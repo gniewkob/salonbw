@@ -1,32 +1,17 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="pl">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{{ config('app.name', 'Salon Black&White') }}</title>
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
+	@stack('head')
 </head>
-<body class="font-sans antialiased bg-white text-gray-800">
+<body class="bg-gray-50 min-h-screen antialiased">
+	{{-- Nawigacja --}}
+	@include('layouts.navigation')
 
-	<header class="bg-white shadow">
-		<div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-			<a href="{{ route('dashboard') }}" class="text-xl font-bold text-gray-900">Panel administracyjny</a>
-			<nav class="space-x-4 text-sm">
-				<a href="{{ route('dashboard') }}">Dashboard</a>
-				<a href="{{ route('appointments.index') }}">Moje rezerwacje</a>
-				<a href="{{ route('admin.services.index') }}">Usługi</a>
-				<a href="{{ route('admin.kontakt') }}">Wiadomości</a>
-
-				<!-- Logout -->
-				<form method="POST" action="{{ route('logout') }}" class="inline">
-					@csrf
-					<button type="submit" class="text-gray-600 hover:underline">{{ Auth::user()->name }} (Wyloguj)</button>
-				</form>
-			</nav>
-		</div>
-	</header>
-
-	<main class="py-8">
+	<main class="py-8 min-h-[70vh]">
 		{{ $slot }}
 	</main>
 
@@ -35,6 +20,6 @@
 			&copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White — Panel zarządzania.
 		</div>
 	</footer>
-
+	@stack('scripts')
 </body>
 </html>
