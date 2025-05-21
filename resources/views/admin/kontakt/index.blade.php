@@ -1,34 +1,37 @@
-@extends('layouts.app')
+<x-app-layout>
+	<div class="max-w-4xl mx-auto py-8">
+		<h2 class="text-2xl font-bold mb-6">Wiadomości kontaktowe</h2>
+		@if(session('success'))
+			<div class="bg-green-100 text-green-800 p-2 mb-4 rounded">
+				{{ session('success') }}
+			</div>
+		@endif
 
-@section('title', 'Wiadomości kontaktowe')
-
-@section('content')
-	<h1 class="text-2xl font-bold mb-6">Wiadomości z formularza kontaktowego</h1>
-
-	<table class="w-full text-left border-collapse">
-		<thead>
-			<tr class="bg-gray-200">
-				<th class="p-2">Imię i nazwisko</th>
-				<th class="p-2">E-mail</th>
-				<th class="p-2">Telefon</th>
-				<th class="p-2">Wiadomość</th>
-				<th class="p-2">Data</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach($messages as $msg)
-				<tr class="border-t">
-					<td class="p-2">{{ $msg->name }}</td>
-					<td class="p-2">{{ $msg->email }}</td>
-					<td class="p-2">{{ $msg->phone ?? '—' }}</td>
-					<td class="p-2">{{ $msg->message }}</td>
-					<td class="p-2 text-sm text-gray-500">{{ $msg->created_at->format('Y-m-d H:i') }}</td>
+		<table class="w-full border border-gray-200">
+			<thead>
+				<tr>
+					<th class="p-2 border-b">Data</th>
+					<th class="p-2 border-b">Imię i nazwisko</th>
+					<th class="p-2 border-b">Email</th>
+					<th class="p-2 border-b">Telefon</th>
+					<th class="p-2 border-b">Wiadomość</th>
 				</tr>
-			@endforeach
-		</tbody>
-	</table>
-
-	<div class="mt-6">
-		{{ $messages->links() }}
+			</thead>
+			<tbody>
+				@forelse($messages as $msg)
+					<tr>
+						<td class="p-2 border-b">{{ $msg->created_at->format('Y-m-d H:i') }}</td>
+						<td class="p-2 border-b">{{ $msg->name }}</td>
+						<td class="p-2 border-b">{{ $msg->email }}</td>
+						<td class="p-2 border-b">{{ $msg->phone ?? '-' }}</td>
+						<td class="p-2 border-b">{{ $msg->message }}</td>
+					</tr>
+				@empty
+					<tr>
+						<td colspan="5" class="p-2 text-center text-gray-400">Brak wiadomości.</td>
+					</tr>
+				@endforelse
+			</tbody>
+		</table>
 	</div>
-@endsection
+</x-app-layout>
