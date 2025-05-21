@@ -87,6 +87,20 @@ Route::middleware(['auth', 'is_admin'])->group(function() {
 	// trasy admina
 });
 
+// Trasy dla panelu admina:
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function() {
+    Route::resource('appointments', App\Http\Controllers\AdminAppointmentController::class);
+    // ...inne trasy admina
+});
+
+// Trasy dla użytkownika:
+Route::middleware(['auth'])->group(function() {
+    Route::get('/moje-wizyty', [App\Http\Controllers\AppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('/moje-wizyty/{id}', [App\Http\Controllers\AppointmentController::class, 'show'])->name('appointments.show');
+    // ...inne trasy usera
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | Tymczasowe zapytanie testowe

@@ -15,7 +15,7 @@
 			<p><strong>Wariant:</strong> <span id="modalVariant"></span></p>
 			<p><strong>Termin:</strong> <span id="modalDatetime"></span></p>
 			<p><strong>Status:</strong> <span id="modalStatus"></span></p>
-	
+
 			<div class="mt-4 text-right">
 				<button onclick="closeModal()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
 					Zamknij
@@ -25,16 +25,16 @@
 	</div>
 
 	@vite(['resources/css/app.css', 'resources/js/calendar.js'])
-	
+
 	<script>
 		function closeModal() {
 			document.getElementById('appointmentModal').classList.add('hidden');
 		}
-	
+
 		document.addEventListener('DOMContentLoaded', function () {
 			const calendarEl = document.getElementById('calendar');
 			const eventsUrl = calendarEl.dataset.eventsUrl;
-	
+
 			const calendar = new FullCalendar.Calendar(calendarEl, {
 				initialView: 'timeGridWeek',
 				headerToolbar: {
@@ -46,17 +46,17 @@
 				events: eventsUrl,
 				eventClick: function (info) {
 					const props = info.event.extendedProps;
-	
+
 					document.getElementById('modalUser').textContent = props.user;
 					document.getElementById('modalService').textContent = props.service;
 					document.getElementById('modalVariant').textContent = props.variant ?? '—';
 					document.getElementById('modalDatetime').textContent = props.datetime;
 					document.getElementById('modalStatus').textContent = props.status;
-	
+
 					document.getElementById('appointmentModal').classList.remove('hidden');
 				}
 			});
-	
+
 			calendar.render();
 		});
 	</script>
