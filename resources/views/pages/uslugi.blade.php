@@ -19,10 +19,10 @@
                                 <tr>
                                     <td class="p-2">{{ $variant->variant_name }}</td>
                                     <td class="p-2">
-                                        {{ !is_null($variant->price) ? number_format($variant->price, 2).' zł' : '—' }}
+                                        {{ !is_null($variant->price_pln) ? number_format($variant->price_pln, 2).' zł' : '—' }}
                                     </td>
                                     <td class="p-2">
-                                        {{ !is_null($variant->duration) ? $variant->duration.' min' : '—' }}
+                                        {{ !is_null($variant->duration_minutes) ? $variant->duration_minutes.' min' : '—' }}
                                     </td>
                                     <td class="p-2">
                                         <a href="{{ route('reservation.entry', ['variant_id' => $variant->id]) }}"
