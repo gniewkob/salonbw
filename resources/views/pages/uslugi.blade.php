@@ -1,31 +1,28 @@
 <x-guest-layout>
     <div class="max-w-3xl mx-auto py-12">
         <h2 class="text-3xl font-bold mb-8">Nasze Usługi</h2>
-
         @forelse($services as $service)
             <div class="mb-8">
                 <h3 class="text-xl font-bold mb-4 border-b pb-2">{{ $service->name }}</h3>
                 @if($service->variants->count())
                     <table class="w-full text-base mb-2">
                         <thead>
-                            <tr class="text-gray-600">
-                                <th class="p-2 text-left font-semibold">Wariant</th>
-                                <th class="p-2 text-left font-semibold">Cena</th>
-                                <th class="p-2 text-left font-semibold">Czas trwania</th>
+                            <tr>
+                                <th class="p-2 text-left">Wariant</th>
+                                <th class="p-2 text-left">Cena</th>
+                                <th class="p-2 text-left">Czas trwania</th>
                                 <th class="p-2"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($service->variants as $variant)
-                                <tr class="border-b last:border-none">
+                                <tr>
+                                    <td class="p-2">{{ $variant->variant_name }}</td>
                                     <td class="p-2">
-                                        {{ $variant->variant_name }}
+                                        {{ !is_null($variant->price) ? number_format($variant->price, 2).' zł' : '—' }}
                                     </td>
                                     <td class="p-2">
-                                        {{ number_format($variant->price, 2) }} zł
-                                    </td>
-                                    <td class="p-2">
-                                        {{ $variant->duration ?? '–' }} min
+                                        {{ !is_null($variant->duration) ? $variant->duration.' min' : '—' }}
                                     </td>
                                     <td class="p-2">
                                         <a href="{{ route('reservation.entry', ['variant_id' => $variant->id]) }}"
