@@ -3,7 +3,6 @@
         <div class="flex items-center space-x-8">
             <a href="{{ route('home') }}" class="font-bold text-lg">Salon Black&White</a>
             <a href="{{ route('uslugi') }}" class="hover:underline">Usługi</a>
-            <a href="{{ route('zespol') }}" class="hover:underline">Zespół</a>
             <a href="{{ route('kontakt') }}" class="hover:underline">Kontakt</a>
             @auth
                 @if(Auth::user()->role === 'admin')
@@ -26,7 +25,8 @@
                     <button type="submit" class="ml-4 text-red-700 hover:underline">Wyloguj</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="hover:underline">Zaloguj się</a>
+                <a href="{{ route('register') }}" class="hover:underline">Zarejestruj się</a>
+                <a href="{{ route('login') }}" class="ml-4 hover:underline">Zaloguj się</a>
             @endauth
         </div>
     </div>
