@@ -27,6 +27,15 @@ class AppointmentController extends Controller
         });
     }
 
+    public function show($id)
+    {
+        $appointment = \App\Models\Appointment::with(['service', 'variant'])
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
+
+        return view('appointments.show', compact('appointment'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
