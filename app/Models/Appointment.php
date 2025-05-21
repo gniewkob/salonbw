@@ -9,9 +9,11 @@ class Appointment extends Model
     protected $fillable = [
         'user_id',
         'service_id',
-        'service_variant_id', // ← dodaj to pole
+        'service_variant_id',
         'appointment_at',
         'status',
+        'note_client',
+        'note_internal',
     ];
     protected $casts = [
         'appointment_at' => 'datetime',
