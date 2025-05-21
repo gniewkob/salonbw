@@ -30,6 +30,9 @@ yarn-error.log
 node_modules/
 dist/
 
+# tailwindcss binary
+tailwindcss
+
 # Compiled Java class files
 *.class
 
@@ -69,4 +72,4 @@ Thumbs.db
 *.avi
 *.flv
 *.mov
-*.wmv
+*.wmvtailwindcss
