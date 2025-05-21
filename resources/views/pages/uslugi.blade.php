@@ -2,41 +2,43 @@
 <div class="max-w-5xl mx-auto py-8 px-4">
 	<h1 class="text-3xl font-bold mb-6">Nasze Usługi</h1>
 
-	@forelse ($services as $service)
-		<div class="mb-8">
-			<h2 class="text-xl font-semibold">{{ $service->name }}</h2>
-			@if ($service->description)
-				<p class="text-gray-700 mb-2">{{ $service->description }}</p>
-			@endif
+    @forelse ($services as $service)
+        <div class="mb-8 border-b pb-6">
+            <h3 class="text-xl font-bold mb-1">{{ $service->name }}</h3>
+            <div class="text-gray-600 mb-2">{{ $service->description }}</div>
+            <ul>
+                @forelse ($service->variants as $variant)
+                    <li class="mb-2 flex items-center justify-between">
+                        <div>
+                            <span class="font-semibold">{{ $variant->variant_name }}</span>
+                            @if($variant->price)
+                                <span class="text-gray-400 ml-2">{{ number_format($variant->price, 2) }} zł</span>
+                            @endif
+                        </div>
+                        @auth
+                            <a href="{{ route('appointments.create', ['variant_id' => $variant->id]) }}"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">Zarezerwuj</a>
+                        @else
+                        <a href="{{ route('login', ['redirect' => route('appointments.create', ['variant_id' => $variant->id])]) }}"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                            Zaloguj się i zarezerwuj
+                        </a>
+                        <a href="{{ route('register', ['redirect' => route('appointments.create', ['variant_id' => $variant->id])]) }}"
+                            class="ml-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                            Zarejestruj się i zaloguj
+                        </a>
 
-			<table class="w-full table-auto border border-gray-200 bg-white mb-4">
-				<thead class="bg-gray-100">
-					<tr>
-						<th class="text-left px-4 py-2">Wariant</th>
-						<th class="text-left px-4 py-2">Czas</th>
-						<th class="text-left px-4 py-2">Cena</th>
-						<th class="text-right px-4 py-2">Akcja</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach ($service->variants as $variant)
-						<tr class="border-t">
-							<td class="px-4 py-2">{{ $variant->variant_name }}</td>
-							<td class="px-4 py-2">{{ $variant->duration_minutes }} min</td>
-							<td class="px-4 py-2">{{ number_format($variant->price_pln, 2) }} zł</td>
-							<td class="px-4 py-2 text-right">
-								<a href="{{ route('appointments.create', ['variant_id' => $variant->id]) }}"
-								   class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-									Zarezerwuj
-								</a>
-							</td>
-						</tr>
-					@endforeach
-				</tbody>
-			</table>
-		</div>
-	@empty
-		<p class="text-gray-500">Brak usług do wyświetlenia.</p>
-	@endforelse
+                        @endauth
+                    </li>
+                @empty
+                    <li class="text-gray-400 italic">Brak wariantów tej usługi.</li>
+                @endforelse
+            </ul>
+        </div>
+    @empty
+        <div class="text-center text-gray-400 py-12">
+            Brak dostępnych usług. Wróć później!
+        </div>
+    @endforelse
 </div>
 </x-guest-layout>

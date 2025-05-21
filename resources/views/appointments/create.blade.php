@@ -19,19 +19,26 @@
 
 			<div>
 				<label class="block font-medium mb-1">Wybierz usługę i wariant</label>
-				<select name="service_variant_id" required class="w-full border rounded px-4 py-2">
-					<option value="" disabled selected>-- wybierz wariant usługi --</option>
-					@foreach ($services as $service)
-						<optgroup label="{{ $service->name }}">
-							@foreach ($service->variants as $variant)
-								<option value="{{ $variant->id }}"
-									@if ((int) $preselectedVariant === $variant->id) selected @endif>
-									{{ $variant->variant_name }} — {{ $variant->duration_minutes }} min, {{ number_format($variant->price_pln, 2) }} zł
-								</option>
-							@endforeach
-						</optgroup>
-					@endforeach
-				</select>
+                <select name="service_variant_id" id="service_variant_id" class="w-full p-2 border rounded" required>
+                    @foreach($services as $service)
+                        <optgroup label="{{ $service->name }}">
+                            @foreach($service->variants as $variant)
+                                <option value="{{ $variant->id }}"
+                                    @if(
+                                        (old('service_variant_id') && old('service_variant_id') == $variant->id) ||
+                                        (isset($preselectedVariant) && !$errors->any() && $preselectedVariant == $variant->id)
+                                    ) selected @endif>
+                                    {{ $variant->variant_name }}
+                                    @if($variant->price)
+                                        – {{ number_format($variant->price, 2) }} zł
+                                    @endif
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+
+
 			</div>
 
 			<div>
