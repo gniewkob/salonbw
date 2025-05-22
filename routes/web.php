@@ -94,9 +94,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/kontakt', [AdminKontaktController::class, 'index'])->name('kontakt');
 
     // Wiadomości
-    Route::get('/admin/wiadomosci', [AdminKontaktController::class, 'index'])->name('admin.messages.index');
-    Route::get('/admin/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('admin.messages.show');
-    Route::post('/admin/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('admin.messages.reply');
+    Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('admin.messages.index');
+    Route::get('/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('admin.messages.show');
+    Route::post('/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('admin.messages.reply');
 
 
     // Rezerwacje/kalendarz - trasy niestandardowe
