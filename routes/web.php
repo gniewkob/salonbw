@@ -63,6 +63,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/moje-wizyty/{id}', [AppointmentController::class, 'show'])->name('appointments.show');
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
+
+    // Wiadomości
+    Route::get('/moje-wiadomosci', [KontaktController::class, 'myMessages'])->name('messages.index');
+    Route::get('/moje-wiadomosci/{id}', [KontaktController::class, 'show'])->name('messages.show');
+    Route::post('/moje-wiadomosci/{id}/reply', [KontaktController::class, 'reply'])->name('messages.reply');
 });
 
 /*
@@ -82,6 +87,12 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Wiadomości kontaktowe
     Route::get('/kontakt', [AdminKontaktController::class, 'index'])->name('kontakt');
+
+    // Wiadomości
+    Route::get('/admin/wiadomosci', [AdminKontaktController::class, 'index'])->name('admin.messages.index');
+    Route::get('/admin/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('admin.messages.show');
+    Route::post('/admin/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('admin.messages.reply');
+
 
     // Rezerwacje/kalendarz - trasy niestandardowe
     Route::get('/rezerwacje', [AdminAppointmentController::class, 'index'])->name('appointments.index');
