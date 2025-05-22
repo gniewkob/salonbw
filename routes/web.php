@@ -68,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/moje-wiadomosci', [KontaktController::class, 'myMessages'])->name('messages.index');
     Route::get('/moje-wiadomosci/{id}', [KontaktController::class, 'show'])->name('messages.show');
     Route::post('/moje-wiadomosci/{id}/reply', [KontaktController::class, 'reply'])->name('messages.reply');
+    Route::get('/moje-wiadomosci/nowa', [KontaktController::class, 'create'])->name('messages.create');
+    Route::post('/moje-wiadomosci', [KontaktController::class, 'store'])->name('messages.store');
 });
 
 /*
