@@ -17,6 +17,11 @@ class KontaktMessage extends Model
         'is_read',          // czy klient przeczytał odpowiedź
         // ...inne pola (np. email, imię/nazwisko itd)
     ];
+    protected $attributes = [
+        'is_from_admin' => false,
+        'is_read' => false,
+        'status' => 'nowa',
+    ];
 
     public function user()    { return $this->belongsTo(User::class, 'user_id'); }
     public function admin()   { return $this->belongsTo(User::class, 'admin_id'); }
