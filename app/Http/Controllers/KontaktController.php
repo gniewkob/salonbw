@@ -58,13 +58,16 @@ class KontaktController extends Controller
                 'message' => 'required|string|max:2000',
             ]);
             $msg = KontaktMessage::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'phone'    => $request->phone,
-                'message'  => $request->message,
-                'is_from_admin' => false,
-                'is_read'  => false,
+                'message'        => $request->message,
+                'user_id'        => auth()->id(),
+                'name'           => auth()->user()->name,
+                'email'          => auth()->user()->email,
+                'is_from_admin'  => false,
+                'is_read'        => false,
+                'status'         => 'nowa', // domyślny status
+                'category'       => $request->input('category', null), // jeśli formularz umożliwia
             ]);
+
         }
 
         // Możesz tu wywołać maila/whatsapp (np. Notification::route(...))
