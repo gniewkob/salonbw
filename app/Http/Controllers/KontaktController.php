@@ -38,10 +38,14 @@ class KontaktController extends Controller
             $request->validate([
                 'message' => 'required|string|max:2000',
                 'category' => 'nullable|string|max:255',
+                'phone' => 'nullable|regex:/^[+0-9\s\-\(\)]{7,20}$/',
             ]);
 
             KontaktMessage::create([
                 'user_id'       => auth()->id(),
+                'name'          => auth()->user()->name ?? 'Zalogowany użytkownik',
+                'email'         => auth()->user()->email,
+                'phone'         => auth()->user()->phone ?? null, // dodane
                 'message'       => $request->message,
                 'category'      => $request->category,
                 'is_from_admin' => false,
