@@ -72,6 +72,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/moje-wiadomosci', [KontaktController::class, 'store'])->name('messages.store');
 });
 
+Route::get('/test-widok', function() { return view('messages.create'); });
+
+
 /*
 |--------------------------------------------------------------------------
 | Panel administratora – wszystkie funkcje
