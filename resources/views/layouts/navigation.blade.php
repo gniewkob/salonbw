@@ -9,11 +9,13 @@
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.services.index') }}" class="hover:underline">Usługi (admin)</a>
                     <a href="{{ route('admin.calendar') }}" class="hover:underline">Kalendarz</a>
-                    <a href="{{ route('admin.kontakt') }}" class="hover:underline">Wiadomości</a>
+                    <a href="{{ route('admin.kontakt') }}" class="hover:underline">Kontakt</a>
+                    <a href="{{ route('admin.messages.index') }}" class="hover:underline">Wiadomości</a>
                     <a href="{{ route('admin.users.index') }}" class="hover:underline">Użytkownicy</a>
                     {{-- Dodaj tutaj link do edycji strony głównej jeśli utworzysz trasę, np. admin.home --}}
                 @else
                     <a href="{{ route('appointments.index') }}" class="hover:underline">Moje rezerwacje</a>
+                    <a href="{{ route('messages.index') }}" class="hover:underline">Wiadomości</a>
                     {{-- Brak trasy do wiadomości użytkownika, możesz dodać tutaj gdy ją zrobisz --}}
                 @endif
             @endauth
