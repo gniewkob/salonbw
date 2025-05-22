@@ -3,77 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\KontaktMail;
 use App\Models\KontaktMessage;
+use Illuminate\Support\Facades\Auth;
 
 class KontaktController extends Controller
 {
-	public function send(Request $request)
-	{
-		// Honeypot — pole "website" musi być puste
-		if ($request->filled('website')) {
-			return back()->withErrors(['Niepoprawna próba wysyłki.']);
-		}
-
-		$response = $request->get('h-captcha-response');
-
-		if (!$response) {
-			return back()->withErrors(['hcaptcha' => 'Potwierdź, że nie jesteś botem.']);
-		}
-
-		$verify = Http::asForm()->post('https://hcaptcha.com/siteverify', [
-			'secret'   => env('HCAPTCHA_SECRET'),
-			'response' => $response,
-			'remoteip' => $request->ip(),
-		]);
-
-		if (!($verify->json()['success'] ?? false)) {
-			return back()->withErrors(['hcaptcha' => 'Weryfikacja hCaptcha nie powiodła się.']);
-		}
-
-		// Walidacja pól formularza
-		$validated = $request->validate([
-			'name'    => 'required|string|max:100',
-			'email'   => 'required|email',
-			'phone'   => 'nullable|string|max:40',
-			'message' => 'required|string|max:1000',
-		]);
-
-		// Zapisz wiadomość do bazy
-		KontaktMessage::create([
-			'name'    => $validated['name'],
-			'email'   => $validated['email'],
-			'phone'   => $validated['phone'] ?? null,
-			'message' => $validated['message'],
-		]);
-
-		// Wyślij wiadomość e-mail
-		Mail::to('kontakt@salon-bw.pl')->send(
-			new KontaktMail(
-				$validated['name'],
-				$validated['email'],
-				$validated['phone'] ?? '',
-				$validated['message']
-			)
-		);
-
-		// Powrót z komunikatem
-		return back()->with('success', 'Dziękujemy! Twoja wiadomość została wysłana.');
-	}
-
+    // Widok "Moje wiadomości" (dla zalogowanych)
     public function myMessages()
     {
         $messages = KontaktMessage::where('user_id', auth()->id())
             ->whereNull('reply_to_id')
-            ->latest()
             ->with('replies')
+            ->orderByDesc('created_at')
             ->get();
 
         return view('messages.index', compact('messages'));
     }
 
+    // Widok pojedynczej wiadomości (dla zalogowanych)
     public function show($id)
     {
         $message = KontaktMessage::with(['replies', 'replies.admin'])->findOrFail($id);
@@ -82,43 +29,69 @@ class KontaktController extends Controller
         return view('messages.show', compact('message'));
     }
 
-    public function reply(Request $request, $id)
-    {
-        $parent = KontaktMessage::findOrFail($id);
-        abort_if($parent->user_id !== auth()->id(), 403);
-
-        $request->validate(['message' => 'required|string|min:2']);
-        KontaktMessage::create([
-            'user_id'      => auth()->id(),
-            'message'      => $request->message,
-            'reply_to_id'  => $parent->id,
-            'is_from_admin'=> false,
-        ]);
-        // Możesz wysłać notyfikację mailową do admina...
-        return back()->with('success', 'Odpowiedź wysłana.');
-    }
-
+    // Formularz nowej wiadomości (dla zalogowanych)
     public function create()
     {
-        if (!auth()->check()) dd('niezalogowany');
         return view('messages.create');
     }
 
+    // Zapis nowej wiadomości od użytkownika (zalogowany lub niezalogowany)
     public function store(Request $request)
     {
+        if (auth()->check()) {
+            // Dla zalogowanego użytkownika
+            $request->validate([
+                'message' => 'required|string|max:2000',
+            ]);
+            $msg = KontaktMessage::create([
+                'message'    => $request->message,
+                'user_id'    => auth()->id(),
+                'is_from_admin' => false,
+                'is_read'    => false,
+            ]);
+        } else {
+            // Dla niezalogowanego
+            $request->validate([
+                'name'    => 'required|string|max:100',
+                'email'   => 'required|email|max:255',
+                'phone'   => 'nullable|string|max:30',
+                'message' => 'required|string|max:2000',
+            ]);
+            $msg = KontaktMessage::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'phone'    => $request->phone,
+                'message'  => $request->message,
+                'is_from_admin' => false,
+                'is_read'  => false,
+            ]);
+        }
+
+        // Możesz tu wywołać maila/whatsapp (np. Notification::route(...))
+        return redirect()->route(auth()->check() ? 'messages.index' : 'home')
+            ->with('success', 'Wiadomość została wysłana!');
+    }
+
+    // Odpowiedź na wiadomość (tylko admin)
+    public function reply(Request $request, $id)
+    {
         $request->validate([
-            'message' => 'required|string|min:2',
+            'message' => 'required|string|max:2000',
         ]);
 
-        KontaktMessage::create([
-            'user_id' => auth()->id(),
-            'message' => $request->message,
-            'is_from_admin' => false,
-            'is_read' => false,
+        $parent = KontaktMessage::findOrFail($id);
+
+        $reply = KontaktMessage::create([
+            'message'      => $request->message,
+            'reply_to_id'  => $parent->id,
+            'user_id'      => $parent->user_id,
+            'admin_id'     => auth()->id(),
+            'is_from_admin'=> true,
+            'is_read'      => false,
         ]);
 
-        // (opcjonalnie: powiadomienie do admina, mail, WhatsApp...)
+        // Możesz wysłać powiadomienie na email/whatsapp użytkownika
 
-        return redirect()->route('messages.index')->with('success', 'Wiadomość została wysłana.');
+        return back()->with('success', 'Odpowiedź została wysłana.');
     }
 }
