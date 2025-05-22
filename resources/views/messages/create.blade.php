@@ -25,16 +25,17 @@
                             class="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                         @error('email')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-
-                    <div class="mb-4">
-                        <label for="phone" class="block font-medium text-sm text-gray-700">Telefon (opcjonalnie)</label>
-                        <input id="phone" type="text" name="phone" value="{{ old('phone') }}"
-                            class="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('phone')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
-                    </div>
                 @endguest
 
-                {{-- Kategoria (dla wszystkich) --}}
+                {{-- Telefon kontaktowy --}}
+                <div class="mb-4">
+                    <label for="phone" class="block font-medium text-sm text-gray-700">Telefon (opcjonalnie)</label>
+                    <input id="phone" type="text" name="phone" value="{{ old('phone') }}"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                    @error('phone')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Kategoria --}}
                 <div class="mb-4">
                     <label for="category" class="block font-medium text-sm text-gray-700">Temat</label>
                     <select id="category" name="category"
