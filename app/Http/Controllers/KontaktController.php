@@ -98,4 +98,26 @@ class KontaktController extends Controller
         return back()->with('success', 'Odpowiedź wysłana.');
     }
 
+    public function create()
+    {
+        return view('messages.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|min:2',
+        ]);
+
+        KontaktMessage::create([
+            'user_id' => auth()->id(),
+            'message' => $request->message,
+            'is_from_admin' => false,
+            'is_read' => false,
+        ]);
+
+        // (opcjonalnie: powiadomienie do admina, mail, WhatsApp...)
+
+        return redirect()->route('messages.index')->with('success', 'Wiadomość została wysłana.');
+    }
 }
