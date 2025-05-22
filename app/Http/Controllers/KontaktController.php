@@ -100,6 +100,7 @@ class KontaktController extends Controller
 
     public function create()
     {
+        if (!auth()->check()) dd('niezalogowany');
         return view('messages.create');
     }
 
