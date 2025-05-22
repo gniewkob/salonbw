@@ -9,20 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('kontakt_messages', function (Blueprint $table) {
-            //
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('kontakt_messages', function (Blueprint $table) {
-            //
-        });
-    }
+public function up()
+     {
+         Schema::table('kontakt_messages', function (Blueprint $table) {
+             $table->unsignedBigInteger('user_id')->nullable()->after('id');
+         });
+     }
+     public function down()
+     {
+         Schema::table('kontakt_messages', function (Blueprint $table) {
+             $table->dropColumn('user_id');
+         });
+     }
 };
