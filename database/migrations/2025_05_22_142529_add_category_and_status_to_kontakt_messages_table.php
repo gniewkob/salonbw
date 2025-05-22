@@ -6,8 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-Schema::table('kontakt_messages', function (Blueprint $table) {
-    $table->string('category')->nullable();
-    $table->string('status')->default('nowa'); // lub ENUM z ograniczeniem
-});
+    public function up(): void
+    {
+        Schema::table('kontakt_messages', function (Blueprint $table) {
+            $table->string('category')->nullable();
+            $table->string('status')->default('nowa');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('kontakt_messages', function (Blueprint $table) {
+            $table->dropColumn(['category', 'status']);
+        });
+    }
 };
