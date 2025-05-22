@@ -19,9 +19,7 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('pages.home');
-})->name('home');
+Route::get('/', fn () => view('pages.home'))->name('home');
 
 Route::get('/uslugi', function () {
     $services = \App\Models\Service::with('variants')->orderBy('name')->get();
@@ -33,20 +31,13 @@ Route::post('/kontakt', [KontaktController::class, 'send'])->name('kontakt.wysli
 
 /*
 |--------------------------------------------------------------------------
-| Flow rezerwacji — pośredni wybór logowania/rejestracji
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/zarezerwuj', [ReservationEntryController::class, 'index'])->name('reservation.entry');
-
-/*
-|--------------------------------------------------------------------------
 | Autoryzowany użytkownik – Dashboard i profil
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -54,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Panel użytkownika – Rezerwacje (moje wizyty)
+| Panel użytkownika – Rezerwacje i wiadomości
 |--------------------------------------------------------------------------
 */
 
@@ -64,22 +55,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
 
-    // Wiadomości
     Route::get('/moje-wiadomosci', [KontaktController::class, 'myMessages'])->name('messages.index');
-    Route::get('/moje-wiadomosci/{id}', [KontaktController::class, 'show'])->name('messages.show');
-    Route::post('/moje-wiadomosci/{id}/reply', [KontaktController::class, 'reply'])->name('messages.reply');
     Route::get('/moje-wiadomosci/nowa', [KontaktController::class, 'create'])->name('messages.create');
     Route::post('/moje-wiadomosci', [KontaktController::class, 'store'])->name('messages.store');
+    Route::get('/moje-wiadomosci/{id}', [KontaktController::class, 'show'])->name('messages.show');
+    Route::post('/moje-wiadomosci/{id}/reply', [KontaktController::class, 'reply'])->name('messages.reply');
 });
-
-Route::get('/test-widok', function() { return view('messages.create'); });
-
 
 /*
 |--------------------------------------------------------------------------
-| Panel administratora – wszystkie funkcje
+| Panel administratora – Usługi, wiadomości, kalendarz
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     // Usługi
     Route::get('/uslugi', [AdminServiceController::class, 'index'])->name('services.index');
@@ -90,33 +78,30 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('/uslugi/{service}', [AdminServiceController::class, 'update'])->name('services.update');
     Route::delete('/uslugi/{service}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
 
-    // Wiadomości kontaktowe
-    Route::get('/kontakt', [AdminKontaktController::class, 'index'])->name('kontakt');
-
-    // Wiadomości
-    Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('admin.messages.index');
-    Route::get('/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('admin.messages.show');
-    Route::post('/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('admin.messages.reply');
-
-
-    // Rezerwacje/kalendarz - trasy niestandardowe
+    // Rezerwacje i kalendarz
     Route::get('/rezerwacje', [AdminAppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/rezerwacje/{appointment}/edit', [AdminAppointmentController::class, 'edit'])->name('appointments.edit');
     Route::patch('/rezerwacje/{appointment}', [AdminAppointmentController::class, 'update'])->name('appointments.update');
-
     Route::get('/kalendarz', [AdminAppointmentController::class, 'calendar'])->name('calendar');
     Route::get('/kalendarz/api', [AdminAppointmentController::class, 'api'])->name('appointments.api');
 
-    // Resource controller – dla masowej edycji (np. z blade, API)
-    Route::resource('appointments', AdminAppointmentController::class)->except(['index', 'edit', 'update']);
+    // Wiadomości
+    Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('messages.index');
+    Route::get('/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('messages.show');
+    Route::post('/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('messages.reply');
 
-    // Zarządzanie użytkownikami
-    Route::resource('users', AdminUserController::class)->except(['create', 'store', 'destroy', 'show']);
+    // Użytkownicy
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Auth Breeze/Fortify
+| Rezerwacja publiczna (np. alias marketingowy)
 |--------------------------------------------------------------------------
 */
-require __DIR__.'/auth.php';
+
+Route::get('/zarezerwuj', [ReservationEntryController::class, 'index'])->name('reservation.entry');
+
+require __DIR__ . '/auth.php';
