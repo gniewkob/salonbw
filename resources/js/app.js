@@ -1,29 +1,24 @@
-/* resources/js/app.js ----------------------------------------------------- */
+/* resources/js/app.js ----------------------------------------------- */
 import './bootstrap';
-import './calendar';
+import 'vite/modulepreload-polyfill';     // (jeśli Twój bundler to dodaje)
 
 import Alpine from 'alpinejs';
-
-/* FullCalendar zostaje tak jak było – wystawiamy go w global */
 import { Calendar }          from '@fullcalendar/core';
 import dayGridPlugin         from '@fullcalendar/daygrid';
 import timeGridPlugin        from '@fullcalendar/timegrid';
 import interactionPlugin     from '@fullcalendar/interaction';
 
-window.FullCalendar = {
-	Calendar,
-	dayGridPlugin,
-	timeGridPlugin,
-	interactionPlugin,
-};
-
-/* udostępniamy Alpine globalnie */
+/* — Alpine — */
 window.Alpine = Alpine;
-
-/* ✨ startujemy PO zbudowaniu całego dokumentu */
 if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => Alpine.start());
+    document.addEventListener('DOMContentLoaded', () => Alpine.start());
 } else {
-	// (gdyby skrypt był w <body> z atrybutem defer)
-	Alpine.start();
+    Alpine.start();
 }
+
+/* — FullCalendar globalnie, żeby blade miał do niego dostęp — */
+window.FullCalendar = { Calendar, dayGridPlugin, timeGridPlugin, interactionPlugin };
+
+/* ❶  Import KALENDARZA **po** starcie Alpine
+   - dynamicznie, aby kod wykonał się po przejściu powyższych linii.   */
+import('./calendar');

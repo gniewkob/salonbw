@@ -1,18 +1,20 @@
+/* resources/js/calendar.js */
 import { Calendar }       from '@fullcalendar/core';
 import dayGridPlugin      from '@fullcalendar/daygrid';
 import timeGridPlugin     from '@fullcalendar/timegrid';
 import interactionPlugin  from '@fullcalendar/interaction';
 import plLocale           from '@fullcalendar/core/locales/pl';
 
-document.addEventListener('DOMContentLoaded', () => {
+/* ❶  Poczekaj, aż Alpine przeleci po DOM-ie */
+document.addEventListener('alpine:initialized', () => {
+
 	/* ---------- element kalendarza ---------- */
 	const calendarEl = document.getElementById('calendar');
 	if (!calendarEl) return;
 
-	const eventsUrl = calendarEl.dataset.eventsUrl;
-	const updateUrl = calendarEl.dataset.updateUrl;
+	const eventsUrl  = calendarEl.dataset.eventsUrl;
+	const updateUrl  = calendarEl.dataset.updateUrl;
 
-	/* ---------- konfiguracja ---------- */
 	const calendar = new Calendar(calendarEl, {
 		plugins     : [dayGridPlugin, timeGridPlugin, interactionPlugin],
 		initialView : 'timeGridWeek',
@@ -30,19 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			const modal = document.getElementById('adminCreateModal');
-			if (!modal) return;
-
-			/* jeśli Alpine nie zdążył zainicjalizować drzewa => zrób to teraz */
-			if (!modal.__x && window.Alpine?.initTree) {
-				window.Alpine.initTree(modal);
+			/* jeśli jednak ktoś usunął x-data – ostrzegamy */
+			if (!modal?.__x?.$data) {
+				console.warn('Modal adminCreateModal bez Alpine – sprawdź markup ✋');
+				return;
 			}
 
-			if (modal.__x?.$data) {
-				modal.__x.$data.date = info.dateStr;
-				modal.__x.$data.open = true;
-			} else {
-				console.warn('Modal adminCreateModal nadal bez Alpine – sprawdź markup ✋');
-			}
+			modal.__x.$data.date = info.dateStr;
+			modal.__x.$data.open = true;
 		},
 
 		/* === przeciąganie wizyty === */
