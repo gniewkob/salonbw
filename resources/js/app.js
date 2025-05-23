@@ -1,15 +1,19 @@
 import './bootstrap';
+import './calendar';
 import Alpine from 'alpinejs';
+
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
+window.FullCalendar = {
+  Calendar,
+  dayGridPlugin,
+  timeGridPlugin,
+  interactionPlugin,
+};
 
 window.Alpine = Alpine;
 
-function boot() {
-  Alpine.start();
-  import('./calendar');
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
-} else {
-  boot();
-}
+Alpine.start();
