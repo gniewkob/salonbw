@@ -114,33 +114,59 @@
         </div>
     </div>
 
-    <!-- Modal szczegółów rezerwacji -->
-    <div
-        id="appointmentModal"
-        class="fixed z-50 inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
-            <h2 class="text-lg font-bold mb-4">Szczegóły rezerwacji</h2>
-            <p><strong>Klient:</strong> <span id="modalUser"></span></p>
-            <p><strong>Usługa:</strong> <span id="modalService"></span></p>
-            <p><strong>Wariant:</strong> <span id="modalVariant"></span></p>
-            <p><strong>Termin:</strong> <span id="modalDatetime"></span></p>
-            <p><strong>Status:</strong>
-                <span id="modalStatus" class="inline-block px-2 py-1 text-white text-xs font-semibold rounded">—</span>
-            </p>
-
-            <div class="mt-4 flex flex-wrap gap-2 justify-between">
-                <button id="btnDone" class="px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
-                    Oznacz jako odbyta
+<!-- Modal podglądu / zmiany statusu wizyty -->
+    <div id="appointmentModal"
+         x-data="{ open: false }"
+         x-show="open"
+         x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    
+        <div class="bg-white w-full max-w-md rounded-lg p-6 shadow-lg"
+             @click.outside="open = false">
+    
+            <h2 class="text-lg font-bold mb-4">Szczegóły wizyty</h2>
+    
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <dt class="font-medium">Klient:</dt>
+                    <dd id="modalUser"></dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="font-medium">Usługa:</dt>
+                    <dd id="modalService"></dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="font-medium">Wariant:</dt>
+                    <dd id="modalVariant">—</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="font-medium">Termin:</dt>
+                    <dd id="modalDatetime"></dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="font-medium">Status:</dt>
+                    <dd><span id="modalStatus"></span></dd>
+                </div>
+            </dl>
+    
+            <div class="mt-6 flex flex-wrap gap-2 justify-end">
+                <button id="btnDone"
+                        class="px-3 py-1 rounded bg-green-600 text-white text-xs hover:bg-green-700">
+                    Oznacz jako odbytą
                 </button>
-                <button id="btnMissed" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
-                    Nieodbyta
+    
+                <button id="btnMissed"
+                        class="px-3 py-1 rounded bg-yellow-500 text-white text-xs hover:bg-yellow-600">
+                    Nie odbyła się
                 </button>
-                <button id="btnCancel" class="px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-                    Anuluj
+    
+                <button id="btnCancel"
+                        class="px-3 py-1 rounded bg-red-600 text-white text-xs hover:bg-red-700">
+                    Anuluj wizytę
                 </button>
-                <button
-                    onclick="document.getElementById('appointmentModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ml-auto">
+    
+                <button @click="open = false"
+                        class="ml-auto px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600">
                     Zamknij
                 </button>
             </div>
