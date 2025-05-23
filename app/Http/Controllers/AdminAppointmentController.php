@@ -67,12 +67,7 @@ class AdminAppointmentController extends Controller
 
         return response()->json(['success' => true]);
     }
-    public function show(Appointment $appointment)
-    {
-        return $appointment
-            ->load(['user', 'serviceVariant.service'])
-            ->only(['id','user','serviceVariant','appointment_at','status','canceled_reason']);
-    }
+
     public function store(Request $request)
     {
         $request->validate([
