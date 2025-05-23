@@ -87,12 +87,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::patch('/rezerwacje/{appointment}', [AdminAppointmentController::class, 'update'])->name('appointments.update');
     Route::get('/kalendarz', [AdminAppointmentController::class, 'calendar'])->name('calendar');
     Route::get('/kalendarz/api', [AdminAppointmentController::class, 'api'])->name('appointments.api');
-    Route::put('/kalendarz/update/{appointment}', [AdminAppointmentController::class, 'updateAppointmentTime'])
-    ->name('appointments.updateTime');
+    Route::put('/kalendarz/update/{appointment}', [AdminAppointmentController::class, 'updateAppointmentTime'])->name('appointments.updateTime');
     Route::post('/admin/kalendarz/store', [AdminAppointmentController::class, 'store'])->name('appointments.store');
     Route::patch('/admin/kalendarz/{appointment}/cancel', [AdminAppointmentController::class, 'cancel'])->name('appointments.cancel');
-    Route::patch('/admin/kalendarz/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])
-    ->name('appointments.updateStatus');
+    Route::patch('/admin/kalendarz/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+    Route::get('/kalendarz/{appointment}', [AdminAppointmentController::class, 'show'])->name('appointments.show');
 
     // 🔽 DODANE: API do dropdownów
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');

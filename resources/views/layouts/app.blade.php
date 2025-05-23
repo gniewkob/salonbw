@@ -4,24 +4,25 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
-
 	<title>{{ config('app.name', 'Salon Black&White') }}</title>
+
+	{{-- Raz – w głównym layoucie --}}
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
 	@stack('head')
 </head>
-<body class="bg-gray-50 min-h-screen antialiased">
-	{{-- Nawigacja --}}
+<body class="bg-gray-50 antialiased">
 	@include('layouts.navigation')
 
-	<main class="py-8 min-h-[70vh]">
+	<main class="py-8 min-h-screen">
 		{{ $slot }}
 	</main>
 
-	<footer class="bg-gray-100 border-t mt-12">
+	<footer class="bg-gray-100 border-t">
 		<div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-600">
 			&copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White — Panel zarządzania.
 		</div>
 	</footer>
+
 	@stack('scripts')
 </body>
 </html>
