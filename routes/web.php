@@ -97,8 +97,6 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // 🔽 DODANE: API do dropdownów
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');
     Route::get('/api/variants', [AdminAppointmentController::class, 'variants'])->name('appointments.variants');
-    });
-
 
     // Wiadomości
     Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('messages.index');
