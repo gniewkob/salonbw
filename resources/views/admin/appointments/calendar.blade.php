@@ -130,7 +130,39 @@
                         alert('Nie udało się zapisać zmiany daty.');
                         info.revert();
                     });
+                },
+
+                dateClick: function (info) {
+                    const start = info.dateStr;
+
+                    const userId = prompt("Podaj ID klienta:");
+                    if (!userId) return;
+
+                    const variantId = prompt("Podaj ID wariantu usługi:");
+                    if (!variantId) return;
+
+                    fetch('/admin/kalendarz/store', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            service_variant_id: variantId,
+                            appointment_at: start,
+                        }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Rezerwacja została dodana.');
+                            calendar.refetchEvents();
+                        }
+                    })
+                    .catch(() => alert('Błąd podczas tworzenia rezerwacji.'));
                 }
+
             });
 
             calendar.render();
