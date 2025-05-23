@@ -4,16 +4,24 @@ import timeGridPlugin    from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import plLocale          from '@fullcalendar/core/locales/pl';
 
-document.addEventListener('DOMContentLoaded', () => {
+/* → DODANE -------------------------------------------------------------------- */
+if (!window.FullCalendar) {
+    window.FullCalendar = {
+        Calendar,
+        dayGridPlugin,
+        timeGridPlugin,
+        interactionPlugin,
+    };
+}
+/* ----------------------------------------------------------------------------- */
 
-    /* ---------- element kalendarza ---------- */
+document.addEventListener('DOMContentLoaded', () => {
     const calendarEl = document.getElementById('calendar');
-    if (!calendarEl) return;        //  ← jesteśmy na innej stronie
+    if (!calendarEl) return;
 
     const eventsUrl = calendarEl.dataset.eventsUrl;
     const updateUrl = calendarEl.dataset.updateUrl;
 
-    /* ---------- konfiguracja ---------- */
     const calendar = new Calendar(calendarEl, {
         plugins     : [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView : 'timeGridWeek',
@@ -22,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         editable    : true,
         events      : eventsUrl,
 
-        /* === klik pustego slotu === */
         dateClick(info) {
             const hour = new Date(info.dateStr).getHours();
             if (hour < 9 || hour > 17) {
@@ -33,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('adminCreateModal');
             if (!modal) return;
 
-            // jeśli Alpine nie zdążył „dosadzić” __x, zrób to ręcznie
+            /* zainicjalizuj Alpine, jeśli trzeba */
             if (!modal.__x && window.Alpine?.initTree) {
                 window.Alpine.initTree(modal);
             }
@@ -46,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
-        /* === przeciąganie wizyty === */
         eventDrop(info) {
             fetch(updateUrl.replace(':id', info.event.id), {
                 method : 'PUT',
@@ -69,5 +75,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calendar.render();
-    window.calendar = calendar;          //  dla modala „Zapisz rezerwację”
+    window.calendar = calendar;
 });
