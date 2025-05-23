@@ -7,36 +7,27 @@
 
     @push('styles')
     <style>
-      .fc .fc-view-harness,
-      .fc .fc-scroller { z-index: 0 !important; }
-
       #appointmentModal,
       #adminCreateModal {
         z-index: 99999 !important;
       }
-
-      /* BLOKADA WSZYSTKICH interakcji na FC, gdy modal jest otwarty */
-      .modal-open .fc,
-      .modal-open .fc *,
-      .modal-open .fc .fc-timegrid,
-      .modal-open .fc .fc-scrollgrid-sync-table,
-      .modal-open .fc .fc-bg-table,
-      .modal-open .fc .fc-daygrid-day,
-      .modal-open .fc .fc-timegrid-slot,
-      .modal-open .fc .fc-timegrid-col-frame {
-          pointer-events: none !important;
-          touch-action: none !important;
+    
+      /* Najprostsza blokada – wyłącza WSZYSTKIE kliknięcia na kalendarzu */
+      .modal-open #calendar {
+        pointer-events: none !important;
       }
-
-      /* Modal oraz wnętrze zawsze klikalne */
+    
+      /* Modal i jego wnętrze – zawsze klikalne */
       #appointmentModal,
       #adminCreateModal,
       #appointmentModal *,
-      #adminCreateModal * {
-          pointer-events: auto !important;
+      #adminCreateModal *,
+      .fixed.inset-0.bg-black.bg-opacity-50 {
+        pointer-events: auto !important;
       }
     </style>
     @endpush
+
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div id="calendar"

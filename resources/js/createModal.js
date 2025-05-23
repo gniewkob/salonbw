@@ -9,19 +9,18 @@ export function createModal() {
 
 	init() {
 	  window.addEventListener('open-create-modal', e => {
+		if (window.modalIsOpen) return;
 		this.date = e.detail;
 		this.open = true;
-		// Dodaj klasę na body przy otwarciu
+		window.modalIsOpen = true; // modal otwarty
 		document.body.classList.add('modal-open');
 	  });
 
-	  // Pobierz listę użytkowników
 	  fetch('/admin/api/users')
 		.then(r => r.ok ? r.json() : [])
 		.then(data => this.users = data)
 		.catch(() => console.error('Users load error'));
 
-	  // Pobierz warianty usług
 	  fetch('/admin/api/variants')
 		.then(r => r.ok ? r.json() : [])
 		.then(data => this.variants = data)
@@ -30,7 +29,7 @@ export function createModal() {
 
 	close() {
 	  this.open = false;
-	  // Usuń klasę z body przy zamykaniu
+	  window.modalIsOpen = false; // odblokuj
 	  document.body.classList.remove('modal-open');
 	},
 

@@ -5,16 +5,17 @@ export function viewModal() {
 
 	init() {
 	  window.addEventListener('open-view-modal', e => {
+		if (window.modalIsOpen) return;
 		this.appointment = e.detail;
 		this.open = true;
-		// Dodaj klasę na body przy otwarciu
+		window.modalIsOpen = true; // modal otwarty
 		document.body.classList.add('modal-open');
 	  });
 	},
 
 	close() {
 	  this.open = false;
-	  // Usuń klasę z body przy zamykaniu
+	  window.modalIsOpen = false; // odblokuj
 	  document.body.classList.remove('modal-open');
 	}
   }
