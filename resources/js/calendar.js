@@ -6,6 +6,8 @@ import plLocale from '@fullcalendar/core/locales/pl';
 
 document.addEventListener('DOMContentLoaded', function () {
 	const calendarEl = document.getElementById('calendar');
+	if (!calendarEl) return; // 👈 zabezpieczenie dla innych stron
+
 	const eventsUrl = calendarEl.dataset.eventsUrl;
 	const updateUrl = calendarEl.dataset.updateUrl;
 
@@ -22,23 +24,28 @@ document.addEventListener('DOMContentLoaded', function () {
 			selectedEventId = info.event.id;
 			const props = info.event.extendedProps;
 
-			document.getElementById('modalUser').textContent = props.user;
-			document.getElementById('modalService').textContent = props.service;
-			document.getElementById('modalVariant').textContent = props.variant ?? '—';
-			document.getElementById('modalDatetime').textContent = props.datetime;
+			const modal = document.getElementById('appointmentModal');
+			if (!modal) return;
+
+			document.getElementById('modalUser')?.textContent = props.user;
+			document.getElementById('modalService')?.textContent = props.service;
+			document.getElementById('modalVariant')?.textContent = props.variant ?? '—';
+			document.getElementById('modalDatetime')?.textContent = props.datetime;
 
 			const statusSpan = document.getElementById('modalStatus');
-			statusSpan.textContent = props.status;
-			statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
+			if (statusSpan) {
+				statusSpan.textContent = props.status;
+				statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
 
-			switch (props.status) {
-				case 'odbyta': statusSpan.classList.add('bg-green-500'); break;
-				case 'odwołana': statusSpan.classList.add('bg-red-500'); break;
-				case 'nieodbyta': statusSpan.classList.add('bg-yellow-500'); break;
-				default: statusSpan.classList.add('bg-blue-500');
+				switch (props.status) {
+					case 'odbyta': statusSpan.classList.add('bg-green-500'); break;
+					case 'odwołana': statusSpan.classList.add('bg-red-500'); break;
+					case 'nieodbyta': statusSpan.classList.add('bg-yellow-500'); break;
+					default: statusSpan.classList.add('bg-blue-500');
+				}
 			}
 
-			document.getElementById('appointmentModal').classList.remove('hidden');
+			modal.classList.remove('hidden');
 		},
 
 		eventDrop: function (info) {
@@ -65,14 +72,27 @@ document.addEventListener('DOMContentLoaded', function () {
 		},
 
 		dateClick: function (info) {
-			const modal = document.querySelector('[x-data]');
-			modal.__x.$data.date = info.dateStr;
-			modal.__x.$data.open = true;
+			const hour = new Date(info.dateStr).getHours();
+			if (hour < 9 || hour > 17) {
+				alert('Można umawiać tylko w godzinach 9:00–18:00');
+				return;
+			}
+
+			const modal = document.getElementById('adminCreateModal');
+			if (modal && modal.__x && modal.__x.$data) {
+				modal.__x.$data.date = info.dateStr;
+				modal.__x.$data.open = true;
+			} else {
+				console.error('Modal Alpine nie jest zainicjalizowany albo nie znaleziono elementu.');
+			}
 		}
 	});
 
-	calendar.render();
-	window.calendar = calendar;
+	// używamy requestAnimationFrame żeby uniknąć błędu getBoundingClientRect
+	requestAnimationFrame(() => {
+		calendar.render();
+		window.calendar = calendar;
+	});
 
 	// przyciski statusu
 	document.getElementById('btnDone')?.addEventListener('click', () => updateStatus('odbyta'));
@@ -96,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		.then(res => res.json())
 		.then(data => {
 			if (data.success) {
-				document.getElementById('appointmentModal').classList.add('hidden');
+				document.getElementById('appointmentModal')?.classList.add('hidden');
 				calendar.refetchEvents();
 			}
 		})

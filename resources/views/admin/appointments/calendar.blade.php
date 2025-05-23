@@ -4,7 +4,6 @@
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto">
-        <!-- Legenda statusów -->
         <div class="mb-4 flex flex-wrap items-center gap-4 text-sm">
             <span class="flex items-center gap-2">
                 <span class="w-4 h-4 rounded bg-blue-500 inline-block"></span> Zaplanowana
@@ -29,6 +28,7 @@
 
     <!-- Modal dodawania rezerwacji przez admina -->
     <div
+        id="adminCreateModal"
         x-data="{
             open: false,
             date: '',
@@ -40,7 +40,6 @@
                 fetch('/admin/api/users')
                     .then(res => res.json())
                     .then(data => this.users = data);
-        
                 fetch('/admin/api/variants')
                     .then(res => res.json())
                     .then(data => this.variants = data);
@@ -49,7 +48,6 @@
         x-init="init()"
         x-show="open"
         x-cloak
-
         class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
             <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
@@ -82,7 +80,10 @@
                 </button>
                 <button
                     @click="
-                        if (!user_id || !variant_id) { alert('Wybierz klienta i usługę'); return; }
+                        if (!user_id || !variant_id) {
+                            alert('Wybierz klienta i wariant usługi');
+                            return;
+                        }
                         fetch('/admin/kalendarz/store', {
                             method: 'POST',
                             headers: {
@@ -124,7 +125,11 @@
             const updateUrl = calendarEl.dataset.updateUrl;
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                plugins: [window.FullCalendar.dayGridPlugin, window.FullCalendar.timeGridPlugin, window.FullCalendar.interactionPlugin],
+                plugins: [
+                    window.FullCalendar.dayGridPlugin,
+                    window.FullCalendar.timeGridPlugin,
+                    window.FullCalendar.interactionPlugin
+                ],
                 initialView: 'timeGridWeek',
                 locale: 'pl',
                 editable: true,
@@ -136,9 +141,14 @@
                         alert('Można umawiać tylko w godzinach 9:00–18:00');
                         return;
                     }
-                    const modal = document.querySelector('[x-data]');
-                    modal.__x.$data.date = info.dateStr;
-                    modal.__x.$data.open = true;
+
+                    const modal = document.getElementById('adminCreateModal');
+                    if (modal && modal.__x && modal.__x.$data) {
+                        modal.__x.$data.date = info.dateStr;
+                        modal.__x.$data.open = true;
+                    } else {
+                        console.error('Modal Alpine nie jest zainicjalizowany');
+                    }
                 }
             });
 
