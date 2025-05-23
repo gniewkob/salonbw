@@ -87,6 +87,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::patch('/rezerwacje/{appointment}', [AdminAppointmentController::class, 'update'])->name('appointments.update');
     Route::get('/kalendarz', [AdminAppointmentController::class, 'calendar'])->name('calendar');
     Route::get('/kalendarz/api', [AdminAppointmentController::class, 'api'])->name('appointments.api');
+    Route::put('/kalendarz/update/{appointment}', [AdminAppointmentController::class, 'updateAppointmentTime'])
+    ->name('appointments.updateTime');
 
     // Wiadomości
     Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('messages.index');
