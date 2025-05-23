@@ -21,9 +21,11 @@
 
         <div
             id="calendar"
+            style="min-height: 600px;" {{-- zapobiega błędom renderowania FullCalendar --}}
             data-events-url="{{ route('admin.appointments.api') }}"
             data-update-url="{{ route('admin.appointments.updateTime', ':id') }}">
         </div>
+
     </div>
 
     <!-- Modal dodawania rezerwacji przez admina -->
