@@ -1,10 +1,10 @@
-import { Calendar }      from '@fullcalendar/core';
-import dayGridPlugin     from '@fullcalendar/daygrid';
-import timeGridPlugin    from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import plLocale          from '@fullcalendar/core/locales/pl';
+import { Calendar }        from '@fullcalendar/core';
+import dayGridPlugin       from '@fullcalendar/daygrid';
+import timeGridPlugin      from '@fullcalendar/timegrid';
+import interactionPlugin   from '@fullcalendar/interaction';
+import plLocale            from '@fullcalendar/core/locales/pl';
 
-/* → DODANE -------------------------------------------------------------------- */
+/*  Eksport w global — przydaje się w widokach Blade’a  */
 if (!window.FullCalendar) {
     window.FullCalendar = {
         Calendar,
@@ -13,7 +13,6 @@ if (!window.FullCalendar) {
         interactionPlugin,
     };
 }
-/* ----------------------------------------------------------------------------- */
 
 document.addEventListener('DOMContentLoaded', () => {
     const calendarEl = document.getElementById('calendar');
@@ -30,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
         editable    : true,
         events      : eventsUrl,
 
+        /* ----------------------------------------------------------
+         |  Klik w pusty slot -> otwieramy modal tworzenia wizyty
+         * ---------------------------------------------------------- */
         dateClick(info) {
             const hour = new Date(info.dateStr).getHours();
             if (hour < 9 || hour > 17) {
@@ -38,21 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const modal = document.getElementById('adminCreateModal');
-            if (!modal) return;
-
-            /* zainicjalizuj Alpine, jeśli trzeba */
-            if (!modal.__x && window.Alpine?.initTree) {
-                window.Alpine.initTree(modal);
+            if (!modal?.__x?.$data) {
+                console.error('❌ Modal «adminCreateModal» nie został zainicjalizowany przez Alpine');
+                return;
             }
 
-            if (modal.__x?.$data) {
-                modal.__x.$data.date = info.dateStr;
-                modal.__x.$data.open = true;
-            } else {
-                console.warn('Modal adminCreateModal nadal bez Alpine – sprawdź markup ✋');
-            }
+            modal.__x.$data.date = info.dateStr;
+            modal.__x.$data.open = true;
         },
 
+        /* ----------------------------------------------------------
+         |  Przeciąganie wydarzenia -> aktualizacja terminu w backendzie
+         * ---------------------------------------------------------- */
         eventDrop(info) {
             fetch(updateUrl.replace(':id', info.event.id), {
                 method : 'PUT',
@@ -75,5 +74,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calendar.render();
-    window.calendar = calendar;
+    window.calendar = calendar;  //  ↩︎ debug helper
 });
