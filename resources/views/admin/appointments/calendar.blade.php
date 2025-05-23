@@ -173,7 +173,7 @@
         </div>
     </div>
 
-    @vite(['resources/css/app.css', 'resources/js/calendar.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/calendar.js'])
 
     @push('head')
         <meta name="csrf-token" content="{{ csrf_token() }}">
