@@ -7,21 +7,21 @@ import './bootstrap';
  |  Alpine JS
  * ------------------------------------------------------------------ */
 import Alpine from 'alpinejs';
-
 window.Alpine = Alpine;
 
 /**
- *  Uruchamiamy Alpine dopiero gdy cały dokument jest już sparsowany.
- *  Dzięki temu każdy element z x-data obecny w widoku Blade’a zostanie
- *  automatycznie zainicjalizowany — bez ręcznych hacków z initTree().
+ * Bootstrappujemy Alpine dopiero po DOMContentLoaded,
+ * a dopiero potem — calendar.js. W ten sposób mamy pewność,
+ * że każdy <div x-data> już istnieje, zanim Alpine zacznie go skanować,
+ * a FullCalendar uruchomi się dopiero po starcie Alpine.
  */
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', () => Alpine.start());
-} else {
-	Alpine.start();   // fallback (w razie gdy skrypt ładuje się po DOM-ie)
+function boot() {
+    Alpine.start();
+    import('./calendar');
 }
 
-/* ------------------------------------------------------------------
- |  Skrypty specyficzne dla konkretnych podstron
- * ------------------------------------------------------------------ */
-import './calendar';
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+} else {
+    boot();
+}
