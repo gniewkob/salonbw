@@ -113,7 +113,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal szczegółów rezerwacji -->
     <div
         id="appointmentModal"
@@ -127,7 +127,7 @@
             <p><strong>Status:</strong>
                 <span id="modalStatus" class="inline-block px-2 py-1 text-white text-xs font-semibold rounded">—</span>
             </p>
-    
+
             <div class="mt-4 flex flex-wrap gap-2 justify-between">
                 <button id="btnDone" class="px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
                     Oznacz jako odbyta
