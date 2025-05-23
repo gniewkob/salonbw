@@ -113,6 +113,39 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal szczegółów rezerwacji -->
+    <div
+        id="appointmentModal"
+        class="fixed z-50 inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
+            <h2 class="text-lg font-bold mb-4">Szczegóły rezerwacji</h2>
+            <p><strong>Klient:</strong> <span id="modalUser"></span></p>
+            <p><strong>Usługa:</strong> <span id="modalService"></span></p>
+            <p><strong>Wariant:</strong> <span id="modalVariant"></span></p>
+            <p><strong>Termin:</strong> <span id="modalDatetime"></span></p>
+            <p><strong>Status:</strong>
+                <span id="modalStatus" class="inline-block px-2 py-1 text-white text-xs font-semibold rounded">—</span>
+            </p>
+    
+            <div class="mt-4 flex flex-wrap gap-2 justify-between">
+                <button id="btnDone" class="px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                    Oznacz jako odbyta
+                </button>
+                <button id="btnMissed" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
+                    Nieodbyta
+                </button>
+                <button id="btnCancel" class="px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                    Anuluj
+                </button>
+                <button
+                    onclick="document.getElementById('appointmentModal').classList.add('hidden')"
+                    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ml-auto">
+                    Zamknij
+                </button>
+            </div>
+        </div>
+    </div>
 
     @vite(['resources/css/app.css', 'resources/js/calendar.js'])
 

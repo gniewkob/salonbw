@@ -12,4 +12,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            'alpinejs': require.resolve('alpinejs'),
+        }
+    }
 });
