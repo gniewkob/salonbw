@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const el  = document.getElementById('calendar');
   const url = el.dataset.eventsUrl;
 
+  // Flaga globalna – czy jakiś modal jest otwarty?
+  window.modalIsOpen = false;
+
   const calendar = new Calendar(el, {
     plugins: [ dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin ],
     initialView: 'timeGridWeek',
@@ -20,10 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     events: url,
 
     dateClick(info) {
+      if (window.modalIsOpen) return; // blokada wielokrotnego otwierania
       window.dispatchEvent(new CustomEvent('open-create-modal', { detail: info.dateStr }));
     },
 
     eventClick(info) {
+      if (window.modalIsOpen) return; // blokada wielokrotnego otwierania
       window.dispatchEvent(new CustomEvent('open-view-modal', { detail: info.event.extendedProps }));
     },
 
