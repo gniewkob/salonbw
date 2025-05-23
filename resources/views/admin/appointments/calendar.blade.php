@@ -4,14 +4,26 @@
     </x-slot>
 
     <div class="py-8 max-w-7xl mx-auto">
-        {{-- …legenda… --}}
+        {{-- Legenda statusów --}}
+        <div class="mb-4 flex flex-wrap items-center gap-4 text-sm">
+            <span class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded bg-blue-500 inline-block"></span> Zaplanowana
+            </span>
+            <span class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded bg-green-500 inline-block"></span> Odbyta
+            </span>
+            <span class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded bg-yellow-500 inline-block"></span> Nieodbyta
+            </span>
+        </div>
 
+        {{-- Kontener kalendarza --}}
         <div
             id="calendar"
             style="min-height: 600px;"
             data-events-url="{{ route('admin.appointments.api') }}"
-            data-detail-url="{{ route('admin.appointments.show', ':id') }}"
-            data-update-url="{{ route('admin.appointments.updateTime', ':id') }}"
+            data-detail-url="{{ url('admin/kalendarz/:id') }}"
+            data-update-url="{{ url('admin/kalendarz/update/:id') }}"
         ></div>
     </div>
 
@@ -67,7 +79,9 @@
 
             {{-- Akcje --}}
             <div class="flex justify-end gap-2">
-                <button @click="open = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Anuluj</button>
+                <button @click="open = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                    Anuluj
+                </button>
                 <button
                     @click="
                         if (!user_id || !variant_id) {
