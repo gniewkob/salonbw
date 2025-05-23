@@ -1,220 +1,118 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold text-gray-800 leading-tight">Kalendarz rezerwacji</h2>
+        <h2 class="font-semibold text-xl leading-tight">
+            Kalendarz rezerwacji
+        </h2>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto">
-        {{-- Legenda statusów --}}
-        <div class="mb-4 flex flex-wrap items-center gap-4 text-sm">
-            <span class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded bg-blue-500 inline-block"></span> Zaplanowana
-            </span>
-            <span class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded bg-green-500 inline-block"></span> Odbyta
-            </span>
-            <span class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded bg-yellow-500 inline-block"></span> Nieodbyta
-            </span>
-            <span class="flex items-center gap-2">
-                <span class="w-4 h-4 rounded bg-red-500 inline-block"></span> Odwołana
-            </span>
-        </div>
+    @push('styles')
+    <style>
+      /* 1) Kalendarz zawsze „pod spodem” */
+      .fc .fc-view-harness,
+      .fc .fc-scroller {
+        z-index: 0 !important;
+      }
 
-        {{-- Kalendarz --}}
-        <div
-            id="calendar"
-            data-events-url="{{ route('admin.appointments.api') }}"
-            data-update-url="{{ route('admin.appointments.updateTime', ':id') }}">
-        </div>
-    </div>
+      /* 2) Modale zawsze na wierzchu */
+      #appointmentModal,
+      #adminCreateModal {
+        z-index: 10000 !important;
+      }
 
-    {{-- Modal szczegółów --}}
-    <div id="appointmentModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md sm:w-auto">
-            <h2 class="text-lg font-bold mb-2">Szczegóły rezerwacji</h2>
-            <p><strong>Klient:</strong> <span id="modalUser"></span></p>
-            <p><strong>Usługa:</strong> <span id="modalService"></span></p>
-            <p><strong>Wariant:</strong> <span id="modalVariant"></span></p>
-            <p><strong>Termin:</strong> <span id="modalDatetime"></span></p>
-            <p><strong>Status:</strong>
-                <span id="modalStatus" class="inline-block px-2 py-1 text-white text-xs font-semibold rounded"></span>
-            </p>
+      /* 3) Gdy body ma klasę modal-open, blokujemy WSZYSTKIE pointer-events na FullCalendar */
+      .modal-open .fc,
+      .modal-open .fc * {
+        pointer-events: none !important;
+      }
 
-            <div class="mt-6 flex justify-between items-center">
-                <button id="btnDone" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Oznacz jako odbyta</button>
-                <button id="btnMissed" class="px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">Nieodbyta</button>
-                <button id="btnCancel" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700">Anuluj</button>
-            </div>
-
-            <div class="mt-4 text-right">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Zamknij</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Modal dodawania rezerwacji przez admina --}}
-    <div
-        x-data="{ open: false, date: '', user_id: '', variant_id: '' }"
-        x-show="open"
-        x-cloak
-        class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
-            <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
-
-            <p class="text-sm mb-2">Data i godzina: <span x-text="date"></span></p>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium">ID klienta:</label>
-                <input x-model="user_id" type="text" class="w-full border rounded px-2 py-1" />
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium">ID wariantu usługi:</label>
-                <input x-model="variant_id" type="text" class="w-full border rounded px-2 py-1" />
-            </div>
-
-            <div class="flex justify-between items-center">
-                <button @click="open = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Anuluj</button>
-                <button
-                    @click="
-                        fetch('/admin/kalendarz/store', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-                            },
-                            body: JSON.stringify({
-                                user_id: user_id,
-                                service_variant_id: variant_id,
-                                appointment_at: date
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                open = false;
-                                window.calendar.refetchEvents();
-                            }
-                        })
-                        .catch(() => alert('Błąd tworzenia rezerwacji'));
-                    "
-                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Zapisz rezerwację
-                </button>
-            </div>
-        </div>
-    </div>
-
-    @vite(['resources/css/app.css', 'resources/js/calendar.js'])
-
-    @push('head')
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+      /* 4) Przywracamy pointer-events tylko dla modali i ich zawartości */
+      #appointmentModal,
+      #adminCreateModal,
+      #appointmentModal *,
+      #adminCreateModal * {
+        pointer-events: auto !important;
+      }
+    </style>
     @endpush
 
-    <script>
-        function closeModal() {
-            document.getElementById('appointmentModal').classList.add('hidden');
-        }
+    <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div id="calendar"
+             data-events-url="{{ route('admin.appointments.api') }}"
+             class="bg-white shadow rounded-lg p-4">
+        </div>
+    </div>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const calendarEl = document.getElementById('calendar');
-            const eventsUrl = calendarEl.dataset.eventsUrl;
-            const updateUrl = calendarEl.dataset.updateUrl;
-            let selectedEventId = null;
+    {{-- Podgląd rezerwacji --}}
+    <div
+      id="appointmentModal"
+      x-data="viewModal()"
+      x-init="init()"
+      x-show="open"
+      x-cloak
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Szczegóły rezerwacji</h2>
+        <template x-if="appointment">
+          <div>
+            <p class="mb-2"><strong>Klient:</strong>   <span x-text="appointment.user"></span></p>
+            <p class="mb-2"><strong>Usługa:</strong>   <span x-text="appointment.service"></span></p>
+            <p class="mb-2"><strong>Wariant:</strong>  <span x-text="appointment.variant"></span></p>
+            <p class="mb-2"><strong>Termin:</strong>   <span x-text="appointment.datetime"></span></p>
+            <p class="mb-2"><strong>Status:</strong>   <span x-text="appointment.status"></span></p>
+          </div>
+        </template>
+        <div class="mt-4 text-right">
+          <button
+            @click="close()"
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+            Zamknij
+          </button>
+        </div>
+      </div>
+    </div>
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                plugins: [window.FullCalendar.dayGridPlugin, window.FullCalendar.timeGridPlugin, window.FullCalendar.interactionPlugin],
-                initialView: 'timeGridWeek',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                locale: 'pl',
-                editable: true,
-                events: eventsUrl,
+    {{-- Dodawanie rezerwacji --}}
+    <div
+      id="adminCreateModal"
+      x-data="createModal()"
+      x-init="init()"
+      x-show="open"
+      x-cloak
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
+        <p class="text-sm mb-4">Data i godzina: <span x-text="date"></span></p>
 
-                eventClick: function (info) {
-                    const props = info.event.extendedProps;
-                    selectedEventId = info.event.id;
+        <label class="block mb-2 text-sm font-medium">Klient:</label>
+        <select x-model="user_id" class="w-full mb-4 border rounded px-2 py-1">
+          <template x-for="u in users" :key="u.id">
+            <option :value="u.id" x-text="u.name"></option>
+          </template>
+        </select>
 
-                    document.getElementById('modalUser').textContent = props.user;
-                    document.getElementById('modalService').textContent = props.service;
-                    document.getElementById('modalVariant').textContent = props.variant ?? '—';
-                    document.getElementById('modalDatetime').textContent = props.datetime;
+        <label class="block mb-2 text-sm font-medium">Wariant usługi:</label>
+        <select x-model="variant_id" class="w-full mb-4 border rounded px-2 py-1">
+          <template x-for="v in variants" :key="v.id">
+            <option :value="v.id" x-text="v.name"></option>
+          </template>
+        </select>
 
-                    const statusSpan = document.getElementById('modalStatus');
-                    statusSpan.textContent = props.status;
-                    statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
-                    switch (props.status) {
-                        case 'odbyta': statusSpan.classList.add('bg-green-500'); break;
-                        case 'odwołana': statusSpan.classList.add('bg-red-500'); break;
-                        case 'nieodbyta': statusSpan.classList.add('bg-yellow-500'); break;
-                        default: statusSpan.classList.add('bg-blue-500');
-                    }
+        <div class="flex justify-end gap-2">
+          <button
+            @click="close()"
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+            Anuluj
+          </button>
+          <button
+            @click="save()"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Zapisz
+          </button>
+        </div>
+      </div>
+    </div>
 
-                    document.getElementById('appointmentModal').classList.remove('hidden');
-                },
-
-                eventDrop: function (info) {
-                    const newDate = info.event.start.toISOString();
-                    const id = info.event.id;
-
-                    fetch(updateUrl.replace(':id', id), {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                        body: JSON.stringify({ appointment_at: newDate }),
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Błąd aktualizacji');
-                        return response.json();
-                    })
-                    .then(() => calendar.refetchEvents())
-                    .catch(() => {
-                        alert('Nie udało się zapisać zmiany daty.');
-                        info.revert();
-                    });
-                },
-
-                dateClick: function (info) {
-                    const modal = document.querySelector('[x-data]');
-                    modal.__x.$data.date = info.dateStr;
-                    modal.__x.$data.open = true;
-                }
-            });
-
-            calendar.render();
-            window.calendar = calendar;
-
-            function sendStatusUpdate(status, reason = null) {
-                if (!selectedEventId) return;
-                fetch(`/admin/kalendarz/${selectedEventId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify({ status, canceled_reason: reason }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        closeModal();
-                        calendar.refetchEvents();
-                    }
-                })
-                .catch(() => alert('Błąd zmiany statusu.'));
-            }
-
-            document.getElementById('btnDone').addEventListener('click', () => sendStatusUpdate('odbyta'));
-            document.getElementById('btnMissed').addEventListener('click', () => sendStatusUpdate('nieodbyta'));
-            document.getElementById('btnCancel').addEventListener('click', () => {
-                const reason = prompt('Powód anulowania:', 'odwołana przez klienta');
-                if (reason) sendStatusUpdate('odwołana', reason);
-            });
-        });
-    </script>
+    @push('scripts')
+      @vite(['resources/css/app.css','resources/js/app.js'])
+    @endpush
 </x-app-layout>

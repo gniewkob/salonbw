@@ -1,20 +1,35 @@
 import { defineConfig } from 'vite';
-import laravel            from 'laravel-vite-plugin';
+import laravel from 'laravel-vite-plugin';
+import path from 'path';
 
 export default defineConfig({
-    server: {
-        host : '127.0.0.1',   // lub '0.0.0.0', jeśli musisz udostępnić z zewnątrz
-        port : 3000,
+  plugins: [
+    laravel({
+      input: ['resources/css/app.css','resources/js/app.js'],
+      refresh: true,
+    }),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname,'resources/js'),
     },
-    plugins: [
-        laravel({
-            // ładujemy **tylko** app.js; calendar.js przyjdzie przez import w app.js
-            input  : [
-                'resources/css/app.css',
-                'resources/js/app.js',
-                'resources/js/calendar.js',
-            ],
-            refresh: true,
-        }),
+  },
+  optimizeDeps: {
+    include: [
+      '@fullcalendar/core',
+      '@fullcalendar/daygrid',
+      '@fullcalendar/timegrid',
+      '@fullcalendar/interaction',
+      '@fullcalendar/list',
     ],
+  },
+  ssr: {
+    noExternal: [
+      '@fullcalendar/core',
+      '@fullcalendar/daygrid',
+      '@fullcalendar/timegrid',
+      '@fullcalendar/interaction',
+      '@fullcalendar/list',
+    ],
+  },
 });

@@ -1,19 +1,14 @@
 import './bootstrap';
-import './calendar';
+
 import Alpine from 'alpinejs';
+import { createModal } from './createModal';
+import { viewModal }   from './viewModal';
 
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-
-window.FullCalendar = {
-  Calendar,
-  dayGridPlugin,
-  timeGridPlugin,
-  interactionPlugin,
-};
+Alpine.data('createModal', createModal);
+Alpine.data('viewModal', viewModal);
 
 window.Alpine = Alpine;
-
 Alpine.start();
+
+// Calendar dopiero po uruchomieniu Alpine
+import './calendar';
