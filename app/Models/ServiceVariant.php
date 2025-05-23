@@ -20,4 +20,9 @@ class ServiceVariant extends Model
 	{
 		return $this->belongsTo(Service::class);
 	}
+
+	public function appointments()
+	{
+		return $this->hasMany(Appointment::class);
+	}
 }

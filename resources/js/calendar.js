@@ -6,20 +6,45 @@ import plLocale from '@fullcalendar/core/locales/pl';
 
 document.addEventListener('DOMContentLoaded', function () {
 	const calendarEl = document.getElementById('calendar');
-	if (!calendarEl) return;
+	const eventsUrl = calendarEl.dataset.eventsUrl;
+	const updateUrl = calendarEl.dataset.updateUrl; // <-- dodane
 
-	const { Calendar, dayGridPlugin, timeGridPlugin, interactionPlugin } = window.FullCalendar;
-
-	const calendar = new Calendar(calendarEl, {
-		plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-		initialView: 'timeGridWeek',
-		headerToolbar: {
-			left: 'prev,next today',
-			center: 'title',
-			right: 'dayGridMonth,timeGridWeek,timeGridDay',
-		},
+	const calendar = new window.FullCalendar.Calendar(calendarEl, {
+		plugins: [window.FullCalendar.dayGridPlugin, window.FullCalendar.interactionPlugin],
+		initialView: 'dayGridMonth',
 		locale: 'pl',
-		events: calendarEl.dataset.eventsUrl,
+		editable: true,
+		eventSources: [
+			{
+				url: eventsUrl,
+				method: 'GET',
+				failure: () => alert('Nie udało się pobrać danych z API.'),
+			}
+		],
+		eventDrop: function (info) {
+			const newDate = info.event.start.toISOString();
+			const id = info.event.id;
+
+			fetch(updateUrl.replace(':id', id), {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+				},
+				body: JSON.stringify({ appointment_at: newDate }),
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('Błąd aktualizacji');
+				return response.json();
+			})
+			.then(data => {
+				console.log('Zaktualizowano:', data);
+			})
+			.catch(error => {
+				alert('Nie udało się zapisać zmiany daty.');
+				info.revert(); // cofnij zmianę jeśli błąd
+			});
+		}
 	});
 
 	calendar.render();
