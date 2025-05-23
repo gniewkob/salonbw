@@ -1,24 +1,8 @@
-/* resources/js/app.js ----------------------------------------------- */
-import './bootstrap';
-import 'vite/modulepreload-polyfill';     // (jeśli Twój bundler to dodaje)
+import './bootstrap';          // Twój plik Inertia/Axios itp.
 
 import Alpine from 'alpinejs';
-import { Calendar }          from '@fullcalendar/core';
-import dayGridPlugin         from '@fullcalendar/daygrid';
-import timeGridPlugin        from '@fullcalendar/timegrid';
-import interactionPlugin     from '@fullcalendar/interaction';
-
-/* — Alpine — */
 window.Alpine = Alpine;
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => Alpine.start());
-} else {
-    Alpine.start();
-}
+Alpine.start();                //  ➜ Alpine uruchamiamy **raz**
 
-/* — FullCalendar globalnie, żeby blade miał do niego dostęp — */
-window.FullCalendar = { Calendar, dayGridPlugin, timeGridPlugin, interactionPlugin };
-
-/* ❶  Import KALENDARZA **po** starcie Alpine
-   - dynamicznie, aby kod wykonał się po przejściu powyższych linii.   */
-import('./calendar');
+/*  ----  reszta skryptów dla konkret-nych stron  ----  */
+import './calendar';           // kalendarz ładuje się dopiero TERAZ, już po Alpine
