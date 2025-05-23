@@ -35,4 +35,11 @@ class AdminAppointmentController extends Controller
 
         return redirect()->route('admin.appointments.index')->with('success', 'Wizyta zaktualizowana!');
     }
+
+    public function calendar()
+    {
+        return view('admin.appointments.calendar');
+    }
+
+
 }
