@@ -13,6 +13,9 @@
                 <span class="w-4 h-4 rounded bg-green-500 inline-block"></span> Odbyta
             </span>
             <span class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded bg-yellow-500 inline-block"></span> Nieodbyta
+            </span>
+            <span class="flex items-center gap-2">
                 <span class="w-4 h-4 rounded bg-red-500 inline-block"></span> Odwołana
             </span>
         </div>
@@ -37,10 +40,14 @@
                 <span id="modalStatus" class="inline-block px-2 py-1 text-white text-xs font-semibold rounded"></span>
             </p>
 
+            <div class="mt-6 flex justify-between items-center">
+                <button id="btnDone" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Oznacz jako odbyta</button>
+                <button id="btnMissed" class="px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">Nieodbyta</button>
+                <button id="btnCancel" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700">Anuluj</button>
+            </div>
+
             <div class="mt-4 text-right">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
-                    Zamknij
-                </button>
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Zamknij</button>
             </div>
         </div>
     </div>
@@ -63,6 +70,8 @@
             const eventsUrl = calendarEl.dataset.eventsUrl;
             const updateUrl = calendarEl.dataset.updateUrl;
 
+            let selectedEventId = null;
+
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 plugins: [window.FullCalendar.dayGridPlugin, window.FullCalendar.timeGridPlugin, window.FullCalendar.interactionPlugin],
                 initialView: 'timeGridWeek',
@@ -77,6 +86,7 @@
 
                 eventClick: function (info) {
                     const props = info.event.extendedProps;
+                    selectedEventId = info.event.id;
 
                     document.getElementById('modalUser').textContent = props.user;
                     document.getElementById('modalService').textContent = props.service;
@@ -88,14 +98,10 @@
                     statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
 
                     switch (props.status) {
-                        case 'odbyta':
-                            statusSpan.classList.add('bg-green-500');
-                            break;
-                        case 'odwołana':
-                            statusSpan.classList.add('bg-red-500');
-                            break;
-                        default:
-                            statusSpan.classList.add('bg-blue-500');
+                        case 'odbyta': statusSpan.classList.add('bg-green-500'); break;
+                        case 'odwołana': statusSpan.classList.add('bg-red-500'); break;
+                        case 'nieodbyta': statusSpan.classList.add('bg-yellow-500'); break;
+                        default: statusSpan.classList.add('bg-blue-500');
                     }
 
                     document.getElementById('appointmentModal').classList.remove('hidden');
@@ -128,6 +134,33 @@
             });
 
             calendar.render();
+
+            function sendStatusUpdate(status, reason = null) {
+                if (!selectedEventId) return;
+                fetch(`/admin/kalendarz/${selectedEventId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({ status, canceled_reason: reason }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal();
+                        calendar.refetchEvents();
+                    }
+                })
+                .catch(() => alert('Błąd zmiany statusu.'));
+            }
+
+            document.getElementById('btnDone').addEventListener('click', () => sendStatusUpdate('odbyta'));
+            document.getElementById('btnMissed').addEventListener('click', () => sendStatusUpdate('nieodbyta'));
+            document.getElementById('btnCancel').addEventListener('click', () => {
+                const reason = prompt('Powód anulowania:', 'odwołana przez klienta');
+                if (reason) sendStatusUpdate('odwołana', reason);
+            });
         });
     </script>
 </x-app-layout>
