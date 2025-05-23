@@ -67,7 +67,7 @@ class AdminAppointmentController extends Controller
 
         return response()->json(['success' => true]);
     }
-    §public function show(Appointment $appointment)
+    public function show(Appointment $appointment)
     {
         return $appointment
             ->load(['user', 'serviceVariant.service'])
