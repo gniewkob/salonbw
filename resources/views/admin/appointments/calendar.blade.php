@@ -52,10 +52,61 @@
         </div>
     </div>
 
-    {{-- Vite --}}
+    {{-- Modal dodawania rezerwacji przez admina --}}
+    <div
+        x-data="{ open: false, date: '', user_id: '', variant_id: '' }"
+        x-show="open"
+        x-cloak
+        class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
+            <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
+
+            <p class="text-sm mb-2">Data i godzina: <span x-text="date"></span></p>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium">ID klienta:</label>
+                <input x-model="user_id" type="text" class="w-full border rounded px-2 py-1" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium">ID wariantu usługi:</label>
+                <input x-model="variant_id" type="text" class="w-full border rounded px-2 py-1" />
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button @click="open = false" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Anuluj</button>
+                <button
+                    @click="
+                        fetch('/admin/kalendarz/store', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                            },
+                            body: JSON.stringify({
+                                user_id: user_id,
+                                service_variant_id: variant_id,
+                                appointment_at: date
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                open = false;
+                                window.calendar.refetchEvents();
+                            }
+                        })
+                        .catch(() => alert('Błąd tworzenia rezerwacji'));
+                    "
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Zapisz rezerwację
+                </button>
+            </div>
+        </div>
+    </div>
+
     @vite(['resources/css/app.css', 'resources/js/calendar.js'])
 
-    {{-- CSRF token --}}
     @push('head')
         <meta name="csrf-token" content="{{ csrf_token() }}">
     @endpush
@@ -69,7 +120,6 @@
             const calendarEl = document.getElementById('calendar');
             const eventsUrl = calendarEl.dataset.eventsUrl;
             const updateUrl = calendarEl.dataset.updateUrl;
-
             let selectedEventId = null;
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -96,7 +146,6 @@
                     const statusSpan = document.getElementById('modalStatus');
                     statusSpan.textContent = props.status;
                     statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
-
                     switch (props.status) {
                         case 'odbyta': statusSpan.classList.add('bg-green-500'); break;
                         case 'odwołana': statusSpan.classList.add('bg-red-500'); break;
@@ -123,49 +172,22 @@
                         if (!response.ok) throw new Error('Błąd aktualizacji');
                         return response.json();
                     })
-                    .then(data => {
-                        console.log('Zaktualizowano:', data);
-                    })
-                    .catch(error => {
+                    .then(() => calendar.refetchEvents())
+                    .catch(() => {
                         alert('Nie udało się zapisać zmiany daty.');
                         info.revert();
                     });
                 },
 
                 dateClick: function (info) {
-                    const start = info.dateStr;
-
-                    const userId = prompt("Podaj ID klienta:");
-                    if (!userId) return;
-
-                    const variantId = prompt("Podaj ID wariantu usługi:");
-                    if (!variantId) return;
-
-                    fetch('/admin/kalendarz/store', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            service_variant_id: variantId,
-                            appointment_at: start,
-                        }),
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Rezerwacja została dodana.');
-                            calendar.refetchEvents();
-                        }
-                    })
-                    .catch(() => alert('Błąd podczas tworzenia rezerwacji.'));
+                    const modal = document.querySelector('[x-data]');
+                    modal.__x.$data.date = info.dateStr;
+                    modal.__x.$data.open = true;
                 }
-
             });
 
             calendar.render();
+            window.calendar = calendar;
 
             function sendStatusUpdate(status, reason = null) {
                 if (!selectedEventId) return;
