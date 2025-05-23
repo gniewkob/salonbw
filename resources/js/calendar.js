@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
 
-    const eventsUrl = calendarEl.dataset.eventsUrl;
-    const detailUrl = calendarEl.dataset.detailUrl;     // nowy: URL do pobrania jednej wizyty
-    const updateUrl = calendarEl.dataset.updateUrl;
+    const eventsUrl   = calendarEl.dataset.eventsUrl;
+    const detailUrl   = calendarEl.dataset.detailUrl;
+    const updateUrl   = calendarEl.dataset.updateUrl;
 
     const calendar = new Calendar(calendarEl, {
         plugins     : [dayGridPlugin, timeGridPlugin, interactionPlugin],
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.__x.$data.variant_id = '';
                 modal.__x.$data.open       = true;
             } else {
-                console.error('Modal «adminCreateModal» nadal bez Alpine');
+                console.error('❌ Modal «adminCreateModal» nadal bez Alpine');
             }
         },
 
@@ -55,12 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.Alpine.initTree(modal);
             }
 
-            if (!detailUrl) {
-                console.error('Nie skonfigurowano data-detail-url na elemencie calendar');
-                return;
-            }
+            const url = detailUrl.replace(':id', info.event.id);
 
-            fetch(detailUrl.replace(':id', info.event.id))
+            fetch(url)
                 .then(r => r.ok ? r.json() : Promise.reject())
                 .then(data => {
                     modal.__x.$data.appointment = data;
@@ -70,10 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         eventDrop(info) {
-            fetch(updateUrl.replace(':id', info.event.id), {
+            const url = updateUrl.replace(':id', info.event.id);
+
+            fetch(url, {
                 method : 'PUT',
                 headers: {
-                    'Content-Type' : 'application/json',
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 },
                 body: JSON.stringify({
