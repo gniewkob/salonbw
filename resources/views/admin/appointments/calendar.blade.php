@@ -4,9 +4,14 @@
 	</x-slot>
 
 	<div class="py-8 max-w-7xl mx-auto">
-		<div id="calendar" data-events-url="{{ route('admin.appointments.api') }}"></div>
+		<div
+			id="calendar"
+			data-events-url="{{ route('admin.appointments.api') }}"
+			data-update-url="{{ route('admin.appointments.update', ':id') }}">
+		</div>
 	</div>
-<!-- Modal -->
+
+	<!-- Modal -->
 	<div id="appointmentModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
 		<div class="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
 			<h2 class="text-lg font-bold mb-2">Szczegóły rezerwacji</h2>
@@ -24,7 +29,13 @@
 		</div>
 	</div>
 
+	{{-- CSS + JS przez Vite --}}
 	@vite(['resources/css/app.css', 'resources/js/calendar.js'])
+
+	{{-- CSRF token --}}
+	@push('head')
+		<meta name="csrf-token" content="{{ csrf_token() }}">
+	@endpush
 
 	<script>
 		function closeModal() {
@@ -34,8 +45,10 @@
 		document.addEventListener('DOMContentLoaded', function () {
 			const calendarEl = document.getElementById('calendar');
 			const eventsUrl = calendarEl.dataset.eventsUrl;
+			const updateUrl = calendarEl.dataset.updateUrl;
 
 			const calendar = new FullCalendar.Calendar(calendarEl, {
+				plugins: [window.FullCalendar.dayGridPlugin, window.FullCalendar.timeGridPlugin, window.FullCalendar.interactionPlugin],
 				initialView: 'timeGridWeek',
 				headerToolbar: {
 					left: 'prev,next today',
@@ -43,6 +56,7 @@
 					right: 'dayGridMonth,timeGridWeek,timeGridDay'
 				},
 				locale: 'pl',
+				editable: true,
 				events: eventsUrl,
 				eventClick: function (info) {
 					const props = info.event.extendedProps;
@@ -54,11 +68,34 @@
 					document.getElementById('modalStatus').textContent = props.status;
 
 					document.getElementById('appointmentModal').classList.remove('hidden');
+				},
+				eventDrop: function (info) {
+					const newDate = info.event.start.toISOString();
+					const id = info.event.id;
+
+					fetch(updateUrl.replace(':id', id), {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+						},
+						body: JSON.stringify({ appointment_at: newDate }),
+					})
+					.then(response => {
+						if (!response.ok) throw new Error('Błąd aktualizacji');
+						return response.json();
+					})
+					.then(data => {
+						console.log('Zaktualizowano:', data);
+					})
+					.catch(error => {
+						alert('Nie udało się zapisać zmiany daty.');
+						info.revert();
+					});
 				}
 			});
 
 			calendar.render();
 		});
 	</script>
-
 </x-app-layout>

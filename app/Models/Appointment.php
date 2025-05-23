@@ -15,9 +15,11 @@ class Appointment extends Model
         'note_client',
         'note_internal',
     ];
+
     protected $casts = [
         'appointment_at' => 'datetime',
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -28,7 +30,7 @@ class Appointment extends Model
         return $this->belongsTo(Service::class);
     }
 
-    public function variant()
+    public function serviceVariant()
     {
         return $this->belongsTo(ServiceVariant::class, 'service_variant_id');
     }
