@@ -40,14 +40,16 @@
                 fetch('/admin/api/users')
                     .then(res => res.json())
                     .then(data => this.users = data);
-
+        
                 fetch('/admin/api/variants')
                     .then(res => res.json())
                     .then(data => this.variants = data);
             }
         }"
+        x-init="init()"
         x-show="open"
         x-cloak
+
         class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
             <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
