@@ -7,30 +7,33 @@
 
     @push('styles')
     <style>
-      /* 1) Kalendarz zawsze „pod spodem” */
       .fc .fc-view-harness,
-      .fc .fc-scroller {
-        z-index: 0 !important;
-      }
+      .fc .fc-scroller { z-index: 0 !important; }
 
-      /* 2) Modale zawsze na wierzchu */
       #appointmentModal,
       #adminCreateModal {
-        z-index: 10000 !important;
+        z-index: 99999 !important;
       }
 
-      /* 3) Gdy body ma klasę modal-open, blokujemy WSZYSTKIE pointer-events na FullCalendar */
+      /* BLOKADA WSZYSTKICH interakcji na FC, gdy modal jest otwarty */
       .modal-open .fc,
-      .modal-open .fc * {
-        pointer-events: none !important;
+      .modal-open .fc *,
+      .modal-open .fc .fc-timegrid,
+      .modal-open .fc .fc-scrollgrid-sync-table,
+      .modal-open .fc .fc-bg-table,
+      .modal-open .fc .fc-daygrid-day,
+      .modal-open .fc .fc-timegrid-slot,
+      .modal-open .fc .fc-timegrid-col-frame {
+          pointer-events: none !important;
+          touch-action: none !important;
       }
 
-      /* 4) Przywracamy pointer-events tylko dla modali i ich zawartości */
+      /* Modal oraz wnętrze zawsze klikalne */
       #appointmentModal,
       #adminCreateModal,
       #appointmentModal *,
       #adminCreateModal * {
-        pointer-events: auto !important;
+          pointer-events: auto !important;
       }
     </style>
     @endpush
@@ -42,7 +45,7 @@
         </div>
     </div>
 
-    {{-- Podgląd rezerwacji --}}
+    {{-- Modal podglądu rezerwacji --}}
     <div
       id="appointmentModal"
       x-data="viewModal()"
@@ -71,7 +74,7 @@
       </div>
     </div>
 
-    {{-- Dodawanie rezerwacji --}}
+    {{-- Modal dodawania rezerwacji --}}
     <div
       id="adminCreateModal"
       x-data="createModal()"
