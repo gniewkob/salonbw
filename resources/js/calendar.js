@@ -6,7 +6,7 @@ import plLocale from '@fullcalendar/core/locales/pl';
 
 document.addEventListener('DOMContentLoaded', function () {
 	const calendarEl = document.getElementById('calendar');
-	if (!calendarEl) return; // 👈 zabezpieczenie dla innych stron
+	if (!calendarEl) return;
 
 	const eventsUrl = calendarEl.dataset.eventsUrl;
 	const updateUrl = calendarEl.dataset.updateUrl;
@@ -27,12 +27,17 @@ document.addEventListener('DOMContentLoaded', function () {
 			const modal = document.getElementById('appointmentModal');
 			if (!modal) return;
 
-			document.getElementById('modalUser')?.textContent = props.user;
-			document.getElementById('modalService')?.textContent = props.service;
-			document.getElementById('modalVariant')?.textContent = props.variant ?? '—';
-			document.getElementById('modalDatetime')?.textContent = props.datetime;
-
+			const userEl = document.getElementById('modalUser');
+			const serviceEl = document.getElementById('modalService');
+			const variantEl = document.getElementById('modalVariant');
+			const datetimeEl = document.getElementById('modalDatetime');
 			const statusSpan = document.getElementById('modalStatus');
+
+			if (userEl) userEl.textContent = props.user;
+			if (serviceEl) serviceEl.textContent = props.service;
+			if (variantEl) variantEl.textContent = props.variant ?? '—';
+			if (datetimeEl) datetimeEl.textContent = props.datetime;
+
 			if (statusSpan) {
 				statusSpan.textContent = props.status;
 				statusSpan.className = 'inline-block px-2 py-1 text-white text-xs font-semibold rounded';
@@ -77,24 +82,15 @@ document.addEventListener('DOMContentLoaded', function () {
 				alert('Można umawiać tylko w godzinach 9:00–18:00');
 				return;
 			}
-
-			const modal = document.getElementById('adminCreateModal');
-			if (modal && modal.__x && modal.__x.$data) {
-				modal.__x.$data.date = info.dateStr;
-				modal.__x.$data.open = true;
-			} else {
-				console.error('Modal Alpine nie jest zainicjalizowany albo nie znaleziono elementu.');
-			}
+			tryShowModal(info.dateStr);
 		}
 	});
 
-	// używamy requestAnimationFrame żeby uniknąć błędu getBoundingClientRect
 	requestAnimationFrame(() => {
 		calendar.render();
 		window.calendar = calendar;
 	});
 
-	// przyciski statusu
 	document.getElementById('btnDone')?.addEventListener('click', () => updateStatus('odbyta'));
 	document.getElementById('btnMissed')?.addEventListener('click', () => updateStatus('nieodbyta'));
 	document.getElementById('btnCancel')?.addEventListener('click', () => {
@@ -121,5 +117,17 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		})
 		.catch(() => alert('Błąd zmiany statusu.'));
+	}
+
+	function tryShowModal(dateStr, attempts = 5) {
+		const modal = document.getElementById('adminCreateModal');
+		if (modal && modal.__x && modal.__x.$data) {
+			modal.__x.$data.date = dateStr;
+			modal.__x.$data.open = true;
+		} else if (attempts > 0) {
+			setTimeout(() => tryShowModal(dateStr, attempts - 1), 100);
+		} else {
+			console.warn('Nie udało się zainicjalizować modala po kilku próbach');
+		}
 	}
 });
