@@ -6,7 +6,21 @@
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 	<title>{{ config('app.name', 'Salon Black&White') }}</title>
 
-	{{-- Raz – w głównym layoucie --}}
+	{{-- FullCalendar CSS (wersja 6.3.5) --}}
+	<link
+	  rel="stylesheet"
+	  href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.3.5/main.min.css"
+	/>
+	<link
+	  rel="stylesheet"
+	  href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.3.5/main.min.css"
+	/>
+	<link
+	  rel="stylesheet"
+	  href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.3.5/main.min.css"
+	/>
+
+	{{-- Vite --}}
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
 	@stack('head')
 </head>
