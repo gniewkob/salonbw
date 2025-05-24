@@ -1,43 +1,44 @@
+---
 image: php:8.4
-
 definitions:
   caches:
-	npm: ~/.npm
-	composer: ~/.composer/cache
-
+    npm: ~/.npm
+    composer: ~/.composer/cache
 pipelines:
   branches:
-	main:
-	  - step:
-		  name: Build and Test
-		  caches:
-			- composer
-			- npm
-		  script:
-			# Instalacja zależności
-			- apt-get update && apt-get install -y unzip git nodejs npm
-			- curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-			- composer install --no-interaction --no-progress
-			- npm ci
-			# Budowanie zasobów
-			- npm run build
-			# Testy (opcjonalnie)
-			# - php artisan test
-	  - step:
-		  name: Deploy to Test Server
-		  deployment: test
-		  script:
-			# Instalacja SSH i konfiguracja
-			- apt-get update && apt-get install -y openssh-client rsync
-			- mkdir -p ~/.ssh
-			- echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-			- chmod 600 ~/.ssh/id_rsa
-			- ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
-			# Przygotowanie do wdrożenia
-			- composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-			- npm ci
-			- npm run build
-			# Wdrożenie na serwer
-			- rsync -avz --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
-			# Komendy po wdrożeniu
-			- ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && composer dump-autoload && php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan view:clear"
+    main:
+      - step:
+          name: Build and Test
+          caches:
+            - composer
+            - npm
+          script:
+            - apt-get update && apt-get install -y unzip git nodejs npm
+            - curl -sS https://getcomposer.org/installer | php --
+              --install-dir=/usr/local/bin --filename=composer
+            - composer install --no-interaction --no-progress
+            - npm ci
+            - npm run build
+      - step:
+          name: Deploy to Test Server
+          deployment: test
+          script:
+            - apt-get update && apt-get install -y openssh-client rsync
+            - mkdir -p ~/.ssh
+            - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            - chmod 600 ~/.ssh/id_rsa
+            - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
+            - composer install --no-dev --optimize-autoloader --no-interaction
+              --no-progress
+            - npm ci
+            - npm run build
+            - rsync -avz --exclude='.git/' --exclude='node_modules/'
+              --exclude='.env' --exclude='storage/logs/'
+              --exclude='storage/framework/cache/'
+              --exclude='storage/framework/sessions/'
+              --exclude='storage/framework/views/' ./
+              vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+            - ssh vetternkraft@s0.mydevil.net "cd
+              /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && composer
+              dump-autoload && php artisan config:clear && php artisan
+              route:clear && php artisan cache:clear && php artisan view:clear"
