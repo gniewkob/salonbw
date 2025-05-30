@@ -1,13 +1,11 @@
 image: php:8.4
-
 definitions:
   caches:
     npm: ~/.npm
     composer: ~/.composer/cache
-
 pipelines:
   branches:
-    main:
+    master:
       - step:
           name: Build and Test
           caches:
