@@ -56,7 +56,10 @@ function initializeCalendar() {
       events: url,
       dateClick(info) {
         console.log('Kliknięto datę:', info);
-        if (window.modalIsOpen) return; // blokada wielokrotnego otwierania
+        if (window.modalIsOpen) {
+          console.log('Modal jest już otwarty, blokowanie kliknięcia');
+          return; // blokada wielokrotnego otwierania
+        }
         
         // Sprawdzenie czy kliknięta data/godzina jest w godzinach pracy
         if (!isWithinWorkingHours(info.date)) {
@@ -64,16 +67,32 @@ function initializeCalendar() {
           return;
         }
         
+        // Dodajemy klasę do body, aby zablokować interakcje z kalendarzem
+        document.body.classList.add('modal-open');
+        
         window.dispatchEvent(new CustomEvent('open-create-modal', { detail: info.dateStr }));
       },
       eventClick(info) {
         console.log('Kliknięto wydarzenie:', info);
-        if (window.modalIsOpen) return; // blokada wielokrotnego otwierania
+        if (window.modalIsOpen) {
+          console.log('Modal jest już otwarty, blokowanie kliknięcia');
+          return; // blokada wielokrotnego otwierania
+        }
+        
+        // Dodajemy klasę do body, aby zablokować interakcje z kalendarzem
+        document.body.classList.add('modal-open');
+        
         window.dispatchEvent(new CustomEvent('open-view-modal', { detail: info.event.extendedProps }));
       },
       editable: true,
       eventDrop: function(info) {
         console.log('Przeciągnięto wydarzenie:', info);
+        // Sprawdzenie czy modal jest otwarty
+        if (window.modalIsOpen) {
+          info.revert();
+          return;
+        }
+        
         // Sprawdzenie czy nowy termin jest w godzinach pracy
         if (!isWithinWorkingHours(info.event.start)) {
           info.revert(); // Cofnij zmianę
@@ -118,6 +137,12 @@ function initializeCalendar() {
       },
       eventResize: function(info) {
         console.log('Zmieniono rozmiar wydarzenia:', info);
+        // Sprawdzenie czy modal jest otwarty
+        if (window.modalIsOpen) {
+          info.revert();
+          return;
+        }
+        
         // Podobna logika jak przy eventDrop
         if (!isWithinWorkingHours(info.event.end)) {
           info.revert();
@@ -145,8 +170,10 @@ function initializeCalendar() {
         info.el.style.cursor = 'move';
         // Dodajemy efekt hover
         info.el.addEventListener('mouseover', function() {
-          this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-          this.style.transform = 'scale(1.02)';
+          if (!window.modalIsOpen) {
+            this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            this.style.transform = 'scale(1.02)';
+          }
         });
         info.el.addEventListener('mouseout', function() {
           this.style.boxShadow = 'none';
@@ -178,6 +205,11 @@ function initializeCalendar() {
     
     // Wstawiamy informację przed kalendarzem
     el.parentNode.insertBefore(infoElement, el);
+    
+    // Nasłuchujemy na zdarzenie zamknięcia modala, aby usunąć klasę modal-open
+    window.addEventListener('close-modal', function() {
+      document.body.classList.remove('modal-open');
+    });
     
     return calendar;
   } catch (error) {
@@ -258,6 +290,13 @@ function initializeCalendar() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('DOMContentLoaded event fired');
   initializeCalendar();
+  
+  // Dodajemy nasłuchiwanie na zdarzenie zamknięcia modala
+  window.addEventListener('close-modal', function() {
+    console.log('Modal zamknięty, usuwanie klasy modal-open');
+    document.body.classList.remove('modal-open');
+    window.modalIsOpen = false;
+  });
 });
 
 // Dodatkowa inicjalizacja z opóźnieniem, aby upewnić się, że strona jest w pełni załadowana
