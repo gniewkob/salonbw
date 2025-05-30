@@ -1,8 +1,10 @@
-image: php:8.4
+image: php:8.2
+
 definitions:
   caches:
     npm: ~/.npm
     composer: ~/.composer/cache
+
 pipelines:
   branches:
     master:
@@ -31,6 +33,9 @@ pipelines:
             - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
             - chmod 600 ~/.ssh/id_rsa
             - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
+            # Wyświetlanie informacji debugowania
+            - echo "Sprawdzanie połączenia SSH..."
+            - ssh -v -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "echo 'Połączenie SSH działa poprawnie'"
             # Przygotowanie do wdrożenia
             - composer install --no-dev --optimize-autoloader --no-interaction --no-progress
             - npm ci
