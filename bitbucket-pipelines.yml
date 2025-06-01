@@ -44,7 +44,7 @@ pipelines:
             - ls -la vendor/laravel || echo "Brak laravel/"
 
             # RSYNC: wykluczamy newralgiczne i lokalne pliki/dane
-            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='tailwindcss' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
 
 
             # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
