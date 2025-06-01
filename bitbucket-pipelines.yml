@@ -1,4 +1,4 @@
-image: php:8.4
+image: php:8.2
 
 definitions:
   caches:
@@ -7,37 +7,47 @@ definitions:
 
 pipelines:
   branches:
-    main:
+    master:
       - step:
           name: Build and Test
           caches:
             - composer
             - npm
           script:
-            # Instalacja zależności
+            # Instalacja build-tools i zależności
             - apt-get update && apt-get install -y unzip git nodejs npm
+            # Instalacja Composer, jeśli nie jest w obrazie
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-            - composer install --no-interaction --no-progress
+            # Instalacja zależności PHP
+            - composer install --no-interaction --no-progress --no-dev
+            # Instalacja zależności JS i build frontu
             - npm ci
-            # Budowanie zasobów
             - npm run build
-            # Testy (opcjonalnie)
+            # (Opcjonalnie) Testy PHP
             # - php artisan test
+          artifacts:
+            # Przekazujemy vendor i build frontu do kroku deploy
+            - vendor/**
+            - public/build/**
+            - composer.lock
+            - package-lock.json
+            - .env.example
       - step:
           name: Deploy to Test Server
           deployment: test
           script:
-            # Instalacja SSH i konfiguracja
+            # Instalacja SSH i rsync
             - apt-get update && apt-get install -y openssh-client rsync
             - mkdir -p ~/.ssh
             - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
             - chmod 600 ~/.ssh/id_rsa
             - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
-            # Przygotowanie do wdrożenia
-            - composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-            - npm ci
-            - npm run build
-            # Wdrożenie na serwer
-            - rsync -avz --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
-            # Komendy po wdrożeniu
-            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && composer dump-autoload && php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan view:clear"
+            - echo "Sprawdzanie połączenia SSH..."
+            - ssh -v -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "echo 'Połączenie SSH działa poprawnie'"
+            # Debug: wyświetlenie zawartości vendor przed rsync
+            - ls -la vendor
+            - ls -la vendor/laravel || echo "Brak laravel/"
+            # Synchronizacja wszystkich plików poza wykluczonymi
+            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+            # Komendy po wdrożeniu (wszystko przez odpowiednią binarkę PHP)
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload && /home/vetternkraft/bin/php artisan config:clear && /home/vetternkraft/bin/php artisan route:clear && /home/vetternkraft/bin/php artisan cache:clear && /home/vetternkraft/bin/php artisan view:clear"
