@@ -14,19 +14,13 @@ pipelines:
             - composer
             - npm
           script:
-            # Instalacja build-tools i zależności
             - apt-get update && apt-get install -y unzip git nodejs npm
-            # Instalacja Composer, jeśli nie jest w obrazie
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-            # Instalacja zależności PHP
             - composer install --no-interaction --no-progress --no-dev
-            # Instalacja zależności JS i build frontu
             - npm ci
             - npm run build
-            # (Opcjonalnie) Testy PHP
-            # - php artisan test
+            # (Opcjonalnie) php artisan test
           artifacts:
-            # Przekazujemy vendor i build frontu do kroku deploy
             - vendor/**
             - public/build/**
             - composer.lock
@@ -36,7 +30,7 @@ pipelines:
           name: Deploy to Test Server
           deployment: test
           script:
-            # Instalacja SSH i rsync
+            # Przygotowanie SSH
             - apt-get update && apt-get install -y openssh-client rsync
             - mkdir -p ~/.ssh
             - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -44,10 +38,25 @@ pipelines:
             - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
             - echo "Sprawdzanie połączenia SSH..."
             - ssh -v -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "echo 'Połączenie SSH działa poprawnie'"
-            # Debug: wyświetlenie zawartości vendor przed rsync
+
+            # Debug - wyświetl vendor przed rsync
             - ls -la vendor
             - ls -la vendor/laravel || echo "Brak laravel/"
-            # Synchronizacja wszystkich plików poza wykluczonymi
-            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
-            # Komendy po wdrożeniu (wszystko przez odpowiednią binarkę PHP)
+
+            # RSYNC: wykluczamy newralgiczne i lokalne pliki/dane
+            - rsync -avz --delete \
+                --exclude='.git/' \
+                --exclude='node_modules/' \
+                --exclude='.env' \
+                --exclude='database/database.sqlite' \
+                --exclude='storage/logs/' \
+                --exclude='storage/framework/cache/' \
+                --exclude='storage/framework/sessions/' \
+                --exclude='storage/framework/views/' \
+                ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+
+            # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
+            - ssh vetternkraft@s0.mydevil.net "if [ ! -f /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite ]; then touch /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; chmod 664 /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; fi"
+
+            # Komendy po wdrożeniu - zawsze przez Twoją binarkę PHP!
             - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload && /home/vetternkraft/bin/php artisan config:clear && /home/vetternkraft/bin/php artisan route:clear && /home/vetternkraft/bin/php artisan cache:clear && /home/vetternkraft/bin/php artisan view:clear"
