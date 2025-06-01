@@ -76,7 +76,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('/uslugi/{service}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
     
     // Kontakt
-    Route::get('/kontakt', [AdminKontaktController::class, 'edit'])->name('kontakt');
+    Route::get('/kontakt', [AdminKontaktController::class, 'edit'])->name('kontakt.edit');
+    Route::put('/kontakt', [AdminKontaktController::class, 'update'])->name('kontakt.update');
     
     // Rezerwacje i kalendarz
     Route::get('/rezerwacje', [AdminAppointmentController::class, 'index'])->name('appointments.index');
