@@ -14,12 +14,13 @@ pipelines:
             - composer
             - npm
           script:
-            # Instalacja zależności
+            # Instalacja zależności build-tools
             - apt-get update && apt-get install -y unzip git nodejs npm
+            # Composer (instalacja lokalna, nie na serwerze)
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-            - composer install --no-interaction --no-progress
+            - composer install --no-interaction --no-progress --no-dev
+            # NPM build (instalacja i build lokalnie)
             - npm ci
-            # Budowanie zasobów
             - npm run build
             # Testy (opcjonalnie)
             # - php artisan test
@@ -27,20 +28,15 @@ pipelines:
           name: Deploy to Test Server
           deployment: test
           script:
-            # Instalacja SSH i konfiguracja
+            # Instalacja SSH i narzędzi
             - apt-get update && apt-get install -y openssh-client rsync
             - mkdir -p ~/.ssh
             - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
             - chmod 600 ~/.ssh/id_rsa
             - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
-            # Wyświetlanie informacji debugowania
             - echo "Sprawdzanie połączenia SSH..."
             - ssh -v -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "echo 'Połączenie SSH działa poprawnie'"
-            # Przygotowanie do wdrożenia
-            - composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-            - npm ci
-            - npm run build
-            # Wdrożenie na serwer
-            - rsync -avz --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
-            # Komendy po wdrożeniu
+            # Wysyłanie gotowych plików na serwer
+            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+            # Komendy po wdrożeniu (na serwerze)
             - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && composer dump-autoload && php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan view:clear"
