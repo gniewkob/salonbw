@@ -15,13 +15,12 @@ use Illuminate\Support\Facades\Route;
 | Strony publiczne
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => view('pages.home'))->name('home');
 
 Route::get('/uslugi', function () {
-    return view('services');
-})->name('services');
+    $services = \App\Models\Service::with('variants')->orderBy('name')->get();
+    return view('pages.uslugi', compact('services'));
+})->name('uslugi');
 
 Route::get('/kontakt', function () {
     return view('kontakt');
