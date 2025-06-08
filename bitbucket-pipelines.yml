@@ -46,9 +46,19 @@ pipelines:
             # RSYNC: wykluczamy newralgiczne i lokalne pliki/dane
             - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='tailwindcss' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
 
-
             # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
             - ssh vetternkraft@s0.mydevil.net "if [ ! -f /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite ]; then touch /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; chmod 664 /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; fi"
 
-            # Komendy po wdrożeniu - zawsze przez Twoją binarkę PHP!
-            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload && /home/vetternkraft/bin/php artisan config:clear && /home/vetternkraft/bin/php artisan route:clear && /home/vetternkraft/bin/php artisan cache:clear && /home/vetternkraft/bin/php artisan view:clear"
+            # Kompleksowe czyszczenie cache i restart aplikacji
+            - echo "Wykonywanie kompleksowego czyszczenia cache i restartu aplikacji..."
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan optimize:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan config:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan route:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan cache:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan view:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan queue:restart"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && rm -rf bootstrap/cache/*.php"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && touch storage/framework/down && sleep 2 && rm storage/framework/down"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/ && devil www restart"
+            - echo "Kompleksowe czyszczenie cache i restart zakończone pomyślnie."
