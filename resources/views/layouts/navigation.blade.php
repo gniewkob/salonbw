@@ -52,7 +52,7 @@
                     <x-heroicon-o-calendar class="w-4 h-4 mr-1 text-gray-500" />
                     Kalendarz
                 </a>
-                <a href="{{ route('admin.kontakt') }}" class="flex items-center text-gray-700 hover:underline">
+                <a href="{{ route('admin.kontakt.edit') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-phone class="w-4 h-4 mr-1 text-gray-500" />
                     Kontakt
                 </a>
