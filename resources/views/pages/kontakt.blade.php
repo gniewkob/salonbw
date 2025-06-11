@@ -55,7 +55,7 @@
 			</div>
 		@endif
 		
-		<form action="{{ route('kontakt.wyslij') }}" method="POST" class="max-w-xl mx-auto space-y-4 text-left">
+                <form action="{{ route('kontakt.store') }}" method="POST" class="max-w-xl mx-auto space-y-4 text-left">
 			@csrf
 			<div>
 				<label for="name" class="block font-medium">Imię i nazwisko:</label>
