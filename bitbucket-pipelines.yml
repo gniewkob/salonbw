@@ -1,4 +1,4 @@
-image: php:8.4
+image: php:8.2
 
 definitions:
   caches:
@@ -7,37 +7,80 @@ definitions:
 
 pipelines:
   branches:
-    main:
+    master:
       - step:
           name: Build and Test
           caches:
             - composer
             - npm
           script:
-            # Instalacja zależności
             - apt-get update && apt-get install -y unzip git nodejs npm
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-            - composer install --no-interaction --no-progress
+            - composer install --no-interaction --no-progress --no-dev
             - npm ci
-            # Budowanie zasobów
             - npm run build
-            # Testy (opcjonalnie)
-            # - php artisan test
+            # (Opcjonalnie) php artisan test
+          artifacts:
+            - vendor/**
+            - public/build/**
+            - composer.lock
+            - package-lock.json
+            - .env.example
       - step:
           name: Deploy to Test Server
           deployment: test
           script:
-            # Instalacja SSH i konfiguracja
+            # Przygotowanie SSH
             - apt-get update && apt-get install -y openssh-client rsync
             - mkdir -p ~/.ssh
             - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
             - chmod 600 ~/.ssh/id_rsa
             - ssh-keyscan -H s0.mydevil.net >> ~/.ssh/known_hosts
-            # Przygotowanie do wdrożenia
-            - composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-            - npm ci
-            - npm run build
-            # Wdrożenie na serwer
-            - rsync -avz --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
-            # Komendy po wdrożeniu
-            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && composer dump-autoload && php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan view:clear"
+            - echo "Sprawdzanie połączenia SSH..."
+            - ssh -v -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "echo 'Połączenie SSH działa poprawnie'"
+
+            # Debug - wyświetl vendor przed rsync
+            - ls -la vendor
+            - ls -la vendor/laravel || echo "Brak laravel/"
+
+            # RSYNC: wykluczamy newralgiczne i lokalne pliki/dane
+            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='tailwindcss' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+
+            # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
+            - ssh vetternkraft@s0.mydevil.net "if [ ! -f /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite ]; then touch /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; chmod 664 /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; fi"
+
+            # Sprawdzenie i naprawa konfiguracji .env dla sesji
+            - echo "Sprawdzanie i naprawa konfiguracji sesji..."
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && echo 'Aktualna konfiguracja sesji:' && cat .env | grep -E '(APP_URL|SESSION_|COOKIE_)' || echo 'Brak konfiguracji sesji'"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && grep -q '^APP_URL=' .env || echo 'APP_URL=https://dev.salon-bw.pl' >> .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && sed -i 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && grep -q '^SESSION_DOMAIN=' .env || echo 'SESSION_DOMAIN=dev.salon-bw.pl' >> .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && sed -i 's|^SESSION_DOMAIN=.*|SESSION_DOMAIN=dev.salon-bw.pl|' .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && grep -q '^SESSION_SECURE_COOKIE=' .env || echo 'SESSION_SECURE_COOKIE=true' >> .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && sed -i 's|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=true|' .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && grep -q '^SESSION_SAME_SITE=' .env || echo 'SESSION_SAME_SITE=lax' >> .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && sed -i 's|^SESSION_SAME_SITE=.*|SESSION_SAME_SITE=lax|' .env"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && echo 'Zaktualizowana konfiguracja sesji:' && cat .env | grep -E '(APP_URL|SESSION_|COOKIE_)'"
+
+            # Naprawa uprawnień do katalogów sesji
+            - echo "Naprawa uprawnień do katalogów sesji..."
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && chmod -R 775 storage/framework/sessions/ || echo 'Katalog sessions nie istnieje, zostanie utworzony'"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && mkdir -p storage/framework/sessions && chmod -R 775 storage/framework/sessions"
+
+            # Kompleksowe czyszczenie cache, sesji i restart aplikacji
+            - echo "Wykonywanie kompleksowego czyszczenia cache, sesji i restartu aplikacji..."
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan optimize:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan config:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan route:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan cache:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan view:clear"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan session:flush"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && /home/vetternkraft/bin/php artisan queue:restart"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && rm -rf bootstrap/cache/*.php"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && rm -rf storage/framework/sessions/*"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && touch storage/framework/down && sleep 2 && rm storage/framework/down"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/ && devil www restart"
+            - echo "Kompleksowe czyszczenie cache, sesji i restart zakończone pomyślnie."
+            - echo "Konfiguracja sesji została naprawiona - błąd 419 Page Expired powinien zostać rozwiązany."
+
