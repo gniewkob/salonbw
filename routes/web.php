@@ -15,13 +15,12 @@ use Illuminate\Support\Facades\Route;
 | Strony publiczne
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => view('pages.home'))->name('home');
 
 Route::get('/uslugi', function () {
-    return view('services');
-})->name('services');
+    $services = \App\Models\Service::with('variants')->orderBy('name')->get();
+    return view('pages.uslugi', compact('services'));
+})->name('uslugi');
 
 Route::get('/kontakt', function () {
     return view('kontakt');
@@ -76,7 +75,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('/uslugi/{service}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
     
     // Kontakt
-    Route::get('/kontakt', [AdminKontaktController::class, 'edit'])->name('kontakt');
+    Route::get('/kontakt', [AdminKontaktController::class, 'edit'])->name('kontakt.edit');
+    Route::put('/kontakt', [AdminKontaktController::class, 'update'])->name('kontakt.update');
     
     // Rezerwacje i kalendarz
     Route::get('/rezerwacje', [AdminAppointmentController::class, 'index'])->name('appointments.index');

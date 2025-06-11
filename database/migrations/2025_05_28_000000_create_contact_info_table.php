@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migration.
+     */
+    public function up(): void
+    {
+        Schema::create('contact_info', function (Blueprint $table) {
+            $table->id();
+            $table->string('salon_name')->nullable();
+            $table->string('address_line1');
+            $table->string('address_line2')->nullable();
+            $table->string('city');
+            $table->string('postal_code');
+            $table->string('phone');
+            $table->string('email');
+            $table->text('description')->nullable();
+            $table->json('working_hours')->nullable();
+            $table->string('facebook_url')->nullable();
+            $table->string('instagram_url')->nullable();
+            $table->string('google_maps_url')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migration.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('contact_info');
+    }
+};
