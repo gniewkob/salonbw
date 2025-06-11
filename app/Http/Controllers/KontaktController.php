@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\KontaktMessage;
-use Illuminate\Support\Facades\Auth;
 
 class KontaktController extends Controller
 {
