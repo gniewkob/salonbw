@@ -72,4 +72,5 @@ Thumbs.db
 *.avi
 *.flv
 *.mov
-*.wmvtailwindcss
+*.wmv
+tailwindcss
