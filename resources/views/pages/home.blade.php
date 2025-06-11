@@ -1,4 +1,3 @@
-{{-- DEBUG: home.blade.php --}}
 <x-guest-layout>
 
 	<!-- Hero Slider -->
