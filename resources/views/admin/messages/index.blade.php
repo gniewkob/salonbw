@@ -4,7 +4,7 @@
     @foreach($messages as $msg)
         <div class="mb-4 border-b pb-2">
             <a href="{{ route('admin.messages.show', $msg->id) }}" class="text-lg font-semibold">
-                {{ $msg->user->name }}: {{ Str::limit($msg->content, 60) }}
+                {{ $msg->user->name }}: {{ Str::limit($msg->message, 60) }}
             </a>
             <div class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</div>
         </div>
