@@ -4,28 +4,34 @@
             ← Wróć do listy wiadomości
         </a>
 
-        <div class="bg-white shadow p-4 rounded my-4">
-            <div class="text-xs text-gray-500 mb-2">
-                Ty &mdash; {{ $message->created_at->format('d.m.Y H:i') }}
-            </div>
-            <p>{{ $message->message }}</p>
-        </div>
-
-        @forelse ($message->replies as $reply)
-            <div class="bg-gray-50 p-4 rounded mb-4">
-                <div class="text-xs text-gray-500 mb-1">
-                    @if($reply->is_from_admin)
-                        {{ $reply->admin->name ?? 'Admin' }}
-                    @else
-                        Ty
-                    @endif
-                    — {{ $reply->created_at->format('d.m.Y H:i') }}
+        <div class="space-y-4 my-4">
+            <div class="flex justify-end">
+                <div class="bg-blue-500 text-white p-3 rounded-lg shadow max-w-xs">
+                    <div class="text-xs text-white/80 mb-1">
+                        Ty — {{ $message->created_at->format('d.m.Y H:i') }}
+                    </div>
+                    <p>{{ $message->message }}</p>
                 </div>
-                <p>{{ $reply->message }}</p>
             </div>
-        @empty
-            <p class="text-gray-500 italic">Brak odpowiedzi.</p>
-        @endforelse
+
+            @forelse ($message->replies as $reply)
+                <div class="flex {{ $reply->is_from_admin ? 'justify-start' : 'justify-end' }}">
+                    <div class="p-3 rounded-lg shadow max-w-xs {{ $reply->is_from_admin ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white' }}">
+                        <div class="text-xs mb-1 {{ $reply->is_from_admin ? 'text-gray-600' : 'text-white/80' }}">
+                            @if($reply->is_from_admin)
+                                {{ $reply->admin->name ?? 'Admin' }}
+                            @else
+                                Ty
+                            @endif
+                            — {{ $reply->created_at->format('d.m.Y H:i') }}
+                        </div>
+                        <p>{{ $reply->message }}</p>
+                    </div>
+                </div>
+            @empty
+                <p class="text-gray-500 italic">Brak odpowiedzi.</p>
+            @endforelse
+        </div>
 
         <form method="POST" action="{{ route('messages.reply', $message->id) }}" class="mt-6">
             @csrf
