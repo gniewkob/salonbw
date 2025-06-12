@@ -47,6 +47,7 @@ class KontaktController extends Controller
                 'phone'         => auth()->user()->phone ?? null, // dodane
                 'message'       => $request->message,
                 'category'      => $request->category,
+                'reply_to_id'   => null, // ensure new thread
                 'is_from_admin' => false,
                 'is_read'       => false,
                 'status'        => 'nowa',
@@ -66,6 +67,7 @@ class KontaktController extends Controller
                 'phone'          => $request->phone,
                 'message'        => $request->message,
                 'category'       => $request->category,
+                'reply_to_id'    => null, // ensure new thread for guests
                 'is_from_admin'  => false,
                 'is_read'        => false,
                 'status'         => 'nowa',
