@@ -34,4 +34,12 @@ class Appointment extends Model
     {
         return $this->belongsTo(ServiceVariant::class, 'service_variant_id');
     }
+
+    /**
+     * Alias for the serviceVariant relationship used in views/controllers.
+     */
+    public function variant()
+    {
+        return $this->serviceVariant();
+    }
 }
