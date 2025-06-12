@@ -59,3 +59,13 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Setup
+
+Before running the application locally, create the SQLite database file and run the migrations. Skipping these steps will result in errors such as the missing `contact_info` table.
+
+```bash
+touch database/database.sqlite
+php artisan migrate
+```
+
