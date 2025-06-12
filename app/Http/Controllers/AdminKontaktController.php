@@ -35,6 +35,9 @@ class AdminKontaktController extends Controller
         KontaktMessage::create([
             'user_id'      => $parent->user_id,
             'admin_id'     => auth()->id(),
+            'name'         => auth()->user()->name,
+            'email'        => auth()->user()->email,
+            'phone'        => auth()->user()->phone ?? null,
             'message'      => $request->message,
             'reply_to_id'  => $parent->id,
             'is_from_admin'=> true,
