@@ -83,17 +83,17 @@ class KontaktController extends Controller
         ]);
 
         $parent = KontaktMessage::findOrFail($id);
+        abort_if($parent->user_id !== auth()->id(), 403);
 
         KontaktMessage::create([
             'message'       => $request->message,
             'reply_to_id'   => $parent->id,
-            'user_id'       => $parent->user_id,
-            'admin_id'      => auth()->id(),
-            'is_from_admin' => true,
+            'user_id'       => auth()->id(),
+            'is_from_admin' => false,
             'is_read'       => false,
             'status'        => 'nowa',
         ]);
 
-        return back()->with('success', 'Odpowiedź została wysłana.');
+        return back()->with('success', 'Twoja wiadomość została wysłana.');
     }
 }
