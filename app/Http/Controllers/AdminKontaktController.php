@@ -66,6 +66,19 @@ class AdminKontaktController extends Controller
      */
     public function update(Request $request)
     {
+        // Zamień puste wartości godzin pracy na null,
+        // aby poprawnie zadziałała walidacja z opcją "nullable"
+        $workingHoursInput = $request->input('working_hours', []);
+        foreach ($workingHoursInput as $day => $hours) {
+            if (is_array($hours)) {
+                $start = $hours[0] ?? null;
+                $end = $hours[1] ?? null;
+                $workingHoursInput[$day][0] = $start !== '' ? $start : null;
+                $workingHoursInput[$day][1] = $end !== '' ? $end : null;
+            }
+        }
+        $request->merge(['working_hours' => $workingHoursInput]);
+
         $validator = Validator::make($request->all(), [
             'salon_name' => 'nullable|string|max:255',
             'address_line1' => 'required|string|max:255',
@@ -93,15 +106,17 @@ class AdminKontaktController extends Controller
         $contactInfo = ContactInfo::getDefault();
         
         // Przygotowanie danych godzin pracy
-        $workingHours = [
-            'monday' => $request->input('working_hours.monday') ?? null,
-            'tuesday' => $request->input('working_hours.tuesday') ?? null,
-            'wednesday' => $request->input('working_hours.wednesday') ?? null,
-            'thursday' => $request->input('working_hours.thursday') ?? null,
-            'friday' => $request->input('working_hours.friday') ?? null,
-            'saturday' => $request->input('working_hours.saturday') ?? null,
-            'sunday' => $request->input('working_hours.sunday') ?? null,
-        ];
+        $workingHours = [];
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+            $dayHours = $request->input("working_hours.$day", null);
+            $start = $dayHours[0] ?? null;
+            $end = $dayHours[1] ?? null;
+            if ($start !== null && $end !== null) {
+                $workingHours[$day] = [$start, $end];
+            } else {
+                $workingHours[$day] = null;
+            }
+        }
 
         // Aktualizacja danych kontaktowych
         $contactInfo->update([
