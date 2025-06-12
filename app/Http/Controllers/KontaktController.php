@@ -86,6 +86,9 @@ class KontaktController extends Controller
         abort_if($parent->user_id !== auth()->id(), 403);
 
         KontaktMessage::create([
+            'name'          => auth()->user()->name ?? 'Użytkownik',
+            'email'         => auth()->user()->email,
+            'phone'         => auth()->user()->phone ?? null,
             'message'       => $request->message,
             'reply_to_id'   => $parent->id,
             'user_id'       => auth()->id(),
