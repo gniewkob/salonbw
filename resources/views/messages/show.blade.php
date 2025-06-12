@@ -6,7 +6,7 @@
 
         <div class="bg-white shadow p-4 rounded my-4">
             <div class="text-xs text-gray-500 mb-2">
-                {{ $message->created_at->format('d.m.Y H:i') }}
+                Ty &mdash; {{ $message->created_at->format('d.m.Y H:i') }}
             </div>
             <p>{{ $message->message }}</p>
         </div>
