@@ -16,7 +16,7 @@
                     {{ Str::limit($msg->message, 60) }}
                 </a>
                 <div class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</div>
-                @if($msg->replies->count())
+                @if($msg->replies->contains('is_from_admin', true))
                     <span class="text-green-600 text-xs ml-2">Odpowiedź z salonu</span>
                 @endif
             </div>
