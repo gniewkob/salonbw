@@ -2,26 +2,32 @@
     <div class="max-w-2xl mx-auto py-12">
         <a href="{{ route('admin.messages.index') }}" class="text-blue-600 hover:underline">&larr; Wróć do listy</a>
 
-        <div class="bg-white shadow p-4 rounded my-4">
-            <div class="text-xs text-gray-500 mb-2">
-                {{ $message->user->name ?? 'Klient' }} &mdash; {{ $message->created_at->format('d.m.Y H:i') }}
-            </div>
-            <p>{{ $message->message }}</p>
-        </div>
-
-        @foreach ($message->replies as $reply)
-            <div class="bg-gray-50 p-4 rounded mb-4">
-                <div class="text-xs text-gray-500 mb-1">
-                    @if($reply->is_from_admin)
-                        {{ $reply->admin->name ?? 'Admin' }}
-                    @else
-                        {{ $reply->user->name ?? 'Klient' }}
-                    @endif
-                    &mdash; {{ $reply->created_at->format('d.m.Y H:i') }}
+        <div class="space-y-4 my-4">
+            <div class="flex justify-start">
+                <div class="bg-gray-200 text-gray-800 p-3 rounded-lg shadow max-w-xs">
+                    <div class="text-xs text-gray-600 mb-1">
+                        {{ $message->user->name ?? 'Klient' }} — {{ $message->created_at->format('d.m.Y H:i') }}
+                    </div>
+                    <p>{{ $message->message }}</p>
                 </div>
-                <p>{{ $reply->message }}</p>
             </div>
-        @endforeach
+
+            @foreach ($message->replies as $reply)
+                <div class="flex {{ $reply->is_from_admin ? 'justify-end' : 'justify-start' }}">
+                    <div class="p-3 rounded-lg shadow max-w-xs {{ $reply->is_from_admin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                        <div class="text-xs mb-1 {{ $reply->is_from_admin ? 'text-white/80' : 'text-gray-600' }}">
+                            @if($reply->is_from_admin)
+                                {{ $reply->admin->name ?? 'Admin' }}
+                            @else
+                                {{ $reply->user->name ?? 'Klient' }}
+                            @endif
+                            — {{ $reply->created_at->format('d.m.Y H:i') }}
+                        </div>
+                        <p>{{ $reply->message }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
         <form method="POST" action="{{ route('admin.messages.reply', $message->id) }}" class="mt-6">
             @csrf

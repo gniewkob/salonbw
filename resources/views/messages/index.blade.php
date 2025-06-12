@@ -11,15 +11,15 @@
         @endif
 
         @forelse($messages as $msg)
-            <div class="mb-4 border-b pb-2">
-                <a href="{{ route('messages.show', $msg->id) }}" class="text-lg font-semibold">
-                    {{ Str::limit($msg->message, 60) }}
-                </a>
-                <div class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</div>
+            <a href="{{ route('messages.show', $msg->id) }}" class="block bg-white p-4 rounded-lg shadow mb-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                    <span class="font-semibold">{{ Str::limit($msg->message, 60) }}</span>
+                    <span class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</span>
+                </div>
                 @if($msg->replies->contains('is_from_admin', true))
-                    <span class="text-green-600 text-xs ml-2">Odpowiedź z salonu</span>
+                    <div class="text-green-600 text-xs mt-1">Odpowiedź z salonu</div>
                 @endif
-            </div>
+            </a>
         @empty
             <div class="text-gray-400 italic py-6">Nie masz jeszcze żadnych wiadomości.</div>
         @endforelse
