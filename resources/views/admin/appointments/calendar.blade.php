@@ -75,7 +75,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
         <h2 class="text-lg font-bold mb-4">Nowa rezerwacja</h2>
-        <p class="text-sm mb-4">Data i godzina: <span x-text="date"></span></p>
+
+        <label class="block mb-2 text-sm font-medium">Data i godzina:</label>
+        <input type="datetime-local" x-model="date" class="w-full mb-4 border rounded px-2 py-1">
 
         <label class="block mb-2 text-sm font-medium">Klient:</label>
         <select x-model="user_id" class="w-full mb-4 border rounded px-2 py-1">
@@ -84,10 +86,18 @@
           </template>
         </select>
 
+        <label class="block mb-2 text-sm font-medium">Usługa:</label>
+        <select x-model="service_id" class="w-full mb-4 border rounded px-2 py-1">
+          <option value="" disabled selected>Wybierz usługę</option>
+          <template x-for="s in services" :key="s.id">
+            <option :value="s.id" x-text="s.name"></option>
+          </template>
+        </select>
+
         <label class="block mb-2 text-sm font-medium">Wariant usługi:</label>
-        <select x-model="variant_id" class="w-full mb-4 border rounded px-2 py-1">
+        <select x-model="variant_id" :disabled="!service_id" class="w-full mb-4 border rounded px-2 py-1">
           <template x-for="v in variants" :key="v.id">
-            <option :value="v.id" x-text="v.name"></option>
+            <option :value="v.id" x-text="v.variant_name"></option>
           </template>
         </select>
 
