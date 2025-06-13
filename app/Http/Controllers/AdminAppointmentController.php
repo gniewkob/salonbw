@@ -160,6 +160,11 @@ class AdminAppointmentController extends Controller
     {
         return Service::select('id', 'name')->orderBy('name')->get();
     }
+
+    public function variantsForService(Service $service)
+    {
+        return $service->variants()->select('id', 'service_id', 'variant_name', 'duration_minutes')->get();
+    }
     
     // Pobieranie godzin pracy
     public function workingHours()

@@ -8,7 +8,6 @@ export function createModal() {
         users: [],
         services: [],
         variants: [],
-        allVariants: [],
 
 	init() {
 	  window.addEventListener('open-create-modal', e => {
@@ -29,21 +28,22 @@ export function createModal() {
                 .then(data => this.services = data)
                 .catch(() => console.error('Services load error'));
 
-          fetch('/admin/api/variants')
-                .then(r => r.ok ? r.json() : [])
-                .then(data => { this.allVariants = data; this.filterVariants(); })
-                .catch(() => console.error('Variants load error'));
-
-          this.$watch('service_id', () => this.filterVariants());
+          this.$watch('service_id', () => this.loadVariants());
        },
 
-        filterVariants() {
+        loadVariants() {
           if (!this.service_id) {
                 this.variants = [];
                 this.variant_id = null;
                 return;
           }
-          this.variants = this.allVariants.filter(v => v.service_id === Number(this.service_id));
+          fetch(`/admin/api/services/${this.service_id}/variants`)
+                .then(r => r.ok ? r.json() : [])
+                .then(data => this.variants = data)
+                .catch(() => {
+                      console.error('Variants load error');
+                      this.variants = [];
+                });
         },
 
 	close() {
