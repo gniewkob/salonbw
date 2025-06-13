@@ -94,6 +94,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');
     Route::get('/api/variants', [AdminAppointmentController::class, 'variants'])->name('appointments.variants');
     Route::get('/api/services', [AdminAppointmentController::class, 'services'])->name('appointments.services');
+    Route::get('/api/services/{service}/variants', [AdminAppointmentController::class, 'variantsForService'])->name('appointments.serviceVariants');
     Route::get('/api/working-hours', [AdminAppointmentController::class, 'workingHours'])->name('appointments.workingHours');
     
     // Wiadomości
