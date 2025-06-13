@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\ServiceVariant;
+use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -148,10 +149,16 @@ class AdminAppointmentController extends Controller
             ->map(function ($variant) {
                 return [
                     'id' => $variant->id,
-                    'name' => $variant->service->name . ' – ' . $variant->name,
-                    'duration' => $variant->duration ?? 60,
+                    'service_id' => $variant->service_id,
+                    'variant_name' => $variant->variant_name,
+                    'duration_minutes' => $variant->duration_minutes,
                 ];
             });
+    }
+
+    public function services()
+    {
+        return Service::select('id', 'name')->orderBy('name')->get();
     }
     
     // Pobieranie godzin pracy

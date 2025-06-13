@@ -1,31 +1,50 @@
 export function createModal() {
   return {
 	open: false,
-	date: '',
-	user_id: null,
-	variant_id: null,
-	users: [],
-	variants: [],
+        date: '',
+        user_id: null,
+        service_id: null,
+        variant_id: null,
+        users: [],
+        services: [],
+        variants: [],
+        allVariants: [],
 
 	init() {
 	  window.addEventListener('open-create-modal', e => {
 		if (window.modalIsOpen) return;
-		this.date = e.detail;
+                this.date = e.detail.substring(0,16);
 		this.open = true;
 		window.modalIsOpen = true; // modal otwarty
 		document.body.classList.add('modal-open');
 	  });
 
-	  fetch('/admin/api/users')
-		.then(r => r.ok ? r.json() : [])
-		.then(data => this.users = data)
-		.catch(() => console.error('Users load error'));
+          fetch('/admin/api/users')
+                .then(r => r.ok ? r.json() : [])
+                .then(data => this.users = data)
+                .catch(() => console.error('Users load error'));
 
-	  fetch('/admin/api/variants')
-		.then(r => r.ok ? r.json() : [])
-		.then(data => this.variants = data)
-		.catch(() => console.error('Variants load error'));
-	},
+          fetch('/admin/api/services')
+                .then(r => r.ok ? r.json() : [])
+                .then(data => this.services = data)
+                .catch(() => console.error('Services load error'));
+
+          fetch('/admin/api/variants')
+                .then(r => r.ok ? r.json() : [])
+                .then(data => { this.allVariants = data; this.filterVariants(); })
+                .catch(() => console.error('Variants load error'));
+
+          this.$watch('service_id', () => this.filterVariants());
+       },
+
+        filterVariants() {
+          if (!this.service_id) {
+                this.variants = [];
+                this.variant_id = null;
+                return;
+          }
+          this.variants = this.allVariants.filter(v => v.service_id === Number(this.service_id));
+        },
 
 	close() {
 	  this.open = false;
@@ -34,11 +53,11 @@ export function createModal() {
 	},
 
 	async save() {
-	  if (!this.user_id || !this.variant_id) {
-		return alert('Wybierz klienta oraz wariant usługi');
-	  }
-	  try {
-		const res = await fetch('/admin/kalendarz/store', {
+          if (!this.user_id || !this.variant_id || !this.date) {
+                return alert('Uzupełnij wszystkie pola');
+          }
+          try {
+                const res = await fetch('/admin/kalendarz/store', {
 		  method: 'POST',
 		  headers: {
 			'Content-Type': 'application/json',
