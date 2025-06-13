@@ -82,7 +82,8 @@ function initializeCalendar() {
         // Dodajemy klasę do body, aby zablokować interakcje z kalendarzem
         document.body.classList.add('modal-open');
         
-        window.dispatchEvent(new CustomEvent('open-view-modal', { detail: info.event.extendedProps }));
+        const data = { ...info.event.extendedProps, id: info.event.id };
+        window.dispatchEvent(new CustomEvent('open-edit-modal', { detail: data }));
       },
       editable: true,
       eventDrop: function(info) {
@@ -123,6 +124,9 @@ function initializeCalendar() {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
+            // Uaktualnij dane wydarzenia, aby klikanie pokazywało nowy termin
+            const local = newDate.substring(0,16).replace('T', ' ');
+            info.event.setExtendedProp('datetime', local);
             showNotification('Termin rezerwacji został zaktualizowany.');
           } else {
             info.revert();

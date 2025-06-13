@@ -65,6 +65,72 @@
       </div>
     </div>
 
+    {{-- Modal edycji rezerwacji --}}
+    <div
+      id="adminEditModal"
+      x-data="editModal()"
+      x-init="init()"
+      x-show="open"
+      x-cloak
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
+        <h2 class="text-lg font-bold mb-4">Edytuj rezerwację</h2>
+
+        <label class="block mb-2 text-sm font-medium">Data i godzina:</label>
+        <input type="datetime-local" x-model="date" class="w-full mb-4 border rounded px-2 py-1">
+
+        <label class="block mb-2 text-sm font-medium">Klient:</label>
+        <select x-model="user_id" class="w-full mb-4 border rounded px-2 py-1">
+          <template x-for="u in users" :key="u.id">
+            <option :value="u.id" x-text="u.name"></option>
+          </template>
+        </select>
+
+        <label class="block mb-2 text-sm font-medium">Usługa:</label>
+        <select x-model="service_id" class="w-full mb-4 border rounded px-2 py-1">
+          <option value="" disabled>Wybierz usługę</option>
+          <template x-for="s in services" :key="s.id">
+            <option :value="s.id" x-text="s.name"></option>
+          </template>
+        </select>
+
+        <label class="block mb-2 text-sm font-medium">Wariant:</label>
+        <select x-model="variant_id" :disabled="!service_id" class="w-full mb-4 border rounded px-2 py-1">
+          <template x-for="v in variants" :key="v.id">
+            <option :value="v.id" x-text="v.variant_name"></option>
+          </template>
+        </select>
+
+        <label class="block mb-2 text-sm font-medium">Status:</label>
+        <select x-model="status" class="w-full mb-4 border rounded px-2 py-1">
+          <option value="zaplanowana">Zaplanowana</option>
+          <option value="odbyta">Odbyta</option>
+          <option value="odwołana">Odwołana</option>
+          <option value="nieodbyta">Nie odbyta</option>
+        </select>
+
+        <div class="flex justify-between mt-4">
+          <button
+            @click="remove()"
+            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            Usuń
+          </button>
+          <div class="flex gap-2">
+            <button
+              @click="close()"
+              class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+              Anuluj
+            </button>
+            <button
+              @click="save()"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Zapisz
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     {{-- Modal dodawania rezerwacji --}}
     <div
       id="adminCreateModal"
