@@ -17,6 +17,7 @@ export function createModal() {
 		window.modalIsOpen = true; // modal otwarty
 		document.body.classList.add('modal-open');
 	  });
+          window.addEventListener('force-close-admin-create-modal', () => this.close());
 
           fetch('/admin/api/users')
                 .then(r => r.ok ? r.json() : [])
