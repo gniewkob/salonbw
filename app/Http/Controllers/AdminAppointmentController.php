@@ -40,6 +40,9 @@ class AdminAppointmentController extends Controller
                     'datetime' => $appointment->appointment_at->format('Y-m-d H:i'),
                     'status' => $appointment->status,
                     'duration' => $appointment->serviceVariant->duration_minutes ?? 60,
+                    'user_id' => $appointment->user_id,
+                    'service_id' => $appointment->service_id,
+                    'service_variant_id' => $appointment->service_variant_id,
                 ],
             ];
         });
@@ -134,6 +137,45 @@ class AdminAppointmentController extends Controller
             'status' => 'zaplanowana',
         ]);
         return response()->json(['success' => true, 'id' => $appointment->id]);
+    }
+
+    public function update(Request $request, Appointment $appointment)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'service_variant_id' => 'required|exists:service_variants,id',
+            'appointment_at' => 'required|date',
+            'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
+        ]);
+
+        $newDateTime = Carbon::parse($request->appointment_at);
+        $dayOfWeek = $newDateTime->dayOfWeek;
+        $timeOfDay = $newDateTime->format('H:i');
+        $workingHoursStart = '09:00';
+        $workingHoursEnd = '18:00';
+        $isWorkingDay = in_array($dayOfWeek, [1, 2, 3, 4, 5, 6]);
+        if (!$isWorkingDay || $timeOfDay < $workingHoursStart || $timeOfDay > $workingHoursEnd) {
+            throw ValidationException::withMessages([
+                'appointment_at' => ['Nie można zaplanować rezerwacji poza godzinami pracy.'],
+            ]);
+        }
+
+        $variant = ServiceVariant::with('service')->findOrFail($request->service_variant_id);
+        $appointment->update([
+            'user_id' => $request->user_id,
+            'service_id' => $variant->service_id,
+            'service_variant_id' => $variant->id,
+            'appointment_at' => $request->appointment_at,
+            'status' => $request->status,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy(Appointment $appointment)
+    {
+        $appointment->delete();
+        return response()->json(['success' => true]);
     }
     
     // API do dropdownów

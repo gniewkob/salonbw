@@ -79,17 +79,6 @@
         <label class="block mb-2 text-sm font-medium">Data i godzina:</label>
         <input type="datetime-local" x-model="date" class="w-full mb-4 border rounded px-2 py-1">
 
-        <div class="flex justify-end gap-2">
-          <button
-            @click="close()"
-            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
-            Anuluj
-          </button>
-          <button
-            @click="save()"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Zapisz
-          </button>
         </div>
       </div>
     </div>

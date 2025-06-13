@@ -124,6 +124,9 @@ function initializeCalendar() {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
+            // Uaktualnij dane wydarzenia, aby klikanie pokazywało nowy termin
+            const local = newDate.substring(0,16).replace('T', ' ');
+            info.event.setExtendedProp('datetime', local);
             showNotification('Termin rezerwacji został zaktualizowany.');
           } else {
             info.revert();
