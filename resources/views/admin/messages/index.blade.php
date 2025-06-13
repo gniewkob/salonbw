@@ -5,7 +5,9 @@
         @foreach($messages as $msg)
             <a href="{{ route('admin.messages.show', $msg->id) }}" class="block bg-white p-4 rounded-lg shadow mb-4 hover:bg-gray-50">
                 <div class="flex items-start justify-between">
-                    <span class="font-semibold">{{ $msg->user->name }}: {{ Str::limit($msg->message, 60) }}</span>
+                    <span class="font-semibold">
+                        {{ optional($msg->user)->name ?? $msg->name }}: {{ Str::limit($msg->message, 60) }}
+                    </span>
                     <span class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</span>
                 </div>
                 @php
