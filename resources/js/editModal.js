@@ -1,98 +1,45 @@
-export function editModal() {
-  return {
-    open: false,
-    appointment: {},
-    date: '',
-    user_id: null,
-    service_id: null,
-    variant_id: null,
-    status: '',
-    users: [],
-    services: [],
-    variants: [],
-    init() {
-      window.addEventListener('open-edit-modal', e => {
-        if (window.modalIsOpen) return;
-        this.appointment = e.detail;
-        this.date = e.detail.datetime.replace(' ', 'T');
-        this.user_id = e.detail.user_id;
-        this.service_id = e.detail.service_id;
-        this.variant_id = e.detail.service_variant_id;
-        this.status = e.detail.status;
-        this.open = true;
-        window.modalIsOpen = true;
-        document.body.classList.add('modal-open');
-        this.loadData();
-      });
-      window.addEventListener('force-close-edit-modal', () => this.close());
-      this.$watch('service_id', () => this.loadVariants());
-    },
-    async loadData() {
-      try {
-        const [u, s] = await Promise.all([
-          fetch('/admin/api/users').then(r => r.ok ? r.json() : []),
-          fetch('/admin/api/services').then(r => r.ok ? r.json() : []),
-        ]);
-        this.users = u;
-        this.services = s;
-        await this.loadVariants();
-      } catch {
-        console.error('Load data error');
-      }
-    },
-    async loadVariants() {
-      if (!this.service_id) { this.variants = []; return; }
-      try {
-        const v = await fetch(`/admin/api/services/${this.service_id}/variants`).then(r => r.ok ? r.json() : []);
-        this.variants = v;
-      } catch {
-        console.error('Variants load error');
-        this.variants = [];
-      }
-    },
-    close() {
-      this.open = false;
-      window.modalIsOpen = false;
-      document.body.classList.remove('modal-open');
-    },
-    async save() {
-      if (!this.user_id || !this.variant_id || !this.date) {
-        return alert('Uzupełnij wszystkie pola');
-      }
-      try {
-        const res = await fetch(`/admin/kalendarz/appointments/${this.appointment.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-          },
-          body: JSON.stringify({
-            user_id: this.user_id,
-            service_variant_id: this.variant_id,
-            appointment_at: this.date,
-            status: this.status,
-          }),
-        });
-        if (!res.ok) throw new Error();
-        this.close();
-        window.location.reload();
-      } catch {
-        alert('Nie udało się zaktualizować rezerwacji');
-      }
-    },
-    async remove() {
-      if (!confirm('Na pewno usunąć rezerwację?')) return;
-      try {
-        const res = await fetch(`/admin/kalendarz/appointments/${this.appointment.id}`, {
-          method: 'DELETE',
-          headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-        });
-        if (!res.ok) throw new Error();
-        this.close();
-        window.location.reload();
-      } catch {
-        alert('Nie udało się usunąć rezerwacji');
-      }
-    },
-  }
-}
+1  export function editModal() {
+2    return {
+3      open: false,
+4      appointment: {},
+5      date: '',
+6      init() {
+7        window.addEventListener('open-edit-modal', e => {
+8          if (window.modalIsOpen) return;
+9          this.appointment = e.detail;
+10         this.date = e.detail.datetime.replace(' ', 'T');
+11         this.open = true;
+12         window.modalIsOpen = true;
+13         document.body.classList.add('modal-open');
+14       });
+15       window.addEventListener('force-close-edit-modal', () => this.close());
+16     },
+17     close() {
+18       this.open = false;
+19       window.modalIsOpen = false;
+20       document.body.classList.remove('modal-open');
+21     },
+22     async save() {
+23       if (!this.date || !this.appointment.id) {
+24         return alert('Uzupełnij wszystkie pola');
+25       }
+26       try {
+27         const res = await fetch(`/admin/kalendarz/appointments/${this.appointment.id}/update-time`, {
+28           method: 'POST',
+29           headers: {
+30             'Content-Type': 'application/json',
+31             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+32           },
+33           body: JSON.stringify({
+34             appointment_at: this.date,
+35           }),
+36         });
+37         if (!res.ok) throw new Error();
+38         this.close();
+39         window.location.reload();
+40       } catch {
+41         alert('Nie udało się zaktualizować rezerwacji');
+42       }
+43     },
+44   }
+45 }
