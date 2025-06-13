@@ -8,6 +8,14 @@
                     <span class="font-semibold">{{ $msg->user->name }}: {{ Str::limit($msg->message, 60) }}</span>
                     <span class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</span>
                 </div>
+                @php
+                    $last = $msg->replies->sortByDesc('created_at')->first();
+                @endphp
+                @if(!$last || !$last->is_from_admin)
+                    <div class="text-red-600 text-xs mt-1">Wymaga odpowiedzi</div>
+                @else
+                    <div class="text-green-600 text-xs mt-1">Odpowiedź udzielona</div>
+                @endif
             </a>
         @endforeach
     </div>
