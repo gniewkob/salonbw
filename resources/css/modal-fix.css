@@ -37,7 +37,7 @@ body.modal-open .fc-view-harness.fc-view-harness-active::after {
   bottom: 0;
   background-color: transparent;
   z-index: 8000;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 body.modal-open .fc-event {
