@@ -82,7 +82,8 @@ function initializeCalendar() {
         // Dodajemy klasę do body, aby zablokować interakcje z kalendarzem
         document.body.classList.add('modal-open');
         
-        window.dispatchEvent(new CustomEvent('open-view-modal', { detail: info.event.extendedProps }));
+        const data = { ...info.event.extendedProps, id: info.event.id };
+        window.dispatchEvent(new CustomEvent('open-edit-modal', { detail: data }));
       },
       editable: true,
       eventDrop: function(info) {
