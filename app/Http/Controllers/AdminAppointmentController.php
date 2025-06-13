@@ -30,16 +30,16 @@ class AdminAppointmentController extends Controller
                 'title' => $appointment->user->name . ' — ' . $appointment->serviceVariant->service->name,
                 'start' => $appointment->appointment_at,
                 'end' => Carbon::parse($appointment->appointment_at)
-                    ->addMinutes($appointment->serviceVariant->duration ?? 60)
+                    ->addMinutes($appointment->serviceVariant->duration_minutes ?? 60)
                     ->toDateTimeString(),
                 'color' => $color,
                 'extendedProps' => [
                     'user' => $appointment->user->name,
                     'service' => $appointment->serviceVariant->service->name,
-                    'variant' => $appointment->serviceVariant->name,
+                    'variant' => $appointment->serviceVariant->variant_name,
                     'datetime' => $appointment->appointment_at->format('Y-m-d H:i'),
                     'status' => $appointment->status,
-                    'duration' => $appointment->serviceVariant->duration ?? 60,
+                    'duration' => $appointment->serviceVariant->duration_minutes ?? 60,
                 ],
             ];
         });
