@@ -6,7 +6,7 @@
             <div class="flex justify-start">
                 <div class="bg-gray-200 text-gray-800 p-3 rounded-lg shadow max-w-xs">
                     <div class="text-xs text-gray-600 mb-1">
-                        {{ $message->user->name ?? 'Klient' }} — {{ $message->created_at->format('d.m.Y H:i') }}
+                        {{ optional($message->user)->name ?? $message->name ?? 'Klient' }} — {{ $message->created_at->format('d.m.Y H:i') }}
                     </div>
                     <p>{{ $message->message }}</p>
                 </div>
@@ -19,7 +19,7 @@
                             @if($reply->is_from_admin)
                                 {{ $reply->admin->name ?? 'Admin' }}
                             @else
-                                {{ $reply->user->name ?? 'Klient' }}
+                                {{ optional($reply->user)->name ?? $reply->name ?? 'Klient' }}
                             @endif
                             — {{ $reply->created_at->format('d.m.Y H:i') }}
                         </div>
