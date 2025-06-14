@@ -4,6 +4,9 @@
         <ul>
             <li><b>Usługa:</b> {{ $appointment->service->name }} – {{ $appointment->variant->variant_name }}</li>
             <li><b>Cena:</b> {{ number_format($appointment->price_pln, 2) }} zł</li>
+            @if($appointment->discount_percent)
+                <li><b>Rabat:</b> {{ $appointment->discount_percent }}%</li>
+            @endif
             <li><b>Data:</b> {{ $appointment->appointment_at }}</li>
             <li><b>Status:</b> {{ $appointment->status }}</li>
         </ul>

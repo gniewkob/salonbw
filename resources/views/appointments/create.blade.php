@@ -41,10 +41,15 @@
 
 			</div>
 
-			<div>
-				<label class="block font-medium mb-1">Data i godzina wizyty</label>
-				<input type="datetime-local" name="appointment_at" class="w-full border rounded px-4 py-2" required>
-			</div>
+                        <div>
+                                <label class="block font-medium mb-1">Data i godzina wizyty</label>
+                                <input type="datetime-local" name="appointment_at" class="w-full border rounded px-4 py-2" required>
+                        </div>
+
+                        <div>
+                                <label class="block font-medium mb-1">Rabat (%)</label>
+                                <input type="number" name="discount_percent" min="0" max="100" value="0" class="w-full border rounded px-4 py-2">
+                        </div>
 
 			<div class="pt-4">
 				<button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
