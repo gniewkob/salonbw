@@ -114,6 +114,7 @@
 
         <label class="block mb-2 text-sm font-medium">Wariant usługi:</label>
         <select x-model="variant_id" :disabled="!service_id" class="w-full mb-4 border rounded px-2 py-1">
+          <option value="" disabled selected>Wybierz wariant</option>
           <template x-for="v in variants" :key="v.id">
             <option :value="v.id" x-text="v.variant_name"></option>
           </template>
