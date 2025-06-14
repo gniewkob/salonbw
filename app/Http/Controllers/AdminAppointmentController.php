@@ -43,6 +43,7 @@ class AdminAppointmentController extends Controller
                     'user_id' => $appointment->user_id,
                     'service_id' => $appointment->service_id,
                     'service_variant_id' => $appointment->service_variant_id,
+                    'price_pln' => $appointment->price_pln,
                 ],
             ];
         });
@@ -102,6 +103,7 @@ class AdminAppointmentController extends Controller
             'user_id' => 'required|exists:users,id',
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at' => 'required|date',
+            'price_pln' => 'required|integer|min:0',
         ]);
         
         // Sprawdzenie czy termin jest w godzinach pracy
@@ -133,6 +135,7 @@ class AdminAppointmentController extends Controller
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
             'service_variant_id' => $variant->id,
+            'price_pln' => $request->price_pln ?? $variant->price_pln,
             'appointment_at' => $request->appointment_at,
             'status' => 'zaplanowana',
         ]);
@@ -146,6 +149,7 @@ class AdminAppointmentController extends Controller
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at' => 'required|date',
             'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
+            'price_pln' => 'required|integer|min:0',
         ]);
 
         $newDateTime = Carbon::parse($request->appointment_at);
@@ -165,6 +169,7 @@ class AdminAppointmentController extends Controller
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
             'service_variant_id' => $variant->id,
+            'price_pln' => $request->price_pln ?? $variant->price_pln,
             'appointment_at' => $request->appointment_at,
             'status' => $request->status,
         ]);
@@ -194,6 +199,7 @@ class AdminAppointmentController extends Controller
                     'service_id' => $variant->service_id,
                     'variant_name' => $variant->variant_name,
                     'duration_minutes' => $variant->duration_minutes,
+                    'price_pln' => $variant->price_pln,
                 ];
             });
     }
@@ -205,7 +211,7 @@ class AdminAppointmentController extends Controller
 
     public function variantsForService(Service $service)
     {
-        return $service->variants()->select('id', 'service_id', 'variant_name', 'duration_minutes')->get();
+        return $service->variants()->select('id', 'service_id', 'variant_name', 'duration_minutes', 'price_pln')->get();
     }
     
     // Pobieranie godzin pracy

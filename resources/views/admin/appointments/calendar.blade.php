@@ -120,6 +120,9 @@
           </template>
         </select>
 
+        <label class="block mb-2 text-sm font-medium">Cena (zł):</label>
+        <input type="number" x-model="price" class="w-full mb-4 border rounded px-2 py-1">
+
         <div class="flex justify-end gap-2">
           <button
             @click="close()"
