@@ -3,8 +3,8 @@ export function createModal() {
 	open: false,
         date: '',
         user_id: null,
-        service_id: null,
-        variant_id: null,
+        service_id: '',
+        variant_id: '',
         users: [],
         services: [],
         variants: [],
@@ -35,7 +35,7 @@ export function createModal() {
         loadVariants() {
           if (!this.service_id) {
                 this.variants = [];
-                this.variant_id = null;
+                this.variant_id = '';
                 return;
           }
           fetch(`/admin/api/services/${this.service_id}/variants`)
