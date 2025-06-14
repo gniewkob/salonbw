@@ -120,8 +120,11 @@
           </template>
         </select>
 
+        <label class="block mb-2 text-sm font-medium">Rabat (%):</label>
+        <input type="number" x-model="discount_percent" min="0" max="100" class="w-full mb-4 border rounded px-2 py-1">
+
         <label class="block mb-2 text-sm font-medium">Cena (zł):</label>
-        <input type="number" x-model="price" class="w-full mb-4 border rounded px-2 py-1">
+        <input type="number" x-model="price" class="w-full mb-4 border rounded px-2 py-1" readonly>
 
         <div class="flex justify-end gap-2">
           <button
