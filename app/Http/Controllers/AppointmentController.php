@@ -41,15 +41,20 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at'     => 'required|date|after:now',
+            'discount_percent'   => 'nullable|integer|min:0|max:100',
         ]);
 
         $variant = ServiceVariant::with('service')->findOrFail($validated['service_variant_id']);
+
+        $discount = $validated['discount_percent'] ?? 0;
+        $price    = round($variant->price_pln * (100 - $discount) / 100);
 
         Appointment::create([
             'user_id'            => Auth::id(),
             'service_id'         => $variant->service->id,
             'service_variant_id' => $variant->id,
-            'price_pln'          => $variant->price_pln,
+            'price_pln'          => $price,
+            'discount_percent'   => $discount,
             'appointment_at'     => $validated['appointment_at'],
             'status'             => 'zaplanowana',
         ]);

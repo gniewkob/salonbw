@@ -44,6 +44,7 @@ class AdminAppointmentController extends Controller
                     'service_id' => $appointment->service_id,
                     'service_variant_id' => $appointment->service_variant_id,
                     'price_pln' => $appointment->price_pln,
+                    'discount_percent' => $appointment->discount_percent,
                 ],
             ];
         });
@@ -104,6 +105,7 @@ class AdminAppointmentController extends Controller
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at' => 'required|date',
             'price_pln' => 'required|integer|min:0',
+            'discount_percent' => 'nullable|integer|min:0|max:100',
         ]);
         
         // Sprawdzenie czy termin jest w godzinach pracy
@@ -131,11 +133,16 @@ class AdminAppointmentController extends Controller
         }
         
         $variant = ServiceVariant::with('service')->findOrFail($request->service_variant_id);
+        $discount = $request->discount_percent ?? 0;
+        $price    = $request->price_pln ?? $variant->price_pln;
+        $price    = round($price * (100 - $discount) / 100);
+
         $appointment = Appointment::create([
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
             'service_variant_id' => $variant->id,
-            'price_pln' => $request->price_pln ?? $variant->price_pln,
+            'price_pln' => $price,
+            'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => 'zaplanowana',
         ]);
@@ -150,6 +157,7 @@ class AdminAppointmentController extends Controller
             'appointment_at' => 'required|date',
             'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
             'price_pln' => 'required|integer|min:0',
+            'discount_percent' => 'nullable|integer|min:0|max:100',
         ]);
 
         $newDateTime = Carbon::parse($request->appointment_at);
@@ -165,11 +173,16 @@ class AdminAppointmentController extends Controller
         }
 
         $variant = ServiceVariant::with('service')->findOrFail($request->service_variant_id);
+        $discount = $request->discount_percent ?? 0;
+        $price    = $request->price_pln ?? $variant->price_pln;
+        $price    = round($price * (100 - $discount) / 100);
+
         $appointment->update([
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
             'service_variant_id' => $variant->id,
-            'price_pln' => $request->price_pln ?? $variant->price_pln,
+            'price_pln' => $price,
+            'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => $request->status,
         ]);
