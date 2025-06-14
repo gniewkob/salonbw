@@ -10,6 +10,7 @@ class Appointment extends Model
         'user_id',
         'service_id',
         'service_variant_id',
+        'price_pln',
         'appointment_at',
         'status',
         'note_client',
@@ -18,6 +19,7 @@ class Appointment extends Model
 
     protected $casts = [
         'appointment_at' => 'datetime',
+        'price_pln' => 'integer',
     ];
 
     public function user()
