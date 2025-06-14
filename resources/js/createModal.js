@@ -5,18 +5,19 @@ export function createModal() {
         user_id: null,
         service_id: '',
         variant_id: '',
+        price: 0,
         users: [],
         services: [],
         variants: [],
 
 	init() {
-	  window.addEventListener('open-create-modal', e => {
-		if (window.modalIsOpen) return;
+          window.addEventListener('open-create-modal', e => {
+                if (window.modalIsOpen) return;
                 this.date = e.detail.substring(0,16);
-		this.open = true;
-		window.modalIsOpen = true; // modal otwarty
-		document.body.classList.add('modal-open');
-	  });
+                this.open = true;
+                window.modalIsOpen = true; // modal otwarty
+                document.body.classList.add('modal-open');
+          });
           window.addEventListener('force-close-admin-create-modal', () => this.close());
 
           fetch('/admin/api/users')
@@ -30,21 +31,31 @@ export function createModal() {
                 .catch(() => console.error('Services load error'));
 
           this.$watch('service_id', () => this.loadVariants());
+          this.$watch('variant_id', () => this.setPrice());
        },
 
         loadVariants() {
           if (!this.service_id) {
                 this.variants = [];
                 this.variant_id = '';
+                this.price = 0;
                 return;
           }
           fetch(`/admin/api/services/${this.service_id}/variants`)
                 .then(r => r.ok ? r.json() : [])
-                .then(data => this.variants = data)
+                .then(data => {
+                      this.variants = data;
+                      this.setPrice();
+                })
                 .catch(() => {
                       console.error('Variants load error');
                       this.variants = [];
                 });
+       },
+
+        setPrice() {
+          const v = this.variants.find(v => v.id == this.variant_id);
+          this.price = v ? v.price_pln : 0;
         },
 
 	close() {
@@ -53,23 +64,24 @@ export function createModal() {
 	  document.body.classList.remove('modal-open');
 	},
 
-	async save() {
+        async save() {
           if (!this.user_id || !this.variant_id || !this.date) {
                 return alert('Uzupełnij wszystkie pola');
           }
           try {
                 const res = await fetch('/admin/kalendarz/store', {
-		  method: 'POST',
-		  headers: {
-			'Content-Type': 'application/json',
-			'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-		  },
-		  body: JSON.stringify({
-			user_id: this.user_id,
-			service_variant_id: this.variant_id,
-			appointment_at: this.date,
-		  })
-		});
+                  method: 'POST',
+                  headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                  },
+                  body: JSON.stringify({
+                        user_id: this.user_id,
+                        service_variant_id: this.variant_id,
+                        price_pln: this.price,
+                        appointment_at: this.date,
+                  })
+                });
 		if (!res.ok) throw new Error;
 		this.close();
 		window.location.reload();
