@@ -6,6 +6,7 @@ export function createModal() {
         service_id: '',
         variant_id: '',
         price: 0,
+        discount_percent: 0,
         users: [],
         services: [],
         variants: [],
@@ -32,6 +33,7 @@ export function createModal() {
 
           this.$watch('service_id', () => this.loadVariants());
           this.$watch('variant_id', () => this.setPrice());
+          this.$watch('discount_percent', () => this.setPrice());
        },
 
         loadVariants() {
@@ -55,7 +57,8 @@ export function createModal() {
 
         setPrice() {
           const v = this.variants.find(v => v.id == this.variant_id);
-          this.price = v ? v.price_pln : 0;
+          const base = v ? v.price_pln : 0;
+          this.price = Math.round(base * (100 - this.discount_percent) / 100);
         },
 
 	close() {
@@ -79,6 +82,7 @@ export function createModal() {
                         user_id: this.user_id,
                         service_variant_id: this.variant_id,
                         price_pln: this.price,
+                        discount_percent: this.discount_percent,
                         appointment_at: this.date,
                   })
                 });

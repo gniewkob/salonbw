@@ -11,6 +11,7 @@ class Appointment extends Model
         'service_id',
         'service_variant_id',
         'price_pln',
+        'discount_percent',
         'appointment_at',
         'status',
         'note_client',
@@ -20,6 +21,7 @@ class Appointment extends Model
     protected $casts = [
         'appointment_at' => 'datetime',
         'price_pln' => 'integer',
+        'discount_percent' => 'integer',
     ];
 
     public function user()
