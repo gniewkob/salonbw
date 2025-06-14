@@ -49,6 +49,7 @@ class AppointmentController extends Controller
             'user_id'            => Auth::id(),
             'service_id'         => $variant->service->id,
             'service_variant_id' => $variant->id,
+            'price_pln'          => $variant->price_pln,
             'appointment_at'     => $validated['appointment_at'],
             'status'             => 'zaplanowana',
         ]);
