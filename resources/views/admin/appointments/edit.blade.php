@@ -13,6 +13,14 @@
                 <textarea name="note_internal" id="note_internal" class="w-full p-2 border rounded">{{ old('note_internal', $appointment->note_internal) }}</textarea>
             </div>
             <div class="mb-4">
+                <label for="service_description" class="block font-medium mb-2">Opis usługi:</label>
+                <textarea name="service_description" id="service_description" class="w-full p-2 border rounded">{{ old('service_description', $appointment->service_description) }}</textarea>
+            </div>
+            <div class="mb-4">
+                <label for="products_used" class="block font-medium mb-2">Użyte produkty i proporcje:</label>
+                <textarea name="products_used" id="products_used" class="w-full p-2 border rounded">{{ old('products_used', $appointment->products_used) }}</textarea>
+            </div>
+            <div class="mb-4">
                 <label for="status" class="block font-medium mb-2">Status:</label>
                 <select name="status" id="status" class="w-full p-2 border rounded">
                     <option value="zaplanowana" @selected($appointment->status === 'zaplanowana')>Zaplanowana</option>
