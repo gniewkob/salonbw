@@ -16,6 +16,8 @@ class Appointment extends Model
         'status',
         'note_client',
         'note_internal',
+        'service_description',
+        'products_used',
     ];
 
     protected $casts = [
