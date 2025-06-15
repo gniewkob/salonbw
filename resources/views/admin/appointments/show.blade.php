@@ -16,5 +16,23 @@
                 {{ $appointment->note_client }}
             </div>
         @endif
+        @if($appointment->service_description)
+            <div class="my-4 p-4 rounded bg-blue-100 border-l-4 border-blue-500">
+                <b>Opis usługi:</b><br>
+                {{ $appointment->service_description }}
+            </div>
+        @endif
+        @if($appointment->products_used)
+            <div class="my-4 p-4 rounded bg-purple-100 border-l-4 border-purple-500">
+                <b>Użyte produkty:</b><br>
+                {{ $appointment->products_used }}
+            </div>
+        @endif
+        @if($appointment->note_internal)
+            <div class="my-4 p-4 rounded bg-gray-100 border-l-4 border-gray-500">
+                <b>Notatka fryzjera:</b><br>
+                {{ $appointment->note_internal }}
+            </div>
+        @endif
     </div>
 </x-app-layout>

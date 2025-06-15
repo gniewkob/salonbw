@@ -106,6 +106,8 @@ class AdminAppointmentController extends Controller
             'appointment_at' => 'required|date',
             'price_pln' => 'required|integer|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
+            'service_description' => 'nullable|string',
+            'products_used' => 'nullable|string',
         ]);
         
         // Sprawdzenie czy termin jest w godzinach pracy
@@ -145,6 +147,8 @@ class AdminAppointmentController extends Controller
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => 'zaplanowana',
+            'service_description' => $request->service_description,
+            'products_used' => $request->products_used,
         ]);
         return response()->json(['success' => true, 'id' => $appointment->id]);
     }
@@ -158,6 +162,8 @@ class AdminAppointmentController extends Controller
             'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
             'price_pln' => 'required|integer|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
+            'service_description' => 'nullable|string',
+            'products_used' => 'nullable|string',
         ]);
 
         $newDateTime = Carbon::parse($request->appointment_at);
@@ -185,6 +191,8 @@ class AdminAppointmentController extends Controller
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => $request->status,
+            'service_description' => $request->service_description,
+            'products_used' => $request->products_used,
         ]);
 
         return response()->json(['success' => true]);
