@@ -18,12 +18,15 @@ class Appointment extends Model
         'note_internal',
         'service_description',
         'products_used',
+        'amount_paid_pln',
+        'payment_method',
     ];
 
     protected $casts = [
         'appointment_at' => 'datetime',
         'price_pln' => 'integer',
         'discount_percent' => 'integer',
+        'amount_paid_pln' => 'integer',
     ];
 
     public function user()

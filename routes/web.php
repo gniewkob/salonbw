@@ -88,6 +88,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::patch('/kalendarz/appointments/{appointment}', [AdminAppointmentController::class, 'update'])->name('appointments.updateFull');
     Route::delete('/kalendarz/appointments/{appointment}', [AdminAppointmentController::class, 'destroy'])->name('appointments.destroy');
     Route::post('/kalendarz/store', [AdminAppointmentController::class, 'store'])->name('appointments.store');
+    Route::get('/kalendarz/appointments/{appointment}/history', [AdminAppointmentController::class, 'history'])->name('appointments.history');
+    Route::patch('/kalendarz/appointments/{appointment}/finalize', [AdminAppointmentController::class, 'finalize'])->name('appointments.finalize');
     Route::patch('/kalendarz/{appointment}/cancel', [AdminAppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::patch('/kalendarz/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
     Route::get('/kalendarz/{appointment}', [AdminAppointmentController::class, 'show'])->name('appointments.show');
