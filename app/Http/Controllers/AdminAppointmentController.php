@@ -244,7 +244,49 @@ class AdminAppointmentController extends Controller
             'end' => '18:00',
             'daysOfWeek' => [1, 2, 3, 4, 5, 6], // Poniedziałek-Sobota
         ];
-        
+
         return response()->json($workingHours);
+    }
+
+    // Historia wizyt klienta dla danej wizyty
+    public function history(Appointment $appointment)
+    {
+        $appointments = Appointment::where('user_id', $appointment->user_id)
+            ->orderByDesc('appointment_at')
+            ->get(['id', 'appointment_at'])
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'appointment_at' => $a->appointment_at->format('Y-m-d H:i'),
+                    'service_name' => optional($a->serviceVariant->service)->name,
+                ];
+            });
+
+        return response()->json($appointments);
+    }
+
+    // Finalizacja wizyty
+    public function finalize(Request $request, Appointment $appointment)
+    {
+        $request->validate([
+            'note_client' => 'nullable|string',
+            'note_internal' => 'nullable|string',
+            'service_description' => 'nullable|string',
+            'products_used' => 'nullable|string',
+            'amount_paid_pln' => 'nullable|integer|min:0',
+            'payment_method' => 'nullable|string|max:50',
+        ]);
+
+        $appointment->update([
+            'note_client' => $request->note_client,
+            'note_internal' => $request->note_internal,
+            'service_description' => $request->service_description,
+            'products_used' => $request->products_used,
+            'amount_paid_pln' => $request->amount_paid_pln,
+            'payment_method' => $request->payment_method,
+            'status' => 'odbyta',
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

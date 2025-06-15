@@ -83,7 +83,7 @@ function initializeCalendar() {
         document.body.classList.add('modal-open');
         
         const data = { ...info.event.extendedProps, id: info.event.id };
-        window.dispatchEvent(new CustomEvent('open-edit-modal', { detail: data }));
+        window.dispatchEvent(new CustomEvent('open-view-modal', { detail: data }));
       },
       editable: true,
       eventDrop: function(info) {
