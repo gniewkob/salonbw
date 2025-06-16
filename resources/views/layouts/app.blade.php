@@ -7,6 +7,9 @@
   <title>{{ config('app.name', 'Salon Black&White') }}</title>
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
   @stack('styles')
   @stack('head')
 </head>
