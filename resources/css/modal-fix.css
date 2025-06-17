@@ -16,6 +16,15 @@
   pointer-events: auto !important;
 }
 
+/* Ustawienia dla modali wykorzystywanych na stronie kalendarza */
+#appointmentModal,
+#adminEditModal,
+#adminCreateModal,
+#adminEditFullModal,
+#realizeModal {
+  z-index: 10000 !important;
+}
+
 /* Zapewnienie, że zawartość modalu przechwytuje wszystkie zdarzenia */
 [x-data][x-show="show"] .bg-white {
   position: relative;
@@ -40,6 +49,7 @@ body.modal-open .fc-view-harness.fc-view-harness-active::after {
   pointer-events: auto;
 }
 
+body.modal-open #calendar,
 body.modal-open .fc-event {
   pointer-events: none !important;
 }
