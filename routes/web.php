@@ -120,3 +120,18 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 Route::get('/zarezerwuj', [ReservationEntryController::class, 'index'])->name('reservation.entry');
 
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Fallback Route
+|--------------------------------------------------------------------------
+*/
+Route::fallback(function () {
+    if (auth()->check()) {
+        return redirect()->route(
+            auth()->user()->role === 'admin' ? 'admin.calendar' : 'dashboard'
+        );
+    }
+
+    return redirect('/');
+});
