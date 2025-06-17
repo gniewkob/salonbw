@@ -45,7 +45,7 @@
     {{-- Modal podglądu rezerwacji --}}
     <div
       id="appointmentModal"
-      x-data="viewModal()"
+      x-data="viewModal"
       x-init="init()"
       x-show="open"
       x-cloak
@@ -84,7 +84,7 @@
     {{-- Modal edycji rezerwacji --}}
     <div
       id="adminEditModal"
-      x-data="editModal()"
+      x-data="editModal"
       x-init="init()"
       x-show="open"
       x-cloak
@@ -102,7 +102,7 @@
     {{-- Modal dodawania rezerwacji --}}
     <div
       id="adminCreateModal"
-      x-data="createModal()"
+      x-data="createModal"
       x-init="init()"
       x-show="open"
       x-cloak
@@ -160,7 +160,7 @@
   {{-- Modal pełnej edycji wizyty --}}
   <div
     id="adminEditFullModal"
-    x-data="editFullModal()"
+    x-data="editFullModal"
     x-init="init()"
     x-show="open"
     x-cloak
@@ -231,7 +231,7 @@
   {{-- Modal realizacji wizyty --}}
   <div
     id="realizeModal"
-    x-data="realizeModal()"
+    x-data="realizeModal"
     x-init="init()"
     x-show="open"
     x-cloak
