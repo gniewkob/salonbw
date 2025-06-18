@@ -45,6 +45,12 @@ class AdminAppointmentController extends Controller
                     'service_variant_id' => $appointment->service_variant_id,
                     'price_pln' => $appointment->price_pln,
                     'discount_percent' => $appointment->discount_percent,
+                    'note_client' => $appointment->note_client,
+                    'note_internal' => $appointment->note_internal,
+                    'service_description' => $appointment->service_description,
+                    'products_used' => $appointment->products_used,
+                    'amount_paid_pln' => $appointment->amount_paid_pln,
+                    'payment_method' => $appointment->payment_method,
                 ],
             ];
         });
