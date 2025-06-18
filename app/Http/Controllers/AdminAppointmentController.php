@@ -252,8 +252,9 @@ class AdminAppointmentController extends Controller
     public function history(Appointment $appointment)
     {
         $appointments = Appointment::where('user_id', $appointment->user_id)
+            ->with('serviceVariant.service')
             ->orderByDesc('appointment_at')
-            ->get(['id', 'appointment_at'])
+            ->get(['id', 'appointment_at', 'service_variant_id'])
             ->map(function ($a) {
                 return [
                     'id' => $a->id,
