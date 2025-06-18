@@ -249,7 +249,15 @@
         <h3 class="font-semibold mb-2">Historia wizyt</h3>
         <ul class="text-sm max-h-32 overflow-y-auto list-disc list-inside" >
           <template x-for="h in history" :key="h.id">
-            <li x-text="h.appointment_at + ' - ' + (h.service_name || '')"></li>
+            <li
+              x-text="h.appointment_at + ' - ' + (h.service_name || '')"
+              :title="
+                (h.note_client ? 'Zalecenia: ' + h.note_client + '\n' : '') +
+                (h.note_internal ? 'Notatka: ' + h.note_internal + '\n' : '') +
+                (h.service_description ? 'Opis: ' + h.service_description + '\n' : '') +
+                (h.products_used ? 'Produkty: ' + h.products_used : '')
+              ">
+            </li>
           </template>
         </ul>
       </div>
