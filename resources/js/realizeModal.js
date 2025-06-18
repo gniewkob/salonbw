@@ -31,7 +31,15 @@ export function realizeModal() {
       try {
         const res = await fetch(`/admin/kalendarz/appointments/${this.appointment.id}/history`);
         if (res.ok) {
-          this.history = await res.json();
+          const data = await res.json();
+          this.history = data.map(h => {
+            const parts = [];
+            if (h.note_client) parts.push('Zalecenia: ' + h.note_client);
+            if (h.note_internal) parts.push('Notatka: ' + h.note_internal);
+            if (h.service_description) parts.push('Opis: ' + h.service_description);
+            if (h.products_used) parts.push('Produkty: ' + h.products_used);
+            return { ...h, tooltip: parts.join('\n') || 'Brak dodatkowych informacji' };
+          });
         }
       } catch {
         this.history = [];
