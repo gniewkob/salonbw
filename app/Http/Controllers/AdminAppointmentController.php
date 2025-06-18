@@ -254,12 +254,24 @@ class AdminAppointmentController extends Controller
         $appointments = Appointment::where('user_id', $appointment->user_id)
             ->with('serviceVariant.service')
             ->orderByDesc('appointment_at')
-            ->get(['id', 'appointment_at', 'service_variant_id'])
+            ->get([
+                'id',
+                'appointment_at',
+                'service_variant_id',
+                'note_client',
+                'note_internal',
+                'service_description',
+                'products_used',
+            ])
             ->map(function ($a) {
                 return [
                     'id' => $a->id,
                     'appointment_at' => $a->appointment_at->format('Y-m-d H:i'),
                     'service_name' => optional($a->serviceVariant->service)->name,
+                    'note_client' => $a->note_client,
+                    'note_internal' => $a->note_internal,
+                    'service_description' => $a->service_description,
+                    'products_used' => $a->products_used,
                 ];
             });
 
