@@ -251,13 +251,8 @@
           <template x-for="h in history" :key="h.id">
             <li
               x-text="h.appointment_at + ' - ' + (h.service_name || '')"
-              :title="
-                (h.note_client ? 'Zalecenia: ' + h.note_client + '\n' : '') +
-                (h.note_internal ? 'Notatka: ' + h.note_internal + '\n' : '') +
-                (h.service_description ? 'Opis: ' + h.service_description + '\n' : '') +
-                (h.products_used ? 'Produkty: ' + h.products_used : '')
-              ">
-            </li>
+              :title="h.tooltip"
+            ></li>
           </template>
         </ul>
       </div>
