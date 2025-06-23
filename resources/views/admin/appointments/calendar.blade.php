@@ -255,6 +255,11 @@
             ></li>
           </template>
         </ul>
+        <button
+          x-show="!loadedAllHistory"
+          @click="viewAllHistory()"
+          class="mt-2 text-blue-600 hover:underline"
+        >Pokaż całą historię</button>
       </div>
 
       <label class="block mb-2 text-sm font-medium">Zalecenia dla klienta:</label>

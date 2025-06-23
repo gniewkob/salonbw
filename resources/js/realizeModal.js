@@ -3,6 +3,7 @@ export function realizeModal() {
     open: false,
     appointment: {},
     history: [],
+    loadedAllHistory: false,
     note_client: '',
     note_internal: '',
     amount_paid_pln: '',
@@ -23,13 +24,15 @@ export function realizeModal() {
         this.open = true;
         window.modalIsOpen = true;
         document.body.classList.add('modal-open');
+        this.loadedAllHistory = false;
         this.loadHistory();
       });
       window.addEventListener('force-close-realize-modal', () => this.close());
     },
-    async loadHistory() {
+    async loadHistory(all = false) {
       try {
-        const res = await fetch(`/admin/kalendarz/appointments/${this.appointment.id}/history`);
+        const url = `/admin/kalendarz/appointments/${this.appointment.id}/history` + (all ? '' : '?limit=5');
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           this.history = data.map(h => {
@@ -41,9 +44,14 @@ export function realizeModal() {
             return { ...h, tooltip: parts.join('\n') || 'Brak dodatkowych informacji' };
           });
         }
+        this.loadedAllHistory = all;
       } catch {
         this.history = [];
       }
+    },
+
+    viewAllHistory() {
+      this.loadHistory(true);
     },
     close() {
       this.open = false;
