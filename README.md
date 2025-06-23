@@ -62,10 +62,25 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Setup
 
-Before running the application locally, create the SQLite database file and run the migrations. Skipping these steps will result in errors such as the missing `contact_info` table.
+Install the PHP and JavaScript dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables, such as the `HCAPTCHA_SITEKEY`.
 
 ```bash
+cp .env.example .env
+# set APP_KEY and HCAPTCHA_SITEKEY in .env
+
+composer install
+npm install
+npm run build
+
 touch database/database.sqlite
 php artisan migrate
+```
+
+Once the application is set up, execute the test suite to ensure everything works correctly:
+
+```bash
+php artisan test
+# or
+composer test
 ```
 
