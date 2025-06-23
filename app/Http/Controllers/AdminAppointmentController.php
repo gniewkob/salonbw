@@ -255,12 +255,19 @@ class AdminAppointmentController extends Controller
     }
 
     // Historia wizyt klienta dla danej wizyty
-    public function history(Appointment $appointment)
+    public function history(Request $request, Appointment $appointment)
     {
-        $appointments = Appointment::where('user_id', $appointment->user_id)
+        $limit = (int) $request->query('limit', 5);
+
+        $query = Appointment::where('user_id', $appointment->user_id)
             ->with('serviceVariant.service')
-            ->orderByDesc('appointment_at')
-            ->get([
+            ->orderByDesc('appointment_at');
+
+        if ($limit > 0) {
+            $query->limit($limit);
+        }
+
+        $appointments = $query->get([
                 'id',
                 'appointment_at',
                 'service_variant_id',
