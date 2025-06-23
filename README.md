@@ -62,11 +62,11 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Setup
 
-Install the PHP and JavaScript dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables, such as the `HCAPTCHA_SITEKEY`.
+Install the PHP and JavaScript dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables.
 
 ```bash
 cp .env.example .env
-# set APP_KEY and HCAPTCHA_SITEKEY in .env
+# set APP_KEY in .env
 
 composer install
 npm install
