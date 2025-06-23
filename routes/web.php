@@ -133,5 +133,5 @@ Route::fallback(function () {
         );
     }
 
-    return redirect('/');
+    return response()->view('errors.404', [], 404);
 });

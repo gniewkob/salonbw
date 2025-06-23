@@ -28,11 +28,12 @@ class FallbackRedirectTest extends TestCase
         $response->assertRedirect(route('admin.calendar', absolute: false));
     }
 
-    public function test_invalid_url_redirects_guest_home(): void
+    public function test_invalid_url_returns_not_found_for_guest(): void
     {
         $response = $this->get('/invalid');
 
-        $response->assertRedirect('/');
+        $response->assertStatus(404);
+        $response->assertViewIs('errors.404');
     }
 }
 
