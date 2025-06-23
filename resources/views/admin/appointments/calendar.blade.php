@@ -235,8 +235,8 @@
     x-init="init()"
     x-show="open"
     x-cloak
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-lg overflow-y-auto max-h-full">
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 sm:p-6">
+    <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-lg overflow-y-auto max-h-[90vh]">
       <h2 class="text-lg font-bold mb-4">Realizacja wizyty</h2>
 
       <div class="mb-4">
