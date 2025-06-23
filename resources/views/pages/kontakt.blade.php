@@ -81,9 +81,9 @@
 				<label for="website">Zostaw to pole puste</label>
 				<input type="text" name="website" id="website" value="">
 			</div>
-			<div class="my-4">
-				<div class="h-captcha" data-sitekey="889a7134-60d2-45d2-9784-a2aeeedaac6a"></div>
-			</div>
+                        <div class="my-4">
+                                <div class="h-captcha" data-sitekey="{{ env('HCAPTCHA_SITEKEY') }}"></div>
+                        </div>
 			<button type="submit"
 				class="bg-gray-900 text-white px-6 py-2 rounded hover:bg-gray-700 transition w-full">
 				Wyślij wiadomość
