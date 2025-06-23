@@ -32,3 +32,20 @@ Alpine.start();
 
 // Calendar po Alpine!
 import './calendar';
+
+import Swiper from 'swiper/bundle';
+import 'swiper/css/bundle';
+
+document.addEventListener('DOMContentLoaded', () => {
+    new Swiper('.hero-swiper', {
+        loop: true,
+        effect: 'fade',
+        autoplay: {
+            delay: 5000,
+        },
+        pagination: {
+            el: '.hero-swiper .swiper-pagination',
+            clickable: true,
+        },
+    });
+});
