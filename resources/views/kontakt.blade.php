@@ -143,17 +143,33 @@
                         </div>
                     </div>
                     
-                    <!-- Mapa Google -->
-                    @if($contactInfo->google_maps_url)
-                        <div class="mt-8">
-                            <h3 class="text-lg font-semibold mb-2">Jak do nas trafić</h3>
-                            <div class="aspect-w-16 aspect-h-9">
-                                <iframe src="{{ $contactInfo->google_maps_url }}" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                            </div>
+                    <!-- Mapa -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold mb-2">Jak do nas trafić</h3>
+                        <div class="aspect-w-16 aspect-h-9">
+                            <div id="map" class="w-full h-full rounded"></div>
                         </div>
-                    @endif
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const lat = {{ $contactInfo->latitude ?? 'null' }};
+            const lng = {{ $contactInfo->longitude ?? 'null' }};
+            if (lat && lng && L) {
+                const map = L.map('map').setView([lat, lng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(@json($contactInfo->address_line1))
+                    .openPopup();
+            }
+        });
+    </script>
+@endpush

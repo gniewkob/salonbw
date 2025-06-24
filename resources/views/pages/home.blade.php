@@ -147,12 +147,26 @@
                 <a href="{{ route('kontakt') }}" class="text-indigo-600 hover:underline">Więcej informacji</a>
             </div>
             <div>
-                @if($contactInfo->google_maps_url)
-                    <iframe src="{{ $contactInfo->google_maps_url }}" width="100%" height="256" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="w-full h-64 object-cover rounded"></iframe>
-                @else
-                    <img src="https://source.unsplash.com/random/600x400?map" alt="Mapa" class="w-full h-64 object-cover rounded" loading="lazy">
-                @endif
+                <div id="map" class="w-full h-64 rounded"></div>
             </div>
         </div>
     </section>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const lat = {{ $contactInfo->latitude ?? 'null' }};
+                const lng = {{ $contactInfo->longitude ?? 'null' }};
+                if (lat && lng && L) {
+                    const map = L.map('map').setView([lat, lng], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup(@json($contactInfo->address_line1))
+                        .openPopup();
+                }
+            });
+        </script>
+    @endpush
 </x-guest-layout>
