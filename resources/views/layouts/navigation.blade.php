@@ -1,26 +1,28 @@
-<nav class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 py-3">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            {{-- Lewa sekcja --}}
-            <div class="flex flex-wrap items-center gap-6">
+<nav x-data="{ open: false }" class="bg-white border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+            <div class="flex items-center">
                 <a href="{{ route('home') }}" class="font-bold text-lg flex items-center">
                     <x-heroicon-o-home class="w-5 h-5 mr-1 text-gray-700" />
                     Salon Black&White
                 </a>
-                <a href="{{ route('uslugi') }}" class="flex items-center text-gray-700 hover:underline">
-                    <x-heroicon-o-scissors class="w-5 h-5 mr-1 text-gray-500" />
-                    Usługi
-                </a>
-                <a href="{{ route('kontakt') }}" class="flex items-center text-gray-700 hover:underline">
-                    <x-heroicon-o-envelope class="w-5 h-5 mr-1 text-gray-500" />
-                    Kontakt
-                </a>
+                <div class="hidden md:flex space-x-6 ml-6">
+                    <a href="{{ route('uslugi') }}" class="text-gray-700 hover:text-indigo-600">Usługi</a>
+                    <a href="{{ route('team') }}" class="text-gray-700 hover:text-indigo-600">Zespół</a>
+                    <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-indigo-600">Galeria</a>
+                    <a href="{{ route('faq') }}" class="text-gray-700 hover:text-indigo-600">FAQ</a>
+                    <a href="{{ route('kontakt') }}" class="text-gray-700 hover:text-indigo-600">Kontakt</a>
+                </div>
             </div>
-
-            {{-- Prawa sekcja --}}
-            <div class="flex items-center gap-4">
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('reservation.entry') }}" class="hidden md:inline-block bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition">Rezerwuj</a>
+                <button @click="open = !open" class="md:hidden focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
+                    </svg>
+                </button>
                 @auth
-                    <form method="POST" action="{{ route('logout') }}" class="flex items-center">
+                    <form method="POST" action="{{ route('logout') }}" class="hidden md:inline-flex items-center">
                         @csrf
                         <button type="submit" class="text-red-600 hover:underline flex items-center">
                             <x-heroicon-o-arrow-left-on-rectangle class="w-5 h-5 mr-1" />
@@ -28,21 +30,36 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('register') }}" class="hover:underline flex items-center">
+                    <a href="{{ route('register') }}" class="hidden md:inline-flex hover:underline items-center">
                         <x-heroicon-o-user-plus class="w-5 h-5 mr-1" />
-                        Zarejestruj się
+                        Rejestracja
                     </a>
-                    <a href="{{ route('login') }}" class="hover:underline flex items-center">
+                    <a href="{{ route('login') }}" class="hidden md:inline-flex hover:underline items-center">
                         <x-heroicon-o-arrow-right-on-rectangle class="w-5 h-5 mr-1" />
-                        Zaloguj się
+                        Logowanie
                     </a>
                 @endauth
             </div>
         </div>
-
-        {{-- Linki użytkownika/admina --}}
+        <div x-show="open" class="md:hidden pb-4 space-y-2">
+            <a href="{{ route('uslugi') }}" class="block text-gray-700">Usługi</a>
+            <a href="{{ route('team') }}" class="block text-gray-700">Zespół</a>
+            <a href="{{ route('gallery') }}" class="block text-gray-700">Galeria</a>
+            <a href="{{ route('faq') }}" class="block text-gray-700">FAQ</a>
+            <a href="{{ route('kontakt') }}" class="block text-gray-700">Kontakt</a>
+            <a href="{{ route('reservation.entry') }}" class="block text-indigo-600 font-semibold">Rezerwuj</a>
+            @auth
+                <form method="POST" action="{{ route('logout') }}" class="block">
+                    @csrf
+                    <button type="submit" class="text-red-600 underline">Wyloguj</button>
+                </form>
+            @else
+                <a href="{{ route('register') }}" class="block">Rejestracja</a>
+                <a href="{{ route('login') }}" class="block">Logowanie</a>
+            @endauth
+        </div>
         @auth
-        <div class="mt-4 pt-2 border-t flex flex-wrap gap-6 text-sm">
+        <div class="hidden md:flex mt-4 pt-2 border-t flex-wrap gap-6 text-sm">
             @if(Auth::user()->role === 'admin')
                 <a href="{{ route('admin.services.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-cog class="w-4 h-4 mr-1 text-gray-500" />
