@@ -79,7 +79,7 @@ pipelines:
             - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && rm -rf bootstrap/cache/*.php"
             - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && rm -rf storage/framework/sessions/*"
             - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw && touch storage/framework/down && sleep 2 && rm storage/framework/down"
-            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/ && devil www restart"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/ && devil www restart dev.salon-bw.pl"
             - echo "Kompleksowe czyszczenie cache, sesji i restart zakończone pomyślnie."
             - echo "Konfiguracja sesji została naprawiona - błąd 419 Page Expired powinien zostać rozwiązany."
 
