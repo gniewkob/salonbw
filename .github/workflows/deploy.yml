@@ -77,5 +77,5 @@ jobs:
             rm -rf bootstrap/cache/*.php
             rm -rf storage/framework/sessions/*
             touch storage/framework/down && sleep 2 && rm storage/framework/down
-            devil www restart
+            devil www restart dev.salon-bw.pl
           EOSSH
