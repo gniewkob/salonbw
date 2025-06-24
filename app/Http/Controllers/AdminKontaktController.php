@@ -91,6 +91,8 @@ class AdminKontaktController extends Controller
             'facebook_url' => 'nullable|url|max:255',
             'instagram_url' => 'nullable|url|max:255',
             'google_maps_url' => 'nullable|url|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'working_hours.*.0' => 'nullable|date_format:H:i',
             'working_hours.*.1' => 'nullable|date_format:H:i|after:working_hours.*.0',
         ], [
@@ -132,6 +134,8 @@ class AdminKontaktController extends Controller
             'facebook_url' => $request->facebook_url,
             'instagram_url' => $request->instagram_url,
             'google_maps_url' => $request->google_maps_url,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         return redirect()->route('admin.kontakt.edit')->with('success', 'Dane kontaktowe zostały zaktualizowane.');

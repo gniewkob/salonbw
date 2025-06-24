@@ -199,11 +199,37 @@
                         <div class="sm:col-span-6">
                             <label for="google_maps_url" class="block text-sm font-medium text-gray-700">Google Maps URL</label>
                             <div class="mt-1">
-                                <input type="url" name="google_maps_url" id="google_maps_url" 
-                                    value="{{ old('google_maps_url', $contactInfo->google_maps_url) }}" 
+                                <input type="url" name="google_maps_url" id="google_maps_url"
+                                    value="{{ old('google_maps_url', $contactInfo->google_maps_url) }}"
                                     class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
                             </div>
                             @error('google_maps_url')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Latitude -->
+                        <div class="sm:col-span-3">
+                            <label for="latitude" class="block text-sm font-medium text-gray-700">Szerokość (lat)</label>
+                            <div class="mt-1">
+                                <input type="text" name="latitude" id="latitude"
+                                    value="{{ old('latitude', $contactInfo->latitude) }}"
+                                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('latitude')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Longitude -->
+                        <div class="sm:col-span-3">
+                            <label for="longitude" class="block text-sm font-medium text-gray-700">Długość (lng)</label>
+                            <div class="mt-1">
+                                <input type="text" name="longitude" id="longitude"
+                                    value="{{ old('longitude', $contactInfo->longitude) }}"
+                                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('longitude')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
