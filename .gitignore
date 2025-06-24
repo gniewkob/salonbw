@@ -77,3 +77,4 @@ tailwindcss
 
 # Generated output files
 output_tree*.txt
+.env.bak
