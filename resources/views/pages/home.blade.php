@@ -127,18 +127,31 @@
         </div>
     </section>
 
+    @php
+        $contactInfo = \App\Models\ContactInfo::getDefault();
+        $mondayHours = $contactInfo->working_hours['monday'] ?? null;
+    @endphp
     <section class="py-16">
         <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-8">
             <div>
                 <h2 class="text-3xl font-bold mb-4">Kontakt</h2>
-                <p class="mb-2">Przykładowa 1</p>
-                <p class="mb-2">00-000 Miasto</p>
-                <p class="mb-2">Tel: <a href="tel:+48111222333" class="text-indigo-600 hover:underline">+48 111 222 333</a></p>
-                <p class="mb-2">Godziny otwarcia: 9:00-18:00</p>
+                <p class="mb-2">{{ $contactInfo->address_line1 }}</p>
+                @if($contactInfo->address_line2)
+                    <p class="mb-2">{{ $contactInfo->address_line2 }}</p>
+                @endif
+                <p class="mb-2">{{ $contactInfo->postal_code }} {{ $contactInfo->city }}</p>
+                <p class="mb-2">Tel: <a href="tel:{{ $contactInfo->phone }}" class="text-indigo-600 hover:underline">{{ $contactInfo->phone }}</a></p>
+                @if($mondayHours && is_array($mondayHours))
+                    <p class="mb-2">Godziny otwarcia: {{ $mondayHours[0] }}-{{ $mondayHours[1] }}</p>
+                @endif
                 <a href="{{ route('kontakt') }}" class="text-indigo-600 hover:underline">Więcej informacji</a>
             </div>
             <div>
-                <img src="https://source.unsplash.com/random/600x400?map" alt="Mapa" class="w-full h-64 object-cover rounded" loading="lazy">
+                @if($contactInfo->google_maps_url)
+                    <iframe src="{{ $contactInfo->google_maps_url }}" width="100%" height="256" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="w-full h-64 object-cover rounded"></iframe>
+                @else
+                    <img src="https://source.unsplash.com/random/600x400?map" alt="Mapa" class="w-full h-64 object-cover rounded" loading="lazy">
+                @endif
             </div>
         </div>
     </section>
