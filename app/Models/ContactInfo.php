@@ -34,6 +34,8 @@ class ContactInfo extends Model
         'facebook_url',
         'instagram_url',
         'google_maps_url',
+        'latitude',
+        'longitude',
     ];
 
     /**
@@ -63,6 +65,8 @@ class ContactInfo extends Model
                 'phone' => '+48 123 456 789',
                 'email' => 'kontakt@salon-bw.pl',
                 'google_maps_url' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2563.0658784063153!2d18.91093751598082!3d50.34623847946937!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47113061f0f77f11%3A0x39e236ec244bcabb!2sBytom!5e0!3m2!1spl!2spl!4v1618312782107!5m2!1spl!2spl',
+                'latitude' => 50.346238,
+                'longitude' => 18.910938,
                 'working_hours' => [
                     'monday' => ['09:00', '18:00'],
                     'tuesday' => ['09:00', '18:00'],
