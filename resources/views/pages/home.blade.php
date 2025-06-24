@@ -63,20 +63,6 @@
         </div>
     </section>
 
-    <section class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-8">Nasz zespół</h2>
-            <div class="grid md:grid-cols-3 gap-6 text-center">
-                @foreach(range(1,3) as $i)
-                    <div>
-                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=300&q=60" alt="Pracownik" class="mx-auto rounded-full w-40 h-40 object-cover mb-4" loading="lazy">
-                        <h3 class="font-semibold">Imię Nazwisko</h3>
-                        <p class="text-sm text-gray-500">Stylista</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
 
     <section class="py-16">
         <div class="max-w-7xl mx-auto px-4">
