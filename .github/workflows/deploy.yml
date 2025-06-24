@@ -73,7 +73,6 @@ jobs:
             /home/vetternkraft/bin/php artisan route:clear
             /home/vetternkraft/bin/php artisan cache:clear
             /home/vetternkraft/bin/php artisan view:clear
-            /home/vetternkraft/bin/php artisan session:flush
             /home/vetternkraft/bin/php artisan queue:restart
             rm -rf bootstrap/cache/*.php
             rm -rf storage/framework/sessions/*
