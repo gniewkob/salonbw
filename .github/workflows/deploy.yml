@@ -60,13 +60,13 @@ jobs:
             fi
             cd $REMOTE_PATH
             grep -q '^APP_URL=' .env || echo 'APP_URL=https://dev.salon-bw.pl' >> .env
-            sed -i 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env
+            sed -i'' 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env
             grep -q '^SESSION_DOMAIN=' .env || echo 'SESSION_DOMAIN=dev.salon-bw.pl' >> .env
-            sed -i 's|^SESSION_DOMAIN=.*|SESSION_DOMAIN=dev.salon-bw.pl|' .env
+            sed -i'' 's|^SESSION_DOMAIN=.*|SESSION_DOMAIN=dev.salon-bw.pl|' .env
             grep -q '^SESSION_SECURE_COOKIE=' .env || echo 'SESSION_SECURE_COOKIE=true' >> .env
-            sed -i 's|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=true|' .env
+            sed -i'' 's|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=true|' .env
             grep -q '^SESSION_SAME_SITE=' .env || echo 'SESSION_SAME_SITE=lax' >> .env
-            sed -i 's|^SESSION_SAME_SITE=.*|SESSION_SAME_SITE=lax|' .env
+            sed -i'' 's|^SESSION_SAME_SITE=.*|SESSION_SAME_SITE=lax|' .env
             /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload
             /home/vetternkraft/bin/php artisan optimize:clear
             /home/vetternkraft/bin/php artisan config:clear
