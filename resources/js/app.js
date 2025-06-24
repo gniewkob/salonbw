@@ -48,4 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
             clickable: true,
         },
     });
+
+    new Swiper('.testimonial-swiper', {
+        loop: true,
+        autoplay: {
+            delay: 7000,
+        },
+        pagination: {
+            el: '.testimonial-swiper .swiper-pagination',
+            clickable: true,
+        },
+    });
 });

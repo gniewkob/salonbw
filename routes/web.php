@@ -22,6 +22,10 @@ Route::get('/uslugi', function () {
     return view('pages.uslugi', compact('services'));
 })->name('uslugi');
 
+Route::view('/team', 'pages.team')->name('team');
+Route::view('/galeria', 'pages.gallery')->name('gallery');
+Route::view('/faq', 'pages.faq')->name('faq');
+
 Route::get('/kontakt', function () {
     return view('kontakt');
 })->name('kontakt');
