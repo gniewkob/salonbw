@@ -8,6 +8,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationEntryController;
+use App\Http\Controllers\GalleryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,14 +16,17 @@ use Illuminate\Support\Facades\Route;
 | Strony publiczne
 |--------------------------------------------------------------------------
 */
-Route::get('/', fn () => view('pages.home'))->name('home');
+Route::get('/', function (GalleryController $gallery) {
+    $instagramPhotos = $gallery->latest();
+    return view('pages.home', compact('instagramPhotos'));
+})->name('home');
 
 Route::get('/uslugi', function () {
     $services = \App\Models\Service::with('variants')->orderBy('name')->get();
     return view('pages.uslugi', compact('services'));
 })->name('uslugi');
 
-Route::view('/galeria', 'pages.gallery')->name('gallery');
+Route::get('/galeria', [GalleryController::class, 'index'])->name('gallery');
 Route::view('/faq', 'pages.faq')->name('faq');
 
 Route::get('/kontakt', function () {
