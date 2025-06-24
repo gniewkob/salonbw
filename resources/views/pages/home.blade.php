@@ -75,9 +75,6 @@
                     </div>
                 @endforeach
             </div>
-            <div class="text-center mt-8">
-                <a href="{{ route('team') }}" class="text-indigo-600 hover:underline">Poznaj cały zespół</a>
-            </div>
         </div>
     </section>
 

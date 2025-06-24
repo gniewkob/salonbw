@@ -8,7 +8,6 @@
                 </a>
                 <div class="hidden md:flex space-x-6 ml-6">
                     <a href="{{ route('uslugi') }}" class="text-gray-700 hover:text-indigo-600">Usługi</a>
-                    <a href="{{ route('team') }}" class="text-gray-700 hover:text-indigo-600">Zespół</a>
                     <a href="{{ route('gallery') }}" class="text-gray-700 hover:text-indigo-600">Galeria</a>
                     <a href="{{ route('faq') }}" class="text-gray-700 hover:text-indigo-600">FAQ</a>
                     <a href="{{ route('kontakt') }}" class="text-gray-700 hover:text-indigo-600">Kontakt</a>
@@ -43,7 +42,6 @@
         </div>
         <div x-show="open" class="md:hidden pb-4 space-y-2">
             <a href="{{ route('uslugi') }}" class="block text-gray-700">Usługi</a>
-            <a href="{{ route('team') }}" class="block text-gray-700">Zespół</a>
             <a href="{{ route('gallery') }}" class="block text-gray-700">Galeria</a>
             <a href="{{ route('faq') }}" class="block text-gray-700">FAQ</a>
             <a href="{{ route('kontakt') }}" class="block text-gray-700">Kontakt</a>
