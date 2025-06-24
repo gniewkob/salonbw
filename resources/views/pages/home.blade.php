@@ -82,11 +82,13 @@
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="text-3xl font-bold text-center mb-8">Galeria</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                @foreach(range(1,6) as $i)
-                    <a href="https://source.unsplash.com/random/800x600?hair,{{ $i }}" target="_blank">
-                        <img src="https://source.unsplash.com/random/400x300?hair,{{ $i }}" alt="Galeria" class="w-full h-48 object-cover rounded" loading="lazy">
+                @forelse($instagramPhotos ?? [] as $photo)
+                    <a href="{{ $photo['permalink'] }}" target="_blank">
+                        <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
                     </a>
-                @endforeach
+                @empty
+                    <p class="col-span-3 text-center text-gray-500">Zdjęcia wkrótce.</p>
+                @endforelse
             </div>
             <div class="text-center mt-8">
                 <a href="{{ route('gallery') }}" class="text-indigo-600 hover:underline">Zobacz więcej zdjęć</a>
