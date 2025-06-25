@@ -5,6 +5,7 @@
             @foreach($media as $item)
                 <a href="{{ $item['permalink'] }}" target="_blank">
                     @if(($item['media_type'] ?? '') === 'VIDEO')
+                        <video autoplay muted loop playsinline class="w-full h-60 object-cover rounded" preload="none">
                             <source src="{{ $item['media_url'] }}" type="video/mp4">
                             <img src="{{ $item['thumbnail_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded">
                         </video>
