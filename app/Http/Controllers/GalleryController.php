@@ -10,7 +10,7 @@ class GalleryController extends Controller
     private function fetchMedia(?string $after = null, int $limit = 9)
     {
         $params = [
-            'fields' => 'id,caption,media_url,permalink,thumbnail_url',
+            'fields' => 'id,caption,media_url,permalink,thumbnail_url,media_type',
             'access_token' => config('services.instagram.token'),
             'limit' => $limit,
         ];
