@@ -78,7 +78,7 @@ class ContactInfo extends Model
                     'sunday' => null,
                 ],
             ]);
-        }
+        } else {
             $contactInfo->update([
                 'latitude' => 50.346238,
                 'longitude' => 18.910938,
