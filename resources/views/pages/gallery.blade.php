@@ -42,7 +42,6 @@
                                             video.muted = true;
                                             video.loop = true;
                                             video.playsInline = true;
-                                            video.preload = 'auto';
                                             video.poster = item.thumbnail_url || '';
                                             video.className = 'w-full h-60 object-cover rounded';
                                             const source = document.createElement('source');

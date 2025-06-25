@@ -81,6 +81,7 @@
                 @forelse($instagramPhotos ?? [] as $photo)
                     <a href="{{ $photo['permalink'] }}" target="_blank">
                         @if(($photo['media_type'] ?? '') === 'VIDEO')
+
                                 <source src="{{ $photo['media_url'] }}" type="video/mp4">
                                 <img src="{{ $photo['thumbnail_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded">
                             </video>
