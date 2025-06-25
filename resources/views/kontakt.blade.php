@@ -7,10 +7,7 @@
                         <!-- Informacje kontaktowe -->
                         <div>
                             <h2 class="text-2xl font-bold mb-4">Kontakt</h2>
-                            
-                            @php
-                                $contactInfo = \App\Models\ContactInfo::getDefault();
-                            @endphp
+
                             
                             <div class="mb-4">
                                 <h3 class="text-lg font-semibold">{{ $contactInfo->salon_name ?? 'Salon Beauty & Wellness' }}</h3>
