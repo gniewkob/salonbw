@@ -143,9 +143,7 @@
                     <!-- Mapa -->
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold mb-2">Jak do nas trafić</h3>
-                        <div class="aspect-w-16 aspect-h-9">
-                            <div id="map" class="w-full h-full rounded"></div>
-                        </div>
+                        <div id="map" class="w-full h-64 rounded"></div>
                     </div>
                 </div>
             </div>
