@@ -7,6 +7,7 @@ import { editModal }   from './editModal';
 import { editFullModal } from './editFullModal';
 import { realizeModal } from './realizeModal';
 import { initMap } from './map';
+import { appointmentForm } from './appointmentForm';
 
 // Uniwersalna funkcja zamykająca oba modale
 window.closeAllModals = function() {
@@ -27,6 +28,7 @@ Alpine.data('viewModal', viewModal);
 Alpine.data('editModal', editModal);
 Alpine.data('editFullModal', editFullModal);
 Alpine.data('realizeModal', realizeModal);
+Alpine.data('appointmentForm', appointmentForm);
 
 window.Alpine = Alpine;
 Alpine.start();
