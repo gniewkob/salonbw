@@ -60,9 +60,13 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
+## Requirements
+
+Running the application requires PHP 8.2 or later with the DOM and XML extensions enabled. Make sure the `composer` command is available on your system.
+
 ## Setup
 
-Install the PHP and JavaScript dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables.
+Install the dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables.
 
 ```bash
 cp .env.example .env
@@ -76,11 +80,9 @@ touch database/database.sqlite
 php artisan migrate
 ```
 
-Once the application is set up, execute the test suite to ensure everything works correctly:
+Run the test suite to ensure everything works correctly:
 
 ```bash
-php artisan test
-# or
 composer test
 ```
 
