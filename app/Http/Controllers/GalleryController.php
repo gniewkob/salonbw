@@ -10,7 +10,7 @@ class GalleryController extends Controller
     private function fetchMedia(?string $after = null, int $limit = 9)
     {
         $params = [
-            'fields' => 'id,caption,media_url,permalink,thumbnail_url,media_type,children',
+            'fields' => 'id,caption,media_url,permalink,thumbnail_url,media_type',
             'access_token' => config('services.instagram.token'),
             'limit' => $limit,
         ];
@@ -26,19 +26,6 @@ class GalleryController extends Controller
 
         $data = $response->json();
 
-        foreach (($data['data'] ?? []) as &$item) {
-            if (($item['media_type'] ?? '') === 'CAROUSEL_ALBUM' && isset($item['id'])) {
-                $childRes = Http::get("https://graph.instagram.com/{$item['id']}/children", [
-                    'fields' => 'id,media_type,media_url,thumbnail_url',
-                    'access_token' => config('services.instagram.token'),
-                ]);
-                if ($childRes->ok()) {
-                    $item['children'] = $childRes->json('data') ?? [];
-                } else {
-                    $item['children'] = [];
-                }
-            }
-        }
 
         return $data;
     }
