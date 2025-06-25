@@ -288,6 +288,6 @@
   </div>
 
   @push('scripts')
-    @vite(['resources/css/app.css','resources/js/app.js'])
+    @vite('resources/js/calendar.js')
   @endpush
 </x-app-layout>

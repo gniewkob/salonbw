@@ -30,8 +30,6 @@ Alpine.data('realizeModal', realizeModal);
 window.Alpine = Alpine;
 Alpine.start();
 
-// Calendar po Alpine!
-import './calendar';
 
 import Swiper from 'swiper/bundle';
 import 'swiper/css/bundle';
