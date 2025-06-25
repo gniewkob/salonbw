@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class ContactInfo extends Model
 {
@@ -78,9 +79,6 @@ class ContactInfo extends Model
                 ],
             ]);
         }
-
-        // Ensure existing record has coordinates
-        elseif (is_null($contactInfo->latitude) || is_null($contactInfo->longitude)) {
             $contactInfo->update([
                 'latitude' => 50.346238,
                 'longitude' => 18.910938,
