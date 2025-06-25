@@ -6,6 +6,7 @@ import { viewModal }   from './viewModal';
 import { editModal }   from './editModal';
 import { editFullModal } from './editFullModal';
 import { realizeModal } from './realizeModal';
+import { initMap } from './map';
 
 // Uniwersalna funkcja zamykająca oba modale
 window.closeAllModals = function() {
@@ -29,6 +30,9 @@ Alpine.data('realizeModal', realizeModal);
 
 window.Alpine = Alpine;
 Alpine.start();
+
+// Expose map initialization globally
+window.initMap = initMap;
 
 
 import Swiper from 'swiper/bundle';
