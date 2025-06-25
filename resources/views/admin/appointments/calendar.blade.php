@@ -59,6 +59,9 @@
             <p class="mb-2"><strong>Wariant:</strong>  <span x-text="appointment.variant"></span></p>
             <p class="mb-2"><strong>Termin:</strong>   <span x-text="appointment.datetime"></span></p>
             <p class="mb-2"><strong>Status:</strong>   <span x-text="appointment.status"></span></p>
+            <template x-if="appointment.note_user">
+              <p class="mb-2"><strong>Uwagi klienta:</strong> <span x-text="appointment.note_user"></span></p>
+            </template>
           </div>
         </template>
         <div class="mt-4 text-right">
@@ -139,6 +142,9 @@
         <label class="block mb-2 text-sm font-medium">Rabat (%):</label>
         <input type="number" x-model="discount_percent" min="0" max="100" class="w-full mb-4 border rounded px-2 py-1">
 
+        <label class="block mb-2 text-sm font-medium">Uwagi klienta:</label>
+        <textarea x-model="note_user" class="w-full mb-4 border rounded px-2 py-1"></textarea>
+
         <label class="block mb-2 text-sm font-medium">Cena (zł):</label>
         <input type="number" x-model="price" class="w-full mb-4 border rounded px-2 py-1" readonly>
 
@@ -197,6 +203,9 @@
       <label class="block mb-2 text-sm font-medium">Rabat (%):</label>
       <input type="number" x-model="discount_percent" min="0" max="100" class="w-full mb-4 border rounded px-2 py-1">
 
+      <label class="block mb-2 text-sm font-medium">Uwagi klienta:</label>
+      <textarea x-model="note_user" class="w-full mb-4 border rounded px-2 py-1"></textarea>
+
       <label class="block mb-2 text-sm font-medium">Cena (zł):</label>
       <input type="number" x-model="price" class="w-full mb-4 border rounded px-2 py-1" readonly>
 
@@ -243,6 +252,9 @@
         <p><strong>Klient:</strong> <span x-text="appointment.user"></span></p>
         <p><strong>Usługa:</strong> <span x-text="appointment.service"></span> - <span x-text="appointment.variant"></span></p>
         <p><strong>Termin:</strong> <span x-text="appointment.datetime"></span></p>
+        <template x-if="appointment.note_user">
+          <p><strong>Uwagi klienta:</strong> <span x-text="appointment.note_user"></span></p>
+        </template>
       </div>
 
       <div class="mb-4">

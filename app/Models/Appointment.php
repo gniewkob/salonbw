@@ -12,6 +12,7 @@ class Appointment extends Model
         'service_variant_id',
         'price_pln',
         'discount_percent',
+        'note_user',
         'appointment_at',
         'status',
         'note_client',
