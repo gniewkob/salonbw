@@ -46,6 +46,22 @@ class AppointmentController extends Controller
 
         $variant = ServiceVariant::with('service')->findOrFail($validated['service_variant_id']);
 
+        // Sprawdzenie czy termin jest wolny
+        $start = new \Carbon\Carbon($validated['appointment_at']);
+        $end   = (clone $start)->addMinutes($variant->duration_minutes);
+
+        $existing = Appointment::with('serviceVariant')
+            ->whereDate('appointment_at', $start->toDateString())
+            ->get();
+
+        foreach ($existing as $appt) {
+            $apptEnd = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes);
+            if ($start < $apptEnd && $end > $appt->appointment_at) {
+                return back()->withErrors(['appointment_at' => 'Wybrany termin jest już zajęty.'])
+                    ->withInput();
+            }
+        }
+
         $price = $variant->price_pln;
 
         Appointment::create([
@@ -59,6 +75,19 @@ class AppointmentController extends Controller
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Rezerwacja została zapisana.');
+    }
+
+    public function busyTimes()
+    {
+        $appointments = Appointment::with('serviceVariant')->get();
+
+        return $appointments->map(function ($appt) {
+            $end = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes ?? 60);
+            return [
+                'start' => $appt->appointment_at,
+                'end'   => $end,
+            ];
+        });
     }
 
     public function index()
