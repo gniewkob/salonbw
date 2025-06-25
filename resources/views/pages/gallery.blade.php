@@ -4,7 +4,14 @@
         <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 gap-4">
             @foreach($media as $item)
                 <a href="{{ $item['permalink'] }}" target="_blank">
-                    <img src="{{ $item['media_url'] }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded" loading="lazy">
+                    @if(($item['media_type'] ?? '') === 'VIDEO')
+                        <video controls poster="{{ $item['thumbnail_url'] ?? '' }}" class="w-full h-60 object-cover rounded" preload="none">
+                            <source src="{{ $item['media_url'] }}" type="video/mp4">
+                            <img src="{{ $item['thumbnail_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded">
+                        </video>
+                    @else
+                        <img src="{{ $item['media_url'] }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded" loading="lazy">
+                    @endif
                 </a>
             @endforeach
         </div>
@@ -29,12 +36,29 @@
                                         const a = document.createElement('a');
                                         a.href = item.permalink;
                                         a.target = '_blank';
-                                        const img = document.createElement('img');
-                                        img.src = item.media_url;
-                                        img.alt = item.caption || '';
-                                        img.className = 'w-full h-60 object-cover rounded';
-                                        img.loading = 'lazy';
-                                        a.appendChild(img);
+                                        if (item.media_type === 'VIDEO') {
+                                            const video = document.createElement('video');
+                                            video.controls = true;
+                                            video.poster = item.thumbnail_url || '';
+                                            video.className = 'w-full h-60 object-cover rounded';
+                                            const source = document.createElement('source');
+                                            source.src = item.media_url;
+                                            source.type = 'video/mp4';
+                                            video.appendChild(source);
+                                            const imgFallback = document.createElement('img');
+                                            imgFallback.src = item.thumbnail_url || '';
+                                            imgFallback.alt = item.caption || '';
+                                            imgFallback.className = 'w-full h-60 object-cover rounded';
+                                            video.appendChild(imgFallback);
+                                            a.appendChild(video);
+                                        } else {
+                                            const img = document.createElement('img');
+                                            img.src = item.media_url;
+                                            img.alt = item.caption || '';
+                                            img.className = 'w-full h-60 object-cover rounded';
+                                            img.loading = 'lazy';
+                                            a.appendChild(img);
+                                        }
                                         gallery.appendChild(a);
                                     });
                                 });
