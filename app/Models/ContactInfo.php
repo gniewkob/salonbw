@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class ContactInfo extends Model
 {
@@ -76,6 +77,11 @@ class ContactInfo extends Model
                     'saturday' => ['09:00', '16:00'],
                     'sunday' => null,
                 ],
+            ]);
+        } else {
+            $contactInfo->update([
+                'latitude' => 50.346238,
+                'longitude' => 18.910938,
             ]);
         }
         
