@@ -5,7 +5,7 @@
             @foreach($media as $item)
                 <a href="{{ $item['permalink'] }}" target="_blank">
                     @if(($item['media_type'] ?? '') === 'VIDEO')
-                        <video controls autoplay poster="{{ $item['thumbnail_url'] ?? '' }}" class="w-full h-60 object-cover rounded" preload="none">
+                        <video autoplay poster="{{ $item['thumbnail_url'] ?? '' }}" class="w-full h-60 object-cover rounded" preload="none">
                             <source src="{{ $item['media_url'] }}" type="video/mp4">
                             <img src="{{ $item['thumbnail_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded">
                         </video>
@@ -38,7 +38,7 @@
                                         a.target = '_blank';
                                         if (item.media_type === 'VIDEO') {
                                             const video = document.createElement('video');
-                                            video.controls = true;
+                                            video.controls = false;
                                             video.autoplay = true;
                                             video.poster = item.thumbnail_url || '';
                                             video.className = 'w-full h-60 object-cover rounded';
