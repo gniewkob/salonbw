@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationEntryController;
 use App\Http\Controllers\GalleryController;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', function (GalleryController $gallery) {
     $instagramPhotos = $gallery->latest();
-    return view('pages.home', compact('instagramPhotos'));
+    $contactInfo = \App\Models\ContactInfo::getDefault();
+    return view('pages.home', compact('instagramPhotos', 'contactInfo'));
 })->name('home');
 
 Route::get('/uslugi', function () {
@@ -29,9 +31,7 @@ Route::get('/uslugi', function () {
 Route::get('/galeria', [GalleryController::class, 'index'])->name('gallery');
 Route::view('/faq', 'pages.faq')->name('faq');
 
-Route::get('/kontakt', function () {
-    return view('kontakt');
-})->name('kontakt');
+Route::get('/kontakt', [ContactController::class, 'show'])->name('kontakt');
 
 Route::post('/kontakt', [KontaktController::class, 'store'])->name('kontakt.store');
 
