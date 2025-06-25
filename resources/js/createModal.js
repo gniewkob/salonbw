@@ -7,6 +7,7 @@ export function createModal() {
         variant_id: '',
         price: 0,
         discount_percent: 0,
+        note_user: '',
         users: [],
         services: [],
         variants: [],
@@ -83,6 +84,7 @@ export function createModal() {
                         service_variant_id: this.variant_id,
                         price_pln: this.price,
                         discount_percent: this.discount_percent,
+                        note_user: this.note_user,
                         appointment_at: this.date,
                   })
                 });

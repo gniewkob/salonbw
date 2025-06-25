@@ -6,9 +6,10 @@ export function editFullModal() {
     user_id: null,
     service_id: '',
     variant_id: '',
-    price: 0,
-    discount_percent: 0,
-    note_client: '',
+   price: 0,
+   discount_percent: 0,
+    note_user: '',
+   note_client: '',
     note_internal: '',
     status: '',
     service_description: '',
@@ -27,6 +28,7 @@ export function editFullModal() {
         this.variant_id = data.service_variant_id;
         this.price = data.price_pln;
         this.discount_percent = data.discount_percent;
+        this.note_user = data.note_user || '';
         this.note_client = data.note_client || '';
         this.note_internal = data.note_internal || '';
         this.status = data.status || 'zaplanowana';
@@ -99,6 +101,7 @@ export function editFullModal() {
             status: this.status,
             price_pln: this.price,
             discount_percent: this.discount_percent,
+            note_user: this.note_user,
             note_client: this.note_client,
             note_internal: this.note_internal,
             service_description: this.service_description,
