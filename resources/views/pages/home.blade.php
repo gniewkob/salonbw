@@ -26,13 +26,23 @@
         </script>
     @endpush
 
-    <section class="relative bg-cover bg-center" style="background-image:url('{{ asset('img/slider/slider1.jpg') }}');">
-        <div class="bg-black/50">
-            <div class="max-w-7xl mx-auto px-4 py-32 text-center text-white">
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">Zadbaj o swoje włosy</h1>
-                <p class="mb-6">Profesjonalne usługi fryzjerskie i kosmetyczne w przyjaznej atmosferze.</p>
-                <a href="{{ route('reservation.entry') }}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded shadow transition">Umów wizytę</a>
+    <!-- Hero Slider -->
+    <section class="mb-10">
+        <div class="hero-swiper relative overflow-hidden rounded-lg shadow-lg">
+            <div class="swiper-wrapper">
+                @foreach(['slider1.jpg', 'slider2.jpg', 'slider3.jpg'] as $slide)
+                <div class="swiper-slide">
+                    <img src="{{ asset('img/slider/'.$slide) }}" alt="Salon Black&White" class="w-full h-96 object-cover">
+                    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-30">
+                        <div class="text-center text-white px-4">
+                            <h2 class="text-3xl font-bold mb-2">Witamy w Akademii Zdrowych Włosów <span class="text-black bg-white px-2">Black</span> & <span class="bg-black text-white px-2">White</span></h2>
+                            <p class="max-w-xl mx-auto">Naszym celem jest dostarczanie najwyższej jakości usług i zadowolenia klienta. Rozumiemy indywidualne potrzeby każdego.</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
+            <div class="swiper-pagination"></div>
         </div>
     </section>
 
@@ -70,7 +80,14 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @forelse($instagramPhotos ?? [] as $photo)
                     <a href="{{ $photo['permalink'] }}" target="_blank">
-                        <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
+                        @if(($photo['media_type'] ?? '') === 'VIDEO')
+                            <video controls poster="{{ $photo['thumbnail_url'] ?? '' }}" class="w-full h-48 object-cover rounded" preload="none">
+                                <source src="{{ $photo['media_url'] }}" type="video/mp4">
+                                <img src="{{ $photo['thumbnail_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded">
+                            </video>
+                        @else
+                            <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
+                        @endif
                     </a>
                 @empty
                     <p class="col-span-3 text-center text-gray-500">Zdjęcia wkrótce.</p>
