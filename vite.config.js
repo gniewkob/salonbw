@@ -5,7 +5,12 @@ import path from 'path';
 export default defineConfig({
   plugins: [
     laravel({
-      input: ['resources/css/app.css','resources/js/app.js','resources/js/calendar.js'],
+      input: [
+        'resources/css/app.css',
+        'resources/js/app.js',
+        'resources/js/calendar.js',
+        'resources/js/userCalendar.js',
+      ],
       refresh: true,
     }),
   ],

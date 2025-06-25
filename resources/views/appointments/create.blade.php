@@ -39,8 +39,9 @@
                         </div>
 
                         <div>
-                                <label class="block font-medium mb-1">Data i godzina wizyty</label>
-                                <input type="datetime-local" name="appointment_at" class="w-full border rounded px-4 py-2" required>
+                                <label class="block font-medium mb-1">Wybierz termin</label>
+                                <div id="user-calendar" data-busy-url="{{ route('appointments.busy') }}" class="mb-4 h-96 border rounded"></div>
+                                <input type="hidden" name="appointment_at" required>
                         </div>
 
 
@@ -49,11 +50,12 @@
                                 <textarea name="note_user" class="w-full border rounded px-4 py-2" rows="3">{{ old('note_user') }}</textarea>
                         </div>
 
-			<div class="pt-4">
-				<button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-					Zarezerwuj
-				</button>
-			</div>
-		</form>
-	</div>
+                        <div class="pt-4">
+                                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                                        Zarezerwuj
+                                </button>
+                                <a href="{{ route('messages.create', ['category' => 'rezerwacja']) }}" class="ml-4 text-blue-600 hover:underline">Nie widzisz terminu? Napisz do nas</a>
+                        </div>
+                </form>
+        </div>
 </x-app-layout>
