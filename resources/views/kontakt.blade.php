@@ -153,11 +153,10 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('DOMContentLoaded fired');
+        function initMap() {
             const lat = {{ $contactInfo->latitude ?? 'null' }};
             const lng = {{ $contactInfo->longitude ?? 'null' }};
-            console.log('lat:', lat, 'lng:', lng, 'window.L:', window.L);
+
             if (lat && lng && window.L) {
                 const map = L.map('map').setView([lat, lng], 14);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -169,6 +168,12 @@
             } else {
                 console.error('Missing latitude, longitude or Leaflet library', { lat, lng, L: window.L });
             }
-        });
+        }
+
+        if (document.readyState !== 'loading') {
+            initMap();
+        } else {
+            document.addEventListener('DOMContentLoaded', initMap);
+        }
     </script>
 @endpush
