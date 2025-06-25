@@ -7,10 +7,7 @@
                         <!-- Informacje kontaktowe -->
                         <div>
                             <h2 class="text-2xl font-bold mb-4">Kontakt</h2>
-                            
-                            @php
-                                $contactInfo = \App\Models\ContactInfo::getDefault();
-                            @endphp
+
                             
                             <div class="mb-4">
                                 <h3 class="text-lg font-semibold">{{ $contactInfo->salon_name ?? 'Salon Beauty & Wellness' }}</h3>
@@ -146,9 +143,7 @@
                     <!-- Mapa -->
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold mb-2">Jak do nas trafić</h3>
-                        <div class="aspect-w-16 aspect-h-9">
-                            <div id="map" class="w-full h-full rounded"></div>
-                        </div>
+                        <div id="map" class="w-full h-64 rounded"></div>
                     </div>
                 </div>
             </div>
@@ -159,9 +154,11 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOMContentLoaded fired');
             const lat = {{ $contactInfo->latitude ?? 'null' }};
             const lng = {{ $contactInfo->longitude ?? 'null' }};
-            if (lat && lng && L) {
+            console.log('lat:', lat, 'lng:', lng, 'window.L:', window.L);
+            if (lat && lng && window.L) {
                 const map = L.map('map').setView([lat, lng], 14);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap contributors'
@@ -169,6 +166,8 @@
                 L.marker([lat, lng]).addTo(map)
                     .bindPopup(@json($contactInfo->address_line1))
                     .openPopup();
+            } else {
+                console.error('Missing latitude, longitude or Leaflet library', { lat, lng, L: window.L });
             }
         });
     </script>

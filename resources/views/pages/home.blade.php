@@ -128,7 +128,6 @@
     </section>
 
     @php
-        $contactInfo = \App\Models\ContactInfo::getDefault();
         $mondayHours = $contactInfo->working_hours['monday'] ?? null;
     @endphp
     <section class="py-16">
