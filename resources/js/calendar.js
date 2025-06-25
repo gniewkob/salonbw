@@ -5,14 +5,14 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 
 // Dodajemy logi debugowania
-console.log('Calendar.js loaded - wersja z wymuszonym inicjowaniem');
+// console.log('Calendar.js loaded - wersja z wymuszonym inicjowaniem');
 
 // Funkcja inicjalizująca kalendarz
 function initializeCalendar() {
-  console.log('Inicjalizacja kalendarza rozpoczęta');
+  // console.log('Inicjalizacja kalendarza rozpoczęta');
   
   const el = document.getElementById('calendar');
-  console.log('Element kalendarza:', el);
+  // console.log('Element kalendarza:', el);
   
   if (!el) {
     console.error('Element kalendarza nie został znaleziony! Sprawdź czy jesteś na właściwej stronie.');
@@ -20,7 +20,7 @@ function initializeCalendar() {
   }
   
   const url = el.dataset.eventsUrl;
-  console.log('URL wydarzeń:', url);
+  // console.log('URL wydarzeń:', url);
   
   if (!url) {
     console.error('Brak URL dla wydarzeń! Sprawdź atrybut data-events-url.');
@@ -37,7 +37,7 @@ function initializeCalendar() {
     daysOfWeek: [1, 2, 3, 4, 5, 6], // Poniedziałek-Sobota (0=Niedziela, 1=Poniedziałek, itd.)
   };
   
-  console.log('Inicjalizacja FullCalendar z pluginami');
+  // console.log('Inicjalizacja FullCalendar z pluginami');
   
   try {
     const calendar = new Calendar(el, {
@@ -55,9 +55,9 @@ function initializeCalendar() {
       snapDuration: '00:15:00',
       events: url,
       dateClick(info) {
-        console.log('Kliknięto datę:', info);
+        // console.log('Kliknięto datę:', info);
         if (window.modalIsOpen) {
-          console.log('Modal jest już otwarty, blokowanie kliknięcia');
+          // console.log('Modal jest już otwarty, blokowanie kliknięcia');
           return; // blokada wielokrotnego otwierania
         }
         
@@ -73,9 +73,9 @@ function initializeCalendar() {
         window.dispatchEvent(new CustomEvent('open-create-modal', { detail: info.dateStr }));
       },
       eventClick(info) {
-        console.log('Kliknięto wydarzenie:', info);
+        // console.log('Kliknięto wydarzenie:', info);
         if (window.modalIsOpen) {
-          console.log('Modal jest już otwarty, blokowanie kliknięcia');
+          // console.log('Modal jest już otwarty, blokowanie kliknięcia');
           return; // blokada wielokrotnego otwierania
         }
         
@@ -87,7 +87,7 @@ function initializeCalendar() {
       },
       editable: true,
       eventDrop: function(info) {
-        console.log('Przeciągnięto wydarzenie:', info);
+        // console.log('Przeciągnięto wydarzenie:', info);
         // Sprawdzenie czy modal jest otwarty
         if (window.modalIsOpen) {
           info.revert();
@@ -140,7 +140,7 @@ function initializeCalendar() {
         });
       },
       eventResize: function(info) {
-        console.log('Zmieniono rozmiar wydarzenia:', info);
+        // console.log('Zmieniono rozmiar wydarzenia:', info);
         // Sprawdzenie czy modal jest otwarty
         if (window.modalIsOpen) {
           info.revert();
@@ -186,9 +186,9 @@ function initializeCalendar() {
       }
     });
     
-    console.log('Renderowanie kalendarza');
+    // console.log('Renderowanie kalendarza');
     calendar.render();
-    console.log('Kalendarz wyrenderowany');
+    // console.log('Kalendarz wyrenderowany');
     
     // Zapisujemy instancję kalendarza do elementu DOM dla łatwiejszego debugowania
     el._fullCalendar = calendar;
@@ -253,7 +253,7 @@ function initializeCalendar() {
   
   // Funkcja wyświetlająca powiadomienie
   function showNotification(message) {
-    console.log('Powiadomienie:', message);
+    // console.log('Powiadomienie:', message);
     // Sprawdź czy element powiadomienia już istnieje
     let notification = document.getElementById('calendar-notification');
     
@@ -292,12 +292,12 @@ function initializeCalendar() {
 
 // Standardowa inicjalizacja przy załadowaniu DOM
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded event fired');
+  // console.log('DOMContentLoaded event fired');
   initializeCalendar();
   
   // Dodajemy nasłuchiwanie na zdarzenie zamknięcia modala
   window.addEventListener('close-modal', function() {
-    console.log('Modal zamknięty, usuwanie klasy modal-open');
+    // console.log('Modal zamknięty, usuwanie klasy modal-open');
     document.body.classList.remove('modal-open');
     window.modalIsOpen = false;
   });
@@ -305,12 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Dodatkowa inicjalizacja z opóźnieniem, aby upewnić się, że strona jest w pełni załadowana
 window.addEventListener('load', function() {
-  console.log('Window load event fired');
+  // console.log('Window load event fired');
   setTimeout(function() {
     // Sprawdź, czy kalendarz został już zainicjalizowany
     const el = document.getElementById('calendar');
     if (el && !el._fullCalendar) {
-      console.log('Kalendarz nie został zainicjalizowany podczas DOMContentLoaded, próbuję ponownie');
+      // console.log('Kalendarz nie został zainicjalizowany podczas DOMContentLoaded, próbuję ponownie');
       initializeCalendar();
     }
   }, 500);
@@ -318,7 +318,7 @@ window.addEventListener('load', function() {
 
 // Natychmiastowa inicjalizacja, jeśli dokument jest już załadowany
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  console.log('Document already loaded, initializing calendar immediately');
+  // console.log('Document already loaded, initializing calendar immediately');
   setTimeout(function() {
     initializeCalendar();
   }, 100);
@@ -326,7 +326,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 // Dodajemy funkcję globalną do ręcznego inicjowania kalendarza
 window.initCalendar = function() {
-  console.log('Manual calendar initialization triggered');
+  // console.log('Manual calendar initialization triggered');
   return initializeCalendar();
 };
 
@@ -334,7 +334,7 @@ window.initCalendar = function() {
 setTimeout(function() {
   const el = document.getElementById('calendar');
   if (el && !el._fullCalendar) {
-    console.log('Dodaję przycisk do ręcznego inicjowania kalendarza');
+    // console.log('Dodaję przycisk do ręcznego inicjowania kalendarza');
     const button = document.createElement('button');
     button.textContent = 'Inicjuj kalendarz';
     button.className = 'px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4';
