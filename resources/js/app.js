@@ -38,6 +38,9 @@ window.initMap = initMap;
 import Swiper from 'swiper/bundle';
 import 'swiper/css/bundle';
 
+// Make Swiper accessible in inline scripts
+window.Swiper = Swiper;
+
 document.addEventListener('DOMContentLoaded', () => {
     new Swiper('.hero-swiper', {
         loop: true,
