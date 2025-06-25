@@ -9,6 +9,9 @@
             @endif
             <li><b>Data:</b> {{ $appointment->appointment_at }}</li>
             <li><b>Status:</b> {{ $appointment->status }}</li>
+            @if($appointment->note_user)
+                <li><b>Uwagi klienta:</b> {{ $appointment->note_user }}</li>
+            @endif
         </ul>
         @if($appointment->note_client)
             <div class="my-4 p-4 rounded bg-green-100 border-l-4 border-green-500">

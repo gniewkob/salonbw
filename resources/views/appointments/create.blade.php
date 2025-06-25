@@ -43,9 +43,10 @@
                                 <input type="datetime-local" name="appointment_at" class="w-full border rounded px-4 py-2" required>
                         </div>
 
+
                         <div>
-                                <label class="block font-medium mb-1">Rabat (%)</label>
-                                <input type="number" name="discount_percent" min="0" max="100" value="0" class="w-full border rounded px-4 py-2">
+                                <label class="block font-medium mb-1">Uwagi / specjalne wymagania</label>
+                                <textarea name="note_user" class="w-full border rounded px-4 py-2" rows="3">{{ old('note_user') }}</textarea>
                         </div>
 
 			<div class="pt-4">
