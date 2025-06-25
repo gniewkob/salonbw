@@ -153,27 +153,10 @@
 
 @push('scripts')
     <script>
-        function initMap() {
+        document.addEventListener('DOMContentLoaded', function () {
             const lat = {{ $contactInfo->latitude ?? 'null' }};
             const lng = {{ $contactInfo->longitude ?? 'null' }};
-
-            if (lat && lng && window.L) {
-                const map = L.map('map').setView([lat, lng], 14);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-                L.marker([lat, lng]).addTo(map)
-                    .bindPopup(@json($contactInfo->address_line1))
-                    .openPopup();
-            } else {
-                console.error('Missing latitude, longitude or Leaflet library', { lat, lng, L: window.L });
-            }
-        }
-
-        if (document.readyState !== 'loading') {
-            initMap();
-        } else {
-            document.addEventListener('DOMContentLoaded', initMap);
-        }
+            window.initMap(lat, lng, @json($contactInfo->address_line1));
+        });
     </script>
 @endpush
