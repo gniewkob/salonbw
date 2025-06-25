@@ -79,13 +79,6 @@ class ContactInfo extends Model
                 ],
             ]);
         }
-
-        // Ensure existing record has coordinates when columns exist
-        elseif (
-            Schema::hasColumn('contact_info', 'latitude') &&
-            Schema::hasColumn('contact_info', 'longitude') &&
-            (is_null($contactInfo->latitude) || is_null($contactInfo->longitude))
-        ) {
             $contactInfo->update([
                 'latitude' => 50.346238,
                 'longitude' => 18.910938,
