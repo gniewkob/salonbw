@@ -154,21 +154,9 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('DOMContentLoaded fired');
             const lat = {{ $contactInfo->latitude ?? 'null' }};
             const lng = {{ $contactInfo->longitude ?? 'null' }};
-            console.log('lat:', lat, 'lng:', lng, 'window.L:', window.L);
-            if (lat && lng && window.L) {
-                const map = L.map('map').setView([lat, lng], 14);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-                L.marker([lat, lng]).addTo(map)
-                    .bindPopup(@json($contactInfo->address_line1))
-                    .openPopup();
-            } else {
-                console.error('Missing latitude, longitude or Leaflet library', { lat, lng, L: window.L });
-            }
+            window.initMap(lat, lng, @json($contactInfo->address_line1));
         });
     </script>
 @endpush
