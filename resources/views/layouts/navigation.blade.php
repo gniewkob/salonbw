@@ -47,6 +47,16 @@
             <a href="{{ route('kontakt') }}" class="block text-gray-700">Kontakt</a>
             <a href="{{ route('reservation.entry') }}" class="block text-indigo-600 font-semibold">Rezerwuj</a>
             @auth
+                @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.services.index') }}" class="block text-gray-700">Usługi (admin)</a>
+                    <a href="{{ route('admin.calendar') }}" class="block text-gray-700">Kalendarz</a>
+                    <a href="{{ route('admin.kontakt.edit') }}" class="block text-gray-700">Kontakt</a>
+                    <a href="{{ route('admin.messages.index') }}" class="block text-gray-700">Wiadomości</a>
+                    <a href="{{ route('admin.users.index') }}" class="block text-gray-700">Użytkownicy</a>
+                @else
+                    <a href="{{ route('appointments.index') }}" class="block text-gray-700">Moje rezerwacje</a>
+                    <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości</a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}" class="block">
                     @csrf
                     <button type="submit" class="text-red-600 underline">Wyloguj</button>
