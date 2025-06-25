@@ -1,9 +1,12 @@
+import { initUserCalendar } from './userCalendar';
+
 export function appointmentForm(services, initialVariantId = null) {
     return {
         services,
         service_id: '',
         variants: [],
         variant_id: '',
+        calendar: null,
         init() {
             if (initialVariantId) {
                 for (const s of this.services) {
@@ -22,6 +25,13 @@ export function appointmentForm(services, initialVariantId = null) {
                 if (!this.variants.some(v => v.id == this.variant_id)) {
                     this.variant_id = '';
                 }
+            });
+
+            this.calendar = initUserCalendar(60);
+            this.calendar.init();
+            this.$watch('variant_id', id => {
+                const d = this.variants.find(v => v.id == id)?.duration_minutes || 60;
+                this.calendar.setDuration(d);
             });
         }
     };
