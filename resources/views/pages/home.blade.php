@@ -80,7 +80,14 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @forelse($instagramPhotos ?? [] as $photo)
                     <a href="{{ $photo['permalink'] }}" target="_blank">
-                        <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
+                        @if(($photo['media_type'] ?? '') === 'VIDEO')
+                            <video controls poster="{{ $photo['thumbnail_url'] ?? '' }}" class="w-full h-48 object-cover rounded" preload="none">
+                                <source src="{{ $photo['media_url'] }}" type="video/mp4">
+                                <img src="{{ $photo['thumbnail_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded">
+                            </video>
+                        @else
+                            <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
+                        @endif
                     </a>
                 @empty
                     <p class="col-span-3 text-center text-gray-500">Zdjęcia wkrótce.</p>
