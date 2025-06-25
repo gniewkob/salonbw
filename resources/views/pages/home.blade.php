@@ -87,11 +87,11 @@
                                         <div class="swiper-slide">
                                             @if(($child['media_type'] ?? '') === 'VIDEO')
                                                 <video autoplay muted loop playsinline class="w-full h-48 object-cover rounded" preload="none">
-                                                    <source src="{{ $child['media_url'] }}" type="video/mp4">
+                                                    <source src="{{ $child['media_url'] ?? '' }}" type="video/mp4">
                                                     <img src="{{ $child['thumbnail_url'] ?? '' }}" alt="" class="w-full h-48 object-cover rounded">
                                                 </video>
                                             @else
-                                                <img src="{{ $child['media_url'] }}" alt="" class="w-full h-48 object-cover rounded" loading="lazy">
+                                                <img src="{{ $child['media_url'] ?? '' }}" alt="" class="w-full h-48 object-cover rounded" loading="lazy">
                                             @endif
                                         </div>
                                     @endforeach
@@ -99,11 +99,11 @@
                             </div>
                         @elseif(($photo['media_type'] ?? '') === 'VIDEO')
                             <video autoplay muted loop playsinline class="w-full h-48 object-cover rounded" preload="none">
-                                <source src="{{ $photo['media_url'] }}" type="video/mp4">
+                                <source src="{{ $photo['media_url'] ?? '' }}" type="video/mp4">
                                 <img src="{{ $photo['thumbnail_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded">
                             </video>
                         @else
-                            <img src="{{ $photo['media_url'] }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
+                            <img src="{{ $photo['media_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded" loading="lazy">
                         @endif
                     </a>
                 @empty

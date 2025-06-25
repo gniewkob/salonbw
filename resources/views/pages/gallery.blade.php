@@ -11,11 +11,11 @@
                                     <div class="swiper-slide">
                                         @if(($child['media_type'] ?? '') === 'VIDEO')
                                             <video autoplay muted loop playsinline class="w-full h-60 object-cover rounded" preload="none">
-                                                <source src="{{ $child['media_url'] }}" type="video/mp4">
+                                                <source src="{{ $child['media_url'] ?? '' }}" type="video/mp4">
                                                 <img src="{{ $child['thumbnail_url'] ?? '' }}" alt="" class="w-full h-60 object-cover rounded">
                                             </video>
                                         @else
-                                            <img src="{{ $child['media_url'] }}" alt="" class="w-full h-60 object-cover rounded" loading="lazy">
+                                            <img src="{{ $child['media_url'] ?? '' }}" alt="" class="w-full h-60 object-cover rounded" loading="lazy">
                                         @endif
                                     </div>
                                 @endforeach
@@ -23,11 +23,11 @@
                         </div>
                     @elseif(($item['media_type'] ?? '') === 'VIDEO')
                         <video autoplay muted loop playsinline class="w-full h-60 object-cover rounded" preload="none">
-                            <source src="{{ $item['media_url'] }}" type="video/mp4">
+                            <source src="{{ $item['media_url'] ?? '' }}" type="video/mp4">
                             <img src="{{ $item['thumbnail_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded">
                         </video>
                     @else
-                        <img src="{{ $item['media_url'] }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded" loading="lazy">
+                        <img src="{{ $item['media_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded" loading="lazy">
                     @endif
                 </a>
             @endforeach
