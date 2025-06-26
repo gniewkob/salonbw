@@ -40,7 +40,8 @@
 
                         <div x-show="variant_id" x-cloak>
                                 <label class="block font-medium mb-1">Wybierz termin</label>
-                                <div id="user-calendar" data-busy-url="{{ route('appointments.busy') }}" class="mb-4 h-96 border rounded"></div>
+                                <div id="user-calendar" data-busy-url="{{ route('appointments.busy') }}" data-msg-url="{{ route('messages.create') }}" class="mb-4 h-96 border rounded"></div>
+                                <div id="calendar-notice" class="hidden mb-2 p-2 rounded text-sm"></div>
                                 <input type="hidden" name="appointment_at" required>
                         </div>
 
@@ -51,7 +52,7 @@
                         </div>
 
                         <div class="pt-4">
-                                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                                <button id="submit-appointment" type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
                                         Zarezerwuj
                                 </button>
                                 @php $msgUrl = route('messages.create'); @endphp
