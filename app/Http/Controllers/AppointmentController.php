@@ -41,25 +41,53 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at'     => 'required|date|after:now',
-            'discount_percent'   => 'nullable|integer|min:0|max:100',
+            'note_user'          => 'nullable|string',
         ]);
 
         $variant = ServiceVariant::with('service')->findOrFail($validated['service_variant_id']);
 
-        $discount = $validated['discount_percent'] ?? 0;
-        $price    = round($variant->price_pln * (100 - $discount) / 100);
+        // Sprawdzenie czy termin jest wolny
+        $start = new \Carbon\Carbon($validated['appointment_at']);
+        $end   = (clone $start)->addMinutes($variant->duration_minutes);
+
+        $existing = Appointment::with('serviceVariant')
+            ->whereDate('appointment_at', $start->toDateString())
+            ->get();
+
+        foreach ($existing as $appt) {
+            $apptEnd = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes);
+            if ($start < $apptEnd && $end > $appt->appointment_at) {
+                return back()->withErrors(['appointment_at' => 'Wybrany termin jest już zajęty.'])
+                    ->withInput();
+            }
+        }
+
+        $price = $variant->price_pln;
 
         Appointment::create([
             'user_id'            => Auth::id(),
             'service_id'         => $variant->service->id,
             'service_variant_id' => $variant->id,
             'price_pln'          => $price,
-            'discount_percent'   => $discount,
             'appointment_at'     => $validated['appointment_at'],
             'status'             => 'zaplanowana',
+            'note_user'          => $validated['note_user'] ?? null,
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Rezerwacja została zapisana.');
+    }
+
+    public function busyTimes()
+    {
+        $appointments = Appointment::with('serviceVariant')->get();
+
+        return $appointments->map(function ($appt) {
+            $end = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes ?? 60);
+            return [
+                'start' => $appt->appointment_at,
+                'end'   => $end,
+            ];
+        });
     }
 
     public function index()

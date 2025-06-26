@@ -80,24 +80,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @forelse($instagramPhotos ?? [] as $photo)
                     <a href="{{ $photo['permalink'] }}" target="_blank">
-                        @if(!empty($photo['children']))
-                            <div class="carousel-swiper swiper h-48">
-                                <div class="swiper-wrapper">
-                                    @foreach($photo['children'] as $child)
-                                        <div class="swiper-slide">
-                                            @if(($child['media_type'] ?? '') === 'VIDEO')
-                                                <video autoplay muted loop playsinline class="w-full h-48 object-cover rounded" preload="none">
-                                                    <source src="{{ $child['media_url'] ?? '' }}" type="video/mp4">
-                                                    <img src="{{ $child['thumbnail_url'] ?? '' }}" alt="" class="w-full h-48 object-cover rounded">
-                                                </video>
-                                            @else
-                                                <img src="{{ $child['media_url'] ?? '' }}" alt="" class="w-full h-48 object-cover rounded" loading="lazy">
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @elseif(($photo['media_type'] ?? '') === 'VIDEO')
+                        @if(($photo['media_type'] ?? '') === 'VIDEO')
                             <video autoplay muted loop playsinline class="w-full h-48 object-cover rounded" preload="none">
                                 <source src="{{ $photo['media_url'] ?? '' }}" type="video/mp4">
                                 <img src="{{ $photo['thumbnail_url'] ?? '' }}" alt="{{ $photo['caption'] ?? '' }}" class="w-full h-48 object-cover rounded">
@@ -194,12 +177,6 @@
                     window.initMap(lat, lng, @json($contactInfo->address_line1));
                 }
 
-                document.querySelectorAll('.carousel-swiper').forEach(el => {
-                    new Swiper(el, {
-                        loop: true,
-                        autoplay: { delay: 3000 },
-                    });
-                });
             });
         </script>
     @endpush

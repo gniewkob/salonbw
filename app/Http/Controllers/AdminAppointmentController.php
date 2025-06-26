@@ -45,6 +45,7 @@ class AdminAppointmentController extends Controller
                     'service_variant_id' => $appointment->service_variant_id,
                     'price_pln' => $appointment->price_pln,
                     'discount_percent' => $appointment->discount_percent,
+                    'note_user' => $appointment->note_user,
                     'note_client' => $appointment->note_client,
                     'note_internal' => $appointment->note_internal,
                     'service_description' => $appointment->service_description,
@@ -112,6 +113,7 @@ class AdminAppointmentController extends Controller
             'appointment_at' => 'required|date',
             'price_pln' => 'required|integer|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
+            'note_user' => 'nullable|string',
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
@@ -153,6 +155,7 @@ class AdminAppointmentController extends Controller
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => 'zaplanowana',
+            'note_user' => $request->note_user,
             'service_description' => $request->service_description,
             'products_used' => $request->products_used,
         ]);
@@ -168,6 +171,7 @@ class AdminAppointmentController extends Controller
             'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
             'price_pln' => 'required|integer|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
+            'note_user' => 'nullable|string',
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
@@ -197,6 +201,7 @@ class AdminAppointmentController extends Controller
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
             'status' => $request->status,
+            'note_user' => $request->note_user,
             'service_description' => $request->service_description,
             'products_used' => $request->products_used,
         ]);

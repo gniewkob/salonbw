@@ -26,9 +26,20 @@ class KontaktController extends Controller
         return view('messages.show', compact('message'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('messages.create');
+        $variantId = $request->query('variant_id');
+        $selectedVariant = null;
+        $prefill = '';
+
+        if ($variantId) {
+            $selectedVariant = \App\Models\ServiceVariant::with('service')->find($variantId);
+            if ($selectedVariant) {
+                $prefill = "Interesuje mnie termin dla us\u0142ugi: {$selectedVariant->service->name} – {$selectedVariant->variant_name}. Preferowane daty: ";
+            }
+        }
+
+        return view('messages.create', compact('selectedVariant', 'prefill'));
     }
 
     public function store(Request $request)
