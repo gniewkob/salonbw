@@ -36,7 +36,9 @@ export function initUserCalendar(duration) {
                             endTime: '18:00',
                             daysOfWeek: [1,2,3,4,5,6],
                         },
-                        selectOverlap: false,
+                        // Allow selection even when the slot overlaps an existing event so
+                        // we can display a notice about the conflict.
+                        selectOverlap: true,
                         select: info => {
                             const start = info.start;
                             const end = new Date(start.getTime() + this.duration * 60000);
