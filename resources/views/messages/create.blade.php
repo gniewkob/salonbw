@@ -49,11 +49,20 @@
                     @error('category')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
 
+                @isset($selectedVariant)
+                    <div class="mb-4 p-4 bg-gray-100 rounded">
+                        <p class="text-sm text-gray-700">
+                            Wybrana usługa:
+                            <strong>{{ $selectedVariant->service->name }} – {{ $selectedVariant->variant_name }}</strong>
+                        </p>
+                    </div>
+                @endisset
+
                 {{-- Wiadomość --}}
                 <div class="mb-4">
                     <label for="message" class="block font-medium text-sm text-gray-700">Wiadomość</label>
                     <textarea id="message" name="message" rows="6" required
-                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">{{ old('message') }}</textarea>
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">{{ old('message', $prefill) }}</textarea>
                     @error('message')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                 </div>
 
