@@ -19,7 +19,7 @@ pipelines:
             - composer install --no-interaction --no-progress --no-dev
             - npm ci
             - npm run build
-            # (Opcjonalnie) php artisan test
+            # (Opcjonalnie) composer test
           artifacts:
             - vendor/**
             - public/build/**
