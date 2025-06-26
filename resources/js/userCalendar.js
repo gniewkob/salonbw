@@ -6,10 +6,13 @@ export function initUserCalendar(duration) {
     return {
         duration,
         events: [],
+        initialized: false,
+        calendar: null,
         setDuration(value) {
             this.duration = value;
         },
         init() {
+            if (this.initialized) return;
             const el = document.getElementById('user-calendar');
             if (!el) return;
             const url = el.dataset.busyUrl;
@@ -45,6 +48,8 @@ export function initUserCalendar(duration) {
                         }
                     });
                     calendar.render();
+                    this.calendar = calendar;
+                    this.initialized = true;
                 });
         }
     }
