@@ -38,7 +38,7 @@
                                 </select>
                         </div>
 
-                        <div>
+                        <div x-show="variant_id" x-cloak>
                                 <label class="block font-medium mb-1">Wybierz termin</label>
                                 <div id="user-calendar" data-busy-url="{{ route('appointments.busy') }}" class="mb-4 h-96 border rounded"></div>
                                 <input type="hidden" name="appointment_at" required>

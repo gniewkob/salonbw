@@ -7,6 +7,7 @@ export function appointmentForm(services, initialVariantId = null) {
         variants: [],
         variant_id: '',
         calendar: null,
+        calendarReady: false,
         init() {
             if (initialVariantId) {
                 for (const s of this.services) {
@@ -28,11 +29,23 @@ export function appointmentForm(services, initialVariantId = null) {
             });
 
             this.calendar = initUserCalendar(60);
-            this.calendar.init();
             this.$watch('variant_id', id => {
                 const d = this.variants.find(v => v.id == id)?.duration_minutes || 60;
-                this.calendar.setDuration(d);
+                if (id && !this.calendarReady) {
+                    this.calendar.init();
+                    this.calendarReady = true;
+                }
+                if (this.calendarReady) {
+                    this.calendar.setDuration(d);
+                }
             });
+
+            if (this.variant_id) {
+                const d = this.variants.find(v => v.id == this.variant_id)?.duration_minutes || 60;
+                this.calendar.init();
+                this.calendar.setDuration(d);
+                this.calendarReady = true;
+            }
         }
     };
 }
