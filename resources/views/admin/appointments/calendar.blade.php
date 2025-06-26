@@ -212,6 +212,7 @@
       <label class="block mb-2 text-sm font-medium">Status:</label>
       <select x-model="status" class="w-full mb-4 border rounded px-2 py-1">
         <option value="zaplanowana">Zaplanowana</option>
+        <option value="oczekuje">Oczekuje</option>
         <option value="odbyta">Odbyta</option>
         <option value="odwołana">Odwołana</option>
         <option value="nieodbyta">Nieodbyta</option>

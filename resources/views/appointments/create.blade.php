@@ -43,6 +43,7 @@
                                 <div id="user-calendar" data-busy-url="{{ route('appointments.busy') }}" data-msg-url="{{ route('messages.create') }}" class="mb-4 h-96 border rounded"></div>
                                 <div id="calendar-notice" class="hidden mb-2 p-2 rounded text-sm"></div>
                                 <input type="hidden" name="appointment_at" required>
+                                <input type="hidden" name="allow_pending" id="allow-pending" value="0">
                         </div>
 
 

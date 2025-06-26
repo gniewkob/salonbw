@@ -21,6 +21,7 @@ export function initUserCalendar(duration) {
             const input = document.querySelector('input[name="appointment_at"]');
             const notice = document.getElementById('calendar-notice');
             const submitBtn = document.getElementById('submit-appointment');
+            const pending = document.getElementById('allow-pending');
             fetch(url)
                 .then(r => r.ok ? r.json() : [])
                 .then(events => {
@@ -58,7 +59,7 @@ export function initUserCalendar(duration) {
                                 }
                             }
 
-                            const color = overlap ? 'red' : 'green';
+                            const color = overlap ? '#f97316' : 'green';
                             this.tempEvent = calendar.addEvent({
                                 id: 'temp-selection',
                                 start,
@@ -66,24 +67,24 @@ export function initUserCalendar(duration) {
                                 backgroundColor: color,
                                 borderColor: color,
                             });
-
                             if (overlap) {
-                                input.value = '';
-                                if (notice) {
-                                    notice.classList.remove('hidden');
-                                    notice.classList.remove('bg-green-100', 'text-green-700');
-                                    notice.classList.add('bg-red-100', 'text-red-700');
-                                    const href = `${msgUrl}?category=rezerwacja&datetime=${start.toISOString()}`;
-                                    notice.innerHTML = `Wybrany termin jest zaj\u0119ty. <a href="${href}" class="underline">Wy\u015blij wiadomo\u015b\u0107</a>`;
-                                }
-                                if (submitBtn) submitBtn.disabled = true;
-                            } else {
+                                if (pending) pending.value = 1;
                                 input.value = start.toISOString().slice(0,16);
                                 if (notice) {
                                     notice.classList.remove('hidden');
-                                    notice.classList.remove('bg-red-100', 'text-red-700');
+                                    notice.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                                    notice.classList.add('bg-orange-100', 'text-orange-700');
+                                    notice.textContent = 'Termin zajety. Kliknij "Zarezerwuj" aby dolaczyc do kolejki.';
+                                }
+                                if (submitBtn) submitBtn.disabled = false;
+                            } else {
+                                if (pending) pending.value = 0;
+                                input.value = start.toISOString().slice(0,16);
+                                if (notice) {
+                                    notice.classList.remove('hidden');
+                                    notice.classList.remove('bg-red-100', 'text-red-700', 'bg-orange-100', 'text-orange-700');
                                     notice.classList.add('bg-green-100', 'text-green-700');
-                                    notice.textContent = 'Termin wolny. Mo\u017cesz zarezerwowa\u0107.';
+                                    notice.textContent = 'Termin wolny. Mozesz zarezerwowac.';
                                 }
                                 if (submitBtn) submitBtn.disabled = false;
                             }
