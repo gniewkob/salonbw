@@ -42,6 +42,7 @@ class AppointmentController extends Controller
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at'     => 'required|date|after:now',
             'note_user'          => 'nullable|string',
+            'allow_pending'      => 'nullable|boolean',
         ]);
 
         $variant = ServiceVariant::with('service')->findOrFail($validated['service_variant_id']);
@@ -54,11 +55,16 @@ class AppointmentController extends Controller
             ->whereDate('appointment_at', $start->toDateString())
             ->get();
 
+        $status = 'zaplanowana';
         foreach ($existing as $appt) {
             $apptEnd = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes);
             if ($start < $apptEnd && $end > $appt->appointment_at) {
-                return back()->withErrors(['appointment_at' => 'Wybrany termin jest już zajęty.'])
-                    ->withInput();
+                if (empty($validated['allow_pending'])) {
+                    return back()->withErrors(['appointment_at' => 'Wybrany termin jest już zajęty.'])
+                        ->withInput();
+                }
+                $status = 'oczekuje';
+                break;
             }
         }
 
@@ -70,7 +76,7 @@ class AppointmentController extends Controller
             'service_variant_id' => $variant->id,
             'price_pln'          => $price,
             'appointment_at'     => $validated['appointment_at'],
-            'status'             => 'zaplanowana',
+            'status'             => $status,
             'note_user'          => $validated['note_user'] ?? null,
         ]);
 

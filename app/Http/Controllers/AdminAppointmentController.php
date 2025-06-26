@@ -23,6 +23,7 @@ class AdminAppointmentController extends Controller
                 'odbyta' => '#38a169',
                 'odwołana' => '#e53e3e',
                 'nieodbyta' => '#f59e0b',
+                'oczekuje' => '#f97316',
                 default => '#3b82f6',
             };
             return [
@@ -95,7 +96,7 @@ class AdminAppointmentController extends Controller
     public function updateStatus(Request $request, Appointment $appointment)
     {
         $request->validate([
-            'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
+            'status' => 'required|in:zaplanowana,oczekuje,odbyta,odwołana,nieodbyta',
             'canceled_reason' => 'nullable|string|max:255',
         ]);
         $appointment->update([
@@ -168,7 +169,7 @@ class AdminAppointmentController extends Controller
             'user_id' => 'required|exists:users,id',
             'service_variant_id' => 'required|exists:service_variants,id',
             'appointment_at' => 'required|date',
-            'status' => 'required|in:zaplanowana,odbyta,odwołana,nieodbyta',
+            'status' => 'required|in:zaplanowana,oczekuje,odbyta,odwołana,nieodbyta',
             'price_pln' => 'required|integer|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
             'note_user' => 'nullable|string',
