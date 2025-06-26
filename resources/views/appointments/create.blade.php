@@ -54,7 +54,12 @@
                                 <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
                                         Zarezerwuj
                                 </button>
-                                <a href="{{ route('messages.create', ['category' => 'rezerwacja']) }}" class="ml-4 text-blue-600 hover:underline">Nie widzisz terminu? Napisz do nas</a>
+                                @php $msgUrl = route('messages.create'); @endphp
+                                <a
+                                    :href="variant_id ? '{{ $msgUrl }}?category=rezerwacja&variant_id=' + variant_id : '{{ $msgUrl }}?category=rezerwacja'"
+                                    class="ml-4 text-blue-600 hover:underline">
+                                    Nie widzisz terminu? Napisz do nas
+                                </a>
                         </div>
                 </form>
         </div>
