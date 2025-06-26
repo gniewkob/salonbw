@@ -24,6 +24,7 @@
                 <label for="status" class="block font-medium mb-2">Status:</label>
                 <select name="status" id="status" class="w-full p-2 border rounded">
                     <option value="zaplanowana" @selected($appointment->status === 'zaplanowana')>Zaplanowana</option>
+                    <option value="oczekuje" @selected($appointment->status === 'oczekuje')>Oczekuje</option>
                     <option value="odbyta" @selected($appointment->status === 'odbyta')>Odbyta</option>
                     <option value="odwołana" @selected($appointment->status === 'odwołana')>Odwołana</option>
                 </select>
