@@ -301,6 +301,23 @@ document.addEventListener('DOMContentLoaded', function() {
   // console.log('DOMContentLoaded event fired');
   initializeCalendar();
 
+  const params = new URLSearchParams(window.location.search);
+  const jumpId = params.get('jump');
+  if (jumpId) {
+    const showAppointment = () => {
+      const el = document.getElementById('calendar');
+      const calendar = el ? el._fullCalendar || window.initCalendar() : null;
+      if (!calendar) return;
+      const event = calendar.getEventById(jumpId);
+      if (event) {
+        calendar.gotoDate(event.start);
+        const data = { ...event.extendedProps, id: event.id };
+        window.dispatchEvent(new CustomEvent('open-view-modal', { detail: data }));
+      }
+    };
+    setTimeout(showAppointment, 800);
+  }
+
   document.addEventListener('click', function(e) {
     const link = e.target.closest('.jump-to-appointment');
     if (!link) return;
