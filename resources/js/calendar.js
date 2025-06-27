@@ -10,9 +10,14 @@ import listPlugin from '@fullcalendar/list';
 // Funkcja inicjalizująca kalendarz
 function initializeCalendar() {
   // console.log('Inicjalizacja kalendarza rozpoczęta');
-  
+
   const el = document.getElementById('calendar');
   // console.log('Element kalendarza:', el);
+
+  // Zapobiegamy wielokrotnej inicjalizacji
+  if (el && el._fullCalendar) {
+    return el._fullCalendar;
+  }
   
   if (!el) {
     console.error('Element kalendarza nie został znaleziony! Sprawdź czy jesteś na właściwej stronie.');
