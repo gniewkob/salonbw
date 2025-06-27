@@ -3,7 +3,7 @@
         <h2 class="text-2xl font-bold mb-6">Edytuj wizytę</h2>
         <form method="POST" action="{{ route('appointments.update', $appointment->id) }}">
             @csrf
-            @method('PUT')
+            @method('PATCH')
             <div class="mb-4">
                 <label class="block font-medium mb-2">Termin wizyty:</label>
                 <a href="{{ route('calendar', ['jump' => $appointment->id]) }}" class="text-blue-600 underline">
