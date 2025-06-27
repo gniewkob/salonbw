@@ -35,10 +35,37 @@
     @endpush
 
     @if($pendingCount > 0 || $proposedCount > 0)
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-2">
-        <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-2" x-data="{open:false}">
+        <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4 cursor-pointer" @click="open = !open">
             <p><strong>Oczekujące zgłoszenia:</strong> {{ $pendingCount }}</p>
             <p><strong>Proponowane terminy:</strong> {{ $proposedCount }}</p>
+            <p class="text-sm" x-show="!open" x-cloak>Kliknij, aby rozwinąć listę</p>
+        </div>
+        <div class="bg-yellow-50 text-yellow-800 p-4 rounded mb-4" x-show="open" x-cloak>
+            @if($pendingList->count())
+                <p class="font-semibold mb-2">Oczekujące zgłoszenia</p>
+                <ul class="list-disc list-inside mb-4">
+                    @foreach($pendingList as $a)
+                        <li>
+                            <a href="#" class="text-blue-600 hover:underline jump-to-appointment" data-appointment-id="{{ $a->id }}">
+                                {{ $a->appointment_at->format('Y-m-d H:i') }} – {{ $a->user->name }} ({{ $a->serviceVariant->service->name }})
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+            @if($proposedList->count())
+                <p class="font-semibold mb-2">Proponowane terminy</p>
+                <ul class="list-disc list-inside">
+                    @foreach($proposedList as $a)
+                        <li>
+                            <a href="#" class="text-blue-600 hover:underline jump-to-appointment" data-appointment-id="{{ $a->id }}">
+                                {{ $a->appointment_at->format('Y-m-d H:i') }} – {{ $a->user->name }} ({{ $a->serviceVariant->service->name }})
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     </div>
     @endif

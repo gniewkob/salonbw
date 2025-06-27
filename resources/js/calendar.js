@@ -197,6 +197,7 @@ function initializeCalendar() {
     
     // Zapisujemy instancję kalendarza do elementu DOM dla łatwiejszego debugowania
     el._fullCalendar = calendar;
+    window.calendar = calendar;
     
     // Dodajemy wizualną wskazówkę, że kalendarz jest gotowy
     el.classList.add('calendar-initialized');
@@ -299,6 +300,22 @@ function initializeCalendar() {
 document.addEventListener('DOMContentLoaded', function() {
   // console.log('DOMContentLoaded event fired');
   initializeCalendar();
+
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('.jump-to-appointment');
+    if (!link) return;
+    e.preventDefault();
+    const id = link.dataset.appointmentId;
+    const el = document.getElementById('calendar');
+    const calendar = el ? el._fullCalendar || window.initCalendar() : null;
+    if (!calendar) return;
+    const event = calendar.getEventById(id);
+    if (event) {
+      calendar.gotoDate(event.start);
+      const data = { ...event.extendedProps, id: event.id };
+      window.dispatchEvent(new CustomEvent('open-view-modal', { detail: data }));
+    }
+  });
   
   // Dodajemy nasłuchiwanie na zdarzenie zamknięcia modala
   window.addEventListener('close-modal', function() {
