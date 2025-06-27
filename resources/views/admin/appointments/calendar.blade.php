@@ -34,6 +34,15 @@
     </style>
     @endpush
 
+    @if($pendingCount > 0 || $proposedCount > 0)
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-2">
+        <div class="bg-yellow-100 text-yellow-800 p-4 rounded mb-4">
+            <p><strong>Oczekujące zgłoszenia:</strong> {{ $pendingCount }}</p>
+            <p><strong>Proponowane terminy:</strong> {{ $proposedCount }}</p>
+        </div>
+    </div>
+    @endif
+
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div id="calendar"
@@ -59,6 +68,9 @@
             <p class="mb-2"><strong>Wariant:</strong>  <span x-text="appointment.variant"></span></p>
             <p class="mb-2"><strong>Termin:</strong>   <span x-text="appointment.datetime"></span></p>
             <p class="mb-2"><strong>Status:</strong>   <span x-text="appointment.status"></span></p>
+            <template x-if="appointment.conflict">
+              <p class="mb-2 text-red-600 font-semibold">Termin pokrywa się z inną wizytą.</p>
+            </template>
             <template x-if="appointment.note_user">
               <p class="mb-2"><strong>Uwagi klienta:</strong> <span x-text="appointment.note_user"></span></p>
             </template>
@@ -213,6 +225,7 @@
       <select x-model="status" class="w-full mb-4 border rounded px-2 py-1">
         <option value="zaplanowana">Zaplanowana</option>
         <option value="oczekuje">Oczekuje</option>
+        <option value="proponowana">Proponowana</option>
         <option value="odbyta">Odbyta</option>
         <option value="odwołana">Odwołana</option>
         <option value="nieodbyta">Nieodbyta</option>
