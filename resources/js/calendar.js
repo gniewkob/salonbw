@@ -299,23 +299,24 @@ function initializeCalendar() {
 // Standardowa inicjalizacja przy załadowaniu DOM
 document.addEventListener('DOMContentLoaded', function() {
   // console.log('DOMContentLoaded event fired');
-  initializeCalendar();
+  const calendar = initializeCalendar();
 
   const params = new URLSearchParams(window.location.search);
   const jumpId = params.get('jump');
-  if (jumpId) {
-    const showAppointment = () => {
-      const el = document.getElementById('calendar');
-      const calendar = el ? el._fullCalendar || window.initCalendar() : null;
-      if (!calendar) return;
+  if (jumpId && calendar) {
+    const handleEventsSet = () => {
       const event = calendar.getEventById(jumpId);
       if (event) {
         calendar.gotoDate(event.start);
         const data = { ...event.extendedProps, id: event.id };
         window.dispatchEvent(new CustomEvent('open-view-modal', { detail: data }));
+        calendar.off('eventsSet', handleEventsSet);
       }
     };
-    setTimeout(showAppointment, 800);
+
+    // In case events are already loaded
+    handleEventsSet();
+    calendar.on('eventsSet', handleEventsSet);
   }
 
   document.addEventListener('click', function(e) {
