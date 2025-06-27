@@ -12,11 +12,21 @@ class AdminAppointmentController extends Controller
 {
     public function calendar()
     {
-        $pendingCount   = Appointment::where('status', 'oczekuje')->count();
-        $proposedCount  = Appointment::where('status', 'proponowana')->count();
+        $pendingAppointments  = Appointment::with(['user', 'serviceVariant.service'])
+            ->where('status', 'oczekuje')
+            ->orderBy('appointment_at')
+            ->get();
+
+        $proposedAppointments = Appointment::with(['user', 'serviceVariant.service'])
+            ->where('status', 'proponowana')
+            ->orderBy('appointment_at')
+            ->get();
+
         return view('admin.appointments.calendar', [
-            'pendingCount'  => $pendingCount,
-            'proposedCount' => $proposedCount,
+            'pendingCount'   => $pendingAppointments->count(),
+            'proposedCount'  => $proposedAppointments->count(),
+            'pendingList'    => $pendingAppointments,
+            'proposedList'   => $proposedAppointments,
         ]);
     }
     
