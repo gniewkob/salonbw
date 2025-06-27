@@ -5,6 +5,13 @@
             @csrf
             @method('PUT')
             <div class="mb-4">
+                <label class="block font-medium mb-2">Termin wizyty:</label>
+                <a href="{{ route('calendar', ['jump' => $appointment->id]) }}" class="text-blue-600 underline">
+                    {{ $appointment->appointment_at->format('Y-m-d H:i') }}
+                </a>
+                <p class="text-sm text-gray-500">Kliknij datę, aby otworzyć kalendarz i zmienić termin przez przeciąganie.</p>
+            </div>
+            <div class="mb-4">
                 <label for="note_client" class="block font-medium mb-2">Zalecenia dla klienta:</label>
                 <textarea name="note_client" id="note_client" class="w-full p-2 border rounded">{{ old('note_client', $appointment->note_client) }}</textarea>
             </div>
