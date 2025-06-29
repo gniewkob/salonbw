@@ -45,6 +45,44 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_phone_is_required_when_whatsapp_preference_selected(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'phone' => '',
+                'notification_preference' => 'whatsapp',
+            ]);
+
+        $response
+            ->assertSessionHasErrors('phone')
+            ->assertRedirect('/profile');
+    }
+
+    public function test_phone_is_required_when_both_preference_selected(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'phone' => '',
+                'notification_preference' => 'both',
+            ]);
+
+        $response
+            ->assertSessionHasErrors('phone')
+            ->assertRedirect('/profile');
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();
