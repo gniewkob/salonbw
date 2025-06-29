@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'phone', // ✅ Dodano do obsługi numeru telefonu
+        'notification_preference',
     ];
 
     /**

@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use App\View\Components\GuestLayout;
+use App\Models\Appointment;
+use App\Models\KontaktMessage;
+use App\Observers\AppointmentObserver;
+use App\Observers\KontaktMessageObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('guest-layout', \App\View\Components\GuestLayout::class);
-
-            
+        Appointment::observe(AppointmentObserver::class);
+        KontaktMessage::observe(KontaktMessageObserver::class);
     }
 }

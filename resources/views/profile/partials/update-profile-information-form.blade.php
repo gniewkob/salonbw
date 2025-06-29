@@ -47,6 +47,22 @@
             @endif
         </div>
 
+        <div>
+            <x-input-label for="phone" :value="__('Phone')" />
+            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" autocomplete="tel" />
+            <x-input-error class="mt-2" :messages="$errors->get('phone')" />
+        </div>
+
+        <div>
+            <x-input-label for="notification_preference" value="Preferencje powiadomień" />
+            <select id="notification_preference" name="notification_preference" class="mt-1 block w-full rounded-md">
+                <option value="email" @selected(old('notification_preference', $user->notification_preference) === 'email')>E-mail</option>
+                <option value="whatsapp" @selected(old('notification_preference', $user->notification_preference) === 'whatsapp')>WhatsApp</option>
+                <option value="both" @selected(old('notification_preference', $user->notification_preference) === 'both')>E-mail i WhatsApp</option>
+            </select>
+            <x-input-error class="mt-2" :messages="$errors->get('notification_preference')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
