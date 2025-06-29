@@ -10,16 +10,28 @@ class WhatsAppChannel
     public function send($notifiable, Notification $notification): void
     {
         $message = $notification->toWhatsApp($notifiable);
-        if (!$message || empty($message['to']) || empty($message['body'])) {
+        if (! $message || empty($message['to']) || empty($message['body'])) {
             return;
         }
 
-        Http::withBasicAuth(config('services.twilio.sid'), config('services.twilio.token'))
-            ->asForm()
-            ->post('https://api.twilio.com/2010-04-01/Accounts/' . config('services.twilio.sid') . '/Messages.json', [
-                'From' => 'whatsapp:' . config('services.twilio.whatsapp_from'),
-                'To' => 'whatsapp:' . $message['to'],
-                'Body' => $message['body'],
-            ]);
+        $token = config('services.whatsapp.token');
+        $phoneNumberId = config('services.whatsapp.phone_number_id');
+
+        if (! $token || ! $phoneNumberId) {
+            return;
+        }
+
+        Http::withToken($token)->post(
+            "https://graph.facebook.com/v19.0/{$phoneNumberId}/messages",
+            [
+                'messaging_product' => 'whatsapp',
+                'to' => $message['to'],
+                'type' => 'text',
+                'text' => [
+                    'body' => $message['body'],
+                ],
+            ]
+        );
     }
 }
+
