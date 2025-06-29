@@ -41,14 +41,7 @@ return [
 
     'whatsapp' => [
         'token' => env('WHATSAPP_TOKEN'),
-        'phone_id' => env('WHATSAPP_PHONE_ID'),
-        'lang' => env('WHATSAPP_TEMPLATE_LANG', 'pl'),
-    ],
 
-    'twilio' => [
-        'sid' => env('TWILIO_ACCOUNT_SID'),
-        'token' => env('TWILIO_AUTH_TOKEN'),
-        'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
     ],
 
 ];
