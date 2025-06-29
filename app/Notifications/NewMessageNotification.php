@@ -39,9 +39,13 @@ class NewMessageNotification extends Notification implements ShouldQueue
 
     public function toWhatsApp(object $notifiable): array
     {
+        $clientName = $notifiable->name;
+        $salonName = config('app.name');
+
         return [
+            'template_name' => 'nowa_wiadomosc',
+            'parameters' => [$clientName, $salonName],
             'to' => $notifiable->phone,
-            'body' => 'Otrzymałeś nową wiadomość od salonu.',
         ];
     }
 }
