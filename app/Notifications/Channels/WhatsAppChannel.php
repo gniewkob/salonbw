@@ -4,6 +4,7 @@ namespace App\Notifications\Channels;
 
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class WhatsAppChannel
 {
@@ -21,5 +22,10 @@ class WhatsAppChannel
                 'To' => 'whatsapp:' . $message['to'],
                 'Body' => $message['body'],
             ]);
+
+        Log::info('WhatsApp message sent', [
+            'to' => $message['to'],
+            'body' => $message['body'],
+        ]);
     }
 }

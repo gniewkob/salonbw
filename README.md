@@ -71,6 +71,7 @@ Install the dependencies and compile the assets before running the project local
 ```bash
 cp .env.example .env
 # set APP_KEY in .env
+# set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_WHATSAPP_FROM in .env
 
 composer install
 npm install
