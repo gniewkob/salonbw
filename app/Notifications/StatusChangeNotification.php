@@ -18,10 +18,17 @@ class StatusChangeNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        $channel = \App\Notifications\Channels\WhatsAppChannel::class;
+        $whatsAppChannel = \App\Notifications\Channels\WhatsAppChannel::class;
+
+        $sendWhatsApp = in_array($notifiable->notification_preference, ['whatsapp', 'both']);
+
+        if (property_exists($notifiable, 'whatsapp_opt_in')) {
+            $sendWhatsApp = $sendWhatsApp && (bool) $notifiable->whatsapp_opt_in;
+        }
+
         return match ($notifiable->notification_preference) {
-            'whatsapp' => [$channel],
-            'both' => ['mail', $channel],
+            'whatsapp' => $sendWhatsApp ? [$whatsAppChannel] : ['mail'],
+            'both' => $sendWhatsApp ? ['mail', $whatsAppChannel] : ['mail'],
             default => ['mail'],
         };
     }
@@ -37,9 +44,14 @@ class StatusChangeNotification extends Notification implements ShouldQueue
 
     public function toWhatsApp(object $notifiable): array
     {
+        $clientName = $notifiable->name;
+        $dateTime = $this->appointment->appointment_at->format('d.m.Y H:i');
+        $serviceOrSalon = $this->appointment->service->name ?? config('app.name');
+
         return [
+            'template_name' => 'status_zmiany_wizyty',
+            'parameters' => [$clientName, $dateTime, $serviceOrSalon],
             'to' => $notifiable->phone,
-            'body' => 'Status Twojej rezerwacji został zmieniony na: ' . $this->appointment->status,
         ];
     }
 }
