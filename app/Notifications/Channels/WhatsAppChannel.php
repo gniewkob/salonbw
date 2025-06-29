@@ -11,10 +11,6 @@ class WhatsAppChannel
     public function send($notifiable, Notification $notification): void
     {
         $message = $notification->toWhatsApp($notifiable);
-        if (! $message || empty($message['to']) || empty($message['body'])) {
-            return;
-        }
-
 
     }
 }
