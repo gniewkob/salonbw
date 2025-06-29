@@ -71,7 +71,6 @@ Install the dependencies and compile the assets before running the project local
 ```bash
 cp .env.example .env
 # set APP_KEY in .env
-# set WHATSAPP_TOKEN and WHATSAPP_PHONE_NUMBER_ID if you want WhatsApp notifications
 
 composer install
 npm install
