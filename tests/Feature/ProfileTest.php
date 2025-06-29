@@ -30,6 +30,8 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'phone' => '123456789',
+                'notification_preference' => 'email',
             ]);
 
         $response
@@ -52,6 +54,8 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
+                'phone' => '123456789',
+                'notification_preference' => 'email',
             ]);
 
         $response
