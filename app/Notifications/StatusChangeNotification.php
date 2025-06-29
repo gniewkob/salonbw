@@ -37,9 +37,14 @@ class StatusChangeNotification extends Notification implements ShouldQueue
 
     public function toWhatsApp(object $notifiable): array
     {
+        $clientName = $notifiable->name;
+        $dateTime = $this->appointment->appointment_at->format('d.m.Y H:i');
+        $serviceOrSalon = $this->appointment->service->name ?? config('app.name');
+
         return [
+            'template_name' => 'status_zmiany_wizyty',
+            'parameters' => [$clientName, $dateTime, $serviceOrSalon],
             'to' => $notifiable->phone,
-            'body' => 'Status Twojej rezerwacji został zmieniony na: ' . $this->appointment->status,
         ];
     }
 }
