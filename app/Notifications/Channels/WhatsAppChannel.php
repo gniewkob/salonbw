@@ -4,6 +4,7 @@ namespace App\Notifications\Channels;
 
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
+use App\Models\WhatsAppMessageLog;
 
 class WhatsAppChannel
 {
@@ -14,24 +15,7 @@ class WhatsAppChannel
             return;
         }
 
-        $token = config('services.whatsapp.token');
-        $phoneNumberId = config('services.whatsapp.phone_number_id');
 
-        if (! $token || ! $phoneNumberId) {
-            return;
-        }
-
-        Http::withToken($token)->post(
-            "https://graph.facebook.com/v19.0/{$phoneNumberId}/messages",
-            [
-                'messaging_product' => 'whatsapp',
-                'to' => $message['to'],
-                'type' => 'text',
-                'text' => [
-                    'body' => $message['body'],
-                ],
-            ]
-        );
     }
 }
 
