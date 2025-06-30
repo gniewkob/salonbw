@@ -7,6 +7,9 @@
             @if($appointment->discount_percent)
                 <li><b>Rabat:</b> {{ $appointment->discount_percent }}%</li>
             @endif
+            @if($appointment->coupon)
+                <li><b>Kupon:</b> {{ $appointment->coupon->code }}</li>
+            @endif
             <li><b>Data:</b> {{ $appointment->appointment_at }}</li>
             <li><b>Status:</b> {{ $appointment->status }}</li>
             @if($appointment->note_user)

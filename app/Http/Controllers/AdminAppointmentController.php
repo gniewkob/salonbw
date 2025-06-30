@@ -77,6 +77,8 @@ class AdminAppointmentController extends Controller
                     'service_variant_id' => $appointment->service_variant_id,
                     'price_pln' => $appointment->price_pln,
                     'discount_percent' => $appointment->discount_percent,
+                    'coupon_id' => $appointment->coupon_id,
+                    'coupon_code' => $appointment->coupon?->code,
                     'note_user' => $appointment->note_user,
                     'note_client' => $appointment->note_client,
                     'note_internal' => $appointment->note_internal,
