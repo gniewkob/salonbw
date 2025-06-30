@@ -32,8 +32,10 @@
                 <select name="status" id="status" class="w-full p-2 border rounded">
                     <option value="zaplanowana" @selected($appointment->status === 'zaplanowana')>Zaplanowana</option>
                     <option value="oczekuje" @selected($appointment->status === 'oczekuje')>Oczekuje</option>
+                    <option value="proponowana" @selected($appointment->status === 'proponowana')>Proponowana</option>
                     <option value="odbyta" @selected($appointment->status === 'odbyta')>Odbyta</option>
                     <option value="odwołana" @selected($appointment->status === 'odwołana')>Odwołana</option>
+                    <option value="nieodbyta" @selected($appointment->status === 'nieodbyta')>Nieodbyta</option>
                 </select>
             </div>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Zapisz zmiany</button>
