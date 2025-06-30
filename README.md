@@ -89,13 +89,13 @@ composer test
 
 ## WhatsApp Notifications
 
-To send notifications via WhatsApp the application uses the [WhatsApp Cloud API](https://developers.facebook.com/docs/whatsapp/). Provide the following variables in your `.env` file:
+The application integrates with the [WhatsApp Cloud API](https://developers.facebook.com/docs/whatsapp/) to deliver messages. Add the credentials below to your `.env` file:
 
 ```
-WHATSAPP_TOKEN=your-access-token
-WHATSAPP_PHONE_ID=your-phone-id
+WHATSAPP_TOKEN=your-access-token       # access token for the Cloud API
+WHATSAPP_PHONE_ID=your-phone-id        # identifier of the sending phone number
 # Optional, defaults to "pl"
 WHATSAPP_TEMPLATE_LANG=pl
 ```
 
-These credentials allow the custom WhatsApp notification channel to authenticate requests against Meta's API and send templated messages from the configured phone number.
+`WHATSAPP_TOKEN` and `WHATSAPP_PHONE_ID` come from your Meta Business account. They allow the custom notification channel to authenticate and send templated messages from the specified number.
