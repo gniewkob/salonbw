@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\AdminKontaktController;
 use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminCouponController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
@@ -119,6 +120,14 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+
+    // Kupony
+    Route::get('/kupony', [AdminCouponController::class, 'index'])->name('coupons.index');
+    Route::get('/kupony/nowy', [AdminCouponController::class, 'create'])->name('coupons.create');
+    Route::post('/kupony', [AdminCouponController::class, 'store'])->name('coupons.store');
+    Route::get('/kupony/{coupon}/edytuj', [AdminCouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/kupony/{coupon}', [AdminCouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/kupony/{coupon}', [AdminCouponController::class, 'destroy'])->name('coupons.destroy');
 });
 
 /*
