@@ -43,6 +43,7 @@ class AppointmentController extends Controller
             'appointment_at'     => 'required|date|after:now',
             'note_user'          => 'nullable|string',
             'allow_pending'      => 'nullable|boolean',
+            'coupon_code'        => 'nullable|string|exists:coupons,code',
         ]);
 
         $variant = ServiceVariant::with('service')->findOrFail($validated['service_variant_id']);
@@ -68,17 +69,33 @@ class AppointmentController extends Controller
             }
         }
 
-        $price = $variant->price_pln;
+        $discount = 0;
+        $coupon = null;
+        if (!empty($validated['coupon_code'])) {
+            $coupon = \App\Models\Coupon::where('code', $validated['coupon_code'])->first();
+            if (!$coupon || !$coupon->isValid()) {
+                return back()->withErrors(['coupon_code' => 'Nieprawidłowy kupon.'])->withInput();
+            }
+            $discount = $coupon->discount_percent;
+        }
+
+        $price = round($variant->price_pln * (100 - $discount) / 100);
 
         Appointment::create([
             'user_id'            => Auth::id(),
             'service_id'         => $variant->service->id,
             'service_variant_id' => $variant->id,
+            'coupon_id'          => $coupon?->id,
             'price_pln'          => $price,
+            'discount_percent'   => $discount,
             'appointment_at'     => $validated['appointment_at'],
             'status'             => $status,
             'note_user'          => $validated['note_user'] ?? null,
         ]);
+
+        if ($coupon) {
+            $coupon->increment('used_count');
+        }
 
         return redirect()->route('dashboard')->with('success', 'Rezerwacja została zapisana.');
     }
