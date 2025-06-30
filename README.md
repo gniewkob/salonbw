@@ -89,12 +89,13 @@ composer test
 
 ## WhatsApp Notifications
 
-To send notifications via WhatsApp the application uses [Twilio](https://www.twilio.com/). Provide the following variables in your `.env` file:
+To send notifications via WhatsApp the application uses the [WhatsApp Cloud API](https://developers.facebook.com/docs/whatsapp/). Provide the following variables in your `.env` file:
 
 ```
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_WHATSAPP_FROM=your-whatsapp-number
+WHATSAPP_TOKEN=your-access-token
+WHATSAPP_PHONE_ID=your-phone-id
+# Optional, defaults to "pl"
+WHATSAPP_TEMPLATE_LANG=pl
 ```
 
-These credentials allow the custom WhatsApp notification channel to authenticate requests against Twilio's API and send messages from the configured number.
+These credentials allow the custom WhatsApp notification channel to authenticate requests against Meta's API and send templated messages from the configured phone number.
