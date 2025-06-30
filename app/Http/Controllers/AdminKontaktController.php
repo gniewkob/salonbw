@@ -43,7 +43,7 @@ class AdminKontaktController extends Controller
             'is_from_admin'=> true,
             'is_read'      => false,
         ]);
-        // Możesz wysłać maila/SMS/WhatsApp do klienta...
+        // Powiadomienia są wysyłane przez KontaktMessageObserver
         return back()->with('success', 'Odpowiedź wysłana do klienta.');
     }
 
