@@ -46,6 +46,10 @@
                                 <input type="hidden" name="allow_pending" id="allow-pending" value="0">
                         </div>
 
+                        <div>
+                                <label class="block font-medium mb-1">Kod kuponu (opcjonalnie)</label>
+                                <input type="text" name="coupon_code" class="w-full border rounded px-4 py-2" value="{{ old('coupon_code') }}">
+                        </div>
 
                         <div>
                                 <label class="block font-medium mb-1">Uwagi / specjalne wymagania</label>

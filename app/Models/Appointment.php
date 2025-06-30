@@ -10,6 +10,7 @@ class Appointment extends Model
         'user_id',
         'service_id',
         'service_variant_id',
+        'coupon_id',
         'price_pln',
         'discount_percent',
         'note_user',
@@ -27,6 +28,7 @@ class Appointment extends Model
         'appointment_at' => 'datetime',
         'price_pln' => 'integer',
         'discount_percent' => 'integer',
+        'coupon_id' => 'integer',
         'amount_paid_pln' => 'integer',
     ];
 
@@ -51,5 +53,10 @@ class Appointment extends Model
     public function variant()
     {
         return $this->serviceVariant();
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }
