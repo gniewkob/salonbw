@@ -7,6 +7,8 @@ use App\Models\Appointment;
 use App\Models\Service;
 use App\Models\ServiceVariant;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Notifications\StatusChangeNotification;
 
 class AppointmentController extends Controller
 {
@@ -104,5 +106,39 @@ class AppointmentController extends Controller
             ->paginate(10);
 
         return view('appointments.index', compact('appointments'));
+    }
+
+    public function confirm(Appointment $appointment)
+    {
+        abort_unless($appointment->user_id === Auth::id(), 403);
+
+        abort_unless(in_array($appointment->status, ['oczekuje', 'proponowana']), 404);
+
+        $appointment->update(['status' => 'zaplanowana']);
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new StatusChangeNotification($appointment));
+        }
+
+        return redirect()->route('appointments.index')
+            ->with('success', 'Rezerwacja została potwierdzona.');
+    }
+
+    public function decline(Appointment $appointment)
+    {
+        abort_unless($appointment->user_id === Auth::id(), 403);
+
+        abort_unless(in_array($appointment->status, ['oczekuje', 'proponowana']), 404);
+
+        $appointment->update(['status' => 'odwołana']);
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new StatusChangeNotification($appointment));
+        }
+
+        return redirect()->route('appointments.index')
+            ->with('success', 'Rezerwacja została odwołana.');
     }
 }
