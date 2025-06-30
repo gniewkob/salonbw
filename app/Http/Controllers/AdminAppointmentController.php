@@ -97,9 +97,9 @@ class AdminAppointmentController extends Controller
         ]);
         
         // Sprawdzenie czy nowy termin jest w godzinach pracy
-        $newDateTime = Carbon::parse($request->appointment_at);
-        $dayOfWeek = $newDateTime->dayOfWeek;
-        $timeOfDay = $newDateTime->format('H:i');
+        $newTime = Carbon::parse($request->appointment_at);
+        $dayOfWeek = $newTime->dayOfWeek;
+        $timeOfDay = $newTime->format('H:i');
         
         // Pobierz godziny pracy dla danego dnia tygodnia
         // Domyślne godziny pracy
@@ -121,7 +121,14 @@ class AdminAppointmentController extends Controller
             ]);
         }
         
-        $appointment->update(['appointment_at' => $request->appointment_at]);
+        $fields = ['appointment_at' => $newTime];
+
+        if (!$appointment->appointment_at->equalTo($newTime)) {
+            $fields['status'] = 'proponowana';
+        }
+
+        $appointment->update($fields);
+
         return response()->json(['success' => true]);
     }
     
