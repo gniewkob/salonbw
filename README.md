@@ -70,7 +70,8 @@ Install the dependencies and compile the assets before running the project local
 
 ```bash
 cp .env.example .env
-# set APP_KEY in .env
+# edit `.env` and set APP_KEY, WHATSAPP_TOKEN and WHATSAPP_PHONE_ID
+# optionally set WHATSAPP_TEMPLATE_LANG (defaults to "pl")
 
 composer install
 npm install
