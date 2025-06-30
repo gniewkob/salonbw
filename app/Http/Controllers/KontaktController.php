@@ -23,6 +23,11 @@ class KontaktController extends Controller
         $message = KontaktMessage::with(['replies', 'replies.admin'])->findOrFail($id);
         abort_if($message->user_id !== auth()->id(), 403);
 
+        if (! $message->is_read) {
+            $message->update(['is_read' => true]);
+            $message->replies()->where('is_from_admin', true)->update(['is_read' => true]);
+        }
+
         return view('messages.show', compact('message'));
     }
 

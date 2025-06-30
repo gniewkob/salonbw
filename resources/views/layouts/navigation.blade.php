@@ -1,4 +1,22 @@
 <nav x-data="{ open: false }" class="bg-white border-b sticky top-0 z-50">
+    @php
+        use Illuminate\Support\Facades\Auth;
+        use App\Models\KontaktMessage;
+
+        $unreadMessages = 0;
+        if (Auth::check()) {
+            if (Auth::user()->role === 'admin') {
+                $unreadMessages = KontaktMessage::where('is_from_admin', false)
+                    ->where('is_read', false)
+                    ->count();
+            } else {
+                $unreadMessages = KontaktMessage::where('user_id', Auth::id())
+                    ->where('is_from_admin', true)
+                    ->where('is_read', false)
+                    ->count();
+            }
+        }
+    @endphp
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center py-4">
             <div class="flex items-center">
@@ -51,11 +69,19 @@
                     <a href="{{ route('admin.services.index') }}" class="block text-gray-700">Usługi (admin)</a>
                     <a href="{{ route('admin.calendar') }}" class="block text-gray-700">Kalendarz</a>
                     <a href="{{ route('admin.kontakt.edit') }}" class="block text-gray-700">Kontakt</a>
-                    <a href="{{ route('admin.messages.index') }}" class="block text-gray-700">Wiadomości</a>
+                    <a href="{{ route('admin.messages.index') }}" class="block text-gray-700">Wiadomości
+                        @if($unreadMessages > 0)
+                            <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('admin.users.index') }}" class="block text-gray-700">Użytkownicy</a>
                 @else
                     <a href="{{ route('appointments.index') }}" class="block text-gray-700">Moje rezerwacje</a>
-                    <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości</a>
+                    <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości
+                        @if($unreadMessages > 0)
+                            <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
+                        @endif
+                    </a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" class="block">
                     @csrf
@@ -84,6 +110,9 @@
                 <a href="{{ route('admin.messages.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-chat-bubble-left class="w-4 h-4 mr-1 text-gray-500" />
                     Wiadomości
+                    @if($unreadMessages > 0)
+                        <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
+                    @endif
                 </a>
                 <a href="{{ route('admin.users.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-user-group class="w-4 h-4 mr-1 text-gray-500" />
@@ -97,6 +126,9 @@
                 <a href="{{ route('messages.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-chat-bubble-left class="w-4 h-4 mr-1 text-gray-500" />
                     Wiadomości
+                    @if($unreadMessages > 0)
+                        <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
+                    @endif
                 </a>
             @endif
         </div>
