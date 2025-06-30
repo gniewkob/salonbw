@@ -233,6 +233,11 @@ class AdminAppointmentController extends Controller
         $price    = $request->price_pln ?? $variant->price_pln;
         $price    = round($price * (100 - $discount) / 100);
 
+        $status = $request->status;
+        if ($appointment->appointment_at->ne($newDateTime) && $status === 'zaplanowana') {
+            $status = 'proponowana';
+        }
+
         $appointment->update([
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
@@ -240,7 +245,7 @@ class AdminAppointmentController extends Controller
             'price_pln' => $price,
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
-            'status' => $request->status,
+            'status' => $status,
             'note_user' => $request->note_user,
             'service_description' => $request->service_description,
             'products_used' => $request->products_used,
