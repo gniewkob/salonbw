@@ -59,6 +59,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::get('/rezerwacje/busy', [AppointmentController::class, 'busyTimes'])->name('appointments.busy');
+    Route::patch('/appointments/{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('appointments.confirm');
+    Route::patch('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
     Route::get('/moje-wiadomosci', [KontaktController::class, 'myMessages'])->name('messages.index');
     Route::get('/moje-wiadomosci/nowa', [KontaktController::class, 'create'])->name('messages.create');
     Route::post('/moje-wiadomosci', [KontaktController::class, 'store'])->name('messages.store');
