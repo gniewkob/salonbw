@@ -132,6 +132,19 @@ function initializeCalendar() {
             // Uaktualnij dane wydarzenia, aby klikanie pokazywało nowy termin
             const local = newDate.substring(0,16).replace('T', ' ');
             info.event.setExtendedProp('datetime', local);
+            // Odswiezenie danych z API, aby kalendarz od razu pokazal zmiany
+            if (info.view && info.view.calendar) {
+              info.view.calendar.refetchEvents();
+            }
+            if (data.color) {
+              info.event.setProp('backgroundColor', data.color);
+              info.event.setProp('borderColor', data.color);
+            }
+            if (data.extendedProps) {
+              Object.entries(data.extendedProps).forEach(([key, val]) => {
+                info.event.setExtendedProp(key, val);
+              });
+            }
             showNotification('Termin rezerwacji został zaktualizowany.');
           } else {
             info.revert();
