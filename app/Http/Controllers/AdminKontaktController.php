@@ -25,9 +25,13 @@ class AdminKontaktController extends Controller
     {
         $message = KontaktMessage::with(['user', 'replies.user', 'replies.admin'])->findOrFail($id);
 
+        $message->replies()
+            ->where('is_from_admin', false)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
         if (! $message->is_read) {
             $message->update(['is_read' => true]);
-            $message->replies()->where('is_from_admin', false)->update(['is_read' => true]);
         }
 
         return view('admin.messages.show', compact('message'));
