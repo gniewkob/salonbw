@@ -11,7 +11,11 @@ class AdminDashboardController extends Controller
     public function index()
     {
         $unreadMessages = KontaktMessage::where('is_from_admin', false)
-            ->where('is_read', false)
+            ->whereNull('reply_to_id')
+            ->whereIn('status', [
+                KontaktMessage::STATUS_SENT,
+                KontaktMessage::STATUS_NEW_REPLY,
+            ])
             ->count();
 
         $userCount = User::count();

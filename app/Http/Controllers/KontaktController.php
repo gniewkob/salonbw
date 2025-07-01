@@ -28,9 +28,10 @@ class KontaktController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        if (! $message->is_read) {
-            $message->update(['is_read' => true]);
-        }
+        $message->update([
+            'is_read' => true,
+            'status'  => KontaktMessage::STATUS_READ,
+        ]);
 
         return view('messages.show', compact('message'));
     }
@@ -70,7 +71,7 @@ class KontaktController extends Controller
                 'reply_to_id'   => null, // ensure new thread
                 'is_from_admin' => false,
                 'is_read'       => false,
-                'status'        => 'nowa',
+                'status'        => KontaktMessage::STATUS_SENT,
             ]);
         } else {
             $request->validate([
@@ -90,7 +91,7 @@ class KontaktController extends Controller
                 'reply_to_id'    => null, // ensure new thread for guests
                 'is_from_admin'  => false,
                 'is_read'        => false,
-                'status'         => 'nowa',
+                'status'         => KontaktMessage::STATUS_SENT,
             ]);
         }
 
@@ -116,8 +117,10 @@ class KontaktController extends Controller
             'user_id'       => auth()->id(),
             'is_from_admin' => false,
             'is_read'       => false,
-            'status'        => 'nowa',
+            'status'        => KontaktMessage::STATUS_SENT,
         ]);
+
+        $parent->update(['status' => KontaktMessage::STATUS_NEW_REPLY]);
 
         return back()->with('success', 'Twoja wiadomość została wysłana.');
     }

@@ -30,9 +30,10 @@ class AdminKontaktController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        if (! $message->is_read) {
-            $message->update(['is_read' => true]);
-        }
+        $message->update([
+            'is_read' => true,
+            'status'  => KontaktMessage::STATUS_READ,
+        ]);
 
         return view('admin.messages.show', compact('message'));
     }
@@ -52,7 +53,10 @@ class AdminKontaktController extends Controller
             'reply_to_id'  => $parent->id,
             'is_from_admin'=> true,
             'is_read'      => false,
+            'status'       => KontaktMessage::STATUS_SENT,
         ]);
+
+        $parent->update(['status' => KontaktMessage::STATUS_NEW_REPLY]);
         // Powiadomienia są wysyłane przez KontaktMessageObserver
         return back()->with('success', 'Odpowiedź wysłana do klienta.');
     }
