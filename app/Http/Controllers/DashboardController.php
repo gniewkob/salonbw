@@ -34,8 +34,8 @@ class DashboardController extends Controller
             ->count();
 
         $unreadMessages = KontaktMessage::where('user_id', $userId)
-            ->where('is_from_admin', true)
-            ->where('is_read', false)
+            ->whereNull('reply_to_id')
+            ->where('status', KontaktMessage::STATUS_NEW_REPLY)
             ->count();
 
         return view('dashboard', [
