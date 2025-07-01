@@ -9,6 +9,10 @@ class KontaktMessage extends Model
 {
     use HasFactory;
 
+    public const STATUS_SENT = 'wyslane';
+    public const STATUS_READ = 'odczytana';
+    public const STATUS_NEW_REPLY = 'nowa';
+
     protected $table = 'kontakt_messages';
 
     protected $fillable = [
@@ -27,7 +31,7 @@ class KontaktMessage extends Model
     protected $attributes = [
         'is_from_admin' => false,
         'is_read' => false,
-        'status' => 'nowa',
+        'status' => self::STATUS_SENT,
     ];
 
     protected $casts = [
