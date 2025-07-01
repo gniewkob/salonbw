@@ -79,6 +79,9 @@ function initializeCalendar() {
       },
       eventClick(info) {
         // console.log('Kliknięto wydarzenie:', info);
+        if (info.event.extendedProps && info.event.extendedProps.is_blocker) {
+          return;
+        }
         if (window.modalIsOpen) {
           // console.log('Modal jest już otwarty, blokowanie kliknięcia');
           return; // blokada wielokrotnego otwierania
@@ -93,6 +96,10 @@ function initializeCalendar() {
       editable: true,
       eventDrop: function(info) {
         // console.log('Przeciągnięto wydarzenie:', info);
+        if (info.event.extendedProps && info.event.extendedProps.is_blocker) {
+          info.revert();
+          return;
+        }
         // Sprawdzenie czy modal jest otwarty
         if (window.modalIsOpen) {
           info.revert();
@@ -159,6 +166,10 @@ function initializeCalendar() {
       },
       eventResize: function(info) {
         // console.log('Zmieniono rozmiar wydarzenia:', info);
+        if (info.event.extendedProps && info.event.extendedProps.is_blocker) {
+          info.revert();
+          return;
+        }
         // Sprawdzenie czy modal jest otwarty
         if (window.modalIsOpen) {
           info.revert();
@@ -188,6 +199,10 @@ function initializeCalendar() {
       },
       // Dodajemy wyraźne style dla wydarzeń, aby były łatwiejsze do przeciągania
       eventDidMount: function(info) {
+        if (info.event.extendedProps && info.event.extendedProps.is_blocker) {
+          info.el.style.cursor = 'not-allowed';
+          return;
+        }
         // Dodajemy kursor wskazujący, że element można przeciągnąć
         info.el.style.cursor = 'move';
         // Dodajemy efekt hover
