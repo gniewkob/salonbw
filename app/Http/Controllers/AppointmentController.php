@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\ServiceVariant;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Blocker;
 use App\Notifications\StatusChangeNotification;
 
 class AppointmentController extends Controller
@@ -105,14 +106,25 @@ class AppointmentController extends Controller
     public function busyTimes()
     {
         $appointments = Appointment::with('serviceVariant')->get();
+        $blockers     = Blocker::all();
 
-        return $appointments->map(function ($appt) {
+        $appointmentEvents = $appointments->map(function ($appt) {
             $end = (clone $appt->appointment_at)->addMinutes($appt->serviceVariant->duration_minutes ?? 60);
             return [
                 'start' => $appt->appointment_at,
                 'end'   => $end,
             ];
         });
+
+        $blockerEvents = $blockers->map(function ($blocker) {
+            $end = $blocker->ends_at ?? $blocker->starts_at->copy()->addHour();
+            return [
+                'start' => $blocker->starts_at,
+                'end'   => $end,
+            ];
+        });
+
+        return $appointmentEvents->merge($blockerEvents);
     }
 
     public function index()
