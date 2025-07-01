@@ -7,16 +7,31 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 text-gray-900 space-y-2">
-                <p>Witaj, <strong>{{ Auth::user()->name }}</strong>!</p>
-                <p>To jest Twoje centrum zarządzania. Wkrótce pojawią się tutaj:</p>
-                <ul class="list-disc list-inside text-sm text-gray-700">
-                    <li>Twoje rezerwacje</li>
-                    <li>Lista dostępnych usług</li>
-                    <li>Profil użytkownika</li>
-                </ul>
-            </div>
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Najbliższa wizyta</p>
+                    @if($nextAppointment)
+                        <p class="mt-2 font-semibold">
+                            {{ $nextAppointment->appointment_at->format('d.m.Y H:i') }}
+                        </p>
+                        <p class="text-xs text-gray-600 capitalize">{{ $nextAppointment->status }}</p>
+                    @else
+                        <p class="mt-2 text-gray-400 italic">Brak zaplanowanych wizyt</p>
+                    @endif
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Odbyte wizyty</p>
+                    <p class="mt-2 text-2xl font-bold">{{ $pastCount }}</p>
+                    <p class="text-sm text-gray-500 mt-1">Nieodbyte: {{ $missedCount }}</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Oczekuje potwierdzenia</p>
+                    <p class="mt-2 text-2xl font-bold">{{ $pendingCount }}</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-sm text-gray-500">Nieprzeczytane wiadomości</p>
+                    <p class="mt-2 text-2xl font-bold">{{ $unreadMessages }}</p>
+                </div>
             </div>
         </div>
     </div>

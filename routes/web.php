@@ -4,11 +4,13 @@ use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\AdminKontaktController;
 use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminCouponController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationEntryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GalleryController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,9 +43,7 @@ Route::post('/kontakt', [KontaktController::class, 'store'])->name('kontakt.stor
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -60,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::get('/rezerwacje/busy', [AppointmentController::class, 'busyTimes'])->name('appointments.busy');
+    Route::patch('/appointments/{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('appointments.confirm');
+    Route::patch('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
     Route::get('/moje-wiadomosci', [KontaktController::class, 'myMessages'])->name('messages.index');
     Route::get('/moje-wiadomosci/nowa', [KontaktController::class, 'create'])->name('messages.create');
     Route::post('/moje-wiadomosci', [KontaktController::class, 'store'])->name('messages.store');
@@ -118,6 +120,14 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+
+    // Kupony
+    Route::get('/kupony', [AdminCouponController::class, 'index'])->name('coupons.index');
+    Route::get('/kupony/nowy', [AdminCouponController::class, 'create'])->name('coupons.create');
+    Route::post('/kupony', [AdminCouponController::class, 'store'])->name('coupons.store');
+    Route::get('/kupony/{coupon}/edytuj', [AdminCouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/kupony/{coupon}', [AdminCouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/kupony/{coupon}', [AdminCouponController::class, 'destroy'])->name('coupons.destroy');
 });
 
 /*
