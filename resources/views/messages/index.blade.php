@@ -12,13 +12,17 @@
 
         @forelse($messages as $msg)
             @php
+                $unreadAdminReplies = $msg->replies
+                    ->where('is_from_admin', true)
+                    ->where('is_read', false)
+                    ->count();
+
                 $textColor = '';
-                if (! $msg->is_read && $msg->is_from_admin) {
+
+                if ($unreadAdminReplies > 0) {
                     $textColor = 'text-red-600';
-                } elseif ($msg->replies->where('is_from_admin', true)->isEmpty()) {
+                } elseif ($msg->replies->where('is_from_admin', true)->count() === 0) {
                     $textColor = 'text-orange-600';
-                } elseif ($msg->replies->where('is_from_admin', true)->isNotEmpty() && $msg->is_read) {
-                    $textColor = 'text-green-600';
                 }
             @endphp
             <a href="{{ route('messages.show', $msg->id) }}" class="block bg-white p-4 rounded-lg shadow mb-4 hover:bg-gray-50 {{ $textColor }}">

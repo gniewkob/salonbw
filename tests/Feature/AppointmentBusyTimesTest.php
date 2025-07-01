@@ -49,7 +49,7 @@ class AppointmentBusyTimesTest extends TestCase
         $data = $response->json();
 
         $this->assertCount(2, $data);
-        $starts = array_column($data, 'start');
+        $starts = array_map(fn ($s) => Carbon::parse($s)->setTimezone('Europe/Warsaw')->format('Y-m-d H:i:s'), array_column($data, 'start'));
         $this->assertContains($appointmentTime->format('Y-m-d H:i:s'), $starts);
         $this->assertContains($blockerStart->format('Y-m-d H:i:s'), $starts);
     }
