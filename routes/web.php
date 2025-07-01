@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminCouponController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminBlockerController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
@@ -105,6 +106,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::patch('/kalendarz/{appointment}/cancel', [AdminAppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::patch('/kalendarz/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
     Route::get('/kalendarz/{appointment}', [AdminAppointmentController::class, 'show'])->name('appointments.show');
+
+    // Blokady
+    Route::get('/blokady', [AdminBlockerController::class, 'calendar'])->name('blockers.calendar');
+    Route::get('/blokady/api', [AdminBlockerController::class, 'api'])->name('blockers.api');
     
     // API do dropdownów i godzin pracy
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');
