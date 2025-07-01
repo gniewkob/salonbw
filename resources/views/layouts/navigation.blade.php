@@ -69,6 +69,7 @@
                     <a href="{{ route('dashboard') }}" class="block text-gray-700">Dashboard</a>
                     <a href="{{ route('admin.services.index') }}" class="block text-gray-700">Usługi (admin)</a>
                     <a href="{{ route('admin.calendar') }}" class="block text-gray-700">Kalendarz</a>
+                    <a href="{{ route('admin.blockers.calendar') }}" class="block text-gray-700">Blokady</a>
                     <a href="{{ route('admin.kontakt.edit') }}" class="block text-gray-700">Kontakt</a>
                     <a href="{{ route('admin.messages.index') }}" class="block text-gray-700">Wiadomości
                         @if($unreadMessages > 0)
@@ -79,6 +80,7 @@
                 @else
                     <a href="{{ route('dashboard') }}" class="block text-gray-700">Dashboard</a>
                     <a href="{{ route('appointments.index') }}" class="block text-gray-700">Moje rezerwacje</a>
+                    <a href="{{ route('appointments.calendar') }}" class="block text-gray-700">Kalendarz wizyt</a>
                     <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości
                         @if($unreadMessages > 0)
                             <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
@@ -109,6 +111,10 @@
                     <x-heroicon-o-calendar class="w-4 h-4 mr-1 text-gray-500" />
                     Kalendarz
                 </a>
+                <a href="{{ route('admin.blockers.calendar') }}" class="flex items-center text-gray-700 hover:underline">
+                    <x-heroicon-o-lock-closed class="w-4 h-4 mr-1 text-gray-500" />
+                    Blokady
+                </a>
                 <a href="{{ route('admin.kontakt.edit') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-phone class="w-4 h-4 mr-1 text-gray-500" />
                     Kontakt
@@ -132,6 +138,10 @@
                 <a href="{{ route('appointments.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-calendar-days class="w-4 h-4 mr-1 text-gray-500" />
                     Moje rezerwacje
+                </a>
+                <a href="{{ route('appointments.calendar') }}" class="flex items-center text-gray-700 hover:underline">
+                    <x-heroicon-o-calendar class="w-4 h-4 mr-1 text-gray-500" />
+                    Kalendarz
                 </a>
                 <a href="{{ route('messages.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-chat-bubble-left class="w-4 h-4 mr-1 text-gray-500" />

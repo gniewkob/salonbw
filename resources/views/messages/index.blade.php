@@ -11,7 +11,17 @@
         @endif
 
         @forelse($messages as $msg)
-            <a href="{{ route('messages.show', $msg->id) }}" class="block bg-white p-4 rounded-lg shadow mb-4 hover:bg-gray-50">
+            @php
+                $textColor = '';
+                if (! $msg->is_read && $msg->is_from_admin) {
+                    $textColor = 'text-red-600';
+                } elseif ($msg->replies->where('is_from_admin', true)->isEmpty()) {
+                    $textColor = 'text-orange-600';
+                } elseif ($msg->replies->where('is_from_admin', true)->isNotEmpty() && $msg->is_read) {
+                    $textColor = 'text-green-600';
+                }
+            @endphp
+            <a href="{{ route('messages.show', $msg->id) }}" class="block bg-white p-4 rounded-lg shadow mb-4 hover:bg-gray-50 {{ $textColor }}">
                 <div class="flex items-start justify-between">
                     <span class="font-semibold">{{ Str::limit($msg->message, 60) }}</span>
                     <span class="text-xs text-gray-500">{{ $msg->created_at->diffForHumans() }}</span>
