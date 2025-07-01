@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminCouponController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminBlockerController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
@@ -58,6 +59,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/moje-wizyty', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/moje-wizyty/{id}', [AppointmentController::class, 'show'])->name('appointments.show');
+    Route::get('/kalendarz/moje-wizyty', [AppointmentController::class, 'calendar'])->name('appointments.calendar');
+    Route::get('/kalendarz/moje-wizyty/api', [AppointmentController::class, 'calendarApi'])->name('appointments.calendar.api');
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::get('/rezerwacje/busy', [AppointmentController::class, 'busyTimes'])->name('appointments.busy');
@@ -105,6 +108,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::patch('/kalendarz/{appointment}/cancel', [AdminAppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::patch('/kalendarz/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
     Route::get('/kalendarz/{appointment}', [AdminAppointmentController::class, 'show'])->name('appointments.show');
+
+    // Blokady
+    Route::get('/blokady', [AdminBlockerController::class, 'calendar'])->name('blockers.calendar');
+    Route::get('/blokady/api', [AdminBlockerController::class, 'api'])->name('blockers.api');
     
     // API do dropdownów i godzin pracy
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');

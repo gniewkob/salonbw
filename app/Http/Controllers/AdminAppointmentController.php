@@ -4,9 +4,11 @@ use App\Models\Appointment;
 use App\Models\ServiceVariant;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Blocker;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class AdminAppointmentController extends Controller
 {
@@ -33,6 +35,7 @@ class AdminAppointmentController extends Controller
     public function api()
     {
         $appointments = Appointment::with(['user', 'serviceVariant.service'])->get();
+        $blockers = Blocker::all();
 
         foreach ($appointments as $appointment) {
             $start = $appointment->appointment_at;
@@ -48,7 +51,7 @@ class AdminAppointmentController extends Controller
                 });
         }
 
-        return $appointments->map(function ($appointment) {
+        $appointmentEvents = $appointments->map(function ($appointment) {
             $color = match ($appointment->status) {
                 'odbyta'       => '#38a169',
                 'odwołana'     => '#e53e3e',
@@ -90,6 +93,22 @@ class AdminAppointmentController extends Controller
                 ],
             ];
         });
+
+        $blockerEvents = $blockers->map(function ($blocker) {
+            return [
+                'id' => 'blocker-' . $blocker->id,
+                'title' => 'Blokada',
+                'start' => $blocker->starts_at,
+                'end' => ($blocker->ends_at ?? Carbon::parse($blocker->starts_at)->addHour())->toDateTimeString(),
+                'color' => '#6b7280',
+                'extendedProps' => [
+                    'is_blocker' => true,
+                    'note' => $blocker->note,
+                ],
+            ];
+        });
+
+        return $appointmentEvents->merge($blockerEvents);
     }
     
     public function updateAppointmentTime(Request $request, Appointment $appointment)
@@ -159,6 +178,13 @@ class AdminAppointmentController extends Controller
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
+
+        $user = User::find($request->user_id);
+        if ($user && $user->role === 'admin') {
+            throw ValidationException::withMessages([
+                'user_id' => ['Administratorzy powinni utworzyć blokadę czasu (blocker) zamiast wizyty.'],
+            ]);
+        }
         
         // Sprawdzenie czy termin jest w godzinach pracy
         $newDateTime = Carbon::parse($request->appointment_at);
@@ -217,6 +243,13 @@ class AdminAppointmentController extends Controller
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
+
+        $user = User::find($request->user_id);
+        if ($user && $user->role === 'admin') {
+            throw ValidationException::withMessages([
+                'user_id' => ['Administratorzy powinni utworzyć blokadę czasu (blocker) zamiast wizyty.'],
+            ]);
+        }
 
         $newDateTime = Carbon::parse($request->appointment_at);
         $dayOfWeek = $newDateTime->dayOfWeek;
