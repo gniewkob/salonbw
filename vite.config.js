@@ -10,6 +10,7 @@ export default defineConfig({
         'resources/js/app.js',
         'resources/js/calendar.js',
         'resources/js/userCalendar.js',
+        'resources/js/userAppointmentsCalendar.js',
       ],
       refresh: true,
     }),

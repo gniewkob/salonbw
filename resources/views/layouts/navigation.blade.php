@@ -80,6 +80,7 @@
                 @else
                     <a href="{{ route('dashboard') }}" class="block text-gray-700">Dashboard</a>
                     <a href="{{ route('appointments.index') }}" class="block text-gray-700">Moje rezerwacje</a>
+                    <a href="{{ route('appointments.calendar') }}" class="block text-gray-700">Kalendarz wizyt</a>
                     <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości
                         @if($unreadMessages > 0)
                             <span class="ml-1 bg-red-500 text-white rounded-full px-2 text-xs">{{ $unreadMessages }}</span>
@@ -137,6 +138,10 @@
                 <a href="{{ route('appointments.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-calendar-days class="w-4 h-4 mr-1 text-gray-500" />
                     Moje rezerwacje
+                </a>
+                <a href="{{ route('appointments.calendar') }}" class="flex items-center text-gray-700 hover:underline">
+                    <x-heroicon-o-calendar class="w-4 h-4 mr-1 text-gray-500" />
+                    Kalendarz
                 </a>
                 <a href="{{ route('messages.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-chat-bubble-left class="w-4 h-4 mr-1 text-gray-500" />
