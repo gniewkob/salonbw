@@ -11,9 +11,9 @@ class KontaktController extends Controller
     {
         $messages = KontaktMessage::where('user_id', auth()->id())
             ->whereNull('reply_to_id')
-            ->with('replies')
+            ->with(['replies:id,reply_to_id,is_from_admin,is_read'])
             ->orderByDesc('created_at')
-            ->get();
+            ->get(['id','message','created_at','is_from_admin','is_read']);
 
         return view('messages.index', compact('messages'));
     }
@@ -23,9 +23,13 @@ class KontaktController extends Controller
         $message = KontaktMessage::with(['replies', 'replies.admin'])->findOrFail($id);
         abort_if($message->user_id !== auth()->id(), 403);
 
+        $message->replies()
+            ->where('is_from_admin', true)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
         if (! $message->is_read) {
             $message->update(['is_read' => true]);
-            $message->replies()->where('is_from_admin', true)->update(['is_read' => true]);
         }
 
         return view('messages.show', compact('message'));
