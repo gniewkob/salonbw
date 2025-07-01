@@ -35,8 +35,12 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
-        // Domyślne zachowanie
-        return redirect()->intended(RouteServiceProvider::HOME);
+        // Domyślne zachowanie z rozróżnieniem roli
+        $home = auth()->user()->role === 'admin'
+            ? route('admin.dashboard')
+            : RouteServiceProvider::HOME;
+
+        return redirect()->intended($home);
     }
 
     /**

@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminKontaktController;
 use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminCouponController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
@@ -75,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     // Usługi
     Route::get('/uslugi', [AdminServiceController::class, 'index'])->name('services.index');
     Route::get('/uslugi/nowa', [AdminServiceController::class, 'create'])->name('services.create');
