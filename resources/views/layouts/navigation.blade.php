@@ -66,6 +66,7 @@
             <a href="{{ route('reservation.entry') }}" class="block text-indigo-600 font-semibold">Rezerwuj</a>
             @auth
                 @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('dashboard') }}" class="block text-gray-700">Dashboard</a>
                     <a href="{{ route('admin.services.index') }}" class="block text-gray-700">Usługi (admin)</a>
                     <a href="{{ route('admin.calendar') }}" class="block text-gray-700">Kalendarz</a>
                     <a href="{{ route('admin.kontakt.edit') }}" class="block text-gray-700">Kontakt</a>
@@ -76,6 +77,7 @@
                     </a>
                     <a href="{{ route('admin.users.index') }}" class="block text-gray-700">Użytkownicy</a>
                 @else
+                    <a href="{{ route('dashboard') }}" class="block text-gray-700">Dashboard</a>
                     <a href="{{ route('appointments.index') }}" class="block text-gray-700">Moje rezerwacje</a>
                     <a href="{{ route('messages.index') }}" class="block text-gray-700">Wiadomości
                         @if($unreadMessages > 0)
@@ -95,6 +97,10 @@
         @auth
         <div class="hidden md:flex mt-4 pt-2 border-t flex-wrap gap-6 text-sm">
             @if(Auth::user()->role === 'admin')
+                <a href="{{ route('dashboard') }}" class="flex items-center text-gray-700 hover:underline">
+                    <x-heroicon-o-home-modern class="w-4 h-4 mr-1 text-gray-500" />
+                    Dashboard
+                </a>
                 <a href="{{ route('admin.services.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-cog class="w-4 h-4 mr-1 text-gray-500" />
                     Usługi (admin)
@@ -119,6 +125,10 @@
                     Użytkownicy
                 </a>
             @else
+                <a href="{{ route('dashboard') }}" class="flex items-center text-gray-700 hover:underline">
+                    <x-heroicon-o-home-modern class="w-4 h-4 mr-1 text-gray-500" />
+                    Dashboard
+                </a>
                 <a href="{{ route('appointments.index') }}" class="flex items-center text-gray-700 hover:underline">
                     <x-heroicon-o-calendar-days class="w-4 h-4 mr-1 text-gray-500" />
                     Moje rezerwacje
