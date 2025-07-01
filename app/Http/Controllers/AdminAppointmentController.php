@@ -8,6 +8,7 @@ use App\Models\Blocker;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class AdminAppointmentController extends Controller
 {
@@ -177,6 +178,13 @@ class AdminAppointmentController extends Controller
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
+
+        $user = User::find($request->user_id);
+        if ($user && $user->role === 'admin') {
+            throw ValidationException::withMessages([
+                'user_id' => ['Administratorzy powinni utworzyć blokadę czasu (blocker) zamiast wizyty.'],
+            ]);
+        }
         
         // Sprawdzenie czy termin jest w godzinach pracy
         $newDateTime = Carbon::parse($request->appointment_at);
@@ -235,6 +243,13 @@ class AdminAppointmentController extends Controller
             'service_description' => 'nullable|string',
             'products_used' => 'nullable|string',
         ]);
+
+        $user = User::find($request->user_id);
+        if ($user && $user->role === 'admin') {
+            throw ValidationException::withMessages([
+                'user_id' => ['Administratorzy powinni utworzyć blokadę czasu (blocker) zamiast wizyty.'],
+            ]);
+        }
 
         $newDateTime = Carbon::parse($request->appointment_at);
         $dayOfWeek = $newDateTime->dayOfWeek;
