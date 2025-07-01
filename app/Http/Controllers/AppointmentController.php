@@ -127,6 +127,44 @@ class AppointmentController extends Controller
         return $appointmentEvents->merge($blockerEvents);
     }
 
+    public function calendar()
+    {
+        return view('appointments.calendar');
+    }
+
+    public function calendarApi()
+    {
+        $appointments = Appointment::with(['serviceVariant.service'])
+            ->where('user_id', Auth::id())
+            ->get();
+
+        return $appointments->map(function ($appointment) {
+            $end = (clone $appointment->appointment_at)
+                ->addMinutes($appointment->serviceVariant->duration_minutes ?? 60);
+            $color = match ($appointment->status) {
+                'odbyta'       => '#38a169',
+                'odwołana'     => '#e53e3e',
+                'nieodbyta'    => '#f59e0b',
+                'oczekuje'     => '#f97316',
+                'proponowana'  => '#a855f7',
+                default        => '#3b82f6',
+            };
+
+            return [
+                'id'    => $appointment->id,
+                'title' => $appointment->serviceVariant->service->name,
+                'start' => $appointment->appointment_at,
+                'end'   => $end,
+                'color' => $color,
+                'extendedProps' => [
+                    'status'   => $appointment->status,
+                    'variant'  => $appointment->serviceVariant->variant_name,
+                    'datetime' => $appointment->appointment_at->format('Y-m-d H:i'),
+                ],
+            ];
+        });
+    }
+
     public function index()
     {
         $appointments = Appointment::with(['service', 'variant'])
