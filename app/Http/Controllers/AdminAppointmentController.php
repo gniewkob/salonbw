@@ -77,6 +77,8 @@ class AdminAppointmentController extends Controller
                     'service_variant_id' => $appointment->service_variant_id,
                     'price_pln' => $appointment->price_pln,
                     'discount_percent' => $appointment->discount_percent,
+                    'coupon_id' => $appointment->coupon_id,
+                    'coupon_code' => $appointment->coupon?->code,
                     'note_user' => $appointment->note_user,
                     'note_client' => $appointment->note_client,
                     'note_internal' => $appointment->note_internal,
@@ -97,9 +99,9 @@ class AdminAppointmentController extends Controller
         ]);
         
         // Sprawdzenie czy nowy termin jest w godzinach pracy
-        $newDateTime = Carbon::parse($request->appointment_at);
-        $dayOfWeek = $newDateTime->dayOfWeek;
-        $timeOfDay = $newDateTime->format('H:i');
+        $newTime = Carbon::parse($request->appointment_at);
+        $dayOfWeek = $newTime->dayOfWeek;
+        $timeOfDay = $newTime->format('H:i');
         
         // Pobierz godziny pracy dla danego dnia tygodnia
         // Domyślne godziny pracy
@@ -121,7 +123,14 @@ class AdminAppointmentController extends Controller
             ]);
         }
         
-        $appointment->update(['appointment_at' => $request->appointment_at]);
+        $fields = ['appointment_at' => $newTime];
+
+        if (!$appointment->appointment_at->equalTo($newTime)) {
+            $fields['status'] = 'proponowana';
+        }
+
+        $appointment->update($fields);
+
         return response()->json(['success' => true]);
     }
     
@@ -226,6 +235,11 @@ class AdminAppointmentController extends Controller
         $price    = $request->price_pln ?? $variant->price_pln;
         $price    = round($price * (100 - $discount) / 100);
 
+        $status = $request->status;
+        if ($appointment->appointment_at->ne($newDateTime) && $status === 'zaplanowana') {
+            $status = 'proponowana';
+        }
+
         $appointment->update([
             'user_id' => $request->user_id,
             'service_id' => $variant->service_id,
@@ -233,7 +247,7 @@ class AdminAppointmentController extends Controller
             'price_pln' => $price,
             'discount_percent' => $discount,
             'appointment_at' => $request->appointment_at,
-            'status' => $request->status,
+            'status' => $status,
             'note_user' => $request->note_user,
             'service_description' => $request->service_description,
             'products_used' => $request->products_used,

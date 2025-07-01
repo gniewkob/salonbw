@@ -21,6 +21,20 @@
                                     <div class="text-sm text-gray-600">
                                             Status: {{ ucfirst($appointment->status) }}
                                     </div>
+                                    @if(in_array($appointment->status, ['oczekuje', 'proponowana']))
+                                        <div class="mt-2 space-x-2">
+                                            <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">Potwierdź</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('appointments.decline', $appointment) }}" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">Odmów</button>
+                                            </form>
+                                        </div>
+                                    @endif
                             </div>
                     @empty
                             <p class="text-center text-gray-500">Nie masz jeszcze żadnych rezerwacji.</p>
