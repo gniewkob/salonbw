@@ -59,6 +59,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/moje-wizyty', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/moje-wizyty/{id}', [AppointmentController::class, 'show'])->name('appointments.show');
+    Route::get('/kalendarz/moje-wizyty', [AppointmentController::class, 'calendar'])->name('appointments.calendar');
+    Route::get('/kalendarz/moje-wizyty/api', [AppointmentController::class, 'calendarApi'])->name('appointments.calendar.api');
     Route::get('/rezerwacje/dodaj', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/rezerwacje', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::get('/rezerwacje/busy', [AppointmentController::class, 'busyTimes'])->name('appointments.busy');
