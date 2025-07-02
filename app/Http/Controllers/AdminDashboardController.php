@@ -28,7 +28,6 @@ class AdminDashboardController extends Controller
         $now = Carbon::now();
 
         $upcomingAppointments = Appointment::with('user')
-            ->withExists('user.missedAppointments')
             ->where('appointment_at', '>=', $now)
             ->where('status', '!=', 'odwołana')
             ->orderBy('appointment_at')
@@ -36,7 +35,7 @@ class AdminDashboardController extends Controller
             ->get();
 
         $upcomingAppointments->each(function ($appointment) {
-            $appointment->has_missed = $appointment->user_missed_appointments_exists;
+            $appointment->has_missed = $appointment->user->missedAppointments()->exists();
         });
 
         $currentStart   = $now->copy()->startOfMonth();
