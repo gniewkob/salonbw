@@ -14,12 +14,13 @@ pipelines:
             - composer
             - npm
           script:
-            - apt-get update && apt-get install -y unzip git nodejs npm
+            - apt-get update && apt-get install -y unzip git nodejs npm libsqlite3-dev
+            - docker-php-ext-install pdo_sqlite
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-            - composer install --no-interaction --no-progress --no-dev
+            - composer install --no-interaction --no-progress
             - npm ci
+            - php artisan test
             - npm run build
-            # (Opcjonalnie) composer test
           artifacts:
             - vendor/**
             - public/build/**
