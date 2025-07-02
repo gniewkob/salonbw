@@ -29,13 +29,18 @@ class AdminDashboardController extends Controller
             ->where('status', '!=', 'odwołana')
             ->orderBy('appointment_at')
             ->take(3)
-            ->get()
-            ->map(function ($appointment) {
-                $appointment->has_missed = Appointment::where('user_id', $appointment->user_id)
-                    ->where('status', 'nieodbyta')
-                    ->exists();
-                return $appointment;
-            });
+            ->get();
+
+        $userIds = $upcomingAppointments->pluck('user_id')->unique();
+
+        $missedUsers = Appointment::whereIn('user_id', $userIds)
+            ->where('status', 'nieodbyta')
+            ->pluck('user_id')
+            ->unique();
+
+        $upcomingAppointments->each(function ($appointment) use ($missedUsers) {
+            $appointment->has_missed = $missedUsers->contains($appointment->user_id);
+        });
 
         $currentStart = now()->startOfMonth();
         $currentEnd   = now()->endOfMonth();
