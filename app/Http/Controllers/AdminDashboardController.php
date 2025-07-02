@@ -24,9 +24,60 @@ class AdminDashboardController extends Controller
 
         $userCount = User::count();
 
+        $upcomingAppointments = Appointment::with('user')
+            ->where('appointment_at', '>=', now())
+            ->where('status', '!=', 'odwołana')
+            ->orderBy('appointment_at')
+            ->take(3)
+            ->get()
+            ->map(function ($appointment) {
+                $appointment->has_missed = Appointment::where('user_id', $appointment->user_id)
+                    ->where('status', 'nieodbyta')
+                    ->exists();
+                return $appointment;
+            });
+
+        $currentStart = now()->startOfMonth();
+        $currentEnd   = now()->endOfMonth();
+        $lastMonthStart = now()->subMonth()->startOfMonth();
+        $lastMonthEnd   = now()->subMonth()->endOfMonth();
+        $lastYearStart  = now()->subYear()->startOfMonth();
+        $lastYearEnd    = now()->subYear()->endOfMonth();
+
+        $completedThisMonth = Appointment::whereBetween('appointment_at', [$currentStart, $currentEnd])
+            ->where('status', 'odbyta')
+            ->count();
+
+        $missedThisMonth = Appointment::whereBetween('appointment_at', [$currentStart, $currentEnd])
+            ->where('status', 'nieodbyta')
+            ->count();
+
+        $completedLastMonth = Appointment::whereBetween('appointment_at', [$lastMonthStart, $lastMonthEnd])
+            ->where('status', 'odbyta')
+            ->count();
+
+        $missedLastMonth = Appointment::whereBetween('appointment_at', [$lastMonthStart, $lastMonthEnd])
+            ->where('status', 'nieodbyta')
+            ->count();
+
+        $completedLastYear = Appointment::whereBetween('appointment_at', [$lastYearStart, $lastYearEnd])
+            ->where('status', 'odbyta')
+            ->count();
+
+        $missedLastYear = Appointment::whereBetween('appointment_at', [$lastYearStart, $lastYearEnd])
+            ->where('status', 'nieodbyta')
+            ->count();
+
         return view('admin.dashboard', [
-            'unreadMessages' => $unreadMessages,
-            'userCount' => $userCount,
+            'unreadMessages'      => $unreadMessages,
+            'userCount'          => $userCount,
+            'upcomingAppointments' => $upcomingAppointments,
+            'completedThisMonth' => $completedThisMonth,
+            'missedThisMonth'    => $missedThisMonth,
+            'completedLastMonth' => $completedLastMonth,
+            'missedLastMonth'    => $missedLastMonth,
+            'completedLastYear'  => $completedLastYear,
+            'missedLastYear'     => $missedLastYear,
         ]);
     }
 }
