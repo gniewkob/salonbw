@@ -7,7 +7,11 @@
         if (Auth::check()) {
             if (Auth::user()->role === 'admin') {
                 $unreadMessages = KontaktMessage::where('is_from_admin', false)
-                    ->where('is_read', false)
+                    ->whereNull('reply_to_id')
+                    ->whereIn('status', [
+                        KontaktMessage::STATUS_SENT,
+                        KontaktMessage::STATUS_NEW_REPLY,
+                    ])
                     ->count();
             } else {
                 $unreadMessages = KontaktMessage::where('user_id', Auth::id())
