@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\KontaktMessage;
 use App\Models\User;
+use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
@@ -24,30 +25,26 @@ class AdminDashboardController extends Controller
 
         $userCount = User::count();
 
+        $now = Carbon::now();
+
         $upcomingAppointments = Appointment::with('user')
-            ->where('appointment_at', '>=', now())
+            ->withExists('user.missedAppointments')
+            ->where('appointment_at', '>=', $now)
             ->where('status', '!=', 'odwołana')
             ->orderBy('appointment_at')
             ->take(3)
             ->get();
 
-        $userIds = $upcomingAppointments->pluck('user_id')->unique();
-
-        $missedUsers = Appointment::whereIn('user_id', $userIds)
-            ->where('status', 'nieodbyta')
-            ->pluck('user_id')
-            ->unique();
-
-        $upcomingAppointments->each(function ($appointment) use ($missedUsers) {
-            $appointment->has_missed = $missedUsers->contains($appointment->user_id);
+        $upcomingAppointments->each(function ($appointment) {
+            $appointment->has_missed = $appointment->user_missed_appointments_exists;
         });
 
-        $currentStart = now()->startOfMonth();
-        $currentEnd   = now()->endOfMonth();
-        $lastMonthStart = now()->subMonth()->startOfMonth();
-        $lastMonthEnd   = now()->subMonth()->endOfMonth();
-        $lastYearStart  = now()->subYear()->startOfMonth();
-        $lastYearEnd    = now()->subYear()->endOfMonth();
+        $currentStart   = $now->copy()->startOfMonth();
+        $currentEnd     = $now->copy()->endOfMonth();
+        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $lastMonthEnd   = $now->copy()->subMonth()->endOfMonth();
+        $lastYearStart  = $now->copy()->subYear()->startOfMonth();
+        $lastYearEnd    = $now->copy()->subYear()->endOfMonth();
 
         $completedThisMonth = Appointment::whereBetween('appointment_at', [$currentStart, $currentEnd])
             ->where('status', 'odbyta')
