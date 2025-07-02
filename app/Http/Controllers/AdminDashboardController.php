@@ -12,10 +12,14 @@ class AdminDashboardController extends Controller
     {
         $unreadMessages = KontaktMessage::where('is_from_admin', false)
             ->whereNull('reply_to_id')
-            ->whereIn('status', [
-                KontaktMessage::STATUS_SENT,
-                KontaktMessage::STATUS_NEW_REPLY,
-            ])
+            ->where(function ($query) {
+                $query->whereDoesntHave('replies', function ($q) {
+                    $q->where('is_from_admin', true);
+                })->orWhereHas('replies', function ($q) {
+                    $q->where('is_from_admin', false)
+                        ->where('is_read', false);
+                });
+            })
             ->count();
 
         $userCount = User::count();

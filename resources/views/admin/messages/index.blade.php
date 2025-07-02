@@ -16,7 +16,9 @@
                 @if(!$last || !$last->is_from_admin)
                     <div class="text-red-600 text-xs mt-1">Wymaga odpowiedzi</div>
                 @else
-                    <div class="text-green-600 text-xs mt-1">Odpowiedź udzielona</div>
+                    <div class="text-xs mt-1 {{ $last->is_read ? 'text-green-600' : 'text-yellow-600' }}">
+                        {{ $last->is_read ? 'Odczytana przez użytkownika' : 'Nieodczytana przez użytkownika' }}
+                    </div>
                 @endif
             </a>
         @endforeach
