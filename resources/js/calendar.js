@@ -8,7 +8,7 @@ import listPlugin from '@fullcalendar/list';
 // console.log('Calendar.js loaded - wersja z wymuszonym inicjowaniem');
 
 // Funkcja inicjalizująca kalendarz
-function initializeCalendar() {
+async function initializeCalendar() {
   // console.log('Inicjalizacja kalendarza rozpoczęta');
 
   const el = document.getElementById('calendar');
@@ -25,6 +25,7 @@ function initializeCalendar() {
   }
   
   const url = el.dataset.eventsUrl;
+  const workingHoursUrl = el.dataset.workingHoursUrl;
   // console.log('URL wydarzeń:', url);
   
   if (!url) {
@@ -36,11 +37,22 @@ function initializeCalendar() {
   window.modalIsOpen = false;
   
   // Godziny pracy salonu
-  const workingHours = {
-    start: '09:00', // Godzina otwarcia
-    end: '18:00',   // Godzina zamknięcia
-    daysOfWeek: [1, 2, 3, 4, 5, 6], // Poniedziałek-Sobota (0=Niedziela, 1=Poniedziałek, itd.)
+  let workingHours = {
+    start: '09:00',
+    end: '18:00',
+    daysOfWeek: [1, 2, 3, 4, 5, 6],
   };
+
+  if (workingHoursUrl) {
+    try {
+      const resp = await fetch(workingHoursUrl);
+      if (resp.ok) {
+        workingHours = await resp.json();
+      }
+    } catch (e) {
+      console.error('Failed to fetch working hours', e);
+    }
+  }
   
   // console.log('Inicjalizacja FullCalendar z pluginami');
   
@@ -325,9 +337,9 @@ function initializeCalendar() {
 }
 
 // Standardowa inicjalizacja przy załadowaniu DOM
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // console.log('DOMContentLoaded event fired');
-  const calendar = initializeCalendar();
+  const calendar = await initializeCalendar();
 
   const params = new URLSearchParams(window.location.search);
   const jumpId = params.get('jump');

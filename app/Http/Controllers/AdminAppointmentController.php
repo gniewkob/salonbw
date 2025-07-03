@@ -5,6 +5,7 @@ use App\Models\ServiceVariant;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Blocker;
+use App\Models\ContactInfo;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -122,11 +123,10 @@ class AdminAppointmentController extends Controller
         $dayOfWeek = $newTime->dayOfWeek;
         $timeOfDay = $newTime->format('H:i');
         
-        // Pobierz godziny pracy dla danego dnia tygodnia
-        // Domyślne godziny pracy
-        $workingHoursStart = '09:00';
-        $workingHoursEnd = '18:00';
-        $isWorkingDay = in_array($dayOfWeek, [1, 2, 3, 4, 5, 6]); // Poniedziałek-Sobota
+        $hours = ContactInfo::getDefault()->formattedWorkingHours();
+        $workingHoursStart = $hours['start'];
+        $workingHoursEnd = $hours['end'];
+        $isWorkingDay = in_array($dayOfWeek, $hours['daysOfWeek']);
         
         // Sprawdź czy dzień jest dniem roboczym
         if (!$isWorkingDay) {
@@ -191,10 +191,10 @@ class AdminAppointmentController extends Controller
         $dayOfWeek = $newDateTime->dayOfWeek;
         $timeOfDay = $newDateTime->format('H:i');
         
-        // Domyślne godziny pracy
-        $workingHoursStart = '09:00';
-        $workingHoursEnd = '18:00';
-        $isWorkingDay = in_array($dayOfWeek, [1, 2, 3, 4, 5, 6]); // Poniedziałek-Sobota
+        $hours = ContactInfo::getDefault()->formattedWorkingHours();
+        $workingHoursStart = $hours['start'];
+        $workingHoursEnd = $hours['end'];
+        $isWorkingDay = in_array($dayOfWeek, $hours['daysOfWeek']);
         
         // Sprawdź czy dzień jest dniem roboczym
         if (!$isWorkingDay) {
@@ -254,9 +254,10 @@ class AdminAppointmentController extends Controller
         $newDateTime = Carbon::parse($request->appointment_at);
         $dayOfWeek = $newDateTime->dayOfWeek;
         $timeOfDay = $newDateTime->format('H:i');
-        $workingHoursStart = '09:00';
-        $workingHoursEnd = '18:00';
-        $isWorkingDay = in_array($dayOfWeek, [1, 2, 3, 4, 5, 6]);
+        $hours = ContactInfo::getDefault()->formattedWorkingHours();
+        $workingHoursStart = $hours['start'];
+        $workingHoursEnd = $hours['end'];
+        $isWorkingDay = in_array($dayOfWeek, $hours['daysOfWeek']);
         if (!$isWorkingDay || $timeOfDay < $workingHoursStart || $timeOfDay > $workingHoursEnd) {
             throw ValidationException::withMessages([
                 'appointment_at' => ['Nie można zaplanować rezerwacji poza godzinami pracy.'],
@@ -329,14 +330,9 @@ class AdminAppointmentController extends Controller
     // Pobieranie godzin pracy
     public function workingHours()
     {
-        // Domyślne godziny pracy
-        $workingHours = [
-            'start' => '09:00',
-            'end' => '18:00',
-            'daysOfWeek' => [1, 2, 3, 4, 5, 6], // Poniedziałek-Sobota
-        ];
+        $hours = ContactInfo::getDefault()->formattedWorkingHours();
 
-        return response()->json($workingHours);
+        return response()->json($hours);
     }
 
     // Historia wizyt klienta dla danej wizyty
