@@ -38,6 +38,11 @@ Route::view('/faq', 'pages.faq')->name('faq');
 Route::get('/kontakt', [ContactController::class, 'show'])->name('kontakt');
 
 Route::post('/kontakt', [KontaktController::class, 'store'])->name('kontakt.store');
+Route::view('/polityka-prywatnosci', 'policy.privacy')->name('privacy');
+Route::view('/polityka-cookies', 'policy.cookies')->name('cookies');
+Route::view('/regulamin', 'policy.terms')->name('terms');
+Route::view('/dane-kontaktowe', 'policy.contact')->name('policy.contact');
+Route::view('/reklamacje', 'policy.complaints')->name('complaints');
 
 /*
 |--------------------------------------------------------------------------
