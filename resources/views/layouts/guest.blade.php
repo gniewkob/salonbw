@@ -36,6 +36,7 @@
                 <a href="{{ route('terms') }}" class="hover:underline">Regulamin</a>
                 <a href="{{ route('policy.contact') }}" class="hover:underline">Kontakt</a>
                 <a href="{{ route('complaints') }}" class="hover:underline">Reklamacje</a>
+                <a href="{{ route('consents') }}" class="hover:underline">Twoje zgody</a>
             </div>
         </div>
     </footer>
