@@ -22,5 +22,8 @@
                 @endif
             </a>
         @endforeach
+        <div class="mt-6">
+            {{ $messages->links() }}
+        </div>
     </div>
 </x-app-layout>
