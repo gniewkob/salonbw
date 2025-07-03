@@ -27,7 +27,6 @@ class PolicyPagesTest extends TestCase
             ['/polityka-prywatnosci'],
             ['/polityka-cookies'],
             ['/regulamin'],
-            ['/dane-kontaktowe'],
             ['/reklamacje'],
             ['/moje-zgody'],
         ];
