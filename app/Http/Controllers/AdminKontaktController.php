@@ -16,7 +16,7 @@ class AdminKontaktController extends Controller
             ->whereNull('reply_to_id')
             ->latest()
             ->with(['user', 'replies'])
-            ->get();
+            ->paginate(20);
 
         return view('admin.messages.index', compact('messages'));
     }
