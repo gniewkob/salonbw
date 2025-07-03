@@ -41,7 +41,6 @@ Route::post('/kontakt', [KontaktController::class, 'store'])->name('kontakt.stor
 Route::view('/polityka-prywatnosci', 'policy.privacy')->name('privacy');
 Route::view('/polityka-cookies', 'policy.cookies')->name('cookies');
 Route::view('/regulamin', 'policy.terms')->name('terms');
-Route::view('/dane-kontaktowe', 'policy.contact')->name('policy.contact');
 Route::view('/reklamacje', 'policy.complaints')->name('complaints');
 Route::view('/moje-zgody', 'policy.consents')->name('consents');
 Route::get('/api/working-hours', [AdminAppointmentController::class, 'workingHours'])->name('public.working-hours');
