@@ -6,5 +6,5 @@ REGON: [REGON]<br>
 KRS: [jeśli dotyczy]<br>
 E-mail: [adres e-mail]<br>
 Telefon: [numer telefonu]<br>
-Formularz kontaktowy: [link/do formularza]</p>
+Formularz kontaktowy: <a href="{{ route('kontakt') }}">Kontakt</a></p>
 <p>Godziny pracy biura: [godziny pracy]</p>
