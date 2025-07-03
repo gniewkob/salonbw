@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-guest-layout>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -149,14 +149,13 @@
             </div>
         </div>
     </div>
-</x-app-layout>
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const lat = {{ $contactInfo->latitude ?? 'null' }};
-            const lng = {{ $contactInfo->longitude ?? 'null' }};
-            window.initMap(lat, lng, @json($contactInfo->address_line1));
-        });
-    </script>
-@endpush
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const lat = {{ $contactInfo->latitude ?? 'null' }};
+                const lng = {{ $contactInfo->longitude ?? 'null' }};
+                window.initMap(lat, lng, @json($contactInfo->address_line1));
+            });
+        </script>
+    @endpush
+</x-guest-layout>
