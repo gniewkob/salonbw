@@ -87,4 +87,45 @@ class ContactInfo extends Model
         
         return $contactInfo;
     }
+
+    /**
+     * Return working hours formatted for calendar JS.
+     */
+    public function formattedWorkingHours(): array
+    {
+        $hours = $this->working_hours ?? [];
+
+        $map = [
+            'sunday' => 0,
+            'monday' => 1,
+            'tuesday' => 2,
+            'wednesday' => 3,
+            'thursday' => 4,
+            'friday' => 5,
+            'saturday' => 6,
+        ];
+
+        $days = [];
+        $starts = [];
+        $ends = [];
+
+        foreach ($map as $key => $index) {
+            if (isset($hours[$key]) && is_array($hours[$key]) && count($hours[$key]) === 2) {
+                $days[] = $index;
+                $starts[] = $hours[$key][0];
+                $ends[] = $hours[$key][1];
+            }
+        }
+
+        sort($days);
+
+        $start = !empty($starts) ? min($starts) : '09:00';
+        $end = !empty($ends) ? max($ends) : '18:00';
+
+        return [
+            'start' => $start,
+            'end' => $end,
+            'daysOfWeek' => $days,
+        ];
+    }
 }
