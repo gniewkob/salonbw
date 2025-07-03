@@ -28,8 +28,15 @@
     </main>
 
     <footer class="bg-gray-100 border-t mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-600">
-            &copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-600 space-y-2">
+            <div>&copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White</div>
+            <div class="space-x-4">
+                <a href="{{ route('privacy') }}" class="hover:underline">Polityka prywatności</a>
+                <a href="{{ route('cookies') }}" class="hover:underline">Polityka cookies</a>
+                <a href="{{ route('terms') }}" class="hover:underline">Regulamin</a>
+                <a href="{{ route('policy.contact') }}" class="hover:underline">Kontakt</a>
+                <a href="{{ route('complaints') }}" class="hover:underline">Reklamacje</a>
+            </div>
         </div>
     </footer>
     @stack('scripts')
