@@ -18,25 +18,29 @@ export function initUserCalendar(duration) {
             if (!el) return;
             const url = el.dataset.busyUrl;
             const msgUrl = el.dataset.msgUrl;
+            const workingHoursUrl = el.dataset.workingHoursUrl;
             const input = document.querySelector('input[name="appointment_at"]');
             const notice = document.getElementById('calendar-notice');
             const submitBtn = document.getElementById('submit-appointment');
             const pending = document.getElementById('allow-pending');
-            fetch(url)
-                .then(r => r.ok ? r.json() : [])
-                .then(events => {
+            const fetchEvents = fetch(url).then(r => r.ok ? r.json() : []);
+            const fetchHours = workingHoursUrl ? fetch(workingHoursUrl).then(r => r.ok ? r.json() : null) : Promise.resolve(null);
+
+            Promise.all([fetchEvents, fetchHours]).then(([events, hours]) => {
                     this.events = events;
+                    const businessHours = hours ? {
+                        startTime: hours.start,
+                        endTime: hours.end,
+                        daysOfWeek: hours.daysOfWeek,
+                    } : { startTime: '09:00', endTime: '18:00', daysOfWeek: [1,2,3,4,5,6] };
+
                     const calendar = new Calendar(el, {
                         plugins: [timeGridPlugin, interactionPlugin],
                         initialView: 'timeGridWeek',
                         locale: 'pl',
                         selectable: true,
                         events,
-                        businessHours: {
-                            startTime: '09:00',
-                            endTime: '18:00',
-                            daysOfWeek: [1,2,3,4,5,6],
-                        },
+                        businessHours,
                         // Allow selection even when the slot overlaps an existing event so
                         // we can display a notice about the conflict.
                         selectOverlap: true,
