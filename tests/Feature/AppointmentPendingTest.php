@@ -66,6 +66,6 @@ class AppointmentPendingTest extends TestCase
 
         $response->assertRedirect('/dashboard');
         $this->assertSame(2, Appointment::count());
-        $this->assertEquals('zaplanowana', Appointment::latest()->first()->status);
+        $this->assertEquals('oczekuje', Appointment::latest()->first()->status);
     }
 }
