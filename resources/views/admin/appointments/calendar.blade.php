@@ -74,6 +74,7 @@
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div id="calendar"
              data-events-url="{{ route('admin.appointments.api') }}"
+             data-working-hours-url="{{ route('admin.appointments.workingHours') }}"
              class="bg-white shadow rounded-lg p-4">
         </div>
     </div>
