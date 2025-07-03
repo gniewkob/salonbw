@@ -27,8 +27,18 @@
 <body class="bg-gray-50 antialiased">
   @include('layouts.navigation')
   <main class="py-8 min-h-screen">{{ $slot }}</main>
-  <footer class="bg-gray-100 border-t py-6 text-center text-sm text-gray-600">
-	&copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White — Panel zarządzania.
+  <footer class="bg-gray-100 border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-600 space-y-2">
+            <div>&copy; {{ date('Y') }} Akademia Zdrowych Włosów Black&White — Panel zarządzania.</div>
+            <div class="space-x-4">
+                <a href="{{ route('privacy') }}" class="hover:underline">Polityka prywatności</a>
+                <a href="{{ route('cookies') }}" class="hover:underline">Polityka cookies</a>
+                <a href="{{ route('terms') }}" class="hover:underline">Regulamin</a>
+                <a href="{{ route('kontakt') }}" class="hover:underline">Kontakt</a>
+                <a href="{{ route('complaints') }}" class="hover:underline">Reklamacje</a>
+                <a href="{{ route('consents') }}" class="hover:underline">Twoje zgody</a>
+            </div>
+        </div>
   </footer>
   @stack('scripts')
   <!-- Matomo -->
