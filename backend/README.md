@@ -23,7 +23,12 @@
 
 ## Description
 
+
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+
+## Requirements
+
+The backend is built with **Node.js 20** and **TypeScript 5.7**. Ensure these versions (or newer) are installed before running the project.
 
 ## Project setup
 
