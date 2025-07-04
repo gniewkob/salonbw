@@ -13,7 +13,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Lato', 'Open Sans', 'Figtree', ...defaultTheme.fontFamily.sans],
             },
         },
     },
