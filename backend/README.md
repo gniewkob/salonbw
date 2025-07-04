@@ -28,7 +28,10 @@
 
 ## Requirements
 
-The backend is built with **Node.js 20** and **TypeScript 5.7**. Ensure these versions (or newer) are installed before running the project.
+Make sure the following tools are available before running the backend:
+
+- **Node.js 20** or newer
+- **TypeScript 5.7** or newer
 
 ## Project setup
 
