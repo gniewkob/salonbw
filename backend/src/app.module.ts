@@ -6,7 +6,12 @@ import { PrismaService } from './prisma.service';
 import { HealthController } from './health.controller';
 
 @Module({
-    imports: [ConfigModule.forRoot({ isGlobal: true })],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+        }),
+    ],
     controllers: [AppController, HealthController],
     providers: [AppService, PrismaService],
     exports: [PrismaService],
