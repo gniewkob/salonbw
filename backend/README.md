@@ -31,6 +31,13 @@
 $ npm install
 ```
 
+## Prisma engine limitations
+
+Prisma does not publish precompiled query engine binaries for FreeBSD. If you
+run the CLI on that platform you may encounter checksum errors. Set the
+`PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` environment variable or build the
+engines from source before running `npx prisma init` or any migration commands.
+
 ## Compile and run the project
 
 ```bash
