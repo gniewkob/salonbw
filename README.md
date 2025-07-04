@@ -67,11 +67,13 @@ Recent posts in the gallery are fetched using the Instagram API. Set `INSTAGRAM_
 The `backend` directory contains a NestJS service that powers the API.
 
 ### Backend Setup
-Before starting the NestJS server or running any tests make sure to install the
-backend dependencies:
+Before running the NestJS server or any tests make sure to install the
+backend dependencies and compile the project:
 
 ```bash
-cd backend && npm install
+cd backend
+npm install
+npm run build
 ```
 
 Start the service in watch mode while developing:
@@ -93,8 +95,7 @@ npx prisma migrate dev
 ### E2E tests
 
 Execute the backend's end-to-end tests from the repository root. The command
-relies on the dependencies installed in **Backend Setup** (`cd backend && npm
-install`):
+relies on the dependencies installed in **Backend Setup**:
 
 ```bash
 npm run test:e2e
