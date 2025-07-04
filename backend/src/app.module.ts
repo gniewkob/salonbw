@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PrismaService } from './prisma.service';
+import { PrismaModule } from './prisma.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -11,9 +11,9 @@ import { HealthController } from './health.controller';
             isGlobal: true,
             envFilePath: '.env',
         }),
+        PrismaModule,
     ],
     controllers: [AppController, HealthController],
-    providers: [AppService, PrismaService],
-    exports: [PrismaService],
+    providers: [AppService],
 })
 export class AppModule {}
