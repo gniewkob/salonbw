@@ -61,3 +61,32 @@ WHATSAPP_TEMPLATE_LANG=pl
 ## Instagram Integration
 
 Recent posts in the gallery are fetched using the Instagram API. Set `INSTAGRAM_ACCESS_TOKEN` in your `.env` file to enable this feature.
+
+## NestJS Backend
+
+The `backend` directory contains a NestJS service that powers the API.
+Install its dependencies and start it in watch mode while developing:
+
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+### Prisma migrations
+
+Run Prisma migrations using the CLI:
+
+```bash
+npx prisma migrate deploy
+# or, for local development
+npx prisma migrate dev
+```
+
+### E2E tests
+
+Execute the backend's end-to-end tests from the repository root:
+
+```bash
+npm run test:e2e
+```
