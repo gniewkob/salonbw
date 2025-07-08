@@ -68,11 +68,12 @@ The `backend` directory contains a NestJS service that powers the API.
 
 ### Backend Setup
 Before running the NestJS server or any tests make sure to install the
-backend dependencies and compile the project:
+backend dependencies, generate the Prisma client, and compile the project:
 
 ```bash
 cd backend
 npm install
+npx prisma generate
 npm run build
 ```
 
