@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GalleryController extends Controller
 {
@@ -21,7 +22,11 @@ class GalleryController extends Controller
         $response = Http::get('https://graph.instagram.com/me/media', $params);
 
         if ($response->failed()) {
-            return ['data' => [], 'paging' => []];
+            Log::error('Failed to fetch Instagram media', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return null;
         }
 
         $data = $response->json();
@@ -33,22 +38,22 @@ class GalleryController extends Controller
     public function index(Request $request)
     {
         $after = $request->query('after');
-        $result = $this->fetchMedia($after);
+        $result = $this->fetchMedia($after) ?? ['data' => [], 'paging' => []];
 
         if ($request->expectsJson()) {
             return $result;
         }
 
         return view('pages.gallery', [
-            'media' => $result['data'] ?? [],
+            'media' => $result['data'],
             'next' => $result['paging']['cursors']['after'] ?? null,
         ]);
     }
 
     public function latest(int $limit = 6)
     {
-        $result = $this->fetchMedia(null, $limit);
+        $result = $this->fetchMedia(null, $limit) ?? ['data' => []];
 
-        return $result['data'] ?? [];
+        return $result['data'];
     }
 }

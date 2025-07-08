@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto py-20 px-4">
         <h1 class="text-3xl font-bold text-center mb-8">Galeria</h1>
         <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            @foreach($media as $item)
+            @forelse($media as $item)
                 <a href="{{ $item['permalink'] }}" target="_blank">
                     @if(($item['media_type'] ?? '') === 'VIDEO')
                         <video autoplay muted loop playsinline class="w-full h-60 object-cover rounded" preload="none">
@@ -13,7 +13,9 @@
                         <img src="{{ $item['media_url'] ?? '' }}" alt="{{ $item['caption'] ?? '' }}" class="w-full h-60 object-cover rounded" loading="lazy">
                     @endif
                 </a>
-            @endforeach
+            @empty
+                <p class="col-span-3 text-center text-gray-500">Zdjęcia wkrótce.</p>
+            @endforelse
         </div>
         <div id="sentinel" class="h-1"></div>
     </div>
