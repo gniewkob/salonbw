@@ -103,3 +103,9 @@ relies on the dependencies installed in **Backend Setup**:
 ```bash
 npm run test:e2e
 ```
+
+### Running the backend on FreeBSD
+
+The API server can be built on macOS or Linux and copied to a FreeBSD
+machine. Follow the "Run on FreeBSD" section in `backend/README.md` for
+detailed steps.
