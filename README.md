@@ -28,7 +28,8 @@ Install the dependencies and compile the assets before running the project local
 ```bash
 # copy the example environment and fill in the required variables
 cp .env.example .env
-# edit `.env` and set APP_KEY, HCAPTCHA_SECRET, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID and INSTAGRAM_ACCESS_TOKEN
+php artisan key:generate --ansi # writes a valid application key to `.env`
+# edit `.env` and set HCAPTCHA_SECRET, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID and INSTAGRAM_ACCESS_TOKEN
 # optionally set WHATSAPP_TEMPLATE_LANG (defaults to "pl")
 
 composer install
@@ -38,6 +39,7 @@ npm run build
 touch database/database.sqlite
 php artisan migrate
 ```
+The previous command writes a valid APP_KEY to your `.env` file.
 
 Run the test suite to ensure everything works correctly:
 
