@@ -55,7 +55,7 @@ pipelines:
 
             # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
             - ssh vetternkraft@s0.mydevil.net "if [ ! -f /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite ]; then touch /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; chmod 664 /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; fi"
-            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/backend && npm ci --omit=dev && npx prisma generate && npm run build"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/backend && npm run build"
 
             # Sprawdzenie i naprawa konfiguracji .env dla sesji
             - echo "Sprawdzanie i naprawa konfiguracji sesji..."
