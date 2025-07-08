@@ -49,7 +49,7 @@ jobs:
 
       - name: Build backend
         run: |
-          npx --prefix backend prisma generate
+          npx --prefix backend prisma generate --schema backend/prisma/schema.prisma
           npm --prefix backend run build
 
       - name: Deploy via SSH
