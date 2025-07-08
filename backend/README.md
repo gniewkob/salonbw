@@ -48,6 +48,39 @@ run the CLI on that platform you may encounter checksum errors. Set the
 `PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` environment variable or build the
 engines from source before running `npx prisma init` or any migration commands.
 
+## Cross-platform workflow (macOS/Linux -> FreeBSD)
+
+If you need to run the service on FreeBSD but cannot install Prisma there,
+prepare the project on a macOS or Linux machine first.
+
+1. Install the dependencies and generate the Prisma client:
+
+    ```bash
+    cd backend
+    npm install
+    npx prisma generate
+    ```
+
+2. Archive the `backend/` directory with `node_modules` intact and copy it to
+   the FreeBSD server:
+
+    ```bash
+    tar czf backend.tgz backend
+    scp backend.tgz freebsd:/opt/app
+    ```
+
+3. Extract the archive on FreeBSD and start the service without reinstalling
+   packages:
+
+    ```bash
+    tar xzf backend.tgz
+    cd backend
+    npm run start
+    ```
+
+This workflow avoids running `npm install` on FreeBSD while keeping the Prisma
+client generated on a supported platform.
+
 ## Compile and run the project
 
 ```bash
