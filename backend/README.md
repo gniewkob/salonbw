@@ -61,6 +61,18 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Run on FreeBSD
+
+To avoid Prisma engine checksum errors on FreeBSD, build the project on
+macOS or Linux and copy the compiled output:
+
+1. Run `npm install` and `npx prisma generate` on a Unix-like system.
+2. Remove or empty the `postinstall` script in `package.json`.
+3. Archive the entire `backend/` directory (including `node_modules`) and
+   extract it on the FreeBSD server.
+4. Start the server with `npm start` or `node dist/main.js` without running
+   `npm install` again.
+
 ## Run tests
 
 ```bash
