@@ -19,6 +19,9 @@ pipelines:
             - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
             - composer install --no-interaction --no-progress
             - npm ci
+            - npm --prefix backend ci
+            - npx --prefix backend prisma generate
+            - npm --prefix backend run build
             - php artisan test
             - npm run build
           artifacts:
@@ -27,6 +30,9 @@ pipelines:
             - composer.lock
             - package-lock.json
             - .env.example
+            - backend/dist/**
+            - backend/node_modules/**
+            - backend/package-lock.json
       - step:
           name: Deploy to Test Server
           deployment: test
@@ -45,10 +51,11 @@ pipelines:
             - ls -la vendor/laravel || echo "Brak laravel/"
 
             # RSYNC: wykluczamy newralgiczne i lokalne pliki/dane
-            - rsync -avz --delete --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='tailwindcss' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+            - rsync -avz --delete --include='backend/node_modules/**' --exclude='.git/' --exclude='node_modules/' --exclude='.env' --exclude='tailwindcss' --exclude='database/database.sqlite' --exclude='storage/logs/' --exclude='storage/framework/cache/' --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' ./ vetternkraft@s0.mydevil.net:/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
 
             # (Opcjonalnie) utwórz plik SQLite jeśli go nie ma, po deploy
             - ssh vetternkraft@s0.mydevil.net "if [ ! -f /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite ]; then touch /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; chmod 664 /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/database/database.sqlite; fi"
+            - ssh vetternkraft@s0.mydevil.net "cd /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/backend && npm ci --omit=dev && npx prisma generate && npm run build"
 
             # Sprawdzenie i naprawa konfiguracji .env dla sesji
             - echo "Sprawdzanie i naprawa konfiguracji sesji..."
