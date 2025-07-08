@@ -39,6 +39,8 @@ Make sure the following tools are available before running the backend:
 $ npm install
 ```
 
+Copy `.env.example` to `.env` and set `DATABASE_URL` and `JWT_SECRET` before running the service.
+
 ## Prisma engine limitations
 
 Prisma does not publish precompiled query engine binaries for FreeBSD. If you
