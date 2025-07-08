@@ -79,6 +79,9 @@ npx prisma generate
 npm run build
 ```
 
+For running the service on FreeBSD without reinstalling packages, see the
+[cross-platform workflow](backend/README.md#cross-platform-workflow-macoslinux--freebsd).
+
 Start the service in watch mode while developing:
 
 ```bash
