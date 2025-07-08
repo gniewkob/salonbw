@@ -26,8 +26,9 @@ Running the application requires PHP 8.2 or later with the DOM and XML extension
 Install the dependencies and compile the assets before running the project locally. Start by creating the environment file and providing any required variables.
 
 ```bash
+# copy the example environment and fill in the required variables
 cp .env.example .env
-# edit `.env` and set APP_KEY, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID and INSTAGRAM_ACCESS_TOKEN
+# edit `.env` and set APP_KEY, HCAPTCHA_SECRET, WHATSAPP_TOKEN, WHATSAPP_PHONE_ID and INSTAGRAM_ACCESS_TOKEN
 # optionally set WHATSAPP_TEMPLATE_LANG (defaults to "pl")
 
 composer install
@@ -61,6 +62,14 @@ WHATSAPP_TEMPLATE_LANG=pl
 ## Instagram Integration
 
 Recent posts in the gallery are fetched using the Instagram API. Set `INSTAGRAM_ACCESS_TOKEN` in your `.env` file to enable this feature.
+
+## hCaptcha
+
+The contact form uses [hCaptcha](https://www.hcaptcha.com/) for spam protection. Add your site secret to `.env`:
+
+```
+HCAPTCHA_SECRET=your-hcaptcha-secret
+```
 
 ## NestJS Backend
 
