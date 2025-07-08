@@ -71,6 +71,8 @@ Before running the NestJS server or any tests make sure to install the
 backend dependencies, generate the Prisma client, and compile the project:
 
 ```bash
+cp backend/.env.example backend/.env
+# fill in DATABASE_URL and JWT_SECRET
 cd backend
 npm install
 npx prisma generate
