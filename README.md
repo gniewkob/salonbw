@@ -64,6 +64,7 @@ WHATSAPP_TEMPLATE_LANG=pl
 ## Instagram Integration
 
 Recent posts in the gallery are fetched using the Instagram API. Set `INSTAGRAM_ACCESS_TOKEN` in your `.env` file to enable this feature.
+Make sure the token stays valid. When using a long‑lived token you must refresh it periodically through the Instagram Basic Display API.
 
 ## hCaptcha
 
