@@ -70,7 +70,7 @@ jobs:
               chmod 664 ${REMOTE_PATH}database/database.sqlite
             fi
             cd $REMOTE_PATH
-            cd backend && npm ci --omit=dev && npx prisma generate && npm run build && cd ..
+            cd backend && npm run build && cd ..
             grep -q '^APP_URL=' .env || echo 'APP_URL=https://dev.salon-bw.pl' >> .env
             sed -i.bak -e 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env && rm .env.bak
             grep -q '^SESSION_DOMAIN=' .env || echo 'SESSION_DOMAIN=dev.salon-bw.pl' >> .env
