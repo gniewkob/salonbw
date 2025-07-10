@@ -39,52 +39,13 @@ Make sure the following tools are available before running the backend:
 $ npm install
 ```
 
-Copy `.env.example` to `.env` and set `DATABASE_URL` and `JWT_SECRET` before running the service.
+Copy `.env.example` to `.env` and set `DATABASE_URL` and `JWT_SECRET` before running the service. The application relies on TypeORM with PostgreSQL so make sure `DATABASE_URL` points to a reachable instance.
 
-## Prisma engine limitations
+## Running on FreeBSD
 
-Prisma does not publish precompiled query engine binaries for FreeBSD. If you
-run the CLI on that platform you may encounter checksum errors. Set the
-`PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` environment variable or build the
-engines from source before running `npx prisma init` or any migration commands.
-
-## Cross-platform workflow (macOS/Linux -> FreeBSD)
-
-If you need to run the service on FreeBSD but cannot install Prisma there,
-prepare the project on a macOS or Linux machine first.
-
-1. Install the dependencies, add `freebsd14` to the Prisma
-   `binaryTargets` and generate the client:
-
-    ```bash
-    cd backend
-    npm install
-    # edit prisma/schema.prisma and append "freebsd14" to binaryTargets
-    npx prisma generate
-    ```
-
-2. Archive the `backend/` directory with `node_modules` intact and copy it to
-   the FreeBSD server:
-
-    ```bash
-    tar czf backend.tgz backend
-    scp backend.tgz freebsd:/opt/app
-    ```
-
-3. Extract the archive on FreeBSD and start the service without reinstalling
-   packages:
-
-    ```bash
-    tar xzf backend.tgz
-    cd backend
-    npm run start
-    ```
-
-This workflow avoids running `npm install` on FreeBSD while keeping the Prisma
-client generated on a supported platform.
-
-After editing `prisma/schema.prisma`, run `npx prisma generate` again before
-archiving the `backend/` directory.
+The service can be built on any Unix-like system and copied to the FreeBSD
+server. Archive the `backend/` directory with `node_modules` included and
+extract it on the target machine.
 
 ## Compile and run the project
 
@@ -101,14 +62,13 @@ $ npm run start:prod
 
 ## Run on FreeBSD
 
-To avoid Prisma engine checksum errors on FreeBSD, build the project on
-macOS or Linux and copy the compiled output:
+Build the project on macOS or Linux and copy the compiled output to the
+FreeBSD machine:
 
-1. Run `npm install` and `npx prisma generate` on a Unix-like system.
-2. Remove or empty the `postinstall` script in `package.json`.
-3. Archive the entire `backend/` directory (including `node_modules`) and
+1. Run `npm install` on a Unix-like system.
+2. Archive the entire `backend/` directory (including `node_modules`) and
    extract it on the FreeBSD server.
-4. Start the server with `npm start` or `node dist/main.js` without running
+3. Start the server with `npm start` or `node dist/main.js` without running
    `npm install` again.
 
 ## Run tests
