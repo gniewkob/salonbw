@@ -53,11 +53,13 @@ engines from source before running `npx prisma init` or any migration commands.
 If you need to run the service on FreeBSD but cannot install Prisma there,
 prepare the project on a macOS or Linux machine first.
 
-1. Install the dependencies and generate the Prisma client:
+1. Install the dependencies, add `freebsd14` to the Prisma
+   `binaryTargets` and generate the client:
 
     ```bash
     cd backend
     npm install
+    # edit prisma/schema.prisma and append "freebsd14" to binaryTargets
     npx prisma generate
     ```
 
@@ -80,6 +82,9 @@ prepare the project on a macOS or Linux machine first.
 
 This workflow avoids running `npm install` on FreeBSD while keeping the Prisma
 client generated on a supported platform.
+
+After editing `prisma/schema.prisma`, run `npx prisma generate` again before
+archiving the `backend/` directory.
 
 ## Compile and run the project
 
