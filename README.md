@@ -80,22 +80,22 @@ The `backend` directory contains a NestJS service that powers the API.
 
 ### Backend Setup
 Before running the NestJS server or any tests make sure to install the
-backend dependencies, generate the Prisma client, and compile the project:
+backend dependencies and compile the project:
 
 ```bash
 cp backend/.env.example backend/.env
 # fill in DATABASE_URL and JWT_SECRET
 cd backend
 npm install
-npx prisma generate
 npm run build
 ```
 
-For running the service on FreeBSD without reinstalling packages, see the
-[cross-platform workflow](backend/README.md#cross-platform-workflow-macoslinux--freebsd).
-When preparing the backend on macOS or Linux, add `freebsd14` to
-`binaryTargets` in `backend/prisma/schema.prisma` before running
-`npx prisma generate`.
+The API uses [TypeORM](https://typeorm.io/) for database access. Configure the
+`DATABASE_URL` environment variable in `backend/.env` to point to your
+PostgreSQL instance.
+
+For running the service on FreeBSD you can install the dependencies
+on any Unix-like system and copy the built project to the server.
 
 Start the service in watch mode while developing:
 
@@ -103,15 +103,6 @@ Start the service in watch mode while developing:
 npm run start:dev
 ```
 
-### Prisma migrations
-
-Run Prisma migrations using the CLI:
-
-```bash
-npx prisma migrate deploy
-# or, for local development
-npx prisma migrate dev
-```
 
 ### E2E tests
 
