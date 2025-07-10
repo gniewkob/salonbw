@@ -61,7 +61,10 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $REMOTE_HOST >> ~/.ssh/known_hosts
-          rsync -avz --delete --include='backend/node_modules/**' --exclude='.git/' --exclude='node_modules/' --exclude='.env' \
+          rsync -avz --delete \
+            --include='backend/node_modules/' \
+            --include='backend/node_modules/**' \
+            --exclude='.git/' --exclude='node_modules/' --exclude='.env' \
             --exclude='tailwindcss' --exclude='database/database.sqlite' \
             --exclude='storage/logs/' --exclude='storage/framework/cache/' \
             --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' \
@@ -73,7 +76,12 @@ jobs:
               chmod 664 ${REMOTE_PATH}database/database.sqlite
             fi
             cd $REMOTE_PATH
-            cd backend && npm run build && cd ..
+            cd backend
+            if [ ! -d node_modules ]; then
+              npm ci
+            fi
+            npm run build
+            cd ..
             grep -q '^APP_URL=' .env || echo 'APP_URL=https://dev.salon-bw.pl' >> .env
             sed -i.bak -e 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env && rm .env.bak
             grep -q '^SESSION_DOMAIN=' .env || echo 'SESSION_DOMAIN=dev.salon-bw.pl' >> .env
