@@ -22,7 +22,6 @@ pipelines:
             - composer install --no-interaction --no-progress
             - npm ci
             - npm --prefix backend ci
-            - npx --prefix backend prisma generate
             - npm --prefix backend run build
             - php artisan test
             - npm run build

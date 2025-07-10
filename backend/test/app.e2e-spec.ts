@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { PrismaService } from '../src/prisma.service';
 
 describe('Health endpoint (e2e)', () => {
   let app: INestApplication;
@@ -10,13 +9,7 @@ describe('Health endpoint (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue({
-        onModuleInit: jest.fn(),
-        enableShutdownHooks: jest.fn(),
-      })
-      .compile();
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
