@@ -75,3 +75,4 @@ tailwindcss
 # Generated output files
 output_tree*.txt
 .env.bak
+backend/node_modules/
