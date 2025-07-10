@@ -93,6 +93,9 @@ npm run build
 
 For running the service on FreeBSD without reinstalling packages, see the
 [cross-platform workflow](backend/README.md#cross-platform-workflow-macoslinux--freebsd).
+When preparing the backend on macOS or Linux, add `freebsd14` to
+`binaryTargets` in `backend/prisma/schema.prisma` before running
+`npx prisma generate`.
 
 Start the service in watch mode while developing:
 
