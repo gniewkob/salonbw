@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 
 @Module({
     imports: [
-        ConfigModule.forRoot(),
+        ConfigModule.forRoot({ envFilePath: '.env' }),
         TypeOrmModule.forRoot({
             type: 'postgres',
             url: process.env.DATABASE_URL,
