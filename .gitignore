@@ -76,7 +76,3 @@ tailwindcss
 output_tree*.txt
 .env.bak
 
-# Backend
-backend/node_modules/
-backend/.env
-!backend/.env.example
