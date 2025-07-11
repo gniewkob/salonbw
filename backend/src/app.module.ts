@@ -13,6 +13,8 @@ import { UsersModule } from './users/users.module';
             type: 'postgres',
             url: process.env.DATABASE_URL,
             autoLoadEntities: true,
+            migrations: [__dirname + '/migrations/*.ts'],
+            migrationsRun: true,
         }),
         UsersModule,
     ],
