@@ -19,7 +19,6 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Requirements
 
-Running the application requires PHP 8.2 or later with the DOM and XML extensions enabled. You will also need **Node.js 20** or newer to compile the front‑end assets. Make sure the `composer` command is available on your system.
 
 ## Setup
 
