@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
             autoLoadEntities: true,
             migrations: [__dirname + '/migrations/*.ts'],
             migrationsRun: true,
+            synchronize: process.env.NODE_ENV !== 'production',
         }),
         UsersModule,
     ],
