@@ -20,9 +20,9 @@ describe('UsersController (e2e)', () => {
         await app.close();
     });
 
-    it('/profile (GET)', () => {
+    it('/users/profile (GET)', () => {
         return request(app.getHttpServer())
-            .get('/profile')
+            .get('/users/profile')
             .expect(200)
             .expect({});
     });
