@@ -16,6 +16,10 @@ describe('HealthController (e2e)', () => {
         await app.init();
     });
 
+    afterEach(async () => {
+        await app.close();
+    });
+
     it('/health (GET)', () => {
         return request(app.getHttpServer())
             .get('/health')
