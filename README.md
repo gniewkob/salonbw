@@ -19,7 +19,7 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Requirements
 
-Running the application requires PHP 8.2 or later with the DOM and XML extensions enabled. Make sure the `composer` command is available on your system. The NestJS service depends on **Node.js 20** or newer and **TypeScript 5.7** or newer.
+Running the application requires PHP 8.2 or later with the DOM and XML extensions enabled. You will also need **Node.js 20** or newer to compile the front‑end assets. Make sure the `composer` command is available on your system.
 
 ## Setup
 
@@ -74,47 +74,3 @@ The contact form uses [hCaptcha](https://www.hcaptcha.com/) for spam protection.
 HCAPTCHA_SECRET=your-hcaptcha-secret
 ```
 
-## NestJS Backend
-
-The `backend` directory contains a NestJS service that powers the API.
-
-### Backend Setup
-Before running the NestJS server or any tests make sure to install the
-backend dependencies and compile the project:
-
-```bash
-cp backend/.env.example backend/.env
-# fill in DATABASE_URL and JWT_SECRET
-cd backend
-npm install
-npm run build
-```
-
-The API uses [TypeORM](https://typeorm.io/) for database access. Configure the
-`DATABASE_URL` environment variable in `backend/.env` to point to your
-PostgreSQL instance.
-
-For running the service on FreeBSD you can install the dependencies
-on any Unix-like system and copy the built project to the server.
-
-Start the service in watch mode while developing:
-
-```bash
-npm run start:dev
-```
-
-
-### E2E tests
-
-Execute the backend's end-to-end tests from the repository root. The command
-relies on the dependencies installed in **Backend Setup**:
-
-```bash
-npm run test:e2e
-```
-
-### Running the backend on FreeBSD
-
-The API server can be built on macOS or Linux and copied to a FreeBSD
-machine. Follow the "Run on FreeBSD" section in `backend/README.md` for
-detailed steps.
