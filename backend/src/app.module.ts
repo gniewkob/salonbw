@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
+import { UsersModule } from './users/users.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { HealthController } from './health.controller';
             url: process.env.DATABASE_URL,
             autoLoadEntities: true,
         }),
+        UsersModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
