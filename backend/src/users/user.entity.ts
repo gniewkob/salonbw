@@ -17,4 +17,7 @@ export class User {
 
     @Column({ type: 'enum', enum: Role })
     role: Role;
+
+    @Column({ nullable: true })
+    refreshToken?: string | null;
 }
