@@ -20,10 +20,29 @@ describe('UsersController (e2e)', () => {
         await app.close();
     });
 
-    it('/users/profile (GET)', () => {
+    it('rejects unauthenticated requests', () => {
+        return request(app.getHttpServer()).get('/users/profile').expect(401);
+    });
+
+    it('returns profile for authenticated user', async () => {
+        const register = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .expect(201);
+
+        const token = register.body.access_token;
+
         return request(app.getHttpServer())
             .get('/users/profile')
+            .set('Authorization', `Bearer ${token}`)
             .expect(200)
-            .expect({});
+            .expect((res) => {
+                expect(res.body).toHaveProperty('id');
+                expect(res.body).toMatchObject({
+                    email: 'test@test.com',
+                    name: 'Test',
+                    role: 'client',
+                });
+            });
     });
 });
