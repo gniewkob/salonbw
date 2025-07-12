@@ -27,6 +27,16 @@
 
 ## Project setup
 
+First copy the example environment file and provide a connection string:
+
+```bash
+cp .env.example .env
+# edit DATABASE_URL to point at your Postgres database
+```
+
+You can also adjust `src/app.module.ts` to use a different database engine,
+for example SQLite, when running tests locally.
+
 ```bash
 $ npm install
 ```
@@ -56,6 +66,9 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+End-to-end tests require all dependencies installed and a reachable database.
+Ensure your `DATABASE_URL` points to a running instance before executing them.
 
 ## Deployment
 
