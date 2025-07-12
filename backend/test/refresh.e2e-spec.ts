@@ -24,6 +24,6 @@ describe('AuthController.refresh (e2e)', () => {
         return request(app.getHttpServer())
             .post('/auth/refresh')
             .send({ refresh_token: 'token' })
-            .expect(201 || 200);
+            .expect(201);
     });
 });
