@@ -40,9 +40,10 @@ export class AuthService {
         if (existing) {
             throw new BadRequestException('Email already registered');
         }
+        const hashed = await bcrypt.hash(dto.password, 10);
         const user = await this.usersService.createUser(
             dto.email,
-            dto.password,
+            hashed,
             dto.name,
             Role.Client,
         );
