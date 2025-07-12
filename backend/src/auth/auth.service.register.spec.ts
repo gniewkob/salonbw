@@ -8,11 +8,19 @@ import { RegisterClientDto } from './dto/register-client.dto';
 
 describe('AuthService.registerClient', () => {
     let service: AuthService;
-    let users: { findByEmail: jest.Mock; createUser: jest.Mock };
+    let users: {
+        findByEmail: jest.Mock;
+        createUser: jest.Mock;
+        updateRefreshToken: jest.Mock;
+    };
     let jwt: { signAsync: jest.Mock };
 
     beforeEach(async () => {
-        users = { findByEmail: jest.fn(), createUser: jest.fn() };
+        users = {
+            findByEmail: jest.fn(),
+            createUser: jest.fn(),
+            updateRefreshToken: jest.fn(),
+        };
         jwt = { signAsync: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -26,19 +34,28 @@ describe('AuthService.registerClient', () => {
         service = module.get<AuthService>(AuthService);
     });
 
-    it('returns token and creates user with hashed password', async () => {
+    it('returns tokens and creates user with hashed password', async () => {
         const dto: RegisterClientDto = {
             email: 'a@test.com',
             password: 'secret',
             name: 'Alice',
         };
         users.findByEmail.mockResolvedValue(null);
-        users.createUser.mockResolvedValue({ id: 1, email: dto.email, role: Role.Client });
+        users.createUser.mockResolvedValue({
+            id: 1,
+            email: dto.email,
+            role: Role.Client,
+        });
         jwt.signAsync.mockResolvedValue('jwt');
 
         const result = await service.registerClient(dto);
-        expect(result).toEqual({ access_token: 'jwt' });
-        expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 1, role: Role.Client });
+        expect(result).toHaveProperty('access_token', 'jwt');
+        expect(result).toHaveProperty('refresh_token');
+        expect(users.updateRefreshToken).toHaveBeenCalled();
+        expect(jwt.signAsync).toHaveBeenCalledWith({
+            sub: 1,
+            role: Role.Client,
+        });
 
         const passed = users.createUser.mock.calls[0][1];
         expect(await bcrypt.compare(dto.password, passed)).toBe(true);

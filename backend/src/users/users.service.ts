@@ -20,9 +20,27 @@ export class UsersService {
         return this.usersRepository.findOne({ where: { email } });
     }
 
-    async createUser(email: string, password: string, name: string, role: Role = Role.Client) {
+    async createUser(
+        email: string,
+        password: string,
+        name: string,
+        role: Role = Role.Client,
+    ) {
         const hashed = await bcrypt.hash(password, 10);
-        const user = this.usersRepository.create({ email, password: hashed, name, role });
+        const user = this.usersRepository.create({
+            email,
+            password: hashed,
+            name,
+            role,
+        });
         return this.usersRepository.save(user);
+    }
+
+    updateRefreshToken(id: number, refreshToken: string | null) {
+        return this.usersRepository.update(id, { refreshToken });
+    }
+
+    findByRefreshToken(token: string) {
+        return this.usersRepository.findOne({ where: { refreshToken: token } });
     }
 }

@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
-describe('AuthController (e2e)', () => {
+describe('AuthController.refresh (e2e)', () => {
     let app: INestApplication<App>;
 
     beforeEach(async () => {
@@ -20,14 +20,10 @@ describe('AuthController (e2e)', () => {
         await app.close();
     });
 
-    it('/auth/register (POST)', () => {
+    it('/auth/refresh (POST)', () => {
         return request(app.getHttpServer())
-            .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
-            .expect(201)
-            .expect((res) => {
-                expect(res.body).toHaveProperty('access_token');
-                expect(res.body).toHaveProperty('refresh_token');
-            });
+            .post('/auth/refresh')
+            .send({ refresh_token: 'token' })
+            .expect(201 || 200);
     });
 });
