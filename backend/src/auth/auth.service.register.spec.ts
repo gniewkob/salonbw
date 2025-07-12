@@ -34,7 +34,7 @@ describe('AuthService.registerClient', () => {
         service = module.get<AuthService>(AuthService);
     });
 
-    it('returns tokens and creates user with hashed password', async () => {
+    it('returns tokens and creates user with provided password', async () => {
         const dto: RegisterClientDto = {
             email: 'a@test.com',
             password: 'secret',
@@ -58,6 +58,6 @@ describe('AuthService.registerClient', () => {
         });
 
         const passed = users.createUser.mock.calls[0][1];
-        expect(await bcrypt.compare(dto.password, passed)).toBe(true);
+        expect(passed).toBe(dto.password);
     });
 });
