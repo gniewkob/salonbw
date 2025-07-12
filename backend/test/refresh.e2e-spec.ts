@@ -20,10 +20,12 @@ describe('AuthController.refresh (e2e)', () => {
         await app.close();
     });
 
+    // No user is seeded here so any refresh token should be invalid
+    // and the endpoint must return Unauthorized (401).
     it('/auth/refresh (POST)', () => {
         return request(app.getHttpServer())
             .post('/auth/refresh')
             .send({ refresh_token: 'token' })
-            .expect(201);
+            .expect(401);
     });
 });
