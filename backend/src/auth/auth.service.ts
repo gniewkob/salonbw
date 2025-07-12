@@ -31,15 +31,16 @@ export class AuthService {
         return result;
     }
 
+    async generateTokens(userId: number, role: Role): Promise<AuthTokensDto> {
+        const access = await this.jwtService.signAsync({ sub: userId, role });
+        const refresh = randomBytes(32).toString('hex');
+        await this.usersService.updateRefreshToken(userId, refresh);
+        return { access_token: access, refresh_token: refresh };
+    }
+
     async login(email: string, password: string): Promise<AuthTokensDto> {
         const user = await this.validateUser(email, password);
-        const access = await this.jwtService.signAsync({
-            sub: user.id,
-            role: user.role,
-        });
-        const refresh = randomBytes(32).toString('hex');
-        await this.usersService.updateRefreshToken(user.id, refresh);
-        return { access_token: access, refresh_token: refresh };
+        return this.generateTokens(user.id, user.role);
     }
 
     async registerClient(dto: RegisterClientDto): Promise<AuthTokensDto> {
@@ -53,13 +54,7 @@ export class AuthService {
             dto.name,
             Role.Client,
         );
-        const access = await this.jwtService.signAsync({
-            sub: user.id,
-            role: user.role,
-        });
-        const refresh = randomBytes(32).toString('hex');
-        await this.usersService.updateRefreshToken(user.id, refresh);
-        return { access_token: access, refresh_token: refresh };
+        return this.generateTokens(user.id, user.role);
     }
 
     async refresh(refreshToken: string): Promise<AuthTokensDto> {
@@ -67,12 +62,6 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('Invalid refresh token');
         }
-        const access = await this.jwtService.signAsync({
-            sub: user.id,
-            role: user.role,
-        });
-        const newRefresh = randomBytes(32).toString('hex');
-        await this.usersService.updateRefreshToken(user.id, newRefresh);
-        return { access_token: access, refresh_token: newRefresh };
+        return this.generateTokens(user.id, user.role);
     }
 }
