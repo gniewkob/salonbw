@@ -45,4 +45,23 @@ describe('UsersController (e2e)', () => {
                 });
             });
     });
+
+    it('returns profile for user logged in via /auth/login', async () => {
+        await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .expect(201);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'test@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = login.body.access_token;
+
+        return request(app.getHttpServer())
+            .get('/users/profile')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+    });
 });
