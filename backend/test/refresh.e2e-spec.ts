@@ -17,7 +17,9 @@ describe('AuthController.refresh (e2e)', () => {
     });
 
     afterEach(async () => {
-        await app.close();
+        if (app) {
+            await app.close();
+        }
     });
 
     // No user is seeded here so any refresh token should be invalid
