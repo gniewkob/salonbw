@@ -1,6 +1,14 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -13,8 +21,13 @@ export class UsersController {
     }
 
     @Get('profile')
-    getProfile(@Request() req) {
-        // TODO: replace with JWT-authenticated user
-        return req.user ?? {};
+    @UseGuards(JwtAuthGuard)
+    async getProfile(@Request() req) {
+        const user = await this.usersService.findOne(req.user.id);
+        if (!user) {
+            return {};
+        }
+        const { password: _p, refreshToken: _r, ...result } = user as any;
+        return result;
     }
 }
