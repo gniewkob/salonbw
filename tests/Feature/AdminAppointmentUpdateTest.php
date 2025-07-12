@@ -31,7 +31,7 @@ class AdminAppointmentUpdateTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $user = User::factory()->create();
 
-        $oldTime = Carbon::now()->addDay()->setTime(10, 0);
+        $oldTime = Carbon::create(2025, 6, 10, 10, 0); // Tuesday
         $appointment = Appointment::create([
             'user_id' => $user->id,
             'service_id' => $service->id,
