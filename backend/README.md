@@ -69,6 +69,8 @@ $ npm run test:cov
 
 End-to-end tests require all dependencies installed and a reachable database.
 Ensure your `DATABASE_URL` points to a running instance before executing them.
+One test posts to `/auth/refresh` without seeding a user first to confirm
+that unknown tokens result in a `401 Unauthorized` response.
 
 ## Deployment
 
