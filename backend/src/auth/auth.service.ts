@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
+import { TokenDto } from './dto/token.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
         return result;
     }
 
-    async login(email: string, password: string) {
+    async login(email: string, password: string): Promise<TokenDto> {
         const user = await this.validateUser(email, password);
         const token = await this.jwtService.signAsync({
             sub: user.id,
@@ -34,11 +35,18 @@ export class AuthService {
         return { access_token: token };
     }
 
-    async registerClient(dto: RegisterClientDto) {
+    async registerClient(dto: RegisterClientDto): Promise<TokenDto> {
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
             throw new BadRequestException('Email already registered');
         }
-        return this.usersService.createUser(dto.email, dto.password, dto.name, Role.Client);
+        const user = await this.usersService.createUser(
+            dto.email,
+            dto.password,
+            dto.name,
+            Role.Client,
+        );
+        const token = await this.jwtService.signAsync({ sub: user.id, role: user.role });
+        return { access_token: token };
     }
 }
