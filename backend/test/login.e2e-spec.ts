@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
-describe('AuthController (e2e)', () => {
+describe('AuthController.login (e2e)', () => {
     let app: INestApplication<App>;
 
     beforeEach(async () => {
@@ -20,10 +20,15 @@ describe('AuthController (e2e)', () => {
         await app.close();
     });
 
-    it('/auth/register (POST)', () => {
-        return request(app.getHttpServer())
+    it('/auth/login (POST) authenticates seeded user', async () => {
+        await request(app.getHttpServer())
             .post('/auth/register')
             .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .expect(201);
+
+        return request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'test@test.com', password: 'secret' })
             .expect(201)
             .expect((res) => {
                 expect(res.body).toHaveProperty('access_token');
@@ -31,10 +36,15 @@ describe('AuthController (e2e)', () => {
             });
     });
 
-    it('/auth/register (POST) invalid data', () => {
-        return request(app.getHttpServer())
+    it('/auth/login (POST) rejects wrong password', async () => {
+        await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'bad', password: '123', name: 'T' })
-            .expect(400);
+            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .expect(201);
+
+        return request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'test@test.com', password: 'invalid' })
+            .expect(401);
     });
 });
