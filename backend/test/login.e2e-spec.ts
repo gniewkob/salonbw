@@ -18,7 +18,9 @@ describe('AuthController.login (e2e)', () => {
     });
 
     afterEach(async () => {
-        await app.close();
+        if (app) {
+            await app.close();
+        }
     });
 
     it('/auth/login (POST) authenticates seeded user', async () => {
