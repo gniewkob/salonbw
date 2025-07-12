@@ -70,6 +70,10 @@ $ npm run test:cov
 End-to-end tests require all dependencies installed and a reachable database.
 Ensure your `DATABASE_URL` points to a running instance before executing them.
 
+The test runner expects this database to be clean. Jest hooks automatically
+truncate the tables between test files, so use a dedicated test database or one
+whose contents can be safely wiped.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
