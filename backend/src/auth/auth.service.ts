@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
-import { TokenDto } from './dto/token.dto';
+import { AuthTokensDto } from './dto/auth-tokens.dto';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -26,16 +31,18 @@ export class AuthService {
         return result;
     }
 
-    async login(email: string, password: string): Promise<TokenDto> {
+    async login(email: string, password: string): Promise<AuthTokensDto> {
         const user = await this.validateUser(email, password);
-        const token = await this.jwtService.signAsync({
+        const access = await this.jwtService.signAsync({
             sub: user.id,
             role: user.role,
         });
-        return { access_token: token };
+        const refresh = randomBytes(32).toString('hex');
+        await this.usersService.updateRefreshToken(user.id, refresh);
+        return { access_token: access, refresh_token: refresh };
     }
 
-    async registerClient(dto: RegisterClientDto): Promise<TokenDto> {
+    async registerClient(dto: RegisterClientDto): Promise<AuthTokensDto> {
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
             throw new BadRequestException('Email already registered');
@@ -47,7 +54,26 @@ export class AuthService {
             dto.name,
             Role.Client,
         );
-        const token = await this.jwtService.signAsync({ sub: user.id, role: user.role });
-        return { access_token: token };
+        const access = await this.jwtService.signAsync({
+            sub: user.id,
+            role: user.role,
+        });
+        const refresh = randomBytes(32).toString('hex');
+        await this.usersService.updateRefreshToken(user.id, refresh);
+        return { access_token: access, refresh_token: refresh };
+    }
+
+    async refresh(refreshToken: string): Promise<AuthTokensDto> {
+        const user = await this.usersService.findByRefreshToken(refreshToken);
+        if (!user) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+        const access = await this.jwtService.signAsync({
+            sub: user.id,
+            role: user.role,
+        });
+        const newRefresh = randomBytes(32).toString('hex');
+        await this.usersService.updateRefreshToken(user.id, newRefresh);
+        return { access_token: access, refresh_token: newRefresh };
     }
 }
