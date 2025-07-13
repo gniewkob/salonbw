@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
+import { RolesGuard } from './roles.guard';
 
 @Module({
     imports: [
@@ -14,7 +15,8 @@ import { LocalStrategy } from './local.strategy';
             signOptions: { expiresIn: '1h' },
         }),
     ],
-    providers: [AuthService, JwtStrategy, LocalStrategy],
+    providers: [AuthService, JwtStrategy, LocalStrategy, RolesGuard],
     controllers: [AuthController],
+    exports: [RolesGuard],
 })
 export class AuthModule {}
