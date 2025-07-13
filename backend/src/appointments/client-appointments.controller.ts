@@ -20,7 +20,12 @@ export class ClientAppointmentsController {
 
     @Post()
     create(@Request() req, @Body() dto: Omit<CreateAppointmentDto, 'clientId'>) {
-        return this.service.create(req.user.id, dto.employeeId, dto.scheduledAt);
+        return this.service.create(
+            req.user.id,
+            dto.employeeId,
+            dto.serviceId,
+            dto.startTime,
+        );
     }
 
     @Patch(':id')

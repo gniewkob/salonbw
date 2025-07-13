@@ -7,6 +7,9 @@ export class CreateAppointmentDto {
     @IsInt()
     employeeId: number;
 
+    @IsInt()
+    serviceId: number;
+
     @IsDateString()
-    scheduledAt: string;
+    startTime: string;
 }
