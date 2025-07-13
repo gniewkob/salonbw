@@ -9,7 +9,6 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
-import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +32,13 @@ export class AuthService {
 
     async generateTokens(userId: number, role: Role): Promise<AuthTokensDto> {
         const access = await this.jwtService.signAsync({ sub: userId, role });
-        const refresh = randomBytes(32).toString('hex');
+        const refresh = await this.jwtService.signAsync(
+            { sub: userId },
+            {
+                secret: process.env.JWT_REFRESH_SECRET ?? 'refresh-secret',
+                expiresIn: '7d',
+            },
+        );
         await this.usersService.updateRefreshToken(userId, refresh);
         return { access_token: access, refresh_token: refresh };
     }
@@ -58,8 +63,16 @@ export class AuthService {
     }
 
     async refresh(refreshToken: string): Promise<AuthTokensDto> {
-        const user = await this.usersService.findByRefreshToken(refreshToken);
-        if (!user) {
+        let payload: { sub: number };
+        try {
+            payload = await this.jwtService.verifyAsync(refreshToken, {
+                secret: process.env.JWT_REFRESH_SECRET ?? 'refresh-secret',
+            });
+        } catch {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+        const user = await this.usersService.findOne(payload.sub);
+        if (!user || user.refreshToken !== refreshToken) {
             throw new UnauthorizedException('Invalid refresh token');
         }
         return this.generateTokens(user.id, user.role);
