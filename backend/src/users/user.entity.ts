@@ -20,4 +20,7 @@ export class User {
 
     @Column({ type: 'varchar', nullable: true })
     refreshToken: string | null;
+
+    @Column({ type: 'float', nullable: true })
+    commissionBase: number | null;
 }
