@@ -20,7 +20,12 @@ export class AdminAppointmentsController {
 
     @Post()
     create(@Body() dto: CreateAppointmentDto) {
-        return this.service.create(dto.clientId, dto.employeeId, dto.scheduledAt);
+        return this.service.create(
+            dto.clientId,
+            dto.employeeId,
+            dto.serviceId,
+            dto.startTime,
+        );
     }
 
     @Patch(':id')

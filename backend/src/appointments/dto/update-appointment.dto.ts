@@ -8,7 +8,18 @@ export class UpdateAppointmentDto {
 
     @IsOptional()
     @IsDateString()
-    scheduledAt?: string;
+    startTime?: string;
+
+    @IsOptional()
+    @IsDateString()
+    endTime?: string;
+
+    @IsOptional()
+    @IsInt()
+    serviceId?: number;
+
+    @IsOptional()
+    notes?: string;
 
     @IsOptional()
     @IsEnum(AppointmentStatus)

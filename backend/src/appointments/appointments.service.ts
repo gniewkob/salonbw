@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { Service } from '../catalog/service.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -10,11 +11,17 @@ export class AppointmentsService {
         private readonly repo: Repository<Appointment>,
     ) {}
 
-    create(clientId: number, employeeId: number, scheduledAt: string) {
+    create(
+        clientId: number,
+        employeeId: number,
+        serviceId: number,
+        startTime: string,
+    ) {
         const appointment = this.repo.create({
             client: { id: clientId } as any,
             employee: { id: employeeId } as any,
-            scheduledAt: new Date(scheduledAt),
+            service: { id: serviceId } as Service,
+            startTime: new Date(startTime),
             status: AppointmentStatus.Scheduled,
         });
         return this.repo.save(appointment);
@@ -37,8 +44,17 @@ export class AppointmentsService {
         if (!appt) {
             return undefined;
         }
-        if (dto.scheduledAt) {
-            appt.scheduledAt = new Date(dto.scheduledAt);
+        if (dto.startTime) {
+            appt.startTime = new Date(dto.startTime);
+        }
+        if (dto.endTime) {
+            appt.endTime = new Date(dto.endTime);
+        }
+        if (dto.notes !== undefined) {
+            appt.notes = dto.notes;
+        }
+        if (dto.serviceId) {
+            appt.service = { id: dto.serviceId } as Service;
         }
         if (dto.employeeId) {
             appt.employee = { id: dto.employeeId } as any;
