@@ -46,16 +46,22 @@ describe('AuthService.registerClient', () => {
             email: dto.email,
             role: Role.Client,
         });
-        jwt.signAsync.mockResolvedValue('jwt');
+        jwt.signAsync
+            .mockResolvedValueOnce('access')
+            .mockResolvedValueOnce('refresh');
 
         const result = await service.registerClient(dto);
-        expect(result).toHaveProperty('access_token', 'jwt');
-        expect(result).toHaveProperty('refresh_token');
-        expect(users.updateRefreshToken).toHaveBeenCalled();
-        expect(jwt.signAsync).toHaveBeenCalledWith({
+        expect(result).toEqual({ access_token: 'access', refresh_token: 'refresh' });
+        expect(users.updateRefreshToken).toHaveBeenCalledWith(1, 'refresh');
+        expect(jwt.signAsync).toHaveBeenNthCalledWith(1, {
             sub: 1,
             role: Role.Client,
         });
+        expect(jwt.signAsync).toHaveBeenNthCalledWith(
+            2,
+            { sub: 1 },
+            expect.objectContaining({ secret: expect.any(String) }),
+        );
 
         const passed = users.createUser.mock.calls[0][1];
         expect(passed).toBe(dto.password);

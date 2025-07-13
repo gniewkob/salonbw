@@ -11,17 +11,17 @@ describe('AuthService', () => {
     let users: {
         findByEmail: jest.Mock;
         updateRefreshToken: jest.Mock;
-        findByRefreshToken: jest.Mock;
+        findOne: jest.Mock;
     };
-    let jwt: { signAsync: jest.Mock };
+    let jwt: { signAsync: jest.Mock; verifyAsync: jest.Mock };
 
     beforeEach(async () => {
         users = {
             findByEmail: jest.fn(),
             updateRefreshToken: jest.fn(),
-            findByRefreshToken: jest.fn(),
+            findOne: jest.fn(),
         };
-        jwt = { signAsync: jest.fn() };
+        jwt = { signAsync: jest.fn(), verifyAsync: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -85,29 +85,39 @@ describe('AuthService', () => {
             password: pass,
             role: Role.Client,
         });
-        jwt.signAsync.mockResolvedValue('token');
+        jwt.signAsync
+            .mockResolvedValueOnce('access')
+            .mockResolvedValueOnce('refresh');
 
         const result = await service.login('b@test.com', 'secret');
-        expect(result).toHaveProperty('access_token', 'token');
-        expect(result).toHaveProperty('refresh_token');
-        expect(users.updateRefreshToken).toHaveBeenCalled();
-        expect(jwt.signAsync).toHaveBeenCalledWith({
+        expect(result).toEqual({ access_token: 'access', refresh_token: 'refresh' });
+        expect(users.updateRefreshToken).toHaveBeenCalledWith(2, 'refresh');
+        expect(jwt.signAsync).toHaveBeenNthCalledWith(1, {
             sub: 2,
             role: Role.Client,
         });
+        expect(jwt.signAsync).toHaveBeenNthCalledWith(
+            2,
+            { sub: 2 },
+            expect.objectContaining({ secret: expect.any(String) }),
+        );
     });
 
     it('refresh validates token and returns new tokens', async () => {
-        const user = { id: 3, email: 'c@test.com', role: Role.Client };
-        users.findByRefreshToken.mockResolvedValue(user);
-        jwt.signAsync.mockResolvedValue('newAccess');
+        const user = {
+            id: 3,
+            email: 'c@test.com',
+            role: Role.Client,
+            refreshToken: 'oldRefresh',
+        } as any;
+        jwt.verifyAsync.mockResolvedValue({ sub: 3 });
+        users.findOne.mockResolvedValue(user);
+        jwt.signAsync
+            .mockResolvedValueOnce('newAccess')
+            .mockResolvedValueOnce('newRefresh');
 
         const result = await service.refresh('oldRefresh');
-        expect(result).toHaveProperty('access_token', 'newAccess');
-        expect(result).toHaveProperty('refresh_token');
-        expect(users.updateRefreshToken).toHaveBeenCalledWith(
-            user.id,
-            expect.any(String),
-        );
+        expect(result).toEqual({ access_token: 'newAccess', refresh_token: 'newRefresh' });
+        expect(users.updateRefreshToken).toHaveBeenCalledWith(3, 'newRefresh');
     });
 });
