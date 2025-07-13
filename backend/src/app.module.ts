@@ -8,6 +8,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { MessagesModule } from './messages/messages.module';
+import { CatalogModule } from './catalog/catalog.module';
+import { FormulasModule } from './formulas/formulas.module';
+import { CommissionsModule } from './commissions/commissions.module';
 
 @Module({
     imports: [
@@ -32,6 +35,9 @@ import { MessagesModule } from './messages/messages.module';
         AuthModule,
         AppointmentsModule,
         MessagesModule,
+        CatalogModule,
+        FormulasModule,
+        CommissionsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
