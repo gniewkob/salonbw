@@ -32,6 +32,7 @@ First copy the example environment file and provide a connection string:
 ```bash
 cp .env.example .env
 # edit DATABASE_URL to point at your Postgres database
+# set JWT_SECRET and JWT_REFRESH_SECRET for access and refresh tokens
 ```
 
 You can also adjust `src/app.module.ts` to use a different database engine,
