@@ -22,10 +22,13 @@ describe('AppointmentsService', () => {
   let formulas: { create: jest.Mock };
   let commissions: { createForAppointment: jest.Mock };
 
+  let formulas: { create: jest.Mock };
+
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
     commissions = { createForAppointment: jest.fn() };
+
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -33,6 +36,7 @@ describe('AppointmentsService', () => {
         { provide: getRepositoryToken(Appointment), useValue: repo },
         { provide: FormulasService, useValue: formulas },
         { provide: CommissionsService, useValue: commissions },
+
       ],
     }).compile();
 
