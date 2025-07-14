@@ -41,6 +41,6 @@ export class Appointment {
     @OneToMany(() => Formula, (formula) => formula.appointment)
     formulas: Formula[];
 
-    @Column({ type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.Scheduled })
+    @Column({ type: 'simple-enum', enum: AppointmentStatus, default: AppointmentStatus.Scheduled })
     status: AppointmentStatus;
 }

@@ -27,7 +27,7 @@ import { ServicesModule } from './services/services.module';
                         : { url }),
                     autoLoadEntities: true,
                     migrations: [__dirname + '/migrations/*.ts'],
-                    migrationsRun: true,
+                    migrationsRun: !isSqlite,
                     synchronize: process.env.NODE_ENV !== 'production',
                 } as any;
             },
