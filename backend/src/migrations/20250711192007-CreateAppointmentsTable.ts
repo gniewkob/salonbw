@@ -15,8 +15,8 @@ export class CreateAppointmentsTable20250711192007 implements MigrationInterface
                     },
                     { name: 'clientId', type: 'int' },
                     { name: 'employeeId', type: 'int' },
-                    { name: 'startTime', type: 'datetime' },
-                    { name: 'endTime', type: 'datetime', isNullable: true },
+                    { name: 'startTime', type: 'timestamp' },
+                    { name: 'endTime', type: 'timestamp', isNullable: true },
                     { name: 'notes', type: 'varchar', isNullable: true },
                     { name: 'serviceId', type: 'int' },
                     {
