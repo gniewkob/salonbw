@@ -78,3 +78,4 @@ tailwindcss
 output_tree*.txt
 .env.bak
 
+backend/test.sqlite
