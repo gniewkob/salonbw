@@ -6,12 +6,14 @@ import { ClientAppointmentsController } from './client-appointments.controller';
 import { EmployeeAppointmentsController } from './employee-appointments.controller';
 import { AdminAppointmentsController } from './admin-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
+import { CommissionsModule } from '../commissions/commissions.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Appointment]),
         forwardRef(() => FormulasModule),
     ],
+
     controllers: [
         ClientAppointmentsController,
         EmployeeAppointmentsController,

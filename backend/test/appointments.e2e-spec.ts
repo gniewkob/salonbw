@@ -4,10 +4,13 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { Role } from './../src/users/role.enum';
+import { UsersService } from './../src/users/users.service';
+
 
 describe('AppointmentsModule (e2e)', () => {
     let app: INestApplication<App>;
-    let usersService: import('../src/users/users.service').UsersService;
+    let usersService: UsersService;
+
 
     beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,7 +20,8 @@ describe('AppointmentsModule (e2e)', () => {
         app = moduleFixture.createNestApplication();
         app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
         await app.init();
-        usersService = moduleFixture.get('UsersService');
+        usersService = moduleFixture.get(UsersService);
+
     });
 
     afterEach(async () => {
@@ -84,5 +88,7 @@ describe('AppointmentsModule (e2e)', () => {
             .delete(`/appointments/admin/${id}`)
             .set('Authorization', `Bearer ${token}`)
             .expect(200);
+    });
+
     });
 });
