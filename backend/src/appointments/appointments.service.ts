@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+
+import { Injectable, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -15,12 +16,21 @@ export class AppointmentsService {
         private readonly commissions: CommissionsService,
     ) {}
 
-    create(
+    async create(
         clientId: number,
         employeeId: number,
         serviceId: number,
         startTime: string,
-    ) {
+    ): Promise<Appointment> {
+        const existing = await this.repo.findOne({
+            where: {
+                employee: { id: employeeId },
+                startTime: new Date(startTime),
+            },
+        });
+        if (existing) {
+            throw new ConflictException('Appointment time already taken');
+        }
         const appointment = this.repo.create({
             client: { id: clientId } as any,
             employee: { id: employeeId } as any,
@@ -43,11 +53,7 @@ export class AppointmentsService {
         return this.repo.find();
     }
 
-    async update(id: number, dto: any) {
-        const appt = await this.repo.findOne({ where: { id } });
-        if (!appt) {
-            return undefined;
-        }
+    private async applyUpdates(appt: Appointment, dto: any) {
         if (dto.startTime) {
             appt.startTime = new Date(dto.startTime);
         }
@@ -90,6 +96,84 @@ export class AppointmentsService {
     }
 
     remove(id: number) {
+        return this.repo.delete(id);
+    }
+
+    async updateForUser(id: number, userId: number, role: Role, dto: any) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            (role === Role.Client && appt.client.id !== userId) ||
+            (role === Role.Employee && appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        return this.applyUpdates(appt, dto);
+    }
+
+    async cancel(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            role !== Role.Admin &&
+            appt.client.id !== userId &&
+            appt.employee.id !== userId
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.Cancelled;
+        return this.repo.save(appt);
+    }
+
+    async complete(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (appt.status === AppointmentStatus.Completed) {
+            return appt;
+        }
+        if (
+            role !== Role.Admin &&
+            (role !== Role.Employee || appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.Completed;
+        appt.endTime = appt.endTime || new Date();
+        const saved = await this.repo.save(appt);
+
+        const percent =
+            (appt.employee.commissionBase ??
+                appt.service.defaultCommissionPercent ??
+                0) / 100;
+        if (percent > 0) {
+            const record = this.commissions.create({
+                employee: { id: appt.employee.id } as any,
+                appointment: { id: appt.id } as any,
+                amount: Number(appt.service.price) * percent,
+                percent: percent * 100,
+            });
+            await this.commissions.save(record);
+        }
+        return saved;
+    }
+
+    async removeForUser(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            (role === Role.Client && appt.client.id !== userId) ||
+            (role === Role.Employee && appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
         return this.repo.delete(id);
     }
 }

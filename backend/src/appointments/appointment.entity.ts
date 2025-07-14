@@ -4,6 +4,7 @@ import {
     ManyToOne,
     Column,
     OneToMany,
+    Index,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Service } from '../catalog/service.entity';
@@ -14,7 +15,7 @@ export enum AppointmentStatus {
     Completed = 'completed',
     Cancelled = 'cancelled',
 }
-
+@Index(['employee', 'startTime'], { unique: true })
 @Entity()
 export class Appointment {
     @PrimaryGeneratedColumn()
