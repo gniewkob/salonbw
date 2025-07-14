@@ -11,7 +11,6 @@ import { MessagesModule } from './messages/messages.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { FormulasModule } from './formulas/formulas.module';
 import { CommissionsModule } from './commissions/commissions.module';
-import { ProductsModule } from './products/products.module';
 
 @Module({
     imports: [
@@ -27,7 +26,7 @@ import { ProductsModule } from './products/products.module';
                         : { url }),
                     autoLoadEntities: true,
                     migrations: [__dirname + '/migrations/*.ts'],
-                    migrationsRun: true,
+                    migrationsRun: !isSqlite,
                     synchronize: process.env.NODE_ENV !== 'production',
                 } as any;
             },
@@ -39,7 +38,7 @@ import { ProductsModule } from './products/products.module';
         CatalogModule,
         FormulasModule,
         CommissionsModule,
-        ProductsModule,
+
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],

@@ -8,7 +8,7 @@ export class CreateUsersTable20250711192002 implements MigrationInterface {
                 columns: [
                     {
                         name: 'id',
-                        type: 'int',
+                        type: 'integer',
                         isPrimary: true,
                         isGenerated: true,
                         generationStrategy: 'increment',
@@ -28,8 +28,7 @@ export class CreateUsersTable20250711192002 implements MigrationInterface {
                     },
                     {
                         name: 'role',
-                        type: 'enum',
-                        enum: ['client', 'employee', 'admin'],
+                        type: 'varchar',
                     },
                 ],
             }),
