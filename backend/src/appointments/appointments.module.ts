@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
 import { AppointmentsService } from './appointments.service';
@@ -11,8 +11,7 @@ import { CommissionsModule } from '../commissions/commissions.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([Appointment]),
-        FormulasModule,
-        CommissionsModule,
+        forwardRef(() => FormulasModule),
     ],
 
     controllers: [
@@ -21,5 +20,6 @@ import { CommissionsModule } from '../commissions/commissions.module';
         AdminAppointmentsController,
     ],
     providers: [AppointmentsService],
+    exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
