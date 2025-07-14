@@ -30,4 +30,14 @@ export class EmployeeAppointmentsController {
             dto,
         );
     }
+
+    @Patch(':id/cancel')
+    cancel(@Param('id') id: number, @Request() req) {
+        return this.service.cancel(Number(id), req.user.id, req.user.role);
+    }
+
+    @Patch(':id/complete')
+    complete(@Param('id') id: number, @Request() req) {
+        return this.service.complete(Number(id), req.user.id, req.user.role);
+    }
 }

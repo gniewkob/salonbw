@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
+
 import { Role } from '../users/role.enum';
 
 @Injectable()
@@ -12,6 +13,8 @@ export class AppointmentsService {
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
         private readonly formulas: FormulasService,
+        @InjectRepository(CommissionRecord)
+        private readonly commissions: Repository<CommissionRecord>,
     ) {}
 
     async create(
@@ -93,12 +96,13 @@ export class AppointmentsService {
         return this.repo.delete(id);
     }
 
-    async updateForUser(id: number, userId: number, role: Role, dto: any) {
+
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
         }
         if (
+
             (role === Role.Client && appt.client.id !== userId) ||
             (role === Role.Employee && appt.employee.id !== userId)
         ) {
@@ -108,16 +112,34 @@ export class AppointmentsService {
     }
 
     async removeForUser(id: number, userId: number, role: Role) {
-        const appt = await this.repo.findOne({ where: { id } });
-        if (!appt) {
-            return undefined;
+
+        if (appt.status === AppointmentStatus.Completed) {
+            return appt;
         }
         if (
-            (role === Role.Client && appt.client.id !== userId) ||
-            (role === Role.Employee && appt.employee.id !== userId)
+            role !== Role.Admin &&
+            (role !== Role.Employee || appt.employee.id !== userId)
         ) {
             throw new ForbiddenException();
         }
-        return this.repo.delete(id);
+        appt.status = AppointmentStatus.Completed;
+        appt.endTime = appt.endTime || new Date();
+        const saved = await this.repo.save(appt);
+
+        const percent =
+            (appt.employee.commissionBase ??
+                appt.service.defaultCommissionPercent ??
+                0) / 100;
+        if (percent > 0) {
+            const record = this.commissions.create({
+                employee: { id: appt.employee.id } as any,
+                appointment: { id: appt.id } as any,
+                amount: Number(appt.service.price) * percent,
+                percent: percent * 100,
+            });
+            await this.commissions.save(record);
+        }
+        return saved;
+
     }
 }
