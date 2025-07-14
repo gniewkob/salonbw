@@ -32,8 +32,14 @@ export class ClientAppointmentsController {
     update(
         @Param('id') id: number,
         @Body() dto: UpdateAppointmentDto,
+        @Request() req,
     ) {
-        return this.service.update(Number(id), dto);
+        return this.service.updateForUser(
+            Number(id),
+            req.user.id,
+            Role.Client,
+            dto,
+        );
     }
 
     @Patch(':id/cancel')
@@ -47,7 +53,7 @@ export class ClientAppointmentsController {
     }
 
     @Delete(':id')
-    remove(@Param('id') id: number) {
-        return this.service.remove(Number(id));
+    remove(@Param('id') id: number, @Request() req) {
+        return this.service.removeForUser(Number(id), req.user.id, Role.Client);
     }
 }

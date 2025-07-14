@@ -1,10 +1,10 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
-import { CommissionRecord } from '../commissions/commission-record.entity';
+
 import { Role } from '../users/role.enum';
 
 @Injectable()
@@ -17,12 +17,21 @@ export class AppointmentsService {
         private readonly commissions: Repository<CommissionRecord>,
     ) {}
 
-    create(
+    async create(
         clientId: number,
         employeeId: number,
         serviceId: number,
         startTime: string,
     ) {
+        const existing = await this.repo.findOne({
+            where: {
+                employee: { id: employeeId },
+                startTime: new Date(startTime),
+            },
+        });
+        if (existing) {
+            throw new ConflictException('Appointment time already taken');
+        }
         const appointment = this.repo.create({
             client: { id: clientId } as any,
             employee: { id: employeeId } as any,
@@ -45,11 +54,7 @@ export class AppointmentsService {
         return this.repo.find();
     }
 
-    async update(id: number, dto: any) {
-        const appt = await this.repo.findOne({ where: { id } });
-        if (!appt) {
-            return undefined;
-        }
+    private async applyUpdates(appt: Appointment, dto: any) {
         if (dto.startTime) {
             appt.startTime = new Date(dto.startTime);
         }
@@ -79,31 +84,35 @@ export class AppointmentsService {
         return saved;
     }
 
+    async update(id: number, dto: any) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        return this.applyUpdates(appt, dto);
+    }
+
     remove(id: number) {
         return this.repo.delete(id);
     }
 
-    async cancel(id: number, userId: number, role: Role) {
+
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
         }
         if (
-            role !== Role.Admin &&
-            appt.client.id !== userId &&
-            appt.employee.id !== userId
+
+            (role === Role.Client && appt.client.id !== userId) ||
+            (role === Role.Employee && appt.employee.id !== userId)
         ) {
             throw new ForbiddenException();
         }
-        appt.status = AppointmentStatus.Cancelled;
-        return this.repo.save(appt);
+        return this.applyUpdates(appt, dto);
     }
 
-    async complete(id: number, userId: number, role: Role) {
-        const appt = await this.repo.findOne({ where: { id } });
-        if (!appt) {
-            return undefined;
-        }
+    async removeForUser(id: number, userId: number, role: Role) {
+
         if (appt.status === AppointmentStatus.Completed) {
             return appt;
         }
@@ -131,5 +140,6 @@ export class AppointmentsService {
             await this.commissions.save(record);
         }
         return saved;
+
     }
 }
