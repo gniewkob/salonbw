@@ -24,6 +24,7 @@ beforeAll(async () => {
       : {
           type: 'postgres',
           url,
+          entities: [join(__dirname, '../src/**/*.entity.ts')],
           migrations: [join(__dirname, '../src/migrations/*.ts')],
         }
   );
