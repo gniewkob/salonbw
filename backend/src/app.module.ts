@@ -11,7 +11,6 @@ import { MessagesModule } from './messages/messages.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { FormulasModule } from './formulas/formulas.module';
 import { CommissionsModule } from './commissions/commissions.module';
-import { ServicesModule } from './services/services.module';
 
 @Module({
     imports: [
@@ -39,7 +38,7 @@ import { ServicesModule } from './services/services.module';
         CatalogModule,
         FormulasModule,
         CommissionsModule,
-        ServicesModule,
+
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
