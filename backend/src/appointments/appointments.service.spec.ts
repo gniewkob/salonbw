@@ -9,6 +9,8 @@ import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionsService } from '../commissions/commissions.service';
+import { CommissionRecord } from '../commissions/commission-record.entity';
+import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -21,19 +23,20 @@ describe('AppointmentsService', () => {
   };
   let formulas: { create: jest.Mock };
   let commissions: { createForAppointment: jest.Mock };
-
-  let formulas: { create: jest.Mock };
+  let commissionRepo: { create: jest.Mock; save: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
     commissions = { createForAppointment: jest.fn() };
+    commissionRepo = { create: jest.fn(), save: jest.fn() };
 
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
+        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
         { provide: FormulasService, useValue: formulas },
         { provide: CommissionsService, useValue: commissions },
 
@@ -103,12 +106,13 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
+    commissionRepo.create.mockReturnValue({});
 
     await service.complete(3);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
     expect(repo.save).toHaveBeenCalledWith(appt);
-    expect(commissions.createForAppointment).toHaveBeenCalledWith(appt);
+    expect(commissionRepo.save).toHaveBeenCalled();
   });
 
   it('remove calls repository delete', async () => {
