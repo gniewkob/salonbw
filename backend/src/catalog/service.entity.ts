@@ -9,7 +9,6 @@ export class Service {
     @Column()
     name: string;
 
-    @Column({ type: 'varchar', nullable: true })
     description: string | null;
 
     @Column('int')
