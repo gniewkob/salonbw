@@ -20,7 +20,7 @@ export class CreateCommissionRecordsTable20250711192009 implements MigrationInte
                     { name: 'percent', type: 'float' },
                     {
                         name: 'createdAt',
-                        type: 'datetime',
+                        type: 'timestamp',
                         default: 'CURRENT_TIMESTAMP',
                     },
                 ],
