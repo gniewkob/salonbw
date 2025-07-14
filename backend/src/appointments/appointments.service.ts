@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
+import { FormulasService } from '../formulas/formulas.service';
 
 @Injectable()
 export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
+        private readonly formulas: FormulasService,
     ) {}
 
     create(
@@ -62,7 +64,15 @@ export class AppointmentsService {
         if (dto.status) {
             appt.status = dto.status;
         }
-        return this.repo.save(appt);
+        const saved = await this.repo.save(appt);
+        if (dto.formulaDescription) {
+            await this.formulas.create(
+                appt.client.id,
+                dto.formulaDescription,
+                appt.id,
+            );
+        }
+        return saved;
     }
 
     remove(id: number) {
