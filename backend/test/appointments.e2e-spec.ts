@@ -98,10 +98,10 @@ describe('AppointmentsModule (e2e)', () => {
             .expect(200);
     });
 
-    it('client can create an appointment', async () => {
-        await servicesRepo.save(
-            servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
-        );
+      it('client can create an appointment', async () => {
+          await servicesRepo.save(
+              servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
+          );
         const client = await usersService.createUser(
             'client3@test.com',
             'secret',
@@ -138,8 +138,46 @@ describe('AppointmentsModule (e2e)', () => {
         expect(saved).toBeDefined();
         expect(saved?.client.id).toBe(client.id);
         expect(saved?.employee.id).toBe(employee.id);
-        expect(saved?.service.id).toBe(1);
-    });
+          expect(saved?.service.id).toBe(1);
+      });
+
+      it('rejects appointment with past start time', async () => {
+          await servicesRepo.save(
+              servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
+          );
+          const client = await usersService.createUser(
+              'past@test.com',
+              'secret',
+              'P',
+              Role.Client,
+          );
+          const employee = await usersService.createUser(
+              'pastemp@test.com',
+              'secret',
+              'E',
+              Role.Employee,
+          );
+
+          const login = await request(app.getHttpServer())
+              .post('/auth/login')
+              .send({ email: 'past@test.com', password: 'secret' })
+              .expect(201);
+          const token = login.body.access_token;
+          const startTime = '2020-01-01T11:00:00.000Z';
+
+          await request(app.getHttpServer())
+              .post('/appointments/client')
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                  employeeId: employee.id,
+                  serviceId: 1,
+                  startTime,
+              })
+              .expect(400);
+
+          const appts = await appointmentsRepo.find();
+          expect(appts.length).toBe(0);
+      });
 
     it('rejects unauthenticated appointment creation', async () => {
         await servicesRepo.save(
