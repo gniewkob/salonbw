@@ -1,9 +1,11 @@
 
+import { Injectable, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
+import { CommissionRecord } from '../commissions/commission-record.entity';
 
 import { Role } from '../users/role.enum';
 
@@ -96,13 +98,12 @@ export class AppointmentsService {
         return this.repo.delete(id);
     }
 
-
+    async updateForUser(id: number, userId: number, role: Role, dto: any) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
         }
         if (
-
             (role === Role.Client && appt.client.id !== userId) ||
             (role === Role.Employee && appt.employee.id !== userId)
         ) {
@@ -111,8 +112,27 @@ export class AppointmentsService {
         return this.applyUpdates(appt, dto);
     }
 
-    async removeForUser(id: number, userId: number, role: Role) {
+    async cancel(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            role !== Role.Admin &&
+            appt.client.id !== userId &&
+            appt.employee.id !== userId
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.Cancelled;
+        return this.repo.save(appt);
+    }
 
+    async complete(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
         if (appt.status === AppointmentStatus.Completed) {
             return appt;
         }
@@ -140,6 +160,19 @@ export class AppointmentsService {
             await this.commissions.save(record);
         }
         return saved;
+    }
 
+    async removeForUser(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            (role === Role.Client && appt.client.id !== userId) ||
+            (role === Role.Employee && appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        return this.repo.delete(id);
     }
 }
