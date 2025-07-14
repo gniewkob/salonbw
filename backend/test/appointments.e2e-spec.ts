@@ -141,5 +141,26 @@ describe('AppointmentsModule (e2e)', () => {
         expect(saved?.service.id).toBe(1);
     });
 
+    it('rejects unauthenticated appointment creation', async () => {
+        await servicesRepo.save(
+            servicesRepo.create({ name: 'style', duration: 30, price: 20 }),
+        );
+        const employee = await usersService.createUser(
+            'emp4@test.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
+        const startTime = '2025-07-02T11:00:00.000Z';
+        await request(app.getHttpServer())
+            .post('/appointments/client')
+            .send({
+                employeeId: employee.id,
+                serviceId: 1,
+                startTime,
+            })
+            .expect(401);
+    });
+
     });
 });
