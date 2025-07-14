@@ -8,6 +8,6 @@ import { CommissionsController } from './commissions.controller';
     imports: [TypeOrmModule.forFeature([CommissionRecord])],
     controllers: [CommissionsController],
     providers: [CommissionsService],
-    exports: [TypeOrmModule],
+    exports: [TypeOrmModule, CommissionsService],
 })
 export class CommissionsModule {}

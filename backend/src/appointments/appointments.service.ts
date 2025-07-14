@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
+import { CommissionsService } from '../commissions/commissions.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -11,6 +12,7 @@ export class AppointmentsService {
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
         private readonly formulas: FormulasService,
+        private readonly commissions: CommissionsService,
     ) {}
 
     create(
@@ -72,6 +74,18 @@ export class AppointmentsService {
                 appt.id,
             );
         }
+        return saved;
+    }
+
+    async complete(id: number) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        appt.status = AppointmentStatus.Completed;
+        appt.endTime = new Date();
+        const saved = await this.repo.save(appt);
+        await this.commissions.createForAppointment(appt);
         return saved;
     }
 
