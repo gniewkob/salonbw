@@ -21,14 +21,13 @@ describe('AppointmentsService', () => {
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
-    commissionRepo = { create: jest.fn(), save: jest.fn() };
-    formulas = { create: jest.fn() };
+
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
-        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
+
         { provide: FormulasService, useValue: formulas },
       ],
     }).compile();
@@ -54,6 +53,15 @@ describe('AppointmentsService', () => {
     expect(result).toBe(created);
   });
 
+  it('create rejects conflicting appointment', async () => {
+    repo.findOne.mockResolvedValue({ id: 9 });
+    await expect(
+      service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.create).not.toHaveBeenCalled();
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
   it('findClientAppointments queries by client id', async () => {
     repo.find.mockResolvedValue([]);
     await service.findClientAppointments(4);
@@ -70,6 +78,24 @@ describe('AppointmentsService', () => {
     expect(existing.status).toBe(AppointmentStatus.Completed);
     expect(existing.notes).toBe('done');
     expect(repo.save).toHaveBeenCalledWith(existing);
+  });
+
+  it('updateForUser throws for mismatched owner', async () => {
+    const existing: any = { id: 3, client: { id: 1 }, employee: { id: 2 } };
+    repo.findOne.mockResolvedValue(existing);
+
+    await expect(
+      service.updateForUser(3, 99, Role.Client, {})
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('removeForUser throws for mismatched owner', async () => {
+    const existing: any = { id: 4, client: { id: 1 }, employee: { id: 2 } };
+    repo.findOne.mockResolvedValue(existing);
+
+    await expect(
+      service.removeForUser(4, 99, Role.Employee)
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('remove calls repository delete', async () => {
