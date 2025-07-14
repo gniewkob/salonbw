@@ -58,6 +58,12 @@ describe('AppointmentsService', () => {
     await expect(
       service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
     ).rejects.toThrow(ConflictException);
+    expect(repo.findOne).toHaveBeenCalledWith({
+      where: {
+        employee: { id: 2 },
+        startTime: new Date('2025-07-01T10:00:00.000Z'),
+      },
+    });
     expect(repo.create).not.toHaveBeenCalled();
     expect(repo.save).not.toHaveBeenCalled();
   });
