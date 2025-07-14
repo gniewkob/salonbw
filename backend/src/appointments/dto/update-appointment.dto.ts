@@ -24,4 +24,7 @@ export class UpdateAppointmentDto {
     @IsOptional()
     @IsEnum(AppointmentStatus)
     status?: AppointmentStatus;
+
+    @IsOptional()
+    formulaDescription?: string;
 }
