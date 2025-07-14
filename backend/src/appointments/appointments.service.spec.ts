@@ -3,8 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
-import { ConflictException } from '@nestjs/common';
-import { FormulasService } from '../formulas/formulas.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -74,6 +72,24 @@ describe('AppointmentsService', () => {
     expect(existing.status).toBe(AppointmentStatus.Completed);
     expect(existing.notes).toBe('done');
     expect(repo.save).toHaveBeenCalledWith(existing);
+  });
+
+  it('updateForUser throws for mismatched owner', async () => {
+    const existing: any = { id: 3, client: { id: 1 }, employee: { id: 2 } };
+    repo.findOne.mockResolvedValue(existing);
+
+    await expect(
+      service.updateForUser(3, 99, Role.Client, {})
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('removeForUser throws for mismatched owner', async () => {
+    const existing: any = { id: 4, client: { id: 1 }, employee: { id: 2 } };
+    repo.findOne.mockResolvedValue(existing);
+
+    await expect(
+      service.removeForUser(4, 99, Role.Employee)
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('remove calls repository delete', async () => {
