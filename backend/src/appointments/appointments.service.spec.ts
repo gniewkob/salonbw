@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { FormulasService } from '../formulas/formulas.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -14,13 +15,17 @@ describe('AppointmentsService', () => {
     delete: jest.Mock;
   };
 
+  let formulas: { create: jest.Mock };
+
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
+    formulas = { create: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
+        { provide: FormulasService, useValue: formulas },
       ],
     }).compile();
 
