@@ -1,11 +1,11 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { Injectable, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
-import { CommissionsService } from '../commissions/commissions.service';
+import { CommissionRecord } from '../commissions/commission-record.entity';
+import { Role } from '../users/role.enum';
 
 @Injectable()
 export class AppointmentsService {
@@ -14,7 +14,8 @@ export class AppointmentsService {
         private readonly repo: Repository<Appointment>,
         @Inject(forwardRef(() => FormulasService))
         private readonly formulas: FormulasService,
-        private readonly commissions: CommissionsService,
+        @InjectRepository(CommissionRecord)
+        private readonly commissions: Repository<CommissionRecord>,
     ) {}
 
     async create(
@@ -63,6 +64,9 @@ export class AppointmentsService {
         if (!appt) {
             return undefined;
         }
+        return this.applyUpdates(appt, dto);
+    }
+
     private async applyUpdates(appt: Appointment, dto: any) {
         if (dto.startTime) {
             appt.startTime = new Date(dto.startTime);
@@ -93,15 +97,53 @@ export class AppointmentsService {
         return saved;
     }
 
-    async complete(id: number) {
+    async complete(id: number): Promise<Appointment | undefined>;
+    async complete(id: number, userId: number, role: Role): Promise<Appointment | undefined>;
+    async complete(id: number, userId?: number, role?: Role) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
         }
+        if (userId === undefined || role === undefined) {
+            appt.status = AppointmentStatus.Completed;
+            appt.endTime = new Date();
+            const saved = await this.repo.save(appt);
+            const record = this.commissions.create({
+                employee: appt.employee,
+                appointment: appt,
+                product: null,
+                amount: appt.service.price,
+                percent: appt.service.defaultCommissionPercent ?? 0,
+            });
+            await this.commissions.save(record);
+            return saved;
+        }
+        if (appt.status === AppointmentStatus.Completed) {
+            return appt;
+        }
+        if (
+            role !== Role.Admin &&
+            (role !== Role.Employee || appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
         appt.status = AppointmentStatus.Completed;
-        appt.endTime = new Date();
+        appt.endTime = appt.endTime || new Date();
         const saved = await this.repo.save(appt);
-        await this.commissions.createForAppointment(appt);
+
+        const percent =
+            (appt.employee.commissionBase ??
+                appt.service.defaultCommissionPercent ??
+                0) / 100;
+        if (percent > 0) {
+            const record = this.commissions.create({
+                employee: { id: appt.employee.id } as any,
+                appointment: { id: appt.id } as any,
+                amount: Number(appt.service.price) * percent,
+                percent: percent * 100,
+            });
+            await this.commissions.save(record);
+        }
         return saved;
     }
 
@@ -137,40 +179,6 @@ export class AppointmentsService {
         }
         appt.status = AppointmentStatus.Cancelled;
         return this.repo.save(appt);
-    }
-
-    async complete(id: number, userId: number, role: Role) {
-        const appt = await this.repo.findOne({ where: { id } });
-        if (!appt) {
-            return undefined;
-        }
-        if (appt.status === AppointmentStatus.Completed) {
-            return appt;
-        }
-        if (
-            role !== Role.Admin &&
-            (role !== Role.Employee || appt.employee.id !== userId)
-        ) {
-            throw new ForbiddenException();
-        }
-        appt.status = AppointmentStatus.Completed;
-        appt.endTime = appt.endTime || new Date();
-        const saved = await this.repo.save(appt);
-
-        const percent =
-            (appt.employee.commissionBase ??
-                appt.service.defaultCommissionPercent ??
-                0) / 100;
-        if (percent > 0) {
-            const record = this.commissions.create({
-                employee: { id: appt.employee.id } as any,
-                appointment: { id: appt.id } as any,
-                amount: Number(appt.service.price) * percent,
-                percent: percent * 100,
-            });
-            await this.commissions.save(record);
-        }
-        return saved;
     }
 
     async removeForUser(id: number, userId: number, role: Role) {
