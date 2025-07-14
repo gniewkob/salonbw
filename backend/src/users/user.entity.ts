@@ -15,7 +15,7 @@ export class User {
     @Column()
     name: string;
 
-    @Column({ type: 'enum', enum: Role })
+    @Column({ type: 'simple-enum', enum: Role })
     role: Role;
 
     @Column({ type: 'varchar', nullable: true })
