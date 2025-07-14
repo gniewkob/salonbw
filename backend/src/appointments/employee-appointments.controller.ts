@@ -18,7 +18,16 @@ export class EmployeeAppointmentsController {
     }
 
     @Patch(':id')
-    update(@Param('id') id: number, @Body() dto: UpdateAppointmentDto) {
-        return this.service.update(Number(id), dto);
+    update(
+        @Param('id') id: number,
+        @Body() dto: UpdateAppointmentDto,
+        @Request() req,
+    ) {
+        return this.service.updateForUser(
+            Number(id),
+            req.user.id,
+            Role.Employee,
+            dto,
+        );
     }
 }
