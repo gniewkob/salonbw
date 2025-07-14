@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -10,6 +10,7 @@ export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
+        @Inject(forwardRef(() => FormulasService))
         private readonly formulas: FormulasService,
     ) {}
 
@@ -39,6 +40,10 @@ export class AppointmentsService {
 
     findAll() {
         return this.repo.find();
+    }
+
+    findOne(id: number) {
+        return this.repo.findOne({ where: { id } });
     }
 
     async update(id: number, dto: any) {
