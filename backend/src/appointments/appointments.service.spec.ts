@@ -3,6 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { ConflictException } from '@nestjs/common';
+import { FormulasService } from '../formulas/formulas.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -16,11 +18,13 @@ describe('AppointmentsService', () => {
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
+    const formulas = { create: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
+        { provide: FormulasService, useValue: formulas },
       ],
     }).compile();
 
@@ -43,6 +47,15 @@ describe('AppointmentsService', () => {
     });
     expect(repo.save).toHaveBeenCalledWith(created);
     expect(result).toBe(created);
+  });
+
+  it('create rejects conflicting appointment', async () => {
+    repo.findOne.mockResolvedValue({ id: 9 });
+    await expect(
+      service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.create).not.toHaveBeenCalled();
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it('findClientAppointments queries by client id', async () => {
