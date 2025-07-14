@@ -27,8 +27,7 @@ import { CommissionsModule } from './commissions/commissions.module';
                     autoLoadEntities: true,
                     migrations: [__dirname + '/migrations/*.ts'],
                     migrationsRun: !isSqlite,
-                    synchronize:
-                        isSqlite && process.env.NODE_ENV !== 'production',
+                    synchronize: isSqlite && process.env.NODE_ENV !== 'production',
                 } as any;
             },
         }),
