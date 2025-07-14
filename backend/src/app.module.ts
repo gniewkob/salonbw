@@ -27,7 +27,8 @@ import { CommissionsModule } from './commissions/commissions.module';
                     autoLoadEntities: true,
                     migrations: [__dirname + '/migrations/*.ts'],
                     migrationsRun: !isSqlite,
-                    synchronize: process.env.NODE_ENV !== 'production',
+                    synchronize:
+                        isSqlite && process.env.NODE_ENV !== 'production',
                 } as any;
             },
         }),
@@ -38,7 +39,6 @@ import { CommissionsModule } from './commissions/commissions.module';
         CatalogModule,
         FormulasModule,
         CommissionsModule,
-
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
