@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
+import { CommissionRecord } from '../commissions/commission-record.entity';
+import { Role } from '../users/role.enum';
 
 @Injectable()
 export class AppointmentsService {
@@ -11,6 +13,8 @@ export class AppointmentsService {
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
         private readonly formulas: FormulasService,
+        @InjectRepository(CommissionRecord)
+        private readonly commissions: Repository<CommissionRecord>,
     ) {}
 
     create(
@@ -77,5 +81,55 @@ export class AppointmentsService {
 
     remove(id: number) {
         return this.repo.delete(id);
+    }
+
+    async cancel(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            role !== Role.Admin &&
+            appt.client.id !== userId &&
+            appt.employee.id !== userId
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.Cancelled;
+        return this.repo.save(appt);
+    }
+
+    async complete(id: number, userId: number, role: Role) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (appt.status === AppointmentStatus.Completed) {
+            return appt;
+        }
+        if (
+            role !== Role.Admin &&
+            (role !== Role.Employee || appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.Completed;
+        appt.endTime = appt.endTime || new Date();
+        const saved = await this.repo.save(appt);
+
+        const percent =
+            (appt.employee.commissionBase ??
+                appt.service.defaultCommissionPercent ??
+                0) / 100;
+        if (percent > 0) {
+            const record = this.commissions.create({
+                employee: { id: appt.employee.id } as any,
+                appointment: { id: appt.id } as any,
+                amount: Number(appt.service.price) * percent,
+                percent: percent * 100,
+            });
+            await this.commissions.save(record);
+        }
+        return saved;
     }
 }

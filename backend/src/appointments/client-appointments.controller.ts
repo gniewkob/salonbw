@@ -36,6 +36,16 @@ export class ClientAppointmentsController {
         return this.service.update(Number(id), dto);
     }
 
+    @Patch(':id/cancel')
+    cancel(@Param('id') id: number, @Request() req) {
+        return this.service.cancel(Number(id), req.user.id, req.user.role);
+    }
+
+    @Patch(':id/complete')
+    complete(@Param('id') id: number, @Request() req) {
+        return this.service.complete(Number(id), req.user.id, req.user.role);
+    }
+
     @Delete(':id')
     remove(@Param('id') id: number) {
         return this.service.remove(Number(id));

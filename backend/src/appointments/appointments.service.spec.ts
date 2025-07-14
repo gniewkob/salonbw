@@ -3,6 +3,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { CommissionRecord } from '../commissions/commission-record.entity';
+import { FormulasService } from '../formulas/formulas.service';
+import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -13,14 +16,20 @@ describe('AppointmentsService', () => {
     findOne: jest.Mock;
     delete: jest.Mock;
   };
+  let commissionRepo: { create: jest.Mock; save: jest.Mock };
+  let formulas: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
+    commissionRepo = { create: jest.fn(), save: jest.fn() };
+    formulas = { create: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
+        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
+        { provide: FormulasService, useValue: formulas },
       ],
     }).compile();
 
@@ -67,5 +76,40 @@ describe('AppointmentsService', () => {
     repo.delete.mockResolvedValue({});
     await service.remove(5);
     expect(repo.delete).toHaveBeenCalledWith(5);
+  });
+
+  it('cancel updates status when authorized', async () => {
+    const appt: any = {
+      id: 1,
+      status: AppointmentStatus.Scheduled,
+      client: { id: 2 },
+      employee: { id: 3 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
+
+    await service.cancel(1, 2, Role.Client);
+    expect(appt.status).toBe(AppointmentStatus.Cancelled);
+    expect(repo.save).toHaveBeenCalledWith(appt);
+  });
+
+  it('complete saves status and commission', async () => {
+    const appt: any = {
+      id: 2,
+      status: AppointmentStatus.Scheduled,
+      client: { id: 2 },
+      employee: { id: 3, commissionBase: 10 },
+      service: { price: 100, defaultCommissionPercent: 15 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
+    commissionRepo.create.mockReturnValue({});
+    commissionRepo.save.mockResolvedValue({});
+
+    await service.complete(2, 3, Role.Employee);
+
+    expect(appt.status).toBe(AppointmentStatus.Completed);
+    expect(repo.save).toHaveBeenCalledWith(appt);
+    expect(commissionRepo.save).toHaveBeenCalled();
   });
 });

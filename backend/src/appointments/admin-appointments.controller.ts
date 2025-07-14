@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, Request } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -31,6 +31,16 @@ export class AdminAppointmentsController {
     @Patch(':id')
     update(@Param('id') id: number, @Body() dto: UpdateAppointmentDto) {
         return this.service.update(Number(id), dto);
+    }
+
+    @Patch(':id/cancel')
+    cancel(@Param('id') id: number, @Request() req) {
+        return this.service.cancel(Number(id), req.user.id, req.user.role);
+    }
+
+    @Patch(':id/complete')
+    complete(@Param('id') id: number, @Request() req) {
+        return this.service.complete(Number(id), req.user.id, req.user.role);
     }
 
     @Delete(':id')

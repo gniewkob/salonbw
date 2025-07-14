@@ -6,9 +6,10 @@ import { ClientAppointmentsController } from './client-appointments.controller';
 import { EmployeeAppointmentsController } from './employee-appointments.controller';
 import { AdminAppointmentsController } from './admin-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
+import { CommissionRecord } from '../commissions/commission-record.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Appointment]), FormulasModule],
+    imports: [TypeOrmModule.forFeature([Appointment, CommissionRecord]), FormulasModule],
     controllers: [
         ClientAppointmentsController,
         EmployeeAppointmentsController,
