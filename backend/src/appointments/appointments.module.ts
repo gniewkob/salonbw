@@ -7,10 +7,11 @@ import { EmployeeAppointmentsController } from './employee-appointments.controll
 import { AdminAppointmentsController } from './admin-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
 import { CommissionsModule } from '../commissions/commissions.module';
+import { CommissionRecord } from '../commissions/commission-record.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Appointment]),
+        TypeOrmModule.forFeature([Appointment, CommissionRecord]),
         forwardRef(() => FormulasModule),
     ],
 
