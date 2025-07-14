@@ -3,9 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
-import { FormulasService } from '../formulas/formulas.service';
-import { ForbiddenException } from '@nestjs/common';
-import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -48,6 +45,15 @@ describe('AppointmentsService', () => {
     });
     expect(repo.save).toHaveBeenCalledWith(created);
     expect(result).toBe(created);
+  });
+
+  it('create rejects conflicting appointment', async () => {
+    repo.findOne.mockResolvedValue({ id: 9 });
+    await expect(
+      service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.create).not.toHaveBeenCalled();
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it('findClientAppointments queries by client id', async () => {

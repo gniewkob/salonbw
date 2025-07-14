@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -14,12 +14,21 @@ export class AppointmentsService {
         private readonly formulas: FormulasService,
     ) {}
 
-    create(
+    async create(
         clientId: number,
         employeeId: number,
         serviceId: number,
         startTime: string,
     ) {
+        const existing = await this.repo.findOne({
+            where: {
+                employee: { id: employeeId },
+                startTime: new Date(startTime),
+            },
+        });
+        if (existing) {
+            throw new ConflictException('Appointment time already taken');
+        }
         const appointment = this.repo.create({
             client: { id: clientId } as any,
             employee: { id: employeeId } as any,
