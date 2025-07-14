@@ -9,8 +9,7 @@ export class Service {
     @Column()
     name: string;
 
-    @Column({ nullable: true })
-    description: string;
+    description: string | null;
 
     @Column('int')
     duration: number; // in minutes
