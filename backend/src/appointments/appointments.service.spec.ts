@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
@@ -21,12 +25,14 @@ describe('AppointmentsService', () => {
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
-
+    commissionRepo = { create: jest.fn(), save: jest.fn() };
+    formulas = { create: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
+        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
 
         { provide: FormulasService, useValue: formulas },
       ],
