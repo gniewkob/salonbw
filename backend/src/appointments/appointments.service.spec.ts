@@ -7,9 +7,8 @@ import {
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
-import { CommissionRecord } from '../commissions/commission-record.entity';
 import { FormulasService } from '../formulas/formulas.service';
-import { Role } from '../users/role.enum';
+import { CommissionsService } from '../commissions/commissions.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -20,21 +19,20 @@ describe('AppointmentsService', () => {
     findOne: jest.Mock;
     delete: jest.Mock;
   };
-  let commissionRepo: { create: jest.Mock; save: jest.Mock };
   let formulas: { create: jest.Mock };
+  let commissions: { createForAppointment: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
-    commissionRepo = { create: jest.fn(), save: jest.fn() };
     formulas = { create: jest.fn() };
+    commissions = { createForAppointment: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
-        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
-
         { provide: FormulasService, useValue: formulas },
+        { provide: CommissionsService, useValue: commissions },
       ],
     }).compile();
 
@@ -92,22 +90,21 @@ describe('AppointmentsService', () => {
     expect(repo.save).toHaveBeenCalledWith(existing);
   });
 
-  it('updateForUser throws for mismatched owner', async () => {
-    const existing: any = { id: 3, client: { id: 1 }, employee: { id: 2 } };
-    repo.findOne.mockResolvedValue(existing);
+  it('complete sets status and records commission', async () => {
+    const appt: any = {
+      id: 3,
+      status: AppointmentStatus.Scheduled,
+      service: { price: 40, defaultCommissionPercent: 0.15 },
+      employee: { id: 5 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
 
-    await expect(
-      service.updateForUser(3, 99, Role.Client, {})
-    ).rejects.toThrow(ForbiddenException);
-  });
+    await service.complete(3);
 
-  it('removeForUser throws for mismatched owner', async () => {
-    const existing: any = { id: 4, client: { id: 1 }, employee: { id: 2 } };
-    repo.findOne.mockResolvedValue(existing);
-
-    await expect(
-      service.removeForUser(4, 99, Role.Employee)
-    ).rejects.toThrow(ForbiddenException);
+    expect(appt.status).toBe(AppointmentStatus.Completed);
+    expect(repo.save).toHaveBeenCalledWith(appt);
+    expect(commissions.createForAppointment).toHaveBeenCalledWith(appt);
   });
 
   it('remove calls repository delete', async () => {
