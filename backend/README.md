@@ -68,12 +68,11 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-End-to-end tests require all dependencies installed. They default to an
-in-memory SQLite database when `DATABASE_URL` is unset. Set
-`DATABASE_URL=sqlite::memory:` (or simply leave the variable unset) so the tests
-run without a local Postgres instance. One test posts to `/auth/refresh` without
-seeding a user first to confirm that unknown tokens result in a
-`401 Unauthorized` response.
+End-to-end tests require all dependencies installed. Set
+`DATABASE_URL=sqlite::memory:` (or simply leave the variable unset) to use an
+in-memory SQLite database so the tests run without a local Postgres instance.
+One test posts to `/auth/refresh` without seeding a user first to confirm that
+unknown tokens result in a `401 Unauthorized` response.
 
 The test runner expects this database to be clean. Jest hooks automatically
 truncate the tables between test files, so use a dedicated test database or one
