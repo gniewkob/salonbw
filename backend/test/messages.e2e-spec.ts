@@ -49,4 +49,20 @@ describe('MessagesModule (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .expect(200);
     });
+
+    it('forbids admin from accessing messages endpoints', async () => {
+        await usersService.createUser('admin@msg.com', 'secret', 'Admin', Role.Admin);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'admin@msg.com', password: 'secret' })
+            .expect(201);
+
+        const token = login.body.access_token;
+
+        await request(app.getHttpServer())
+            .get('/messages')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403);
+    });
 });
