@@ -199,6 +199,4 @@ describe('AppointmentsModule (e2e)', () => {
             })
             .expect(401);
     });
-
-    });
 });
