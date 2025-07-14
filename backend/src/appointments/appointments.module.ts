@@ -14,6 +14,7 @@ import { CommissionsModule } from '../commissions/commissions.module';
         FormulasModule,
         CommissionsModule,
     ],
+
     controllers: [
         ClientAppointmentsController,
         EmployeeAppointmentsController,

@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { FormulasService } from '../formulas/formulas.service';
@@ -53,6 +57,21 @@ describe('AppointmentsService', () => {
     expect(result).toBe(created);
   });
 
+  it('create rejects conflicting appointment', async () => {
+    repo.findOne.mockResolvedValue({ id: 9 });
+    await expect(
+      service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.findOne).toHaveBeenCalledWith({
+      where: {
+        employee: { id: 2 },
+        startTime: new Date('2025-07-01T10:00:00.000Z'),
+      },
+    });
+    expect(repo.create).not.toHaveBeenCalled();
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
   it('findClientAppointments queries by client id', async () => {
     repo.find.mockResolvedValue([]);
     await service.findClientAppointments(4);
@@ -92,5 +111,40 @@ describe('AppointmentsService', () => {
     repo.delete.mockResolvedValue({});
     await service.remove(5);
     expect(repo.delete).toHaveBeenCalledWith(5);
+  });
+
+  it('cancel updates status when authorized', async () => {
+    const appt: any = {
+      id: 1,
+      status: AppointmentStatus.Scheduled,
+      client: { id: 2 },
+      employee: { id: 3 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
+
+    await service.cancel(1, 2, Role.Client);
+    expect(appt.status).toBe(AppointmentStatus.Cancelled);
+    expect(repo.save).toHaveBeenCalledWith(appt);
+  });
+
+  it('complete saves status and commission', async () => {
+    const appt: any = {
+      id: 2,
+      status: AppointmentStatus.Scheduled,
+      client: { id: 2 },
+      employee: { id: 3, commissionBase: 10 },
+      service: { price: 100, defaultCommissionPercent: 15 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
+    commissionRepo.create.mockReturnValue({});
+    commissionRepo.save.mockResolvedValue({});
+
+    await service.complete(2, 3, Role.Employee);
+
+    expect(appt.status).toBe(AppointmentStatus.Completed);
+    expect(repo.save).toHaveBeenCalledWith(appt);
+    expect(commissionRepo.save).toHaveBeenCalled();
   });
 });
