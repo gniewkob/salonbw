@@ -22,7 +22,7 @@ export class AppointmentsService {
         employeeId: number,
         serviceId: number,
         startTime: string,
-    ) {
+    ): Promise<Appointment> {
         const existing = await this.repo.findOne({
             where: {
                 employee: { id: employeeId },
