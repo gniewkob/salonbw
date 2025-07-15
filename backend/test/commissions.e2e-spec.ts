@@ -27,6 +27,10 @@ describe('CommissionsModule (e2e)', () => {
         }
     });
 
+    it('rejects unauthenticated requests', () => {
+        return request(app.getHttpServer()).get('/commissions/employee').expect(401);
+    });
+
     it('employee can list own commissions', async () => {
         await usersService.createUser('emp@comm.com', 'secret', 'Emp', Role.Employee);
         const login = await request(app.getHttpServer())
