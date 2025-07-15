@@ -1,12 +1,11 @@
 import { DataSource } from 'typeorm';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import { config } from 'dotenv';
 
 config({ path: '.env' });
 const url = process.env.DATABASE_URL || 'sqlite:./dev.sqlite';
 const isSqlite = url.startsWith('sqlite:');
-const dir = dirname(fileURLToPath(import.meta.url));
+const dir = __dirname;
 
 export const AppDataSource = new DataSource(
   isSqlite
