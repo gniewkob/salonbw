@@ -14,7 +14,7 @@ export class CreateServicesTable20250711192005 implements MigrationInterface {
                         generationStrategy: 'increment',
                     },
                     { name: 'name', type: 'varchar' },
-                    { name: 'description', type: 'varchar', isNullable: true },
+                    { name: 'description', type: 'text', isNullable: true },
                     { name: 'duration', type: 'int' },
                     { name: 'price', type: 'decimal', precision: 10, scale: 2 },
                     {
