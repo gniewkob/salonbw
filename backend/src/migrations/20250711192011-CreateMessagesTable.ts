@@ -29,11 +29,13 @@ export class CreateMessagesTable20250711192011 implements MigrationInterface {
                 columnNames: ['senderId'],
                 referencedTableName: 'user',
                 referencedColumnNames: ['id'],
+                onDelete: 'RESTRICT',
             }),
             new TableForeignKey({
                 columnNames: ['recipientId'],
                 referencedTableName: 'user',
                 referencedColumnNames: ['id'],
+                onDelete: 'RESTRICT',
             }),
         ]);
     }

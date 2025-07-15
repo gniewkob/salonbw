@@ -31,6 +31,7 @@ export class CreateCommissionRecordsTable20250711192009 implements MigrationInte
                 columnNames: ['employeeId'],
                 referencedTableName: 'user',
                 referencedColumnNames: ['id'],
+                onDelete: 'RESTRICT',
             }),
             new TableForeignKey({
                 columnNames: ['appointmentId'],
