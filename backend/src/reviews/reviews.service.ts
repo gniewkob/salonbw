@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './review.entity';
@@ -12,7 +12,15 @@ export class ReviewsService {
         private readonly repo: Repository<Review>,
     ) {}
 
-    create(dto: CreateReviewDto) {
+    async create(dto: CreateReviewDto) {
+        const existing = await this.repo.findOne({
+            where: { reservation: { id: dto.reservationId } },
+        });
+        if (existing) {
+            throw new BadRequestException(
+                'Review already exists for this reservation',
+            );
+        }
         const review = this.repo.create({
             reservation: { id: dto.reservationId } as any,
             reservationId: dto.reservationId,
