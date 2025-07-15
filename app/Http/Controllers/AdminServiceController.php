@@ -93,6 +93,9 @@ class AdminServiceController extends Controller
 
     public function destroy(Service $service)
     {
+        if ($service->variants()->whereHas('appointments')->exists()) {
+            return back()->withErrors(['service' => 'Nie można usunąć usługi z rezerwacjami.']);
+        }
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Usługa została usunięta.');
     }

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
+import { Appointment } from '../appointments/appointment.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
@@ -10,6 +11,8 @@ export class ServicesService {
     constructor(
         @InjectRepository(ServiceEntity)
         private readonly repo: Repository<ServiceEntity>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
     ) {}
 
     create(dto: CreateServiceDto) {
