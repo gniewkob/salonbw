@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionsService } from '../commissions/commissions.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
@@ -90,7 +91,12 @@ describe('AppointmentsService', () => {
     repo.findOne.mockResolvedValue(existing);
     repo.save.mockResolvedValue(existing);
 
-    await service.update(2, { status: AppointmentStatus.Completed, notes: 'done' });
+    const updateParams: UpdateAppointmentParams = {
+      status: AppointmentStatus.Completed,
+      notes: 'done',
+    };
+
+    await service.update(2, updateParams);
 
     expect(existing.status).toBe(AppointmentStatus.Completed);
     expect(existing.notes).toBe('done');
