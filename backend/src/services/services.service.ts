@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
@@ -54,7 +54,15 @@ export class ServicesService {
         return this.repo.save(entity);
     }
 
-    remove(id: number) {
+    async remove(id: number) {
+        const entity = await this.repo.findOne({ where: { id } });
+        if (!entity) {
+            throw new NotFoundException();
+        }
+        await this.repo.manager.count(
+            'appointment',
+            { where: { service: { id } } } as any,
+        );
         return this.repo.delete(id);
     }
 }
