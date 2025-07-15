@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
+import { LogsService } from '../logs/logs.service';
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -14,6 +15,7 @@ describe('AuthService', () => {
         findOne: jest.Mock;
     };
     let jwt: { signAsync: jest.Mock; verifyAsync: jest.Mock };
+    let logs: { create: jest.Mock };
 
     beforeEach(async () => {
         users = {
@@ -22,12 +24,14 @@ describe('AuthService', () => {
             findOne: jest.fn(),
         };
         jwt = { signAsync: jest.fn(), verifyAsync: jest.fn() };
+        logs = { create: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthService,
                 { provide: UsersService, useValue: users },
                 { provide: JwtService, useValue: jwt },
+                { provide: LogsService, useValue: logs },
             ],
         }).compile();
 

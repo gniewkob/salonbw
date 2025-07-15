@@ -8,11 +8,13 @@ import { AdminAppointmentsController } from './admin-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { CommissionRecord } from '../commissions/commission-record.entity';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Appointment, CommissionRecord]),
         forwardRef(() => FormulasModule),
+        LogsModule,
     ],
 
     controllers: [
