@@ -13,9 +13,12 @@ export class Formula {
     @CreateDateColumn()
     date: Date;
 
-    @ManyToOne(() => Customer, { eager: true })
+    @ManyToOne(() => Customer, { eager: true, onDelete: 'RESTRICT' })
     client: Customer;
 
-    @ManyToOne(() => Appointment, (appointment) => appointment.formulas, { nullable: true })
+    @ManyToOne(() => Appointment, (appointment) => appointment.formulas, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
     appointment: Appointment | null;
 }

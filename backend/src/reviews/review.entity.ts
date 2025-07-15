@@ -18,10 +18,10 @@ export class Review {
     @Column()
     reservationId: number;
 
-    @ManyToOne(() => Appointment, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Appointment, { onDelete: 'RESTRICT' })
     reservation: Appointment;
 
-    @ManyToOne(() => Customer, { eager: true })
+    @ManyToOne(() => Customer, { eager: true, onDelete: 'RESTRICT' })
     client: Customer;
 
     @Column('int')

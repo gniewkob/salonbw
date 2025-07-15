@@ -6,10 +6,10 @@ export class Message {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
     sender: User;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
     recipient: User;
 
     @Column()
