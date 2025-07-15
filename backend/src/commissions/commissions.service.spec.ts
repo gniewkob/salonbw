@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CommissionsService } from './commissions.service';
 import { CommissionRecord } from './commission-record.entity';
 import { Appointment } from '../appointments/appointment.entity';
-import { User } from '../users/user.entity';
+import { Employee } from '../employees/employee.entity';
 import { Service } from '../catalog/service.entity';
 
 describe('CommissionsService', () => {
@@ -27,7 +27,7 @@ describe('CommissionsService', () => {
     const appt = {
       id: 1,
       service: { price: 50, defaultCommissionPercent: 0.2 } as Service,
-      employee: { id: 2 } as User,
+      employee: { id: 2 } as Employee,
     } as Appointment;
     const created = { id: 99 } as CommissionRecord;
     repo.create.mockReturnValue(created);
