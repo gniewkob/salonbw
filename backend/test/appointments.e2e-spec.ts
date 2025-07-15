@@ -73,6 +73,7 @@ describe('AppointmentsModule (e2e)', () => {
             .expect(201);
         const token = login.body.access_token;
 
+        const futureTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         const create = await request(app.getHttpServer())
             .post('/appointments/admin')
             .set('Authorization', `Bearer ${token}`)
@@ -80,7 +81,7 @@ describe('AppointmentsModule (e2e)', () => {
                 clientId: client.id,
                 employeeId: employee.id,
                 serviceId: 1,
-                startTime: '2025-07-01T10:00:00.000Z',
+                startTime: futureTime,
             })
             .expect(201);
 
@@ -120,7 +121,7 @@ describe('AppointmentsModule (e2e)', () => {
             .send({ email: 'client3@test.com', password: 'secret' })
             .expect(201);
         const token = login.body.access_token;
-        const startTime = '2025-07-01T11:00:00.000Z';
+        const startTime = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
         const res = await request(app.getHttpServer())
             .post('/appointments/client')
@@ -189,7 +190,7 @@ describe('AppointmentsModule (e2e)', () => {
             'E',
             Role.Employee,
         );
-        const startTime = '2025-07-02T11:00:00.000Z';
+        const startTime = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
         await request(app.getHttpServer())
             .post('/appointments/client')
             .send({
