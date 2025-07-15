@@ -40,4 +40,16 @@ describe('AuthController (e2e)', () => {
             .send({ email: 'bad', password: '123', name: 'T' })
             .expect(400);
     });
+
+    it('/auth/register (POST) rejects duplicates', async () => {
+        await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'dup@test.com', password: 'secret', name: 'One' })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'dup@test.com', password: 'other', name: 'Two' })
+            .expect(400);
+    });
 });
