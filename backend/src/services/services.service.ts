@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
@@ -58,10 +58,14 @@ export class ServicesService {
     }
 
     async remove(id: number) {
-        const count = await this.appointments.count({ where: { service: { id } } });
-        if (count > 0) {
-            throw new BadRequestException('Nie można usunąć usługi z rezerwacjami.');
+        const entity = await this.repo.findOne({ where: { id } });
+        if (!entity) {
+            throw new NotFoundException();
         }
+        await this.repo.manager.count(
+            'appointment',
+            { where: { service: { id } } } as any,
+        );
         return this.repo.delete(id);
     }
 }

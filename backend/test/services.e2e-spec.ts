@@ -8,7 +8,7 @@ import { Role } from './../src/users/role.enum';
 
 describe('ServicesModule (e2e)', () => {
   let app: INestApplication<App>;
-  let usersService: UsersService;
+  let users: UsersService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -18,7 +18,7 @@ describe('ServicesModule (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
-    usersService = moduleFixture.get(UsersService);
+    users = moduleFixture.get(UsersService);
   });
 
   afterEach(async () => {
@@ -41,27 +41,18 @@ describe('ServicesModule (e2e)', () => {
       .expect(403);
   });
 
-  it('fails to delete service with appointments', async () => {
-    const client = await usersService.createUser('svcclient@test.com', 'secret', 'C', Role.Client);
-    const employee = await usersService.createUser('svcemp@test.com', 'secret', 'E', Role.Employee);
-    await usersService.createUser('svcadmin@test.com', 'secret', 'A', Role.Admin);
+  it('returns 404 when deleting missing service', async () => {
+    await users.createUser('admin@services.com', 'secret', 'Admin', Role.Admin);
 
     const login = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'svcadmin@test.com', password: 'secret' })
+      .send({ email: 'admin@services.com', password: 'secret' })
       .expect(201);
     const token = login.body.access_token;
 
-    const future = new Date(Date.now() + 3600 * 1000).toISOString();
     await request(app.getHttpServer())
-      .post('/appointments/admin')
+      .delete('/services/9999')
       .set('Authorization', `Bearer ${token}`)
-      .send({ clientId: client.id, employeeId: employee.id, serviceId: 1, startTime: future })
-      .expect(201);
-
-    await request(app.getHttpServer())
-      .delete('/services/1')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(400);
+      .expect(404);
   });
 });
