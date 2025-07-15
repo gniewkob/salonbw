@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { User } from '../users/user.entity';
+import { Customer } from '../customers/customer.entity';
 import { Appointment } from '../appointments/appointment.entity';
 
 @Entity()
@@ -13,8 +13,8 @@ export class Formula {
     @CreateDateColumn()
     date: Date;
 
-    @ManyToOne(() => User, { eager: true })
-    client: User;
+    @ManyToOne(() => Customer, { eager: true })
+    client: Customer;
 
     @ManyToOne(() => Appointment, (appointment) => appointment.formulas, { nullable: true })
     appointment: Appointment | null;
