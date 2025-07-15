@@ -21,10 +21,10 @@ export class Appointment {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
     client: User;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
     employee: User;
 
     @Column()
@@ -36,7 +36,7 @@ export class Appointment {
     @Column({ nullable: true })
     notes: string;
 
-    @ManyToOne(() => Service, { eager: true })
+    @ManyToOne(() => Service, { eager: true, onDelete: 'RESTRICT' })
     service: Service;
 
     @OneToMany(() => Formula, (formula) => formula.appointment)
