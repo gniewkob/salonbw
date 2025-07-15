@@ -7,6 +7,8 @@ import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { Role } from '../users/role.enum';
 import { UpdateAppointmentParams } from './dto/update-appointment-params';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class AppointmentsService {
@@ -17,6 +19,7 @@ export class AppointmentsService {
         private readonly formulas: FormulasService,
         @InjectRepository(CommissionRecord)
         private readonly commissions: Repository<CommissionRecord>,
+        private readonly logs: LogsService,
     ) {}
 
     async create(
@@ -45,7 +48,13 @@ export class AppointmentsService {
             startTime: start,
             status: AppointmentStatus.Scheduled,
         });
-        return this.repo.save(appointment);
+        const saved = await this.repo.save(appointment);
+        await this.logs.create(
+            LogAction.CreateAppointment,
+            JSON.stringify({ clientId, employeeId, serviceId, startTime }),
+            clientId,
+        );
+        return saved;
     }
 
     findClientAppointments(clientId: number) {

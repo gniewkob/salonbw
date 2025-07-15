@@ -5,6 +5,8 @@ import { Service as ServiceEntity } from '../catalog/service.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class ServicesService {
@@ -13,14 +15,20 @@ export class ServicesService {
         private readonly repo: Repository<ServiceEntity>,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
+        private readonly logs: LogsService,
     ) {}
 
-    create(dto: CreateServiceDto) {
+    async create(dto: CreateServiceDto) {
         const entity = this.repo.create({
             ...dto,
             category: dto.categoryId ? ({ id: dto.categoryId } as any) : null,
         });
-        return this.repo.save(entity);
+        const saved = await this.repo.save(entity);
+        await this.logs.create(
+            LogAction.UpdateService,
+            JSON.stringify({ id: saved.id, ...dto }),
+        );
+        return saved;
     }
 
     findAll() {
@@ -54,7 +62,12 @@ export class ServicesService {
         if (dto.defaultCommissionPercent !== undefined) {
             entity.defaultCommissionPercent = dto.defaultCommissionPercent;
         }
-        return this.repo.save(entity);
+        const saved = await this.repo.save(entity);
+        await this.logs.create(
+            LogAction.UpdateService,
+            JSON.stringify({ id, ...dto }),
+        );
+        return saved;
     }
 
     async remove(id: number) {

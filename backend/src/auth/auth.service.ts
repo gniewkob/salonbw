@@ -9,21 +9,26 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly logs: LogsService,
     ) {}
 
     async validateUser(email: string, password: string) {
         const user = await this.usersService.findByEmail(email);
         if (!user) {
+            await this.logs.create(LogAction.LoginFail, `email=${email}`);
             throw new UnauthorizedException('Invalid credentials');
         }
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
+            await this.logs.create(LogAction.LoginFail, `email=${email}`, user.id);
             throw new UnauthorizedException('Invalid credentials');
         }
         const { password: _pw, ...result } = user;
