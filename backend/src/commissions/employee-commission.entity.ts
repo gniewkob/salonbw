@@ -6,7 +6,9 @@ export class EmployeeCommission {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Employee, (employee) => employee.commissions, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Employee, (employee) => employee.commissions, {
+        onDelete: 'RESTRICT',
+    })
     employee: Employee;
 
     @Column('decimal', { precision: 10, scale: 2 })

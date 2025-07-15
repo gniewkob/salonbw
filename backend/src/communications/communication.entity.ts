@@ -6,8 +6,12 @@ export class Communication {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Customer, { eager: true, onDelete: 'CASCADE' })
-    customer: Customer;
+    @ManyToOne(() => Customer, {
+        eager: true,
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
+    customer: Customer | null;
 
     @Column()
     medium: string;
