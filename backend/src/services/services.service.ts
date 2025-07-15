@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
+import { Appointment } from '../appointments/appointment.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
@@ -10,6 +11,8 @@ export class ServicesService {
     constructor(
         @InjectRepository(ServiceEntity)
         private readonly repo: Repository<ServiceEntity>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
     ) {}
 
     create(dto: CreateServiceDto) {
@@ -54,7 +57,11 @@ export class ServicesService {
         return this.repo.save(entity);
     }
 
-    remove(id: number) {
+    async remove(id: number) {
+        const count = await this.appointments.count({ where: { service: { id } } });
+        if (count > 0) {
+            throw new BadRequestException('Nie można usunąć usługi z rezerwacjami.');
+        }
         return this.repo.delete(id);
     }
 }
