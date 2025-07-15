@@ -58,14 +58,11 @@ export class ServicesService {
     }
 
     async remove(id: number) {
-        const entity = await this.repo.findOne({ where: { id } });
+        const entity = await this.findOne(id);
         if (!entity) {
             throw new NotFoundException();
         }
-        await this.repo.manager.count(
-            'appointment',
-            { where: { service: { id } } } as any,
-        );
+        await this.appointments.count({ where: { service: { id } } });
         return this.repo.delete(id);
     }
 }
