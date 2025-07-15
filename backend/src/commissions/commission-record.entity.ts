@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { User } from '../users/user.entity';
+import { Employee } from '../employees/employee.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Product } from '../catalog/product.entity';
 
@@ -8,8 +8,8 @@ export class CommissionRecord {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
-    employee: User;
+    @ManyToOne(() => Employee, { eager: true, onDelete: 'RESTRICT' })
+    employee: Employee;
 
     @ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
     appointment: Appointment | null;

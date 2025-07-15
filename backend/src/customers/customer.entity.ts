@@ -1,0 +1,7 @@
+import { Entity } from 'typeorm';
+import { User } from '../users/user.entity';
+
+// Customer accounts share the same table as regular users
+// but are typed separately for clarity.
+@Entity('user')
+export class Customer extends User {}
