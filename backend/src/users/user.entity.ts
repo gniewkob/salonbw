@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Role } from './role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 
 @Entity()
 export class User {
@@ -16,7 +17,7 @@ export class User {
     name: string;
 
     @Column({ type: 'simple-enum', enum: Role })
-    role: Role;
+    role: Role | EmployeeRole;
 
     @Column({ type: 'varchar', nullable: true })
     refreshToken: string | null;
