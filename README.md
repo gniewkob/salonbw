@@ -13,6 +13,12 @@ Salon Black & White is a modern hair salon website built with Laravel.
 It lets clients book appointments, browse a gallery of our work and contact us directly.
 The application integrates with WhatsApp and Instagram to keep customers up to date.
 
+## Archived frontend
+
+The original Laravel implementation of the frontend has been moved to
+`archive/laravel-frontend`. It is kept only as a reference for the initial
+prototype and is no longer maintained on the main branch.
+
 ## License
 
 This project is open-sourced software licensed under the [MIT license](LICENSE).
