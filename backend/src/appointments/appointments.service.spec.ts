@@ -51,13 +51,13 @@ describe('AppointmentsService', () => {
     repo.create.mockReturnValue(created);
     repo.save.mockResolvedValue(created);
 
-    const result = await service.create(1, 2, 3, '2025-07-01T10:00:00.000Z');
+    const result = await service.create(1, 2, 3, '2100-07-01T10:00:00.000Z');
 
     expect(repo.create).toHaveBeenCalledWith({
       client: { id: 1 },
       employee: { id: 2 },
       service: { id: 3 },
-      startTime: new Date('2025-07-01T10:00:00.000Z'),
+      startTime: new Date('2100-07-01T10:00:00.000Z'),
       status: AppointmentStatus.Scheduled,
     });
     expect(repo.save).toHaveBeenCalledWith(created);
@@ -67,12 +67,12 @@ describe('AppointmentsService', () => {
   it('create rejects conflicting appointment', async () => {
     repo.findOne.mockResolvedValue({ id: 9 });
     await expect(
-      service.create(1, 2, 3, '2025-07-01T10:00:00.000Z'),
+      service.create(1, 2, 3, '2100-07-01T10:00:00.000Z'),
     ).rejects.toThrow(ConflictException);
     expect(repo.findOne).toHaveBeenCalledWith({
       where: {
         employee: { id: 2 },
-        startTime: new Date('2025-07-01T10:00:00.000Z'),
+        startTime: new Date('2100-07-01T10:00:00.000Z'),
       },
     });
     expect(repo.create).not.toHaveBeenCalled();
