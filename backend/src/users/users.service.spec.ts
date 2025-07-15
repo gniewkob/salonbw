@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
@@ -50,5 +51,14 @@ describe('UsersService', () => {
         const passed = repo.create.mock.calls[0][0].password;
         expect(await bcrypt.compare(plain, passed)).toBe(true);
         expect(repo.save).toHaveBeenCalledWith(created);
+    });
+
+    it('createUser throws BadRequest if email already exists', async () => {
+        repo.findOne.mockResolvedValue({ id: 2 } as User);
+
+        await expect(
+            service.createUser('a@test.com', 'secret', 'Alice', Role.Client),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(repo.save).not.toHaveBeenCalled();
     });
 });
