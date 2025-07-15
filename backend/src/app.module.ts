@@ -14,6 +14,7 @@ import { CommissionsModule } from './commissions/commissions.module';
 import { ServicesModule } from './services/services.module';
 import { ProductsModule } from './products/products.module';
 import { LogsModule } from './logs/logs.module';
+import { CommunicationsModule } from './communications/communications.module';
 
 @Module({
     imports: [
@@ -44,6 +45,7 @@ import { LogsModule } from './logs/logs.module';
         ServicesModule,
         ProductsModule,
         LogsModule,
+        CommunicationsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
