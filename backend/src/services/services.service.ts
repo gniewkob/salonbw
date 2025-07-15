@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
@@ -75,7 +75,10 @@ export class ServicesService {
         if (!entity) {
             throw new NotFoundException();
         }
-        await this.appointments.count({ where: { service: { id } } });
+        const count = await this.appointments.count({ where: { service: { id } } });
+        if (count > 0) {
+            throw new BadRequestException('Service has existing appointments');
+        }
         return this.repo.delete(id);
     }
 }

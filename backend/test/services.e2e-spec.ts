@@ -70,4 +70,33 @@ describe('ServicesModule (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(404);
   });
+
+  it('rejects deleting service with appointments', async () => {
+    const client = await users.createUser('svcclient@test.com', 'secret', 'C', Role.Client);
+    const employee = await users.createUser('svcemp@test.com', 'secret', 'E', Role.Employee);
+    await users.createUser('svcadmin@test.com', 'secret', 'Admin', Role.Admin);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'svcadmin@test.com', password: 'secret' })
+      .expect(201);
+    const token = login.body.access_token;
+
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await request(app.getHttpServer())
+      .post('/appointments/admin')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        clientId: client.id,
+        employeeId: employee.id,
+        serviceId: 1,
+        startTime: future,
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .delete('/services/1')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400);
+  });
 });
