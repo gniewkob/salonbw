@@ -23,7 +23,7 @@ export class CreateAppointmentsTable20250711192007 implements MigrationInterface
                         name: 'status',
                         type: 'enum',
                         enum: ['scheduled', 'completed', 'cancelled'],
-                        default: `'scheduled'`,
+                        default: "'scheduled'",
                     },
                 ],
             }),
