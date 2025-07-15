@@ -6,7 +6,8 @@ import {
     OneToMany,
     Index,
 } from 'typeorm';
-import { User } from '../users/user.entity';
+import { Employee } from '../employees/employee.entity';
+import { Customer } from '../customers/customer.entity';
 import { Service } from '../catalog/service.entity';
 import { Formula } from '../formulas/formula.entity';
 
@@ -21,11 +22,11 @@ export class Appointment {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
-    client: User;
+    @ManyToOne(() => Customer, { eager: true, onDelete: 'RESTRICT' })
+    client: Customer;
 
-    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
-    employee: User;
+    @ManyToOne(() => Employee, { eager: true, onDelete: 'RESTRICT' })
+    employee: Employee;
 
     @Column()
     startTime: Date;
