@@ -10,12 +10,14 @@ class AdminUserController extends Controller
     public function index()
     {
         $users = User::orderBy('created_at', 'desc')->paginate(20);
+
         return view('admin.users.index', compact('users'));
     }
 
     public function edit($id)
     {
         $user = User::findOrFail($id);
+
         return view('admin.users.edit', compact('user'));
     }
 
@@ -36,5 +38,18 @@ class AdminUserController extends Controller
         $user->save();
 
         return redirect()->route('admin.users.index')->with('success', 'Rola użytkownika została zaktualizowana.');
+    }
+
+    public function destroy(User $user)
+    {
+        if (auth()->id() === $user->id) {
+            return back()->withErrors([
+                'user' => 'Nie możesz usunąć własnego konta.',
+            ]);
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')->with('success', 'Użytkownik został usunięty.');
     }
 }
