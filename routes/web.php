@@ -1,19 +1,19 @@
 <?php
 
 use App\Http\Controllers\AdminAppointmentController;
+use App\Http\Controllers\AdminBlockerController;
+use App\Http\Controllers\AdminCouponController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminKontaktController;
 use App\Http\Controllers\AdminServiceController;
 use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\AdminCouponController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminBlockerController;
 use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\KontaktController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReservationEntryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\KontaktController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReservationEntryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,11 +24,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function (GalleryController $gallery) {
     $instagramPhotos = $gallery->latest();
     $contactInfo = \App\Models\ContactInfo::getDefault();
+
     return view('pages.home', compact('instagramPhotos', 'contactInfo'));
 })->name('home');
 
 Route::get('/uslugi', function () {
     $services = \App\Models\Service::with('variants')->orderBy('name')->get();
+
     return view('pages.uslugi', compact('services'));
 })->name('uslugi');
 
@@ -94,11 +96,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/uslugi/{service}/edytuj', [AdminServiceController::class, 'edit'])->name('services.edit');
     Route::put('/uslugi/{service}', [AdminServiceController::class, 'update'])->name('services.update');
     Route::delete('/uslugi/{service}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
-    
+
     // Kontakt
     Route::get('/kontakt', [AdminKontaktController::class, 'edit'])->name('kontakt.edit');
     Route::put('/kontakt', [AdminKontaktController::class, 'update'])->name('kontakt.update');
-    
+
     // Rezerwacje i kalendarz
     Route::get('/rezerwacje', [AdminAppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/rezerwacje/{appointment}/edit', [AdminAppointmentController::class, 'edit'])->name('appointments.edit');
@@ -118,23 +120,24 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Blokady
     Route::get('/blokady', [AdminBlockerController::class, 'calendar'])->name('blockers.calendar');
     Route::get('/blokady/api', [AdminBlockerController::class, 'api'])->name('blockers.api');
-    
+
     // API do dropdownów i godzin pracy
     Route::get('/api/users', [AdminAppointmentController::class, 'users'])->name('appointments.users');
     Route::get('/api/variants', [AdminAppointmentController::class, 'variants'])->name('appointments.variants');
     Route::get('/api/services', [AdminAppointmentController::class, 'services'])->name('appointments.services');
     Route::get('/api/services/{service}/variants', [AdminAppointmentController::class, 'variantsForService'])->name('appointments.serviceVariants');
     Route::get('/api/working-hours', [AdminAppointmentController::class, 'workingHours'])->name('appointments.workingHours');
-    
+
     // Wiadomości
     Route::get('/wiadomosci', [AdminKontaktController::class, 'index'])->name('messages.index');
     Route::get('/wiadomosci/{id}', [AdminKontaktController::class, 'show'])->name('messages.show');
     Route::post('/wiadomosci/{id}/reply', [AdminKontaktController::class, 'reply'])->name('messages.reply');
-    
+
     // Użytkownicy
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 
     // Kupony
     Route::get('/kupony', [AdminCouponController::class, 'index'])->name('coupons.index');
@@ -152,7 +155,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 */
 Route::get('/zarezerwuj', [ReservationEntryController::class, 'index'])->name('reservation.entry');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
