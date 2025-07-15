@@ -6,6 +6,7 @@ import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { Role } from '../users/role.enum';
+import { UpdateAppointmentParams } from './dto/update-appointment-params';
 
 @Injectable()
 export class AppointmentsService {
@@ -63,7 +64,7 @@ export class AppointmentsService {
         return this.repo.findOne({ where: { id } });
     }
 
-    async update(id: number, dto: any) {
+    async update(id: number, dto: UpdateAppointmentParams) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
@@ -71,7 +72,10 @@ export class AppointmentsService {
         return this.applyUpdates(appt, dto);
     }
 
-    private async applyUpdates(appt: Appointment, dto: any) {
+    private async applyUpdates(
+        appt: Appointment,
+        dto: UpdateAppointmentParams,
+    ) {
         if (dto.startTime) {
             appt.startTime = new Date(dto.startTime);
         }
@@ -155,7 +159,12 @@ export class AppointmentsService {
         return this.repo.delete(id);
     }
 
-    async updateForUser(id: number, userId: number, role: Role, dto: any) {
+    async updateForUser(
+        id: number,
+        userId: number,
+        role: Role,
+        dto: UpdateAppointmentParams,
+    ) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
