@@ -21,6 +21,10 @@ export class Service {
     @Column({ type: 'float', nullable: true })
     defaultCommissionPercent: number | null;
 
-    @ManyToOne(() => Category, (category) => category.services, { eager: true, nullable: true })
+    @ManyToOne(() => Category, (category) => category.services, {
+        eager: true,
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
     category: Category | null;
 }

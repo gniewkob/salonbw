@@ -29,6 +29,7 @@ export class CreateFormulasTable20250711192008 implements MigrationInterface {
                 columnNames: ['clientId'],
                 referencedTableName: 'user',
                 referencedColumnNames: ['id'],
+                onDelete: 'RESTRICT',
             }),
             new TableForeignKey({
                 columnNames: ['appointmentId'],
