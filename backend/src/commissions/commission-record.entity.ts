@@ -8,13 +8,13 @@ export class CommissionRecord {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
     employee: User;
 
-    @ManyToOne(() => Appointment, { nullable: true })
+    @ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
     appointment: Appointment | null;
 
-    @ManyToOne(() => Product, { nullable: true })
+    @ManyToOne(() => Product, { nullable: true, onDelete: 'SET NULL' })
     product: Product | null;
 
     @Column('decimal', { precision: 10, scale: 2 })
