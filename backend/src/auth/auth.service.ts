@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LogsService } from '../logs/logs.service';
@@ -35,7 +36,10 @@ export class AuthService {
         return result;
     }
 
-    async generateTokens(userId: number, role: Role): Promise<AuthTokensDto> {
+    async generateTokens(
+        userId: number,
+        role: Role | EmployeeRole,
+    ): Promise<AuthTokensDto> {
         const access = await this.jwtService.signAsync({ sub: userId, role });
         const refresh = await this.jwtService.signAsync(
             { sub: userId },
