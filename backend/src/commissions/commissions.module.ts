@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommissionRecord } from './commission-record.entity';
+import { EmployeeCommission } from './employee-commission.entity';
 import { CommissionsService } from './commissions.service';
 import { CommissionsController } from './commissions.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([CommissionRecord])],
+    imports: [TypeOrmModule.forFeature([CommissionRecord, EmployeeCommission])],
     controllers: [CommissionsController],
     providers: [CommissionsService],
     exports: [TypeOrmModule, CommissionsService],
