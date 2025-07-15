@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -26,6 +26,10 @@ export class UsersService {
         name: string,
         role: Role = Role.Client,
     ) {
+        const existing = await this.findByEmail(email);
+        if (existing) {
+            throw new BadRequestException('Email already registered');
+        }
         const hashed = await bcrypt.hash(password, 10);
         const user = this.usersRepository.create({
             email,
