@@ -17,7 +17,7 @@ export class CreateFormulasTable20250711192008 implements MigrationInterface {
                     {
                         name: 'date',
                         type: 'timestamp',
-                        default: 'CURRENT_TIMESTAMP',
+                        default: 'now()',
                     },
                     { name: 'clientId', type: 'int' },
                     { name: 'appointmentId', type: 'int', isNullable: true },

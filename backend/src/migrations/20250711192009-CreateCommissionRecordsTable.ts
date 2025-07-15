@@ -21,7 +21,7 @@ export class CreateCommissionRecordsTable20250711192009 implements MigrationInte
                     {
                         name: 'createdAt',
                         type: 'timestamp',
-                        default: 'CURRENT_TIMESTAMP',
+                        default: 'now()',
                     },
                 ],
             }),
