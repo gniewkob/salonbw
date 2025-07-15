@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -24,10 +24,14 @@ export class AppointmentsService {
         serviceId: number,
         startTime: string,
     ): Promise<Appointment> {
+        const start = new Date(startTime);
+        if (start < new Date()) {
+            throw new BadRequestException('Start time must be in the future');
+        }
         const existing = await this.repo.findOne({
             where: {
                 employee: { id: employeeId },
-                startTime: new Date(startTime),
+                startTime: start,
             },
         });
         if (existing) {
@@ -37,7 +41,7 @@ export class AppointmentsService {
             client: { id: clientId } as any,
             employee: { id: employeeId } as any,
             service: { id: serviceId } as Service,
-            startTime: new Date(startTime),
+            startTime: start,
             status: AppointmentStatus.Scheduled,
         });
         return this.repo.save(appointment);
