@@ -8,10 +8,12 @@ import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
         UsersModule,
+        LogsModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET ?? 'secret',
             signOptions: { expiresIn: '1h' },

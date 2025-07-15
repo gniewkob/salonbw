@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
+import { LogsService } from '../logs/logs.service';
 
 describe('AuthService.registerClient', () => {
     let service: AuthService;
@@ -14,6 +15,7 @@ describe('AuthService.registerClient', () => {
         updateRefreshToken: jest.Mock;
     };
     let jwt: { signAsync: jest.Mock };
+    let logs: { create: jest.Mock };
 
     beforeEach(async () => {
         users = {
@@ -22,12 +24,14 @@ describe('AuthService.registerClient', () => {
             updateRefreshToken: jest.fn(),
         };
         jwt = { signAsync: jest.fn() };
+        logs = { create: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthService,
                 { provide: UsersService, useValue: users },
                 { provide: JwtService, useValue: jwt },
+                { provide: LogsService, useValue: logs },
             ],
         }).compile();
 

@@ -11,6 +11,7 @@ import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionsService } from '../commissions/commissions.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
+import { LogsService } from '../logs/logs.service';
 import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
@@ -25,12 +26,14 @@ describe('AppointmentsService', () => {
   let formulas: { create: jest.Mock };
   let commissions: { createForAppointment: jest.Mock };
   let commissionRepo: { create: jest.Mock; save: jest.Mock };
+  let logs: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
     commissions = { createForAppointment: jest.fn() };
     commissionRepo = { create: jest.fn(), save: jest.fn() };
+    logs = { create: jest.fn() };
 
 
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +43,7 @@ describe('AppointmentsService', () => {
         { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
         { provide: FormulasService, useValue: formulas },
         { provide: CommissionsService, useValue: commissions },
+        { provide: LogsService, useValue: logs },
 
       ],
     }).compile();
