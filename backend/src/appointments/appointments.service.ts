@@ -6,6 +6,7 @@ import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { Role } from '../users/role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
@@ -115,8 +116,12 @@ export class AppointmentsService {
     }
 
     async complete(id: number): Promise<Appointment | undefined>;
-    async complete(id: number, userId: number, role: Role): Promise<Appointment | undefined>;
-    async complete(id: number, userId?: number, role?: Role) {
+    async complete(
+        id: number,
+        userId: number,
+        role: Role | EmployeeRole,
+    ): Promise<Appointment | undefined>;
+    async complete(id: number, userId?: number, role?: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
@@ -171,7 +176,7 @@ export class AppointmentsService {
     async updateForUser(
         id: number,
         userId: number,
-        role: Role,
+        role: Role | EmployeeRole,
         dto: UpdateAppointmentParams,
     ) {
         const appt = await this.repo.findOne({ where: { id } });
@@ -187,7 +192,7 @@ export class AppointmentsService {
         return this.applyUpdates(appt, dto);
     }
 
-    async cancel(id: number, userId: number, role: Role) {
+    async cancel(id: number, userId: number, role: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
@@ -203,7 +208,11 @@ export class AppointmentsService {
         return this.repo.save(appt);
     }
 
-    async removeForUser(id: number, userId: number, role: Role) {
+    async removeForUser(
+        id: number,
+        userId: number,
+        role: Role | EmployeeRole,
+    ) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;
