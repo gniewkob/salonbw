@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Formula } from './formula.entity';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { Role } from '../users/role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 
 @Injectable()
 export class FormulasService {
@@ -32,7 +33,7 @@ export class FormulasService {
 
     async createForAppointment(
         userId: number,
-        role: Role,
+        role: Role | EmployeeRole,
         appointmentId: number,
         description: string,
     ) {
