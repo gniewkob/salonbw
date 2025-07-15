@@ -55,4 +55,19 @@ describe('ServicesModule (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(404);
   });
+
+  it('responds 404 for deleting a nonexistent service', async () => {
+    await users.createUser('otheradmin@services.com', 'secret', 'Admin', Role.Admin);
+
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'otheradmin@services.com', password: 'secret' })
+      .expect(201);
+    const token = login.body.access_token;
+
+    await request(app.getHttpServer())
+      .delete('/services/8888')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
+  });
 });
