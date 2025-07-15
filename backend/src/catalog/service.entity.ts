@@ -9,6 +9,7 @@ export class Service {
     @Column()
     name: string;
 
+    @Column({ nullable: true })
     description: string | null;
 
     @Column('int')
