@@ -15,6 +15,7 @@ import { ServicesModule } from './services/services.module';
 import { ProductsModule } from './products/products.module';
 import { LogsModule } from './logs/logs.module';
 import { CommunicationsModule } from './communications/communications.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
     imports: [
@@ -44,6 +45,7 @@ import { CommunicationsModule } from './communications/communications.module';
         CommissionsModule,
         ServicesModule,
         ProductsModule,
+        ReviewsModule,
         LogsModule,
         CommunicationsModule,
     ],
