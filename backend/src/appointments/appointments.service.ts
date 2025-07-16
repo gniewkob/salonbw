@@ -171,6 +171,14 @@ export class AppointmentsService {
                 percent: appt.service.defaultCommissionPercent ?? 0,
             });
             await this.commissions.save(record);
+            await this.logs.create(
+                LogAction.CompleteAppointment,
+                JSON.stringify({
+                    appointmentId: saved.id,
+                    commissionAmount: record.amount,
+                    percent: record.percent,
+                }),
+            );
             return saved;
         }
         if (appt.status === AppointmentStatus.Completed) {
@@ -190,8 +198,9 @@ export class AppointmentsService {
             (appt.employee.commissionBase ??
                 appt.service.defaultCommissionPercent ??
                 0) / 100;
+        let record: CommissionRecord | null = null;
         if (percent > 0) {
-            const record = this.commissions.create({
+            record = this.commissions.create({
                 employee: { id: appt.employee.id } as any,
                 appointment: { id: appt.id } as any,
                 amount: Number(appt.service.price) * percent,
@@ -199,11 +208,25 @@ export class AppointmentsService {
             });
             await this.commissions.save(record);
         }
+        await this.logs.create(
+            LogAction.CompleteAppointment,
+            JSON.stringify({
+                appointmentId: saved.id,
+                commissionAmount: record?.amount ?? 0,
+                percent: record?.percent ?? percent * 100,
+            }),
+            userId,
+        );
         return saved;
     }
 
-    remove(id: number) {
-        return this.repo.delete(id);
+    async remove(id: number) {
+        const result = await this.repo.delete(id);
+        await this.logs.create(
+            LogAction.DeleteAppointment,
+            JSON.stringify({ appointmentId: id }),
+        );
+        return result;
     }
 
     async updateForUser(
@@ -238,7 +261,13 @@ export class AppointmentsService {
             throw new ForbiddenException();
         }
         appt.status = AppointmentStatus.Cancelled;
-        return this.repo.save(appt);
+        const saved = await this.repo.save(appt);
+        await this.logs.create(
+            LogAction.CancelAppointment,
+            JSON.stringify({ appointmentId: id, userId }),
+            userId,
+        );
+        return saved;
     }
 
     async removeForUser(
@@ -256,6 +285,12 @@ export class AppointmentsService {
         ) {
             throw new ForbiddenException();
         }
-        return this.repo.delete(id);
+        const result = await this.repo.delete(id);
+        await this.logs.create(
+            LogAction.DeleteAppointment,
+            JSON.stringify({ appointmentId: id, userId }),
+            userId,
+        );
+        return result;
     }
 }
