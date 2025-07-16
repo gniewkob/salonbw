@@ -1,15 +1,18 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { Role } from './role.enum';
+import { Appointment } from '../appointments/appointment.entity';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
     ) {}
 
     findOne(id: number) {
@@ -46,5 +49,35 @@ export class UsersService {
 
     findByRefreshToken(token: string) {
         return this.usersRepository.findOne({ where: { refreshToken: token } });
+    }
+
+    async removeCustomer(id: number, adminId: number) {
+        if (id === adminId) {
+            throw new BadRequestException('Cannot delete your own account');
+        }
+        const user = await this.usersRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException();
+        }
+        const count = await this.appointments.count({ where: { client: { id } } });
+        if (count > 0) {
+            throw new BadRequestException('Cannot delete user with appointments');
+        }
+        return this.usersRepository.delete(id);
+    }
+
+    async removeEmployee(id: number, adminId: number) {
+        if (id === adminId) {
+            throw new BadRequestException('Cannot delete your own account');
+        }
+        const user = await this.usersRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException();
+        }
+        const count = await this.appointments.count({ where: { employee: { id } } });
+        if (count > 0) {
+            throw new BadRequestException('Cannot delete user with appointments');
+        }
+        return this.usersRepository.delete(id);
     }
 }
