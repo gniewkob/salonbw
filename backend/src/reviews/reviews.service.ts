@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './review.entity';
+import { Appointment } from '../appointments/appointment.entity';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -10,6 +11,8 @@ export class ReviewsService {
     constructor(
         @InjectRepository(Review)
         private readonly repo: Repository<Review>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
     ) {}
 
     async create(dto: CreateReviewDto) {
@@ -21,9 +24,18 @@ export class ReviewsService {
                 'Review already exists for this reservation',
             );
         }
+        const appointment = await this.appointments.findOne({
+            where: { id: dto.reservationId },
+            relations: { client: true },
+        });
+        if (!appointment) {
+            throw new BadRequestException('Reservation not found');
+        }
+
         const review = this.repo.create({
-            reservation: { id: dto.reservationId } as any,
+            reservation: appointment,
             reservationId: dto.reservationId,
+            client: appointment.client,
             rating: dto.rating,
             comment: dto.comment,
         });
