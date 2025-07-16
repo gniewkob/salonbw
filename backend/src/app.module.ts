@@ -13,6 +13,7 @@ import { FormulasModule } from './formulas/formulas.module';
 import { CommissionsModule } from './commissions/commissions.module';
 import { ServicesModule } from './services/services.module';
 import { ProductsModule } from './products/products.module';
+import { SalesModule } from './sales/sales.module';
 import { LogsModule } from './logs/logs.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -45,6 +46,7 @@ import { ReviewsModule } from './reviews/reviews.module';
         CommissionsModule,
         ServicesModule,
         ProductsModule,
+        SalesModule,
         ReviewsModule,
         LogsModule,
         CommunicationsModule,
