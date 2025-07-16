@@ -18,6 +18,7 @@ import { LogsModule } from './logs/logs.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ChatModule } from './chat/chat.module';
+import { ChatMessagesModule } from './chat-messages/chat-messages.module';
 
 @Module({
     imports: [
@@ -49,6 +50,7 @@ import { ChatModule } from './chat/chat.module';
         ProductsModule,
         SalesModule,
         ReviewsModule,
+        ChatMessagesModule,
         ChatModule,
         LogsModule,
         CommunicationsModule,
