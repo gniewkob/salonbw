@@ -78,6 +78,10 @@ The test runner expects this database to be clean. Jest hooks automatically
 drop and recreate all tables between test files, so use a dedicated test database
 or one whose contents can be safely wiped.
 
+The `review` table is created by the `CreateReviewsTable` migration. Run this
+migration (or enable TypeORM `synchronize`) so tests have the `review` table
+available.
+
 Example sequence using the in-memory database:
 
 ```bash
