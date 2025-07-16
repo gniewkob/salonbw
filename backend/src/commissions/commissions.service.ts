@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CommissionRecord } from './commission-record.entity';
 import { CommissionRule, CommissionTargetType } from './commission-rule.entity';
 import { Service } from '../catalog/service.entity';
+import { Product } from '../catalog/product.entity';
 
 export const DEFAULT_COMMISSION_BASE = 13;
 
@@ -55,4 +56,23 @@ export class CommissionsService {
         return base ?? service.defaultCommissionPercent ?? DEFAULT_COMMISSION_BASE;
     }
 
+    async getPercentForProduct(
+        employeeId: number,
+        product: Product,
+        base?: number | null,
+    ): Promise<number> {
+        const rule = await this.rules.findOne({
+            where: {
+                employee: { id: employeeId } as any,
+                targetType: CommissionTargetType.Product,
+                targetId: product.id,
+            },
+        });
+        if (rule) return rule.commissionPercent;
+
+        if (base === null) {
+            return DEFAULT_COMMISSION_BASE;
+        }
+        return base ?? DEFAULT_COMMISSION_BASE;
+    }
 }
