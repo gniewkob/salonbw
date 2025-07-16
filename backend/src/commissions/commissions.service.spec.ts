@@ -110,4 +110,33 @@ describe('CommissionsService', () => {
     );
     expect(result).toEqual({ amount: 5, percent: 10 });
   });
+
+  it('returns service-specific commission when rule exists', async () => {
+    ruleRepo.findOne.mockResolvedValueOnce({ commissionPercent: 20 });
+    const serviceObj = { id: 1, category: { id: 2 } } as Service;
+
+    const result = await service.getPercentForService(3, serviceObj, 10);
+
+    expect(result).toBe(20);
+  });
+
+  it('returns category commission when service rule missing', async () => {
+    ruleRepo.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ commissionPercent: 15 });
+    const serviceObj = { id: 5, category: { id: 2 } } as Service;
+
+    const result = await service.getPercentForService(3, serviceObj, 10);
+
+    expect(result).toBe(15);
+  });
+
+  it('returns base commission when no matching rules', async () => {
+    ruleRepo.findOne.mockResolvedValue(null);
+    const serviceObj = { id: 6, category: { id: 9 } } as Service;
+
+    const result = await service.getPercentForService(3, serviceObj, 10);
+
+    expect(result).toBe(10);
+  });
 });
