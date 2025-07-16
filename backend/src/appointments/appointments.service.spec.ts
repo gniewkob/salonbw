@@ -26,15 +26,13 @@ describe('AppointmentsService', () => {
     delete: jest.Mock;
   };
   let formulas: { create: jest.Mock };
-  let commissions: { getPercentForService: jest.Mock };
-  let commissionRepo: { create: jest.Mock; save: jest.Mock };
+  let commissions: { getPercentForService: jest.Mock; calculateCommission: jest.Mock };
   let logs: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
-    commissions = { getPercentForService: jest.fn() };
-    commissionRepo = { create: jest.fn(), save: jest.fn() };
+    commissions = { getPercentForService: jest.fn(), calculateCommission: jest.fn() };
     logs = { create: jest.fn() };
 
 
@@ -42,7 +40,7 @@ describe('AppointmentsService', () => {
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useValue: repo },
-        { provide: getRepositoryToken(CommissionRecord), useValue: commissionRepo },
+        { provide: getRepositoryToken(CommissionRecord), useValue: {} },
         { provide: FormulasService, useValue: formulas },
         { provide: CommissionsService, useValue: commissions },
         { provide: LogsService, useValue: logs },
@@ -128,15 +126,13 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
-    commissions.getPercentForService.mockResolvedValue(15);
-    commissionRepo.create.mockReturnValue({ amount: 6, percent: 15 });
+    commissions.calculateCommission.mockResolvedValue({ amount: 6, percent: 15 } as any);
 
-    await service.complete(3);
+    const result = await service.complete(3);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
-    expect(commissions.getPercentForService).toHaveBeenCalledWith(5, appt.service, null);
+    expect(commissions.calculateCommission).toHaveBeenCalledWith(3);
     expect(repo.save).toHaveBeenCalledWith(appt);
-    expect(commissionRepo.save).toHaveBeenCalled();
     expect(logs.create).toHaveBeenCalledWith(
       LogAction.CompleteAppointment,
       JSON.stringify({
@@ -145,6 +141,7 @@ describe('AppointmentsService', () => {
         percent: 15,
       }),
     );
+    expect(result).toEqual({ appointment: appt, commission: { amount: 6, percent: 15 } });
   });
 
   it('remove calls repository delete', async () => {
@@ -234,16 +231,13 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
-    commissions.getPercentForService.mockResolvedValue(10);
-    commissionRepo.create.mockReturnValue({ amount: 10, percent: 10 });
-    commissionRepo.save.mockResolvedValue({});
+    commissions.calculateCommission.mockResolvedValue({ amount: 10, percent: 10 } as any);
 
-    await service.complete(2, 3, Role.Employee);
+    const result = await service.complete(2, 3, Role.Employee);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
-    expect(commissions.getPercentForService).toHaveBeenCalledWith(3, appt.service, 10);
+    expect(commissions.calculateCommission).toHaveBeenCalledWith(2);
     expect(repo.save).toHaveBeenCalledWith(appt);
-    expect(commissionRepo.save).toHaveBeenCalled();
     expect(logs.create).toHaveBeenCalledWith(
       LogAction.CompleteAppointment,
       JSON.stringify({
@@ -253,5 +247,6 @@ describe('AppointmentsService', () => {
       }),
       3,
     );
+    expect(result).toEqual({ appointment: appt, commission: { amount: 10, percent: 10 } });
   });
 });
