@@ -91,4 +91,59 @@ describe('LogsModule (e2e)', () => {
         expect(res.body.length).toBe(1);
         expect(res.body[0].id).toBe(log.id);
     });
+
+    it('records appointment creation and cancellation', async () => {
+        const admin = await usersService.createUser(
+            'apadmin@logs.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const client = await usersService.createUser(
+            'apclient@logs.com',
+            'secret',
+            'Client',
+            Role.Client,
+        );
+
+        const clientLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'apclient@logs.com', password: 'secret' })
+            .expect(201);
+        const clientToken = clientLogin.body.access_token;
+
+        const startTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+        const createRes = await request(app.getHttpServer())
+            .post('/appointments/client')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ employeeId: admin.id, serviceId: 1, startTime })
+            .expect(201);
+        const apptId = createRes.body.id;
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'apadmin@logs.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token;
+
+        await request(app.getHttpServer())
+            .patch(`/appointments/admin/${apptId}/cancel`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(200);
+
+        const createLogs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({ action: LogAction.CreateAppointment })
+            .expect(200);
+
+        const cancelLogs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({ action: LogAction.CancelAppointment })
+            .expect(200);
+
+        expect(createLogs.body.length).toBeGreaterThanOrEqual(1);
+        expect(cancelLogs.body.length).toBeGreaterThanOrEqual(1);
+    });
 });
