@@ -57,6 +57,16 @@ $ npm run start:prod
 
 ## Run tests
 
+Install the dependencies before running the test suite:
+
+```bash
+$ npm install
+```
+
+Afterwards you can execute the tests directly or by using the helper script in
+`scripts/install_and_test.sh` which installs dependencies and runs the tests in
+one step.
+
 ```bash
 # unit tests
 $ npm run test
