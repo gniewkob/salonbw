@@ -5,10 +5,18 @@ import { EmployeeCommission } from './employee-commission.entity';
 import { CommissionRule } from './commission-rule.entity';
 import { CommissionsService } from './commissions.service';
 import { CommissionsController } from './commissions.controller';
+import { Appointment } from '../appointments/appointment.entity';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CommissionRecord, EmployeeCommission, CommissionRule]),
+        TypeOrmModule.forFeature([
+            CommissionRecord,
+            EmployeeCommission,
+            CommissionRule,
+            Appointment,
+        ]),
+        LogsModule,
     ],
     controllers: [CommissionsController],
     providers: [CommissionsService],

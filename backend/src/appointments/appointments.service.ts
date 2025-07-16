@@ -19,8 +19,6 @@ export class AppointmentsService {
         private readonly repo: Repository<Appointment>,
         @Inject(forwardRef(() => FormulasService))
         private readonly formulas: FormulasService,
-        @InjectRepository(CommissionRecord)
-        private readonly commissionRepo: Repository<CommissionRecord>,
         private readonly commissions: CommissionsService,
         private readonly logs: LogsService,
     ) {}
@@ -150,12 +148,12 @@ export class AppointmentsService {
         return saved;
     }
 
-    async complete(id: number): Promise<Appointment | undefined>;
+    async complete(id: number): Promise<{ appointment: Appointment; commission: CommissionRecord | null } | undefined>;
     async complete(
         id: number,
         userId: number,
         role: Role | EmployeeRole,
-    ): Promise<Appointment | undefined>;
+    ): Promise<{ appointment: Appointment; commission: CommissionRecord | null } | undefined>;
     async complete(id: number, userId?: number, role?: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
@@ -165,32 +163,19 @@ export class AppointmentsService {
             appt.status = AppointmentStatus.Completed;
             appt.endTime = new Date();
             const saved = await this.repo.save(appt);
-            const percent =
-                (await this.commissions.getPercentForService(
-                    appt.employee.id,
-                    appt.service,
-                    appt.employee.commissionBase ?? null,
-                )) / 100;
-            const record = this.commissionRepo.create({
-                employee: appt.employee,
-                appointment: appt,
-                product: null,
-                amount: Number(appt.service.price) * percent,
-                percent: percent * 100,
-            });
-            await this.commissionRepo.save(record);
+            const record = await this.commissions.calculateCommission(saved.id);
             await this.logs.create(
                 LogAction.CompleteAppointment,
                 JSON.stringify({
                     appointmentId: saved.id,
-                    commissionAmount: record.amount,
-                    percent: record.percent,
+                    commissionAmount: record?.amount ?? 0,
+                    percent: record?.percent ?? 0,
                 }),
             );
-            return saved;
+            return { appointment: saved, commission: record };
         }
         if (appt.status === AppointmentStatus.Completed) {
-            return appt;
+            return { appointment: appt, commission: null };
         }
         if (
             role !== Role.Admin &&
@@ -202,32 +187,17 @@ export class AppointmentsService {
         appt.endTime = appt.endTime || new Date();
         const saved = await this.repo.save(appt);
 
-        const percent =
-            (await this.commissions.getPercentForService(
-                appt.employee.id,
-                appt.service,
-                appt.employee.commissionBase ?? null,
-            )) / 100;
-        let record: CommissionRecord | null = null;
-        if (percent > 0) {
-            record = this.commissionRepo.create({
-                employee: { id: appt.employee.id } as any,
-                appointment: { id: appt.id } as any,
-                amount: Number(appt.service.price) * percent,
-                percent: percent * 100,
-            });
-            await this.commissionRepo.save(record);
-        }
+        const record = await this.commissions.calculateCommission(saved.id);
         await this.logs.create(
             LogAction.CompleteAppointment,
             JSON.stringify({
                 appointmentId: saved.id,
                 commissionAmount: record?.amount ?? 0,
-                percent: record?.percent ?? percent * 100,
+                percent: record?.percent ?? 0,
             }),
             userId,
         );
-        return saved;
+        return { appointment: saved, commission: record };
     }
 
     async remove(id: number) {

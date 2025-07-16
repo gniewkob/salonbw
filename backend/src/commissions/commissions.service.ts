@@ -5,6 +5,9 @@ import { CommissionRecord } from './commission-record.entity';
 import { CommissionRule, CommissionTargetType } from './commission-rule.entity';
 import { Service } from '../catalog/service.entity';
 import { Product } from '../catalog/product.entity';
+import { Appointment } from '../appointments/appointment.entity';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 export const DEFAULT_COMMISSION_BASE = 13;
 
@@ -15,6 +18,9 @@ export class CommissionsService {
         private readonly repo: Repository<CommissionRecord>,
         @InjectRepository(CommissionRule)
         private readonly rules: Repository<CommissionRule>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
+        private readonly logs: LogsService,
     ) {}
 
     listAll() {
@@ -74,5 +80,37 @@ export class CommissionsService {
             return DEFAULT_COMMISSION_BASE;
         }
         return base ?? DEFAULT_COMMISSION_BASE;
+    }
+
+    async calculateCommission(
+        appointmentId: number,
+    ): Promise<CommissionRecord | null> {
+        const appt = await this.appointments.findOne({ where: { id: appointmentId } });
+        if (!appt) {
+            return null;
+        }
+        const percent =
+            (await this.getPercentForService(
+                appt.employee.id,
+                appt.service,
+                appt.employee.commissionBase ?? null,
+            )) / 100;
+        if (percent <= 0) {
+            return null;
+        }
+        const record = this.repo.create({
+            employee: { id: appt.employee.id } as any,
+            appointment: { id: appt.id } as any,
+            product: null,
+            amount: Number(appt.service.price) * percent,
+            percent: percent * 100,
+        });
+        const saved = await this.repo.save(record);
+        await this.logs.create(
+            LogAction.CommissionGranted,
+            JSON.stringify({ appointmentId: appt.id, amount: saved.amount, percent: saved.percent }),
+            appt.employee.id,
+        );
+        return saved;
     }
 }
