@@ -14,6 +14,7 @@ import { LogsModule } from '../logs/logs.module';
     imports: [
         TypeOrmModule.forFeature([Appointment, CommissionRecord]),
         forwardRef(() => FormulasModule),
+        CommissionsModule,
         LogsModule,
     ],
 
