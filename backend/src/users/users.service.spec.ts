@@ -6,6 +6,7 @@ import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './role.enum';
 import { Repository } from 'typeorm';
+import { Appointment } from '../appointments/appointment.entity';
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -14,6 +15,7 @@ describe('UsersService', () => {
         create: jest.Mock;
         save: jest.Mock;
     };
+    let appointments: { count: jest.Mock };
 
     beforeEach(async () => {
         repo = {
@@ -21,11 +23,13 @@ describe('UsersService', () => {
             create: jest.fn(),
             save: jest.fn(),
         };
+        appointments = { count: jest.fn() };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UsersService,
                 { provide: getRepositoryToken(User), useValue: repo },
+                { provide: getRepositoryToken(Appointment), useValue: appointments },
             ],
         }).compile();
 
