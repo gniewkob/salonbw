@@ -79,6 +79,8 @@ export class ServicesService {
         if (count > 0) {
             throw new BadRequestException('Service has existing appointments');
         }
-        return this.repo.delete(id);
+        const result = await this.repo.delete(id);
+        await this.logs.create(LogAction.DeleteService, JSON.stringify({ id }));
+        return result;
     }
 }
