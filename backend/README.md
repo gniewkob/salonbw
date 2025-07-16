@@ -105,6 +105,7 @@ $ DATABASE_URL=sqlite::memory: npm run test:e2e
 After connecting with a JWT token, emit `joinRoom` with an `appointmentId` to
 enter the chat for that appointment. Only the client or assigned employee may
 join. Send messages by emitting `message` with `{ appointmentId, content }`.
+Chat history can be fetched with `GET /appointments/:id/chat` using the same JWT authentication (client or employee).
 
 ## Deployment
 
