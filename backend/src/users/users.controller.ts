@@ -4,6 +4,8 @@ import {
     Get,
     Post,
     Request,
+    Delete,
+    Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -29,5 +31,17 @@ export class UsersController {
         }
         const { password: _p, refreshToken: _r, ...result } = user as any;
         return result;
+    }
+
+    @Delete('customers/:id')
+    @Roles(Role.Admin)
+    removeCustomer(@Param('id') id: number, @Request() req) {
+        return this.usersService.removeCustomer(Number(id), req.user.id);
+    }
+
+    @Delete('employees/:id')
+    @Roles(Role.Admin)
+    removeEmployee(@Param('id') id: number, @Request() req) {
+        return this.usersService.removeEmployee(Number(id), req.user.id);
     }
 }
