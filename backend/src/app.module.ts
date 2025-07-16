@@ -17,6 +17,7 @@ import { SalesModule } from './sales/sales.module';
 import { LogsModule } from './logs/logs.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { ReviewsModule } from './reviews/reviews.module';
         ProductsModule,
         SalesModule,
         ReviewsModule,
+        ChatModule,
         LogsModule,
         CommunicationsModule,
     ],
