@@ -6,11 +6,14 @@ import {
     Request,
     Delete,
     Param,
+    Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from './role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 
 @Controller('users')
 export class UsersController {
@@ -31,6 +34,12 @@ export class UsersController {
         }
         const { password: _p, refreshToken: _r, ...result } = user as any;
         return result;
+    }
+
+    @Patch('customers/:id')
+    @Roles(EmployeeRole.RECEPCJA, EmployeeRole.ADMIN, Role.Admin)
+    updateCustomer(@Param('id') id: number, @Body() dto: UpdateCustomerDto) {
+        return this.usersService.updateCustomer(Number(id), dto);
     }
 
     @Delete('customers/:id')
