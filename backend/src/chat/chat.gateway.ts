@@ -10,22 +10,27 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from '../messages/messages.service';
+import { AppointmentsService } from '../appointments/appointments.service';
 
 interface SendMessageDto {
     recipientId: number;
     content: string;
 }
 
+interface AppointmentMessageDto {
+    appointmentId: number;
+    content: string;
+}
+
 @WebSocketGateway({ cors: true })
-export class ChatGateway
-    implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
     constructor(
         private readonly jwtService: JwtService,
         private readonly messages: MessagesService,
+        private readonly appointments: AppointmentsService,
     ) {}
 
     handleConnection(client: Socket) {
@@ -47,6 +52,48 @@ export class ChatGateway
 
     handleDisconnect(client: Socket) {
         // nothing
+    }
+
+    @SubscribeMessage('joinRoom')
+    async joinRoom(
+        @ConnectedSocket() client: Socket,
+        @MessageBody() data: { appointmentId: number },
+    ) {
+        const userId: number = client.data.userId;
+        if (!userId) {
+            return;
+        }
+        const appt = await this.appointments.findOne(data.appointmentId);
+        if (
+            !appt ||
+            (appt.client.id !== userId && appt.employee.id !== userId)
+        ) {
+            client.emit('error', 'unauthorized');
+            return;
+        }
+        client.join(`chat-${data.appointmentId}`);
+    }
+
+    @SubscribeMessage('message')
+    async handleChatMessage(
+        @ConnectedSocket() client: Socket,
+        @MessageBody() dto: AppointmentMessageDto,
+    ) {
+        const userId: number = client.data.userId;
+        if (!userId) {
+            return;
+        }
+        const appt = await this.appointments.findOne(dto.appointmentId);
+        if (
+            !appt ||
+            (appt.client.id !== userId && appt.employee.id !== userId)
+        ) {
+            client.emit('error', 'unauthorized');
+            return;
+        }
+        this.server
+            .to(`chat-${dto.appointmentId}`)
+            .emit('message', { userId, content: dto.content });
     }
 
     @SubscribeMessage('sendMessage')
