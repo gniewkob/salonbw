@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CommissionsService } from './commissions.service';
+import { CommissionsService, DEFAULT_COMMISSION_BASE } from './commissions.service';
 import { CommissionRecord } from './commission-record.entity';
 import { CommissionRule, CommissionTargetType } from './commission-rule.entity';
 import { Service } from '../catalog/service.entity';
@@ -65,5 +65,14 @@ describe('CommissionsService', () => {
       },
     });
     expect(result).toBe(15);
+  });
+
+  it('getPercentForService uses default base when none provided', async () => {
+    ruleRepo.findOne.mockResolvedValue(null);
+    const serviceObj = { id: 8 } as Service;
+
+    const result = await service.getPercentForService(2, serviceObj, null);
+
+    expect(result).toBe(DEFAULT_COMMISSION_BASE);
   });
 });
