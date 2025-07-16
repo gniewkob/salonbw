@@ -5,6 +5,8 @@ import { CommissionRecord } from './commission-record.entity';
 import { CommissionRule, CommissionTargetType } from './commission-rule.entity';
 import { Service } from '../catalog/service.entity';
 
+export const DEFAULT_COMMISSION_BASE = 13;
+
 @Injectable()
 export class CommissionsService {
     constructor(
@@ -47,7 +49,10 @@ export class CommissionsService {
             if (catRule) return catRule.commissionPercent;
         }
 
-        return base ?? service.defaultCommissionPercent ?? 0;
+        if (base === null) {
+            return DEFAULT_COMMISSION_BASE;
+        }
+        return base ?? service.defaultCommissionPercent ?? DEFAULT_COMMISSION_BASE;
     }
 
 }
