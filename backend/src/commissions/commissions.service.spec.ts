@@ -5,20 +5,29 @@ import { CommissionsService, DEFAULT_COMMISSION_BASE } from './commissions.servi
 import { CommissionRecord } from './commission-record.entity';
 import { CommissionRule, CommissionTargetType } from './commission-rule.entity';
 import { Service } from '../catalog/service.entity';
+import { Appointment } from '../appointments/appointment.entity';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 describe('CommissionsService', () => {
   let service: CommissionsService;
   let repo: { create: jest.Mock; save: jest.Mock };
   let ruleRepo: { findOne: jest.Mock };
+  let apptRepo: { findOne: jest.Mock };
+  let logs: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn() };
     ruleRepo = { findOne: jest.fn() };
+    apptRepo = { findOne: jest.fn() };
+    logs = { create: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CommissionsService,
         { provide: getRepositoryToken(CommissionRecord), useValue: repo },
         { provide: getRepositoryToken(CommissionRule), useValue: ruleRepo },
+        { provide: getRepositoryToken(Appointment), useValue: apptRepo },
+        { provide: LogsService, useValue: logs },
       ],
     }).compile();
 
@@ -74,5 +83,31 @@ describe('CommissionsService', () => {
     const result = await service.getPercentForService(2, serviceObj, null);
 
     expect(result).toBe(DEFAULT_COMMISSION_BASE);
+  });
+
+  it('calculateCommission saves record and logs', async () => {
+    const appt: any = {
+      id: 5,
+      employee: { id: 7, commissionBase: 10 },
+      service: { price: 50, defaultCommissionPercent: 15 },
+    };
+    apptRepo.findOne.mockResolvedValue(appt);
+    jest
+      .spyOn(service, 'getPercentForService')
+      .mockResolvedValue(10);
+    repo.create.mockReturnValue({ amount: 5, percent: 10 });
+    repo.save.mockResolvedValue({ amount: 5, percent: 10 });
+
+    const result = await service.calculateCommission(5);
+
+    expect(apptRepo.findOne).toHaveBeenCalledWith({ where: { id: 5 } });
+    expect(service.getPercentForService).toHaveBeenCalledWith(7, appt.service, 10);
+    expect(repo.save).toHaveBeenCalled();
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.CommissionGranted,
+      JSON.stringify({ appointmentId: 5, amount: 5, percent: 10 }),
+      7,
+    );
+    expect(result).toEqual({ amount: 5, percent: 10 });
   });
 });
