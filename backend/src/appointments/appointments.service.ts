@@ -165,17 +165,18 @@ export class AppointmentsService {
             appt.status = AppointmentStatus.Completed;
             appt.endTime = new Date();
             const saved = await this.repo.save(appt);
-            const percent = await this.commissions.getPercentForService(
-                appt.employee.id,
-                appt.service,
-                appt.employee.commissionBase ?? null,
-            );
+            const percent =
+                (await this.commissions.getPercentForService(
+                    appt.employee.id,
+                    appt.service,
+                    appt.employee.commissionBase ?? null,
+                )) / 100;
             const record = this.commissionRepo.create({
                 employee: appt.employee,
                 appointment: appt,
                 product: null,
-                amount: appt.service.price,
-                percent,
+                amount: Number(appt.service.price) * percent,
+                percent: percent * 100,
             });
             await this.commissionRepo.save(record);
             await this.logs.create(
