@@ -26,14 +26,14 @@ describe('AppointmentsService', () => {
     delete: jest.Mock;
   };
   let formulas: { create: jest.Mock };
-  let commissions: { createForAppointment: jest.Mock; getPercentForService: jest.Mock };
+  let commissions: { getPercentForService: jest.Mock };
   let commissionRepo: { create: jest.Mock; save: jest.Mock };
   let logs: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
-    commissions = { createForAppointment: jest.fn(), getPercentForService: jest.fn() };
+    commissions = { getPercentForService: jest.fn() };
     commissionRepo = { create: jest.fn(), save: jest.fn() };
     logs = { create: jest.fn() };
 
