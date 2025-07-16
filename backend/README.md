@@ -100,6 +100,12 @@ $ npm install
 $ DATABASE_URL=sqlite::memory: npm run test:e2e
 ```
 
+## WebSocket chat
+
+After connecting with a JWT token, emit `joinRoom` with an `appointmentId` to
+enter the chat for that appointment. Only the client or assigned employee may
+join. Send messages by emitting `message` with `{ appointmentId, content }`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
