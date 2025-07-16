@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 describe('AuthService.registerClient', () => {
     let service: AuthService;
@@ -65,6 +66,12 @@ describe('AuthService.registerClient', () => {
             2,
             { sub: 1 },
             expect.objectContaining({ secret: expect.any(String) }),
+        );
+
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.RegisterSuccess,
+            'email=a@test.com',
+            1,
         );
 
         const passed = users.createUser.mock.calls[0][1];

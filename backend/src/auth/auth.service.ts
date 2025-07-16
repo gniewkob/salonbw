@@ -54,7 +54,13 @@ export class AuthService {
 
     async login(email: string, password: string): Promise<AuthTokensDto> {
         const user = await this.validateUser(email, password);
-        return this.generateTokens(user.id, user.role);
+        const tokens = await this.generateTokens(user.id, user.role);
+        await this.logs.create(
+            LogAction.LoginSuccess,
+            `email=${email}`,
+            user.id,
+        );
+        return tokens;
     }
 
     async registerClient(dto: RegisterClientDto): Promise<AuthTokensDto> {
@@ -67,6 +73,11 @@ export class AuthService {
             dto.password,
             dto.name,
             Role.Client,
+        );
+        await this.logs.create(
+            LogAction.RegisterSuccess,
+            `email=${dto.email}`,
+            user.id,
         );
         return this.generateTokens(user.id, user.role);
     }
