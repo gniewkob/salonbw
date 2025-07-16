@@ -129,7 +129,7 @@ describe('AppointmentsService', () => {
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
     commissions.getPercentForService.mockResolvedValue(15);
-    commissionRepo.create.mockReturnValue({ amount: 40, percent: 15 });
+    commissionRepo.create.mockReturnValue({ amount: 6, percent: 15 });
 
     await service.complete(3);
 
@@ -141,7 +141,7 @@ describe('AppointmentsService', () => {
       LogAction.CompleteAppointment,
       JSON.stringify({
         appointmentId: 3,
-        commissionAmount: 40,
+        commissionAmount: 6,
         percent: 15,
       }),
     );
