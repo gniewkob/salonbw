@@ -31,6 +31,29 @@ describe('LogsModule (e2e)', () => {
         }
     });
 
+    it('rejects unauthenticated requests', () => {
+        return request(app.getHttpServer()).get('/logs').expect(401);
+    });
+
+    it('forbids client from accessing logs', async () => {
+        await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({ email: 'client@logs.com', password: 'secret', name: 'Client' })
+            .expect(201);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'client@logs.com', password: 'secret' })
+            .expect(201);
+
+        const token = login.body.access_token;
+
+        await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403);
+    });
+
     it('admin can fetch logs with filters', async () => {
         const admin = await usersService.createUser(
             'admin@logs.com',
