@@ -3,12 +3,19 @@ import { ChatGateway } from './chat.gateway';
 describe('ChatGateway', () => {
     let gateway: ChatGateway;
     let appointments: { findOne: jest.Mock };
+    let chatMessages: { create: jest.Mock };
     let server: any;
     let socket: any;
 
     beforeEach(() => {
         appointments = { findOne: jest.fn() };
-        gateway = new ChatGateway({} as any, {} as any, appointments as any);
+        chatMessages = { create: jest.fn() };
+        gateway = new ChatGateway(
+            {} as any,
+            {} as any,
+            appointments as any,
+            chatMessages as any,
+        );
         server = { to: jest.fn(() => ({ emit: jest.fn() })) } as any;
         gateway.server = server;
         socket = {
@@ -40,6 +47,7 @@ describe('ChatGateway', () => {
     it('broadcasts message to room for valid user', async () => {
         const emitMock = jest.fn();
         server.to = jest.fn(() => ({ emit: emitMock }));
+        chatMessages.create.mockResolvedValue({ id: 1, message: 'hi' });
         appointments.findOne.mockResolvedValue({
             client: { id: 1 },
             employee: { id: 2 },
@@ -49,9 +57,10 @@ describe('ChatGateway', () => {
             content: 'hi',
         });
         expect(server.to).toHaveBeenCalledWith('chat-5');
+        expect(chatMessages.create).toHaveBeenCalledWith(5, 1, 'hi');
         expect(emitMock).toHaveBeenCalledWith('message', {
-            userId: 1,
-            content: 'hi',
+            id: 1,
+            message: 'hi',
         });
     });
 
@@ -64,6 +73,7 @@ describe('ChatGateway', () => {
             appointmentId: 5,
             content: 'hi',
         });
+        expect(chatMessages.create).not.toHaveBeenCalled();
         expect(socket.emit).toHaveBeenCalledWith('error', 'unauthorized');
     });
 });
