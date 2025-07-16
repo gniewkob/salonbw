@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { Role } from '../users/role.enum';
 import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -104,6 +105,11 @@ describe('AuthService', () => {
             2,
             { sub: 2 },
             expect.objectContaining({ secret: expect.any(String) }),
+        );
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.LoginSuccess,
+            'email=b@test.com',
+            2,
         );
     });
 
