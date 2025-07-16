@@ -177,7 +177,82 @@ describe('AppointmentsModule (e2e)', () => {
               .expect(400);
 
           const appts = await appointmentsRepo.find();
-          expect(appts.length).toBe(0);
+      expect(appts.length).toBe(0);
+      });
+
+      it('rejects updating appointment to past time', async () => {
+          const admin = await usersService.createUser('upadmin@test.com', 'secret', 'A', Role.Admin);
+          const client = await usersService.createUser('upclient@test.com', 'secret', 'C', Role.Client);
+          const employee = await usersService.createUser('upemp@test.com', 'secret', 'E', Role.Employee);
+
+          const login = await request(app.getHttpServer())
+              .post('/auth/login')
+              .send({ email: 'upadmin@test.com', password: 'secret' })
+              .expect(201);
+          const token = login.body.access_token;
+
+          const futureTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          const create = await request(app.getHttpServer())
+              .post('/appointments/admin')
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                  clientId: client.id,
+                  employeeId: employee.id,
+                  serviceId: 1,
+                  startTime: futureTime,
+              })
+              .expect(201);
+
+          const id = create.body.id;
+
+          await request(app.getHttpServer())
+              .patch(`/appointments/admin/${id}`)
+              .set('Authorization', `Bearer ${token}`)
+              .send({ startTime: '2020-01-01T11:00:00.000Z' })
+              .expect(400);
+      });
+
+      it('rejects conflicting appointment update', async () => {
+          const admin = await usersService.createUser('confadmin@test.com', 'secret', 'A', Role.Admin);
+          const client = await usersService.createUser('confclient@test.com', 'secret', 'C', Role.Client);
+          const employee = await usersService.createUser('confemp@test.com', 'secret', 'E', Role.Employee);
+
+          const login = await request(app.getHttpServer())
+              .post('/auth/login')
+              .send({ email: 'confadmin@test.com', password: 'secret' })
+              .expect(201);
+          const token = login.body.access_token;
+
+          const start1 = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          const appt1 = await request(app.getHttpServer())
+              .post('/appointments/admin')
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                  clientId: client.id,
+                  employeeId: employee.id,
+                  serviceId: 1,
+                  startTime: start1,
+              })
+              .expect(201);
+
+          const start2 = new Date(Date.parse(start1) + 60 * 60 * 1000).toISOString();
+          const appt2 = await request(app.getHttpServer())
+              .post('/appointments/admin')
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                  clientId: client.id,
+                  employeeId: employee.id,
+                  serviceId: 1,
+                  startTime: start2,
+              })
+              .expect(201);
+
+          const conflictStart = new Date(Date.parse(start1) + 15 * 60 * 1000).toISOString();
+          await request(app.getHttpServer())
+              .patch(`/appointments/admin/${appt2.body.id}`)
+              .set('Authorization', `Bearer ${token}`)
+              .send({ startTime: conflictStart })
+              .expect(409);
       });
 
     it('rejects unauthenticated appointment creation', async () => {

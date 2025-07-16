@@ -87,7 +87,40 @@ export class AppointmentsService {
         dto: UpdateAppointmentParams,
     ) {
         if (dto.startTime) {
-            appt.startTime = new Date(dto.startTime);
+            const newStart = new Date(dto.startTime);
+            if (newStart < new Date()) {
+                throw new BadRequestException('Start time must be in the future');
+            }
+            const employeeId = dto.employeeId ?? appt.employee.id;
+            let service = appt.service;
+            if (dto.serviceId) {
+                const found = await this.repo.manager.findOne(Service, {
+                    where: { id: dto.serviceId },
+                });
+                if (found) {
+                    service = found;
+                }
+            }
+            const newEnd = dto.endTime
+                ? new Date(dto.endTime)
+                : new Date(newStart.getTime() + service.duration * 60000);
+            const existing = await this.repo.find({
+                where: { employee: { id: employeeId } },
+            });
+            for (const other of existing) {
+                if (other.id === appt.id) continue;
+                const otherStart = other.startTime;
+                const otherEnd = other.endTime
+                    ? other.endTime
+                    : new Date(
+                          other.startTime.getTime() +
+                              other.service.duration * 60000,
+                      );
+                if (newStart < otherEnd && newEnd > otherStart) {
+                    throw new ConflictException('Appointment time already taken');
+                }
+            }
+            appt.startTime = newStart;
         }
         if (dto.endTime) {
             appt.endTime = new Date(dto.endTime);
