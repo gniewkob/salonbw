@@ -5,6 +5,7 @@ import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
+import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
 import { UpdateAppointmentParams } from './dto/update-appointment-params';
@@ -19,7 +20,8 @@ export class AppointmentsService {
         @Inject(forwardRef(() => FormulasService))
         private readonly formulas: FormulasService,
         @InjectRepository(CommissionRecord)
-        private readonly commissions: Repository<CommissionRecord>,
+        private readonly commissionRepo: Repository<CommissionRecord>,
+        private readonly commissions: CommissionsService,
         private readonly logs: LogsService,
     ) {}
 
@@ -163,14 +165,19 @@ export class AppointmentsService {
             appt.status = AppointmentStatus.Completed;
             appt.endTime = new Date();
             const saved = await this.repo.save(appt);
-            const record = this.commissions.create({
+            const percent = await this.commissions.getPercentForService(
+                appt.employee.id,
+                appt.service,
+                appt.employee.commissionBase ?? null,
+            );
+            const record = this.commissionRepo.create({
                 employee: appt.employee,
                 appointment: appt,
                 product: null,
                 amount: appt.service.price,
-                percent: appt.service.defaultCommissionPercent ?? 0,
+                percent,
             });
-            await this.commissions.save(record);
+            await this.commissionRepo.save(record);
             await this.logs.create(
                 LogAction.CompleteAppointment,
                 JSON.stringify({
@@ -195,18 +202,20 @@ export class AppointmentsService {
         const saved = await this.repo.save(appt);
 
         const percent =
-            (appt.employee.commissionBase ??
-                appt.service.defaultCommissionPercent ??
-                0) / 100;
+            (await this.commissions.getPercentForService(
+                appt.employee.id,
+                appt.service,
+                appt.employee.commissionBase ?? null,
+            )) / 100;
         let record: CommissionRecord | null = null;
         if (percent > 0) {
-            record = this.commissions.create({
+            record = this.commissionRepo.create({
                 employee: { id: appt.employee.id } as any,
                 appointment: { id: appt.id } as any,
                 amount: Number(appt.service.price) * percent,
                 percent: percent * 100,
             });
-            await this.commissions.save(record);
+            await this.commissionRepo.save(record);
         }
         await this.logs.create(
             LogAction.CompleteAppointment,

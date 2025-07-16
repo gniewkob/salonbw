@@ -26,14 +26,14 @@ describe('AppointmentsService', () => {
     delete: jest.Mock;
   };
   let formulas: { create: jest.Mock };
-  let commissions: { createForAppointment: jest.Mock };
+  let commissions: { createForAppointment: jest.Mock; getPercentForService: jest.Mock };
   let commissionRepo: { create: jest.Mock; save: jest.Mock };
   let logs: { create: jest.Mock };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
-    commissions = { createForAppointment: jest.fn() };
+    commissions = { createForAppointment: jest.fn(), getPercentForService: jest.fn() };
     commissionRepo = { create: jest.fn(), save: jest.fn() };
     logs = { create: jest.fn() };
 
@@ -128,11 +128,13 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
-    commissionRepo.create.mockReturnValue({ amount: 40, percent: 0.15 });
+    commissions.getPercentForService.mockResolvedValue(15);
+    commissionRepo.create.mockReturnValue({ amount: 40, percent: 15 });
 
     await service.complete(3);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
+    expect(commissions.getPercentForService).toHaveBeenCalledWith(5, appt.service, null);
     expect(repo.save).toHaveBeenCalledWith(appt);
     expect(commissionRepo.save).toHaveBeenCalled();
     expect(logs.create).toHaveBeenCalledWith(
@@ -140,7 +142,7 @@ describe('AppointmentsService', () => {
       JSON.stringify({
         appointmentId: 3,
         commissionAmount: 40,
-        percent: 0.15,
+        percent: 15,
       }),
     );
   });
@@ -232,12 +234,14 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
+    commissions.getPercentForService.mockResolvedValue(10);
     commissionRepo.create.mockReturnValue({ amount: 10, percent: 10 });
     commissionRepo.save.mockResolvedValue({});
 
     await service.complete(2, 3, Role.Employee);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
+    expect(commissions.getPercentForService).toHaveBeenCalledWith(3, appt.service, 10);
     expect(repo.save).toHaveBeenCalledWith(appt);
     expect(commissionRepo.save).toHaveBeenCalled();
     expect(logs.create).toHaveBeenCalledWith(
