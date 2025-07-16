@@ -65,4 +65,21 @@ describe('UsersService', () => {
         ).rejects.toBeInstanceOf(BadRequestException);
         expect(repo.save).not.toHaveBeenCalled();
     });
+
+    it('updateCustomer hashes password and saves changes', async () => {
+        const user = { id: 1, email: 'old@test.com', password: 'p', name: 'Old' } as User;
+        repo.findOne.mockResolvedValue(user);
+        repo.save.mockResolvedValue(user);
+
+        await service.updateCustomer(1, { password: 'new', name: 'New' });
+
+        const passed = repo.save.mock.calls[0][0].password;
+        expect(await bcrypt.compare('new', passed)).toBe(true);
+        expect(repo.save).toHaveBeenCalled();
+    });
+
+    it('updateCustomer returns undefined when user missing', async () => {
+        repo.findOne.mockResolvedValue(undefined);
+        await expect(service.updateCustomer(2, { name: 'x' })).resolves.toBeUndefined();
+    });
 });
