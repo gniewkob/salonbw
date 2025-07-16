@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import {
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -129,6 +130,39 @@ describe('AppointmentsService', () => {
     repo.delete.mockResolvedValue({});
     await service.remove(5);
     expect(repo.delete).toHaveBeenCalledWith(5);
+  });
+
+  it('update rejects past start time', async () => {
+    const existing: any = {
+      id: 1,
+      employee: { id: 2 },
+      service: { duration: 30 },
+    };
+    repo.findOne.mockResolvedValue(existing);
+    await expect(
+      service.update(1, { startTime: '2000-01-01T00:00:00.000Z' })
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('update rejects conflicting appointment', async () => {
+    const existing: any = {
+      id: 1,
+      employee: { id: 2 },
+      service: { duration: 30 },
+      startTime: new Date('2100-01-01T10:00:00.000Z'),
+    };
+    const other: any = {
+      id: 2,
+      employee: { id: 2 },
+      service: { duration: 30 },
+      startTime: new Date('2100-01-01T10:15:00.000Z'),
+    };
+    repo.findOne.mockResolvedValue(existing);
+    repo.find.mockResolvedValue([existing, other]);
+    await expect(
+      service.update(1, { startTime: '2100-01-01T10:20:00.000Z' })
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('cancel updates status when authorized', async () => {
