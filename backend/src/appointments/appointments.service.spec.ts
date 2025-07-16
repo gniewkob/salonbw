@@ -13,6 +13,7 @@ import { FormulasService } from '../formulas/formulas.service';
 import { CommissionsService } from '../commissions/commissions.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
@@ -67,6 +68,16 @@ describe('AppointmentsService', () => {
       status: AppointmentStatus.Scheduled,
     });
     expect(repo.save).toHaveBeenCalledWith(created);
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.CreateAppointment,
+      JSON.stringify({
+        clientId: 1,
+        employeeId: 2,
+        serviceId: 3,
+        startTime: '2100-07-01T10:00:00.000Z',
+      }),
+      1,
+    );
     expect(result).toBe(created);
   });
 
@@ -117,19 +128,31 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
-    commissionRepo.create.mockReturnValue({});
+    commissionRepo.create.mockReturnValue({ amount: 40, percent: 0.15 });
 
     await service.complete(3);
 
     expect(appt.status).toBe(AppointmentStatus.Completed);
     expect(repo.save).toHaveBeenCalledWith(appt);
     expect(commissionRepo.save).toHaveBeenCalled();
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.CompleteAppointment,
+      JSON.stringify({
+        appointmentId: 3,
+        commissionAmount: 40,
+        percent: 0.15,
+      }),
+    );
   });
 
   it('remove calls repository delete', async () => {
     repo.delete.mockResolvedValue({});
     await service.remove(5);
     expect(repo.delete).toHaveBeenCalledWith(5);
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.DeleteAppointment,
+      JSON.stringify({ appointmentId: 5 }),
+    );
   });
 
   it('update rejects past start time', async () => {
@@ -180,6 +203,25 @@ describe('AppointmentsService', () => {
     expect(repo.save).toHaveBeenCalledWith(appt);
   });
 
+  it('cancel logs action', async () => {
+    const appt: any = {
+      id: 2,
+      status: AppointmentStatus.Scheduled,
+      client: { id: 1 },
+      employee: { id: 3 },
+    };
+    repo.findOne.mockResolvedValue(appt);
+    repo.save.mockResolvedValue(appt);
+
+    await service.cancel(2, 1, Role.Client);
+
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.CancelAppointment,
+      JSON.stringify({ appointmentId: 2, userId: 1 }),
+      1,
+    );
+  });
+
   it('complete saves status and commission', async () => {
     const appt: any = {
       id: 2,
@@ -190,7 +232,7 @@ describe('AppointmentsService', () => {
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
-    commissionRepo.create.mockReturnValue({});
+    commissionRepo.create.mockReturnValue({ amount: 10, percent: 10 });
     commissionRepo.save.mockResolvedValue({});
 
     await service.complete(2, 3, Role.Employee);
@@ -198,5 +240,14 @@ describe('AppointmentsService', () => {
     expect(appt.status).toBe(AppointmentStatus.Completed);
     expect(repo.save).toHaveBeenCalledWith(appt);
     expect(commissionRepo.save).toHaveBeenCalled();
+    expect(logs.create).toHaveBeenCalledWith(
+      LogAction.CompleteAppointment,
+      JSON.stringify({
+        appointmentId: 2,
+        commissionAmount: 10,
+        percent: 10,
+      }),
+      3,
+    );
   });
 });
