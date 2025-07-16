@@ -10,6 +10,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from '../messages/messages.service';
+import { ChatMessagesService } from '../chat-messages/chat-messages.service';
 import { AppointmentsService } from '../appointments/appointments.service';
 
 interface SendMessageDto {
@@ -31,6 +32,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly jwtService: JwtService,
         private readonly messages: MessagesService,
         private readonly appointments: AppointmentsService,
+        private readonly chatMessages: ChatMessagesService,
     ) {}
 
     handleConnection(client: Socket) {
@@ -91,9 +93,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             client.emit('error', 'unauthorized');
             return;
         }
+        const saved = await this.chatMessages.create(
+            dto.appointmentId,
+            userId,
+            dto.content,
+        );
         this.server
             .to(`chat-${dto.appointmentId}`)
-            .emit('message', { userId, content: dto.content });
+            .emit('message', saved);
     }
 
     @SubscribeMessage('sendMessage')
