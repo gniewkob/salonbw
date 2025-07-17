@@ -40,6 +40,8 @@ for example SQLite, when running tests locally.
 
 ```bash
 $ npm install
+$ npx typeorm-ts-node-commonjs migration:run -d src/data-source.ts
+# creates all tables including the optional `phone` column on `user`
 ```
 
 ## Compile and run the project
