@@ -29,6 +29,9 @@ export class NotificationsService {
     private readonly baseUrl = 'https://graph.facebook.com/v18.0';
 
     async sendText(to: string, text: string) {
+        if (process.env.NOTIFICATIONS_ENABLED === 'false') {
+            return;
+        }
         if (!this.token || !this.phoneId) {
             throw new Error('WhatsApp credentials not configured');
         }
@@ -62,6 +65,9 @@ export class NotificationsService {
         templateName: string,
         parameters: string[],
     ) {
+        if (process.env.NOTIFICATIONS_ENABLED === 'false') {
+            return;
+        }
         if (!this.token || !this.phoneId) {
             throw new Error('WhatsApp credentials not configured');
         }
