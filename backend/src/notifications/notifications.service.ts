@@ -7,6 +7,20 @@ interface WhatsAppTextPayload {
     text: { body: string };
 }
 
+interface WhatsAppTemplatePayload {
+    messaging_product: 'whatsapp';
+    to: string;
+    type: 'template';
+    template: {
+        name: string;
+        language: { code: string };
+        components: {
+            type: 'body';
+            parameters: { type: 'text'; text: string }[];
+        }[];
+    };
+}
+
 @Injectable()
 export class NotificationsService {
     private readonly token = process.env.WHATSAPP_TOKEN;
@@ -22,6 +36,48 @@ export class NotificationsService {
             to,
             type: 'text',
             text: { body: text },
+        };
+        const res = await fetch(`${this.baseUrl}/${this.phoneId}/messages`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${this.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const body = await res.text();
+            throw new Error(`WhatsApp API error: ${res.status} ${body}`);
+        }
+        return res.json();
+    }
+
+    async sendWhatsAppTemplate(
+        to: string,
+        templateName: string,
+        parameters: string[],
+    ) {
+        if (!this.token || !this.phoneId) {
+            throw new Error('WhatsApp credentials not configured');
+        }
+        const lang = process.env.WHATSAPP_TEMPLATE_LANG || 'pl';
+        const payload: WhatsAppTemplatePayload = {
+            messaging_product: 'whatsapp',
+            to,
+            type: 'template',
+            template: {
+                name: templateName,
+                language: { code: lang },
+                components: [
+                    {
+                        type: 'body',
+                        parameters: parameters.map((text) => ({
+                            type: 'text',
+                            text,
+                        })),
+                    },
+                ],
+            },
         };
         const res = await fetch(`${this.baseUrl}/${this.phoneId}/messages`, {
             method: 'POST',
