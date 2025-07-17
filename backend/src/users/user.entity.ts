@@ -16,7 +16,7 @@ export class User {
     @Column()
     name: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
     @Column({ type: 'simple-enum', enum: Role })
