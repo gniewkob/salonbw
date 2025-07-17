@@ -9,7 +9,7 @@ import { EmployeeCommission } from '../commissions/employee-commission.entity';
 @Entity('user')
 export class Employee extends User {
     @Column({
-        type: 'enum',
+        type: 'simple-enum',
         enum: EmployeeRole,
         default: EmployeeRole.FRYZJER,
     })

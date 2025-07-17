@@ -21,7 +21,7 @@ export class CreateAppointmentsTable20250711192007 implements MigrationInterface
                     { name: 'serviceId', type: 'int' },
                     {
                         name: 'status',
-                        type: 'enum',
+                        type: 'varchar',
                         enum: ['scheduled', 'completed', 'cancelled'],
                         default: "'scheduled'",
                     },
