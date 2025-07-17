@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -24,6 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 @Module({
     imports: [
         ConfigModule.forRoot({ envFilePath: '.env' }),
+        ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             useFactory: () => {
                 const url = process.env.DATABASE_URL || 'sqlite::memory:';
