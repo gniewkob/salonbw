@@ -19,6 +19,7 @@ import { CommunicationsModule } from './communications/communications.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatMessagesModule } from './chat-messages/chat-messages.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
     imports: [
@@ -54,6 +55,7 @@ import { ChatMessagesModule } from './chat-messages/chat-messages.module';
         ChatModule,
         LogsModule,
         CommunicationsModule,
+        NotificationsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
