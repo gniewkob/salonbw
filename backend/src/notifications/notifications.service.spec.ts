@@ -79,4 +79,12 @@ describe('NotificationsService', () => {
             },
         );
     });
+
+    it('does nothing when notifications are disabled', async () => {
+        const postMock = jest.spyOn(axios, 'post');
+        process.env.NOTIFICATIONS_ENABLED = 'false';
+        await service.sendText('48123456789', 'hello');
+        expect(postMock).not.toHaveBeenCalled();
+        delete process.env.NOTIFICATIONS_ENABLED;
+    });
 });
