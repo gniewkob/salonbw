@@ -8,6 +8,7 @@ import { AdminAppointmentsController } from './admin-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { LogsModule } from '../logs/logs.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { LogsModule } from '../logs/logs.module';
         forwardRef(() => FormulasModule),
         CommissionsModule,
         LogsModule,
+        NotificationsModule,
     ],
 
     controllers: [
