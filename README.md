@@ -62,6 +62,7 @@ WHATSAPP_TOKEN=your-access-token       # access token for the Cloud API
 WHATSAPP_PHONE_ID=your-phone-id        # identifier of the sending phone number
 # Optional, defaults to "pl"
 WHATSAPP_TEMPLATE_LANG=pl
+NOTIFICATIONS_ENABLED=true             # set to "false" to skip sending messages
 ```
 
 `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_ID` come from your Meta Business account. They allow the custom notification channel to authenticate and send templated messages from the specified number.
