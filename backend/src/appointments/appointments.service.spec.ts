@@ -15,6 +15,7 @@ import { CommissionRecord } from '../commissions/commission-record.entity';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { Role } from '../users/role.enum';
+import { NotificationsService } from '../notifications/notifications.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -28,12 +29,22 @@ describe('AppointmentsService', () => {
   let formulas: { create: jest.Mock };
   let commissions: { getPercentForService: jest.Mock; calculateCommission: jest.Mock };
   let logs: { create: jest.Mock };
+  let notifications: {
+    sendAppointmentConfirmation: jest.Mock;
+    sendThankYou: jest.Mock;
+    sendText: jest.Mock;
+  };
 
   beforeEach(async () => {
     repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
     formulas = { create: jest.fn() };
     commissions = { getPercentForService: jest.fn(), calculateCommission: jest.fn() };
     logs = { create: jest.fn() };
+    notifications = {
+      sendAppointmentConfirmation: jest.fn(),
+      sendThankYou: jest.fn(),
+      sendText: jest.fn(),
+    };
 
 
     const module: TestingModule = await Test.createTestingModule({
@@ -44,6 +55,7 @@ describe('AppointmentsService', () => {
         { provide: FormulasService, useValue: formulas },
         { provide: CommissionsService, useValue: commissions },
         { provide: LogsService, useValue: logs },
+        { provide: NotificationsService, useValue: notifications },
 
       ],
     }).compile();
@@ -52,7 +64,12 @@ describe('AppointmentsService', () => {
   });
 
   it('create builds and saves a new appointment', async () => {
-    const created = { id: 1 } as Appointment;
+    const created: any = {
+      id: 1,
+      client: { phone: '111' },
+      employee: { phone: '222' },
+      startTime: new Date('2100-07-01T10:00:00.000Z'),
+    };
     repo.create.mockReturnValue(created);
     repo.save.mockResolvedValue(created);
 
@@ -76,6 +93,7 @@ describe('AppointmentsService', () => {
       }),
       1,
     );
+    expect(notifications.sendAppointmentConfirmation).toHaveBeenCalled();
     expect(result).toBe(created);
   });
 
@@ -225,9 +243,10 @@ describe('AppointmentsService', () => {
     const appt: any = {
       id: 2,
       status: AppointmentStatus.Scheduled,
-      client: { id: 2 },
+      client: { id: 2, phone: '111' },
       employee: { id: 3, commissionBase: 10 },
       service: { price: 100, defaultCommissionPercent: 15 },
+      startTime: new Date('2100-07-01T10:00:00.000Z'),
     };
     repo.findOne.mockResolvedValue(appt);
     repo.save.mockResolvedValue(appt);
@@ -247,6 +266,7 @@ describe('AppointmentsService', () => {
       }),
       3,
     );
+    expect(notifications.sendThankYou).toHaveBeenCalled();
     expect(result).toEqual({ appointment: appt, commission: { amount: 10, percent: 10 } });
   });
 });

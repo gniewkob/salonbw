@@ -16,6 +16,9 @@ export class User {
     @Column()
     name: string;
 
+    @Column({ nullable: true })
+    phone: string | null;
+
     @Column({ type: 'simple-enum', enum: Role })
     role: Role | EmployeeRole;
 
