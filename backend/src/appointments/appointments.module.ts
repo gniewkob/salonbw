@@ -9,6 +9,7 @@ import { FormulasModule } from '../formulas/formulas.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ReminderService } from './reminder.service';
 
 @Module({
     imports: [
@@ -24,7 +25,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
         EmployeeAppointmentsController,
         AdminAppointmentsController,
     ],
-    providers: [AppointmentsService],
+    providers: [AppointmentsService, ReminderService],
     exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
