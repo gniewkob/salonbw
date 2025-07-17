@@ -16,7 +16,7 @@ export class CommissionRule {
     @ManyToOne(() => User, { onDelete: 'RESTRICT' })
     employee: User;
 
-    @Column({ type: 'enum', enum: CommissionTargetType })
+    @Column({ type: 'simple-enum', enum: CommissionTargetType })
     targetType: CommissionTargetType;
 
     @Column('int')
