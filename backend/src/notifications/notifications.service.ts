@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import axios from 'axios';
 
 interface WhatsAppTextPayload {
     messaging_product: 'whatsapp';
@@ -37,19 +38,23 @@ export class NotificationsService {
             type: 'text',
             text: { body: text },
         };
-        const res = await fetch(`${this.baseUrl}/${this.phoneId}/messages`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${this.token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-            const body = await res.text();
-            throw new Error(`WhatsApp API error: ${res.status} ${body}`);
+        try {
+            const res = await axios.post(
+                `${this.baseUrl}/${this.phoneId}/messages`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+            return res.data;
+        } catch (err: any) {
+            const status = err.response?.status;
+            const body = err.response?.data;
+            throw new Error(`WhatsApp API error: ${status} ${body}`);
         }
-        return res.json();
     }
 
     async sendWhatsAppTemplate(
@@ -79,19 +84,23 @@ export class NotificationsService {
                 ],
             },
         };
-        const res = await fetch(`${this.baseUrl}/${this.phoneId}/messages`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${this.token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-            const body = await res.text();
-            throw new Error(`WhatsApp API error: ${res.status} ${body}`);
+        try {
+            const res = await axios.post(
+                `${this.baseUrl}/${this.phoneId}/messages`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+            return res.data;
+        } catch (err: any) {
+            const status = err.response?.status;
+            const body = err.response?.data;
+            throw new Error(`WhatsApp API error: ${status} ${body}`);
         }
-        return res.json();
     }
 
     async sendAppointmentConfirmation(to: string, when: Date) {
