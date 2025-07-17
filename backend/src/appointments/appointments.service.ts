@@ -11,6 +11,7 @@ import { EmployeeRole } from '../employees/employee-role.enum';
 import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -21,6 +22,7 @@ export class AppointmentsService {
         private readonly formulas: FormulasService,
         private readonly commissions: CommissionsService,
         private readonly logs: LogsService,
+        private readonly notifications: NotificationsService,
     ) {}
 
     async create(
@@ -55,6 +57,18 @@ export class AppointmentsService {
             JSON.stringify({ clientId, employeeId, serviceId, startTime }),
             clientId,
         );
+        if ((saved.client as any)?.phone) {
+            void this.notifications.sendAppointmentConfirmation(
+                (saved.client as any).phone,
+                saved.startTime,
+            );
+        }
+        if ((saved.employee as any)?.phone) {
+            void this.notifications.sendText(
+                (saved.employee as any).phone,
+                `Nowa rezerwacja ${saved.startTime.toLocaleString()}`,
+            );
+        }
         return saved;
     }
 
@@ -172,6 +186,11 @@ export class AppointmentsService {
                     percent: record?.percent ?? 0,
                 }),
             );
+            if ((saved.client as any)?.phone) {
+                void this.notifications.sendThankYou(
+                    (saved.client as any).phone,
+                );
+            }
             return { appointment: saved, commission: record };
         }
         if (appt.status === AppointmentStatus.Completed) {
@@ -197,6 +216,11 @@ export class AppointmentsService {
             }),
             userId,
         );
+        if ((saved.client as any)?.phone) {
+            void this.notifications.sendThankYou(
+                (saved.client as any).phone,
+            );
+        }
         return { appointment: saved, commission: record };
     }
 
