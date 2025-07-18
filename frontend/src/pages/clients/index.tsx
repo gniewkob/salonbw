@@ -1,3 +1,9 @@
+import RouteGuard from '@/components/RouteGuard';
+
 export default function ClientsPage() {
-    return <div>Clients</div>;
+  return (
+    <RouteGuard>
+      <div>Clients</div>
+    </RouteGuard>
+  );
 }

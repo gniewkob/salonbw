@@ -1,18 +1,9 @@
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import RouteGuard from '@/components/RouteGuard';
 
 export default function DashboardPage() {
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) return null;
-
-  return <div>Dashboard</div>;
+  return (
+    <RouteGuard>
+      <div>Dashboard</div>
+    </RouteGuard>
+  );
 }
