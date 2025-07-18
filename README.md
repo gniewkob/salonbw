@@ -1,13 +1,13 @@
 # Salon Black & White
 
-This repository contains the Salon Black & White application.
-The server is built with [NestJS](https://nestjs.com) in
-[`backend/`](backend/), while the web interface uses
-[Next.js](https://nextjs.org) in [`frontend/`](frontend/).
-See [`backend/README.md`](backend/README.md) for backend setup and
-[`frontend/README.md`](frontend/README.md) for running the frontend.
+Salon Black & White now consists of a
+[NestJS](https://nestjs.com) backend in [`backend/`](backend/) and a
+[Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/).
+To get each part running, follow
+[`backend/README.md`](backend/README.md) for backend instructions and
+[`frontend/README.md`](frontend/README.md) for the frontend.
 
-The original Laravel-based frontend has been archived in
+The old Laravel-based frontend has been archived in
 [`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
 maintained.
 
