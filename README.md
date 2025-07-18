@@ -27,6 +27,16 @@ the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
 * **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
   values for your local database, JWT secrets and other settings.
 
+## Installing dependencies
+
+Run `npm install` once in each project directory to install all required
+packages:
+
+```bash
+cd frontend && npm install
+cd ../backend && npm install
+```
+
 ## Developing the frontend
 
 The Next.js development server can be started with:
@@ -45,18 +55,13 @@ cd frontend && npm run dev
 
 Then open <http://localhost:3000> in your browser.
 
-### Useful npm scripts
+## Common npm scripts
 
-Run `npm run lint` from either `frontend/` or `backend/` depending on which
-project you are working on:
+Use these commands inside either `frontend/` or `backend/` as needed:
 
 ```bash
+npm run dev       # start the development server
 npm run lint      # check for linting issues
-```
-
-Formatting is only available in `backend/`:
-
-```bash
-npm run format    # format the backend codebase
+npm run format    # format the backend codebase (backend only)
 ```
 
