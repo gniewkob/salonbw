@@ -12,13 +12,15 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
-    "test": "jest"
+    "test": "jest",
+    "e2e": "cypress run"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
     "next": "15.4.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -29,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cypress": "^14.5.2",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
     "eslint-config-prettier": "^10.1.5",

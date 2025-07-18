@@ -1,3 +1,9 @@
+import RouteGuard from '@/components/RouteGuard';
+
 export default function ServicesPage() {
-    return <div>Services</div>;
+  return (
+    <RouteGuard>
+      <div>Services</div>
+    </RouteGuard>
+  );
 }
