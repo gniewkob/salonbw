@@ -18,11 +18,18 @@ export class SalesService {
         private readonly commissionService: CommissionsService,
     ) {}
 
-    async create(clientId: number, employeeId: number, productId: number, quantity: number) {
+    async create(
+        clientId: number,
+        employeeId: number,
+        productId: number,
+        quantity: number,
+    ) {
         if (quantity <= 0) {
             throw new BadRequestException('quantity must be > 0');
         }
-        const product = await this.products.findOne({ where: { id: productId } });
+        const product = await this.products.findOne({
+            where: { id: productId },
+        });
         if (!product) {
             throw new BadRequestException('invalid product');
         }

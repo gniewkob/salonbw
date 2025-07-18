@@ -36,11 +36,30 @@ describe('FormulasModule (e2e)', () => {
     });
 
     it('employee can create formula for their appointment', async () => {
-        await servicesRepo.save(servicesRepo.create({ name: 'cut', duration: 30, price: 10 }));
-        const client = await users.createUser('cf@test.com', 'secret', 'C', Role.Client);
-        const employee = await users.createUser('ef@test.com', 'secret', 'E', Role.Employee);
-        const startTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        const appt = await appointments.create(client.id, employee.id, 1, startTime);
+        await servicesRepo.save(
+            servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
+        );
+        const client = await users.createUser(
+            'cf@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
+        const employee = await users.createUser(
+            'ef@test.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
+        const startTime = new Date(
+            Date.now() + 24 * 60 * 60 * 1000,
+        ).toISOString();
+        const appt = await appointments.create(
+            client.id,
+            employee.id,
+            1,
+            startTime,
+        );
 
         const loginEmp = await request(app.getHttpServer())
             .post('/auth/login')
@@ -69,12 +88,36 @@ describe('FormulasModule (e2e)', () => {
     });
 
     it('forbids other employees from adding formula', async () => {
-        await servicesRepo.save(servicesRepo.create({ name: 'cut', duration: 30, price: 10 }));
-        const client = await users.createUser('cf2@test.com', 'secret', 'C', Role.Client);
-        const emp1 = await users.createUser('emp1@test.com', 'secret', 'E1', Role.Employee);
-        const emp2 = await users.createUser('emp2@test.com', 'secret', 'E2', Role.Employee);
-        const startTime2 = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        const appt = await appointments.create(client.id, emp1.id, 1, startTime2);
+        await servicesRepo.save(
+            servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
+        );
+        const client = await users.createUser(
+            'cf2@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
+        const emp1 = await users.createUser(
+            'emp1@test.com',
+            'secret',
+            'E1',
+            Role.Employee,
+        );
+        const emp2 = await users.createUser(
+            'emp2@test.com',
+            'secret',
+            'E2',
+            Role.Employee,
+        );
+        const startTime2 = new Date(
+            Date.now() + 24 * 60 * 60 * 1000,
+        ).toISOString();
+        const appt = await appointments.create(
+            client.id,
+            emp1.id,
+            1,
+            startTime2,
+        );
 
         const loginEmp2 = await request(app.getHttpServer())
             .post('/auth/login')

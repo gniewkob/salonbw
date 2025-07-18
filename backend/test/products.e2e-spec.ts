@@ -49,7 +49,12 @@ describe('ProductsModule (e2e)', () => {
     });
 
     it('rejects negative values on update', async () => {
-        await users.createUser('admin2@prod.com', 'secret', 'Admin', Role.Admin);
+        await users.createUser(
+            'admin2@prod.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')

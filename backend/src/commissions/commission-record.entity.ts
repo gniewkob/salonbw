@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    CreateDateColumn,
+} from 'typeorm';
 import { Employee } from '../employees/employee.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Product } from '../catalog/product.entity';

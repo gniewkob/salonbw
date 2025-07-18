@@ -28,8 +28,18 @@ describe('MessagesModule (e2e)', () => {
     });
 
     it('allows sending and listing messages', async () => {
-        const client = await usersService.createUser('client@msg.com', 'secret', 'Client', Role.Client);
-        const employee = await usersService.createUser('emp@msg.com', 'secret', 'Emp', Role.Employee);
+        const client = await usersService.createUser(
+            'client@msg.com',
+            'secret',
+            'Client',
+            Role.Client,
+        );
+        const employee = await usersService.createUser(
+            'emp@msg.com',
+            'secret',
+            'Emp',
+            Role.Employee,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')
@@ -51,7 +61,12 @@ describe('MessagesModule (e2e)', () => {
     });
 
     it('forbids admin from accessing messages endpoints', async () => {
-        await usersService.createUser('admin@msg.com', 'secret', 'Admin', Role.Admin);
+        await usersService.createUser(
+            'admin@msg.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')

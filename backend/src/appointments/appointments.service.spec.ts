@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  ConflictException,
-  ForbiddenException,
-  BadRequestException,
+    ConflictException,
+    ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -18,255 +18,284 @@ import { Role } from '../users/role.enum';
 import { NotificationsService } from '../notifications/notifications.service';
 
 describe('AppointmentsService', () => {
-  let service: AppointmentsService;
-  let repo: {
-    create: jest.Mock;
-    save: jest.Mock;
-    find: jest.Mock;
-    findOne: jest.Mock;
-    delete: jest.Mock;
-  };
-  let formulas: { create: jest.Mock };
-  let commissions: { getPercentForService: jest.Mock; calculateCommission: jest.Mock };
-  let logs: { create: jest.Mock };
-  let notifications: {
-    sendAppointmentConfirmation: jest.Mock;
-    sendThankYou: jest.Mock;
-    sendText: jest.Mock;
-  };
-
-  beforeEach(async () => {
-    repo = { create: jest.fn(), save: jest.fn(), find: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
-    formulas = { create: jest.fn() };
-    commissions = { getPercentForService: jest.fn(), calculateCommission: jest.fn() };
-    logs = { create: jest.fn() };
-    notifications = {
-      sendAppointmentConfirmation: jest.fn(),
-      sendThankYou: jest.fn(),
-      sendText: jest.fn(),
+    let service: AppointmentsService;
+    let repo: {
+        create: jest.Mock;
+        save: jest.Mock;
+        find: jest.Mock;
+        findOne: jest.Mock;
+        delete: jest.Mock;
+    };
+    let formulas: { create: jest.Mock };
+    let commissions: {
+        getPercentForService: jest.Mock;
+        calculateCommission: jest.Mock;
+    };
+    let logs: { create: jest.Mock };
+    let notifications: {
+        sendAppointmentConfirmation: jest.Mock;
+        sendThankYou: jest.Mock;
+        sendText: jest.Mock;
     };
 
+    beforeEach(async () => {
+        repo = {
+            create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            delete: jest.fn(),
+        };
+        formulas = { create: jest.fn() };
+        commissions = {
+            getPercentForService: jest.fn(),
+            calculateCommission: jest.fn(),
+        };
+        logs = { create: jest.fn() };
+        notifications = {
+            sendAppointmentConfirmation: jest.fn(),
+            sendThankYou: jest.fn(),
+            sendText: jest.fn(),
+        };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AppointmentsService,
-        { provide: getRepositoryToken(Appointment), useValue: repo },
-        { provide: getRepositoryToken(CommissionRecord), useValue: {} },
-        { provide: FormulasService, useValue: formulas },
-        { provide: CommissionsService, useValue: commissions },
-        { provide: LogsService, useValue: logs },
-        { provide: NotificationsService, useValue: notifications },
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                AppointmentsService,
+                { provide: getRepositoryToken(Appointment), useValue: repo },
+                { provide: getRepositoryToken(CommissionRecord), useValue: {} },
+                { provide: FormulasService, useValue: formulas },
+                { provide: CommissionsService, useValue: commissions },
+                { provide: LogsService, useValue: logs },
+                { provide: NotificationsService, useValue: notifications },
+            ],
+        }).compile();
 
-      ],
-    }).compile();
-
-    service = module.get<AppointmentsService>(AppointmentsService);
-  });
-
-  it('create builds and saves a new appointment', async () => {
-    const created: any = {
-      id: 1,
-      client: { phone: '111' },
-      employee: { phone: '222' },
-      startTime: new Date('2100-07-01T10:00:00.000Z'),
-    };
-    repo.create.mockReturnValue(created);
-    repo.save.mockResolvedValue(created);
-
-    const result = await service.create(1, 2, 3, '2100-07-01T10:00:00.000Z');
-
-    expect(repo.create).toHaveBeenCalledWith({
-      client: { id: 1 },
-      employee: { id: 2 },
-      service: { id: 3 },
-      startTime: new Date('2100-07-01T10:00:00.000Z'),
-      status: AppointmentStatus.Scheduled,
+        service = module.get<AppointmentsService>(AppointmentsService);
     });
-    expect(repo.save).toHaveBeenCalledWith(created);
-    expect(logs.create).toHaveBeenCalledWith(
-      LogAction.CreateAppointment,
-      JSON.stringify({
-        clientId: 1,
-        employeeId: 2,
-        serviceId: 3,
-        startTime: '2100-07-01T10:00:00.000Z',
-      }),
-      1,
-    );
-    expect(notifications.sendAppointmentConfirmation).toHaveBeenCalled();
-    expect(result).toBe(created);
-  });
 
-  it('create rejects conflicting appointment', async () => {
-    repo.findOne.mockResolvedValue({ id: 9 });
-    await expect(
-      service.create(1, 2, 3, '2100-07-01T10:00:00.000Z'),
-    ).rejects.toThrow(ConflictException);
-    expect(repo.findOne).toHaveBeenCalledWith({
-      where: {
-        employee: { id: 2 },
-        startTime: new Date('2100-07-01T10:00:00.000Z'),
-      },
+    it('create builds and saves a new appointment', async () => {
+        const created: any = {
+            id: 1,
+            client: { phone: '111' },
+            employee: { phone: '222' },
+            startTime: new Date('2100-07-01T10:00:00.000Z'),
+        };
+        repo.create.mockReturnValue(created);
+        repo.save.mockResolvedValue(created);
+
+        const result = await service.create(
+            1,
+            2,
+            3,
+            '2100-07-01T10:00:00.000Z',
+        );
+
+        expect(repo.create).toHaveBeenCalledWith({
+            client: { id: 1 },
+            employee: { id: 2 },
+            service: { id: 3 },
+            startTime: new Date('2100-07-01T10:00:00.000Z'),
+            status: AppointmentStatus.Scheduled,
+        });
+        expect(repo.save).toHaveBeenCalledWith(created);
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.CreateAppointment,
+            JSON.stringify({
+                clientId: 1,
+                employeeId: 2,
+                serviceId: 3,
+                startTime: '2100-07-01T10:00:00.000Z',
+            }),
+            1,
+        );
+        expect(notifications.sendAppointmentConfirmation).toHaveBeenCalled();
+        expect(result).toBe(created);
     });
-    expect(repo.create).not.toHaveBeenCalled();
-    expect(repo.save).not.toHaveBeenCalled();
-  });
 
-  it('findClientAppointments queries by client id', async () => {
-    repo.find.mockResolvedValue([]);
-    await service.findClientAppointments(4);
-    expect(repo.find).toHaveBeenCalledWith({ where: { client: { id: 4 } } });
-  });
+    it('create rejects conflicting appointment', async () => {
+        repo.findOne.mockResolvedValue({ id: 9 });
+        await expect(
+            service.create(1, 2, 3, '2100-07-01T10:00:00.000Z'),
+        ).rejects.toThrow(ConflictException);
+        expect(repo.findOne).toHaveBeenCalledWith({
+            where: {
+                employee: { id: 2 },
+                startTime: new Date('2100-07-01T10:00:00.000Z'),
+            },
+        });
+        expect(repo.create).not.toHaveBeenCalled();
+        expect(repo.save).not.toHaveBeenCalled();
+    });
 
-  it('update modifies existing appointment', async () => {
-    const existing: any = { id: 2, status: AppointmentStatus.Scheduled };
-    repo.findOne.mockResolvedValue(existing);
-    repo.save.mockResolvedValue(existing);
+    it('findClientAppointments queries by client id', async () => {
+        repo.find.mockResolvedValue([]);
+        await service.findClientAppointments(4);
+        expect(repo.find).toHaveBeenCalledWith({
+            where: { client: { id: 4 } },
+        });
+    });
 
-    const updateParams: UpdateAppointmentParams = {
-      status: AppointmentStatus.Completed,
-      notes: 'done',
-    };
+    it('update modifies existing appointment', async () => {
+        const existing: any = { id: 2, status: AppointmentStatus.Scheduled };
+        repo.findOne.mockResolvedValue(existing);
+        repo.save.mockResolvedValue(existing);
 
-    await service.update(2, updateParams);
+        const updateParams: UpdateAppointmentParams = {
+            status: AppointmentStatus.Completed,
+            notes: 'done',
+        };
 
-    expect(existing.status).toBe(AppointmentStatus.Completed);
-    expect(existing.notes).toBe('done');
-    expect(repo.save).toHaveBeenCalledWith(existing);
-  });
+        await service.update(2, updateParams);
 
-  it('complete sets status and records commission', async () => {
-    const appt: any = {
-      id: 3,
-      status: AppointmentStatus.Scheduled,
-      service: { price: 40, defaultCommissionPercent: 0.15 },
-      employee: { id: 5 },
-    };
-    repo.findOne.mockResolvedValue(appt);
-    repo.save.mockResolvedValue(appt);
-    commissions.calculateCommission.mockResolvedValue({ amount: 6, percent: 15 } as any);
+        expect(existing.status).toBe(AppointmentStatus.Completed);
+        expect(existing.notes).toBe('done');
+        expect(repo.save).toHaveBeenCalledWith(existing);
+    });
 
-    const result = await service.complete(3);
+    it('complete sets status and records commission', async () => {
+        const appt: any = {
+            id: 3,
+            status: AppointmentStatus.Scheduled,
+            service: { price: 40, defaultCommissionPercent: 0.15 },
+            employee: { id: 5 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
+        commissions.calculateCommission.mockResolvedValue({
+            amount: 6,
+            percent: 15,
+        } as any);
 
-    expect(appt.status).toBe(AppointmentStatus.Completed);
-    expect(commissions.calculateCommission).toHaveBeenCalledWith(3);
-    expect(repo.save).toHaveBeenCalledWith(appt);
-    expect(logs.create).toHaveBeenCalledWith(
-      LogAction.CompleteAppointment,
-      JSON.stringify({
-        appointmentId: 3,
-        commissionAmount: 6,
-        percent: 15,
-      }),
-    );
-    expect(result).toEqual({ appointment: appt, commission: { amount: 6, percent: 15 } });
-  });
+        const result = await service.complete(3);
 
-  it('remove calls repository delete', async () => {
-    repo.delete.mockResolvedValue({});
-    await service.remove(5);
-    expect(repo.delete).toHaveBeenCalledWith(5);
-    expect(logs.create).toHaveBeenCalledWith(
-      LogAction.DeleteAppointment,
-      JSON.stringify({ appointmentId: 5 }),
-    );
-  });
+        expect(appt.status).toBe(AppointmentStatus.Completed);
+        expect(commissions.calculateCommission).toHaveBeenCalledWith(3);
+        expect(repo.save).toHaveBeenCalledWith(appt);
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.CompleteAppointment,
+            JSON.stringify({
+                appointmentId: 3,
+                commissionAmount: 6,
+                percent: 15,
+            }),
+        );
+        expect(result).toEqual({
+            appointment: appt,
+            commission: { amount: 6, percent: 15 },
+        });
+    });
 
-  it('update rejects past start time', async () => {
-    const existing: any = {
-      id: 1,
-      employee: { id: 2 },
-      service: { duration: 30 },
-    };
-    repo.findOne.mockResolvedValue(existing);
-    await expect(
-      service.update(1, { startTime: '2000-01-01T00:00:00.000Z' })
-    ).rejects.toBeInstanceOf(BadRequestException);
-    expect(repo.save).not.toHaveBeenCalled();
-  });
+    it('remove calls repository delete', async () => {
+        repo.delete.mockResolvedValue({});
+        await service.remove(5);
+        expect(repo.delete).toHaveBeenCalledWith(5);
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.DeleteAppointment,
+            JSON.stringify({ appointmentId: 5 }),
+        );
+    });
 
-  it('update rejects conflicting appointment', async () => {
-    const existing: any = {
-      id: 1,
-      employee: { id: 2 },
-      service: { duration: 30 },
-      startTime: new Date('2100-01-01T10:00:00.000Z'),
-    };
-    const other: any = {
-      id: 2,
-      employee: { id: 2 },
-      service: { duration: 30 },
-      startTime: new Date('2100-01-01T10:15:00.000Z'),
-    };
-    repo.findOne.mockResolvedValue(existing);
-    repo.find.mockResolvedValue([existing, other]);
-    await expect(
-      service.update(1, { startTime: '2100-01-01T10:20:00.000Z' })
-    ).rejects.toBeInstanceOf(ConflictException);
-  });
+    it('update rejects past start time', async () => {
+        const existing: any = {
+            id: 1,
+            employee: { id: 2 },
+            service: { duration: 30 },
+        };
+        repo.findOne.mockResolvedValue(existing);
+        await expect(
+            service.update(1, { startTime: '2000-01-01T00:00:00.000Z' }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(repo.save).not.toHaveBeenCalled();
+    });
 
-  it('cancel updates status when authorized', async () => {
-    const appt: any = {
-      id: 1,
-      status: AppointmentStatus.Scheduled,
-      client: { id: 2 },
-      employee: { id: 3 },
-    };
-    repo.findOne.mockResolvedValue(appt);
-    repo.save.mockResolvedValue(appt);
+    it('update rejects conflicting appointment', async () => {
+        const existing: any = {
+            id: 1,
+            employee: { id: 2 },
+            service: { duration: 30 },
+            startTime: new Date('2100-01-01T10:00:00.000Z'),
+        };
+        const other: any = {
+            id: 2,
+            employee: { id: 2 },
+            service: { duration: 30 },
+            startTime: new Date('2100-01-01T10:15:00.000Z'),
+        };
+        repo.findOne.mockResolvedValue(existing);
+        repo.find.mockResolvedValue([existing, other]);
+        await expect(
+            service.update(1, { startTime: '2100-01-01T10:20:00.000Z' }),
+        ).rejects.toBeInstanceOf(ConflictException);
+    });
 
-    await service.cancel(1, 2, Role.Client);
-    expect(appt.status).toBe(AppointmentStatus.Cancelled);
-    expect(repo.save).toHaveBeenCalledWith(appt);
-  });
+    it('cancel updates status when authorized', async () => {
+        const appt: any = {
+            id: 1,
+            status: AppointmentStatus.Scheduled,
+            client: { id: 2 },
+            employee: { id: 3 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
 
-  it('cancel logs action', async () => {
-    const appt: any = {
-      id: 2,
-      status: AppointmentStatus.Scheduled,
-      client: { id: 1 },
-      employee: { id: 3 },
-    };
-    repo.findOne.mockResolvedValue(appt);
-    repo.save.mockResolvedValue(appt);
+        await service.cancel(1, 2, Role.Client);
+        expect(appt.status).toBe(AppointmentStatus.Cancelled);
+        expect(repo.save).toHaveBeenCalledWith(appt);
+    });
 
-    await service.cancel(2, 1, Role.Client);
+    it('cancel logs action', async () => {
+        const appt: any = {
+            id: 2,
+            status: AppointmentStatus.Scheduled,
+            client: { id: 1 },
+            employee: { id: 3 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
 
-    expect(logs.create).toHaveBeenCalledWith(
-      LogAction.CancelAppointment,
-      JSON.stringify({ appointmentId: 2, userId: 1 }),
-      1,
-    );
-  });
+        await service.cancel(2, 1, Role.Client);
 
-  it('complete saves status and commission', async () => {
-    const appt: any = {
-      id: 2,
-      status: AppointmentStatus.Scheduled,
-      client: { id: 2, phone: '111' },
-      employee: { id: 3, commissionBase: 10 },
-      service: { price: 100, defaultCommissionPercent: 15 },
-      startTime: new Date('2100-07-01T10:00:00.000Z'),
-    };
-    repo.findOne.mockResolvedValue(appt);
-    repo.save.mockResolvedValue(appt);
-    commissions.calculateCommission.mockResolvedValue({ amount: 10, percent: 10 } as any);
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.CancelAppointment,
+            JSON.stringify({ appointmentId: 2, userId: 1 }),
+            1,
+        );
+    });
 
-    const result = await service.complete(2, 3, Role.Employee);
+    it('complete saves status and commission', async () => {
+        const appt: any = {
+            id: 2,
+            status: AppointmentStatus.Scheduled,
+            client: { id: 2, phone: '111' },
+            employee: { id: 3, commissionBase: 10 },
+            service: { price: 100, defaultCommissionPercent: 15 },
+            startTime: new Date('2100-07-01T10:00:00.000Z'),
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
+        commissions.calculateCommission.mockResolvedValue({
+            amount: 10,
+            percent: 10,
+        } as any);
 
-    expect(appt.status).toBe(AppointmentStatus.Completed);
-    expect(commissions.calculateCommission).toHaveBeenCalledWith(2);
-    expect(repo.save).toHaveBeenCalledWith(appt);
-    expect(logs.create).toHaveBeenCalledWith(
-      LogAction.CompleteAppointment,
-      JSON.stringify({
-        appointmentId: 2,
-        commissionAmount: 10,
-        percent: 10,
-      }),
-      3,
-    );
-    expect(notifications.sendThankYou).toHaveBeenCalled();
-    expect(result).toEqual({ appointment: appt, commission: { amount: 10, percent: 10 } });
-  });
+        const result = await service.complete(2, 3, Role.Employee);
+
+        expect(appt.status).toBe(AppointmentStatus.Completed);
+        expect(commissions.calculateCommission).toHaveBeenCalledWith(2);
+        expect(repo.save).toHaveBeenCalledWith(appt);
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.CompleteAppointment,
+            JSON.stringify({
+                appointmentId: 2,
+                commissionAmount: 10,
+                percent: 10,
+            }),
+            3,
+        );
+        expect(notifications.sendThankYou).toHaveBeenCalled();
+        expect(result).toEqual({
+            appointment: appt,
+            commission: { amount: 10, percent: 10 },
+        });
+    });
 });
