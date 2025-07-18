@@ -1,3 +1,3 @@
 export default function ClientsPage() {
-    return <div>Clients Page</div>;
+    return <div>Clients</div>;
 }
