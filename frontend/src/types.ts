@@ -5,11 +5,18 @@ export interface Client {
 
 export interface Appointment {
   id: number;
-  date: string;
-  clientId: number;
+  startTime: string;
+  client?: Client;
 }
 
 export interface Service {
   id: number;
   name: string;
+}
+
+export interface DashboardResponse {
+  clientCount: number;
+  todayCount: number;
+  employeeCount: number;
+  upcoming: Appointment[];
 }
