@@ -47,11 +47,16 @@ Then open <http://localhost:3000> in your browser.
 
 ### Useful npm scripts
 
-Run these from either `frontend/` or `backend/` depending on which project you
-are working on:
+Run `npm run lint` from either `frontend/` or `backend/` depending on which
+project you are working on:
 
 ```bash
 npm run lint      # check for linting issues
-npm run format    # format the codebase (if defined)
+```
+
+Formatting is only available in `backend/`:
+
+```bash
+npm run format    # format the backend codebase
 ```
 
