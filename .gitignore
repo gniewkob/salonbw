@@ -76,7 +76,6 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-tailwindcss
 
 # Generated output files
 output_tree*.txt
