@@ -1,63 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Salon Black & White Frontend
 
-## Getting Started
+This directory contains the Next.js application.
 
-First, run the development server:
+## Installation
+
+Install dependencies using npm:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd frontend
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Environment variables
-
-Create a `.env.local` file in this folder with the following placeholder. It configures the base URL for the backend API used by the app.
+Create a `.env.local` file with the API URL used by the frontend:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run these commands from the `frontend` folder:
 
-## Learn More
+- `npm run dev` – start the development server
+- `npm run lint` – check the code with ESLint
+- `npm run format` – format source files with Prettier
 
-To learn more about Next.js, take a look at the following resources:
+## Placeholder routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The `src/pages` directory contains placeholder pages for the following routes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `/` (home)
+- `/about`
+- `/appointments`
+- `/clients`
+- `/dashboard`
+- `/employees`
+- `/login`
+- `/products`
+- `/reviews`
+- `/services`
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Recovering from integrity errors
-
-If `npm` reports integrity errors, clean the cache and reinstall dependencies:
-
-```bash
-npm cache clean --force && npm install
-```
-
-Make sure you have a working internet connection. If issues persist, delete the
-`node_modules` directory and run `npm install` again.
-
-## Formatting code
-
-Run the Prettier script to automatically format source files:
-
-```bash
-npm run format
-```
+Each page currently just renders simple text and can be expanded later.
