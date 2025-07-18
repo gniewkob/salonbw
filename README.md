@@ -1,8 +1,11 @@
 # Salon Black & White
 
 This repository contains the Salon Black & White application.
-The Next.js frontend lives in [`frontend/`](frontend/), while the Nest.js backend
-is located in [`backend/`](backend/).
+The server is built with [NestJS](https://nestjs.com) in
+[`backend/`](backend/), while the web interface uses
+[Next.js](https://nextjs.org) in [`frontend/`](frontend/).
+See [`backend/README.md`](backend/README.md) for backend setup and
+[`frontend/README.md`](frontend/README.md) for running the frontend.
 
 The original Laravel-based frontend has been archived in
 [`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
