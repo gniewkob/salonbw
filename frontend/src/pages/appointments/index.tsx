@@ -1,3 +1,9 @@
+import RouteGuard from '@/components/RouteGuard';
+
 export default function AppointmentsPage() {
-    return <div>Appointments</div>;
+  return (
+    <RouteGuard>
+      <div>Appointments</div>
+    </RouteGuard>
+  );
 }

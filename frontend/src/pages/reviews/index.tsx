@@ -1,3 +1,9 @@
+import RouteGuard from '@/components/RouteGuard';
+
 export default function ReviewsPage() {
-    return <div>Reviews</div>;
+  return (
+    <RouteGuard>
+      <div>Reviews</div>
+    </RouteGuard>
+  );
 }
