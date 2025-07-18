@@ -38,7 +38,11 @@ describe('LogsModule (e2e)', () => {
     it('forbids client from accessing logs', async () => {
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'client@logs.com', password: 'secret', name: 'Client' })
+            .send({
+                email: 'client@logs.com',
+                password: 'secret',
+                name: 'Client',
+            })
             .expect(201);
 
         const login = await request(app.getHttpServer())

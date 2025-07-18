@@ -20,7 +20,9 @@ describe('NotificationsService', () => {
     });
 
     it('sendText posts to WhatsApp API', async () => {
-        const postMock = jest.spyOn(axios, 'post').mockResolvedValue({ data: {} } as any);
+        const postMock = jest
+            .spyOn(axios, 'post')
+            .mockResolvedValue({ data: {} } as any);
         process.env.WHATSAPP_TOKEN = 't';
         process.env.WHATSAPP_PHONE_ID = '123';
 
@@ -44,12 +46,17 @@ describe('NotificationsService', () => {
     });
 
     it('sendWhatsAppTemplate posts to WhatsApp API', async () => {
-        const postMock = jest.spyOn(axios, 'post').mockResolvedValue({ data: {} } as any);
+        const postMock = jest
+            .spyOn(axios, 'post')
+            .mockResolvedValue({ data: {} } as any);
         process.env.WHATSAPP_TOKEN = 't';
         process.env.WHATSAPP_PHONE_ID = '123';
         process.env.WHATSAPP_TEMPLATE_LANG = 'pl';
 
-        await service.sendWhatsAppTemplate('48123456789', 'template', ['X', 'Y']);
+        await service.sendWhatsAppTemplate('48123456789', 'template', [
+            'X',
+            'Y',
+        ]);
 
         expect(postMock).toHaveBeenCalledWith(
             'https://graph.facebook.com/v18.0/123/messages',

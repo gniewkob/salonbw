@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddCommissionBaseToUser20250711192010 implements MigrationInterface {
+export class AddCommissionBaseToUser20250711192010
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.addColumn(
             'user',

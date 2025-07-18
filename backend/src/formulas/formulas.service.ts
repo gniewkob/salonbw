@@ -1,4 +1,9 @@
-import { Injectable, Inject, ForbiddenException, forwardRef } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    ForbiddenException,
+    forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Formula } from './formula.entity';

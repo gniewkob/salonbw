@@ -56,7 +56,10 @@ describe('AuthService.registerClient', () => {
             .mockResolvedValueOnce('refresh');
 
         const result = await service.registerClient(dto);
-        expect(result).toEqual({ access_token: 'access', refresh_token: 'refresh' });
+        expect(result).toEqual({
+            access_token: 'access',
+            refresh_token: 'refresh',
+        });
         expect(users.updateRefreshToken).toHaveBeenCalledWith(1, 'refresh');
         expect(jwt.signAsync).toHaveBeenNthCalledWith(1, {
             sub: 1,

@@ -32,10 +32,23 @@ describe('Reception role restrictions (e2e)', () => {
     });
 
     it('rejects FRYZJER accessing reception-only endpoint', async () => {
-        const employee = await usersService.createUser('fry@test.com', 'secret', 'F', Role.Employee);
-        const client = await usersService.createUser('clientf@test.com', 'secret', 'C', Role.Client);
+        const employee = await usersService.createUser(
+            'fry@test.com',
+            'secret',
+            'F',
+            Role.Employee,
+        );
+        const client = await usersService.createUser(
+            'clientf@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
 
-        const tokens = await authService.generateTokens(employee.id, EmployeeRole.FRYZJER);
+        const tokens = await authService.generateTokens(
+            employee.id,
+            EmployeeRole.FRYZJER,
+        );
         const token = tokens.access_token;
 
         await request(app.getHttpServer())
@@ -46,10 +59,23 @@ describe('Reception role restrictions (e2e)', () => {
     });
 
     it('allows RECEPCJA employee to update customer', async () => {
-        const reception = await usersService.createUser('rec@test.com', 'secret', 'R', Role.Employee);
-        const client = await usersService.createUser('clientr@test.com', 'secret', 'C', Role.Client);
+        const reception = await usersService.createUser(
+            'rec@test.com',
+            'secret',
+            'R',
+            Role.Employee,
+        );
+        const client = await usersService.createUser(
+            'clientr@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
 
-        const tokens = await authService.generateTokens(reception.id, EmployeeRole.RECEPCJA);
+        const tokens = await authService.generateTokens(
+            reception.id,
+            EmployeeRole.RECEPCJA,
+        );
         const token = tokens.access_token;
 
         await request(app.getHttpServer())
@@ -60,8 +86,18 @@ describe('Reception role restrictions (e2e)', () => {
     });
 
     it('allows admin user to update customer', async () => {
-        await usersService.createUser('adminr@test.com', 'secret', 'A', Role.Admin);
-        const client = await usersService.createUser('clienta@test.com', 'secret', 'C', Role.Client);
+        await usersService.createUser(
+            'adminr@test.com',
+            'secret',
+            'A',
+            Role.Admin,
+        );
+        const client = await usersService.createUser(
+            'clienta@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -26,6 +34,10 @@ export class FormulasController {
     @Post()
     @Roles(Role.Employee)
     create(@Body() dto: CreateFormulaDto) {
-        return this.service.create(dto.clientId, dto.description, dto.appointmentId);
+        return this.service.create(
+            dto.clientId,
+            dto.description,
+            dto.appointmentId,
+        );
     }
 }

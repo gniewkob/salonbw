@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
@@ -45,7 +49,9 @@ export class ServicesService {
             return undefined;
         }
         if (dto.categoryId !== undefined) {
-            entity.category = dto.categoryId ? ({ id: dto.categoryId } as any) : null;
+            entity.category = dto.categoryId
+                ? ({ id: dto.categoryId } as any)
+                : null;
         }
         if (dto.name !== undefined) {
             entity.name = dto.name;
@@ -75,7 +81,9 @@ export class ServicesService {
         if (!entity) {
             throw new NotFoundException();
         }
-        const count = await this.appointments.count({ where: { service: { id } } });
+        const count = await this.appointments.count({
+            where: { service: { id } },
+        });
         if (count > 0) {
             throw new BadRequestException('Service has existing appointments');
         }
