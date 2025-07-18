@@ -1,20 +1,36 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    Table,
+    TableForeignKey,
+} from 'typeorm';
 
-export class AddCommissionsAndCommunications20250711192015 implements MigrationInterface {
+export class AddCommissionsAndCommunications20250711192015
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
                 name: 'employee_commission',
                 columns: [
-                    { name: 'id', type: 'int', isPrimary: true, isGenerated: true, generationStrategy: 'increment' },
+                    {
+                        name: 'id',
+                        type: 'int',
+                        isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: 'increment',
+                    },
                     { name: 'employeeId', type: 'int' },
-                    { name: 'amount', type: 'decimal', precision: 10, scale: 2 },
+                    {
+                        name: 'amount',
+                        type: 'decimal',
+                        precision: 10,
+                        scale: 2,
+                    },
                     { name: 'percent', type: 'float' },
                     { name: 'createdAt', type: 'timestamp', default: 'now()' },
                 ],
-                indices: [
-                    { columnNames: ['employeeId'] },
-                ],
+                indices: [{ columnNames: ['employeeId'] }],
             }),
         );
         await queryRunner.createForeignKey(
@@ -31,7 +47,13 @@ export class AddCommissionsAndCommunications20250711192015 implements MigrationI
             new Table({
                 name: 'communication',
                 columns: [
-                    { name: 'id', type: 'int', isPrimary: true, isGenerated: true, generationStrategy: 'increment' },
+                    {
+                        name: 'id',
+                        type: 'int',
+                        isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: 'increment',
+                    },
                     { name: 'customerId', type: 'int', isNullable: true },
                     { name: 'medium', type: 'varchar' },
                     { name: 'content', type: 'text' },

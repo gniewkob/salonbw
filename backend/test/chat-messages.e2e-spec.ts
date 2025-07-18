@@ -43,8 +43,18 @@ describe('ChatMessages (e2e)', () => {
         await servicesRepo.save(
             servicesRepo.create({ name: 'cut', duration: 30, price: 10 }),
         );
-        const client = await users.createUser('chatc@test.com', 'secret', 'C', Role.Client);
-        const emp = await users.createUser('chate@test.com', 'secret', 'E', Role.Employee);
+        const client = await users.createUser(
+            'chatc@test.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
+        const emp = await users.createUser(
+            'chate@test.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
         const start = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         const appt = await appointments.create(client.id, emp.id, 1, start);
 

@@ -21,10 +21,7 @@ export class MessagesService {
 
     findForUser(userId: number) {
         return this.repo.find({
-            where: [
-                { sender: { id: userId } },
-                { recipient: { id: userId } },
-            ],
+            where: [{ sender: { id: userId } }, { recipient: { id: userId } }],
             order: { id: 'ASC' },
         });
     }

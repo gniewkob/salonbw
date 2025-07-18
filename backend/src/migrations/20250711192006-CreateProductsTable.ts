@@ -15,7 +15,12 @@ export class CreateProductsTable20250711192006 implements MigrationInterface {
                     },
                     { name: 'name', type: 'varchar' },
                     { name: 'brand', type: 'varchar', isNullable: true },
-                    { name: 'unitPrice', type: 'decimal', precision: 10, scale: 2 },
+                    {
+                        name: 'unitPrice',
+                        type: 'decimal',
+                        precision: 10,
+                        scale: 2,
+                    },
                     { name: 'stock', type: 'int' },
                 ],
             }),

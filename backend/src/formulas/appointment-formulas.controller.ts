@@ -1,4 +1,12 @@
-import { Body, Controller, ForbiddenException, Param, Post, Request, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    ForbiddenException,
+    Param,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -26,9 +34,16 @@ export class AppointmentFormulasController {
         if (!appointment) {
             throw new ForbiddenException();
         }
-        if (req.user.role !== Role.Admin && appointment.employee.id !== req.user.id) {
+        if (
+            req.user.role !== Role.Admin &&
+            appointment.employee.id !== req.user.id
+        ) {
             throw new ForbiddenException();
         }
-        return this.formulas.create(appointment.client.id, dto.description, appointment.id);
+        return this.formulas.create(
+            appointment.client.id,
+            dto.description,
+            appointment.id,
+        );
     }
 }

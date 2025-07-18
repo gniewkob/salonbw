@@ -29,7 +29,10 @@ describe('UsersService', () => {
             providers: [
                 UsersService,
                 { provide: getRepositoryToken(User), useValue: repo },
-                { provide: getRepositoryToken(Appointment), useValue: appointments },
+                {
+                    provide: getRepositoryToken(Appointment),
+                    useValue: appointments,
+                },
             ],
         }).compile();
 
@@ -41,12 +44,19 @@ describe('UsersService', () => {
         repo.findOne.mockResolvedValue(user);
 
         await expect(service.findByEmail('a@test.com')).resolves.toEqual(user);
-        expect(repo.findOne).toHaveBeenCalledWith({ where: { email: 'a@test.com' } });
+        expect(repo.findOne).toHaveBeenCalledWith({
+            where: { email: 'a@test.com' },
+        });
     });
 
     it('createUser hashes the password before calling save', async () => {
         const plain = 'secret';
-        const created = { email: 'a@test.com', password: 'hashed', name: 'A', role: Role.Client } as User;
+        const created = {
+            email: 'a@test.com',
+            password: 'hashed',
+            name: 'A',
+            role: Role.Client,
+        } as User;
         repo.create.mockReturnValue(created);
         repo.save.mockResolvedValue(created);
 
@@ -67,7 +77,12 @@ describe('UsersService', () => {
     });
 
     it('updateCustomer hashes password and saves changes', async () => {
-        const user = { id: 1, email: 'old@test.com', password: 'p', name: 'Old' } as User;
+        const user = {
+            id: 1,
+            email: 'old@test.com',
+            password: 'p',
+            name: 'Old',
+        } as User;
         repo.findOne.mockResolvedValue(user);
         repo.save.mockResolvedValue(user);
 
@@ -80,6 +95,8 @@ describe('UsersService', () => {
 
     it('updateCustomer returns undefined when user missing', async () => {
         repo.findOne.mockResolvedValue(undefined);
-        await expect(service.updateCustomer(2, { name: 'x' })).resolves.toBeUndefined();
+        await expect(
+            service.updateCustomer(2, { name: 'x' }),
+        ).resolves.toBeUndefined();
     });
 });

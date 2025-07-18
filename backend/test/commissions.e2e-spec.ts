@@ -28,11 +28,18 @@ describe('CommissionsModule (e2e)', () => {
     });
 
     it('rejects unauthenticated requests', () => {
-        return request(app.getHttpServer()).get('/commissions/employee').expect(401);
+        return request(app.getHttpServer())
+            .get('/commissions/employee')
+            .expect(401);
     });
 
     it('employee can list own commissions', async () => {
-        await usersService.createUser('emp@comm.com', 'secret', 'Emp', Role.Employee);
+        await usersService.createUser(
+            'emp@comm.com',
+            'secret',
+            'Emp',
+            Role.Employee,
+        );
         const login = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'emp@comm.com', password: 'secret' })
@@ -45,7 +52,12 @@ describe('CommissionsModule (e2e)', () => {
     });
 
     it('employee cannot access admin commissions', async () => {
-        await usersService.createUser('emp2@comm.com', 'secret', 'Emp2', Role.Employee);
+        await usersService.createUser(
+            'emp2@comm.com',
+            'secret',
+            'Emp2',
+            Role.Employee,
+        );
         const login = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'emp2@comm.com', password: 'secret' })

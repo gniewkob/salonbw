@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, Index } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    Column,
+    Index,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 
 export enum CommissionTargetType {

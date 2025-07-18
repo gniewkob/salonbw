@@ -29,7 +29,11 @@ export class AuthService {
         }
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            await this.logs.create(LogAction.LoginFail, `email=${email}`, user.id);
+            await this.logs.create(
+                LogAction.LoginFail,
+                `email=${email}`,
+                user.id,
+            );
             throw new UnauthorizedException('Invalid credentials');
         }
         const { password: _pw, ...result } = user;

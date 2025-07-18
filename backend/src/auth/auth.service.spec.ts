@@ -95,7 +95,10 @@ describe('AuthService', () => {
             .mockResolvedValueOnce('refresh');
 
         const result = await service.login('b@test.com', 'secret');
-        expect(result).toEqual({ access_token: 'access', refresh_token: 'refresh' });
+        expect(result).toEqual({
+            access_token: 'access',
+            refresh_token: 'refresh',
+        });
         expect(users.updateRefreshToken).toHaveBeenCalledWith(2, 'refresh');
         expect(jwt.signAsync).toHaveBeenNthCalledWith(1, {
             sub: 2,
@@ -127,7 +130,10 @@ describe('AuthService', () => {
             .mockResolvedValueOnce('newRefresh');
 
         const result = await service.refresh('oldRefresh');
-        expect(result).toEqual({ access_token: 'newAccess', refresh_token: 'newRefresh' });
+        expect(result).toEqual({
+            access_token: 'newAccess',
+            refresh_token: 'newRefresh',
+        });
         expect(users.updateRefreshToken).toHaveBeenCalledWith(3, 'newRefresh');
     });
 });

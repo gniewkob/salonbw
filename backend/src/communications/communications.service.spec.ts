@@ -38,6 +38,8 @@ describe('CommunicationsService', () => {
     it('findForCustomer queries by customer id', async () => {
         repo.find.mockResolvedValue([]);
         await service.findForCustomer(5);
-        expect(repo.find).toHaveBeenCalledWith({ where: { customer: { id: 5 } } });
+        expect(repo.find).toHaveBeenCalledWith({
+            where: { customer: { id: 5 } },
+        });
     });
 });

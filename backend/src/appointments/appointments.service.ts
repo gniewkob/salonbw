@@ -1,4 +1,11 @@
-import { Injectable, Inject, forwardRef, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    forwardRef,
+    ConflictException,
+    ForbiddenException,
+    BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
@@ -103,7 +110,9 @@ export class AppointmentsService {
         if (dto.startTime) {
             const newStart = new Date(dto.startTime);
             if (newStart < new Date()) {
-                throw new BadRequestException('Start time must be in the future');
+                throw new BadRequestException(
+                    'Start time must be in the future',
+                );
             }
             const employeeId = dto.employeeId ?? appt.employee.id;
             let service = appt.service;
@@ -131,7 +140,9 @@ export class AppointmentsService {
                               other.service.duration * 60000,
                       );
                 if (newStart < otherEnd && newEnd > otherStart) {
-                    throw new ConflictException('Appointment time already taken');
+                    throw new ConflictException(
+                        'Appointment time already taken',
+                    );
                 }
             }
             appt.startTime = newStart;
@@ -162,12 +173,20 @@ export class AppointmentsService {
         return saved;
     }
 
-    async complete(id: number): Promise<{ appointment: Appointment; commission: CommissionRecord | null } | undefined>;
+    async complete(
+        id: number,
+    ): Promise<
+        | { appointment: Appointment; commission: CommissionRecord | null }
+        | undefined
+    >;
     async complete(
         id: number,
         userId: number,
         role: Role | EmployeeRole,
-    ): Promise<{ appointment: Appointment; commission: CommissionRecord | null } | undefined>;
+    ): Promise<
+        | { appointment: Appointment; commission: CommissionRecord | null }
+        | undefined
+    >;
     async complete(id: number, userId?: number, role?: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
@@ -217,9 +236,7 @@ export class AppointmentsService {
             userId,
         );
         if ((saved.client as any)?.phone) {
-            void this.notifications.sendThankYou(
-                (saved.client as any).phone,
-            );
+            void this.notifications.sendThankYou((saved.client as any).phone);
         }
         return { appointment: saved, commission: record };
     }
@@ -274,11 +291,7 @@ export class AppointmentsService {
         return saved;
     }
 
-    async removeForUser(
-        id: number,
-        userId: number,
-        role: Role | EmployeeRole,
-    ) {
+    async removeForUser(id: number, userId: number, role: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {
             return undefined;

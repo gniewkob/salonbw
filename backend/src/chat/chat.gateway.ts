@@ -98,9 +98,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             userId,
             dto.content,
         );
-        this.server
-            .to(`chat-${dto.appointmentId}`)
-            .emit('message', saved);
+        this.server.to(`chat-${dto.appointmentId}`).emit('message', saved);
     }
 
     @SubscribeMessage('sendMessage')

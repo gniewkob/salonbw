@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    Table,
+    TableForeignKey,
+} from 'typeorm';
 
 export class CreateReviewsTable20250711192016 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -19,9 +24,7 @@ export class CreateReviewsTable20250711192016 implements MigrationInterface {
                     { name: 'comment', type: 'text', isNullable: true },
                     { name: 'createdAt', type: 'timestamp', default: 'now()' },
                 ],
-                indices: [
-                    { columnNames: ['reservationId'], isUnique: true },
-                ],
+                indices: [{ columnNames: ['reservationId'], isUnique: true }],
             }),
         );
         await queryRunner.createForeignKeys('review', [
