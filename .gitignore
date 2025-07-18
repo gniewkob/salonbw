@@ -30,6 +30,10 @@ yarn-error.log
 node_modules/
 dist/
 
+# Ignore Next.js build output and dependencies
+frontend/node_modules/
+frontend/.next/
+
 # tailwindcss binary
 tailwindcss
 
