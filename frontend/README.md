@@ -53,3 +53,11 @@ npm cache clean --force && npm install
 
 Make sure you have a working internet connection. If issues persist, delete the
 `node_modules` directory and run `npm install` again.
+
+## Formatting code
+
+Run the Prettier script to automatically format source files:
+
+```bash
+npm run format
+```
