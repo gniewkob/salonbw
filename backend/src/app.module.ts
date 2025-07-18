@@ -21,6 +21,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatMessagesModule } from './chat-messages/chat-messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
     imports: [
@@ -58,6 +59,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         ChatModule,
         LogsModule,
         CommunicationsModule,
+        DashboardModule,
         NotificationsModule,
     ],
     controllers: [AppController, HealthController],
