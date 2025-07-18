@@ -37,7 +37,9 @@ describe('RolesGuard (e2e)', () => {
             })
             .expect(201);
 
-        const token = register.body.access_token;
+        const { access_token: token } = register.body as {
+            access_token: string;
+        };
 
         return request(app.getHttpServer())
             .post('/users')
@@ -59,7 +61,7 @@ describe('RolesGuard (e2e)', () => {
             .send({ email: 'admin@test.com', password: 'secret' })
             .expect(201);
 
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         await request(app.getHttpServer())
             .post('/users')
