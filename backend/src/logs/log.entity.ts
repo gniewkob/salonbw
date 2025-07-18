@@ -13,7 +13,11 @@ export class Log {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { nullable: true, eager: true, onDelete: 'SET NULL' })
+    @ManyToOne(() => User, {
+        nullable: true,
+        eager: true,
+        onDelete: 'SET NULL',
+    })
     user: User | null;
 
     @Column({ type: 'simple-enum', enum: LogAction })

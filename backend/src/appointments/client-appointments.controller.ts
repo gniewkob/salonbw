@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -19,7 +29,10 @@ export class ClientAppointmentsController {
     }
 
     @Post()
-    create(@Request() req, @Body() dto: Omit<CreateAppointmentDto, 'clientId'>) {
+    create(
+        @Request() req,
+        @Body() dto: Omit<CreateAppointmentDto, 'clientId'>,
+    ) {
         return this.service.create(
             req.user.id,
             dto.employeeId,

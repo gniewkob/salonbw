@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+    Injectable,
+    BadRequestException,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -81,9 +85,13 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException();
         }
-        const count = await this.appointments.count({ where: { client: { id } } });
+        const count = await this.appointments.count({
+            where: { client: { id } },
+        });
         if (count > 0) {
-            throw new BadRequestException('Cannot delete user with appointments');
+            throw new BadRequestException(
+                'Cannot delete user with appointments',
+            );
         }
         return this.usersRepository.delete(id);
     }
@@ -96,9 +104,13 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException();
         }
-        const count = await this.appointments.count({ where: { employee: { id } } });
+        const count = await this.appointments.count({
+            where: { employee: { id } },
+        });
         if (count > 0) {
-            throw new BadRequestException('Cannot delete user with appointments');
+            throw new BadRequestException(
+                'Cannot delete user with appointments',
+            );
         }
         return this.usersRepository.delete(id);
     }

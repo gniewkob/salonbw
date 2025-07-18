@@ -1,6 +1,13 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    Table,
+    TableForeignKey,
+} from 'typeorm';
 
-export class CreateCommissionRecordsTable20250711192009 implements MigrationInterface {
+export class CreateCommissionRecordsTable20250711192009
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
@@ -16,7 +23,12 @@ export class CreateCommissionRecordsTable20250711192009 implements MigrationInte
                     { name: 'employeeId', type: 'int' },
                     { name: 'appointmentId', type: 'int', isNullable: true },
                     { name: 'productId', type: 'int', isNullable: true },
-                    { name: 'amount', type: 'decimal', precision: 10, scale: 2 },
+                    {
+                        name: 'amount',
+                        type: 'decimal',
+                        precision: 10,
+                        scale: 2,
+                    },
                     { name: 'percent', type: 'float' },
                     {
                         name: 'createdAt',

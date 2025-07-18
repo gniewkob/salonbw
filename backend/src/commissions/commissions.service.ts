@@ -59,7 +59,9 @@ export class CommissionsService {
         if (base === null) {
             return DEFAULT_COMMISSION_BASE;
         }
-        return base ?? service.defaultCommissionPercent ?? DEFAULT_COMMISSION_BASE;
+        return (
+            base ?? service.defaultCommissionPercent ?? DEFAULT_COMMISSION_BASE
+        );
     }
 
     async getPercentForProduct(
@@ -85,7 +87,9 @@ export class CommissionsService {
     async calculateCommission(
         appointmentId: number,
     ): Promise<CommissionRecord | null> {
-        const appt = await this.appointments.findOne({ where: { id: appointmentId } });
+        const appt = await this.appointments.findOne({
+            where: { id: appointmentId },
+        });
         if (!appt) {
             return null;
         }
@@ -108,7 +112,11 @@ export class CommissionsService {
         const saved = await this.repo.save(record);
         await this.logs.create(
             LogAction.CommissionGranted,
-            JSON.stringify({ appointmentId: appt.id, amount: saved.amount, percent: saved.percent }),
+            JSON.stringify({
+                appointmentId: appt.id,
+                amount: saved.amount,
+                percent: saved.percent,
+            }),
             appt.employee.id,
         );
         return saved;
