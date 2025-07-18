@@ -8,6 +8,9 @@ import { Role } from './../src/users/role.enum';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Appointment } from './../src/appointments/appointment.entity';
+import { Customer } from './../src/customers/customer.entity';
+import { Employee } from './../src/employees/employee.entity';
+import { Service } from './../src/catalog/service.entity';
 
 describe('ReviewsModule (e2e)', () => {
     let app: INestApplication<App>;
@@ -48,9 +51,9 @@ describe('ReviewsModule (e2e)', () => {
 
         const appointment = await appointmentsRepo.save(
             appointmentsRepo.create({
-                client: { id: client.id } as any,
-                employee: { id: employee.id } as any,
-                service: { id: 1 } as any,
+                client: { id: client.id } as Customer,
+                employee: { id: employee.id } as Employee,
+                service: { id: 1 } as Service,
                 startTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
             }),
         );
@@ -59,7 +62,7 @@ describe('ReviewsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'client@review.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         await request(app.getHttpServer())
             .post('/reviews')

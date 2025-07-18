@@ -8,6 +8,7 @@ import { UsersService } from './../src/users/users.service';
 import { AuthService } from './../src/auth/auth.service';
 import { Role } from './../src/users/role.enum';
 import { EmployeeRole } from './../src/employees/employee-role.enum';
+import { AuthTokensDto } from './../src/auth/dto/auth-tokens.dto';
 
 describe('Customer update (e2e)', () => {
     let app: INestApplication<App>;
@@ -51,7 +52,7 @@ describe('Customer update (e2e)', () => {
             .send({ email: 'admupd@test.com', password: 'secret' })
             .expect(201);
 
-        const token = (login.body as { access_token: string }).access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         await request(app.getHttpServer())
             .patch(`/users/customers/${client.id}`)
@@ -80,7 +81,7 @@ describe('Customer update (e2e)', () => {
             reception.id,
             EmployeeRole.RECEPCJA,
         );
-        const token = tokens.access_token;
+        const { access_token: token } = tokens;
 
         await request(app.getHttpServer())
             .patch(`/users/customers/${client.id}`)
@@ -108,7 +109,7 @@ describe('Customer update (e2e)', () => {
             .send({ email: 'empupd@test.com', password: 'secret' })
             .expect(201);
 
-        const token = (login.body as { access_token: string }).access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         await request(app.getHttpServer())
             .patch(`/users/customers/${client.id}`)
