@@ -44,7 +44,9 @@ describe('AppointmentsModule (e2e)', () => {
                 name: 'Client',
             })
             .expect(201);
-        const token = register.body.access_token;
+        const { access_token: token } = register.body as {
+            access_token: string;
+        };
         await request(app.getHttpServer())
             .get('/appointments/client')
             .set('Authorization', `Bearer ${token}`)
@@ -60,7 +62,9 @@ describe('AppointmentsModule (e2e)', () => {
                 name: 'Client',
             })
             .expect(201);
-        const token = register.body.access_token;
+        const { access_token: token } = register.body as {
+            access_token: string;
+        };
         await request(app.getHttpServer())
             .get('/appointments/admin')
             .set('Authorization', `Bearer ${token}`)
@@ -86,7 +90,7 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'a@test.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         const futureTime = new Date(
             Date.now() + 24 * 60 * 60 * 1000,
@@ -137,7 +141,7 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'client3@test.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
         const startTime = new Date(
             Date.now() + 48 * 60 * 60 * 1000,
         ).toISOString();
@@ -182,7 +186,7 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'past@test.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
         const startTime = '2020-01-01T11:00:00.000Z';
 
         await request(app.getHttpServer())
@@ -223,7 +227,7 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'upadmin@test.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         const futureTime = new Date(
             Date.now() + 24 * 60 * 60 * 1000,
@@ -272,7 +276,7 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'confadmin@test.com', password: 'secret' })
             .expect(201);
-        const token = login.body.access_token;
+        const { access_token: token } = login.body as { access_token: string };
 
         const start1 = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         const appt1 = await request(app.getHttpServer())
