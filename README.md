@@ -123,3 +123,14 @@ npm run start:prod
 
 Use `npm run lint` to check the code and `npm run format` to apply Prettier. A
 pre‑commit hook powered by Husky runs Prettier on staged files automatically.
+
+## Instagram integration
+
+The backend fetches the latest posts from Instagram for the gallery page.
+Set a long‑lived token in `backend/.env`:
+
+```bash
+INSTAGRAM_ACCESS_TOKEN=your-instagram-token
+```
+
+Remember to refresh this token periodically so the gallery keeps working.
