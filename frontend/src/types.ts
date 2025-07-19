@@ -55,3 +55,12 @@ export interface EmailLog {
     status: string;
     sentAt: string;
 }
+
+export interface Invoice {
+    id: number;
+    reservationId: number;
+    number: string;
+    pdfUrl: string;
+    createdAt: string;
+    status: string;
+}
