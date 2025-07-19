@@ -1,5 +1,7 @@
 # Salon Black & White
 
+[![CI](https://github.com/OWNER/salonbw/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/OWNER/salonbw/actions/workflows/test.yml)
+
 Salon Black & White now consists of a
 [NestJS](https://nestjs.com) backend in [`backend/`](backend/) and a
 [Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/).
@@ -18,13 +20,13 @@ the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
 
 ## Environment setup
 
-* **Frontend** – create `frontend/.env.local` and set the base API URL:
+- **Frontend** – create `frontend/.env.local` and set the base API URL:
 
-  ```bash
-  NEXT_PUBLIC_API_URL=http://localhost:3001
-  ```
+    ```bash
+    NEXT_PUBLIC_API_URL=http://localhost:3001
+    ```
 
-* **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
+- **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
   values for your local database, JWT secrets and other settings.
 
 ## Installing dependencies
@@ -64,4 +66,3 @@ npm run dev       # start the development server
 npm run lint      # check for linting issues
 npm run format    # format the backend codebase (backend only)
 ```
-
