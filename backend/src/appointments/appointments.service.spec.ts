@@ -35,7 +35,7 @@ describe('AppointmentsService', () => {
     let notifications: {
         sendAppointmentConfirmation: jest.Mock;
         sendThankYou: jest.Mock;
-        sendText: jest.Mock;
+        sendNotification: jest.Mock;
     };
 
     beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('AppointmentsService', () => {
         notifications = {
             sendAppointmentConfirmation: jest.fn(),
             sendThankYou: jest.fn(),
-            sendText: jest.fn(),
+            sendNotification: jest.fn(),
         };
 
         const module: TestingModule = await Test.createTestingModule({
