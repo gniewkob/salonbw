@@ -13,7 +13,8 @@
     "lint": "next lint",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
     "test": "jest",
-    "e2e": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'xvfb-run -a cypress run'"
+    "e2e": "xvfb-run -a cypress run",
+    "e2e:ci": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'xvfb-run -a cypress run'"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.18",
