@@ -1,11 +1,16 @@
 import { ReactNode } from 'react';
+import { useRouter } from 'next/router';
+import PublicNav from './PublicNav';
+import DashboardNav from './DashboardNav';
 
 export default function Layout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const onDashboard = router.pathname.startsWith('/dashboard');
   return (
-    <div className="min-h-screen flex">
-      <aside className="hidden md:block w-48 bg-gray-200 p-4">Menu</aside>
-      <div className="flex-1 flex flex-col">
-        <header className="bg-gray-100 border-b p-4 font-bold">Dashboard</header>
+    <div className="min-h-screen flex flex-col">
+      {!onDashboard && <PublicNav />}
+      <div className="flex flex-1">
+        {onDashboard && <DashboardNav />}
         <main className="flex-1 p-4">{children}</main>
       </div>
     </div>
