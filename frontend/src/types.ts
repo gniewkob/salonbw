@@ -7,6 +7,7 @@ export interface Appointment {
   id: number;
   startTime: string;
   client?: Client;
+  paymentStatus?: string;
 }
 
 export interface Service {

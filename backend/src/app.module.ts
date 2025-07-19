@@ -22,6 +22,7 @@ import { ChatModule } from './chat/chat.module';
 import { ChatMessagesModule } from './chat-messages/chat-messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
     imports: [
@@ -61,6 +62,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
         CommunicationsModule,
         DashboardModule,
         NotificationsModule,
+        PaymentsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],

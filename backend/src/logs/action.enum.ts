@@ -10,4 +10,6 @@ export enum LogAction {
     DeleteAppointment = 'DELETE_APPOINTMENT',
     DeleteService = 'DELETE_SERVICE',
     CommissionGranted = 'COMMISSION_GRANTED',
+    PaymentInit = 'PAYMENT_INIT',
+    PaymentPaid = 'PAYMENT_PAID',
 }

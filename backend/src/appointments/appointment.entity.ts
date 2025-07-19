@@ -16,6 +16,13 @@ export enum AppointmentStatus {
     Completed = 'completed',
     Cancelled = 'cancelled',
 }
+
+export enum PaymentStatus {
+    Pending = 'pending',
+    Paid = 'paid',
+    Failed = 'failed',
+    Refunded = 'refunded',
+}
 @Index(['employee', 'startTime'], { unique: true })
 @Entity()
 export class Appointment {
@@ -49,4 +56,11 @@ export class Appointment {
         default: AppointmentStatus.Scheduled,
     })
     status: AppointmentStatus;
+
+    @Column({
+        type: 'simple-enum',
+        enum: PaymentStatus,
+        default: PaymentStatus.Pending,
+    })
+    paymentStatus: PaymentStatus;
 }
