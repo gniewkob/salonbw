@@ -8,7 +8,7 @@ export default function RouteGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace('/login');
+      router.replace('/auth/login');
     }
   }, [isAuthenticated, router]);
 

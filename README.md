@@ -9,6 +9,10 @@ To get each part running, follow
 [`backend/README.md`](backend/README.md) for backend instructions and
 [`frontend/README.md`](frontend/README.md) for the frontend.
 
+The frontend provides marketing pages (home, services, gallery and contact),
+authentication under `/auth`, and a role-based dashboard located in `/dashboard`.
+
+
 The old Laravel-based frontend has been archived in
 [`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
 maintained.
