@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotificationsService } from './notifications.service';
+import { WhatsappService } from './whatsapp.service';
 import * as nock from 'nock';
 
-describe('NotificationsService with nock', () => {
-    let service: NotificationsService;
+describe('WhatsappService with nock', () => {
+    let service: WhatsappService;
     const httpProxy = process.env.http_proxy;
     const httpsProxy = process.env.https_proxy;
     const HTTPProxy = process.env.HTTP_PROXY;
@@ -28,10 +28,10 @@ describe('NotificationsService with nock', () => {
         delete process.env.YARN_HTTPS_PROXY;
         delete process.env.GLOBAL_AGENT_HTTP_PROXY;
         const module: TestingModule = await Test.createTestingModule({
-            providers: [NotificationsService],
+            providers: [WhatsappService],
         }).compile();
 
-        service = module.get<NotificationsService>(NotificationsService);
+        service = module.get<WhatsappService>(WhatsappService);
     });
 
     afterEach(() => {
