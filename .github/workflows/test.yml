@@ -1,5 +1,6 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,19 +17,40 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install root deps
+        run: npm ci
       - name: Install frontend deps
         run: |
           cd frontend
           npm ci
-      - name: Run frontend tests
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+      - name: Test frontend
         run: |
           cd frontend
           npm test -- --coverage
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
       - name: Install backend deps
         run: |
           cd backend
           npm ci
-      - name: Run backend tests
+      - name: Lint backend
+        run: |
+          cd backend
+          npm run lint
+      - name: Test backend
         run: |
           cd backend
           npm test -- --coverage
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+      - name: Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: echo "Deploying..."
