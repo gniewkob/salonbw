@@ -1,3 +1,9 @@
+describe('basic', () => {
+  it('loads home', () => {
+    cy.visit('/');
+    cy.contains('Home Page');
+  });
+});
 describe('reviews crud', () => {
   beforeEach(() => {
     localStorage.setItem('jwtToken', 'x');

@@ -1,3 +1,10 @@
+describe('basic', () => {
+  it('loads home', () => {
+    cy.visit('/');
+    cy.contains('Home Page');
+  });
+});
+
 describe('employees crud', () => {
   beforeEach(() => {
     localStorage.setItem('jwtToken', 'x');
@@ -16,3 +23,4 @@ describe('employees crud', () => {
     cy.contains('Employee created');
   });
 });
+
