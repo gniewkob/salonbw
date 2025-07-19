@@ -32,6 +32,7 @@
         "@nestjs/platform-express": "^11.1.5",
         "@nestjs/platform-socket.io": "^11.1.5",
         "@nestjs/schedule": "^6.0.0",
+        "@nestjs/swagger": "^11.2.0",
         "@nestjs/typeorm": "^11.0.0",
         "@nestjs/websockets": "^11.1.5",
         "@sendgrid/mail": "^8.1.5",
@@ -51,6 +52,7 @@
         "rxjs": "^7.8.1",
         "sqlite3": "^5.1.7",
         "stripe": "^14.23.0",
+        "swagger-ui-express": "^5.0.1",
         "typeorm": "^0.3.25"
     },
     "devDependencies": {
