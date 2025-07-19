@@ -1,27 +1,45 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { Appointment } from '@/types';
 
 export function useAppointmentsApi() {
   const { apiFetch } = useAuth();
+  const toast = useToast();
 
-  const create = (data: {
+  const create = async (data: {
     clientId: number;
     employeeId: number;
     serviceId: number;
     startTime: string;
-  }) =>
-    apiFetch<Appointment>('/appointments/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  }) => {
+    try {
+      const res = await apiFetch<Appointment>('/appointments/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      toast.success('Appointment created');
+      return res;
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
 
-  const update = (id: number, data: { startTime: string }) =>
-    apiFetch<Appointment>(`/appointments/admin/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  const update = async (id: number, data: { startTime: string }) => {
+    try {
+      const res = await apiFetch<Appointment>(`/appointments/admin/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      toast.success('Appointment updated');
+      return res;
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
 
   return { create, update };
 }

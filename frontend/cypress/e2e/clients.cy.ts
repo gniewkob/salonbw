@@ -13,5 +13,6 @@ describe('clients crud', () => {
     cy.contains('button', 'Save').click();
     cy.wait('@createClient');
     cy.contains('New');
+    cy.contains('Client created');
   });
 });
