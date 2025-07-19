@@ -65,4 +65,5 @@ Use these commands inside either `frontend/` or `backend/` as needed:
 npm run dev       # start the development server
 npm run lint      # check for linting issues
 npm run format    # format the backend codebase (backend only)
+npm run e2e       # run Cypress tests (requires xvfb)
 ```
