@@ -21,6 +21,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatMessagesModule } from './chat-messages/chat-messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { EmailsModule } from './emails/emails.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
 import { CalendarModule } from './calendar/calendar.module';
@@ -65,6 +66,7 @@ import { CalendarModule } from './calendar/calendar.module';
         NotificationsModule,
         PaymentsModule,
         CalendarModule,
+        EmailsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
