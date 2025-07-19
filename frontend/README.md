@@ -25,19 +25,3 @@ Run these commands from the `frontend` folder:
 - `npm run lint` – check the code with ESLint
 - `npm run format` – format source files with Prettier
 
-## Placeholder routes
-
-The `src/pages` directory contains placeholder pages for the following routes:
-
-- `/` (home)
-- `/about`
-- `/appointments`
-- `/clients`
-- `/dashboard`
-- `/employees`
-- `/login`
-- `/products`
-- `/reviews`
-- `/services`
-
-Each page currently just renders simple text and can be expanded later.
