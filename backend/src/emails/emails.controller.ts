@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+} from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
 import { EmailsService, EmailPayload } from './emails.service';
 
@@ -27,7 +34,11 @@ export class EmailsController {
     @Post('opt-out')
     @Public()
     optOut(@Body() body: { token?: string; email?: string }) {
-        return this.service.optOut(body.token || body.email);
+        const tokenOrEmail = body.token || body.email;
+        if (!tokenOrEmail) {
+            throw new BadRequestException('token or email is required');
+        }
+        return this.service.optOut(tokenOrEmail);
     }
 
     @Get('unsubscribe/:token')
