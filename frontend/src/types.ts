@@ -20,3 +20,9 @@ export interface DashboardResponse {
   employeeCount: number;
   upcoming: Appointment[];
 }
+
+export interface Notification {
+  id: number;
+  message: string;
+  createdAt: string;
+}

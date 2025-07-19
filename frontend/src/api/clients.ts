@@ -1,25 +1,50 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { Client } from '@/types';
 
 export function useClientApi() {
   const { apiFetch } = useAuth();
+  const toast = useToast();
 
-  const create = (data: { name: string }) =>
-    apiFetch<Client>('/clients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  const create = async (data: { name: string }) => {
+    try {
+      const res = await apiFetch<Client>('/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      toast.success('Client created');
+      return res;
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
 
-  const update = (id: number, data: { name: string }) =>
-    apiFetch<Client>(`/clients/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  const update = async (id: number, data: { name: string }) => {
+    try {
+      const res = await apiFetch<Client>(`/clients/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      toast.success('Client updated');
+      return res;
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
 
-  const remove = (id: number) =>
-    apiFetch<void>(`/clients/${id}`, { method: 'DELETE' });
+  const remove = async (id: number) => {
+    try {
+      await apiFetch<void>(`/clients/${id}`, { method: 'DELETE' });
+      toast.success('Client deleted');
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
 
   return { create, update, remove };
 }

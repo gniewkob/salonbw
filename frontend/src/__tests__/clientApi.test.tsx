@@ -1,0 +1,42 @@
+import { renderHook, act } from '@testing-library/react';
+import React from 'react';
+import { useClientApi } from '@/api/clients';
+import { useAuth } from '@/contexts/AuthContext';
+import { ToastProvider } from '@/contexts/ToastContext';
+
+jest.mock('@/contexts/AuthContext');
+jest.mock('react-hot-toast', () => ({
+  Toaster: () => null,
+  toast: { success: jest.fn(), error: jest.fn() },
+}));
+
+const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const toast = require('react-hot-toast').toast;
+
+describe('useClientApi', () => {
+  it('shows success toast on create', async () => {
+    const apiFetch = jest.fn().mockResolvedValue({ id: 1, name: 'A' });
+    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastProvider>{children}</ToastProvider>
+    );
+    const { result } = renderHook(() => useClientApi(), { wrapper });
+    await act(async () => {
+      await result.current.create({ name: 'A' });
+    });
+    expect(toast.success).toHaveBeenCalled();
+  });
+
+  it('shows error toast on failure', async () => {
+    const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
+    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastProvider>{children}</ToastProvider>
+    );
+    const { result } = renderHook(() => useClientApi(), { wrapper });
+    await expect(act(async () => {
+      await result.current.create({ name: 'A' });
+    })).rejects.toThrow();
+    expect(toast.error).toHaveBeenCalled();
+  });
+});
