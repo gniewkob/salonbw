@@ -14,6 +14,26 @@ export interface Service {
   name: string;
 }
 
+export interface Employee {
+  id: number;
+  name: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  brand?: string;
+  unitPrice: number;
+  stock: number;
+}
+
+export interface Review {
+  id: number;
+  reservationId: number;
+  rating: number;
+  comment?: string;
+}
+
 export interface DashboardResponse {
   clientCount: number;
   todayCount: number;

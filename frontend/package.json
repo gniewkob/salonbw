@@ -13,7 +13,7 @@
     "lint": "next lint",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
     "test": "jest",
-    "e2e": "cypress run"
+    "e2e": "xvfb-run -a cypress run"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.18",
