@@ -1,6 +1,6 @@
 # Salon Black & White
 
-[![CI](https://github.com/OWNER/salonbw/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/OWNER/salonbw/actions/workflows/test.yml)
+[![CI](https://github.com/gniewkob/salonbw/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/gniewkob/salonbw/actions/workflows/test.yml)
 
 Salon Black & White now consists of a
 [NestJS](https://nestjs.com) backend in [`backend/`](backend/) and a
