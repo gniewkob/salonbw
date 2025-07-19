@@ -13,6 +13,23 @@ The old Laravel-based frontend has been archived in
 [`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
 maintained.
 
+## Project structure
+
+```
+frontend/
+  src/
+    api/          # fetch helpers for the REST API
+    components/   # shared React components
+    contexts/     # React context providers
+    hooks/        # custom hooks wrapping API calls
+    pages/        # Next.js page routes
+    app/          # Next.js app router entrypoint
+    styles/       # Tailwind and global CSS
+```
+
+The NestJS backend lives in `backend/` with typical controllers,
+services and entities under `src/`.
+
 ## Prerequisites
 
 Install [Node.js](https://nodejs.org/) and npm. The project uses Node.js 20 (see
@@ -25,6 +42,8 @@ the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
     ```bash
     NEXT_PUBLIC_API_URL=http://localhost:3001
     ```
+
+  `NEXT_PUBLIC_API_URL` must point to the backend API used by the frontend.
 
 - **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
   values for your local database, JWT secrets and other settings.
@@ -67,3 +86,40 @@ npm run lint      # check for linting issues
 npm run format    # format the backend codebase (backend only)
 npm run e2e       # run Cypress tests (requires xvfb)
 ```
+
+## Running tests
+
+Run unit tests inside either project with Jest and collect coverage:
+
+```bash
+npm test -- --coverage
+```
+
+End-to-end tests for the frontend use Cypress:
+
+```bash
+npm run e2e
+```
+
+## Build and deployment
+
+To create a production build of the frontend and start it locally:
+
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+Build the backend and run it in production mode:
+
+```bash
+cd backend
+npm run build
+npm run start:prod
+```
+
+## Linting and formatting
+
+Use `npm run lint` to check the code and `npm run format` to apply Prettier. A
+pre‑commit hook powered by Husky runs Prettier on staged files automatically.
