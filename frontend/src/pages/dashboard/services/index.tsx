@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ServiceForm from '@/components/ServiceForm';
@@ -44,8 +43,7 @@ export default function ServicesPage() {
 
   return (
     <RouteGuard>
-      <Layout>
-        <div className="mb-2 flex justify-end">
+              <div className="mb-2 flex justify-end">
           <button
             className="border px-2 py-1"
             onClick={() => {
@@ -95,7 +93,7 @@ export default function ServicesPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
           />
         </Modal>
-      </Layout>
+      
     </RouteGuard>
   );
 }

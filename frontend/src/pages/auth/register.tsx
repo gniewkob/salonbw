@@ -1,0 +1,63 @@
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/router';
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        }
+      );
+      if (!res.ok) throw new Error('Registration failed');
+      router.push('/auth/login');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2 p-4">
+      <h1 className="text-2xl font-bold">Register</h1>
+      <input
+        className="border p-1 w-full"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        className="border p-1 w-full"
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        className="border p-1 w-full"
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button className="border px-2 py-1" type="submit">
+        Register
+      </button>
+      {error && (
+        <p role="alert" className="text-red-600">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}

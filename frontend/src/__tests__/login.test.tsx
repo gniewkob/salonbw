@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import LoginPage from '@/pages/login';
+import LoginPage from '@/pages/auth/login';
 import { useAuth } from '@/contexts/AuthContext';
 
 const push = jest.fn();
