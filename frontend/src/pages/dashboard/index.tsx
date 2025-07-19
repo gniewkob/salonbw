@@ -38,6 +38,7 @@ export default function DashboardPage() {
                   <th className="p-2 text-left">ID</th>
                   <th className="p-2 text-left">Data</th>
                   <th className="p-2 text-left">Klient</th>
+                  <th className="p-2 text-left">&nbsp;</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,6 +59,15 @@ export default function DashboardPage() {
                           Opłać online
                         </button>
                       )}
+                    </td>
+                    <td className="p-2">
+                      <a
+                        className="underline"
+                        href={`${process.env.NEXT_PUBLIC_API_URL}/calendar/add/${a.id}`}
+                        target="_blank"
+                      >
+                        Dodaj do kalendarza
+                      </a>
                     </td>
                   </tr>
                 ))}
