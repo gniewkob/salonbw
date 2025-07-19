@@ -71,9 +71,10 @@ export class AppointmentsService {
             );
         }
         if ((saved.employee as any)?.phone) {
-            void this.notifications.sendText(
+            void this.notifications.sendNotification(
                 (saved.employee as any).phone,
                 `Nowa rezerwacja ${saved.startTime.toLocaleString()}`,
+                'whatsapp',
             );
         }
         return saved;
