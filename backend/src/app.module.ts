@@ -26,6 +26,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 @Module({
     imports: [
@@ -68,6 +69,7 @@ import { InvoicesModule } from './invoices/invoices.module';
         PaymentsModule,
         CalendarModule,
         InvoicesModule,
+        IntegrationsModule,
         EmailsModule,
     ],
     controllers: [AppController, HealthController],
