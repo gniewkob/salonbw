@@ -12,6 +12,7 @@ export enum LogAction {
     CommissionGranted = 'COMMISSION_GRANTED',
     PaymentInit = 'PAYMENT_INIT',
     PaymentPaid = 'PAYMENT_PAID',
+    InvoiceGenerated = 'INVOICE_GENERATED',
     CalendarAdd = 'CALENDAR_ADD',
     CalendarUpdate = 'CALENDAR_UPDATE',
     CalendarDelete = 'CALENDAR_DELETE',
