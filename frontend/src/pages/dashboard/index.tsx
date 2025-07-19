@@ -2,9 +2,11 @@ import RouteGuard from '@/components/RouteGuard';
 import Layout from '@/components/Layout';
 import DashboardWidget from '@/components/DashboardWidget';
 import { useDashboard } from '@/hooks/useDashboard';
+import { usePaymentsApi } from '@/api/payments';
 
 export default function DashboardPage() {
   const { data, loading } = useDashboard();
+  const payments = usePaymentsApi();
 
   return (
     <RouteGuard>
@@ -43,7 +45,20 @@ export default function DashboardPage() {
                   <tr key={a.id} className="border-t">
                     <td className="p-2">{a.id}</td>
                     <td className="p-2">{new Date(a.startTime).toLocaleString()}</td>
-                    <td className="p-2">{a.client?.name}</td>
+                    <td className="p-2">
+                      {a.client?.name}{' '}
+                      {a.paymentStatus === 'pending' && (
+                        <button
+                          className="ml-2 underline"
+                          onClick={async () => {
+                            const url = await payments.createSession(a.id);
+                            window.location.href = url;
+                          }}
+                        >
+                          Opłać online
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
