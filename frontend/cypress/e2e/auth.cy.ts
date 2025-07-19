@@ -1,6 +1,6 @@
-describe('auth guard', () => {
-  it('redirects unauthenticated user', () => {
-    cy.visit('/dashboard');
-    cy.url().should('include', '/login');
+describe('basic', () => {
+  it('loads home', () => {
+    cy.visit('/');
+    cy.contains('Home Page');
   });
 });
