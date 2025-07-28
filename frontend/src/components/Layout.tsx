@@ -1,3 +1,4 @@
+'use client';
 import { ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import PublicNav from './PublicNav';

@@ -21,6 +21,10 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from './role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
 
+interface AuthRequest {
+    user: { id: number };
+}
+
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
@@ -40,6 +44,7 @@ export class UsersController {
     @ApiOperation({ summary: 'Get current user profile' })
     @ApiResponse({ status: 200 })
     async getProfile(@Request() req) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const user = await this.usersService.findOne(req.user.id);
         if (!user) {
             return {};
@@ -52,7 +57,8 @@ export class UsersController {
     @Roles(EmployeeRole.RECEPCJA, EmployeeRole.ADMIN, Role.Admin)
     @ApiOperation({ summary: 'Update customer data' })
     @ApiResponse({ status: 200 })
-    updateCustomer(@Param('id') id: number, @Body() dto: UpdateCustomerDto) {
+    updateCustomer(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
+         
         return this.usersService.updateCustomer(Number(id), dto);
     }
 
@@ -60,7 +66,11 @@ export class UsersController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Delete customer' })
     @ApiResponse({ status: 200 })
-    removeCustomer(@Param('id') id: number, @Request() req) {
+    removeCustomer(
+        @Param('id') id: string,
+        @Request() req: AuthRequest,
+    ) {
+         
         return this.usersService.removeCustomer(Number(id), req.user.id);
     }
 
@@ -68,7 +78,11 @@ export class UsersController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Delete employee' })
     @ApiResponse({ status: 200 })
-    removeEmployee(@Param('id') id: number, @Request() req) {
+    removeEmployee(
+        @Param('id') id: string,
+        @Request() req: AuthRequest,
+    ) {
+         
         return this.usersService.removeEmployee(Number(id), req.user.id);
     }
 }
