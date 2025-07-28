@@ -2,8 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-
-type Role = 'client' | 'employee' | 'admin';
+import type { Role } from '@/types';
 
 const navLinks: Record<Role, { href: string; label: string }[]> = {
     client: [

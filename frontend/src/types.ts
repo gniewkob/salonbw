@@ -3,6 +3,8 @@ export interface Client {
     name: string;
 }
 
+export type Role = 'client' | 'employee' | 'admin';
+
 export interface Appointment {
     id: number;
     startTime: string;
