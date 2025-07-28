@@ -11,6 +11,13 @@ import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LocalAuthGuard } from './local-auth.guard';
 import { Public } from './public.decorator';
+import { Role } from '../users/role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthRequest extends ExpressRequest {
+    user: { id: number; role: Role | EmployeeRole };
+}
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -22,7 +29,7 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @ApiOperation({ summary: 'Login with email and password' })
     @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
-    login(@Request() req): Promise<AuthTokensDto> {
+    login(@Request() req: AuthRequest): Promise<AuthTokensDto> {
         return this.authService.generateTokens(req.user.id, req.user.role);
     }
 
