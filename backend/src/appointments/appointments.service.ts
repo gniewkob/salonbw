@@ -15,6 +15,7 @@ import { CommissionRecord } from '../commissions/commission-record.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
+import { Employee } from '../employees/employee.entity';
 import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
@@ -159,7 +160,7 @@ export class AppointmentsService {
             appt.service = { id: dto.serviceId } as Service;
         }
         if (dto.employeeId) {
-            appt.employee = { id: dto.employeeId } as EmployeeWithPhone;
+            appt.employee = { id: dto.employeeId } as unknown as Employee;
         }
         if (dto.status) {
             appt.status = dto.status;
