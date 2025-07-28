@@ -29,7 +29,7 @@ export class ReminderService {
         });
 
         for (const appt of appointments) {
-            const phone = (appt.client as any)?.phone;
+            const phone = (appt.client as { phone?: string } | null)?.phone;
             if (phone) {
                 await this.notifications.sendAppointmentReminder(
                     phone,

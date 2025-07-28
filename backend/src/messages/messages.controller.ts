@@ -21,11 +21,15 @@ export class MessagesController {
 
     @Get()
     list(@Request() req) {
-        return this.service.findForUser(req.user.id);
+        return this.service.findForUser(Number(req.user.id));
     }
 
     @Post()
     create(@Request() req, @Body() dto: CreateMessageDto) {
-        return this.service.create(req.user.id, dto.recipientId, dto.content);
+        return this.service.create(
+            Number(req.user.id),
+            dto.recipientId,
+            dto.content,
+        );
     }
 }

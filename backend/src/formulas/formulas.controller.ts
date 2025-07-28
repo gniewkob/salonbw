@@ -22,12 +22,12 @@ export class FormulasController {
     @Get()
     @Roles(Role.Client, Role.Employee)
     listOwn(@Request() req) {
-        return this.service.findForUser(req.user.id);
+        return this.service.findForUser(Number(req.user.id));
     }
 
     @Get(':clientId')
     @Roles(Role.Employee)
-    listForClient(@Param('clientId') clientId: number) {
+    listForClient(@Param('clientId') clientId: string) {
         return this.service.findForUser(Number(clientId));
     }
 

@@ -35,18 +35,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly chatMessages: ChatMessagesService,
     ) {}
 
-    handleConnection(client: Socket) {
+    async handleConnection(client: Socket) {
         const token = this.extractToken(client);
         if (!token) {
             client.disconnect();
             return;
         }
         try {
-            const payload: any = this.jwtService.verify(token, {
+            const payload = this.jwtService.verify<{ sub: number }>(token, {
                 secret: process.env.JWT_SECRET ?? 'secret',
             });
             client.data.userId = payload.sub;
-            client.join(this.roomForUser(payload.sub));
+            await client.join(this.roomForUser(client.data.userId));
         } catch {
             client.disconnect();
         }
@@ -73,7 +73,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             client.emit('error', 'unauthorized');
             return;
         }
-        client.join(`chat-${data.appointmentId}`);
+        await client.join(`chat-${data.appointmentId}`);
     }
 
     @SubscribeMessage('message')
