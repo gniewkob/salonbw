@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
+import { EmployeeRole } from '../employees/employee-role.enum';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Request as ExpressRequest } from 'express';
@@ -79,7 +80,7 @@ export class ClientAppointmentsController {
         @Param('id') id: string,
         @Request() req: AuthRequest,
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+         
         return this.service.cancel(Number(id), req.user.id, req.user.role);
     }
 
@@ -89,7 +90,7 @@ export class ClientAppointmentsController {
         @Param('id') id: string,
         @Request() req: AuthRequest,
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+         
         return this.service.complete(Number(id), req.user.id, req.user.role);
     }
 
