@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -25,8 +25,8 @@ export class CustomersController {
     }
 
     @Get(':id')
-    async get(@Param('id') id: string) {
-        const customer = await this.service.findOne(Number(id));
+    async get(@Param('id', ParseIntPipe) id: number) {
+        const customer = await this.service.findOne(id);
         if (!customer) {
             throw new NotFoundException();
         }
