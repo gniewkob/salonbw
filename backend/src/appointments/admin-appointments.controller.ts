@@ -22,6 +22,11 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthRequest extends ExpressRequest {
+    user: { id: number; role: Role | EmployeeRole };
+}
 
 @ApiTags('Appointments')
 @ApiBearerAuth()
@@ -53,25 +58,33 @@ export class AdminAppointmentsController {
     @Patch(':id')
     @ApiOperation({ summary: 'Update appointment' })
     @ApiResponse({ status: 200 })
-    update(@Param('id') id: number, @Body() dto: UpdateAppointmentDto) {
+    update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
         return this.service.update(Number(id), dto);
     }
 
     @Patch(':id/cancel')
     @ApiOperation({ summary: 'Cancel appointment' })
-    cancel(@Param('id') id: number, @Request() req) {
+    cancel(
+        @Param('id') id: string,
+        @Request() req: AuthRequest,
+    ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return this.service.cancel(Number(id), req.user.id, req.user.role);
     }
 
     @Patch(':id/complete')
     @ApiOperation({ summary: 'Mark appointment completed' })
-    complete(@Param('id') id: number, @Request() req) {
+    complete(
+        @Param('id') id: string,
+        @Request() req: AuthRequest,
+    ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return this.service.complete(Number(id), req.user.id, req.user.role);
     }
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete appointment' })
-    remove(@Param('id') id: number) {
+    remove(@Param('id') id: string) {
         return this.service.remove(Number(id));
     }
 }

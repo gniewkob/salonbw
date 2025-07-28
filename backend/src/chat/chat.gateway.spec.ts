@@ -1,28 +1,33 @@
 import { ChatGateway } from './chat.gateway';
+import { JwtService } from '@nestjs/jwt';
+import { MessagesService } from '../messages/messages.service';
+import { AppointmentsService } from '../appointments/appointments.service';
+import { ChatMessagesService } from '../chat-messages/chat-messages.service';
+import { Server, Socket } from 'socket.io';
 
 describe('ChatGateway', () => {
     let gateway: ChatGateway;
     let appointments: { findOne: jest.Mock };
     let chatMessages: { create: jest.Mock };
     let server: any;
-    let socket: any;
+    let socket: Socket;
 
     beforeEach(() => {
         appointments = { findOne: jest.fn() };
         chatMessages = { create: jest.fn() };
         gateway = new ChatGateway(
-            {} as any,
-            {} as any,
-            appointments as any,
-            chatMessages as any,
+            {} as unknown as JwtService,
+            {} as unknown as MessagesService,
+            appointments as unknown as AppointmentsService,
+            chatMessages as unknown as ChatMessagesService,
         );
-        server = { to: jest.fn(() => ({ emit: jest.fn() })) } as any;
+        server = { to: jest.fn(() => ({ emit: jest.fn() })) } as unknown as Server;
         gateway.server = server;
         socket = {
             data: { userId: 1 },
             join: jest.fn(),
             emit: jest.fn(),
-        } as any;
+        } as unknown as Socket;
     });
 
     it('joins room for valid appointment participant', async () => {

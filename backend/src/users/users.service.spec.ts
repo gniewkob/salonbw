@@ -62,7 +62,7 @@ describe('UsersService', () => {
 
         await service.createUser('a@test.com', plain, 'A', Role.Client);
 
-        const passed = repo.create.mock.calls[0][0].password;
+        const passed: string = repo.create.mock.calls[0][0].password as string;
         expect(await bcrypt.compare(plain, passed)).toBe(true);
         expect(repo.save).toHaveBeenCalledWith(created);
     });
@@ -88,7 +88,7 @@ describe('UsersService', () => {
 
         await service.updateCustomer(1, { password: 'new', name: 'New' });
 
-        const passed = repo.save.mock.calls[0][0].password;
+        const passed: string = repo.save.mock.calls[0][0].password as string;
         expect(await bcrypt.compare('new', passed)).toBe(true);
         expect(repo.save).toHaveBeenCalled();
     });

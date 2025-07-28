@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, QueryDeepPartialEntity } from 'typeorm';
 import { Review } from './review.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -51,7 +51,10 @@ export class ReviewsService {
     }
 
     async update(id: number, dto: UpdateReviewDto) {
-        await this.repo.update(id, dto as any);
+        await this.repo.update(
+            id,
+            dto as unknown as QueryDeepPartialEntity<Review>,
+        );
         return this.findOne(id);
     }
 

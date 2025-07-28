@@ -19,6 +19,6 @@ export class CommissionsController {
     @Get('employee')
     @Roles(Role.Employee)
     listOwn(@Request() req) {
-        return this.service.listForEmployee(req.user.id);
+        return this.service.listForEmployee(Number(req.user.id));
     }
 }
