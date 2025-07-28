@@ -11,7 +11,8 @@ cd frontend
 npm install
 ```
 
-Create a `.env.local` file with the API URL used by the frontend:
+Create a `.env.local` file with the API URL used by the frontend. This value is
+read by Next.js at build and runtime and should point to the running backend:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:3001
@@ -21,9 +22,13 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 Run these commands from the `frontend` folder:
 
-- `npm run dev` – start the development server
+- `npm run dev` – start the development server with Tailwind watching for changes
 - `npm run lint` – check the code with ESLint
 - `npm run format` – format source files with Prettier
+
+When `npm run dev` is running, Tailwind CSS classes are compiled on the fly
+using the configuration in `tailwind.config.ts` and the global styles in
+`src/styles/globals.css`.
 
 ## Features
 
@@ -31,4 +36,4 @@ Run these commands from the `frontend` folder:
 - **Authentication** routes in `src/pages/auth` with login and registration forms.
 - **Role-based dashboard** pages under `src/pages/dashboard` for clients, employees and admins.
 - Navigation components in `src/components` (`PublicNav` and `DashboardNav`) rendered via the global `Layout`.
-- Configure the backend API URL via `NEXT_PUBLIC_API_URL`.
+- Configure the backend API URL via `NEXT_PUBLIC_API_URL` in `.env.local`.
