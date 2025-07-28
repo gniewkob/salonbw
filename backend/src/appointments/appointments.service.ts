@@ -20,6 +20,16 @@ import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { NotificationsService } from '../notifications/notifications.service';
 
+interface ClientWithPhone {
+    id: number;
+    phone?: string | null;
+}
+
+interface EmployeeWithPhone {
+    id: number;
+    phone?: string | null;
+}
+
 @Injectable()
 export class AppointmentsService {
     constructor(
@@ -52,8 +62,8 @@ export class AppointmentsService {
             throw new ConflictException('Appointment time already taken');
         }
         const appointment = this.repo.create({
-            client: { id: clientId } as any,
-            employee: { id: employeeId } as any,
+            client: { id: clientId } as ClientWithPhone,
+            employee: { id: employeeId } as EmployeeWithPhone,
             service: { id: serviceId } as Service,
             startTime: start,
             status: AppointmentStatus.Scheduled,
@@ -64,15 +74,15 @@ export class AppointmentsService {
             JSON.stringify({ clientId, employeeId, serviceId, startTime }),
             clientId,
         );
-        if ((saved.client as any)?.phone) {
+        if ((saved.client as ClientWithPhone)?.phone) {
             void this.notifications.sendAppointmentConfirmation(
-                (saved.client as any).phone,
+                (saved.client as ClientWithPhone).phone!,
                 saved.startTime,
             );
         }
-        if ((saved.employee as any)?.phone) {
+        if ((saved.employee as EmployeeWithPhone)?.phone) {
             void this.notifications.sendNotification(
-                (saved.employee as any).phone,
+                (saved.employee as EmployeeWithPhone).phone!,
                 `Nowa rezerwacja ${saved.startTime.toLocaleString()}`,
                 'whatsapp',
             );
@@ -158,7 +168,7 @@ export class AppointmentsService {
             appt.service = { id: dto.serviceId } as Service;
         }
         if (dto.employeeId) {
-            appt.employee = { id: dto.employeeId } as any;
+            appt.employee = { id: dto.employeeId } as EmployeeWithPhone;
         }
         if (dto.status) {
             appt.status = dto.status;
@@ -206,9 +216,9 @@ export class AppointmentsService {
                     percent: record?.percent ?? 0,
                 }),
             );
-            if ((saved.client as any)?.phone) {
+            if ((saved.client as ClientWithPhone)?.phone) {
                 void this.notifications.sendThankYou(
-                    (saved.client as any).phone,
+                    (saved.client as ClientWithPhone).phone!,
                 );
             }
             return { appointment: saved, commission: record };
@@ -236,8 +246,10 @@ export class AppointmentsService {
             }),
             userId,
         );
-        if ((saved.client as any)?.phone) {
-            void this.notifications.sendThankYou((saved.client as any).phone);
+        if ((saved.client as ClientWithPhone)?.phone) {
+            void this.notifications.sendThankYou(
+                (saved.client as ClientWithPhone).phone!,
+            );
         }
         return { appointment: saved, commission: record };
     }
