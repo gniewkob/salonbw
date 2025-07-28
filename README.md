@@ -9,8 +9,22 @@ To get each part running, follow
 [`backend/README.md`](backend/README.md) for backend instructions and
 [`frontend/README.md`](frontend/README.md) for the frontend.
 
-The frontend provides marketing pages (home, services, gallery and contact),
-authentication under `/auth`, and a role-based dashboard located in `/dashboard`.
+## Frontend overview
+
+The Next.js app offers several publicly accessible marketing pages:
+
+- `/` – home page
+- `/services` – list of available services fetched from the API
+- `/gallery` – photo gallery populated from Instagram
+- `/contact` – contact details and a simple form
+
+Authentication is handled under `/auth` (`/auth/login` and `/auth/register`).
+After signing in, users are redirected to `/dashboard` which renders different
+sub‑pages depending on the user role:
+
+- `client` – personal appointments and profile management
+- `employee` – manage bookings and availability
+- `admin` – administration tools for managing users and services
 
 
 The old Laravel-based frontend has been archived in
