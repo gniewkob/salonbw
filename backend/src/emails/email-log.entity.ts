@@ -29,7 +29,7 @@ export class EmailLog {
     @Column({ type: 'simple-enum', enum: EmailStatus })
     status: EmailStatus;
 
-    @Column({ nullable: true })
+    @Column('text', { nullable: true })
     error: string | null;
 
     @CreateDateColumn()
