@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { Review } from './review.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { UpdateReviewDto } from './dto/update-review.dto';
