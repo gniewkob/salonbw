@@ -27,6 +27,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
     imports: [
@@ -65,6 +66,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
         LogsModule,
         CommunicationsModule,
         DashboardModule,
+        CustomersModule,
         NotificationsModule,
         PaymentsModule,
         CalendarModule,
