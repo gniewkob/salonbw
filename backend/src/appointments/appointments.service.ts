@@ -10,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
-import { Employee } from '../employees/employee.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { CommissionsService } from '../commissions/commissions.service';
@@ -20,16 +19,7 @@ import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { NotificationsService } from '../notifications/notifications.service';
-
-interface ClientWithPhone {
-    id: number;
-    phone?: string | null;
-}
-
-interface EmployeeWithPhone {
-    id: number;
-    phone?: string | null;
-}
+import { ClientWithPhone, EmployeeWithPhone } from './phone-interfaces';
 
 @Injectable()
 export class AppointmentsService {
@@ -169,7 +159,7 @@ export class AppointmentsService {
             appt.service = { id: dto.serviceId } as Service;
         }
         if (dto.employeeId) {
-            appt.employee = { id: dto.employeeId } as Employee;
+            appt.employee = { id: dto.employeeId } as EmployeeWithPhone;
         }
         if (dto.status) {
             appt.status = dto.status;

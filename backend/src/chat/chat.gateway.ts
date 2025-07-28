@@ -46,7 +46,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 secret: process.env.JWT_SECRET ?? 'secret',
             });
             client.data.userId = payload.sub;
-            await client.join(this.roomForUser(client.data.userId));
+            await client.join(
+                this.roomForUser(client.data.userId as number),
+            );
         } catch {
             client.disconnect();
         }
