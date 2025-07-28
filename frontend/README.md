@@ -37,3 +37,13 @@ using the configuration in `tailwind.config.ts` and the global styles in
 - **Role-based dashboard** pages under `src/pages/dashboard` for clients, employees and admins.
 - Navigation components in `src/components` (`PublicNav` and `DashboardNav`) rendered via the global `Layout`.
 - Configure the backend API URL via `NEXT_PUBLIC_API_URL` in `.env.local`.
+
+## Manual Testing
+
+- Start the app with `npm run dev`.
+- Log in using an existing account.
+- Log out.
+- Navigate to `/dashboard`.
+- Confirm you are redirected to `/auth/login`.
+
+Run unit tests with `npm test`.
