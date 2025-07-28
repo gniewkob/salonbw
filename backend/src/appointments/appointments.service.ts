@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Service } from '../catalog/service.entity';
+import { Employee } from '../employees/employee.entity';
 import { FormulasService } from '../formulas/formulas.service';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { CommissionsService } from '../commissions/commissions.service';
@@ -168,7 +169,7 @@ export class AppointmentsService {
             appt.service = { id: dto.serviceId } as Service;
         }
         if (dto.employeeId) {
-            appt.employee = { id: dto.employeeId } as EmployeeWithPhone;
+            appt.employee = { id: dto.employeeId } as Employee;
         }
         if (dto.status) {
             appt.status = dto.status;
