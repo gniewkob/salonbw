@@ -87,4 +87,18 @@ describe('CustomersController (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .expect(404);
     });
+
+    it('returns 400 for invalid customer id', async () => {
+        await usersService.createUser('admin3@cust.com', 'secret', 'Admin', Role.Admin);
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'admin3@cust.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .get('/customers/abc')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(400);
+    });
 });
