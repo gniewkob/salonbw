@@ -2,11 +2,14 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { beforeAll, afterAll, afterEach } from '@jest/globals';
 import { join } from 'path';
+import { dirSync, DirResult } from 'tmp';
 import { Service as CatalogService } from '../src/catalog/service.entity';
 
 config({ path: '.env' });
+let tmpDir: DirResult | undefined;
 if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = 'sqlite:./test.sqlite';
+    tmpDir = dirSync({ prefix: `jest-${process.env.JEST_WORKER_ID ?? ''}-`, unsafeCleanup: true });
+    process.env.DATABASE_URL = `sqlite:${join(tmpDir.name, 'test.sqlite')}`;
 }
 
 let dataSource: DataSource;
@@ -56,4 +59,5 @@ afterAll(async () => {
     if (dataSource?.isInitialized) {
         await dataSource.destroy();
     }
+    tmpDir?.removeCallback();
 });
