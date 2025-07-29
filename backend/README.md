@@ -102,6 +102,16 @@ $ npm install
 $ DATABASE_URL=sqlite::memory: npm run test:e2e
 ```
 
+## Lint
+
+Check code style with eslint:
+
+```bash
+$ npm run lint
+# automatically fix problems
+$ npm run lint:fix
+```
+
 ## WebSocket chat
 
 After connecting with a JWT token, emit `joinRoom` with an `appointmentId` to
