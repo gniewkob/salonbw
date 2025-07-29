@@ -54,7 +54,7 @@ export class UsersController {
     }
 
     @Patch('customers/:id')
-    @Roles(EmployeeRole.RECEPCJA, EmployeeRole.ADMIN, Role.Admin)
+    @Roles(EmployeeRole.RECEPTIONIST, EmployeeRole.ADMIN, Role.Admin)
     @ApiOperation({ summary: 'Update customer data' })
     @ApiResponse({ status: 200 })
     updateCustomer(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {

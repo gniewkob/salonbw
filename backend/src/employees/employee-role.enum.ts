@@ -1,6 +1,6 @@
 export enum EmployeeRole {
     ADMIN = 'ADMIN',
     FRYZJER = 'FRYZJER',
-    RECEPCJA = 'RECEPCJA',
+    RECEPTIONIST = 'RECEPTIONIST',
     POMOCNIK = 'POMOCNIK',
 }

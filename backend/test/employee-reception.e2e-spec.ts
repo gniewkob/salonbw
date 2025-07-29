@@ -58,7 +58,7 @@ describe('Reception role restrictions (e2e)', () => {
             .expect(403);
     });
 
-    it('allows RECEPCJA employee to update customer', async () => {
+    it('allows RECEPTIONIST employee to update customer', async () => {
         const reception = await usersService.createUser(
             'rec@test.com',
             'secret',
@@ -74,7 +74,7 @@ describe('Reception role restrictions (e2e)', () => {
 
         const tokens = await authService.generateTokens(
             reception.id,
-            EmployeeRole.RECEPCJA,
+            EmployeeRole.RECEPTIONIST,
         );
         const token = tokens.access_token;
 
