@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { SmsService } from './sms.service';
 import { WhatsappService } from './whatsapp.service';
 import { Notification, NotificationStatus } from './notification.entity';
@@ -15,6 +20,8 @@ export class NotificationsService {
         private readonly whatsapp: WhatsappService,
         @InjectRepository(Notification)
         private readonly repo: Repository<Notification>,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
     ) {}
 
     async sendNotification(
@@ -68,6 +75,62 @@ export class NotificationsService {
     sendThankYou(to: string) {
         const text = 'Dziękujemy za wizytę!';
         return this.sendNotification(to, text, 'whatsapp');
+    }
+
+    @Cron('0 7 * * *')
+    async reminderCron() {
+        const start = new Date();
+        start.setDate(start.getDate() + 1);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+
+        const appointments = await this.appointments.find({
+            where: {
+                startTime: Between(start, end),
+                status: AppointmentStatus.Scheduled,
+            },
+        });
+
+        for (const appt of appointments) {
+            const phone = (appt.client as { phone?: string } | null)?.phone;
+            if (phone) {
+                 
+                await this.sendReminder(phone, appt.startTime);
+            }
+        }
+    }
+
+    @Cron('0 19 * * *')
+    async followUpCron() {
+        const start = new Date();
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+
+        const appointments = await this.appointments.find({
+            where: {
+                startTime: Between(start, end),
+                status: AppointmentStatus.Completed,
+            },
+        });
+
+        for (const appt of appointments) {
+            const phone = (appt.client as { phone?: string } | null)?.phone;
+            if (phone) {
+                 
+                await this.sendFollowUp(phone);
+            }
+        }
+    }
+
+    sendReminder(to: string, when: Date) {
+        return this.sendAppointmentReminder(to, when);
+    }
+
+    sendFollowUp(to: string) {
+        return this.sendThankYou(to);
     }
 
     findAll() {

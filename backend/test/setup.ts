@@ -10,7 +10,8 @@ export const TEST_DB: DirResult = dirSync({
     prefix: `jest-${process.env.JEST_WORKER_ID ?? ''}-`,
     unsafeCleanup: true,
 });
-process.env.DATABASE_URL = `sqlite:${join(TEST_DB.name, 'test.sqlite')}`;
+const dbFile: string = join(TEST_DB.name as string, 'test.sqlite');
+process.env.DATABASE_URL = `sqlite:${dbFile}`;
 
 let dataSource: DataSource;
 
