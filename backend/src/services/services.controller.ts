@@ -17,6 +17,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { Public } from '../auth/public.decorator';
 import { Role } from '../users/role.enum';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -29,8 +30,8 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 export class ServicesController {
     constructor(private readonly service: ServicesService) {}
 
+    @Public()
     @Get()
-    @Roles(Role.Admin, Role.Client)
     @ApiOperation({ summary: 'List all services' })
     @ApiResponse({ status: 200 })
     list() {
