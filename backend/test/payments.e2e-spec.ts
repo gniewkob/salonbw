@@ -61,7 +61,7 @@ describe('Payments (e2e)', () => {
             .send({ appointmentId: id })
             .expect(201);
         await payments.handleWebhook(Buffer.from(''), 'sig');
-        const updated = await appointments.findOne(id);
+        const updated = await appointments.findOne(Number(id));
         expect(updated?.paymentStatus).toBe(PaymentStatus.Paid);
     });
 });
