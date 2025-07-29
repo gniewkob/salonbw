@@ -7,11 +7,13 @@ import { UsersService } from './../src/users/users.service';
 import { Role } from './../src/users/role.enum';
 import { PaymentsService } from './../src/payments/payments.service';
 import { PaymentStatus } from './../src/appointments/appointment.entity';
+import { AppointmentsService } from './../src/appointments/appointments.service';
 
 describe('Payments (e2e)', () => {
     let app: INestApplication<App>;
     let users: UsersService;
     let payments: PaymentsService;
+    let appointments: AppointmentsService;
 
     beforeEach(async () => {
         process.env.STRIPE_SECRET_KEY = 'sk_test';
@@ -25,6 +27,7 @@ describe('Payments (e2e)', () => {
         await app.init();
         users = moduleFixture.get(UsersService);
         payments = moduleFixture.get(PaymentsService);
+        appointments = moduleFixture.get(AppointmentsService);
         (payments as any).stripe.checkout = { sessions: { create: jest.fn().mockResolvedValue({ id: 's', url: 'u' }) } };
         (payments as any).stripe.webhooks = { constructEvent: jest.fn().mockReturnValue({
             type: 'checkout.session.completed',
@@ -39,9 +42,10 @@ describe('Payments (e2e)', () => {
     it('creates session and processes webhook', async () => {
         const client = await users.createUser('p@test.com','secret','P',Role.Client);
         const employee = await users.createUser('e@test.com','secret','E',Role.Employee);
+        await users.createUser('a@test.com','secret','A',Role.Admin);
         const login = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'p@test.com', password: 'secret' })
+            .send({ email: 'a@test.com', password: 'secret' })
             .expect(201);
         const token = login.body.access_token;
         const start = new Date(Date.now()+86400000).toISOString();
@@ -53,13 +57,11 @@ describe('Payments (e2e)', () => {
         const id = appt.body.id;
         await request(app.getHttpServer())
             .post('/payments/create-session')
+            .set('Authorization', `Bearer ${token}`)
             .send({ appointmentId: id })
             .expect(201);
         await payments.handleWebhook(Buffer.from(''), 'sig');
-        const updated = await request(app.getHttpServer())
-            .get(`/appointments/admin/${id}`)
-            .set('Authorization', `Bearer ${token}`)
-            .expect(200);
-        expect(updated.body.paymentStatus).toBe(PaymentStatus.Paid);
+        const updated = await appointments.findOne(id);
+        expect(updated?.paymentStatus).toBe(PaymentStatus.Paid);
     });
 });
