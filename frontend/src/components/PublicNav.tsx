@@ -7,6 +7,7 @@ export default function PublicNav() {
       <Link href="/">Home</Link>
       <Link href="/services">Services</Link>
       <Link href="/gallery">Gallery</Link>
+      <Link href="/faq">FAQ</Link>
       <Link href="/contact">Contact</Link>
       <Link href="/auth/login">Login</Link>
       <Link href="/auth/register">Register</Link>
