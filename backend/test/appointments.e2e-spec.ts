@@ -336,4 +336,46 @@ describe('AppointmentsModule (e2e)', () => {
             })
             .expect(401);
     });
+
+    it('returns 404 when employee cancels nonexistent appointment', async () => {
+        const employee = await usersService.createUser(
+            'nfemp1@test.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'nfemp1@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = (login.body as { access_token: string }).access_token;
+
+        await request(app.getHttpServer())
+            .patch('/appointments/employee/9999/cancel')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(404);
+    });
+
+    it('returns 404 when employee completes nonexistent appointment', async () => {
+        const employee = await usersService.createUser(
+            'nfemp2@test.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'nfemp2@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = (login.body as { access_token: string }).access_token;
+
+        await request(app.getHttpServer())
+            .patch('/appointments/employee/9999/complete')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(404);
+    });
 });
