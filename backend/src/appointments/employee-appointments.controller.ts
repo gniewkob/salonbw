@@ -6,6 +6,7 @@ import {
     Patch,
     Request,
     UseGuards,
+    NotFoundException,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -58,21 +59,29 @@ export class EmployeeAppointmentsController {
 
     @Patch(':id/cancel')
     @ApiOperation({ summary: 'Cancel appointment by employee' })
-    cancel(
-        @Param('id') id: string,
-        @Request() req: AuthRequest,
-    ) {
-         
-        return this.service.cancel(Number(id), req.user.id, req.user.role);
+    async cancel(@Param('id') id: string, @Request() req: AuthRequest) {
+        const result = await this.service.cancel(
+            Number(id),
+            req.user.id,
+            req.user.role,
+        );
+        if (result === undefined) {
+            throw new NotFoundException();
+        }
+        return result;
     }
 
     @Patch(':id/complete')
     @ApiOperation({ summary: 'Mark appointment completed by employee' })
-    complete(
-        @Param('id') id: string,
-        @Request() req: AuthRequest,
-    ) {
-         
-        return this.service.complete(Number(id), req.user.id, req.user.role);
+    async complete(@Param('id') id: string, @Request() req: AuthRequest) {
+        const result = await this.service.complete(
+            Number(id),
+            req.user.id,
+            req.user.role,
+        );
+        if (result === undefined) {
+            throw new NotFoundException();
+        }
+        return result;
     }
 }
