@@ -55,7 +55,7 @@ describe('RolesGuard', () => {
     });
 
     it('throws when employee role does not match', () => {
-        reflector.getAllAndOverride.mockReturnValue([EmployeeRole.RECEPCJA]);
+        reflector.getAllAndOverride.mockReturnValue([EmployeeRole.RECEPTIONIST]);
         const ctx = createContext(EmployeeRole.FRYZJER);
         expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
     });
