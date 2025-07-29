@@ -63,7 +63,7 @@ describe('Customer update (e2e)', () => {
             .expect((res) => expect(res.body.name).toBe('Updated'));
     });
 
-    it('allows reception role to update customer', async () => {
+    it('allows receptionist role to update customer', async () => {
         const reception = await usersService.createUser(
             'recupd@test.com',
             'secret',
@@ -79,7 +79,7 @@ describe('Customer update (e2e)', () => {
 
         const tokens: AuthTokensDto = await authService.generateTokens(
             reception.id,
-            EmployeeRole.RECEPCJA,
+            EmployeeRole.RECEPTIONIST,
         );
         const { access_token: token } = tokens;
 
