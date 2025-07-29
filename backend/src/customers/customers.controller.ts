@@ -11,7 +11,7 @@ import { EmployeeRole } from '../employees/employee-role.enum';
 @ApiBearerAuth()
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.Admin, EmployeeRole.RECEPCJA)
+@Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
 export class CustomersController {
     constructor(private readonly service: CustomersService) {}
 
