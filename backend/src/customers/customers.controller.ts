@@ -1,4 +1,11 @@
-import { Controller, Get, Param, NotFoundException, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Param,
+    NotFoundException,
+    UseGuards,
+    ParseIntPipe,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,11 +24,7 @@ export class CustomersController {
 
     @Get()
     async list() {
-        const customers = await this.service.findAll();
-        return customers.map((c) => {
-            const { password, refreshToken, ...rest } = c as any;
-            return rest;
-        });
+        return this.service.findAll();
     }
 
     @Get(':id')
@@ -30,7 +33,6 @@ export class CustomersController {
         if (!customer) {
             throw new NotFoundException();
         }
-        const { password, refreshToken, ...rest } = customer as any;
-        return rest;
+        return customer;
     }
 }
