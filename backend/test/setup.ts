@@ -6,11 +6,11 @@ import { dirSync, DirResult } from 'tmp';
 import { Service as CatalogService } from '../src/catalog/service.entity';
 
 config({ path: '.env' });
-let tmpDir: DirResult | undefined;
-if (!process.env.DATABASE_URL) {
-    tmpDir = dirSync({ prefix: `jest-${process.env.JEST_WORKER_ID ?? ''}-`, unsafeCleanup: true });
-    process.env.DATABASE_URL = `sqlite:${join(tmpDir.name, 'test.sqlite')}`;
-}
+export const TEST_DB: DirResult = dirSync({
+    prefix: `jest-${process.env.JEST_WORKER_ID ?? ''}-`,
+    unsafeCleanup: true,
+});
+process.env.DATABASE_URL = `sqlite:${join(TEST_DB.name, 'test.sqlite')}`;
 
 let dataSource: DataSource;
 
@@ -59,5 +59,5 @@ afterAll(async () => {
     if (dataSource?.isInitialized) {
         await dataSource.destroy();
     }
-    tmpDir?.removeCallback();
+    TEST_DB.removeCallback();
 });
