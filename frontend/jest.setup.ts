@@ -18,6 +18,14 @@ process.env.NEXT_PUBLIC_API_URL = 'http://localhost';
   removeEventListener() {}
 };
 
+// polyfill window.matchMedia used by react-hot-toast
+(global as any).matchMedia = (query: string) => ({
+  media: query,
+  matches: false,
+  addEventListener: () => {},
+  removeEventListener: () => {},
+});
+
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
 }));
