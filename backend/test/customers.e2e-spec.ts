@@ -32,9 +32,24 @@ describe('CustomersController (e2e)', () => {
     });
 
     it('admin can list customers', async () => {
-        await usersService.createUser('admin@cust.com', 'secret', 'Admin', Role.Admin);
-        await usersService.createUser('c1@test.com', 'secret', 'C1', Role.Client);
-        await usersService.createUser('c2@test.com', 'secret', 'C2', Role.Client);
+        await usersService.createUser(
+            'admin@cust.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        await usersService.createUser(
+            'c1@test.com',
+            'secret',
+            'C1',
+            Role.Client,
+        );
+        await usersService.createUser(
+            'c2@test.com',
+            'secret',
+            'C2',
+            Role.Client,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')
@@ -52,6 +67,9 @@ describe('CustomersController (e2e)', () => {
         res.body.forEach((c: any) => {
             expect(c).not.toHaveProperty('password');
             expect(c).not.toHaveProperty('refreshToken');
+            expect(c).toHaveProperty('email');
+            expect(c).toHaveProperty('name');
+            expect(c).toHaveProperty('phone');
             expect(c.role).toBe('client');
         });
     });
@@ -65,7 +83,10 @@ describe('CustomersController (e2e)', () => {
             'E',
             Role.Employee,
         );
-        const tokens = await authService.generateTokens(employee.id, EmployeeRole.FRYZJER);
+        const tokens = await authService.generateTokens(
+            employee.id,
+            EmployeeRole.FRYZJER,
+        );
         const token = tokens.access_token;
 
         await request(app.getHttpServer())
@@ -75,7 +96,12 @@ describe('CustomersController (e2e)', () => {
     });
 
     it('returns 404 for missing customer', async () => {
-        await usersService.createUser('admin2@cust.com', 'secret', 'Admin', Role.Admin);
+        await usersService.createUser(
+            'admin2@cust.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
         const login = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'admin2@cust.com', password: 'secret' })
@@ -89,7 +115,12 @@ describe('CustomersController (e2e)', () => {
     });
 
     it('returns 400 for invalid customer id', async () => {
-        await usersService.createUser('admin3@cust.com', 'secret', 'Admin', Role.Admin);
+        await usersService.createUser(
+            'admin3@cust.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
         const login = await request(app.getHttpServer())
             .post('/auth/login')
             .send({ email: 'admin3@cust.com', password: 'secret' })
