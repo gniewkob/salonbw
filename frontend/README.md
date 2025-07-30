@@ -11,7 +11,7 @@ cd frontend
 npm install
 ```
 
-Create a `.env.local` file with the API URL used by the frontend. This value is
+Copy `.env.example` to `.env.local` and adjust the API URL if needed. This value is
 read by Next.js at build and runtime and should point to the running backend:
 
 ```bash
@@ -36,7 +36,7 @@ using the configuration in `tailwind.config.ts` and the global styles in
 - **Authentication** routes in `src/pages/auth` with login and registration forms.
 - **Role-based dashboard** pages under `src/pages/dashboard` for clients, employees and admins.
 - Navigation components in `src/components` (`PublicNav` and `DashboardNav`) rendered via the global `Layout`.
-- Configure the backend API URL via `NEXT_PUBLIC_API_URL` in `.env.local`.
+- Configure the backend API URL via `NEXT_PUBLIC_API_URL` in `.env.local` (copied from `.env.example`).
 
 ## Manual Testing
 
