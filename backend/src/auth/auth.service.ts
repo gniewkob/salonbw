@@ -6,12 +6,17 @@ import {
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
+import axios from 'axios';
+import * as jwt from 'jsonwebtoken';
+import jwkToPem from 'jwk-to-pem';
+import { SocialLoginDto } from './dto/social-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +29,10 @@ export class AuthService {
     async validateUser(email: string, password: string) {
         const user = await this.usersService.findByEmail(email);
         if (!user) {
+            await this.logs.create(LogAction.LoginFail, `email=${email}`);
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        if (!user.password) {
             await this.logs.create(LogAction.LoginFail, `email=${email}`);
             throw new UnauthorizedException('Invalid credentials');
         }
@@ -103,5 +112,77 @@ export class AuthService {
             throw new UnauthorizedException('Invalid refresh token');
         }
         return this.generateTokens(user.id, user.role);
+    }
+
+    async socialLogin(dto: SocialLoginDto): Promise<{
+        tokens: AuthTokensDto;
+        user: { id: number; email: string; name: string; role: Role };
+        isNew: boolean;
+    }> {
+        const { provider, token, consentMarketing } = dto;
+        let email: string | undefined;
+        let name = '';
+        try {
+            if (provider === 'google') {
+                const res = await axios.get('https://oauth2.googleapis.com/tokeninfo', {
+                    params: { id_token: token },
+                });
+                email = res.data.email as string;
+                name = res.data.name as string;
+            } else if (provider === 'facebook') {
+                const res = await axios.get('https://graph.facebook.com/me', {
+                    params: { access_token: token, fields: 'id,name,email' },
+                });
+                email = res.data.email as string;
+                name = res.data.name as string;
+            } else if (provider === 'apple') {
+                const decoded = jwt.decode(token) as any;
+                email = decoded?.email as string | undefined;
+                name = decoded?.name as string || '';
+            }
+        } catch {
+            await this.logs.create(LogAction.LoginFail, `${provider} token invalid`);
+            throw new UnauthorizedException('Invalid social token');
+        }
+        if (!email) {
+            throw new UnauthorizedException('Email not available');
+        }
+
+        const existing = await this.usersService.findByEmail(email);
+        let user: User;
+        let isNew = false;
+        if (existing) {
+            if (existing.password) {
+                throw new BadRequestException('Email already registered');
+            }
+            if (existing.role !== Role.Client) {
+                throw new UnauthorizedException('Invalid account');
+            }
+            user = existing;
+        } else {
+            user = await this.usersService.createSocialUser(
+                email,
+                name,
+                Role.Client,
+                null,
+                true,
+                consentMarketing ?? false,
+            );
+            isNew = true;
+            await this.logs.create(LogAction.RegisterSuccess, `email=${email}`, user.id);
+        }
+
+        const tokens = await this.generateTokens(user.id, user.role);
+        await this.logs.create(LogAction.LoginSuccess, `email=${email}`, user.id);
+        return {
+            tokens,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role as Role,
+            },
+            isNew,
+        };
     }
 }
