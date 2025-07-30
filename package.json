@@ -3,7 +3,8 @@
     "private": true,
     "version": "1.0.0",
     "scripts": {
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "e2e": "npm --prefix frontend run e2e"
     },
     "devDependencies": {
         "husky": "^9.0.0",
