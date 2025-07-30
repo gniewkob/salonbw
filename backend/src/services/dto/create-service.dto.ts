@@ -18,7 +18,6 @@ export class CreateServiceDto {
     @IsNumber()
     defaultCommissionPercent?: number | null;
 
-    @IsOptional()
     @IsInt()
-    categoryId?: number | null;
+    categoryId: number;
 }
