@@ -29,6 +29,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { CustomersModule } from './customers/customers.module';
 import { EmployeesModule } from './employees/employees.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { EmployeesModule } from './employees/employees.module';
         AppointmentsModule,
         MessagesModule,
         CatalogModule,
+        CategoriesModule,
         FormulasModule,
         CommissionsModule,
         ServicesModule,
