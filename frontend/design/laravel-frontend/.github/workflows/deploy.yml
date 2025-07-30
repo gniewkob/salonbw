@@ -1,0 +1,103 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_sqlite
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y rsync openssh-client
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Install NPM dependencies
+        run: |
+          npm ci
+          npm --prefix backend ci
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Run tests
+        run: php artisan test
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Build backend
+        run: npm --prefix backend run build
+
+      - name: Deploy via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: vetternkraft
+          REMOTE_HOST: s0.mydevil.net
+          REMOTE_PATH: /home/vetternkraft/domains/dev.salon-bw.pl/salonbw/
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $REMOTE_HOST >> ~/.ssh/known_hosts
+          rsync -avz --delete \
+            --include='backend/node_modules/' \
+            --include='backend/node_modules/**' \
+            --exclude='.git/' --exclude='node_modules/' --exclude='.env' \
+            --exclude='tailwindcss' --exclude='database/database.sqlite' \
+            --exclude='storage/logs/' --exclude='storage/framework/cache/' \
+            --exclude='storage/framework/sessions/' --exclude='storage/framework/views/' \
+            ./ $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH
+          ssh $REMOTE_USER@$REMOTE_HOST <<'EOSSH'
+            REMOTE_PATH="/home/vetternkraft/domains/dev.salon-bw.pl/salonbw/"
+            if [ ! -f ${REMOTE_PATH}database/database.sqlite ]; then
+              touch ${REMOTE_PATH}database/database.sqlite
+              chmod 664 ${REMOTE_PATH}database/database.sqlite
+            fi
+            cd $REMOTE_PATH
+            cd backend
+            if [ ! -d node_modules ]; then
+              npm ci
+            fi
+            npm run build
+            cd ..
+            grep -q '^APP_URL=' .env || echo 'APP_URL=https://dev.salon-bw.pl' >> .env
+            sed -i.bak -e 's|^APP_URL=.*|APP_URL=https://dev.salon-bw.pl|' .env && rm .env.bak
+            grep -q '^SESSION_DOMAIN=' .env || echo 'SESSION_DOMAIN=dev.salon-bw.pl' >> .env
+            sed -i.bak -e 's|^SESSION_DOMAIN=.*|SESSION_DOMAIN=dev.salon-bw.pl|' .env && rm .env.bak
+            grep -q '^SESSION_SECURE_COOKIE=' .env || echo 'SESSION_SECURE_COOKIE=true' >> .env
+            sed -i.bak -e 's|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=true|' .env && rm .env.bak
+            grep -q '^SESSION_SAME_SITE=' .env || echo 'SESSION_SAME_SITE=lax' >> .env
+            sed -i.bak -e 's|^SESSION_SAME_SITE=.*|SESSION_SAME_SITE=lax|' .env && rm .env.bak
+            /home/vetternkraft/bin/php /usr/local/bin/composer dump-autoload
+            /home/vetternkraft/bin/php artisan optimize:clear
+            /home/vetternkraft/bin/php artisan config:clear
+            /home/vetternkraft/bin/php artisan route:clear
+            /home/vetternkraft/bin/php artisan cache:clear
+            /home/vetternkraft/bin/php artisan view:clear
+            /home/vetternkraft/bin/php artisan queue:restart
+            rm -rf bootstrap/cache/*.php
+            rm -rf storage/framework/sessions/*
+            touch storage/framework/down && sleep 2 && rm storage/framework/down
+          EOSSH
