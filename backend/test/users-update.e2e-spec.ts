@@ -59,7 +59,6 @@ describe('Customer update (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .send({ name: 'Updated' })
             .expect(200)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             .expect((res) => expect(res.body.name).toBe('Updated'));
     });
 
