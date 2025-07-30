@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 
@@ -27,25 +26,17 @@ const navLinks: Record<Role, { href: string; label: string }[]> = {
 };
 
 export default function DashboardNav() {
-    const { logout } = useAuth();
-    const [role, setRole] = useState<Role>('client');
-
-    useEffect(() => {
-        const stored = localStorage.getItem('role');
-        if (
-            stored === 'client' ||
-            stored === 'employee' ||
-            stored === 'admin'
-        ) {
-            setRole(stored);
-        }
-    }, []);
+    const { logout, role } = useAuth();
+    const currentRole: Role =
+        role === 'client' || role === 'employee' || role === 'admin'
+            ? role
+            : 'client';
 
     return (
         <aside className="w-48 bg-gray-200 p-4 space-y-2">
             <h2 className="font-bold mb-2">Menu</h2>
             <nav className="space-y-1">
-                {navLinks[role].map((l) => (
+                {navLinks[currentRole].map((l) => (
                     <Link key={l.href} href={l.href} className="block">
                         {l.label}
                     </Link>
