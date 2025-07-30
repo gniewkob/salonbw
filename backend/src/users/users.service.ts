@@ -54,6 +54,30 @@ export class UsersService {
         return this.usersRepository.save(user);
     }
 
+    async createSocialUser(
+        email: string,
+        name: string,
+        role: Role = Role.Client,
+        phone?: string | null,
+        consentRODO = true,
+        consentMarketing = false,
+    ) {
+        const existing = await this.findByEmail(email);
+        if (existing) {
+            throw new BadRequestException('Email already registered');
+        }
+        const user = this.usersRepository.create({
+            email,
+            password: null,
+            name,
+            role,
+            phone: phone ?? null,
+            consentRODO,
+            consentMarketing,
+        });
+        return this.usersRepository.save(user);
+    }
+
     updateRefreshToken(id: number, refreshToken: string | null) {
         return this.usersRepository.update(id, { refreshToken });
     }

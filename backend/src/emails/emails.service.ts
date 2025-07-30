@@ -85,7 +85,6 @@ export class EmailsService {
     async sendBulk(payloads: EmailPayload[]) {
         const results: EmailLog[] = [];
         for (const p of payloads) {
-            // eslint-disable-next-line no-await-in-loop
             results.push(await this.sendEmail(p));
         }
         return results;
