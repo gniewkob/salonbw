@@ -26,12 +26,18 @@ describe('AuthController.login (e2e)', () => {
     it('/auth/login (POST) authenticates seeded user', async () => {
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .send({
+                email: 'test@test.com',
+                password: 'Secret123!',
+                fullName: 'Test',
+                phone: '+48123123123',
+                consentRODO: true,
+            })
             .expect(201);
 
         return request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'test@test.com', password: 'secret' })
+            .send({ email: 'test@test.com', password: 'Secret123!' })
             .expect(201)
             .expect((res) => {
                 expect(res.body).toHaveProperty('access_token');
@@ -42,7 +48,13 @@ describe('AuthController.login (e2e)', () => {
     it('/auth/login (POST) rejects wrong password', async () => {
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .send({
+                email: 'test@test.com',
+                password: 'Secret123!',
+                fullName: 'Test',
+                phone: '+48123123123',
+                consentRODO: true,
+            })
             .expect(201);
 
         return request(app.getHttpServer())

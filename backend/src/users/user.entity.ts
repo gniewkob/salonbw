@@ -19,6 +19,12 @@ export class User {
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
+    @Column({ type: 'boolean', default: false })
+    consentRODO: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    consentMarketing: boolean;
+
     @Column({ type: 'simple-enum', enum: Role })
     role: Role | EmployeeRole;
 
