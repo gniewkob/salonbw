@@ -1,16 +1,17 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 
 export default function DashboardRedirect() {
   const router = useRouter();
+  const { role } = useAuth();
   useEffect(() => {
-    const stored = localStorage.getItem('role');
-    const role: Role =
-      stored === 'client' || stored === 'employee' || stored === 'admin'
-        ? (stored as Role)
+    const current: Role =
+      role === 'client' || role === 'employee' || role === 'admin'
+        ? role
         : 'client';
-    router.replace(`/dashboard/${role}`);
-  }, [router]);
+    router.replace(`/dashboard/${current}`);
+  }, [router, role]);
   return null;
 }
