@@ -1,17 +1,41 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength } from 'class-validator';
+import {
+    IsEmail,
+    IsString,
+    IsNotEmpty,
+    MinLength,
+    Matches,
+    IsBoolean,
+    IsOptional,
+    Equals,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterClientDto {
+    @ApiProperty()
+    @IsString()
+    @MinLength(3)
+    fullName: string;
+
     @ApiProperty()
     @IsEmail()
     @IsNotEmpty()
     email: string;
 
     @ApiProperty()
-    @MinLength(6)
+    @Matches(/^\+48\d{9}$/)
+    phone: string;
+
+    @ApiProperty()
+    @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
     password: string;
 
     @ApiProperty()
-    @IsString()
-    name: string;
+    @IsBoolean()
+    @Equals(true)
+    consentRODO: boolean;
+
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    @IsOptional()
+    consentMarketing?: boolean;
 }

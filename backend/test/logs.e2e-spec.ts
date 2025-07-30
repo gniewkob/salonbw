@@ -40,14 +40,16 @@ describe('LogsModule (e2e)', () => {
             .post('/auth/register')
             .send({
                 email: 'client@logs.com',
-                password: 'secret',
-                name: 'Client',
+                password: 'Secret123!',
+                fullName: 'Client',
+                phone: '+48123123131',
+                consentRODO: true,
             })
             .expect(201);
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'client@logs.com', password: 'secret' })
+            .send({ email: 'client@logs.com', password: 'Secret123!' })
             .expect(201);
 
         const token = login.body.access_token;
