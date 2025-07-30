@@ -16,4 +16,7 @@ export enum LogAction {
     CalendarAdd = 'CALENDAR_ADD',
     CalendarUpdate = 'CALENDAR_UPDATE',
     CalendarDelete = 'CALENDAR_DELETE',
+    CreateCategory = 'CREATE_CATEGORY',
+    UpdateCategory = 'UPDATE_CATEGORY',
+    DeleteCategory = 'DELETE_CATEGORY',
 }

@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service as ServiceEntity } from '../catalog/service.entity';
+import { Category } from '../catalog/category.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -19,13 +20,21 @@ export class ServicesService {
         private readonly repo: Repository<ServiceEntity>,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
+        @InjectRepository(Category)
+        private readonly categories: Repository<Category>,
         private readonly logs: LogsService,
     ) {}
 
     async create(dto: CreateServiceDto) {
+        const category = await this.categories.findOne({
+            where: { id: dto.categoryId },
+        });
+        if (!category) {
+            throw new BadRequestException('Category not found');
+        }
         const entity = this.repo.create({
             ...dto,
-            category: dto.categoryId ? ({ id: dto.categoryId } as any) : null,
+            category,
         });
         const saved = await this.repo.save(entity);
         await this.logs.create(
