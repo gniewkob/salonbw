@@ -26,7 +26,13 @@ describe('AuthController (e2e)', () => {
     it('/auth/register (POST)', () => {
         return request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .send({
+                email: 'test@test.com',
+                password: 'Secret123!',
+                fullName: 'Test',
+                phone: '+48123123123',
+                consentRODO: true,
+            })
             .expect(201)
             .expect((res) => {
                 expect(res.body).toHaveProperty('access_token');
@@ -37,19 +43,37 @@ describe('AuthController (e2e)', () => {
     it('/auth/register (POST) invalid data', () => {
         return request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'bad', password: '123', name: 'T' })
+            .send({
+                email: 'bad',
+                password: '123',
+                fullName: 'T',
+                phone: '123',
+                consentRODO: false,
+            })
             .expect(400);
     });
 
     it('/auth/register (POST) rejects duplicates', async () => {
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'dup@test.com', password: 'secret', name: 'One' })
+            .send({
+                email: 'dup@test.com',
+                password: 'Secret123!',
+                fullName: 'One',
+                phone: '+48123123124',
+                consentRODO: true,
+            })
             .expect(201);
 
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'dup@test.com', password: 'other', name: 'Two' })
+            .send({
+                email: 'dup@test.com',
+                password: 'Other123!',
+                fullName: 'Two',
+                phone: '+48123123125',
+                consentRODO: true,
+            })
             .expect(400);
     });
 });

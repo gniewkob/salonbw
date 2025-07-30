@@ -33,6 +33,9 @@ export class UsersService {
         password: string,
         name: string,
         role: Role = Role.Client,
+        phone?: string | null,
+        consentRODO?: boolean,
+        consentMarketing?: boolean,
     ) {
         const existing = await this.findByEmail(email);
         if (existing) {
@@ -44,6 +47,9 @@ export class UsersService {
             password: hashed,
             name,
             role,
+            phone: phone ?? null,
+            consentRODO: consentRODO ?? false,
+            consentMarketing: consentMarketing ?? false,
         });
         return this.usersRepository.save(user);
     }

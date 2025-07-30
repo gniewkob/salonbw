@@ -42,9 +42,11 @@ describe('AuthService.registerClient', () => {
     it('returns tokens and creates user with provided password', async () => {
         const dto: RegisterClientDto = {
             email: 'a@test.com',
-            password: 'secret',
-            name: 'Alice',
-        };
+            password: 'Secret123!',
+            fullName: 'Alice',
+            phone: '+48123123132',
+            consentRODO: true,
+        } as RegisterClientDto;
         users.findByEmail.mockResolvedValue(null);
         users.createUser.mockResolvedValue({
             id: 1,
