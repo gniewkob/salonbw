@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 
@@ -32,23 +31,15 @@ interface Props {
 }
 
 export default function SidebarMenu({ open, onClose }: Props) {
-    const { logout } = useAuth();
-    const [role, setRole] = useState<Role>('client');
-
-    useEffect(() => {
-        const stored = localStorage.getItem('role');
-        if (
-            stored === 'client' ||
-            stored === 'employee' ||
-            stored === 'admin'
-        ) {
-            setRole(stored);
-        }
-    }, []);
+    const { logout, role } = useAuth();
+    const currentRole: Role =
+        role === 'client' || role === 'employee' || role === 'admin'
+            ? role
+            : 'client';
 
     const content = (
         <nav className="space-y-1 px-4">
-            {links[role].map((l) => (
+            {links[currentRole].map((l) => (
                 <Link
                     key={l.href}
                     href={l.href}
