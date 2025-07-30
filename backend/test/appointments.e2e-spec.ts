@@ -40,8 +40,10 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/register')
             .send({
                 email: 'client@test.com',
-                password: 'secret',
-                name: 'Client',
+                password: 'Secret123!',
+                fullName: 'Client',
+                phone: '+48123123128',
+                consentRODO: true,
             })
             .expect(201);
         const { access_token: token } = register.body as {
@@ -58,8 +60,10 @@ describe('AppointmentsModule (e2e)', () => {
             .post('/auth/register')
             .send({
                 email: 'client2@test.com',
-                password: 'secret',
-                name: 'Client',
+                password: 'Secret123!',
+                fullName: 'Client',
+                phone: '+48123123129',
+                consentRODO: true,
             })
             .expect(201);
         const { access_token: token } = register.body as {

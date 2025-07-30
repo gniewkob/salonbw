@@ -75,8 +75,11 @@ export class AuthService {
         const user = await this.usersService.createUser(
             dto.email,
             dto.password,
-            dto.name,
+            dto.fullName,
             Role.Client,
+            dto.phone,
+            dto.consentRODO,
+            dto.consentMarketing ?? false,
         );
         await this.logs.create(
             LogAction.RegisterSuccess,

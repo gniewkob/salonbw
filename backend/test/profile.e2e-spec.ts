@@ -30,7 +30,13 @@ describe('UsersController (e2e)', () => {
     it('returns profile for authenticated user', async () => {
         const register = await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .send({
+                email: 'test@test.com',
+                password: 'Secret123!',
+                fullName: 'Test',
+                phone: '+48123123130',
+                consentRODO: true,
+            })
             .expect(201);
 
         const token = register.body.access_token;
@@ -52,12 +58,18 @@ describe('UsersController (e2e)', () => {
     it('returns profile for user logged in via /auth/login', async () => {
         await request(app.getHttpServer())
             .post('/auth/register')
-            .send({ email: 'test@test.com', password: 'secret', name: 'Test' })
+            .send({
+                email: 'test@test.com',
+                password: 'Secret123!',
+                fullName: 'Test',
+                phone: '+48123123130',
+                consentRODO: true,
+            })
             .expect(201);
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'test@test.com', password: 'secret' })
+            .send({ email: 'test@test.com', password: 'Secret123!' })
             .expect(201);
 
         const token = login.body.access_token;
