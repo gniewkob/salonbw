@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SocialLoginDto } from './dto/social-login.dto';
 import { LocalAuthGuard } from './local-auth.guard';
 import { Public } from './public.decorator';
 import { Role } from '../users/role.enum';
@@ -39,6 +40,26 @@ export class AuthController {
     @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
     register(@Body() registerDto: RegisterClientDto): Promise<AuthTokensDto> {
         return this.authService.registerClient(registerDto);
+    }
+
+    @Post('social-login')
+    @Public()
+    @ApiOperation({ summary: 'Login or register using social provider token' })
+    @ApiResponse({ status: 201, description: 'JWT tokens and user data' })
+    async socialLogin(@Body() dto: SocialLoginDto, @Request() req): Promise<any> {
+        const { tokens, user, isNew } = await this.authService.socialLogin(dto);
+        const result = {
+            ...tokens,
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.name,
+                role: user.role,
+            },
+        };
+        // express Response not used due to Nest return style; handle status code
+        (req.res as any).status(isNew ? 201 : 200);
+        return result;
     }
 
     @Post('refresh')

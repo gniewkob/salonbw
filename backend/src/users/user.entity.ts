@@ -10,8 +10,8 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column()
-    password: string; // hashed
+    @Column({ type: 'varchar', nullable: true })
+    password: string | null; // hashed, null for social accounts
 
     @Column()
     name: string;
