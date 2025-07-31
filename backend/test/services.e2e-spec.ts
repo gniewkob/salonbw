@@ -236,4 +236,35 @@ describe('ServicesModule (e2e)', () => {
             .send({ name: 'first' })
             .expect(409);
     });
+
+    it('allows same name in different categories', async () => {
+        await users.createUser('svcuniq@test.com', 'secret', 'Admin', Role.Admin);
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'svcuniq@test.com', password: 'secret' })
+            .expect(201);
+        const token = (login.body as { access_token: string }).access_token;
+        const cat1 = await request(app.getHttpServer())
+            .post('/categories')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'cat1' })
+            .expect(201);
+        const cat2 = await request(app.getHttpServer())
+            .post('/categories')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'cat2' })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'dup', duration: 30, price: 10, categoryId: cat1.body.id })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'dup', duration: 30, price: 10, categoryId: cat2.body.id })
+            .expect(201);
+    });
 });
