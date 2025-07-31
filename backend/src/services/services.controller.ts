@@ -7,6 +7,7 @@ import {
     Patch,
     Post,
     UseGuards,
+    NotFoundException,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -36,6 +37,19 @@ export class ServicesController {
     @ApiResponse({ status: 200 })
     list() {
         return this.service.findAll();
+    }
+
+    @Public()
+    @Get(':id')
+    @ApiOperation({ summary: 'Get service by id' })
+    @ApiResponse({ status: 200 })
+    @ApiResponse({ status: 404 })
+    async get(@Param('id') id: number) {
+        const svc = await this.service.findOne(Number(id));
+        if (!svc) {
+            throw new NotFoundException();
+        }
+        return svc;
     }
 
     @Post()
