@@ -152,4 +152,88 @@ describe('ServicesModule (e2e)', () => {
             .send({ name: 'bad' })
             .expect(404);
     });
+
+    it('rejects duplicate service creation', async () => {
+        await users.createUser('svcdup@test.com', 'secret', 'Admin', Role.Admin);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'svcdup@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = (login.body as { access_token: string }).access_token;
+
+        const category = await request(app.getHttpServer())
+            .post('/categories')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'svcdup' })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                name: 'svc',
+                duration: 30,
+                price: 10,
+                categoryId: category.body.id,
+            })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                name: 'svc',
+                duration: 30,
+                price: 10,
+                categoryId: category.body.id,
+            })
+            .expect(409);
+    });
+
+    it('rejects duplicate update of service name and category', async () => {
+        await users.createUser('svcdupupd@test.com', 'secret', 'Admin', Role.Admin);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'svcdupupd@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = (login.body as { access_token: string }).access_token;
+
+        const cat = await request(app.getHttpServer())
+            .post('/categories')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'svcupdcat' })
+            .expect(201);
+
+        const first = await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                name: 'first',
+                duration: 30,
+                price: 10,
+                categoryId: cat.body.id,
+            })
+            .expect(201);
+
+        const second = await request(app.getHttpServer())
+            .post('/services')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                name: 'second',
+                duration: 30,
+                price: 10,
+                categoryId: cat.body.id,
+            })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .patch(`/services/${second.body.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'first' })
+            .expect(409);
+    });
 });
