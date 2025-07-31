@@ -26,5 +26,16 @@ describe('ServicesController (public) (e2e)', () => {
     it('/services (GET) allows anonymous access', () => {
         return request(app.getHttpServer()).get('/services').expect(200);
     });
+
+    it('/services/:id (GET) returns single service', async () => {
+        const res = await request(app.getHttpServer())
+            .get('/services/1')
+            .expect(200);
+        expect(res.body.name).toBeDefined();
+    });
+
+    it('/services/:id (GET) returns 404 for missing', () => {
+        return request(app.getHttpServer()).get('/services/9999').expect(404);
+    });
 });
 
