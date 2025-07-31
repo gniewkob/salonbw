@@ -38,7 +38,7 @@ export class ServicesService {
         });
         const saved = await this.repo.save(entity);
         await this.logs.create(
-            LogAction.UpdateService,
+            LogAction.CreateService,
             JSON.stringify({ id: saved.id, ...dto }),
         );
         return saved;

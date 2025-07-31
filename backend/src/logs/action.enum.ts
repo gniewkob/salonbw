@@ -1,5 +1,6 @@
 export enum LogAction {
     CreateAppointment = 'CREATE_APPOINTMENT',
+    CreateService = 'CREATE_SERVICE',
     UpdateService = 'UPDATE_SERVICE',
     LoginFail = 'LOGIN_FAIL',
     LoginSuccess = 'LOGIN_SUCCESS',
