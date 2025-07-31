@@ -2,6 +2,7 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -32,6 +33,12 @@ export class ServicesService {
         if (!category) {
             throw new BadRequestException('Category not found');
         }
+        const exists = await this.repo.findOne({
+            where: { name: dto.name, category: { id: dto.categoryId } },
+        });
+        if (exists) {
+            throw new ConflictException('Service already exists');
+        }
         const entity = this.repo.create({
             ...dto,
             category,
@@ -56,6 +63,28 @@ export class ServicesService {
         const entity = await this.repo.findOne({ where: { id } });
         if (!entity) {
             throw new NotFoundException();
+        }
+        const newName = dto.name ?? entity.name;
+        const newCategoryId =
+            dto.categoryId !== undefined
+                ? dto.categoryId
+                : entity.category?.id ?? null;
+        if (
+            (dto.name !== undefined && dto.name !== entity.name) ||
+            (dto.categoryId !== undefined &&
+                dto.categoryId !== entity.category?.id)
+        ) {
+            const exists = await this.repo.findOne({
+                where: {
+                    name: newName,
+                    category: newCategoryId
+                        ? ({ id: newCategoryId } as any)
+                        : null,
+                },
+            });
+            if (exists && exists.id !== id) {
+                throw new ConflictException('Service already exists');
+            }
         }
         if (dto.categoryId !== undefined) {
             entity.category = dto.categoryId
