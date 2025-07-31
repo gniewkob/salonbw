@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, Check } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    Check,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 
 @Check('CHK_product_unit_price', '"unitPrice" >= 0')
 @Check('CHK_product_stock', '"stock" >= 0')
@@ -7,7 +14,7 @@ export class Product {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @Column({ nullable: true })
@@ -18,4 +25,20 @@ export class Product {
 
     @Column('int')
     stock: number;
+
+    @Column('int', { default: 5 })
+    lowStockThreshold: number;
+
+    @CreateDateColumn({
+        type: 'datetime',
+        default: () => 'CURRENT_TIMESTAMP',
+    })
+    createdAt: Date;
+
+    @UpdateDateColumn({
+        type: 'datetime',
+        default: () => 'CURRENT_TIMESTAMP',
+        onUpdate: 'CURRENT_TIMESTAMP',
+    })
+    updatedAt: Date;
 }
