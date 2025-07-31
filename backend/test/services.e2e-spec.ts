@@ -135,4 +135,21 @@ describe('ServicesModule (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .expect(400);
     });
+
+    it('returns 404 when updating nonexistent service', async () => {
+        await users.createUser('svcupd@test.com', 'secret', 'Admin', Role.Admin);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'svcupd@test.com', password: 'secret' })
+            .expect(201);
+
+        const token = (login.body as { access_token: string }).access_token;
+
+        await request(app.getHttpServer())
+            .patch('/services/9999')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'bad' })
+            .expect(404);
+    });
 });
