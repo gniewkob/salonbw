@@ -55,7 +55,7 @@ export class ServicesService {
     async update(id: number, dto: UpdateServiceDto) {
         const entity = await this.repo.findOne({ where: { id } });
         if (!entity) {
-            return undefined;
+            throw new NotFoundException();
         }
         if (dto.categoryId !== undefined) {
             entity.category = dto.categoryId
