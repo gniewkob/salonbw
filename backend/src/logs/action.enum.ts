@@ -20,4 +20,8 @@ export enum LogAction {
     CreateCategory = 'CREATE_CATEGORY',
     UpdateCategory = 'UPDATE_CATEGORY',
     DeleteCategory = 'DELETE_CATEGORY',
+    CreateProduct = 'CREATE_PRODUCT',
+    UpdateProduct = 'UPDATE_PRODUCT',
+    UpdateProductStock = 'UPDATE_PRODUCT_STOCK',
+    DeleteProduct = 'DELETE_PRODUCT',
 }
