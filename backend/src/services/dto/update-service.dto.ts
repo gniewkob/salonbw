@@ -1,8 +1,9 @@
-import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Length, Max, Min } from 'class-validator';
 
 export class UpdateServiceDto {
     @IsOptional()
     @IsString()
+    @Length(2, 80)
     name?: string;
 
     @IsOptional()
@@ -11,10 +12,14 @@ export class UpdateServiceDto {
 
     @IsOptional()
     @IsInt()
+    @Min(10)
+    @Max(480)
     duration?: number;
 
     @IsOptional()
-    @IsNumber()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(1)
+    @Max(10000)
     price?: number;
 
     @IsOptional()
