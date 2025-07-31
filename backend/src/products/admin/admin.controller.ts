@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     Patch,
     Post,
@@ -47,5 +48,17 @@ export class AdminController {
     @ApiOperation({ summary: 'Update product' })
     update(@Param('id') id: number, @Body() dto: UpdateProductDto) {
         return this.service.update(Number(id), dto);
+    }
+
+    @Patch(':id/stock')
+    @ApiOperation({ summary: 'Adjust product stock' })
+    updateStock(@Param('id') id: number, @Body('amount') amount: number) {
+        return this.service.updateStock(Number(id), Number(amount));
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete product' })
+    remove(@Param('id') id: number) {
+        return this.service.remove(Number(id));
     }
 }
