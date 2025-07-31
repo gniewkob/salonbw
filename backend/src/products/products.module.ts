@@ -4,9 +4,11 @@ import { AdminController } from './admin/admin.controller';
 import { EmployeeController } from './employee/employee.controller';
 import { ProductsService } from './products.service';
 import { Product } from '../catalog/product.entity';
+import { Sale } from '../sales/sale.entity';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Product])],
+    imports: [TypeOrmModule.forFeature([Product, Sale]), LogsModule],
     controllers: [AdminController, EmployeeController],
     providers: [ProductsService],
     exports: [TypeOrmModule, ProductsService],
