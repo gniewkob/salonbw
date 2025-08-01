@@ -77,6 +77,33 @@ export class ProductsService {
         return saved;
     }
 
+    async bulkUpdateStock(entries: { id: number; stock: number }[]) {
+        return this.repo.manager.transaction(async (manager) => {
+            const updated: Product[] = [];
+            for (const { id, stock } of entries) {
+                if (stock < 0) {
+                    throw new BadRequestException('stock must be >= 0');
+                }
+                const product = await manager.findOne(Product, {
+                    where: { id },
+                });
+                if (!product) {
+                    throw new NotFoundException(`Product ${id} not found`);
+                }
+                product.stock = stock;
+                updated.push(await manager.save(Product, product));
+            }
+
+            for (const prod of updated) {
+                await this.logs.create(
+                    LogAction.BulkUpdateProductStock,
+                    JSON.stringify({ id: prod.id, stock: prod.stock }),
+                );
+            }
+            return updated;
+        });
+    }
+
     async remove(id: number) {
         const entity = await this.repo.findOne({ where: { id } });
         if (!entity) throw new NotFoundException();
@@ -85,10 +112,7 @@ export class ProductsService {
             throw new ConflictException('Product has sales');
         }
         const result = await this.repo.delete(id);
-        await this.logs.create(
-            LogAction.DeleteProduct,
-            JSON.stringify({ id }),
-        );
+        await this.logs.create(LogAction.DeleteProduct, JSON.stringify({ id }));
         return result;
     }
 

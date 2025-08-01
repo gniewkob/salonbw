@@ -21,6 +21,7 @@ describe('ProductsService', () => {
         update: jest.fn(),
         delete: jest.fn(),
         createQueryBuilder: jest.fn(),
+        manager: { transaction: jest.fn() },
     } as any;
     const sales = { count: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
@@ -33,6 +34,7 @@ describe('ProductsService', () => {
         repo.update.mockReset();
         repo.delete.mockReset();
         repo.createQueryBuilder.mockReset();
+        repo.manager.transaction.mockReset();
         sales.count.mockReset();
         logs.create.mockReset();
         const module: TestingModule = await Test.createTestingModule({
@@ -122,6 +124,59 @@ describe('ProductsService', () => {
         expect(repo.createQueryBuilder).toHaveBeenCalledWith('p');
         expect(qb.where).toHaveBeenCalledWith('p.stock < p.lowStockThreshold');
         expect(res).toEqual(['p']);
+    });
+
+    it('bulk updates stock for multiple products', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne
+            .mockResolvedValueOnce({ id: 1, stock: 1 })
+            .mockResolvedValueOnce({ id: 2, stock: 2 });
+        manager.save.mockImplementation((_: any, p: any) => p);
+
+        const res = await service.bulkUpdateStock([
+            { id: 1, stock: 5 },
+            { id: 2, stock: 3 },
+        ]);
+
+        expect(res).toHaveLength(2);
+        expect(manager.save).toHaveBeenCalledTimes(2);
+        expect(logs.create).toHaveBeenNthCalledWith(
+            1,
+            LogAction.BulkUpdateProductStock,
+            JSON.stringify({ id: 1, stock: 5 }),
+        );
+        expect(logs.create).toHaveBeenNthCalledWith(
+            2,
+            LogAction.BulkUpdateProductStock,
+            JSON.stringify({ id: 2, stock: 3 }),
+        );
+    });
+
+    it('fails bulk update on negative stock', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue({ id: 1, stock: 1 });
+
+        await expect(
+            service.bulkUpdateStock([{ id: 1, stock: -1 }]),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('fails bulk update when product missing', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue(undefined);
+
+        await expect(
+            service.bulkUpdateStock([{ id: 99, stock: 1 }]),
+        ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('throws when stock goes negative', async () => {
