@@ -44,6 +44,15 @@ export class AdminController {
         return this.service.create(dto);
     }
 
+    @Patch('bulk-stock')
+    @ApiOperation({ summary: 'Bulk update product stock' })
+    @ApiResponse({ status: 200 })
+    bulkUpdateStock(
+        @Body() body: { entries: { id: number; stock: number }[] },
+    ) {
+        return this.service.bulkUpdateStock(body.entries);
+    }
+
     @Patch(':id')
     @ApiOperation({ summary: 'Update product' })
     @ApiResponse({ status: 200 })

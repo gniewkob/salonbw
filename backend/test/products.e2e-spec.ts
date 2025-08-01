@@ -202,4 +202,61 @@ describe('ProductsModule (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .expect(409);
     });
+
+    it('admin can bulk update stock', async () => {
+        await users.createUser('bulk@prod.com', 'secret', 'A', Role.Admin);
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'bulk@prod.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const p1 = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'p1', unitPrice: 2, stock: 1 })
+            .expect(201);
+        const p2 = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'p2', unitPrice: 3, stock: 2 })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .patch('/products/admin/bulk-stock')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                entries: [
+                    { id: p1.body.id, stock: 5 },
+                    { id: p2.body.id, stock: 4 },
+                ],
+            })
+            .expect(200);
+
+        const res = await request(app.getHttpServer())
+            .get(`/products/${p1.body.id}`)
+            .expect(200);
+        expect(res.body.stock).toBe(5);
+    });
+
+    it('rejects bulk update with negative stock', async () => {
+        await users.createUser('bulk2@prod.com', 'secret', 'A', Role.Admin);
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'bulk2@prod.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const p = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'pneg', unitPrice: 2, stock: 1 })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .patch('/products/admin/bulk-stock')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ entries: [{ id: p.body.id, stock: -1 }] })
+            .expect(400);
+    });
 });
