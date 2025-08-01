@@ -5,6 +5,11 @@ import { Product } from '../catalog/product.entity';
 import { Sale } from '../sales/sale.entity';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
+import {
+    BadRequestException,
+    ConflictException,
+    NotFoundException,
+} from '@nestjs/common';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -84,6 +89,60 @@ describe('ProductsService', () => {
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.DeleteProduct,
             JSON.stringify({ id: 1 }),
+        );
+    });
+
+    it('lists all products', async () => {
+        repo.find.mockResolvedValue([{ id: 1 }]);
+        const res = await service.findAll();
+        expect(repo.find).toHaveBeenCalled();
+        expect(res).toEqual([{ id: 1 }]);
+    });
+
+    it('finds product by id', async () => {
+        repo.findOne.mockResolvedValue({ id: 2 });
+        const res = await service.findOne(2);
+        expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 2 } });
+        expect(res).toEqual({ id: 2 });
+    });
+
+    it('returns undefined when product missing', async () => {
+        repo.findOne.mockResolvedValue(undefined);
+        const res = await service.findOne(99);
+        expect(res).toBeUndefined();
+    });
+
+    it('finds low stock products', async () => {
+        const qb = {
+            where: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue(['p']),
+        };
+        repo.createQueryBuilder.mockReturnValue(qb);
+        const res = await service.findLowStock();
+        expect(repo.createQueryBuilder).toHaveBeenCalledWith('p');
+        expect(qb.where).toHaveBeenCalledWith('p.stock < p.lowStockThreshold');
+        expect(res).toEqual(['p']);
+    });
+
+    it('throws when stock goes negative', async () => {
+        repo.findOne.mockResolvedValue({ id: 1, stock: 1 });
+        await expect(service.updateStock(1, -2)).rejects.toBeInstanceOf(
+            BadRequestException,
+        );
+    });
+
+    it('throws NotFound when deleting missing product', async () => {
+        repo.findOne.mockResolvedValue(undefined);
+        await expect(service.remove(1)).rejects.toBeInstanceOf(
+            NotFoundException,
+        );
+    });
+
+    it('throws Conflict when deleting with sales', async () => {
+        repo.findOne.mockResolvedValue({ id: 1 });
+        sales.count.mockResolvedValue(1);
+        await expect(service.remove(1)).rejects.toBeInstanceOf(
+            ConflictException,
         );
     });
 });
