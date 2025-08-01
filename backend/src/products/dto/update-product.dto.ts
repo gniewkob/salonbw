@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/mapped-types';
 import {
     IsInt,
     IsNumber,
@@ -9,7 +9,9 @@ import {
 } from 'class-validator';
 import { CreateProductDto } from './create-product.dto';
 
-export class UpdateProductDto extends PartialType(CreateProductDto) {
+export class UpdateProductDto extends PartialType(
+    OmitType(CreateProductDto, ['brand'] as const),
+) {
     @IsOptional()
     @IsString()
     @Length(2, 80)
