@@ -33,6 +33,14 @@ export class PublicController {
         return this.service.findAll();
     }
 
+    @Get('low-stock')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'List low stock products' })
+    @ApiResponse({ status: 200 })
+    listLowStock() {
+        return this.service.findLowStock();
+    }
+
     @Public()
     @Get(':id')
     @ApiOperation({ summary: 'Get product by id' })
@@ -44,13 +52,5 @@ export class PublicController {
             throw new NotFoundException();
         }
         return prod;
-    }
-
-    @Get('low-stock')
-    @Roles(Role.Admin)
-    @ApiOperation({ summary: 'List low stock products' })
-    @ApiResponse({ status: 200 })
-    listLowStock() {
-        return this.service.findLowStock();
     }
 }
