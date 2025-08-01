@@ -46,18 +46,21 @@ export class AdminController {
 
     @Patch(':id')
     @ApiOperation({ summary: 'Update product' })
+    @ApiResponse({ status: 200 })
     update(@Param('id') id: number, @Body() dto: UpdateProductDto) {
         return this.service.update(Number(id), dto);
     }
 
     @Patch(':id/stock')
     @ApiOperation({ summary: 'Adjust product stock' })
+    @ApiResponse({ status: 200 })
     updateStock(@Param('id') id: number, @Body('amount') amount: number) {
         return this.service.updateStock(Number(id), Number(amount));
     }
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete product' })
+    @ApiResponse({ status: 200 })
     remove(@Param('id') id: number) {
         return this.service.remove(Number(id));
     }

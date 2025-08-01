@@ -18,6 +18,9 @@ export const AppDataSource = new DataSource(
               type: 'postgres',
               url,
               entities: [join(dir, '**/*.entity.ts')],
-              migrations: [join(dir, 'migrations/*.ts')],
+              migrations: [
+                  join(dir, 'migrations/*.ts'),
+                  join(dir, 'migrations/*.js'),
+              ],
           },
 );

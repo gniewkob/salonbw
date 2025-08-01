@@ -28,6 +28,7 @@ export class PublicController {
     @Public()
     @Get()
     @ApiOperation({ summary: 'List all products' })
+    @ApiResponse({ status: 200 })
     list() {
         return this.service.findAll();
     }
@@ -48,6 +49,7 @@ export class PublicController {
     @Get('low-stock')
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List low stock products' })
+    @ApiResponse({ status: 200 })
     listLowStock() {
         return this.service.findLowStock();
     }
