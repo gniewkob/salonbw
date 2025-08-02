@@ -9,7 +9,7 @@ export class AddServiceTimestamps20250711192026 implements MigrationInterface {
                 'service',
                 new TableColumn({
                     name: 'createdAt',
-                    type: 'datetime',
+                    type: 'timestamptz',
                     default: 'CURRENT_TIMESTAMP',
                 }),
             );
@@ -19,7 +19,7 @@ export class AddServiceTimestamps20250711192026 implements MigrationInterface {
                 'service',
                 new TableColumn({
                     name: 'updatedAt',
-                    type: 'datetime',
+                    type: 'timestamptz',
                     default: 'CURRENT_TIMESTAMP',
                     onUpdate: 'CURRENT_TIMESTAMP',
                 }),

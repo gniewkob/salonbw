@@ -1,16 +1,21 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableUnique } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    TableColumn,
+    TableUnique,
+} from 'typeorm';
 
 export class UpdateServiceSchema20250711192025 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.addColumns('service', [
             new TableColumn({
                 name: 'createdAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
             }),
             new TableColumn({
                 name: 'updatedAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
                 onUpdate: 'CURRENT_TIMESTAMP',
             }),
