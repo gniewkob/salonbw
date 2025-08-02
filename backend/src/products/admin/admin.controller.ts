@@ -7,6 +7,7 @@ import {
     Post,
     Param,
     UseGuards,
+    Request,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -23,6 +24,11 @@ import { ProductsService } from '../products.service';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { BulkUpdateStockDto } from '../dto/bulk-update-stock.dto';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthRequest extends ExpressRequest {
+    user: { id: number };
+}
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -50,8 +56,11 @@ export class AdminController {
     @ApiOperation({ summary: 'Bulk update product stock' })
     @ApiResponse({ status: 200 })
     @ApiBody({ type: BulkUpdateStockDto })
-    bulkUpdateStock(@Body() body: BulkUpdateStockDto) {
-        return this.service.bulkUpdateStock(body.entries);
+    bulkUpdateStock(
+        @Body() body: BulkUpdateStockDto,
+        @Request() req: AuthRequest,
+    ) {
+        return this.service.bulkUpdateStock(body.entries, req.user.id);
     }
 
     @Patch(':id')

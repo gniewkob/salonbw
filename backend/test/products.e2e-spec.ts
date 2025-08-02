@@ -214,7 +214,7 @@ describe('ProductsModule (e2e)', () => {
         const p1 = await request(app.getHttpServer())
             .post('/products/admin')
             .set('Authorization', `Bearer ${token}`)
-            .send({ name: 'p1', unitPrice: 2, stock: 1 })
+            .send({ name: 'p1', unitPrice: 2, stock: 5 })
             .expect(201);
         const p2 = await request(app.getHttpServer())
             .post('/products/admin')
@@ -227,7 +227,7 @@ describe('ProductsModule (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .send({
                 entries: [
-                    { id: p1.body.id, stock: 5 },
+                    { id: p1.body.id, stock: 3 },
                     { id: p2.body.id, stock: 4 },
                 ],
             })
@@ -236,7 +236,7 @@ describe('ProductsModule (e2e)', () => {
         const res = await request(app.getHttpServer())
             .get(`/products/${p1.body.id}`)
             .expect(200);
-        expect(res.body.stock).toBe(5);
+        expect(res.body.stock).toBe(3);
 
         const logs = await request(app.getHttpServer())
             .get('/logs')
@@ -244,6 +244,15 @@ describe('ProductsModule (e2e)', () => {
             .query({ action: 'BULK_UPDATE_PRODUCT_STOCK' })
             .expect(200);
         expect(logs.body.length).toBe(2);
+
+        const usedLogs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ action: 'PRODUCT_USED' })
+            .expect(200);
+        expect(usedLogs.body.length).toBe(1);
+        const payload = JSON.parse(usedLogs.body[0].data);
+        expect(payload.usageType).toBe('STOCK_CORRECTION');
     });
 
     it('rejects bulk update with negative stock', async () => {
