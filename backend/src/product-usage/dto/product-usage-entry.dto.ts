@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Min } from 'class-validator';
+import { IsEnum, IsInt, Min } from 'class-validator';
+import { UsageType } from '../usage-type.enum';
 
 export class ProductUsageEntryDto {
     @ApiProperty()
@@ -10,4 +11,8 @@ export class ProductUsageEntryDto {
     @IsInt()
     @Min(1)
     quantity: number;
+
+    @IsEnum(UsageType)
+    @ApiProperty({ enum: UsageType, required: false })
+    usageType?: UsageType;
 }

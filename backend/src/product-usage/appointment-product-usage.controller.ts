@@ -24,6 +24,7 @@ import {
 import { EmployeeRole } from '../employees/employee-role.enum';
 import { Request as ExpressRequest } from 'express';
 import { ProductUsageEntryDto } from './dto/product-usage-entry.dto';
+import { UsageType } from './usage-type.enum';
 
 interface AuthRequest extends ExpressRequest {
     user: { id: number; role: Role | EmployeeRole };
@@ -58,6 +59,10 @@ export class AppointmentProductUsageController {
         if (req.user.role !== Role.Admin && appt.employee.id !== req.user.id) {
             throw new ForbiddenException();
         }
-        return this.usage.registerUsage(Number(id), req.user.id, body);
+        const entries = body.map((entry) => ({
+            ...entry,
+            usageType: entry.usageType ?? UsageType.INTERNAL,
+        }));
+        return this.usage.registerUsage(Number(id), req.user.id, entries);
     }
 }
