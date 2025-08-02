@@ -10,6 +10,7 @@ import {
     ConflictException,
     NotFoundException,
 } from '@nestjs/common';
+import { ProductUsageService } from '../product-usage/product-usage.service';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -25,6 +26,7 @@ describe('ProductsService', () => {
     } as any;
     const sales = { count: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
+    const usage = { createStockCorrection: jest.fn() } as any;
 
     beforeEach(async () => {
         repo.create.mockReset();
@@ -37,12 +39,14 @@ describe('ProductsService', () => {
         repo.manager.transaction.mockReset();
         sales.count.mockReset();
         logs.create.mockReset();
+        usage.createStockCorrection.mockReset();
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ProductsService,
                 { provide: getRepositoryToken(Product), useValue: repo },
                 { provide: getRepositoryToken(Sale), useValue: sales },
                 { provide: LogsService, useValue: logs },
+                { provide: ProductUsageService, useValue: usage },
             ],
         }).compile();
         service = module.get(ProductsService);
@@ -136,10 +140,13 @@ describe('ProductsService', () => {
             .mockResolvedValueOnce({ id: 2, stock: 2 });
         manager.save.mockImplementation((_: any, p: any) => p);
 
-        const res = await service.bulkUpdateStock([
-            { id: 1, stock: 5 },
-            { id: 2, stock: 3 },
-        ]);
+        const res = await service.bulkUpdateStock(
+            [
+                { id: 1, stock: 5 },
+                { id: 2, stock: 3 },
+            ],
+            1,
+        );
 
         expect(res).toHaveLength(2);
         expect(manager.save).toHaveBeenCalledTimes(2);
@@ -153,6 +160,31 @@ describe('ProductsService', () => {
             LogAction.BulkUpdateProductStock,
             JSON.stringify({ id: 2, stock: 3 }),
         );
+        expect(usage.createStockCorrection).not.toHaveBeenCalled();
+    });
+
+    it('records usage when stock decreases', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue({ id: 1, stock: 5 });
+        manager.save.mockImplementation((_: any, p: any) => p);
+
+        const res = await service.bulkUpdateStock([{ id: 1, stock: 3 }], 2);
+
+        expect(res).toHaveLength(1);
+        expect(usage.createStockCorrection).toHaveBeenCalledWith(
+            manager,
+            1,
+            2,
+            3,
+            2,
+        );
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.BulkUpdateProductStock,
+            JSON.stringify({ id: 1, stock: 3 }),
+        );
     });
 
     it('fails bulk update on negative stock', async () => {
@@ -163,7 +195,7 @@ describe('ProductsService', () => {
         manager.findOne.mockResolvedValue({ id: 1, stock: 1 });
 
         await expect(
-            service.bulkUpdateStock([{ id: 1, stock: -1 }]),
+            service.bulkUpdateStock([{ id: 1, stock: -1 }], 1),
         ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -175,7 +207,7 @@ describe('ProductsService', () => {
         manager.findOne.mockResolvedValue(undefined);
 
         await expect(
-            service.bulkUpdateStock([{ id: 99, stock: 1 }]),
+            service.bulkUpdateStock([{ id: 99, stock: 1 }], 1),
         ).rejects.toBeInstanceOf(NotFoundException);
     });
 
