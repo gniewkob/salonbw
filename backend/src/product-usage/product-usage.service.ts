@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { ProductUsage } from './product-usage.entity';
 import { Product } from '../catalog/product.entity';
 import { LogsService } from '../logs/logs.service';
@@ -72,6 +72,34 @@ export class ProductUsageService {
             }
             return records;
         });
+    }
+
+    async createStockCorrection(
+        manager: EntityManager,
+        productId: number,
+        quantity: number,
+        stock: number,
+        employeeId: number,
+    ) {
+        const usage = manager.create(ProductUsage, {
+            appointment: null,
+            product: { id: productId } as any,
+            quantity,
+            usageType: UsageType.STOCK_CORRECTION,
+            usedByEmployee: { id: employeeId } as any,
+        });
+        await manager.save(ProductUsage, usage);
+        await this.logs.create(
+            LogAction.ProductUsed,
+            JSON.stringify({
+                productId,
+                quantity,
+                usageType: UsageType.STOCK_CORRECTION,
+                stock,
+            }),
+            employeeId,
+        );
+        return usage;
     }
 
     findForProduct(productId: number) {

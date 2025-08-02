@@ -12,6 +12,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { Sale } from '../sales/sale.entity';
+import { ProductUsageService } from '../product-usage/product-usage.service';
 
 @Injectable()
 export class ProductsService {
@@ -21,6 +22,7 @@ export class ProductsService {
         @InjectRepository(Sale)
         private readonly sales: Repository<Sale>,
         private readonly logs: LogsService,
+        private readonly usage: ProductUsageService,
     ) {}
 
     async create(dto: CreateProductDto) {
@@ -77,7 +79,10 @@ export class ProductsService {
         return saved;
     }
 
-    async bulkUpdateStock(entries: { id: number; stock: number }[]) {
+    async bulkUpdateStock(
+        entries: { id: number; stock: number }[],
+        userId: number,
+    ) {
         return this.repo.manager.transaction(async (manager) => {
             const updated: Product[] = [];
             for (const { id, stock } of entries) {
@@ -90,8 +95,18 @@ export class ProductsService {
                 if (!product) {
                     throw new NotFoundException(`Product ${id} not found`);
                 }
+                const diff = product.stock - stock;
                 product.stock = stock;
                 updated.push(await manager.save(Product, product));
+                if (diff > 0) {
+                    await this.usage.createStockCorrection(
+                        manager,
+                        id,
+                        diff,
+                        stock,
+                        userId,
+                    );
+                }
             }
 
             for (const prod of updated) {
