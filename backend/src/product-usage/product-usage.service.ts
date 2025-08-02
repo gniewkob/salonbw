@@ -129,9 +129,13 @@ export class ProductUsageService {
         return usage;
     }
 
-    findForProduct(productId: number) {
+    findForProduct(productId: number, usageType?: UsageType) {
+        const where: any = { product: { id: productId } };
+        if (usageType) {
+            where.usageType = usageType;
+        }
         return this.repo.find({
-            where: { product: { id: productId } },
+            where,
             order: { timestamp: 'DESC' },
         });
     }

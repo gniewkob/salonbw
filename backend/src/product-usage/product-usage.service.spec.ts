@@ -14,12 +14,13 @@ import { UsageType } from './usage-type.enum';
 
 describe('ProductUsageService', () => {
     let service: ProductUsageService;
-    const repo = { manager: { transaction: jest.fn() } } as any;
+    const repo = { manager: { transaction: jest.fn() }, find: jest.fn() } as any;
     const products = { findOne: jest.fn(), save: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
 
     beforeEach(async () => {
         repo.manager.transaction.mockReset();
+        repo.find.mockReset();
         products.findOne.mockReset();
         products.save.mockReset();
         logs.create.mockReset();
@@ -98,5 +99,14 @@ describe('ProductUsageService', () => {
                 { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
             ]),
         ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('filters by usage type when provided', async () => {
+        repo.find.mockResolvedValue([]);
+        await service.findForProduct(1, UsageType.SALE);
+        expect(repo.find).toHaveBeenCalledWith({
+            where: { product: { id: 1 }, usageType: UsageType.SALE },
+            order: { timestamp: 'DESC' },
+        });
     });
 });
