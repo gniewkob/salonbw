@@ -24,7 +24,12 @@ export class ProductUsageController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List usage history for product' })
     @ApiResponse({ status: 200 })
-    @ApiQuery({ name: 'usageType', required: false, enum: UsageType })
+    @ApiQuery({
+        name: 'usageType',
+        required: false,
+        enum: UsageType,
+        description: 'Filter by usage type. Returns all records when omitted.',
+    })
     list(
         @Param('id') id: string,
         @Query('usageType') usageType?: UsageType,

@@ -9,6 +9,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { Product } from '../catalog/product.entity';
 import { User } from '../users/user.entity';
 import { UsageType } from './usage-type.enum';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class ProductUsage {
@@ -29,6 +30,7 @@ export class ProductUsage {
     quantity: number;
 
     @Column({ type: 'enum', enum: UsageType, default: UsageType.INTERNAL })
+    @ApiProperty({ enum: UsageType, default: UsageType.INTERNAL })
     usageType: UsageType;
 
     @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
