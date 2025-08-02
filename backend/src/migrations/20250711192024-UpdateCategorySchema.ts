@@ -19,12 +19,12 @@ export class UpdateCategorySchema20250711192024 implements MigrationInterface {
         await queryRunner.addColumns('category', [
             new TableColumn({
                 name: 'createdAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
             }),
             new TableColumn({
                 name: 'updatedAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
                 onUpdate: 'CURRENT_TIMESTAMP',
             }),

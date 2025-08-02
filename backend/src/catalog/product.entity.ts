@@ -30,13 +30,13 @@ export class Product {
     lowStockThreshold: number;
 
     @CreateDateColumn({
-        type: 'datetime',
+        type: 'timestamptz',
         default: () => 'CURRENT_TIMESTAMP',
     })
     createdAt: Date;
 
     @UpdateDateColumn({
-        type: 'datetime',
+        type: 'timestamptz',
         default: () => 'CURRENT_TIMESTAMP',
         onUpdate: 'CURRENT_TIMESTAMP',
     })
