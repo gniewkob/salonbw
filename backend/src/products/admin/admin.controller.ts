@@ -53,9 +53,16 @@ export class AdminController {
     }
 
     @Patch('bulk-stock')
-    @ApiOperation({ summary: 'Bulk update product stock' })
+    @ApiOperation({
+        summary: 'Bulk update product stock',
+        description:
+            'Adjusts stock levels for multiple products. Each change is logged with usageType STOCK_CORRECTION.',
+    })
     @ApiResponse({ status: 200 })
-    @ApiBody({ type: BulkUpdateStockDto })
+    @ApiBody({
+        type: BulkUpdateStockDto,
+        description: 'Stock levels to apply. Logged as usageType STOCK_CORRECTION.',
+    })
     bulkUpdateStock(
         @Body() body: BulkUpdateStockDto,
         @Request() req: AuthRequest,
@@ -71,8 +78,23 @@ export class AdminController {
     }
 
     @Patch(':id/stock')
-    @ApiOperation({ summary: 'Adjust product stock' })
+    @ApiOperation({
+        summary: 'Adjust product stock',
+        description: 'Increments or decrements stock. Logged with usageType STOCK_CORRECTION.',
+    })
     @ApiResponse({ status: 200 })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                amount: {
+                    type: 'integer',
+                    description:
+                        'Change in stock (positive or negative). Logged as usageType STOCK_CORRECTION.',
+                },
+            },
+        },
+    })
     updateStock(@Param('id') id: number, @Body('amount') amount: number) {
         return this.service.updateStock(Number(id), Number(amount));
     }

@@ -114,14 +114,26 @@ $ npm run lint:fix
 
 ## Product stock and usage
 
+The `usageType` enum documents why stock changes:
+
+- `SALE` – product sold to a customer
+- `INTERNAL` – internal consumption
+- `STOCK_CORRECTION` – manual adjustment or correction
+
 - `PATCH /products/admin/bulk-stock` updates the stock for multiple products in
   one request. The body should contain an `entries` array with product IDs and
-  their new stock levels.
+  their new stock levels. Each change is logged with `usageType` `STOCK_CORRECTION`.
+- `PATCH /products/admin/:id/stock` adjusts the stock for a single product. Send
+  `{ "amount": number }` to increment or decrement the current value. Logged as
+  `usageType` `STOCK_CORRECTION`.
 - `POST /appointments/:id/product-usage` registers product consumption for an
-  appointment. Send an array of `{ "productId": number, "quantity": number }`
-  objects. Employees may only log usage for their own appointments.
+  appointment. Send an array of `{ "productId": number, "quantity": number,
+  "usageType"?: "SALE" | "INTERNAL" | "STOCK_CORRECTION" }` objects. The
+  `usageType` defaults to `INTERNAL` when omitted. Employees may only log usage
+  for their own appointments.
 - `GET /products/:id/usage-history` returns the usage records for a given
-  product. This endpoint is restricted to administrators.
+  product and accepts an optional `usageType` query parameter to filter results.
+  This endpoint is restricted to administrators.
 
 ## WebSocket chat
 
