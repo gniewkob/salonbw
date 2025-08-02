@@ -112,6 +112,17 @@ $ npm run lint
 $ npm run lint:fix
 ```
 
+## Product stock and usage
+
+- `PATCH /products/admin/bulk-stock` updates the stock for multiple products in
+  one request. The body should contain an `entries` array with product IDs and
+  their new stock levels.
+- `POST /appointments/:id/product-usage` registers product consumption for an
+  appointment. Send an array of `{ "productId": number, "quantity": number }`
+  objects. Employees may only log usage for their own appointments.
+- `GET /products/:id/usage-history` returns the usage records for a given
+  product. This endpoint is restricted to administrators.
+
 ## WebSocket chat
 
 After connecting with a JWT token, emit `joinRoom` with an `appointmentId` to
