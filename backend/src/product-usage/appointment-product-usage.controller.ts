@@ -14,9 +14,16 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { ProductUsageService } from './product-usage.service';
 import { AppointmentsService } from '../appointments/appointments.service';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { EmployeeRole } from '../employees/employee-role.enum';
 import { Request as ExpressRequest } from 'express';
+import { ProductUsageEntryDto } from './dto/product-usage-entry.dto';
 
 interface AuthRequest extends ExpressRequest {
     user: { id: number; role: Role | EmployeeRole };
@@ -35,9 +42,13 @@ export class AppointmentProductUsageController {
     @Post(':id/product-usage')
     @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Register product usage for appointment' })
+    @ApiResponse({ status: 201 })
+    @ApiResponse({ status: 404 })
+    @ApiResponse({ status: 409 })
+    @ApiBody({ type: [ProductUsageEntryDto] })
     async create(
         @Param('id') id: string,
-        @Body() body: { productId: number; quantity: number }[],
+        @Body() body: ProductUsageEntryDto[],
         @Request() req: AuthRequest,
     ) {
         const appt = await this.appointments.findOne(Number(id));

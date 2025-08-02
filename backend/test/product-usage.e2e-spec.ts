@@ -92,6 +92,17 @@ describe('ProductUsage (e2e)', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
         expect(history.body.length).toBe(1);
+
+        const logs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({ action: 'PRODUCT_USED' })
+            .expect(200);
+        expect(
+            logs.body.some((l: any) =>
+                l.description.includes(`"productId":${product.id}`),
+            ),
+        ).toBe(true);
     });
 
     it('rejects usage with insufficient stock', async () => {

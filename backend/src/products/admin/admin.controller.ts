@@ -13,6 +13,7 @@ import {
     ApiOperation,
     ApiResponse,
     ApiBearerAuth,
+    ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../auth/roles.guard';
@@ -21,6 +22,7 @@ import { Role } from '../../users/role.enum';
 import { ProductsService } from '../products.service';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
+import { BulkUpdateStockDto } from '../dto/bulk-update-stock.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -47,9 +49,8 @@ export class AdminController {
     @Patch('bulk-stock')
     @ApiOperation({ summary: 'Bulk update product stock' })
     @ApiResponse({ status: 200 })
-    bulkUpdateStock(
-        @Body() body: { entries: { id: number; stock: number }[] },
-    ) {
+    @ApiBody({ type: BulkUpdateStockDto })
+    bulkUpdateStock(@Body() body: BulkUpdateStockDto) {
         return this.service.bulkUpdateStock(body.entries);
     }
 

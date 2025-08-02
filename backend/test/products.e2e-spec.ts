@@ -237,6 +237,13 @@ describe('ProductsModule (e2e)', () => {
             .get(`/products/${p1.body.id}`)
             .expect(200);
         expect(res.body.stock).toBe(5);
+
+        const logs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ action: 'BULK_UPDATE_PRODUCT_STOCK' })
+            .expect(200);
+        expect(logs.body.length).toBe(2);
     });
 
     it('rejects bulk update with negative stock', async () => {
