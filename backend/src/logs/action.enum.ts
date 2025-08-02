@@ -24,6 +24,6 @@ export enum LogAction {
     UpdateProduct = 'UPDATE_PRODUCT',
     UpdateProductStock = 'UPDATE_PRODUCT_STOCK',
     BulkUpdateProductStock = 'BULK_UPDATE_PRODUCT_STOCK',
-    DeleteProduct = 'DELETE_PRODUCT',
     ProductUsed = 'PRODUCT_USED',
+    DeleteProduct = 'DELETE_PRODUCT',
 }
