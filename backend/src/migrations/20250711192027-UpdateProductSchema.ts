@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableUnique } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    TableColumn,
+    TableUnique,
+} from 'typeorm';
 
 export class UpdateProductSchema20250711192027 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,12 +15,12 @@ export class UpdateProductSchema20250711192027 implements MigrationInterface {
             }),
             new TableColumn({
                 name: 'createdAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
             }),
             new TableColumn({
                 name: 'updatedAt',
-                type: 'datetime',
+                type: 'timestamptz',
                 default: 'CURRENT_TIMESTAMP',
                 onUpdate: 'CURRENT_TIMESTAMP',
             }),
