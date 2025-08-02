@@ -5,7 +5,10 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { LogsService } from './logs.service';
 import { LogAction } from './action.enum';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Logs')
+@ApiBearerAuth()
 @Controller('logs')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
@@ -13,6 +16,10 @@ export class LogsController {
     constructor(private readonly service: LogsService) {}
 
     @Get()
+    @ApiQuery({ name: 'startDate', required: false })
+    @ApiQuery({ name: 'endDate', required: false })
+    @ApiQuery({ name: 'action', enum: LogAction, required: false })
+    @ApiQuery({ name: 'userId', required: false })
     list(
         @Query('startDate') startDate?: string,
         @Query('endDate') endDate?: string,
