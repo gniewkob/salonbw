@@ -5,7 +5,11 @@ import { ProductUsage } from './product-usage.entity';
 import { Product } from '../catalog/product.entity';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
-import { ConflictException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    NotFoundException,
+} from '@nestjs/common';
 
 describe('ProductUsageService', () => {
     let service: ProductUsageService;
@@ -62,5 +66,28 @@ describe('ProductUsageService', () => {
         await expect(
             service.registerUsage(1, 2, [{ productId: 1, quantity: 1 }]),
         ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('throws on negative quantity', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        await expect(
+            service.registerUsage(1, 2, [{ productId: 1, quantity: 0 }]),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws when product not found', async () => {
+        const manager = {
+            findOne: jest.fn().mockResolvedValue(undefined),
+            save: jest.fn(),
+        } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        await expect(
+            service.registerUsage(1, 2, [{ productId: 1, quantity: 1 }]),
+        ).rejects.toBeInstanceOf(NotFoundException);
     });
 });
