@@ -15,6 +15,7 @@ import { CommissionsModule } from './commissions/commissions.module';
 import { ServicesModule } from './services/services.module';
 import { ProductsModule } from './products/products.module';
 import { SalesModule } from './sales/sales.module';
+import { ProductUsageModule } from './product-usage/product-usage.module';
 import { LogsModule } from './logs/logs.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -62,6 +63,7 @@ import { CategoriesModule } from './categories/categories.module';
         CommissionsModule,
         ServicesModule,
         ProductsModule,
+        ProductUsageModule,
         SalesModule,
         ReviewsModule,
         ChatMessagesModule,
