@@ -10,6 +10,7 @@ import {
     ConflictException,
     NotFoundException,
 } from '@nestjs/common';
+import { UsageType } from './usage-type.enum';
 
 describe('ProductUsageService', () => {
     let service: ProductUsageService;
@@ -44,7 +45,7 @@ describe('ProductUsageService', () => {
         );
 
         const res = await service.registerUsage(1, 2, [
-            { productId: 1, quantity: 1 },
+            { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
         ]);
         expect(res).toHaveLength(1);
         expect(manager.save).toHaveBeenCalledTimes(2);
@@ -53,6 +54,8 @@ describe('ProductUsageService', () => {
             expect.any(String),
             2,
         );
+        const payload = JSON.parse(logs.create.mock.calls[0][1]);
+        expect(payload.usageType).toBe(UsageType.INTERNAL);
     });
 
     it('throws on insufficient stock', async () => {
@@ -64,7 +67,9 @@ describe('ProductUsageService', () => {
             cb(manager),
         );
         await expect(
-            service.registerUsage(1, 2, [{ productId: 1, quantity: 1 }]),
+            service.registerUsage(1, 2, [
+                { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
+            ]),
         ).rejects.toBeInstanceOf(ConflictException);
     });
 
@@ -74,7 +79,9 @@ describe('ProductUsageService', () => {
             cb(manager),
         );
         await expect(
-            service.registerUsage(1, 2, [{ productId: 1, quantity: 0 }]),
+            service.registerUsage(1, 2, [
+                { productId: 1, quantity: 0, usageType: UsageType.INTERNAL },
+            ]),
         ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -87,7 +94,9 @@ describe('ProductUsageService', () => {
             cb(manager),
         );
         await expect(
-            service.registerUsage(1, 2, [{ productId: 1, quantity: 1 }]),
+            service.registerUsage(1, 2, [
+                { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
+            ]),
         ).rejects.toBeInstanceOf(NotFoundException);
     });
 });

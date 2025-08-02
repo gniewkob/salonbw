@@ -10,6 +10,7 @@ import { ProductUsage } from './product-usage.entity';
 import { Product } from '../catalog/product.entity';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
+import { UsageType } from './usage-type.enum';
 
 @Injectable()
 export class ProductUsageService {
@@ -24,11 +25,15 @@ export class ProductUsageService {
     async registerUsage(
         appointmentId: number,
         employeeId: number,
-        entries: { productId: number; quantity: number }[],
+        entries: {
+            productId: number;
+            quantity: number;
+            usageType: UsageType;
+        }[],
     ) {
         return this.repo.manager.transaction(async (manager) => {
             const records: ProductUsage[] = [];
-            for (const { productId, quantity } of entries) {
+            for (const { productId, quantity, usageType } of entries) {
                 if (quantity <= 0) {
                     throw new BadRequestException('quantity must be > 0');
                 }
@@ -49,6 +54,7 @@ export class ProductUsageService {
                     appointment: { id: appointmentId } as any,
                     product: { id: productId } as any,
                     quantity,
+                    usageType,
                     usedByEmployee: { id: employeeId } as any,
                 });
                 records.push(await manager.save(ProductUsage, usage));
@@ -58,6 +64,7 @@ export class ProductUsageService {
                         appointmentId,
                         productId,
                         quantity,
+                        usageType,
                         stock: product.stock,
                     }),
                     employeeId,
