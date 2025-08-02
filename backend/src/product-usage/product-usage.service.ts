@@ -102,6 +102,33 @@ export class ProductUsageService {
         return usage;
     }
 
+    async createSale(
+        productId: number,
+        quantity: number,
+        stock: number,
+        employeeId: number,
+    ) {
+        const usage = this.repo.create({
+            appointment: null,
+            product: { id: productId } as any,
+            quantity,
+            usageType: UsageType.SALE,
+            usedByEmployee: { id: employeeId } as any,
+        });
+        await this.repo.save(usage);
+        await this.logs.create(
+            LogAction.ProductUsed,
+            JSON.stringify({
+                productId,
+                quantity,
+                usageType: UsageType.SALE,
+                stock,
+            }),
+            employeeId,
+        );
+        return usage;
+    }
+
     findForProduct(productId: number) {
         return this.repo.find({
             where: { product: { id: productId } },

@@ -5,6 +5,7 @@ import { Sale } from './sale.entity';
 import { Product } from '../catalog/product.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { CommissionsService } from '../commissions/commissions.service';
+import { ProductUsageService } from '../product-usage/product-usage.service';
 
 @Injectable()
 export class SalesService {
@@ -16,6 +17,7 @@ export class SalesService {
         @InjectRepository(CommissionRecord)
         private readonly commissions: Repository<CommissionRecord>,
         private readonly commissionService: CommissionsService,
+        private readonly usage: ProductUsageService,
     ) {}
 
     async create(
@@ -38,6 +40,12 @@ export class SalesService {
         }
         product.stock -= quantity;
         await this.products.save(product);
+        await this.usage.createSale(
+            productId,
+            quantity,
+            product.stock,
+            employeeId,
+        );
 
         const sale = this.repo.create({
             client: { id: clientId } as any,
