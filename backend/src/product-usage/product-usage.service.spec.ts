@@ -50,6 +50,15 @@ describe('ProductUsageService', () => {
         ]);
         expect(res).toHaveLength(1);
         expect(manager.save).toHaveBeenCalledTimes(2);
+        expect(manager.create).toHaveBeenCalledWith(
+            ProductUsage,
+            expect.objectContaining({ usageType: UsageType.INTERNAL }),
+        );
+        expect(manager.save).toHaveBeenCalledWith(
+            ProductUsage,
+            expect.objectContaining({ usageType: UsageType.INTERNAL }),
+        );
+        expect(res[0].usageType).toBe(UsageType.INTERNAL);
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.ProductUsed,
             expect.any(String),
