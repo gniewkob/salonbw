@@ -19,3 +19,5 @@ import { AppointmentsModule } from '../appointments/appointments.module';
     exports: [TypeOrmModule, ProductUsageService],
 })
 export class ProductUsageModule {}
+
+export { UsageType } from './usage-type.enum';
