@@ -253,6 +253,13 @@ describe('ProductsModule (e2e)', () => {
         expect(usedLogs.body.length).toBe(1);
         const payload = JSON.parse(usedLogs.body[0].data);
         expect(payload.usageType).toBe('STOCK_CORRECTION');
+
+        const usageHistory = await request(app.getHttpServer())
+            .get(`/products/${p1.body.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(usageHistory.body.length).toBe(1);
+        expect(usageHistory.body[0].usageType).toBe('STOCK_CORRECTION');
     });
 
     it('rejects bulk update with negative stock', async () => {
