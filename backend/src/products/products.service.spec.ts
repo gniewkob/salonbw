@@ -11,6 +11,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { ProductUsageService } from '../product-usage/product-usage.service';
+import { UsageType } from '../product-usage/usage-type.enum';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -82,7 +83,12 @@ describe('ProductsService', () => {
         expect(res!.stock).toBe(1);
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.UpdateProductStock,
-            JSON.stringify({ id: 1, amount: -1, stock: 1 }),
+            JSON.stringify({
+                id: 1,
+                amount: -1,
+                stock: 1,
+                usageType: UsageType.STOCK_CORRECTION,
+            }),
         );
     });
 
@@ -153,12 +159,20 @@ describe('ProductsService', () => {
         expect(logs.create).toHaveBeenNthCalledWith(
             1,
             LogAction.BulkUpdateProductStock,
-            JSON.stringify({ id: 1, stock: 5 }),
+            JSON.stringify({
+                id: 1,
+                stock: 5,
+                usageType: UsageType.STOCK_CORRECTION,
+            }),
         );
         expect(logs.create).toHaveBeenNthCalledWith(
             2,
             LogAction.BulkUpdateProductStock,
-            JSON.stringify({ id: 2, stock: 3 }),
+            JSON.stringify({
+                id: 2,
+                stock: 3,
+                usageType: UsageType.STOCK_CORRECTION,
+            }),
         );
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
     });
@@ -183,7 +197,11 @@ describe('ProductsService', () => {
         );
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.BulkUpdateProductStock,
-            JSON.stringify({ id: 1, stock: 3 }),
+            JSON.stringify({
+                id: 1,
+                stock: 3,
+                usageType: UsageType.STOCK_CORRECTION,
+            }),
         );
     });
 

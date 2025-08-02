@@ -42,11 +42,18 @@ export class AppointmentProductUsageController {
 
     @Post(':id/product-usage')
     @Roles(Role.Admin, Role.Employee)
-    @ApiOperation({ summary: 'Register product usage for appointment' })
+    @ApiOperation({
+        summary: 'Register product usage for appointment',
+        description:
+            'Records consumption of products. The usageType defaults to INTERNAL when not provided.',
+    })
     @ApiResponse({ status: 201 })
     @ApiResponse({ status: 404 })
     @ApiResponse({ status: 409 })
-    @ApiBody({ type: [ProductUsageEntryDto] })
+    @ApiBody({
+        type: [ProductUsageEntryDto],
+        description: 'Each entry may specify a usageType; defaults to INTERNAL.',
+    })
     async create(
         @Param('id') id: string,
         @Body() body: ProductUsageEntryDto[],

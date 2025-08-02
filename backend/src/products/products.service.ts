@@ -13,6 +13,7 @@ import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { Sale } from '../sales/sale.entity';
 import { ProductUsageService } from '../product-usage/product-usage.service';
+import { UsageType } from '../product-usage/usage-type.enum';
 
 @Injectable()
 export class ProductsService {
@@ -74,7 +75,12 @@ export class ProductsService {
         const saved = await this.repo.save(product);
         await this.logs.create(
             LogAction.UpdateProductStock,
-            JSON.stringify({ id, amount, stock: saved.stock }),
+            JSON.stringify({
+                id,
+                amount,
+                stock: saved.stock,
+                usageType: UsageType.STOCK_CORRECTION,
+            }),
         );
         return saved;
     }
@@ -112,7 +118,11 @@ export class ProductsService {
             for (const prod of updated) {
                 await this.logs.create(
                     LogAction.BulkUpdateProductStock,
-                    JSON.stringify({ id: prod.id, stock: prod.stock }),
+                    JSON.stringify({
+                        id: prod.id,
+                        stock: prod.stock,
+                        usageType: UsageType.STOCK_CORRECTION,
+                    }),
                 );
             }
             return updated;
