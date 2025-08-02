@@ -92,6 +92,7 @@ describe('ProductUsage (e2e)', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
         expect(history.body.length).toBe(1);
+        expect(history.body[0].usageType).toBe('INTERNAL');
 
         const logs = await request(app.getHttpServer())
             .get('/logs')
@@ -141,6 +142,64 @@ describe('ProductUsage (e2e)', () => {
             .set('Authorization', `Bearer ${empToken}`)
             .send([{ productId: product.id, quantity: 5 }])
             .expect(409);
+    });
+
+    it('allows overriding usageType', async () => {
+        const admin = await users.createUser(
+            'admino@pu.com',
+            'secret',
+            'AO',
+            Role.Admin,
+        );
+        const employee = await users.createUser(
+            'empo@pu.com',
+            'secret',
+            'EO',
+            Role.Employee,
+        );
+        const client = await users.createUser(
+            'cliento@pu.com',
+            'secret',
+            'CO',
+            Role.Client,
+        );
+
+        const product = await products.create({
+            name: 'wax',
+            unitPrice: 5,
+            stock: 2,
+        } as any);
+        const appt = await appointments.create(
+            client.id,
+            employee.id,
+            1,
+            new Date(Date.now() + 3600000).toISOString(),
+        );
+
+        const empLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'empo@pu.com', password: 'secret' })
+            .expect(201);
+        const empToken = empLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .post(`/appointments/${appt.id}/product-usage`)
+            .set('Authorization', `Bearer ${empToken}`)
+            .send([{ productId: product.id, quantity: 1, usageType: 'SALE' }])
+            .expect(201);
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'admino@pu.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token as string;
+
+        const history = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(200);
+        expect(history.body.length).toBe(1);
+        expect(history.body[0].usageType).toBe('SALE');
     });
 
     it('filters usage history by usageType', async () => {
