@@ -13,6 +13,10 @@ export class ProductUsageEntryDto {
     quantity: number;
 
     @IsEnum(UsageType)
-    @ApiProperty({ enum: UsageType, required: false })
+    @ApiProperty({
+        enum: UsageType,
+        required: false,
+        description: 'Usage classification. Defaults to INTERNAL when omitted.',
+    })
     usageType?: UsageType;
 }
