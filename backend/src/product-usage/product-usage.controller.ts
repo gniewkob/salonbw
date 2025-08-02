@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -9,7 +9,9 @@ import {
     ApiOperation,
     ApiResponse,
     ApiTags,
+    ApiQuery,
 } from '@nestjs/swagger';
+import { UsageType } from './usage-type.enum';
 
 @ApiTags('Product Usage')
 @ApiBearerAuth()
@@ -22,7 +24,11 @@ export class ProductUsageController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List usage history for product' })
     @ApiResponse({ status: 200 })
-    list(@Param('id') id: string) {
-        return this.usage.findForProduct(Number(id));
+    @ApiQuery({ name: 'usageType', required: false, enum: UsageType })
+    list(
+        @Param('id') id: string,
+        @Query('usageType') usageType?: UsageType,
+    ) {
+        return this.usage.findForProduct(Number(id), usageType);
     }
 }

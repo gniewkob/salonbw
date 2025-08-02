@@ -142,4 +142,88 @@ describe('ProductUsage (e2e)', () => {
             .send([{ productId: product.id, quantity: 5 }])
             .expect(409);
     });
+
+    it('filters usage history by usageType', async () => {
+        const admin = await users.createUser(
+            'adminf@pu.com',
+            'secret',
+            'AF',
+            Role.Admin,
+        );
+        const employee = await users.createUser(
+            'empf@pu.com',
+            'secret',
+            'EF',
+            Role.Employee,
+        );
+        const client = await users.createUser(
+            'clientf@pu.com',
+            'secret',
+            'CF',
+            Role.Client,
+        );
+
+        const product = await products.create({
+            name: 'shampoo',
+            unitPrice: 5,
+            stock: 5,
+        } as any);
+        const appt = await appointments.create(
+            client.id,
+            employee.id,
+            1,
+            new Date(Date.now() + 3600000).toISOString(),
+        );
+
+        const empLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'empf@pu.com', password: 'secret' })
+            .expect(201);
+        const empToken = empLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .post(`/appointments/${appt.id}/product-usage`)
+            .set('Authorization', `Bearer ${empToken}`)
+            .send([{ productId: product.id, quantity: 1 }])
+            .expect(201);
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'adminf@pu.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .post('/sales')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                clientId: client.id,
+                employeeId: employee.id,
+                productId: product.id,
+                quantity: 1,
+            })
+            .expect(201);
+
+        const allHistory = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(200);
+        expect(allHistory.body.length).toBe(2);
+
+        const saleHistory = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({ usageType: 'SALE' })
+            .expect(200);
+        expect(saleHistory.body.length).toBe(1);
+        expect(saleHistory.body[0].usageType).toBe('SALE');
+
+        const internalHistory = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({ usageType: 'INTERNAL' })
+            .expect(200);
+        expect(internalHistory.body.length).toBe(1);
+        expect(internalHistory.body[0].usageType).toBe('INTERNAL');
+    });
 });
