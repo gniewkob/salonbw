@@ -24,6 +24,9 @@ import { ClientWithPhone, EmployeeWithPhone } from './phone-interfaces';
 
 @Injectable()
 export class AppointmentsService {
+    private readonly cancelCutoffMinutes =
+        Number(process.env.CANCEL_CUTOFF_MINUTES ?? '60');
+
     constructor(
         @InjectRepository(Appointment)
         private readonly repo: Repository<Appointment>,
@@ -349,6 +352,13 @@ export class AppointmentsService {
             appt.employee.id !== userId
         ) {
             throw new ForbiddenException();
+        }
+        if (role !== Role.Admin) {
+            const now = new Date();
+            const diff = appt.startTime.getTime() - now.getTime();
+            if (diff < this.cancelCutoffMinutes * 60000) {
+                throw new BadRequestException('Cannot cancel close to start');
+            }
         }
         appt.status = AppointmentStatus.Cancelled;
         const saved = await this.repo.save(appt);
