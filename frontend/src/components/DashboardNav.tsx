@@ -15,6 +15,10 @@ const navLinks: Record<Role, { href: string; label: string }[]> = {
         { href: '/appointments', label: 'Appointments' },
         { href: '/clients', label: 'Clients' },
     ],
+    receptionist: [
+        { href: '/dashboard/receptionist', label: 'Home' },
+        { href: '/appointments', label: 'Appointments' },
+    ],
     admin: [
         { href: '/dashboard/admin', label: 'Home' },
         { href: '/appointments', label: 'Appointments' },
@@ -28,7 +32,10 @@ const navLinks: Record<Role, { href: string; label: string }[]> = {
 export default function DashboardNav() {
     const { logout, role } = useAuth();
     const currentRole: Role =
-        role === 'client' || role === 'employee' || role === 'admin'
+        role === 'client' ||
+        role === 'employee' ||
+        role === 'receptionist' ||
+        role === 'admin'
             ? role
             : 'client';
 
