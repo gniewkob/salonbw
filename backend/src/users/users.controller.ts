@@ -7,6 +7,7 @@ import {
     Delete,
     Param,
     Patch,
+    BadRequestException,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -46,6 +47,11 @@ export class UsersController {
             privacyConsent,
             marketingConsent,
         } = createUserDto;
+        if (!role || role === Role.Client) {
+            throw new BadRequestException(
+                'Admins cannot create client accounts',
+            );
+        }
         return this.usersService.createUser(
             email,
             password,
