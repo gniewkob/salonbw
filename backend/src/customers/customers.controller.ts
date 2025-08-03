@@ -22,7 +22,6 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
-import { UsersService } from '../users/users.service';
 import { UpdateCustomerDto } from '../users/dto/update-customer.dto';
 import { UpdateMarketingConsentDto } from './dto/update-marketing-consent.dto';
 
@@ -31,10 +30,7 @@ import { UpdateMarketingConsentDto } from './dto/update-marketing-consent.dto';
 @Controller('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomersController {
-    constructor(
-        private readonly service: CustomersService,
-        private readonly users: UsersService,
-    ) {}
+    constructor(private readonly service: CustomersService) {}
 
     @Get()
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
@@ -61,12 +57,7 @@ export class CustomersController {
     @ApiOperation({ summary: 'Update own customer profile' })
     @ApiResponse({ status: 200 })
     async updateMe(@Request() req, @Body() dto: UpdateCustomerDto) {
-        await this.users.updateCustomer(req.user.id, dto);
-        const updated = await this.service.findOne(req.user.id);
-        if (!updated) {
-            throw new NotFoundException();
-        }
-        return updated;
+        return this.service.updateProfile(req.user.id, dto);
     }
 
     @Get(':id')
