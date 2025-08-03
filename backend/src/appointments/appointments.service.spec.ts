@@ -94,6 +94,8 @@ describe('AppointmentsService', () => {
             2,
             3,
             '2100-07-01T10:00:00.000Z',
+            undefined,
+            7,
         );
 
         expect(repo.create).toHaveBeenCalledWith({
@@ -113,7 +115,7 @@ describe('AppointmentsService', () => {
                 serviceId: 3,
                 startTime: '2100-07-01T10:00:00.000Z',
             }),
-            1,
+            7,
         );
         expect(notifications.sendAppointmentConfirmation).toHaveBeenCalled();
         expect(result).toBe(created);
@@ -139,6 +141,7 @@ describe('AppointmentsService', () => {
             3,
             '2100-07-01T10:00:00.000Z',
             'bring tools',
+            7,
         );
 
         expect(repo.create).toHaveBeenCalledWith({
