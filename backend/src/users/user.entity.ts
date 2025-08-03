@@ -4,6 +4,7 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    DeleteDateColumn,
 } from 'typeorm';
 import { Role } from './role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
@@ -51,4 +52,7 @@ export class User {
 
     @Column({ type: 'float', nullable: true })
     commissionBase: number | null;
+
+    @DeleteDateColumn({ type: 'timestamptz', nullable: true })
+    deletedAt: Date | null;
 }

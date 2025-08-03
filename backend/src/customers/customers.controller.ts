@@ -9,6 +9,7 @@ import {
     Request,
     Put,
     Patch,
+    Delete,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -112,5 +113,14 @@ export class CustomersController {
             throw new NotFoundException();
         }
         return customer;
+    }
+
+    @Delete('me')
+    @Roles(Role.Client)
+    @ApiOperation({ summary: 'Request account deletion' })
+    @ApiResponse({ status: 200 })
+    async removeMe(@Request() req) {
+        await this.service.forgetMe(req.user.id);
+        return { success: true };
     }
 }

@@ -86,4 +86,8 @@ export class CustomersService {
             excludeExtraneousValues: true,
         });
     }
+
+    async forgetMe(id: number): Promise<void> {
+        await this.users.forgetMe(id);
+    }
 }
