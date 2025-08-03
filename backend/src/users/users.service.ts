@@ -31,13 +31,53 @@ export class UsersService {
     async createUser(
         email: string,
         password: string,
-        firstName: string,
-        lastName: string,
-        role: Role = Role.Client,
-        phone?: string | null,
-        privacyConsent?: boolean,
-        marketingConsent?: boolean,
+        first: string,
+        lastOrRole?: string | Role,
+        roleOrPhone?: Role | string,
+        phoneOrPrivacy?: string | boolean | null,
+        privacyOrMarketing?: boolean,
+        marketing?: boolean,
     ) {
+        let firstName = first;
+        let lastName = '';
+        let role: Role = Role.Client;
+        let phone: string | null = null;
+        let privacyConsent = false;
+        let marketingConsent = false;
+
+        if (
+            typeof lastOrRole === 'string' &&
+            Object.values(Role).includes(lastOrRole as Role) &&
+            (roleOrPhone === undefined || typeof roleOrPhone === 'string')
+        ) {
+            const [fn, ...ln] = first.split(' ');
+            firstName = fn;
+            lastName = ln.join(' ');
+            role = lastOrRole as Role;
+            if (typeof roleOrPhone === 'string') {
+                phone = roleOrPhone;
+            }
+        } else {
+            lastName = (lastOrRole as string) ?? '';
+            role = (roleOrPhone as Role) ?? Role.Client;
+            if (typeof phoneOrPrivacy === 'string') {
+                phone = phoneOrPrivacy;
+                if (typeof privacyOrMarketing === 'boolean') {
+                    privacyConsent = privacyOrMarketing;
+                }
+                if (typeof marketing === 'boolean') {
+                    marketingConsent = marketing;
+                }
+            } else {
+                if (typeof phoneOrPrivacy === 'boolean') {
+                    privacyConsent = phoneOrPrivacy;
+                }
+                if (typeof privacyOrMarketing === 'boolean') {
+                    marketingConsent = privacyOrMarketing;
+                }
+            }
+        }
+
         const existing = await this.findByEmail(email);
         if (existing) {
             throw new BadRequestException('Email already registered');
@@ -50,8 +90,8 @@ export class UsersService {
             lastName,
             role,
             phone: phone ?? null,
-            privacyConsent: privacyConsent ?? false,
-            marketingConsent: marketingConsent ?? false,
+            privacyConsent,
+            marketingConsent,
         });
         return this.usersRepository.save(user);
     }

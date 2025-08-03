@@ -29,9 +29,10 @@ describe('AuthController (e2e)', () => {
             .send({
                 email: 'test@test.com',
                 password: 'Secret123!',
-                fullName: 'Test',
+                firstName: 'Test',
+                lastName: 'User',
                 phone: '+48123123123',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201)
             .expect((res) => {
@@ -46,9 +47,10 @@ describe('AuthController (e2e)', () => {
             .send({
                 email: 'bad',
                 password: '123',
-                fullName: 'T',
+                firstName: 'T',
+                lastName: 'U',
                 phone: '123',
-                consentRODO: false,
+                privacyConsent: false,
             })
             .expect(400);
     });
@@ -59,9 +61,10 @@ describe('AuthController (e2e)', () => {
             .send({
                 email: 'dup@test.com',
                 password: 'Secret123!',
-                fullName: 'One',
+                firstName: 'One',
+                lastName: 'A',
                 phone: '+48123123124',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 
@@ -70,9 +73,10 @@ describe('AuthController (e2e)', () => {
             .send({
                 email: 'dup@test.com',
                 password: 'Other123!',
-                fullName: 'Two',
+                firstName: 'Two',
+                lastName: 'B',
                 phone: '+48123123125',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(400);
     });
