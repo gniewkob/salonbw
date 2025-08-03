@@ -22,4 +22,8 @@ export class EmployeeDto {
     @ApiProperty({ enum: Role })
     @Expose()
     role: Role;
+
+    @ApiProperty()
+    @Expose()
+    commissionBase: number;
 }

@@ -3,6 +3,7 @@ import {
     IsEmail,
     IsEnum,
     IsMobilePhone,
+    IsNumber,
     IsOptional,
     IsString,
 } from 'class-validator';
@@ -20,6 +21,10 @@ export class CreateEmployeeDto {
     @ApiProperty()
     @IsString()
     lastName: string;
+
+    @ApiProperty()
+    @IsNumber()
+    commissionBase: number;
 
     @ApiPropertyOptional()
     @IsMobilePhone()

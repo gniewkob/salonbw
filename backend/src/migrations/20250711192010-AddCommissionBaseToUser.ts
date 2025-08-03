@@ -9,7 +9,8 @@ export class AddCommissionBaseToUser20250711192010
             new TableColumn({
                 name: 'commissionBase',
                 type: 'float',
-                isNullable: true,
+                isNullable: false,
+                default: '10',
             }),
         );
     }
