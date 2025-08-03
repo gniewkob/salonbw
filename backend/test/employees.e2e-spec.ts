@@ -186,4 +186,53 @@ describe('EmployeesController (e2e)', () => {
             expect(l.actor.id).toBe(admin.id);
         });
     });
+
+    it('employee can manage own profile without changing role or permissions', async () => {
+        await usersService.createUser('me@test.com', 'secret', 'Emp', Role.Employee);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'me@test.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const me = await request(app.getHttpServer())
+            .get('/employees/me')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(me.body.email).toBe('me@test.com');
+        expect(me.body.role).toBe('employee');
+
+        const updated = await request(app.getHttpServer())
+            .patch('/employees/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                firstName: 'New',
+                email: 'me2@test.com',
+                role: 'admin',
+                commissionBase: 20,
+                isActive: false,
+            })
+            .expect(200);
+        expect(updated.body.firstName).toBe('New');
+        expect(updated.body.email).toBe('me2@test.com');
+        expect(updated.body.role).toBe('employee');
+        expect(updated.body.commissionBase).toBe(10);
+
+        await request(app.getHttpServer())
+            .patch('/employees/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ password: 'Secret123!' })
+            .expect(200);
+
+        const dbUser = await usersService.findByEmail('me2@test.com');
+        expect(dbUser?.role).toBe(Role.Employee);
+        expect(dbUser?.commissionBase).toBe(10);
+        expect(dbUser?.isActive).toBe(true);
+
+        await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'me2@test.com', password: 'Secret123!' })
+            .expect(201);
+    });
 });
