@@ -138,26 +138,61 @@ export class UsersService {
         if (!user) {
             return undefined;
         }
+
+        const profileChanges: Record<string, unknown> = {};
+        let profileChanged = false;
+        let marketingChanged = false;
+
         if (dto.email && dto.email !== user.email) {
             const existing = await this.findByEmail(dto.email);
             if (existing && existing.id !== id) {
                 throw new BadRequestException('Email already registered');
             }
             user.email = dto.email;
+            profileChanges.email = dto.email;
+            profileChanged = true;
         }
-        if (dto.firstName !== undefined) {
+        if (dto.firstName !== undefined && dto.firstName !== user.firstName) {
             user.firstName = dto.firstName;
+            profileChanges.firstName = dto.firstName;
+            profileChanged = true;
         }
-        if (dto.lastName !== undefined) {
+        if (dto.lastName !== undefined && dto.lastName !== user.lastName) {
             user.lastName = dto.lastName;
+            profileChanges.lastName = dto.lastName;
+            profileChanged = true;
         }
-        if (dto.phone !== undefined) {
+        if (dto.phone !== undefined && dto.phone !== user.phone) {
             user.phone = dto.phone;
+            profileChanges.phone = dto.phone;
+            profileChanged = true;
         }
-        if (dto.marketingConsent !== undefined) {
+        if (
+            dto.marketingConsent !== undefined &&
+            dto.marketingConsent !== user.marketingConsent
+        ) {
             user.marketingConsent = dto.marketingConsent;
+            marketingChanged = true;
         }
-        return this.usersRepository.save(user);
+
+        const saved = await this.usersRepository.save(user);
+
+        if (profileChanged) {
+            await this.logs.create(
+                LogAction.ProfileUpdate,
+                JSON.stringify({ id, ...profileChanges }),
+                id,
+            );
+        }
+        if (marketingChanged) {
+            await this.logs.create(
+                LogAction.MarketingConsentChange,
+                JSON.stringify({ id, marketingConsent: user.marketingConsent }),
+                id,
+            );
+        }
+
+        return saved;
     }
 
     async forgetMe(id: number) {
