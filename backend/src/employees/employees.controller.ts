@@ -27,6 +27,7 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeCommissionDto } from './dto/update-employee-commission.dto';
 import { CreateEmployeeResponseDto } from './dto/create-employee-response.dto';
+import { UpdateEmployeeProfileDto } from './dto/update-employee-profile.dto';
 import { Request as ExpressRequest } from 'express';
 
 interface AuthRequest extends ExpressRequest {
@@ -46,6 +47,29 @@ export class EmployeesController {
     @ApiResponse({ status: 200 })
     list() {
         return this.service.findAll();
+    }
+
+    @Get('me')
+    @Roles(Role.Employee)
+    @ApiOperation({ summary: 'Get own employee profile' })
+    @ApiResponse({ status: 200 })
+    async getMe(@Request() req: AuthRequest) {
+        const employee = await this.service.findMe(req.user.id);
+        if (!employee) {
+            throw new NotFoundException();
+        }
+        return employee;
+    }
+
+    @Patch('me')
+    @Roles(Role.Employee)
+    @ApiOperation({ summary: 'Update own employee profile' })
+    @ApiResponse({ status: 200 })
+    async updateMe(
+        @Request() req: AuthRequest,
+        @Body() dto: UpdateEmployeeProfileDto,
+    ) {
+        return this.service.updateProfile(req.user.id, dto);
     }
 
     @Get(':id')

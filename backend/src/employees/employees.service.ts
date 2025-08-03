@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { plainToInstance, instanceToPlain } from 'class-transformer';
@@ -7,6 +7,7 @@ import { Role } from '../users/role.enum';
 import { EmployeeDto } from './dto/employee.dto';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { UpdateEmployeeProfileDto } from './dto/update-employee-profile.dto';
 import { CreateEmployeeResponseDto } from './dto/create-employee-response.dto';
 import * as bcrypt from 'bcrypt';
 import { generateStrongPassword } from '../common/password.util';
@@ -44,6 +45,61 @@ export class EmployeesService {
         });
         if (!employee) return undefined;
         return this.toDto(employee);
+    }
+
+    async findMe(id: number): Promise<EmployeeDto | undefined> {
+        const employee = await this.repo.findOne({
+            where: { id, role: Role.Employee },
+        });
+        if (!employee) return undefined;
+        return this.toDto(employee);
+    }
+
+    async updateProfile(
+        id: number,
+        dto: UpdateEmployeeProfileDto,
+    ): Promise<EmployeeDto> {
+        const employee = await this.repo.findOne({
+            where: { id, role: Role.Employee },
+        });
+        if (!employee) {
+            throw new NotFoundException();
+        }
+        const profileChanges: Record<string, unknown> = {};
+        if (dto.email && dto.email !== employee.email) {
+            const existing = await this.repo.findOne({
+                where: { email: dto.email },
+            });
+            if (existing && existing.id !== id) {
+                throw new BadRequestException('Email already registered');
+            }
+            employee.email = dto.email;
+            profileChanges.email = dto.email;
+        }
+        if (dto.firstName !== undefined && dto.firstName !== employee.firstName) {
+            employee.firstName = dto.firstName;
+            profileChanges.firstName = dto.firstName;
+        }
+        if (dto.lastName !== undefined && dto.lastName !== employee.lastName) {
+            employee.lastName = dto.lastName;
+            profileChanges.lastName = dto.lastName;
+        }
+        if (dto.phone !== undefined && dto.phone !== employee.phone) {
+            employee.phone = dto.phone;
+            profileChanges.phone = dto.phone;
+        }
+        if (dto.password !== undefined) {
+            employee.password = await bcrypt.hash(dto.password, 10);
+        }
+        const saved = await this.repo.save(employee);
+        if (Object.keys(profileChanges).length > 0) {
+            await this.logs.create(
+                LogAction.ProfileUpdate,
+                JSON.stringify({ id, ...profileChanges }),
+                id,
+            );
+        }
+        return this.toDto(saved);
     }
 
     async create(
