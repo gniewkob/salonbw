@@ -61,6 +61,7 @@ export class EmployeesService {
             lastName: dto.lastName,
             phone: dto.phone ?? null,
             role: dto.role ?? Role.Employee,
+            commissionBase: dto.commissionBase,
         });
         const saved = await this.repo.save(user);
         return { employee: this.toDto(saved), password };
