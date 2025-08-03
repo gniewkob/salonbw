@@ -56,6 +56,7 @@ export class ClientAppointmentsController {
             dto.employeeId,
             dto.serviceId,
             dto.startTime,
+            dto.notes,
         );
     }
 
