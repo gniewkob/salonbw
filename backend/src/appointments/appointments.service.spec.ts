@@ -81,6 +81,7 @@ describe('AppointmentsService', () => {
             client: { phone: '111' },
             employee: { phone: '222' },
             startTime: new Date('2100-07-01T10:00:00.000Z'),
+            endTime: new Date('2100-07-01T10:30:00.000Z'),
         };
         repo.create.mockReturnValue(created);
         repo.save.mockResolvedValue(created);
@@ -99,6 +100,7 @@ describe('AppointmentsService', () => {
             employee: { id: 2 },
             service: { id: 3 },
             startTime: new Date('2100-07-01T10:00:00.000Z'),
+            endTime: new Date('2100-07-01T10:30:00.000Z'),
             status: AppointmentStatus.Scheduled,
         });
         expect(repo.save).toHaveBeenCalledWith(created);
@@ -181,6 +183,50 @@ describe('AppointmentsService', () => {
 
         expect(existing.status).toBe(AppointmentStatus.Completed);
         expect(existing.notes).toBe('done');
+        expect(repo.save).toHaveBeenCalledWith(existing);
+    });
+
+    it('update recalculates endTime when startTime changes', async () => {
+        const existing: any = {
+            id: 1,
+            employee: { id: 2 },
+            client: { id: 3 },
+            service: { duration: 30 },
+            startTime: new Date('2100-01-01T10:00:00.000Z'),
+        };
+        repo.findOne.mockResolvedValue(existing);
+        repo.save.mockResolvedValue(existing);
+        repo.find.mockResolvedValue([existing]);
+
+        await service.update(1, { startTime: '2100-01-01T11:00:00.000Z' });
+
+        expect(existing.startTime).toEqual(
+            new Date('2100-01-01T11:00:00.000Z'),
+        );
+        expect(existing.endTime).toEqual(
+            new Date('2100-01-01T11:30:00.000Z'),
+        );
+        expect(repo.save).toHaveBeenCalledWith(existing);
+    });
+
+    it('update recalculates endTime when service changes', async () => {
+        const existing: any = {
+            id: 1,
+            employee: { id: 2 },
+            client: { id: 3 },
+            service: { id: 3, duration: 30 },
+            startTime: new Date('2100-01-01T10:00:00.000Z'),
+        };
+        repo.findOne.mockResolvedValue(existing);
+        repo.save.mockResolvedValue(existing);
+        repo.find.mockResolvedValue([existing]);
+        repo.manager.findOne.mockResolvedValue({ id: 4, duration: 45 });
+
+        await service.update(1, { serviceId: 4 });
+
+        expect(existing.endTime).toEqual(
+            new Date('2100-01-01T10:45:00.000Z'),
+        );
         expect(repo.save).toHaveBeenCalledWith(existing);
     });
 
