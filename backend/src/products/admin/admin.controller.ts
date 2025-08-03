@@ -95,8 +95,16 @@ export class AdminController {
             },
         },
     })
-    updateStock(@Param('id') id: number, @Body('amount') amount: number) {
-        return this.service.updateStock(Number(id), Number(amount));
+    updateStock(
+        @Param('id') id: number,
+        @Body('amount') amount: number,
+        @Request() req: AuthRequest,
+    ) {
+        return this.service.updateStock(
+            Number(id),
+            Number(amount),
+            req.user.id,
+        );
     }
 
     @Delete(':id')
