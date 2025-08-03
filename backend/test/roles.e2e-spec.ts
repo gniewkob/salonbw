@@ -33,9 +33,10 @@ describe('RolesGuard (e2e)', () => {
             .send({
                 email: 'client@test.com',
                 password: 'Secret123!',
-                fullName: 'Client',
+                firstName: 'Client',
+                lastName: 'User',
                 phone: '+48123123126',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 

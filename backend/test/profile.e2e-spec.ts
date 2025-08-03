@@ -33,9 +33,10 @@ describe('UsersController (e2e)', () => {
             .send({
                 email: 'test@test.com',
                 password: 'Secret123!',
-                fullName: 'Test',
+                firstName: 'Test',
+                lastName: 'User',
                 phone: '+48123123130',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 
@@ -49,7 +50,8 @@ describe('UsersController (e2e)', () => {
                 expect(res.body).toHaveProperty('id');
                 expect(res.body).toMatchObject({
                     email: 'test@test.com',
-                    name: 'Test',
+                    firstName: 'Test',
+                    lastName: 'User',
                     role: 'client',
                 });
             });
@@ -61,9 +63,10 @@ describe('UsersController (e2e)', () => {
             .send({
                 email: 'test@test.com',
                 password: 'Secret123!',
-                fullName: 'Test',
+                firstName: 'Test',
+                lastName: 'User',
                 phone: '+48123123130',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 

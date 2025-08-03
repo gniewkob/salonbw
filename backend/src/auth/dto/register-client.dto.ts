@@ -9,37 +9,38 @@ import {
     Equals,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEuPhoneNumber } from '../../common/validators/is-eu-phone-number';
 
 export class RegisterClientDto {
-    @ApiProperty()
+    @ApiProperty({ example: 'Jan' })
     @IsString()
     @MinLength(2)
     firstName: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'Kowalski' })
     @IsString()
     @MinLength(2)
     lastName: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'jan@example.com' })
     @IsEmail()
     @IsNotEmpty()
     email: string;
 
-    @ApiProperty()
-    @Matches(/^\+48\d{9}$/)
+    @ApiProperty({ example: '+48123123123' })
+    @IsEuPhoneNumber()
     phone: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'Secret123!' })
     @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
     password: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: true })
     @IsBoolean()
     @Equals(true)
     privacyConsent: boolean;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ required: false, example: false })
     @IsBoolean()
     @IsOptional()
     marketingConsent?: boolean;

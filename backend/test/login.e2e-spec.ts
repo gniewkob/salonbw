@@ -29,9 +29,10 @@ describe('AuthController.login (e2e)', () => {
             .send({
                 email: 'test@test.com',
                 password: 'Secret123!',
-                fullName: 'Test',
+                firstName: 'Test',
+                lastName: 'User',
                 phone: '+48123123123',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 
@@ -51,9 +52,10 @@ describe('AuthController.login (e2e)', () => {
             .send({
                 email: 'test@test.com',
                 password: 'Secret123!',
-                fullName: 'Test',
+                firstName: 'Test',
+                lastName: 'User',
                 phone: '+48123123123',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 

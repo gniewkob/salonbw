@@ -48,7 +48,7 @@ describe('AuthController.socialLogin (e2e)', () => {
     it('registers new user via Google', async () => {
         const res = await request(app.getHttpServer())
             .post('/auth/social-login')
-            .send({ provider: 'google', token: 'good', consentMarketing: true })
+            .send({ provider: 'google', token: 'good', marketingConsent: true })
             .expect(201);
         expect(res.body).toHaveProperty('access_token');
         expect(res.body).toHaveProperty('refresh_token');
@@ -57,7 +57,7 @@ describe('AuthController.socialLogin (e2e)', () => {
     });
 
     it('logs in existing social user', async () => {
-        await users.createSocialUser('log@test.com', 'Existing');
+        await users.createSocialUser('log@test.com', 'Existing', 'User');
         await request(app.getHttpServer())
             .post('/auth/social-login')
             .send({ provider: 'google', token: 'exist' })
