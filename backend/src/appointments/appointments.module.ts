@@ -5,6 +5,7 @@ import { AppointmentsService } from './appointments.service';
 import { ClientAppointmentsController } from './client-appointments.controller';
 import { EmployeeAppointmentsController } from './employee-appointments.controller';
 import { AdminAppointmentsController } from './admin-appointments.controller';
+import { MeAppointmentsController } from './me-appointments.controller';
 import { FormulasModule } from '../formulas/formulas.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { LogsModule } from '../logs/logs.module';
@@ -24,6 +25,7 @@ import { ReminderService } from './reminder.service';
         ClientAppointmentsController,
         EmployeeAppointmentsController,
         AdminAppointmentsController,
+        MeAppointmentsController,
     ],
     providers: [AppointmentsService, ReminderService],
     exports: [AppointmentsService],
