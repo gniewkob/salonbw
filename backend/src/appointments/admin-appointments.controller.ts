@@ -69,8 +69,17 @@ export class AdminAppointmentsController {
         @Param('id') id: string,
         @Request() req: AuthRequest,
     ) {
-         
+
         return this.service.cancel(Number(id), req.user.id, req.user.role);
+    }
+
+    @Patch(':id/no-show')
+    @ApiOperation({ summary: 'Mark appointment as no-show' })
+    noShow(
+        @Param('id') id: string,
+        @Request() req: AuthRequest,
+    ) {
+        return this.service.noShow(Number(id), req.user.id, req.user.role);
     }
 
     @Patch(':id/complete')
