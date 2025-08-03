@@ -31,4 +31,34 @@ export class CustomersService {
             excludeExtraneousValues: true,
         });
     }
+
+    async setActive(
+        id: number,
+        isActive: boolean,
+    ): Promise<CustomerDto | undefined> {
+        const customer = await this.repo.findOne({
+            where: { id, role: Role.Client },
+        });
+        if (!customer) return undefined;
+        customer.isActive = isActive;
+        const saved = await this.repo.save(customer);
+        return plainToInstance(CustomerDto, saved, {
+            excludeExtraneousValues: true,
+        });
+    }
+
+    async updateMarketingConsent(
+        id: number,
+        marketingConsent: boolean,
+    ): Promise<CustomerDto | undefined> {
+        const customer = await this.repo.findOne({
+            where: { id, role: Role.Client },
+        });
+        if (!customer) return undefined;
+        customer.marketingConsent = marketingConsent;
+        const saved = await this.repo.save(customer);
+        return plainToInstance(CustomerDto, saved, {
+            excludeExtraneousValues: true,
+        });
+    }
 }
