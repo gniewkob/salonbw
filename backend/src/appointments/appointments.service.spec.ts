@@ -467,4 +467,32 @@ describe('AppointmentsService', () => {
             commission: { amount: 10, percent: 10 },
         });
     });
+
+    describe('findOneForUser', () => {
+        it('returns appointment for owning client', async () => {
+            const appt: any = { id: 1, client: { id: 1 }, employee: { id: 2 } };
+            repo.findOne.mockResolvedValueOnce(appt);
+            await expect(
+                service.findOneForUser(1, 1, Role.Client),
+            ).resolves.toBe(appt);
+        });
+
+        it('throws when accessing another user\'s appointment', async () => {
+            repo.findOne.mockResolvedValueOnce({
+                id: 1,
+                client: { id: 2 },
+                employee: { id: 3 },
+            });
+            await expect(
+                service.findOneForUser(1, 1, Role.Client),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('returns undefined when appointment not found', async () => {
+            repo.findOne.mockResolvedValueOnce(undefined);
+            await expect(
+                service.findOneForUser(1, 1, Role.Client),
+            ).resolves.toBeUndefined();
+        });
+    });
 });
