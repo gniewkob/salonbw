@@ -89,25 +89,41 @@ describe('UsersService', () => {
         expect(repo.save).not.toHaveBeenCalled();
     });
 
-    it('updateCustomer hashes password and saves changes', async () => {
+    it('updateCustomer saves changes to allowed fields', async () => {
         const user = {
             id: 1,
             email: 'old@test.com',
-            password: 'p',
             firstName: 'Old',
             lastName: 'Name',
+            marketingConsent: false,
         } as User;
         repo.findOne.mockResolvedValue(user);
         repo.save.mockResolvedValue(user);
 
         await service.updateCustomer(1, {
-            password: 'new',
             firstName: 'New',
+            marketingConsent: true,
         });
 
-        const passed: string = repo.save.mock.calls[0][0].password as string;
-        expect(await bcrypt.compare('new', passed)).toBe(true);
+        const saved = repo.save.mock.calls[0][0] as User;
+        expect(saved.firstName).toBe('New');
+        expect(saved.marketingConsent).toBe(true);
         expect(repo.save).toHaveBeenCalled();
+    });
+
+    it('updateCustomer throws BadRequest if email already registered', async () => {
+        const user = {
+            id: 1,
+            email: 'old@test.com',
+        } as User;
+        repo.findOne
+            .mockResolvedValueOnce(user) // find user by id
+            .mockResolvedValueOnce({ id: 2 } as User); // find existing email
+
+        await expect(
+            service.updateCustomer(1, { email: 'new@test.com' }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(repo.save).not.toHaveBeenCalled();
     });
 
     it('updateCustomer returns undefined when user missing', async () => {

@@ -142,9 +142,6 @@ export class UsersService {
             }
             user.email = dto.email;
         }
-        if (dto.password) {
-            user.password = await bcrypt.hash(dto.password, 10);
-        }
         if (dto.firstName !== undefined) {
             user.firstName = dto.firstName;
         }
@@ -153,9 +150,6 @@ export class UsersService {
         }
         if (dto.phone !== undefined) {
             user.phone = dto.phone;
-        }
-        if (dto.privacyConsent !== undefined) {
-            user.privacyConsent = dto.privacyConsent;
         }
         if (dto.marketingConsent !== undefined) {
             user.marketingConsent = dto.marketingConsent;
