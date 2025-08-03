@@ -72,6 +72,7 @@ export class ClientAppointmentsController {
             dto.serviceId,
             dto.startTime,
             dto.notes,
+            req.user.id,
         );
     }
 

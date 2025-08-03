@@ -47,13 +47,14 @@ export class AdminAppointmentsController {
     @Post()
     @ApiOperation({ summary: 'Create appointment' })
     @ApiResponse({ status: 201 })
-    create(@Body() dto: CreateAppointmentDto) {
+    create(@Body() dto: CreateAppointmentDto, @Request() req: AuthRequest) {
         return this.service.create(
             dto.clientId,
             dto.employeeId,
             dto.serviceId,
             dto.startTime,
             dto.notes,
+            req.user.id,
         );
     }
 
