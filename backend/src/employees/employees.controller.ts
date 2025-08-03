@@ -146,7 +146,8 @@ export class EmployeesController {
     }
 
     @Patch(':id/commission')
-    @ApiOperation({ summary: 'Update employee commission base' })
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Update employee commission percentage' })
     @ApiResponse({ status: 200 })
     @ApiResponse({ status: 404 })
     async updateCommission(

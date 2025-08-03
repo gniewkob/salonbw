@@ -235,4 +235,59 @@ describe('EmployeesController (e2e)', () => {
             .send({ email: 'me2@test.com', password: 'Secret123!' })
             .expect(201);
     });
+
+    it('validates commission percentage and enforces admin role', async () => {
+        const admin = await usersService.createUser(
+            'adminc@emp.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const employee = await usersService.createUser(
+            'empc@emp.com',
+            'secret',
+            'Emp',
+            Role.Employee,
+        );
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'adminc@emp.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token as string;
+
+        const employeeLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'empc@emp.com', password: 'secret' })
+            .expect(201);
+        const employeeToken = employeeLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${employee.id}/commission`)
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({ commissionBase: 20 })
+            .expect(403);
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${employee.id}/commission`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ commissionBase: -5 })
+            .expect(400);
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${employee.id}/commission`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ commissionBase: 150 })
+            .expect(400);
+
+        const res = await request(app.getHttpServer())
+            .patch(`/employees/${employee.id}/commission`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ commissionBase: 25.5 })
+            .expect(200);
+        expect(res.body.commissionBase).toBe(25.5);
+
+        const dbUser = await usersService.findOne(employee.id);
+        expect(dbUser?.commissionBase).toBe(25.5);
+    });
 });
