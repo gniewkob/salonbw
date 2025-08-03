@@ -39,6 +39,7 @@ export class AppointmentsService {
         employeeId: number,
         serviceId: number,
         startTime: string,
+        notes?: string,
     ): Promise<Appointment> {
         const start = new Date(startTime);
         if (start < new Date()) {
@@ -76,6 +77,7 @@ export class AppointmentsService {
             startTime: start,
             endTime,
             status: AppointmentStatus.Scheduled,
+            notes,
         });
         const saved = await this.repo.save(appointment);
         await this.logs.create(
