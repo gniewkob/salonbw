@@ -7,8 +7,9 @@ import { Role } from '../users/role.enum';
 import { EmployeeDto } from './dto/employee.dto';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { CreateEmployeeResponseDto } from './dto/create-employee-response.dto';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
+import { generateStrongPassword } from '../common/password.util';
 
 @Injectable()
 export class EmployeesService {
@@ -43,14 +44,14 @@ export class EmployeesService {
 
     async create(
         dto: CreateEmployeeDto,
-    ): Promise<{ employee: EmployeeDto; password: string }> {
+    ): Promise<CreateEmployeeResponseDto> {
         const existing = await this.repo.findOne({
             where: { email: dto.email },
         });
         if (existing) {
             throw new BadRequestException('Email already registered');
         }
-        const password = randomBytes(8).toString('hex');
+        const password = generateStrongPassword();
         const hashed = await bcrypt.hash(password, 10);
         const user = this.repo.create({
             email: dto.email,
