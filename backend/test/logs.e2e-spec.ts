@@ -153,4 +153,64 @@ describe('LogsModule (e2e)', () => {
         expect(createLogs.body.length).toBeGreaterThanOrEqual(1);
         expect(cancelLogs.body.length).toBeGreaterThanOrEqual(1);
     });
+
+    it('records profile updates and marketing consent changes', async () => {
+        const admin = await usersService.createUser(
+            'profileadmin@logs.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const client = await usersService.createUser(
+            'profileclient@logs.com',
+            'secret',
+            'Client',
+            Role.Client,
+        );
+
+        const clientLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'profileclient@logs.com', password: 'secret' })
+            .expect(201);
+        const clientToken = clientLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .put('/customers/me')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ firstName: 'New' })
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .put('/customers/me')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({ marketingConsent: true })
+            .expect(200);
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'profileadmin@logs.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token as string;
+
+        const profileLogs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({
+                action: LogAction.ProfileUpdate,
+                userId: client.id,
+            })
+            .expect(200);
+
+        const consentLogs = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .query({
+                action: LogAction.MarketingConsentChange,
+                userId: client.id,
+            })
+            .expect(200);
+
+        expect(profileLogs.body.length).toBeGreaterThanOrEqual(1);
+        expect(consentLogs.body.length).toBeGreaterThanOrEqual(1);
+    });
 });
