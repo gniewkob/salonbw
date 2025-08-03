@@ -14,6 +14,7 @@ import { LogAction } from '../logs/action.enum';
 import { Sale } from '../sales/sale.entity';
 import { ProductUsageService } from '../product-usage/product-usage.service';
 import { UsageType } from '../product-usage/usage-type.enum';
+import { ProductUsage } from '../product-usage/product-usage.entity';
 
 @Injectable()
 export class ProductsService {
@@ -22,6 +23,8 @@ export class ProductsService {
         private readonly repo: Repository<Product>,
         @InjectRepository(Sale)
         private readonly sales: Repository<Sale>,
+        @InjectRepository(ProductUsage)
+        private readonly usageRepo: Repository<ProductUsage>,
         private readonly logs: LogsService,
         private readonly usage: ProductUsageService,
     ) {}
@@ -132,8 +135,12 @@ export class ProductsService {
     async remove(id: number) {
         const entity = await this.repo.findOne({ where: { id } });
         if (!entity) throw new NotFoundException();
-        const count = await this.sales.count({ where: { product: { id } } });
-        if (count > 0) {
+        const usageCount = await this.usageRepo.count({ where: { product: { id } } });
+        if (usageCount > 0) {
+            throw new ConflictException('Product has usage records');
+        }
+        const salesCount = await this.sales.count({ where: { product: { id } } });
+        if (salesCount > 0) {
             throw new ConflictException('Product has sales');
         }
         const result = await this.repo.delete(id);

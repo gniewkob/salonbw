@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ProductUsageService } from '../product-usage/product-usage.service';
 import { UsageType } from '../product-usage/usage-type.enum';
+import { ProductUsage } from '../product-usage/product-usage.entity';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -26,6 +27,7 @@ describe('ProductsService', () => {
         manager: { transaction: jest.fn() },
     } as any;
     const sales = { count: jest.fn() } as any;
+    const usageRepo = { count: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
     const usage = { createStockCorrection: jest.fn() } as any;
 
@@ -39,6 +41,7 @@ describe('ProductsService', () => {
         repo.createQueryBuilder.mockReset();
         repo.manager.transaction.mockReset();
         sales.count.mockReset();
+        usageRepo.count.mockReset();
         logs.create.mockReset();
         usage.createStockCorrection.mockReset();
         const module: TestingModule = await Test.createTestingModule({
@@ -46,6 +49,7 @@ describe('ProductsService', () => {
                 ProductsService,
                 { provide: getRepositoryToken(Product), useValue: repo },
                 { provide: getRepositoryToken(Sale), useValue: sales },
+                { provide: getRepositoryToken(ProductUsage), useValue: usageRepo },
                 { provide: LogsService, useValue: logs },
                 { provide: ProductUsageService, useValue: usage },
             ],
@@ -94,6 +98,7 @@ describe('ProductsService', () => {
 
     it('deletes product when no sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
+        usageRepo.count.mockResolvedValue(0);
         sales.count.mockResolvedValue(0);
         repo.delete.mockResolvedValue({ affected: 1 });
         const res = await service.remove(1);
@@ -245,9 +250,19 @@ describe('ProductsService', () => {
 
     it('throws Conflict when deleting with sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
+        usageRepo.count.mockResolvedValue(0);
         sales.count.mockResolvedValue(1);
         await expect(service.remove(1)).rejects.toBeInstanceOf(
             ConflictException,
         );
+    });
+
+    it('throws Conflict when deleting with usage records', async () => {
+        repo.findOne.mockResolvedValue({ id: 1 });
+        usageRepo.count.mockResolvedValue(1);
+        await expect(service.remove(1)).rejects.toBeInstanceOf(
+            ConflictException,
+        );
+        expect(repo.delete).not.toHaveBeenCalled();
     });
 });
