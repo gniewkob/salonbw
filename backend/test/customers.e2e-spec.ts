@@ -68,7 +68,8 @@ describe('CustomersController (e2e)', () => {
             expect(c).not.toHaveProperty('password');
             expect(c).not.toHaveProperty('refreshToken');
             expect(c).toHaveProperty('email');
-            expect(c).toHaveProperty('name');
+            expect(c).toHaveProperty('firstName');
+            expect(c).toHaveProperty('lastName');
             expect(c).toHaveProperty('phone');
             expect(c.role).toBe('client');
         });
@@ -131,5 +132,145 @@ describe('CustomersController (e2e)', () => {
             .get('/customers/abc')
             .set('Authorization', `Bearer ${token}`)
             .expect(400);
+    });
+
+    it('client can manage own profile and cannot change privacy consent', async () => {
+        const register = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+                email: 'self@test.com',
+                password: 'Secret123!',
+                firstName: 'Self',
+                lastName: 'Client',
+                phone: '+48123123130',
+                privacyConsent: true,
+                marketingConsent: false,
+            })
+            .expect(201);
+        const token = register.body.access_token as string;
+
+        const me = await request(app.getHttpServer())
+            .get('/customers/me')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(me.body.email).toBe('self@test.com');
+
+        const updated = await request(app.getHttpServer())
+            .put('/customers/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                firstName: 'Updated',
+                marketingConsent: true,
+                privacyConsent: false,
+            })
+            .expect(200);
+        expect(updated.body.firstName).toBe('Updated');
+        expect(updated.body.marketingConsent).toBe(true);
+        expect(updated.body.privacyConsent).toBe(true);
+
+        const dbUser = await usersService.findByEmail('self@test.com');
+        expect(dbUser?.firstName).toBe('Updated');
+        expect(dbUser?.marketingConsent).toBe(true);
+        expect(dbUser?.privacyConsent).toBe(true);
+    });
+
+    it('admin can change customer marketing consent', async () => {
+        await usersService.createUser(
+            'mcadmin@test.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const client = await usersService.createUser(
+            'mcclient@test.com',
+            'secret',
+            'Client',
+            Role.Client,
+        );
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'mcadmin@test.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const res = await request(app.getHttpServer())
+            .patch(`/customers/${client.id}/marketing-consent`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ marketingConsent: true })
+            .expect(200);
+        expect(res.body.marketingConsent).toBe(true);
+    });
+
+    it('admin can deactivate and reactivate a customer', async () => {
+        await usersService.createUser(
+            'actadmin@test.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const client = await usersService.createUser(
+            'actclient@test.com',
+            'secret',
+            'Client',
+            Role.Client,
+        );
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'actadmin@test.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const deactivated = await request(app.getHttpServer())
+            .patch(`/customers/${client.id}/deactivate`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(deactivated.body.isActive).toBe(false);
+
+        const activated = await request(app.getHttpServer())
+            .patch(`/customers/${client.id}/activate`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(activated.body.isActive).toBe(true);
+    });
+
+    it('client can soft delete their account', async () => {
+        const email = 'delme@test.com';
+        const register = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+                email,
+                password: 'Secret123!',
+                firstName: 'Del',
+                lastName: 'Me',
+                phone: '+48123123130',
+                privacyConsent: true,
+            })
+            .expect(201);
+        const token = register.body.access_token as string;
+        const user = await usersService.findByEmail(email);
+        const id = user!.id;
+
+        await request(app.getHttpServer())
+            .delete('/customers/me')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .get('/customers/me')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(404);
+
+        await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email, password: 'Secret123!' })
+            .expect(401);
+
+        const repo = (usersService as any).usersRepository;
+        const deleted = await repo.findOne({ where: { id }, withDeleted: true });
+        expect(deleted).toBeDefined();
+        expect(deleted.isActive).toBe(false);
+        expect(deleted.deletedAt).toBeTruthy();
+        expect(deleted.privacyConsent).toBe(false);
+        expect(deleted.marketingConsent).toBe(false);
     });
 });

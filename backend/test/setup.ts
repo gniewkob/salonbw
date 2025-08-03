@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, getMetadataArgsStorage } from 'typeorm';
 import { config } from 'dotenv';
 import { beforeAll, afterAll, afterEach } from '@jest/globals';
 import { join } from 'path';
@@ -18,6 +18,17 @@ let dataSource: DataSource;
 beforeAll(async () => {
     const url = process.env.DATABASE_URL as string;
     const isSqlite = url.startsWith('sqlite:');
+    if (isSqlite) {
+        const storage = getMetadataArgsStorage();
+        storage.columns.forEach((col) => {
+            if (col.options.type === 'timestamptz') {
+                col.options.type = 'datetime';
+            }
+            if (col.options.type === 'enum') {
+                col.options.type = 'simple-enum';
+            }
+        });
+    }
     dataSource = new DataSource(
         isSqlite
             ? {
