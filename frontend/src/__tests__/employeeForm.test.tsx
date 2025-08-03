@@ -13,8 +13,15 @@ describe('EmployeeForm', () => {
   it('submits valid data', async () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     render(<EmployeeForm onSubmit={onSubmit} onCancel={() => {}} />);
-    fireEvent.change(screen.getByPlaceholderText('Name'), { target: { value: 'A' } });
+    fireEvent.change(screen.getByPlaceholderText('First name'), {
+      target: { value: 'A' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Last name'), {
+      target: { value: 'B' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ name: 'A' }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith({ firstName: 'A', lastName: 'B' })
+    );
   });
 });

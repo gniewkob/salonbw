@@ -3,23 +3,25 @@ import { z } from 'zod';
 import { Employee } from '@/types';
 
 const schema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
+  firstName: z.string().min(1, { message: 'First name is required' }),
+  lastName: z.string().min(1, { message: 'Last name is required' }),
 });
 
 interface Props {
   initial?: Partial<Employee>;
-  onSubmit: (data: { name: string }) => Promise<void>;
+  onSubmit: (data: { firstName: string; lastName: string }) => Promise<void>;
   onCancel: () => void;
 }
 
 export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
-  const [name, setName] = useState(initial?.name ?? '');
+  const [firstName, setFirstName] = useState(initial?.firstName ?? '');
+  const [lastName, setLastName] = useState(initial?.lastName ?? '');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const data = schema.parse({ name });
+      const data = schema.parse({ firstName, lastName });
       await onSubmit(data);
     } catch (err: any) {
       if (err.errors) setError(err.errors[0].message);
@@ -30,10 +32,16 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
         className="border p-1 w-full"
-        placeholder="Name"
+        placeholder="First name"
+      />
+      <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        className="border p-1 w-full"
+        placeholder="Last name"
       />
       {error && (
         <p role="alert" className="text-red-600 text-sm">

@@ -53,7 +53,9 @@ describe('EmployeesController (e2e)', () => {
             expect(e).not.toHaveProperty('password');
             expect(e).not.toHaveProperty('refreshToken');
             expect(e).toHaveProperty('email');
-            expect(e).toHaveProperty('name');
+            expect(e).toHaveProperty('firstName');
+            expect(e).toHaveProperty('lastName');
+            expect(e).toHaveProperty('fullName');
             expect(e).toHaveProperty('phone');
             expect([Role.Employee, Role.Admin]).toContain(e.role);
         });
