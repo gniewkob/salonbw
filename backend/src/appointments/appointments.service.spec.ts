@@ -26,6 +26,12 @@ describe('AppointmentsService', () => {
         delete: jest.Mock;
         findOne: jest.Mock;
         manager: { findOne: jest.Mock };
+        createQueryBuilder: jest.Mock;
+    };
+    let qb: {
+        leftJoinAndSelect: jest.Mock;
+        andWhere: jest.Mock;
+        getMany: jest.Mock;
     };
     let formulas: { create: jest.Mock };
     let commissions: {
@@ -41,6 +47,11 @@ describe('AppointmentsService', () => {
 
     beforeEach(async () => {
         process.env.CANCEL_CUTOFF_MINUTES = '30';
+        qb = {
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue([]),
+        };
         repo = {
             create: jest.fn(),
             save: jest.fn(),
@@ -48,6 +59,7 @@ describe('AppointmentsService', () => {
             findOne: jest.fn(),
             delete: jest.fn(),
             manager: { findOne: jest.fn() },
+            createQueryBuilder: jest.fn(() => qb),
         };
         formulas = { create: jest.fn() };
         commissions = {
@@ -468,6 +480,40 @@ describe('AppointmentsService', () => {
         expect(result).toEqual({
             appointment: appt,
             commission: { amount: 10, percent: 10 },
+        });
+    });
+
+    describe('findAll', () => {
+        it('filters by employeeId', async () => {
+            await service.findAll({ employeeId: 7 });
+            expect(repo.createQueryBuilder).toHaveBeenCalled();
+            expect(qb.andWhere).toHaveBeenCalledWith(
+                'appointment.employeeId = :employeeId',
+                { employeeId: 7 },
+            );
+            expect(qb.getMany).toHaveBeenCalled();
+        });
+
+        it('filters by date range and status', async () => {
+            const start = new Date('2024-01-01');
+            const end = new Date('2024-01-31');
+            await service.findAll({
+                startDate: start,
+                endDate: end,
+                status: AppointmentStatus.Completed,
+            });
+            expect(qb.andWhere).toHaveBeenCalledWith(
+                'appointment.startTime >= :start',
+                { start },
+            );
+            expect(qb.andWhere).toHaveBeenCalledWith(
+                'appointment.startTime <= :end',
+                { end },
+            );
+            expect(qb.andWhere).toHaveBeenCalledWith(
+                'appointment.status = :status',
+                { status: AppointmentStatus.Completed },
+            );
         });
     });
 

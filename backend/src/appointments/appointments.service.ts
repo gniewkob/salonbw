@@ -113,8 +113,40 @@ export class AppointmentsService {
         return this.repo.find({ where: { employee: { id: employeeId } } });
     }
 
-    findAll() {
-        return this.repo.find();
+    findAll(filters?: {
+        employeeId?: number;
+        startDate?: Date;
+        endDate?: Date;
+        status?: AppointmentStatus;
+    }) {
+        const qb = this.repo
+            .createQueryBuilder('appointment')
+            .leftJoinAndSelect('appointment.client', 'client')
+            .leftJoinAndSelect('appointment.employee', 'employee')
+            .leftJoinAndSelect('appointment.service', 'service');
+
+        if (filters?.employeeId) {
+            qb.andWhere('appointment.employeeId = :employeeId', {
+                employeeId: filters.employeeId,
+            });
+        }
+        if (filters?.startDate) {
+            qb.andWhere('appointment.startTime >= :start', {
+                start: filters.startDate,
+            });
+        }
+        if (filters?.endDate) {
+            qb.andWhere('appointment.startTime <= :end', {
+                end: filters.endDate,
+            });
+        }
+        if (filters?.status) {
+            qb.andWhere('appointment.status = :status', {
+                status: filters.status,
+            });
+        }
+
+        return qb.getMany();
     }
 
     findOne(id: number) {
