@@ -103,6 +103,7 @@ describe('ProductsService', () => {
         );
     });
 
+    it('deletes product when no usage or sales', async () => {
     it('does not record usage when stock increases', async () => {
         repo.findOne.mockResolvedValue({ id: 1, stock: 2 });
         repo.save.mockImplementation((d: any) => d);
@@ -119,8 +120,6 @@ describe('ProductsService', () => {
             }),
         );
     });
-
-    it('deletes product when no sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
         usageRepo.count.mockResolvedValue(0);
         sales.count.mockResolvedValue(0);
@@ -281,9 +280,10 @@ describe('ProductsService', () => {
         );
     });
 
-    it('throws Conflict when deleting with usage records', async () => {
+    it('throws Conflict when deleting with usage history', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
         usageRepo.count.mockResolvedValue(1);
+        sales.count.mockResolvedValue(0);
         await expect(service.remove(1)).rejects.toBeInstanceOf(
             ConflictException,
         );
