@@ -146,6 +146,7 @@ export class ProductsService {
         const entity = await this.repo.findOne({ where: { id } });
         if (!entity) throw new NotFoundException();
         const usageCount = await this.usageRepo.count({ where: { product: { id } } });
+        // Prevent deletion when usage records exist
         if (usageCount > 0) {
             throw new ConflictException('Product has usage records');
         }
