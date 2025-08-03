@@ -8,7 +8,10 @@ export default function DashboardRedirect() {
   const { role } = useAuth();
   useEffect(() => {
     const current: Role =
-      role === 'client' || role === 'employee' || role === 'admin'
+      role === 'client' ||
+      role === 'employee' ||
+      role === 'receptionist' ||
+      role === 'admin'
         ? role
         : 'client';
     router.replace(`/dashboard/${current}`);

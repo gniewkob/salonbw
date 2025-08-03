@@ -6,6 +6,7 @@ import { useAppointments } from '@/hooks/useAppointments';
 import { useClients } from '@/hooks/useClients';
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
+import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -21,6 +22,7 @@ export default function AppointmentsPage() {
     const { data: clients } = useClients();
     const { data: services } = useServices();
     const api = useAppointmentsApi();
+    const { role } = useAuth();
     const [formOpen, setFormOpen] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
@@ -71,8 +73,11 @@ export default function AppointmentsPage() {
     };
 
     return (
-        <RouteGuard>
+        <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
             <Layout>
+                {role === 'receptionist' && (
+                    <div>Viewing appointments for all employees</div>
+                )}
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
