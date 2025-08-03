@@ -8,12 +8,14 @@ import {
     Post,
     UseGuards,
     Request,
+    Query,
 } from '@nestjs/common';
 import {
     ApiTags,
     ApiOperation,
     ApiResponse,
     ApiBearerAuth,
+    ApiQuery,
 } from '@nestjs/swagger';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -24,6 +26,7 @@ import { EmployeeRole } from '../employees/employee-role.enum';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Request as ExpressRequest } from 'express';
+import { AppointmentStatus } from './appointment.entity';
 
 interface AuthRequest extends ExpressRequest {
     user: { id: number; role: Role | EmployeeRole };
@@ -40,8 +43,22 @@ export class AdminAppointmentsController {
     @Get()
     @ApiOperation({ summary: 'List all appointments' })
     @ApiResponse({ status: 200 })
-    list() {
-        return this.service.findAll();
+    @ApiQuery({ name: 'employeeId', required: false })
+    @ApiQuery({ name: 'startDate', required: false })
+    @ApiQuery({ name: 'endDate', required: false })
+    @ApiQuery({ name: 'status', enum: AppointmentStatus, required: false })
+    list(
+        @Query('employeeId') employeeId?: string,
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string,
+        @Query('status') status?: AppointmentStatus,
+    ) {
+        return this.service.findAll({
+            employeeId: employeeId ? Number(employeeId) : undefined,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
+            status,
+        });
     }
 
     @Post()
