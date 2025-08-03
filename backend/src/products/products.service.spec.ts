@@ -126,7 +126,7 @@ describe('ProductsService', () => {
         );
     });
 
-    it('deletes product when no sales', async () => {
+    it('deletes product when no usage or sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
         usageRepo.count.mockResolvedValue(0);
         sales.count.mockResolvedValue(0);
