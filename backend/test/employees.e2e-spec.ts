@@ -7,6 +7,7 @@ import { UsersService } from './../src/users/users.service';
 import { AuthService } from './../src/auth/auth.service';
 import { Role } from './../src/users/role.enum';
 import { EmployeeRole } from './../src/employees/employee-role.enum';
+import { LogAction } from './../src/logs/action.enum';
 
 describe('EmployeesController (e2e)', () => {
     let app: INestApplication<App>;
@@ -109,5 +110,80 @@ describe('EmployeesController (e2e)', () => {
             .get('/employees/abc')
             .set('Authorization', `Bearer ${token}`)
             .expect(400);
+    });
+
+    it('logs employee actions with actor and user ids', async () => {
+        const admin = await usersService.createUser(
+            'logadmin@emp.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'logadmin@emp.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const createRes = await request(app.getHttpServer())
+            .post('/employees')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                email: 'emp@logs.com',
+                firstName: 'Emp',
+                lastName: 'Loyee',
+                commissionBase: 10,
+            })
+            .expect(201);
+        const empId = createRes.body.employee.id as number;
+
+        await request(app.getHttpServer())
+            .put(`/employees/${empId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ firstName: 'New' })
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${empId}/deactivate`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${empId}/activate`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .patch(`/employees/${empId}/commission`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ commissionBase: 15 })
+            .expect(200);
+
+        await request(app.getHttpServer())
+            .delete(`/employees/${empId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+
+        const logsRes = await request(app.getHttpServer())
+            .get('/logs')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ userId: empId })
+            .expect(200);
+
+        const actions = logsRes.body.map((l: any) => l.action);
+        expect(actions).toHaveLength(6);
+        expect(actions).toEqual(
+            expect.arrayContaining([
+                LogAction.EmployeeCreate,
+                LogAction.EmployeeUpdate,
+                LogAction.EmployeeDeactivate,
+                LogAction.EmployeeActivate,
+                LogAction.EmployeeCommissionChange,
+                LogAction.EmployeeDelete,
+            ]),
+        );
+        logsRes.body.forEach((l: any) => {
+            expect(l.actor.id).toBe(admin.id);
+        });
     });
 });
