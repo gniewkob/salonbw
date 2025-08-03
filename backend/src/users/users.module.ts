@@ -6,10 +6,12 @@ import { Customer } from '../customers/customer.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, Employee, Customer, Appointment]),
+        LogsModule,
     ],
     providers: [UsersService],
     controllers: [UsersController],
