@@ -96,7 +96,7 @@ describe('ProductsModule (e2e)', () => {
             .send({
                 name: 'shampoo',
                 unitPrice: 10,
-                stock: 5,
+                stock: 2,
                 lowStockThreshold: 4,
             })
             .expect(201);
@@ -116,7 +116,7 @@ describe('ProductsModule (e2e)', () => {
         await request(app.getHttpServer())
             .patch(`/products/admin/${id}/stock`)
             .set('Authorization', `Bearer ${token}`)
-            .send({ amount: -3 })
+            .send({ amount: 1 })
             .expect(200);
 
         const low = await request(app.getHttpServer())
@@ -203,6 +203,69 @@ describe('ProductsModule (e2e)', () => {
             .expect(409);
     });
 
+    it('cannot delete product with usage records', async () => {
+        const admin = await users.createUser(
+            'usageadmin@prod.com',
+            'secret',
+            'A',
+            Role.Admin,
+        );
+        const employee = await users.createUser(
+            'usageemp@prod.com',
+            'secret',
+            'E',
+            Role.Employee,
+        );
+        const client = await users.createUser(
+            'usageclient@prod.com',
+            'secret',
+            'C',
+            Role.Client,
+        );
+
+        const adminLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'usageadmin@prod.com', password: 'secret' })
+            .expect(201);
+        const adminToken = adminLogin.body.access_token as string;
+
+        const prod = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({ name: 'gel', unitPrice: 5, stock: 2 })
+            .expect(201);
+        const id = prod.body.id as number;
+
+        const { AppointmentsService } = await import(
+            './../src/appointments/appointments.service'
+        );
+        const appointments = app.get(AppointmentsService);
+        const appt = await appointments.create(
+            client.id,
+            employee.id,
+            1,
+            new Date(Date.now() + 3600000).toISOString(),
+        );
+
+        const empLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'usageemp@prod.com', password: 'secret' })
+            .expect(201);
+        const empToken = empLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .post(`/appointments/${appt.id}/product-usage`)
+            .set('Authorization', `Bearer ${empToken}`)
+            .send([{ productId: id, quantity: 1 }])
+            .expect(201);
+
+        const del = await request(app.getHttpServer())
+            .delete(`/products/admin/${id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(409);
+        expect(del.body.message).toBe('Product has usage records');
+    });
+
     it('admin can bulk update stock', async () => {
         await users.createUser('bulk@prod.com', 'secret', 'A', Role.Admin);
         const login = await request(app.getHttpServer())
@@ -251,7 +314,7 @@ describe('ProductsModule (e2e)', () => {
             .query({ action: 'PRODUCT_USED' })
             .expect(200);
         expect(usedLogs.body.length).toBe(1);
-        const payload = JSON.parse(usedLogs.body[0].data);
+        const payload = JSON.parse(usedLogs.body[0].description);
         expect(payload.usageType).toBe('STOCK_CORRECTION');
 
         const usageHistory = await request(app.getHttpServer())
