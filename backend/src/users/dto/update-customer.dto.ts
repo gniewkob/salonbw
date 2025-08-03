@@ -24,7 +24,7 @@ export class UpdateCustomerDto {
     lastName?: string;
 
     @ApiPropertyOptional()
-    @IsMobilePhone('any')
+    @IsMobilePhone()
     @IsOptional()
     phone?: string;
 
