@@ -120,6 +120,24 @@ export class AppointmentsService {
         return this.repo.findOne({ where: { id } });
     }
 
+    async findOneForUser(
+        id: number,
+        userId: number,
+        role: Role | EmployeeRole,
+    ) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            (role === Role.Client && appt.client.id !== userId) ||
+            (role === Role.Employee && appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        return appt;
+    }
+
     async update(id: number, dto: UpdateAppointmentParams) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {

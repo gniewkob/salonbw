@@ -8,6 +8,7 @@ import {
     Post,
     Request,
     UseGuards,
+    NotFoundException,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -42,6 +43,20 @@ export class ClientAppointmentsController {
     @ApiResponse({ status: 200 })
     list(@Request() req) {
         return this.service.findClientAppointments(Number(req.user.id));
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get appointment for logged in client' })
+    async get(@Param('id') id: string, @Request() req: AuthRequest) {
+        const appt = await this.service.findOneForUser(
+            Number(id),
+            req.user.id,
+            req.user.role,
+        );
+        if (!appt) {
+            throw new NotFoundException();
+        }
+        return appt;
     }
 
     @Post()

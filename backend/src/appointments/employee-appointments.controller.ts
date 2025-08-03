@@ -42,6 +42,20 @@ export class EmployeeAppointmentsController {
         return this.service.findEmployeeAppointments(Number(req.user.id));
     }
 
+    @Get(':id')
+    @ApiOperation({ summary: 'Get appointment assigned to employee' })
+    async get(@Param('id') id: string, @Request() req: AuthRequest) {
+        const appt = await this.service.findOneForUser(
+            Number(id),
+            req.user.id,
+            req.user.role,
+        );
+        if (!appt) {
+            throw new NotFoundException();
+        }
+        return appt;
+    }
+
     @Patch(':id')
     @ApiOperation({ summary: 'Update appointment by employee' })
     update(
