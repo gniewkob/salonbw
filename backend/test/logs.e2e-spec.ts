@@ -79,8 +79,13 @@ describe('LogsModule (e2e)', () => {
             LogAction.LoginSuccess,
             'admin logged in',
             admin.id,
+            admin.id,
         );
-        await logsService.create(LogAction.LoginFail, 'other fail', other.id);
+        await logsService.create(
+            LogAction.LoginFail,
+            'other fail',
+            other.id,
+        );
 
         const login = await request(app.getHttpServer())
             .post('/auth/login')
@@ -91,12 +96,17 @@ describe('LogsModule (e2e)', () => {
         const res = await request(app.getHttpServer())
             .get('/logs')
             .set('Authorization', `Bearer ${token}`)
-            .query({ userId: admin.id, action: LogAction.LoginSuccess })
+            .query({
+                userId: admin.id,
+                actorId: admin.id,
+                action: LogAction.LoginSuccess,
+            })
             .expect(200);
 
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body.length).toBe(1);
         expect(res.body[0].id).toBe(log.id);
+        expect(res.body[0].actor.id).toBe(admin.id);
     });
 
     it('records appointment creation and cancellation', async () => {

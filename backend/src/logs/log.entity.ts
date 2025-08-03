@@ -23,6 +23,14 @@ export class Log {
     @ApiProperty({ type: () => User, nullable: true })
     user: User | null;
 
+    @ManyToOne(() => User, {
+        nullable: true,
+        eager: true,
+        onDelete: 'SET NULL',
+    })
+    @ApiProperty({ type: () => User, nullable: true })
+    actor: User | null;
+
     @Column({ type: 'simple-enum', enum: LogAction })
     @ApiProperty({ enum: LogAction })
     action: LogAction;

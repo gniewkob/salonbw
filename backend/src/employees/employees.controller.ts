@@ -10,6 +10,7 @@ import {
     Post,
     Put,
     UseGuards,
+    Request,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -26,6 +27,11 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeCommissionDto } from './dto/update-employee-commission.dto';
 import { CreateEmployeeResponseDto } from './dto/create-employee-response.dto';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthRequest extends ExpressRequest {
+    user: { id: number };
+}
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -62,8 +68,11 @@ export class EmployeesController {
             'Employee created. The plaintext password is returned only in this response.',
         type: CreateEmployeeResponseDto,
     })
-    create(@Body() dto: CreateEmployeeDto): Promise<CreateEmployeeResponseDto> {
-        return this.service.create(dto);
+    create(
+        @Body() dto: CreateEmployeeDto,
+        @Request() req: AuthRequest,
+    ): Promise<CreateEmployeeResponseDto> {
+        return this.service.create(dto, req.user.id);
     }
 
     @Put(':id')
@@ -73,8 +82,9 @@ export class EmployeesController {
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateEmployeeDto,
+        @Request() req: AuthRequest,
     ) {
-        const employee = await this.service.update(id, dto);
+        const employee = await this.service.update(id, dto, req.user.id);
         if (!employee) {
             throw new NotFoundException();
         }
@@ -85,8 +95,11 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Activate employee account' })
     @ApiResponse({ status: 200 })
     @ApiResponse({ status: 404 })
-    async activate(@Param('id', ParseIntPipe) id: number) {
-        const employee = await this.service.setActive(id, true);
+    async activate(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req: AuthRequest,
+    ) {
+        const employee = await this.service.setActive(id, true, req.user.id);
         if (!employee) {
             throw new NotFoundException();
         }
@@ -97,8 +110,11 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Deactivate employee account' })
     @ApiResponse({ status: 200 })
     @ApiResponse({ status: 404 })
-    async deactivate(@Param('id', ParseIntPipe) id: number) {
-        const employee = await this.service.setActive(id, false);
+    async deactivate(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req: AuthRequest,
+    ) {
+        const employee = await this.service.setActive(id, false, req.user.id);
         if (!employee) {
             throw new NotFoundException();
         }
@@ -112,10 +128,12 @@ export class EmployeesController {
     async updateCommission(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateEmployeeCommissionDto,
+        @Request() req: AuthRequest,
     ) {
         const employee = await this.service.setCommissionBase(
             id,
             dto.commissionBase,
+            req.user.id,
         );
         if (!employee) {
             throw new NotFoundException();
@@ -127,8 +145,11 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Soft delete employee' })
     @ApiResponse({ status: 200 })
     @ApiResponse({ status: 404 })
-    async remove(@Param('id', ParseIntPipe) id: number) {
-        const removed = await this.service.remove(id);
+    async remove(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req: AuthRequest,
+    ) {
+        const removed = await this.service.remove(id, req.user.id);
         if (!removed) {
             throw new NotFoundException();
         }
