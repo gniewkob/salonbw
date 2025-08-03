@@ -1,4 +1,4 @@
-import { IsInt, IsDateString } from 'class-validator';
+import { IsInt, IsDateString, IsString, IsOptional } from 'class-validator';
 
 export class CreateAppointmentDto {
     @IsInt()
@@ -12,4 +12,8 @@ export class CreateAppointmentDto {
 
     @IsDateString()
     startTime: string;
+
+    @IsOptional()
+    @IsString()
+    notes?: string;
 }

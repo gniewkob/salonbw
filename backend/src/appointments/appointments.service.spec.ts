@@ -118,6 +118,40 @@ describe('AppointmentsService', () => {
         expect(result).toBe(created);
     });
 
+    it('create persists notes when provided', async () => {
+        const created: any = {
+            id: 1,
+            client: { phone: '111' },
+            employee: { phone: '222' },
+            startTime: new Date('2100-07-01T10:00:00.000Z'),
+            endTime: new Date('2100-07-01T10:30:00.000Z'),
+            notes: 'bring tools',
+        };
+        repo.create.mockReturnValue(created);
+        repo.save.mockResolvedValue(created);
+        repo.manager.findOne.mockResolvedValue({ id: 3, duration: 30 });
+        repo.find.mockResolvedValue([]);
+
+        const result = await service.create(
+            1,
+            2,
+            3,
+            '2100-07-01T10:00:00.000Z',
+            'bring tools',
+        );
+
+        expect(repo.create).toHaveBeenCalledWith({
+            client: { id: 1 },
+            employee: { id: 2 },
+            service: { id: 3 },
+            startTime: new Date('2100-07-01T10:00:00.000Z'),
+            endTime: new Date('2100-07-01T10:30:00.000Z'),
+            status: AppointmentStatus.Scheduled,
+            notes: 'bring tools',
+        });
+        expect(result.notes).toBe('bring tools');
+    });
+
     it('create rejects overlapping appointment for employee', async () => {
         repo.manager.findOne.mockResolvedValue({ id: 3, duration: 30 });
         repo.find.mockResolvedValue([

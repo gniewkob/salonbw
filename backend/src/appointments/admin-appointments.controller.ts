@@ -53,6 +53,7 @@ export class AdminAppointmentsController {
             dto.employeeId,
             dto.serviceId,
             dto.startTime,
+            dto.notes,
         );
     }
 
