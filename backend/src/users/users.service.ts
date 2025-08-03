@@ -10,6 +10,8 @@ import { User } from './user.entity';
 import { Role } from './role.enum';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Appointment } from '../appointments/appointment.entity';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +20,7 @@ export class UsersService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
+        private readonly logs: LogsService,
     ) {}
 
     findOne(id: number) {
@@ -157,6 +160,32 @@ export class UsersService {
         return this.usersRepository.save(user);
     }
 
+    async forgetMe(id: number) {
+        const user = await this.usersRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException();
+        }
+        await this.usersRepository.update(id, {
+            isActive: false,
+            refreshToken: null,
+        });
+        await this.logs.create(
+            LogAction.CustomerDelete,
+            JSON.stringify({ id }),
+        );
+        const anonymizedEmail = `deleted-${id}-${Date.now()}@example.com`;
+        await this.usersRepository.update(id, {
+            email: anonymizedEmail,
+            firstName: '',
+            lastName: '',
+            phone: null,
+            password: null,
+            privacyConsent: false,
+            marketingConsent: false,
+        });
+        return this.usersRepository.softDelete(id);
+    }
+
     async removeCustomer(id: number, adminId: number) {
         if (id === adminId) {
             throw new BadRequestException('Cannot delete your own account');
@@ -173,7 +202,16 @@ export class UsersService {
                 'Cannot delete user with appointments',
             );
         }
-        return this.usersRepository.delete(id);
+        await this.usersRepository.update(id, {
+            isActive: false,
+            refreshToken: null,
+        });
+        const result = await this.usersRepository.softDelete(id);
+        await this.logs.create(
+            LogAction.CustomerDelete,
+            JSON.stringify({ id }),
+        );
+        return result;
     }
 
     async removeEmployee(id: number, adminId: number) {
@@ -192,6 +230,15 @@ export class UsersService {
                 'Cannot delete user with appointments',
             );
         }
-        return this.usersRepository.delete(id);
+        await this.usersRepository.update(id, {
+            isActive: false,
+            refreshToken: null,
+        });
+        const result = await this.usersRepository.softDelete(id);
+        await this.logs.create(
+            LogAction.CustomerDelete,
+            JSON.stringify({ id }),
+        );
+        return result;
     }
 }
