@@ -50,8 +50,8 @@ export class User {
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
 
-    @Column({ type: 'float', nullable: true })
-    commissionBase: number | null;
+    @Column({ type: 'float', default: 10 })
+    commissionBase: number;
 
     @DeleteDateColumn({ type: 'timestamptz', nullable: true })
     deletedAt: Date | null;
