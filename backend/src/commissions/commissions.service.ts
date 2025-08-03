@@ -97,7 +97,7 @@ export class CommissionsService {
             (await this.getPercentForService(
                 appt.employee.id,
                 appt.service,
-                appt.employee.commissionBase ?? null,
+                appt.employee.commissionBase,
             )) / 100;
         if (percent <= 0) {
             return null;
