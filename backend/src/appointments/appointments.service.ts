@@ -44,14 +44,30 @@ export class AppointmentsService {
         if (start < new Date()) {
             throw new BadRequestException('Start time must be in the future');
         }
-        const existing = await this.repo.findOne({
-            where: {
-                employee: { id: employeeId },
-                startTime: start,
-            },
+        const service = await this.repo.manager.findOne(Service, {
+            where: { id: serviceId },
         });
-        if (existing) {
-            throw new ConflictException('Appointment time already taken');
+        if (!service) {
+            throw new BadRequestException('Service not found');
+        }
+        const end = new Date(start.getTime() + service.duration * 60000);
+        const overlapping = await this.repo.find({
+            where: [
+                { employee: { id: employeeId } },
+                { client: { id: clientId } },
+            ],
+            relations: ['service'],
+        });
+        for (const other of overlapping) {
+            const otherEnd =
+                other.endTime ||
+                new Date(
+                    other.startTime.getTime() +
+                        other.service.duration * 60000,
+                );
+            if (start < otherEnd && end > other.startTime) {
+                throw new ConflictException('Appointment time already taken');
+            }
         }
         const appointment = this.repo.create({
             client: { id: clientId } as ClientWithPhone,
@@ -110,6 +126,14 @@ export class AppointmentsService {
         appt: Appointment,
         dto: UpdateAppointmentParams,
     ) {
+        const employeeId = dto.employeeId ?? appt.employee.id;
+        let start = appt.startTime;
+        let service = appt.service;
+        let end =
+            appt.endTime ||
+            new Date(appt.startTime.getTime() + appt.service.duration * 60000);
+        let needsCheck = false;
+
         if (dto.startTime) {
             const newStart = new Date(dto.startTime);
             if (newStart < new Date()) {
@@ -117,41 +141,55 @@ export class AppointmentsService {
                     'Start time must be in the future',
                 );
             }
-            const employeeId = dto.employeeId ?? appt.employee.id;
-            let service = appt.service;
-            if (dto.serviceId) {
-                const found = await this.repo.manager.findOne(Service, {
-                    where: { id: dto.serviceId },
-                });
-                if (found) {
-                    service = found;
-                }
+            start = newStart;
+            needsCheck = true;
+        }
+        if (dto.serviceId) {
+            const found = await this.repo.manager.findOne(Service, {
+                where: { id: dto.serviceId },
+            });
+            if (found) {
+                service = found;
             }
-            const newEnd = dto.endTime
-                ? new Date(dto.endTime)
-                : new Date(newStart.getTime() + service.duration * 60000);
+            needsCheck = true;
+        }
+        if (dto.endTime) {
+            end = new Date(dto.endTime);
+            needsCheck = true;
+        } else if (dto.startTime || dto.serviceId) {
+            end = new Date(start.getTime() + service.duration * 60000);
+            needsCheck = true;
+        }
+
+        if (needsCheck) {
             const existing = await this.repo.find({
-                where: { employee: { id: employeeId } },
+                where: [
+                    { employee: { id: employeeId } },
+                    { client: { id: appt.client.id } },
+                ],
+                relations: ['service'],
             });
             for (const other of existing) {
                 if (other.id === appt.id) continue;
-                const otherStart = other.startTime;
-                const otherEnd = other.endTime
-                    ? other.endTime
-                    : new Date(
-                          other.startTime.getTime() +
-                              other.service.duration * 60000,
-                      );
-                if (newStart < otherEnd && newEnd > otherStart) {
+                const otherEnd =
+                    other.endTime ||
+                    new Date(
+                        other.startTime.getTime() +
+                            other.service.duration * 60000,
+                    );
+                if (start < otherEnd && end > other.startTime) {
                     throw new ConflictException(
                         'Appointment time already taken',
                     );
                 }
             }
-            appt.startTime = newStart;
+        }
+
+        if (dto.startTime) {
+            appt.startTime = start;
         }
         if (dto.endTime) {
-            appt.endTime = new Date(dto.endTime);
+            appt.endTime = end;
         }
         if (dto.notes !== undefined) {
             appt.notes = dto.notes;
