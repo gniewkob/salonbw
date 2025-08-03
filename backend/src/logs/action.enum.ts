@@ -29,4 +29,10 @@ export enum LogAction {
     ProfileUpdate = 'PROFILE_UPDATE',
     MarketingConsentChange = 'MARKETING_CONSENT_CHANGE',
     CustomerDelete = 'CUSTOMER_DELETE',
+    EmployeeCreate = 'EMPLOYEE_CREATE',
+    EmployeeUpdate = 'EMPLOYEE_UPDATE',
+    EmployeeDelete = 'EMPLOYEE_DELETE',
+    EmployeeActivate = 'EMPLOYEE_ACTIVATE',
+    EmployeeDeactivate = 'EMPLOYEE_DEACTIVATE',
+    EmployeeCommissionChange = 'EMPLOYEE_COMMISSION_CHANGE',
 }

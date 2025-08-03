@@ -20,17 +20,20 @@ export class LogsController {
     @ApiQuery({ name: 'endDate', required: false })
     @ApiQuery({ name: 'action', enum: LogAction, required: false })
     @ApiQuery({ name: 'userId', required: false })
+    @ApiQuery({ name: 'actorId', required: false })
     list(
         @Query('startDate') startDate?: string,
         @Query('endDate') endDate?: string,
         @Query('action') action?: LogAction,
         @Query('userId') userId?: string,
+        @Query('actorId') actorId?: string,
     ) {
         return this.service.findAll({
             startDate: startDate ? new Date(startDate) : undefined,
             endDate: endDate ? new Date(endDate) : undefined,
             action,
             userId: userId ? Number(userId) : undefined,
+            actorId: actorId ? Number(actorId) : undefined,
         });
     }
 }

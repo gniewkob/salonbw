@@ -10,11 +10,17 @@ export class LogsService {
         @InjectRepository(Log) private readonly repo: Repository<Log>,
     ) {}
 
-    create(action: LogAction, description?: string, userId?: number) {
+    create(
+        action: LogAction,
+        description?: string,
+        userId?: number,
+        actorId?: number,
+    ) {
         const log = this.repo.create({
             action,
             description: description ?? null,
             user: userId ? ({ id: userId } as any) : null,
+            actor: actorId ? ({ id: actorId } as any) : null,
         });
         return this.repo.save(log);
     }
@@ -24,6 +30,7 @@ export class LogsService {
         endDate?: Date;
         action?: LogAction;
         userId?: number;
+        actorId?: number;
     }) {
         const where: FindOptionsWhere<Log> = {};
         if (filters.action) {
@@ -32,12 +39,19 @@ export class LogsService {
         if (filters.userId) {
             where.user = { id: filters.userId } as any;
         }
+        if (filters.actorId) {
+            where.actor = { id: filters.actorId } as any;
+        }
         if (filters.startDate || filters.endDate) {
             where.timestamp = Between(
                 filters.startDate ?? new Date(0),
                 filters.endDate ?? new Date(),
             );
         }
-        return this.repo.find({ where, order: { timestamp: 'DESC' } });
+        return this.repo.find({
+            where,
+            order: { timestamp: 'DESC' },
+            withDeleted: true,
+        });
     }
 }
