@@ -15,6 +15,7 @@ export enum AppointmentStatus {
     Scheduled = 'scheduled',
     Completed = 'completed',
     Cancelled = 'cancelled',
+    NO_SHOW = 'no_show',
 }
 
 export enum PaymentStatus {

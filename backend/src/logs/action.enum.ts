@@ -7,6 +7,7 @@ export enum LogAction {
     RegisterSuccess = 'REGISTER_SUCCESS',
     ForbiddenAccess = 'FORBIDDEN_ACCESS',
     CancelAppointment = 'CANCEL_APPOINTMENT',
+    NoShowAppointment = 'NO_SHOW_APPOINTMENT',
     CompleteAppointment = 'COMPLETE_APPOINTMENT',
     DeleteAppointment = 'DELETE_APPOINTMENT',
     DeleteService = 'DELETE_SERVICE',
