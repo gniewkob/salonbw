@@ -25,6 +25,7 @@ import { Role } from '../users/role.enum';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeCommissionDto } from './dto/update-employee-commission.dto';
+import { CreateEmployeeResponseDto } from './dto/create-employee-response.dto';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -55,8 +56,13 @@ export class EmployeesController {
 
     @Post()
     @ApiOperation({ summary: 'Create employee' })
-    @ApiResponse({ status: 201 })
-    create(@Body() dto: CreateEmployeeDto) {
+    @ApiResponse({
+        status: 201,
+        description:
+            'Employee created. The plaintext password is returned only in this response.',
+        type: CreateEmployeeResponseDto,
+    })
+    create(@Body() dto: CreateEmployeeDto): Promise<CreateEmployeeResponseDto> {
         return this.service.create(dto);
     }
 
