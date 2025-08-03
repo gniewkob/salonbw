@@ -24,14 +24,24 @@ describe('RouteGuard', () => {
     expect(screen.queryByText('Secret')).toBeNull();
   });
 
-  it('renders children when authenticated', () => {
-    mockedUseAuth.mockReturnValue({ isAuthenticated: true } as any);
+  it('renders children when authenticated and role allowed', () => {
+    mockedUseAuth.mockReturnValue({ isAuthenticated: true, role: 'receptionist' } as any);
     render(
-      <RouteGuard>
+      <RouteGuard roles={['receptionist']}>
         <div>Secret</div>
       </RouteGuard>
     );
     expect(replace).not.toHaveBeenCalled();
     expect(screen.getByText('Secret')).toBeInTheDocument();
+  });
+
+  it('redirects when role not permitted', () => {
+    mockedUseAuth.mockReturnValue({ isAuthenticated: true, role: 'client' } as any);
+    render(
+      <RouteGuard roles={['admin']}>
+        <div>Secret</div>
+      </RouteGuard>
+    );
+    expect(replace).toHaveBeenCalledWith('/dashboard');
   });
 });

@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (
       storedRole === 'client' ||
       storedRole === 'employee' ||
+      storedRole === 'receptionist' ||
       storedRole === 'admin'
     ) {
       setRole(storedRole);
@@ -51,7 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const payload = JSON.parse(atob(jwt.split('.')[1]));
       const r = payload.role as Role | undefined;
-      if (r === 'client' || r === 'employee' || r === 'admin') {
+      if (
+        r === 'client' ||
+        r === 'employee' ||
+        r === 'receptionist' ||
+        r === 'admin'
+      ) {
         return r;
       }
       return null;

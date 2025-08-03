@@ -15,6 +15,10 @@ const links: Record<Role, { href: string; label: string }[]> = {
         { href: '/appointments', label: 'Appointments' },
         { href: '/clients', label: 'Clients' },
     ],
+    receptionist: [
+        { href: '/dashboard/receptionist', label: 'Home' },
+        { href: '/appointments', label: 'Appointments' },
+    ],
     admin: [
         { href: '/dashboard/admin', label: 'Home' },
         { href: '/appointments', label: 'Appointments' },
@@ -33,7 +37,10 @@ interface Props {
 export default function SidebarMenu({ open, onClose }: Props) {
     const { logout, role } = useAuth();
     const currentRole: Role =
-        role === 'client' || role === 'employee' || role === 'admin'
+        role === 'client' ||
+        role === 'employee' ||
+        role === 'receptionist' ||
+        role === 'admin'
             ? role
             : 'client';
 
