@@ -19,7 +19,9 @@ export interface Service {
 
 export interface Employee {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
 }
 
 export interface Product {
