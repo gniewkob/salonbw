@@ -23,8 +23,9 @@ describe('AppointmentsService', () => {
         create: jest.Mock;
         save: jest.Mock;
         find: jest.Mock;
-        findOne: jest.Mock;
         delete: jest.Mock;
+        findOne: jest.Mock;
+        manager: { findOne: jest.Mock };
     };
     let formulas: { create: jest.Mock };
     let commissions: {
@@ -45,6 +46,7 @@ describe('AppointmentsService', () => {
             find: jest.fn(),
             findOne: jest.fn(),
             delete: jest.fn(),
+            manager: { findOne: jest.fn() },
         };
         formulas = { create: jest.fn() };
         commissions = {
@@ -82,6 +84,8 @@ describe('AppointmentsService', () => {
         };
         repo.create.mockReturnValue(created);
         repo.save.mockResolvedValue(created);
+        repo.manager.findOne.mockResolvedValue({ id: 3, duration: 30 });
+        repo.find.mockResolvedValue([]);
 
         const result = await service.create(
             1,
@@ -112,17 +116,38 @@ describe('AppointmentsService', () => {
         expect(result).toBe(created);
     });
 
-    it('create rejects conflicting appointment', async () => {
-        repo.findOne.mockResolvedValue({ id: 9 });
+    it('create rejects overlapping appointment for employee', async () => {
+        repo.manager.findOne.mockResolvedValue({ id: 3, duration: 30 });
+        repo.find.mockResolvedValue([
+            {
+                id: 9,
+                startTime: new Date('2100-07-01T10:15:00.000Z'),
+                service: { duration: 30 },
+                employee: { id: 2 },
+                client: { id: 99 },
+            },
+        ]);
         await expect(
             service.create(1, 2, 3, '2100-07-01T10:00:00.000Z'),
-        ).rejects.toThrow(ConflictException);
-        expect(repo.findOne).toHaveBeenCalledWith({
-            where: {
-                employee: { id: 2 },
-                startTime: new Date('2100-07-01T10:00:00.000Z'),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(repo.create).not.toHaveBeenCalled();
+        expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('create rejects overlapping appointment for client', async () => {
+        repo.manager.findOne.mockResolvedValue({ id: 3, duration: 30 });
+        repo.find.mockResolvedValue([
+            {
+                id: 9,
+                startTime: new Date('2100-07-01T10:15:00.000Z'),
+                service: { duration: 30 },
+                employee: { id: 99 },
+                client: { id: 1 },
             },
-        });
+        ]);
+        await expect(
+            service.create(1, 2, 3, '2100-07-01T10:00:00.000Z'),
+        ).rejects.toBeInstanceOf(ConflictException);
         expect(repo.create).not.toHaveBeenCalled();
         expect(repo.save).not.toHaveBeenCalled();
     });
@@ -136,7 +161,14 @@ describe('AppointmentsService', () => {
     });
 
     it('update modifies existing appointment', async () => {
-        const existing: any = { id: 2, status: AppointmentStatus.Scheduled };
+        const existing: any = {
+            id: 2,
+            status: AppointmentStatus.Scheduled,
+            employee: { id: 5 },
+            client: { id: 6 },
+            service: { duration: 30 },
+            startTime: new Date('2100-01-01T10:00:00.000Z'),
+        };
         repo.findOne.mockResolvedValue(existing);
         repo.save.mockResolvedValue(existing);
 
@@ -200,6 +232,8 @@ describe('AppointmentsService', () => {
             id: 1,
             employee: { id: 2 },
             service: { duration: 30 },
+            client: { id: 3 },
+            startTime: new Date('2100-01-01T10:00:00.000Z'),
         };
         repo.findOne.mockResolvedValue(existing);
         await expect(
@@ -214,12 +248,14 @@ describe('AppointmentsService', () => {
             employee: { id: 2 },
             service: { duration: 30 },
             startTime: new Date('2100-01-01T10:00:00.000Z'),
+            client: { id: 3 },
         };
         const other: any = {
             id: 2,
             employee: { id: 2 },
             service: { duration: 30 },
             startTime: new Date('2100-01-01T10:15:00.000Z'),
+            client: { id: 4 },
         };
         repo.findOne.mockResolvedValue(existing);
         repo.find.mockResolvedValue([existing, other]);
