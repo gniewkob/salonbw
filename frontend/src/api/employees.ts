@@ -6,7 +6,7 @@ export function useEmployeeApi() {
   const { apiFetch } = useAuth();
   const toast = useToast();
 
-  const create = async (data: { name: string }) => {
+  const create = async (data: { firstName: string; lastName: string }) => {
     try {
       const res = await apiFetch<Employee>('/employees', {
         method: 'POST',
@@ -21,7 +21,7 @@ export function useEmployeeApi() {
     }
   };
 
-  const update = async (id: number, data: { name: string }) => {
+  const update = async (id: number, data: { firstName: string; lastName: string }) => {
     try {
       const res = await apiFetch<Employee>(`/employees/${id}`, {
         method: 'PUT',

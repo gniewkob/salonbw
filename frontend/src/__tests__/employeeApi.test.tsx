@@ -15,14 +15,21 @@ const toast = require('react-hot-toast').toast;
 
 describe('useEmployeeApi', () => {
   it('shows success toast on create', async () => {
-    const apiFetch = jest.fn().mockResolvedValue({ id: 1, name: 'A' });
+    const apiFetch = jest
+      .fn()
+      .mockResolvedValue({
+        id: 1,
+        firstName: 'A',
+        lastName: 'B',
+        fullName: 'A B',
+      });
     mockedUseAuth.mockReturnValue({ apiFetch } as any);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );
     const { result } = renderHook(() => useEmployeeApi(), { wrapper });
     await act(async () => {
-      await result.current.create({ name: 'A' });
+      await result.current.create({ firstName: 'A', lastName: 'B' });
     });
     expect(toast.success).toHaveBeenCalled();
   });
@@ -36,7 +43,7 @@ describe('useEmployeeApi', () => {
     const { result } = renderHook(() => useEmployeeApi(), { wrapper });
     await expect(
       act(async () => {
-        await result.current.create({ name: 'A' });
+        await result.current.create({ firstName: 'A', lastName: 'B' });
       })
     ).rejects.toThrow();
     expect(toast.error).toHaveBeenCalled();
