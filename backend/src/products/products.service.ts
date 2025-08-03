@@ -68,7 +68,7 @@ export class ProductsService {
         return saved;
     }
 
-    async updateStock(id: number, amount: number) {
+    async updateStock(id: number, amount: number, userId: number) {
         const product = await this.repo.findOne({ where: { id } });
         if (!product) return undefined;
         if (product.stock + amount < 0) {
@@ -76,6 +76,15 @@ export class ProductsService {
         }
         product.stock += amount;
         const saved = await this.repo.save(product);
+        if (amount < 0) {
+            await this.usage.createStockCorrection(
+                this.repo.manager,
+                id,
+                -amount,
+                saved.stock,
+                userId,
+            );
+        }
         await this.logs.create(
             LogAction.UpdateProductStock,
             JSON.stringify({
