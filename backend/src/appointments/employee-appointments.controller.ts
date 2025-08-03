@@ -71,6 +71,20 @@ export class EmployeeAppointmentsController {
         return result;
     }
 
+    @Patch(':id/no-show')
+    @ApiOperation({ summary: 'Mark appointment as no-show by employee' })
+    async noShow(@Param('id') id: string, @Request() req: AuthRequest) {
+        const result = await this.service.noShow(
+            Number(id),
+            req.user.id,
+            req.user.role,
+        );
+        if (result === undefined) {
+            throw new NotFoundException();
+        }
+        return result;
+    }
+
     @Patch(':id/complete')
     @ApiOperation({ summary: 'Mark appointment completed by employee' })
     async complete(@Param('id') id: string, @Request() req: AuthRequest) {

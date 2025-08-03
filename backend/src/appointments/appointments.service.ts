@@ -315,6 +315,27 @@ export class AppointmentsService {
         return this.applyUpdates(appt, dto);
     }
 
+    async noShow(id: number, userId: number, role: Role | EmployeeRole) {
+        const appt = await this.repo.findOne({ where: { id } });
+        if (!appt) {
+            return undefined;
+        }
+        if (
+            role !== Role.Admin &&
+            (role !== Role.Employee || appt.employee.id !== userId)
+        ) {
+            throw new ForbiddenException();
+        }
+        appt.status = AppointmentStatus.NO_SHOW;
+        const saved = await this.repo.save(appt);
+        await this.logs.create(
+            LogAction.NoShowAppointment,
+            JSON.stringify({ appointmentId: id, userId }),
+            userId,
+        );
+        return saved;
+    }
+
     async cancel(id: number, userId: number, role: Role | EmployeeRole) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt) {

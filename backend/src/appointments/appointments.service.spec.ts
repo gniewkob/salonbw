@@ -344,6 +344,40 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('noShow updates status when authorized', async () => {
+        const appt: any = {
+            id: 3,
+            status: AppointmentStatus.Scheduled,
+            client: { id: 2 },
+            employee: { id: 4 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
+
+        await service.noShow(3, 4, Role.Employee);
+        expect(appt.status).toBe(AppointmentStatus.NO_SHOW);
+        expect(repo.save).toHaveBeenCalledWith(appt);
+    });
+
+    it('noShow logs action', async () => {
+        const appt: any = {
+            id: 4,
+            status: AppointmentStatus.Scheduled,
+            client: { id: 2 },
+            employee: { id: 5 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+        repo.save.mockResolvedValue(appt);
+
+        await service.noShow(4, 5, Role.Employee);
+
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.NoShowAppointment,
+            JSON.stringify({ appointmentId: 4, userId: 5 }),
+            5,
+        );
+    });
+
     it('complete saves status and commission', async () => {
         const appt: any = {
             id: 2,
