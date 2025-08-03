@@ -84,11 +84,12 @@ export class AuthService {
         const user = await this.usersService.createUser(
             dto.email,
             dto.password,
-            dto.fullName,
+            dto.firstName,
+            dto.lastName,
             Role.Client,
             dto.phone,
-            dto.consentRODO,
-            dto.consentMarketing ?? false,
+            dto.privacyConsent,
+            dto.marketingConsent ?? false,
         );
         await this.logs.create(
             LogAction.RegisterSuccess,
@@ -116,10 +117,10 @@ export class AuthService {
 
     async socialLogin(dto: SocialLoginDto): Promise<{
         tokens: AuthTokensDto;
-        user: { id: number; email: string; name: string; role: Role };
+        user: { id: number; email: string; firstName: string; lastName: string; role: Role };
         isNew: boolean;
     }> {
-        const { provider, token, consentMarketing } = dto;
+        const { provider, token, marketingConsent } = dto;
         let email: string | undefined;
         let name = '';
         try {
@@ -148,6 +149,9 @@ export class AuthService {
             throw new UnauthorizedException('Email not available');
         }
 
+        const [firstName, ...rest] = name.split(' ');
+        const lastName = rest.join(' ');
+
         const existing = await this.usersService.findByEmail(email);
         let user: User;
         let isNew = false;
@@ -162,11 +166,12 @@ export class AuthService {
         } else {
             user = await this.usersService.createSocialUser(
                 email,
-                name,
+                firstName,
+                lastName,
                 Role.Client,
                 null,
                 true,
-                consentMarketing ?? false,
+                marketingConsent ?? false,
             );
             isNew = true;
             await this.logs.create(LogAction.RegisterSuccess, `email=${email}`, user.id);
@@ -179,7 +184,8 @@ export class AuthService {
             user: {
                 id: user.id,
                 email: user.email,
-                name: user.name,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 role: user.role as Role,
             },
             isNew,

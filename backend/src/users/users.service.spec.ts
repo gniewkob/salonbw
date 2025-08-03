@@ -54,13 +54,20 @@ describe('UsersService', () => {
         const created = {
             email: 'a@test.com',
             password: 'hashed',
-            name: 'A',
+            firstName: 'A',
+            lastName: 'Test',
             role: Role.Client,
         } as User;
         repo.create.mockReturnValue(created);
         repo.save.mockResolvedValue(created);
 
-        await service.createUser('a@test.com', plain, 'A', Role.Client);
+        await service.createUser(
+            'a@test.com',
+            plain,
+            'A',
+            'Test',
+            Role.Client,
+        );
 
         const passed: string = repo.create.mock.calls[0][0].password as string;
         expect(await bcrypt.compare(plain, passed)).toBe(true);
@@ -71,7 +78,13 @@ describe('UsersService', () => {
         repo.findOne.mockResolvedValue({ id: 2 } as User);
 
         await expect(
-            service.createUser('a@test.com', 'secret', 'Alice', Role.Client),
+            service.createUser(
+                'a@test.com',
+                'secret',
+                'Alice',
+                'Smith',
+                Role.Client,
+            ),
         ).rejects.toBeInstanceOf(BadRequestException);
         expect(repo.save).not.toHaveBeenCalled();
     });
@@ -81,12 +94,16 @@ describe('UsersService', () => {
             id: 1,
             email: 'old@test.com',
             password: 'p',
-            name: 'Old',
+            firstName: 'Old',
+            lastName: 'Name',
         } as User;
         repo.findOne.mockResolvedValue(user);
         repo.save.mockResolvedValue(user);
 
-        await service.updateCustomer(1, { password: 'new', name: 'New' });
+        await service.updateCustomer(1, {
+            password: 'new',
+            firstName: 'New',
+        });
 
         const passed: string = repo.save.mock.calls[0][0].password as string;
         expect(await bcrypt.compare('new', passed)).toBe(true);
@@ -96,7 +113,7 @@ describe('UsersService', () => {
     it('updateCustomer returns undefined when user missing', async () => {
         repo.findOne.mockResolvedValue(undefined);
         await expect(
-            service.updateCustomer(2, { name: 'x' }),
+            service.updateCustomer(2, { firstName: 'x' }),
         ).resolves.toBeUndefined();
     });
 });

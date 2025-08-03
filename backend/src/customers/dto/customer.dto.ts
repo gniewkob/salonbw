@@ -13,7 +13,11 @@ export class CustomerDto {
 
     @ApiProperty()
     @Expose()
-    name: string;
+    firstName: string;
+
+    @ApiProperty()
+    @Expose()
+    lastName: string;
 
     @ApiProperty({ nullable: true })
     @Expose()
@@ -22,4 +26,24 @@ export class CustomerDto {
     @ApiProperty({ enum: Role })
     @Expose()
     role: Role;
+
+    @ApiProperty()
+    @Expose()
+    privacyConsent: boolean;
+
+    @ApiProperty()
+    @Expose()
+    marketingConsent: boolean;
+
+    @ApiProperty()
+    @Expose()
+    createdAt: Date;
+
+    @ApiProperty()
+    @Expose()
+    updatedAt: Date;
+
+    @ApiProperty()
+    @Expose()
+    isActive: boolean;
 }

@@ -13,8 +13,13 @@ import { ApiProperty } from '@nestjs/swagger';
 export class RegisterClientDto {
     @ApiProperty()
     @IsString()
-    @MinLength(3)
-    fullName: string;
+    @MinLength(2)
+    firstName: string;
+
+    @ApiProperty()
+    @IsString()
+    @MinLength(2)
+    lastName: string;
 
     @ApiProperty()
     @IsEmail()
@@ -32,10 +37,10 @@ export class RegisterClientDto {
     @ApiProperty()
     @IsBoolean()
     @Equals(true)
-    consentRODO: boolean;
+    privacyConsent: boolean;
 
     @ApiProperty({ required: false })
     @IsBoolean()
     @IsOptional()
-    consentMarketing?: boolean;
+    marketingConsent?: boolean;
 }
