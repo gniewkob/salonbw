@@ -7,6 +7,8 @@ import { Role } from '../users/role.enum';
 import { CustomerDto } from './dto/customer.dto';
 import { UsersService } from '../users/users.service';
 import { UpdateCustomerDto } from '../users/dto/update-customer.dto';
+import { LogsService } from '../logs/logs.service';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class CustomersService {
@@ -14,6 +16,7 @@ export class CustomersService {
         @InjectRepository(Customer)
         private readonly repo: Repository<Customer>,
         private readonly users: UsersService,
+        private readonly logs: LogsService,
     ) {}
 
     async findAll(): Promise<CustomerDto[]> {
@@ -58,8 +61,16 @@ export class CustomersService {
             where: { id, role: Role.Client },
         });
         if (!customer) return undefined;
+        const changed = customer.marketingConsent !== marketingConsent;
         customer.marketingConsent = marketingConsent;
         const saved = await this.repo.save(customer);
+        if (changed) {
+            await this.logs.create(
+                LogAction.MarketingConsentChange,
+                JSON.stringify({ id, marketingConsent }),
+                id,
+            );
+        }
         return plainToInstance(CustomerDto, saved, {
             excludeExtraneousValues: true,
         });
