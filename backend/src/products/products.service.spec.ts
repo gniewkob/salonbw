@@ -29,7 +29,9 @@ describe('ProductsService', () => {
     const sales = { count: jest.fn() } as any;
     const usageRepo = { count: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
-    const usage = { createStockCorrection: jest.fn() } as any;
+    const usage = {
+        createStockCorrection: jest.fn().mockResolvedValue(undefined),
+    } as any;
 
     beforeEach(async () => {
         repo.create.mockReset();
@@ -44,6 +46,7 @@ describe('ProductsService', () => {
         usageRepo.count.mockReset();
         logs.create.mockReset();
         usage.createStockCorrection.mockReset();
+        usage.createStockCorrection.mockResolvedValue(undefined);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ProductsService,
@@ -81,40 +84,40 @@ describe('ProductsService', () => {
     });
 
     it('adjusts stock and logs, recording usage when decreased', async () => {
-        repo.findOne.mockResolvedValue({ id: 1, stock: 2 });
+        repo.findOne.mockResolvedValue({ id: 1, stock: 10 });
         repo.save.mockImplementation((d: any) => d);
-        const res = await service.updateStock(1, -1, 7);
-        expect(res!.stock).toBe(1);
+        const res = await service.updateStock(1, -5, 7);
+        expect(res!.stock).toBe(5);
         expect(usage.createStockCorrection).toHaveBeenCalledWith(
             repo.manager,
             1,
-            1,
-            1,
+            5,
+            5,
             7,
         );
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.UpdateProductStock,
             JSON.stringify({
                 id: 1,
-                amount: -1,
-                stock: 1,
+                amount: -5,
+                stock: 5,
                 usageType: UsageType.STOCK_CORRECTION,
             }),
         );
     });
 
     it('does not record usage when stock increases', async () => {
-        repo.findOne.mockResolvedValue({ id: 1, stock: 2 });
+        repo.findOne.mockResolvedValue({ id: 1, stock: 10 });
         repo.save.mockImplementation((d: any) => d);
-        const res = await service.updateStock(1, 3, 7);
-        expect(res!.stock).toBe(5);
+        const res = await service.updateStock(1, 5, 7);
+        expect(res!.stock).toBe(15);
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.UpdateProductStock,
             JSON.stringify({
                 id: 1,
-                amount: 3,
-                stock: 5,
+                amount: 5,
+                stock: 15,
                 usageType: UsageType.STOCK_CORRECTION,
             }),
         );
