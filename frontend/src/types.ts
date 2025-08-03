@@ -3,7 +3,7 @@ export interface Client {
     name: string;
 }
 
-export type Role = 'client' | 'employee' | 'admin';
+export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
 
 export interface Appointment {
     id: number;

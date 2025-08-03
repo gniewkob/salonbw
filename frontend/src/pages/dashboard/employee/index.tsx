@@ -6,7 +6,7 @@ import { useDashboard } from '@/hooks/useDashboard';
 export default function EmployeeDashboard() {
     const { data, loading } = useDashboard();
     return (
-        <RouteGuard>
+        <RouteGuard roles={['employee']}>
             <DashboardLayout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <DashboardWidget

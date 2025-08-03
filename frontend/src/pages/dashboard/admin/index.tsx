@@ -6,7 +6,7 @@ import { useDashboard } from '@/hooks/useDashboard';
 export default function AdminDashboard() {
     const { data, loading } = useDashboard();
     return (
-        <RouteGuard>
+        <RouteGuard roles={['admin']}>
             <DashboardLayout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
                     <DashboardWidget
