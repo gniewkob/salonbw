@@ -40,6 +40,7 @@ describe('AppointmentsService', () => {
     };
 
     beforeEach(async () => {
+        process.env.CANCEL_CUTOFF_MINUTES = '30';
         repo = {
             create: jest.fn(),
             save: jest.fn(),
@@ -348,6 +349,7 @@ describe('AppointmentsService', () => {
         const appt: any = {
             id: 1,
             status: AppointmentStatus.Scheduled,
+            startTime: new Date(Date.now() + 60 * 60000),
             client: { id: 2 },
             employee: { id: 3 },
         };
@@ -363,6 +365,7 @@ describe('AppointmentsService', () => {
         const appt: any = {
             id: 2,
             status: AppointmentStatus.Scheduled,
+            startTime: new Date(Date.now() + 60 * 60000),
             client: { id: 1 },
             employee: { id: 3 },
         };
@@ -376,6 +379,22 @@ describe('AppointmentsService', () => {
             JSON.stringify({ appointmentId: 2, userId: 1 }),
             1,
         );
+    });
+
+    it('cancel rejects within cutoff for non-admin', async () => {
+        const appt: any = {
+            id: 5,
+            status: AppointmentStatus.Scheduled,
+            startTime: new Date(Date.now() + 10 * 60000),
+            client: { id: 1 },
+            employee: { id: 3 },
+        };
+        repo.findOne.mockResolvedValue(appt);
+
+        await expect(service.cancel(5, 1, Role.Client)).rejects.toBeInstanceOf(
+            BadRequestException,
+        );
+        expect(repo.save).not.toHaveBeenCalled();
     });
 
     it('noShow updates status when authorized', async () => {
