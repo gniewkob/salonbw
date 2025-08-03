@@ -51,7 +51,7 @@ describe('RolesGuard (e2e)', () => {
             .expect(403);
     });
 
-    it('allows admin user to create a new user', async () => {
+    it('rejects admin user creating a client account', async () => {
         await usersService.createUser(
             'admin@test.com',
             'secret',
@@ -72,7 +72,37 @@ describe('RolesGuard (e2e)', () => {
             .send({
                 email: 'client2@test.com',
                 password: 'secret',
-                name: 'Client2',
+                firstName: 'Client2',
+                lastName: 'User',
+                role: Role.Client,
+            })
+            .expect(400);
+    });
+
+    it('allows admin user to create an employee', async () => {
+        await usersService.createUser(
+            'admin2@test.com',
+            'secret',
+            'Admin',
+            Role.Admin,
+        );
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'admin2@test.com', password: 'secret' })
+            .expect(201);
+
+        const { access_token: token } = login.body as { access_token: string };
+
+        await request(app.getHttpServer())
+            .post('/users')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                email: 'employee@test.com',
+                password: 'secret',
+                firstName: 'Employee',
+                lastName: 'User',
+                role: Role.Employee,
             })
             .expect(201);
     });
