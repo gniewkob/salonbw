@@ -86,21 +86,23 @@ describe('ProductsService', () => {
     it('adjusts stock and logs, recording usage when decreased', async () => {
         repo.findOne.mockResolvedValue({ id: 1, stock: 10 });
         repo.save.mockImplementation((d: any) => d);
-        const res = await service.updateStock(1, -5, 7);
-        expect(res!.stock).toBe(5);
+        const userId = 7;
+        const res = await service.updateStock(1, -5, userId);
+        const newStock = res!.stock;
+        expect(newStock).toBe(5);
         expect(usage.createStockCorrection).toHaveBeenCalledWith(
             repo.manager,
             1,
             5,
-            5,
-            7,
+            newStock,
+            userId,
         );
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.UpdateProductStock,
             JSON.stringify({
                 id: 1,
                 amount: -5,
-                stock: 5,
+                stock: newStock,
                 usageType: UsageType.STOCK_CORRECTION,
             }),
         );
@@ -109,7 +111,8 @@ describe('ProductsService', () => {
     it('does not record usage when stock increases', async () => {
         repo.findOne.mockResolvedValue({ id: 1, stock: 10 });
         repo.save.mockImplementation((d: any) => d);
-        const res = await service.updateStock(1, 5, 7);
+        const userId = 7;
+        const res = await service.updateStock(1, 5, userId);
         expect(res!.stock).toBe(15);
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
         expect(logs.create).toHaveBeenCalledWith(
@@ -263,7 +266,8 @@ describe('ProductsService', () => {
 
     it('throws when stock goes negative', async () => {
         repo.findOne.mockResolvedValue({ id: 1, stock: 1 });
-        await expect(service.updateStock(1, -2, 1)).rejects.toBeInstanceOf(
+        const userId = 1;
+        await expect(service.updateStock(1, -2, userId)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
