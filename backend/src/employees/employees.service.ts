@@ -18,11 +18,9 @@ export class EmployeesService {
     ) {}
 
     private toDto(user: User): EmployeeDto {
-        return plainToInstance(
-            EmployeeDto,
-            { ...user, name: `${user.firstName} ${user.lastName}` },
-            { excludeExtraneousValues: true },
-        );
+        return plainToInstance(EmployeeDto, user, {
+            excludeExtraneousValues: true,
+        });
     }
 
     async findAll(): Promise<EmployeeDto[]> {
