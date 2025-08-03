@@ -43,6 +43,7 @@ export class AppointmentsService {
         serviceId: number,
         startTime: string,
         notes?: string,
+        createdBy?: number,
     ): Promise<Appointment> {
         const start = new Date(startTime);
         if (start < new Date()) {
@@ -86,7 +87,7 @@ export class AppointmentsService {
         await this.logs.create(
             LogAction.CreateAppointment,
             JSON.stringify({ clientId, employeeId, serviceId, startTime }),
-            clientId,
+            createdBy ?? clientId,
         );
         if ((saved.client as ClientWithPhone)?.phone) {
             void this.notifications.sendAppointmentConfirmation(
