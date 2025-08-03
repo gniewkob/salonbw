@@ -50,7 +50,7 @@ export class AppointmentsService {
         if (!service) {
             throw new BadRequestException('Service not found');
         }
-        const end = new Date(start.getTime() + service.duration * 60000);
+        const endTime = new Date(start.getTime() + service.duration * 60000);
         const overlapping = await this.repo.find({
             where: [
                 { employee: { id: employeeId } },
@@ -65,7 +65,7 @@ export class AppointmentsService {
                     other.startTime.getTime() +
                         other.service.duration * 60000,
                 );
-            if (start < otherEnd && end > other.startTime) {
+            if (start < otherEnd && endTime > other.startTime) {
                 throw new ConflictException('Appointment time already taken');
             }
         }
@@ -74,6 +74,7 @@ export class AppointmentsService {
             employee: { id: employeeId } as EmployeeWithPhone,
             service: { id: serviceId } as Service,
             startTime: start,
+            endTime,
             status: AppointmentStatus.Scheduled,
         });
         const saved = await this.repo.save(appointment);
@@ -129,7 +130,7 @@ export class AppointmentsService {
         const employeeId = dto.employeeId ?? appt.employee.id;
         let start = appt.startTime;
         let service = appt.service;
-        let end =
+        let endTime =
             appt.endTime ||
             new Date(appt.startTime.getTime() + appt.service.duration * 60000);
         let needsCheck = false;
@@ -154,10 +155,10 @@ export class AppointmentsService {
             needsCheck = true;
         }
         if (dto.endTime) {
-            end = new Date(dto.endTime);
+            endTime = new Date(dto.endTime);
             needsCheck = true;
         } else if (dto.startTime || dto.serviceId) {
-            end = new Date(start.getTime() + service.duration * 60000);
+            endTime = new Date(start.getTime() + service.duration * 60000);
             needsCheck = true;
         }
 
@@ -177,7 +178,7 @@ export class AppointmentsService {
                         other.startTime.getTime() +
                             other.service.duration * 60000,
                     );
-                if (start < otherEnd && end > other.startTime) {
+                if (start < otherEnd && endTime > other.startTime) {
                     throw new ConflictException(
                         'Appointment time already taken',
                     );
@@ -189,7 +190,9 @@ export class AppointmentsService {
             appt.startTime = start;
         }
         if (dto.endTime) {
-            appt.endTime = end;
+            appt.endTime = endTime;
+        } else if (dto.startTime || dto.serviceId) {
+            appt.endTime = endTime;
         }
         if (dto.notes !== undefined) {
             appt.notes = dto.notes;
