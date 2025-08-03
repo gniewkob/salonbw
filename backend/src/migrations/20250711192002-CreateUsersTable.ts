@@ -21,14 +21,35 @@ export class CreateUsersTable20250711192002 implements MigrationInterface {
                     {
                         name: 'password',
                         type: 'varchar',
+                        isNullable: true,
                     },
                     {
-                        name: 'name',
+                        name: 'firstName',
+                        type: 'varchar',
+                    },
+                    {
+                        name: 'lastName',
                         type: 'varchar',
                     },
                     {
                         name: 'role',
                         type: 'varchar',
+                    },
+                    {
+                        name: 'isActive',
+                        type: 'boolean',
+                        default: true,
+                    },
+                    {
+                        name: 'createdAt',
+                        type: 'timestamptz',
+                        default: 'CURRENT_TIMESTAMP',
+                    },
+                    {
+                        name: 'updatedAt',
+                        type: 'timestamptz',
+                        default: 'CURRENT_TIMESTAMP',
+                        onUpdate: 'CURRENT_TIMESTAMP',
                     },
                 ],
             }),

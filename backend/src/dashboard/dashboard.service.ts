@@ -74,7 +74,10 @@ export class DashboardService {
         role: Role | EmployeeRole,
     ): Promise<DashboardSummary> {
         const user = await this.users.findOne({ where: { id: userId } });
-        const base = { fullName: user?.name ?? '', email: user?.email ?? '' };
+        const base = {
+            fullName: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
+            email: user?.email ?? '',
+        };
         const now = new Date();
         const startOfDay = new Date(
             now.getFullYear(),
