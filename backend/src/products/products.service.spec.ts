@@ -103,7 +103,6 @@ describe('ProductsService', () => {
         );
     });
 
-    it('deletes product when no usage or sales', async () => {
     it('does not record usage when stock increases', async () => {
         repo.findOne.mockResolvedValue({ id: 1, stock: 2 });
         repo.save.mockImplementation((d: any) => d);
@@ -120,6 +119,8 @@ describe('ProductsService', () => {
             }),
         );
     });
+
+    it('deletes product when no sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
         usageRepo.count.mockResolvedValue(0);
         sales.count.mockResolvedValue(0);
