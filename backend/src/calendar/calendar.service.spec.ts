@@ -33,7 +33,7 @@ describe('CalendarService', () => {
             id: 1,
             startTime: new Date('2024-01-01T10:00:00Z'),
             service: { name: 'cut', duration: 60 },
-            client: { name: 'c' },
+            client: { firstName: 'c', lastName: 'd' },
         });
         const scope = nock('https://www.googleapis.com')
             .post('/calendar/v3/calendars/primary/events')
@@ -48,7 +48,7 @@ describe('CalendarService', () => {
             id: 1,
             startTime: new Date('2024-01-01T10:00:00Z'),
             service: { name: 'cut', duration: 60 },
-            client: { name: 'c' },
+            client: { firstName: 'c', lastName: 'd' },
         });
         const result = await service.add(1, 'ics');
         expect(result?.ics).toContain('BEGIN:VCALENDAR');

@@ -31,11 +31,12 @@ export class UsersService {
     async createUser(
         email: string,
         password: string,
-        name: string,
+        firstName: string,
+        lastName: string,
         role: Role = Role.Client,
         phone?: string | null,
-        consentRODO?: boolean,
-        consentMarketing?: boolean,
+        privacyConsent?: boolean,
+        marketingConsent?: boolean,
     ) {
         const existing = await this.findByEmail(email);
         if (existing) {
@@ -45,22 +46,24 @@ export class UsersService {
         const user = this.usersRepository.create({
             email,
             password: hashed,
-            name,
+            firstName,
+            lastName,
             role,
             phone: phone ?? null,
-            consentRODO: consentRODO ?? false,
-            consentMarketing: consentMarketing ?? false,
+            privacyConsent: privacyConsent ?? false,
+            marketingConsent: marketingConsent ?? false,
         });
         return this.usersRepository.save(user);
     }
 
     async createSocialUser(
         email: string,
-        name: string,
+        firstName: string,
+        lastName: string,
         role: Role = Role.Client,
         phone?: string | null,
-        consentRODO = true,
-        consentMarketing = false,
+        privacyConsent = true,
+        marketingConsent = false,
     ) {
         const existing = await this.findByEmail(email);
         if (existing) {
@@ -69,11 +72,12 @@ export class UsersService {
         const user = this.usersRepository.create({
             email,
             password: null,
-            name,
+            firstName,
+            lastName,
             role,
             phone: phone ?? null,
-            consentRODO,
-            consentMarketing,
+            privacyConsent,
+            marketingConsent,
         });
         return this.usersRepository.save(user);
     }
@@ -101,8 +105,20 @@ export class UsersService {
         if (dto.password) {
             user.password = await bcrypt.hash(dto.password, 10);
         }
-        if (dto.name !== undefined) {
-            user.name = dto.name;
+        if (dto.firstName !== undefined) {
+            user.firstName = dto.firstName;
+        }
+        if (dto.lastName !== undefined) {
+            user.lastName = dto.lastName;
+        }
+        if (dto.phone !== undefined) {
+            user.phone = dto.phone;
+        }
+        if (dto.privacyConsent !== undefined) {
+            user.privacyConsent = dto.privacyConsent;
+        }
+        if (dto.marketingConsent !== undefined) {
+            user.marketingConsent = dto.marketingConsent;
         }
         return this.usersRepository.save(user);
     }

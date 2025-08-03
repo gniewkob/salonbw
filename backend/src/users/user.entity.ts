@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 import { Role } from './role.enum';
 import { EmployeeRole } from '../employees/employee-role.enum';
 
@@ -14,22 +20,34 @@ export class User {
     password: string | null; // hashed, null for social accounts
 
     @Column()
-    name: string;
+    firstName: string;
+
+    @Column()
+    lastName: string;
 
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
     @Column({ type: 'boolean', default: false })
-    consentRODO: boolean;
+    privacyConsent: boolean;
 
     @Column({ type: 'boolean', default: false })
-    consentMarketing: boolean;
+    marketingConsent: boolean;
 
     @Column({ type: 'simple-enum', enum: Role })
     role: Role | EmployeeRole;
 
     @Column({ type: 'varchar', nullable: true })
     refreshToken: string | null;
+
+    @CreateDateColumn({ type: 'timestamptz' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamptz' })
+    updatedAt: Date;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
 
     @Column({ type: 'float', nullable: true })
     commissionBase: number | null;

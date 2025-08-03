@@ -39,7 +39,7 @@ describe('InvoicesService', () => {
     it('generates invoice', async () => {
         appts.findOne.mockResolvedValue({
             id: 1,
-            client: { name: 'c' },
+            client: { firstName: 'c', lastName: 'd' },
             service: { name: 's', price: 10 },
         });
         axiosMock.post.mockResolvedValue({
@@ -61,7 +61,7 @@ describe('InvoicesService', () => {
     it('logs on failure', async () => {
         appts.findOne.mockResolvedValue({
             id: 1,
-            client: { name: 'c' },
+            client: { firstName: 'c', lastName: 'd' },
             service: { name: 's', price: 10 },
         });
         axiosMock.post.mockRejectedValue(new Error('fail'));
