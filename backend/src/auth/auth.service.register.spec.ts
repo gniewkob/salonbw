@@ -43,9 +43,10 @@ describe('AuthService.registerClient', () => {
         const dto: RegisterClientDto = {
             email: 'a@test.com',
             password: 'Secret123!',
-            fullName: 'Alice',
+            firstName: 'Alice',
+            lastName: 'Liddell',
             phone: '+48123123132',
-            consentRODO: true,
+            privacyConsent: true,
         } as RegisterClientDto;
         users.findByEmail.mockResolvedValue(null);
         users.createUser.mockResolvedValue({

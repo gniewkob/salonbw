@@ -36,8 +36,26 @@ export class UsersController {
     @ApiOperation({ summary: 'Create a new user (admin only)' })
     @ApiResponse({ status: 201, description: 'User created' })
     create(@Body() createUserDto: CreateUserDto) {
-        const { email, password, name, role } = createUserDto;
-        return this.usersService.createUser(email, password, name, role);
+        const {
+            email,
+            password,
+            firstName,
+            lastName,
+            role,
+            phone,
+            privacyConsent,
+            marketingConsent,
+        } = createUserDto;
+        return this.usersService.createUser(
+            email,
+            password,
+            firstName,
+            lastName,
+            role,
+            phone,
+            privacyConsent,
+            marketingConsent,
+        );
     }
 
     @Get('profile')

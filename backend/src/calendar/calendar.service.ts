@@ -29,7 +29,11 @@ export class CalendarService {
             new Date(appt.startTime.getTime() + appt.service.duration * 60000);
         return {
             title: appt.service.name,
-            description: `Wizyta z ${appt.client?.name ?? ''}`,
+            description: `Wizyta z ${
+                appt.client
+                    ? `${appt.client.firstName} ${appt.client.lastName}`.trim()
+                    : ''
+            }`,
             startTime: appt.startTime,
             endTime: end,
         };

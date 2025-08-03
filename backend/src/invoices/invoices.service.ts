@@ -28,7 +28,9 @@ export class InvoicesService {
             const res = await axios.post(
                 `${process.env.INVOICE_API_URL}/invoices`,
                 {
-                    client: { name: appt.client.name },
+                    client: {
+                        name: `${appt.client.firstName} ${appt.client.lastName}`,
+                    },
                     items: [
                         {
                             name: appt.service.name,

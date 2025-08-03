@@ -15,5 +15,5 @@ export class SocialLoginDto {
     @ApiProperty({ required: false })
     @IsBoolean()
     @IsOptional()
-    consentMarketing?: boolean;
+    marketingConsent?: boolean;
 }
