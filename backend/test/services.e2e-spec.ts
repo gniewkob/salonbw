@@ -34,9 +34,10 @@ describe('ServicesModule (e2e)', () => {
             .send({
                 email: 'client@services.com',
                 password: 'Secret123!',
-                fullName: 'Client',
+                firstName: 'Client',
+                lastName: 'User',
                 phone: '+48123123127',
-                consentRODO: true,
+                privacyConsent: true,
             })
             .expect(201);
 
