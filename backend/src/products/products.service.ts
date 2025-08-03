@@ -69,6 +69,7 @@ export class ProductsService {
     }
 
     async updateStock(id: number, amount: number, userId: number) {
+        // userId identifies who performed the stock adjustment
         const product = await this.repo.findOne({ where: { id } });
         if (!product) return undefined;
         if (product.stock + amount < 0) {
