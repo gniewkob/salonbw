@@ -14,13 +14,20 @@ import { UsageType } from './usage-type.enum';
 
 describe('ProductUsageService', () => {
     let service: ProductUsageService;
-    const repo = { manager: { transaction: jest.fn() }, find: jest.fn() } as any;
+    const repo = {
+        manager: { transaction: jest.fn() },
+        find: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+    } as any;
     const products = { findOne: jest.fn(), save: jest.fn() } as any;
     const logs = { create: jest.fn() } as any;
 
     beforeEach(async () => {
         repo.manager.transaction.mockReset();
         repo.find.mockReset();
+        repo.create.mockReset();
+        repo.save.mockReset();
         products.findOne.mockReset();
         products.save.mockReset();
         logs.create.mockReset();
@@ -167,5 +174,26 @@ describe('ProductUsageService', () => {
             where: { product: { id: 1 }, usageType: UsageType.SALE },
             order: { timestamp: 'DESC' },
         });
+    });
+
+    it('creates sale usage linked to appointment when provided', async () => {
+        repo.create.mockImplementation((d: any) => d);
+        repo.save.mockImplementation(async (d: any) => d);
+        const res = await service.createSale(1, 2, 3, 4, 5);
+        expect(repo.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                appointment: { id: 5 },
+                product: { id: 1 },
+                quantity: 2,
+                usageType: UsageType.SALE,
+                usedByEmployee: { id: 4 },
+            }),
+        );
+        expect(res.appointment).toEqual({ id: 5 });
+        expect(logs.create).toHaveBeenCalledWith(
+            LogAction.ProductUsed,
+            expect.stringContaining('"appointmentId":5'),
+            4,
+        );
     });
 });
