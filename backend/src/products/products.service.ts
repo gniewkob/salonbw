@@ -86,14 +86,17 @@ export class ProductsService {
                 userId,
             );
         }
+        const logPayload: any = {
+            id,
+            amount,
+            stock: saved.stock,
+        };
+        if (amount < 0) {
+            logPayload.usageType = UsageType.STOCK_CORRECTION;
+        }
         await this.logs.create(
             LogAction.UpdateProductStock,
-            JSON.stringify({
-                id,
-                amount,
-                stock: saved.stock,
-                usageType: UsageType.STOCK_CORRECTION,
-            }),
+            JSON.stringify(logPayload),
         );
         return saved;
     }
@@ -103,7 +106,7 @@ export class ProductsService {
         userId: number,
     ) {
         return this.repo.manager.transaction(async (manager) => {
-            const updated: Product[] = [];
+            const updated: { prod: Product; diff: number }[] = [];
             for (const { id, stock } of entries) {
                 if (stock < 0) {
                     throw new BadRequestException('stock must be >= 0');
@@ -116,7 +119,8 @@ export class ProductsService {
                 }
                 const diff = product.stock - stock;
                 product.stock = stock;
-                updated.push(await manager.save(Product, product));
+                const saved = await manager.save(Product, product);
+                updated.push({ prod: saved, diff });
                 if (diff > 0) {
                     await this.usage.createStockCorrection(
                         manager,
@@ -128,17 +132,17 @@ export class ProductsService {
                 }
             }
 
-            for (const prod of updated) {
+            for (const { prod, diff } of updated) {
+                const payload: any = { id: prod.id, stock: prod.stock };
+                if (diff > 0) {
+                    payload.usageType = UsageType.STOCK_CORRECTION;
+                }
                 await this.logs.create(
                     LogAction.BulkUpdateProductStock,
-                    JSON.stringify({
-                        id: prod.id,
-                        stock: prod.stock,
-                        usageType: UsageType.STOCK_CORRECTION,
-                    }),
+                    JSON.stringify(payload),
                 );
             }
-            return updated;
+            return updated.map((u) => u.prod);
         });
     }
 

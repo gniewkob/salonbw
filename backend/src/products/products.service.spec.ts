@@ -117,12 +117,7 @@ describe('ProductsService', () => {
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.UpdateProductStock,
-            JSON.stringify({
-                id: 1,
-                amount: 5,
-                stock: 15,
-                usageType: UsageType.STOCK_CORRECTION,
-            }),
+            JSON.stringify({ id: 1, amount: 5, stock: 15 }),
         );
     });
 
@@ -195,20 +190,12 @@ describe('ProductsService', () => {
         expect(logs.create).toHaveBeenNthCalledWith(
             1,
             LogAction.BulkUpdateProductStock,
-            JSON.stringify({
-                id: 1,
-                stock: 5,
-                usageType: UsageType.STOCK_CORRECTION,
-            }),
+            JSON.stringify({ id: 1, stock: 5 }),
         );
         expect(logs.create).toHaveBeenNthCalledWith(
             2,
             LogAction.BulkUpdateProductStock,
-            JSON.stringify({
-                id: 2,
-                stock: 3,
-                usageType: UsageType.STOCK_CORRECTION,
-            }),
+            JSON.stringify({ id: 2, stock: 3 }),
         );
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
     });
