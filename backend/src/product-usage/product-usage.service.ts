@@ -34,6 +34,11 @@ export class ProductUsageService {
         return this.repo.manager.transaction(async (manager) => {
             const records: ProductUsage[] = [];
             for (const { productId, quantity, usageType } of entries) {
+                if (usageType === UsageType.SALE) {
+                    throw new BadRequestException(
+                        'sale entries must be registered via SalesService',
+                    );
+                }
                 if (quantity <= 0) {
                     throw new BadRequestException('quantity must be > 0');
                 }
