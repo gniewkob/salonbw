@@ -144,7 +144,7 @@ describe('ProductUsage (e2e)', () => {
             .expect(409);
     });
 
-    it('allows overriding usageType', async () => {
+    it('allows overriding usageType to STOCK_CORRECTION', async () => {
         const admin = await users.createUser(
             'admino@pu.com',
             'secret',
@@ -185,7 +185,7 @@ describe('ProductUsage (e2e)', () => {
         await request(app.getHttpServer())
             .post(`/appointments/${appt.id}/product-usage`)
             .set('Authorization', `Bearer ${empToken}`)
-            .send([{ productId: product.id, quantity: 1, usageType: 'SALE' }])
+            .send([{ productId: product.id, quantity: 1, usageType: 'STOCK_CORRECTION' }])
             .expect(201);
 
         const adminLogin = await request(app.getHttpServer())
@@ -199,31 +199,31 @@ describe('ProductUsage (e2e)', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
         expect(history.body.length).toBe(1);
-        expect(history.body[0].usageType).toBe('SALE');
+        expect(history.body[0].usageType).toBe('STOCK_CORRECTION');
     });
 
-    it('routes SALE usage through sales service', async () => {
+    it('rejects SALE usageType', async () => {
         const admin = await users.createUser(
-            'adminrs@pu.com',
+            'adminr@pu.com',
             'secret',
             'AR',
             Role.Admin,
         );
         const employee = await users.createUser(
-            'emprs@pu.com',
+            'empr@pu.com',
             'secret',
             'ER',
             Role.Employee,
         );
         const client = await users.createUser(
-            'clrs@pu.com',
+            'clir@pu.com',
             'secret',
             'CR',
             Role.Client,
         );
 
         const product = await products.create({
-            name: 'spray',
+            name: 'wax',
             unitPrice: 5,
             stock: 2,
         } as any);
@@ -236,36 +236,15 @@ describe('ProductUsage (e2e)', () => {
 
         const empLogin = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: 'emprs@pu.com', password: 'secret' })
+            .send({ email: 'empr@pu.com', password: 'secret' })
             .expect(201);
         const empToken = empLogin.body.access_token as string;
 
-        const res = await request(app.getHttpServer())
+        await request(app.getHttpServer())
             .post(`/appointments/${appt.id}/product-usage`)
             .set('Authorization', `Bearer ${empToken}`)
             .send([{ productId: product.id, quantity: 1, usageType: 'SALE' }])
-            .expect(201);
-        expect(res.body.sales).toHaveLength(1);
-
-        const adminLogin = await request(app.getHttpServer())
-            .post('/auth/login')
-            .send({ email: 'adminrs@pu.com', password: 'secret' })
-            .expect(201);
-        const adminToken = adminLogin.body.access_token as string;
-
-        const history = await request(app.getHttpServer())
-            .get(`/products/${product.id}/usage-history`)
-            .set('Authorization', `Bearer ${adminToken}`)
-            .expect(200);
-        expect(history.body.length).toBe(1);
-        expect(history.body[0].usageType).toBe('SALE');
-
-        const commissions = await request(app.getHttpServer())
-            .get('/commissions/admin')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .expect(200);
-        expect(commissions.body.length).toBe(1);
-        expect(Number(commissions.body[0].amount)).toBeCloseTo(5 * 0.13);
+            .expect(400);
     });
 
     it('filters usage history by usageType', async () => {

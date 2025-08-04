@@ -7,7 +7,6 @@ import {
     UseGuards,
     NotFoundException,
     ForbiddenException,
-    BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -15,7 +14,6 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { ProductUsageService } from './product-usage.service';
 import { AppointmentsService } from '../appointments/appointments.service';
-import { SalesService } from '../sales/sales.service';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -25,7 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { EmployeeRole } from '../employees/employee-role.enum';
 import { Request as ExpressRequest } from 'express';
-import { ProductUsageEntryDto } from './dto/product-usage-entry.dto';
+import { AppointmentProductUsageEntryDto } from './dto/appointment-product-usage-entry.dto';
 import { UsageType } from './usage-type.enum';
 
 interface AuthRequest extends ExpressRequest {
@@ -40,7 +38,6 @@ export class AppointmentProductUsageController {
     constructor(
         private readonly usage: ProductUsageService,
         private readonly appointments: AppointmentsService,
-        private readonly sales: SalesService,
     ) {}
 
     @Post(':id/product-usage')
@@ -54,12 +51,13 @@ export class AppointmentProductUsageController {
     @ApiResponse({ status: 404 })
     @ApiResponse({ status: 409 })
     @ApiBody({
-        type: [ProductUsageEntryDto],
-        description: 'Each entry may specify a usageType; defaults to INTERNAL.',
+        type: [AppointmentProductUsageEntryDto],
+        description:
+            'Each entry may specify a usageType; allowed values: INTERNAL or STOCK_CORRECTION. Defaults to INTERNAL.',
     })
     async create(
         @Param('id') id: string,
-        @Body() body: ProductUsageEntryDto[],
+        @Body() body: AppointmentProductUsageEntryDto[],
         @Request() req: AuthRequest,
     ) {
         const appt = await this.appointments.findOne(Number(id));
@@ -74,36 +72,14 @@ export class AppointmentProductUsageController {
             usageType: entry.usageType ?? UsageType.INTERNAL,
         }));
 
-        const saleEntries = entries.filter(
-            (e) => e.usageType === UsageType.SALE,
-        );
-        const usageEntries = entries.filter(
-            (e) => e.usageType !== UsageType.SALE,
-        );
-
-        if (saleEntries.length > 0 && !appt.client?.id) {
-            throw new BadRequestException('sale entries require client');
-        }
-
-        const sales = await Promise.all(
-            saleEntries.map((e) =>
-                this.sales.create(
-                    appt.client.id,
-                    appt.employee.id,
-                    e.productId,
-                    e.quantity,
-                ),
-            ),
-        );
-
-        const usageRecords = usageEntries.length
+        const usageRecords = entries.length
             ? await this.usage.registerUsage(
                   Number(id),
                   req.user.id,
-                  usageEntries,
+                  entries,
               )
             : [];
 
-        return { sales, usage: usageRecords };
+        return { usage: usageRecords };
     }
 }
