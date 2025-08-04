@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
@@ -14,9 +15,19 @@ import { LogsModule } from '../logs/logs.module';
     imports: [
         UsersModule,
         LogsModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET ?? 'secret',
-            signOptions: { expiresIn: '1h' },
+        ConfigModule,
+        JwtModule.registerAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => {
+                const secret = config.get<string>('JWT_SECRET');
+                if (!secret) {
+                    throw new Error('JWT_SECRET is not defined');
+                }
+                return {
+                    secret,
+                    signOptions: { expiresIn: '1h' },
+                };
+            },
         }),
     ],
     providers: [

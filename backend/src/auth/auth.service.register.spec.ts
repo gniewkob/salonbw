@@ -7,6 +7,7 @@ import { Role } from '../users/role.enum';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService.registerClient', () => {
     let service: AuthService;
@@ -17,6 +18,7 @@ describe('AuthService.registerClient', () => {
     };
     let jwt: { signAsync: jest.Mock };
     let logs: { create: jest.Mock };
+    let config: { get: jest.Mock };
 
     beforeEach(async () => {
         users = {
@@ -26,6 +28,11 @@ describe('AuthService.registerClient', () => {
         };
         jwt = { signAsync: jest.fn() };
         logs = { create: jest.fn() };
+        config = {
+            get: jest.fn((key: string) =>
+                key === 'JWT_REFRESH_SECRET' ? 'refresh-secret' : undefined,
+            ),
+        };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -33,6 +40,7 @@ describe('AuthService.registerClient', () => {
                 { provide: UsersService, useValue: users },
                 { provide: JwtService, useValue: jwt },
                 { provide: LogsService, useValue: logs },
+                { provide: ConfigService, useValue: config },
             ],
         }).compile();
 
