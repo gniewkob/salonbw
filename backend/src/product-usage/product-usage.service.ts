@@ -37,8 +37,10 @@ export class ProductUsageService {
                 if (quantity <= 0) {
                     throw new BadRequestException('quantity must be > 0');
                 }
+                // Acquire a pessimistic write lock to avoid concurrent stock modifications
                 const product = await manager.findOne(Product, {
                     where: { id: productId },
+                    lock: { mode: 'pessimistic_write' },
                 });
                 if (!product) {
                     throw new NotFoundException(
