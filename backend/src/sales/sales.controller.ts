@@ -19,6 +19,7 @@ export class SalesController {
             dto.employeeId,
             dto.productId,
             dto.quantity,
+            dto.appointmentId,
         );
     }
 }
