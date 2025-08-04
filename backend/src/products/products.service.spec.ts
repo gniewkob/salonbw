@@ -13,6 +13,7 @@ import {
 import { ProductUsageService } from '../product-usage/product-usage.service';
 import { UsageType } from '../product-usage/usage-type.enum';
 import { ProductUsage } from '../product-usage/product-usage.entity';
+import { OptimisticLockVersionMismatchError } from 'typeorm';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -121,6 +122,26 @@ describe('ProductsService', () => {
         );
     });
 
+    it('uses pessimistic lock when updating stock', async () => {
+        repo.findOne.mockResolvedValue({ id: 1, stock: 0 });
+        repo.save.mockImplementation((d: any) => d);
+        await service.updateStock(1, 1, 1);
+        expect(repo.findOne).toHaveBeenCalledWith({
+            where: { id: 1 },
+            lock: { mode: 'pessimistic_write' },
+        });
+    });
+
+    it('throws ConflictException on optimistic lock error in updateStock', async () => {
+        repo.findOne.mockResolvedValue({ id: 1, stock: 0 });
+        repo.save.mockRejectedValue(
+            new OptimisticLockVersionMismatchError('Product', 1, 2),
+        );
+        await expect(service.updateStock(1, 1, 1)).rejects.toBeInstanceOf(
+            ConflictException,
+        );
+    });
+
     it('deletes product when no usage or sales', async () => {
         repo.findOne.mockResolvedValue({ id: 1 });
         usageRepo.count.mockResolvedValue(0);
@@ -198,6 +219,37 @@ describe('ProductsService', () => {
             JSON.stringify({ id: 2, stock: 3 }),
         );
         expect(usage.createStockCorrection).not.toHaveBeenCalled();
+    });
+
+    it('uses pessimistic lock in bulk update', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue({ id: 1, stock: 1 });
+        manager.save.mockImplementation((_: any, p: any) => p);
+
+        await service.bulkUpdateStock([{ id: 1, stock: 2 }], 1);
+
+        expect(manager.findOne).toHaveBeenCalledWith(Product, {
+            where: { id: 1 },
+            lock: { mode: 'pessimistic_write' },
+        });
+    });
+
+    it('throws ConflictException on optimistic lock error in bulkUpdateStock', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue({ id: 1, stock: 1 });
+        manager.save.mockRejectedValue(
+            new OptimisticLockVersionMismatchError('Product', 1, 2),
+        );
+
+        await expect(
+            service.bulkUpdateStock([{ id: 1, stock: 2 }], 1),
+        ).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('records usage when stock decreases', async () => {
