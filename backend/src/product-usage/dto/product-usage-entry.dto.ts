@@ -5,6 +5,7 @@ import { UsageType } from '../usage-type.enum';
 export class ProductUsageEntryDto {
     @ApiProperty()
     @IsInt()
+    @Min(1)
     productId: number;
 
     @ApiProperty({ minimum: 1 })

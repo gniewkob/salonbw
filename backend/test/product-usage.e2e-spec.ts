@@ -144,6 +144,39 @@ describe('ProductUsage (e2e)', () => {
             .expect(409);
     });
 
+    it('rejects usage with productId less than 1', async () => {
+        const employee = await users.createUser(
+            'emp0@pu.com',
+            'secret',
+            'E0',
+            Role.Employee,
+        );
+        const client = await users.createUser(
+            'client0@pu.com',
+            'secret',
+            'C0',
+            Role.Client,
+        );
+        const appt = await appointments.create(
+            client.id,
+            employee.id,
+            1,
+            new Date(Date.now() + 3600000).toISOString(),
+        );
+
+        const empLogin = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'emp0@pu.com', password: 'secret' })
+            .expect(201);
+        const empToken = empLogin.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .post(`/appointments/${appt.id}/product-usage`)
+            .set('Authorization', `Bearer ${empToken}`)
+            .send([{ productId: 0, quantity: 1 }])
+            .expect(400);
+    });
+
     it('allows overriding usageType to STOCK_CORRECTION', async () => {
         const admin = await users.createUser(
             'admino@pu.com',
