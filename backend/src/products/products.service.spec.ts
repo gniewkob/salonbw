@@ -207,8 +207,10 @@ describe('ProductsService', () => {
         );
         manager.findOne.mockResolvedValue({ id: 1, stock: 5 });
         manager.save.mockImplementation((_: any, p: any) => p);
-
-        const res = await service.bulkUpdateStock([{ id: 1, stock: 3 }], 2);
+        const userId = 7;
+        const res = await service.bulkUpdateStock([
+            { id: 1, stock: 3 },
+        ], userId);
 
         expect(res).toHaveLength(1);
         expect(usage.createStockCorrection).toHaveBeenCalledWith(
@@ -216,7 +218,7 @@ describe('ProductsService', () => {
             1,
             2,
             3,
-            2,
+            userId,
         );
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.BulkUpdateProductStock,
@@ -226,6 +228,22 @@ describe('ProductsService', () => {
                 usageType: UsageType.STOCK_CORRECTION,
             }),
         );
+    });
+
+    it('propagates the caller\'s userId to createStockCorrection', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        manager.findOne.mockResolvedValue({ id: 1, stock: 5 });
+        manager.save.mockImplementation((_: any, p: any) => p);
+
+        const userId = 42;
+        await service.bulkUpdateStock([{ id: 1, stock: 3 }], userId);
+
+        expect(usage.createStockCorrection).toHaveBeenCalledTimes(1);
+        const callArgs = usage.createStockCorrection.mock.calls[0];
+        expect(callArgs[4]).toBe(userId);
     });
 
     it('fails bulk update on negative stock', async () => {
