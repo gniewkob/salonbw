@@ -5,7 +5,7 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, OptimisticLockVersionMismatchError } from 'typeorm';
 import { Product } from '../catalog/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -18,6 +18,8 @@ import { ProductUsage } from '../product-usage/product-usage.entity';
 
 @Injectable()
 export class ProductsService {
+    private readonly useOptimisticLocking =
+        process.env.USE_OPTIMISTIC_LOCKING === 'true';
     constructor(
         @InjectRepository(Product)
         private readonly repo: Repository<Product>,
@@ -70,13 +72,34 @@ export class ProductsService {
 
     async updateStock(id: number, amount: number, userId: number) {
         // userId identifies who performed the stock adjustment
-        const product = await this.repo.findOne({ where: { id } });
+        let product: Product | null;
+        try {
+            product = await this.repo.findOne({
+                where: { id },
+                lock: this.useOptimisticLocking
+                    ? undefined
+                    : { mode: 'pessimistic_write' },
+            });
+        } catch (e) {
+            if (e instanceof OptimisticLockVersionMismatchError) {
+                throw new ConflictException('Optimistic lock error');
+            }
+            throw e;
+        }
         if (!product) return undefined;
         if (product.stock + amount < 0) {
             throw new BadRequestException('stock must be >= 0');
         }
         product.stock += amount;
-        const saved = await this.repo.save(product);
+        let saved: Product;
+        try {
+            saved = await this.repo.save(product);
+        } catch (e) {
+            if (e instanceof OptimisticLockVersionMismatchError) {
+                throw new ConflictException('Optimistic lock error');
+            }
+            throw e;
+        }
         if (amount < 0) {
             await this.usage.createStockCorrection(
                 this.repo.manager,
@@ -111,15 +134,34 @@ export class ProductsService {
                 if (stock < 0) {
                     throw new BadRequestException('stock must be >= 0');
                 }
-                const product = await manager.findOne(Product, {
-                    where: { id },
-                });
+                let product: Product | null;
+                try {
+                    product = await manager.findOne(Product, {
+                        where: { id },
+                        lock: this.useOptimisticLocking
+                            ? undefined
+                            : { mode: 'pessimistic_write' },
+                    });
+                } catch (e) {
+                    if (e instanceof OptimisticLockVersionMismatchError) {
+                        throw new ConflictException('Optimistic lock error');
+                    }
+                    throw e;
+                }
                 if (!product) {
                     throw new NotFoundException(`Product ${id} not found`);
                 }
                 const diff = product.stock - stock;
                 product.stock = stock;
-                const saved = await manager.save(Product, product);
+                let saved: Product;
+                try {
+                    saved = await manager.save(Product, product);
+                } catch (e) {
+                    if (e instanceof OptimisticLockVersionMismatchError) {
+                        throw new ConflictException('Optimistic lock error');
+                    }
+                    throw e;
+                }
                 updated.push({ prod: saved, diff });
                 if (diff > 0) {
                     await this.usage.createStockCorrection(
