@@ -3,6 +3,7 @@ import {
     Controller,
     Param,
     Post,
+    ParseIntPipe,
     Request,
     UseGuards,
     NotFoundException,
@@ -56,11 +57,11 @@ export class AppointmentProductUsageController {
             'Each entry may specify a usageType; allowed values: INTERNAL or STOCK_CORRECTION. Defaults to INTERNAL.',
     })
     async create(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @Body() body: AppointmentProductUsageEntryDto[],
         @Request() req: AuthRequest,
     ) {
-        const appt = await this.appointments.findOne(Number(id));
+        const appt = await this.appointments.findOne(id);
         if (!appt) {
             throw new NotFoundException();
         }
@@ -74,7 +75,7 @@ export class AppointmentProductUsageController {
 
         const usageRecords = entries.length
             ? await this.usage.registerUsage(
-                  Number(id),
+                  id,
                   req.user.id,
                   entries,
               )
