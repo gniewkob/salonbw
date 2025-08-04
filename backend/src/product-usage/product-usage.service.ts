@@ -99,6 +99,7 @@ export class ProductUsageService {
         await this.logs.create(
             LogAction.ProductUsed,
             JSON.stringify({
+                appointmentId: null,
                 productId,
                 quantity,
                 usageType: UsageType.STOCK_CORRECTION,
@@ -129,7 +130,7 @@ export class ProductUsageService {
         await this.logs.create(
             LogAction.ProductUsed,
             JSON.stringify({
-                appointmentId: appointmentId ?? undefined,
+                appointmentId: appointmentId ?? null,
                 productId,
                 quantity,
                 usageType: UsageType.SALE,
