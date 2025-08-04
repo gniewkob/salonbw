@@ -132,6 +132,7 @@ describe('ProductsService', () => {
         sales.count.mockResolvedValue(0);
         repo.delete.mockResolvedValue({ affected: 1 });
         const res = await service.remove(1);
+        expect(usageRepo.count).toHaveBeenCalledWith({ where: { product: { id: 1 } } });
         expect(res).toEqual({ affected: 1 });
         expect(logs.create).toHaveBeenCalledWith(
             LogAction.DeleteProduct,
@@ -286,6 +287,7 @@ describe('ProductsService', () => {
         await expect(service.remove(1)).rejects.toBeInstanceOf(
             ConflictException,
         );
+        expect(usageRepo.count).toHaveBeenCalledWith({ where: { product: { id: 1 } } });
     });
 
     it('throws Conflict when deleting with usage history', async () => {
@@ -295,6 +297,7 @@ describe('ProductsService', () => {
         await expect(service.remove(1)).rejects.toBeInstanceOf(
             ConflictException,
         );
+        expect(usageRepo.count).toHaveBeenCalledWith({ where: { product: { id: 1 } } });
         expect(repo.delete).not.toHaveBeenCalled();
     });
 });
