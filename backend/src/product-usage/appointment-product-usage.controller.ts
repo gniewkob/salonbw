@@ -7,6 +7,7 @@ import {
     UseGuards,
     NotFoundException,
     ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -14,6 +15,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { ProductUsageService } from './product-usage.service';
 import { AppointmentsService } from '../appointments/appointments.service';
+import { SalesService } from '../sales/sales.service';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -38,6 +40,7 @@ export class AppointmentProductUsageController {
     constructor(
         private readonly usage: ProductUsageService,
         private readonly appointments: AppointmentsService,
+        private readonly sales: SalesService,
     ) {}
 
     @Post(':id/product-usage')
@@ -70,6 +73,37 @@ export class AppointmentProductUsageController {
             ...entry,
             usageType: entry.usageType ?? UsageType.INTERNAL,
         }));
-        return this.usage.registerUsage(Number(id), req.user.id, entries);
+
+        const saleEntries = entries.filter(
+            (e) => e.usageType === UsageType.SALE,
+        );
+        const usageEntries = entries.filter(
+            (e) => e.usageType !== UsageType.SALE,
+        );
+
+        if (saleEntries.length > 0 && !appt.client?.id) {
+            throw new BadRequestException('sale entries require client');
+        }
+
+        const sales = await Promise.all(
+            saleEntries.map((e) =>
+                this.sales.create(
+                    appt.client.id,
+                    appt.employee.id,
+                    e.productId,
+                    e.quantity,
+                ),
+            ),
+        );
+
+        const usageRecords = usageEntries.length
+            ? await this.usage.registerUsage(
+                  Number(id),
+                  req.user.id,
+                  usageEntries,
+              )
+            : [];
+
+        return { sales, usage: usageRecords };
     }
 }
