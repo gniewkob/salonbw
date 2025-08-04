@@ -9,6 +9,11 @@ import { Repository } from 'typeorm';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogsService } from '../logs/logs.service';
 
+/**
+ * Reminder: when seeding users in tests or scripts, ensure passwords are
+ * hashed using bcrypt. UsersService.createUser applies a 10 round hash and the
+ * test below guards against storing plaintext values.
+ */
 describe('UsersService', () => {
     let service: UsersService;
     let repo: {
