@@ -11,6 +11,9 @@ import { Product } from '../catalog/product.entity';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { UsageType } from './usage-type.enum';
+import { EntityRef } from '../common/entity-ref';
+import type { Appointment } from '../appointments/appointment.entity';
+import type { User } from '../users/user.entity';
 
 @Injectable()
 export class ProductUsageService {
@@ -58,11 +61,13 @@ export class ProductUsageService {
                 product.stock -= quantity;
                 await manager.save(Product, product);
                 const usage = manager.create(ProductUsage, {
-                    appointment: { id: appointmentId } as any,
-                    product: { id: productId } as any,
+                    appointment: {
+                        id: appointmentId,
+                    } as EntityRef<Appointment>,
+                    product: { id: productId } as EntityRef<Product>,
                     quantity,
                     usageType,
-                    usedByEmployee: { id: employeeId } as any,
+                    usedByEmployee: { id: employeeId } as EntityRef<User>,
                 });
                 records.push(await manager.save(ProductUsage, usage));
                 await this.logs.create(
@@ -90,10 +95,10 @@ export class ProductUsageService {
     ) {
         const usage = manager.create(ProductUsage, {
             appointment: null,
-            product: { id: productId } as any,
+            product: { id: productId } as EntityRef<Product>,
             quantity,
             usageType: UsageType.STOCK_CORRECTION,
-            usedByEmployee: { id: employeeId } as any,
+            usedByEmployee: { id: employeeId } as EntityRef<User>,
         });
         await manager.save(ProductUsage, usage);
         await this.logs.create(
@@ -119,12 +124,12 @@ export class ProductUsageService {
     ) {
         const usage = this.repo.create({
             appointment: appointmentId
-                ? ({ id: appointmentId } as any)
+                ? ({ id: appointmentId } as EntityRef<Appointment>)
                 : null,
-            product: { id: productId } as any,
+            product: { id: productId } as EntityRef<Product>,
             quantity,
             usageType: UsageType.SALE,
-            usedByEmployee: { id: employeeId } as any,
+            usedByEmployee: { id: employeeId } as EntityRef<User>,
         });
         await this.repo.save(usage);
         await this.logs.create(
