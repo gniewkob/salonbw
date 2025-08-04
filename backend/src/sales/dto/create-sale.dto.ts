@@ -1,4 +1,4 @@
-import { IsInt, Min } from 'class-validator';
+import { IsInt, Min, IsOptional } from 'class-validator';
 
 export class CreateSaleDto {
     @IsInt()
@@ -13,4 +13,8 @@ export class CreateSaleDto {
     @IsInt()
     @Min(1)
     quantity: number;
+
+    @IsInt()
+    @IsOptional()
+    appointmentId?: number;
 }

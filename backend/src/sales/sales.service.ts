@@ -25,6 +25,7 @@ export class SalesService {
         employeeId: number,
         productId: number,
         quantity: number,
+        appointmentId?: number,
     ) {
         if (quantity <= 0) {
             throw new BadRequestException('quantity must be > 0');
@@ -78,6 +79,7 @@ export class SalesService {
             quantity,
             updatedStock,
             employeeId,
+            appointmentId,
         );
 
         return saved;
