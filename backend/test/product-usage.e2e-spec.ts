@@ -285,4 +285,121 @@ describe('ProductUsage (e2e)', () => {
         expect(internalHistory.body.length).toBe(1);
         expect(internalHistory.body[0].usageType).toBe('INTERNAL');
     });
+
+    it('logs stock correction on updateStock and not on increase', async () => {
+        const admin = await users.createUser(
+            'stockcorr@pu.com',
+            'secret',
+            'SC',
+            Role.Admin,
+        );
+
+        const product = await products.create({
+            name: 'scissors',
+            unitPrice: 10,
+            stock: 10,
+        } as any);
+
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'stockcorr@pu.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        await request(app.getHttpServer())
+            .patch(`/products/admin/${product.id}/stock`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ amount: -5 })
+            .expect(200);
+
+        const historyAfterDecrease = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(historyAfterDecrease.body.length).toBe(1);
+        expect(historyAfterDecrease.body[0].usageType).toBe('STOCK_CORRECTION');
+        expect(historyAfterDecrease.body[0].quantity).toBe(5);
+
+        await request(app.getHttpServer())
+            .patch(`/products/admin/${product.id}/stock`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ amount: 5 })
+            .expect(200);
+
+        const historyAfterIncrease = await request(app.getHttpServer())
+            .get(`/products/${product.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(historyAfterIncrease.body.length).toBe(1);
+    });
+
+    it('logs stock correction only when bulk decreasing stock', async () => {
+        await users.createUser('bulkstock@pu.com', 'secret', 'BS', Role.Admin);
+        const login = await request(app.getHttpServer())
+            .post('/auth/login')
+            .send({ email: 'bulkstock@pu.com', password: 'secret' })
+            .expect(201);
+        const token = login.body.access_token as string;
+
+        const p1 = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'p1', unitPrice: 2, stock: 10 })
+            .expect(201);
+        const p2 = await request(app.getHttpServer())
+            .post('/products/admin')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'p2', unitPrice: 2, stock: 20 })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .patch('/products/admin/bulk-stock')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                entries: [
+                    { id: p1.body.id, stock: 5 },
+                    { id: p2.body.id, stock: 15 },
+                ],
+            })
+            .expect(200);
+
+        const p1HistoryAfterDecrease = await request(app.getHttpServer())
+            .get(`/products/${p1.body.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(p1HistoryAfterDecrease.body.length).toBe(1);
+        expect(p1HistoryAfterDecrease.body[0].usageType).toBe('STOCK_CORRECTION');
+        expect(p1HistoryAfterDecrease.body[0].quantity).toBe(5);
+
+        const p2HistoryAfterDecrease = await request(app.getHttpServer())
+            .get(`/products/${p2.body.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(p2HistoryAfterDecrease.body.length).toBe(1);
+        expect(p2HistoryAfterDecrease.body[0].usageType).toBe('STOCK_CORRECTION');
+        expect(p2HistoryAfterDecrease.body[0].quantity).toBe(5);
+
+        await request(app.getHttpServer())
+            .patch('/products/admin/bulk-stock')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                entries: [
+                    { id: p1.body.id, stock: 10 },
+                    { id: p2.body.id, stock: 20 },
+                ],
+            })
+            .expect(200);
+
+        const p1HistoryAfterIncrease = await request(app.getHttpServer())
+            .get(`/products/${p1.body.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(p1HistoryAfterIncrease.body.length).toBe(1);
+
+        const p2HistoryAfterIncrease = await request(app.getHttpServer())
+            .get(`/products/${p2.body.id}/usage-history`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200);
+        expect(p2HistoryAfterIncrease.body.length).toBe(1);
+    });
 });
