@@ -236,16 +236,17 @@ describe('ProductsModule (e2e)', () => {
             .expect(201);
         const id = prod.body.id as number;
 
-        const { AppointmentsService } = await import(
-            './../src/appointments/appointments.service'
-        );
-        const appointments = app.get(AppointmentsService);
-        const appt = await appointments.create(
-            client.id,
-            employee.id,
-            1,
-            new Date(Date.now() + 3600000).toISOString(),
-        );
+        const appt = await request(app.getHttpServer())
+            .post('/appointments/admin')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                clientId: client.id,
+                employeeId: employee.id,
+                serviceId: 1,
+                startTime: new Date(Date.now() + 3600000).toISOString(),
+            })
+            .expect(201);
+        const apptId = appt.body.id as number;
 
         const empLogin = await request(app.getHttpServer())
             .post('/auth/login')
@@ -254,7 +255,7 @@ describe('ProductsModule (e2e)', () => {
         const empToken = empLogin.body.access_token as string;
 
         await request(app.getHttpServer())
-            .post(`/appointments/${appt.id}/product-usage`)
+            .post(`/appointments/${apptId}/product-usage`)
             .set('Authorization', `Bearer ${empToken}`)
             .send([{ productId: id, quantity: 1 }])
             .expect(201);
