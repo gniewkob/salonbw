@@ -110,6 +110,44 @@ describe('ProductUsageService', () => {
         ).rejects.toBeInstanceOf(NotFoundException);
     });
 
+    it('prevents concurrent stock modifications', async () => {
+        const product = { id: 1, stock: 1 };
+        const manager = {
+            findOne: jest.fn().mockResolvedValue(product),
+            save: jest.fn().mockImplementation((_: any, d: any) => d),
+            create: jest.fn((_: any, d: any) => d),
+        } as any;
+        const queue: (() => void)[] = [];
+        let locked = false;
+        repo.manager.transaction.mockImplementation(async (cb: any) => {
+            if (locked) {
+                await new Promise<void>((resolve) => queue.push(resolve));
+            }
+            locked = true;
+            try {
+                return await cb(manager);
+            } finally {
+                locked = false;
+                queue.shift()?.();
+            }
+        });
+
+        const firstCall = service.registerUsage(1, 2, [
+            { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
+        ]);
+        const secondCall = service.registerUsage(1, 2, [
+            { productId: 1, quantity: 1, usageType: UsageType.INTERNAL },
+        ]);
+        const secondExpectation = expect(secondCall).rejects.toBeInstanceOf(
+            ConflictException,
+        );
+
+        await expect(firstCall).resolves.toHaveLength(1);
+        await secondExpectation;
+        expect(manager.save).toHaveBeenCalledTimes(2);
+        expect(logs.create).toHaveBeenCalledTimes(1);
+    });
+
     it('filters by usage type when provided', async () => {
         repo.find.mockResolvedValue([]);
         await service.findForProduct(1, UsageType.SALE);
