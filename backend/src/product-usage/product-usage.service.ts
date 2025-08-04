@@ -114,9 +114,12 @@ export class ProductUsageService {
         quantity: number,
         stock: number,
         employeeId: number,
+        appointmentId?: number,
     ) {
         const usage = this.repo.create({
-            appointment: null,
+            appointment: appointmentId
+                ? ({ id: appointmentId } as any)
+                : null,
             product: { id: productId } as any,
             quantity,
             usageType: UsageType.SALE,
@@ -126,6 +129,7 @@ export class ProductUsageService {
         await this.logs.create(
             LogAction.ProductUsed,
             JSON.stringify({
+                appointmentId: appointmentId ?? undefined,
                 productId,
                 quantity,
                 usageType: UsageType.SALE,

@@ -47,7 +47,7 @@ describe('SalesService', () => {
         );
         commissionService.getPercentForProduct.mockResolvedValue(0);
 
-        const sale = await service.create(1, 2, 1, 2);
+        const sale = await service.create(1, 2, 1, 2, 3);
 
         expect(manager.findOne).toHaveBeenCalledWith(Product, {
             where: { id: 1 },
@@ -58,7 +58,7 @@ describe('SalesService', () => {
             stock: 3,
             unitPrice: 10,
         });
-        expect(usage.createSale).toHaveBeenCalledWith(1, 2, 3, 2);
+        expect(usage.createSale).toHaveBeenCalledWith(1, 2, 3, 2, 3);
         expect(sale.id).toBe(1);
     });
 });
