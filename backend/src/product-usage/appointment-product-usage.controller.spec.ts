@@ -55,6 +55,25 @@ describe('AppointmentProductUsageController', () => {
         expect(res).toEqual({ sales: ['sale'], usage: ['usage'] });
     });
 
+    it('routes sale-only entries through sales service', async () => {
+        appointments.findOne.mockResolvedValue({
+            id: 1,
+            client: { id: 2 },
+            employee: { id: 3 },
+        });
+        sales.create.mockResolvedValue('sale');
+
+        const res = await controller.create(
+            '1',
+            [{ productId: 1, quantity: 1, usageType: UsageType.SALE }],
+            { user: { id: 3, role: Role.Employee } } as any,
+        );
+
+        expect(sales.create).toHaveBeenCalledWith(2, 3, 1, 1);
+        expect(usage.registerUsage).not.toHaveBeenCalled();
+        expect(res).toEqual({ sales: ['sale'], usage: [] });
+    });
+
     it('rejects sale entries without client', async () => {
         appointments.findOne.mockResolvedValue({
             id: 1,

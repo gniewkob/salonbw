@@ -110,6 +110,18 @@ describe('ProductUsageService', () => {
         ).rejects.toBeInstanceOf(NotFoundException);
     });
 
+    it('rejects sale entries', async () => {
+        const manager = { findOne: jest.fn(), save: jest.fn() } as any;
+        repo.manager.transaction.mockImplementation(async (cb: any) =>
+            cb(manager),
+        );
+        await expect(
+            service.registerUsage(1, 2, [
+                { productId: 1, quantity: 1, usageType: UsageType.SALE },
+            ]),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('prevents concurrent stock modifications', async () => {
         const product = { id: 1, stock: 1 };
         const manager = {
