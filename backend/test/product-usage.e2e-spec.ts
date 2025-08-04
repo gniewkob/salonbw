@@ -100,9 +100,17 @@ describe('ProductUsage (e2e)', () => {
             .query({ action: 'PRODUCT_USED' })
             .expect(200);
         expect(
-            logs.body.some((l: any) =>
-                l.description.includes(`"productId":${product.id}`),
-            ),
+            logs.body.some((l: any) => {
+                const desc = JSON.parse(l.description);
+                return (
+                    'appointmentId' in desc &&
+                    'productId' in desc &&
+                    'usageType' in desc &&
+                    'quantity' in desc &&
+                    'stock' in desc &&
+                    desc.productId === product.id
+                );
+            }),
         ).toBe(true);
     });
 
