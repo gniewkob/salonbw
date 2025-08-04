@@ -3,6 +3,7 @@ import {
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -20,11 +21,20 @@ import { SocialLoginDto } from './dto/social-login.dto';
 
 @Injectable()
 export class AuthService {
+    private readonly refreshSecret: string;
+
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
         private readonly logs: LogsService,
-    ) {}
+        private readonly config: ConfigService,
+    ) {
+        const refreshSecret = this.config.get<string>('JWT_REFRESH_SECRET');
+        if (!refreshSecret) {
+            throw new Error('JWT_REFRESH_SECRET is not defined');
+        }
+        this.refreshSecret = refreshSecret;
+    }
 
     async validateUser(email: string, password: string) {
         const user = await this.usersService.findByEmail(email);
@@ -57,7 +67,7 @@ export class AuthService {
         const refresh = await this.jwtService.signAsync(
             { sub: userId },
             {
-                secret: process.env.JWT_REFRESH_SECRET ?? 'refresh-secret',
+                secret: this.refreshSecret,
                 expiresIn: '7d',
             },
         );
@@ -103,7 +113,7 @@ export class AuthService {
         let payload: { sub: number };
         try {
             payload = await this.jwtService.verifyAsync(refreshToken, {
-                secret: process.env.JWT_REFRESH_SECRET ?? 'refresh-secret',
+                secret: this.refreshSecret,
             });
         } catch {
             throw new UnauthorizedException('Invalid refresh token');
