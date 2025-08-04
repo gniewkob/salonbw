@@ -33,7 +33,7 @@ describe('AppointmentProductUsageController', () => {
         usage.registerUsage.mockResolvedValue(['usage']);
 
         const res = await controller.create(
-            '1',
+            1,
             [
                 { productId: 1, quantity: 1 },
                 { productId: 2, quantity: 2, usageType: UsageType.STOCK_CORRECTION },
