@@ -18,25 +18,26 @@ export class ReviewsService {
 
     async create(dto: CreateReviewDto) {
         const existing = await this.repo.findOne({
-            where: { reservation: { id: dto.reservationId } },
+            where: { appointment: { id: dto.appointmentId } },
         });
         if (existing) {
             throw new BadRequestException(
-                'Review already exists for this reservation',
+                'Review already exists for this appointment',
             );
         }
         const appointment = await this.appointments.findOne({
-            where: { id: dto.reservationId },
-            relations: { client: true },
+            where: { id: dto.appointmentId },
+            relations: { client: true, employee: true },
         });
         if (!appointment) {
-            throw new BadRequestException('Reservation not found');
+            throw new BadRequestException('Appointment not found');
         }
 
         const review = this.repo.create({
-            reservation: appointment,
-            reservationId: dto.reservationId,
-            client: appointment.client,
+            appointment,
+            appointmentId: dto.appointmentId,
+            author: appointment.client,
+            employee: appointment.employee,
             rating: dto.rating,
             comment: dto.comment,
         });
