@@ -11,8 +11,8 @@ import { WhatsappService } from './whatsapp.service';
 import {
     Notification,
     NotificationStatus,
-    NotificationChannel,
 } from './notification.entity';
+import { NotificationChannel } from './notification-channel.enum';
 
 @Injectable()
 export class NotificationsService {
