@@ -8,9 +8,11 @@ import {
 } from '../appointments/appointment.entity';
 import { SmsService } from './sms.service';
 import { WhatsappService } from './whatsapp.service';
-import { Notification, NotificationStatus } from './notification.entity';
-
-export type NotificationType = 'sms' | 'whatsapp';
+import {
+    Notification,
+    NotificationStatus,
+    NotificationChannel,
+} from './notification.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -27,7 +29,7 @@ export class NotificationsService {
     async sendNotification(
         to: string,
         message: string,
-        type: NotificationType,
+        type: NotificationChannel,
     ) {
         if (process.env.NOTIFICATIONS_ENABLED === 'false') {
             const fake = this.repo.create({
@@ -47,7 +49,7 @@ export class NotificationsService {
         });
         await this.repo.save(notif);
         try {
-            if (type === 'sms') {
+            if (type === NotificationChannel.Sms) {
                 await this.sms.sendSms(to, message);
             } else {
                 await this.whatsapp.sendText(to, message);
@@ -64,17 +66,29 @@ export class NotificationsService {
 
     sendAppointmentConfirmation(to: string, when: Date) {
         const text = `Twoja wizyta została umówiona na ${when.toLocaleString()}`;
-        return this.sendNotification(to, text, 'whatsapp');
+        return this.sendNotification(
+            to,
+            text,
+            NotificationChannel.Whatsapp,
+        );
     }
 
     sendAppointmentReminder(to: string, when: Date) {
         const text = `Przypomnienie: wizyta ${when.toLocaleString()}`;
-        return this.sendNotification(to, text, 'whatsapp');
+        return this.sendNotification(
+            to,
+            text,
+            NotificationChannel.Whatsapp,
+        );
     }
 
     sendThankYou(to: string) {
         const text = 'Dziękujemy za wizytę!';
-        return this.sendNotification(to, text, 'whatsapp');
+        return this.sendNotification(
+            to,
+            text,
+            NotificationChannel.Whatsapp,
+        );
     }
 
     @Cron('0 7 * * *')

@@ -5,7 +5,11 @@ import { Appointment, AppointmentStatus } from '../appointments/appointment.enti
 import { NotificationsService } from './notifications.service';
 import { SmsService } from './sms.service';
 import { WhatsappService } from './whatsapp.service';
-import { Notification, NotificationStatus } from './notification.entity';
+import {
+    Notification,
+    NotificationStatus,
+    NotificationChannel,
+} from './notification.entity';
 
 describe('NotificationsService', () => {
     let service: NotificationsService;
@@ -32,13 +36,17 @@ describe('NotificationsService', () => {
     });
 
     it('uses SMS adapter when type sms', async () => {
-        await service.sendNotification('1', 'msg', 'sms');
+        await service.sendNotification('1', 'msg', NotificationChannel.Sms);
         expect(sms.sendSms).toHaveBeenCalledWith('1', 'msg');
         expect(whatsapp.sendText).not.toHaveBeenCalled();
     });
 
     it('uses WhatsApp adapter when type whatsapp', async () => {
-        await service.sendNotification('1', 'msg', 'whatsapp');
+        await service.sendNotification(
+            '1',
+            'msg',
+            NotificationChannel.Whatsapp,
+        );
         expect(whatsapp.sendText).toHaveBeenCalledWith('1', 'msg');
         expect(sms.sendSms).not.toHaveBeenCalled();
     });
@@ -48,7 +56,7 @@ describe('NotificationsService', () => {
         const notif = (await service.sendNotification(
             '1',
             'msg',
-            'whatsapp',
+            NotificationChannel.Whatsapp,
         )) as Notification;
         expect(notif.status).toBe(NotificationStatus.Failed);
     });

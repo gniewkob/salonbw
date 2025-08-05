@@ -7,6 +7,7 @@ import { UsersService } from './../src/users/users.service';
 import { AppointmentsService } from './../src/appointments/appointments.service';
 import { ReviewsService } from './../src/reviews/reviews.service';
 import { NotificationsService } from './../src/notifications/notifications.service';
+import { NotificationChannel } from './../src/notifications/notification.entity';
 import { Role } from './../src/users/role.enum';
 import { EmployeeCommission } from './../src/commissions/employee-commission.entity';
 import { Repository } from 'typeorm';
@@ -84,7 +85,7 @@ describe('Dashboard (e2e)', () => {
         await notifications.sendNotification(
             client.phone as string,
             'hi',
-            'whatsapp',
+            NotificationChannel.Whatsapp,
         );
         const res = await request(app.getHttpServer())
             .get('/dashboard')
