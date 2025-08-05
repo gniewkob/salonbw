@@ -36,7 +36,7 @@ export class NotificationsService {
                 recipient: to,
                 type,
                 message,
-                status: NotificationStatus.Sent,
+                status: NotificationStatus.Skipped,
                 sentAt: new Date(),
             });
             return this.repo.save(fake);
