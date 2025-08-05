@@ -61,6 +61,30 @@ export class ReviewsService {
         return this.repo.save(review);
     }
 
+    findByAppointment(appointmentId: number) {
+        return this.repo.findOne({
+            where: { appointment: { id: appointmentId } },
+        });
+    }
+
+    async findEmployeeReviews(
+        employeeId: number,
+        page = 1,
+        limit = 10,
+        rating?: number,
+    ) {
+        const [data, total] = await this.repo.findAndCount({
+            where: {
+                employee: { id: employeeId },
+                ...(rating ? { rating } : {}),
+            },
+            order: { createdAt: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+        return { data, total, page, limit };
+    }
+
     findAll() {
         return this.repo.find();
     }
