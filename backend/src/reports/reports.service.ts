@@ -12,6 +12,7 @@ import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import { Log } from '../logs/log.entity';
 import { LogAction } from '../logs/action.enum';
+import { Parser } from 'json2csv';
 
 @Injectable()
 export class ReportsService {
@@ -208,8 +209,72 @@ export class ReportsService {
         return { from: start, to: end, count: clientIds.size };
     }
 
-    export(type: string) {
-        return { type };
+    async export(type: string) {
+        switch (type) {
+            case 'financial':
+                return this.exportFinancial();
+            case 'services':
+                return this.exportServices();
+            case 'products':
+                return this.exportProducts();
+            case 'customers':
+                return this.exportCustomers();
+            default:
+                throw new Error(`Unknown export type: ${type}`);
+        }
+    }
+
+    private async exportFinancial() {
+        const data = await this.getFinancialSummary();
+        const parser = new Parser({
+            fields: [
+                'from',
+                'to',
+                'serviceRevenue',
+                'productRevenue',
+                'totalRevenue',
+                'commissionTotal',
+                'serviceCount',
+                'newClients',
+                'averageBasketSize',
+            ],
+        });
+        const csv = parser.parse([data]);
+        return { fileName: 'financial.csv', csv };
+    }
+
+    private async exportServices() {
+        const data = await this.getTopServices(100);
+        const parser = new Parser({
+            fields: ['serviceId', 'name', 'count', 'revenue'],
+        });
+        const csv = parser.parse(data);
+        return { fileName: 'services.csv', csv };
+    }
+
+    private async exportProducts() {
+        const data = await this.getTopProducts(100);
+        const parser = new Parser({
+            fields: ['productId', 'name', 'quantity', 'revenue'],
+        });
+        const csv = parser.parse(data);
+        return { fileName: 'products.csv', csv };
+    }
+
+    private async exportCustomers() {
+        const customers = await this.users.find({ where: { role: Role.Client } });
+        const data = customers.map((c) => ({
+            id: c.id,
+            firstName: c.firstName,
+            lastName: c.lastName,
+            email: c.email,
+            createdAt: c.createdAt.toISOString(),
+        }));
+        const parser = new Parser({
+            fields: ['id', 'firstName', 'lastName', 'email', 'createdAt'],
+        });
+        const csv = parser.parse(data);
+        return { fileName: 'customers.csv', csv };
     }
 
     async getFinancialSummary(from?: Date, to?: Date) {
