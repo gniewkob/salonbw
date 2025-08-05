@@ -117,12 +117,53 @@ export class ReportsService {
         };
     }
 
-    getTopServices(limit: number) {
-        return { limit };
+    async getTopServices(limit: number) {
+        const result = await this.appointments
+            .createQueryBuilder('a')
+            .leftJoin('a.service', 's')
+            .select('s.id', 'serviceId')
+            .addSelect('s.name', 'name')
+            .addSelect('COUNT(*)', 'count')
+            .addSelect('SUM(s.price)', 'revenue')
+            .where('a.paymentStatus = :status', {
+                status: PaymentStatus.Paid,
+            })
+            .groupBy('s.id')
+            .addGroupBy('s.name')
+            .orderBy('revenue', 'DESC')
+            .addOrderBy('count', 'DESC')
+            .limit(limit)
+            .getRawMany();
+
+        return result.map((row) => ({
+            serviceId: Number(row.serviceId),
+            name: row.name,
+            count: Number(row.count),
+            revenue: Number(row.revenue),
+        }));
     }
 
-    getTopProducts(limit: number) {
-        return { limit };
+    async getTopProducts(limit: number) {
+        const result = await this.sales
+            .createQueryBuilder('sale')
+            .leftJoin('sale.product', 'p')
+            .select('p.id', 'productId')
+            .addSelect('p.name', 'name')
+            .addSelect('SUM(sale.quantity)', 'quantity')
+            .addSelect('SUM(p.unitPrice * sale.quantity)', 'revenue')
+            .groupBy('p.id')
+            .addGroupBy('p.name')
+            .orderBy('revenue', 'DESC')
+            .addOrderBy('quantity', 'DESC')
+            .limit(limit)
+            .getRawMany();
+
+        return result.map((row) => ({
+            productId: Number(row.productId),
+            name: row.name,
+            quantity: Number(row.quantity),
+            revenue: Number(row.revenue),
+        }));
     }
 
     getNewCustomers(from?: string, to?: string) {
