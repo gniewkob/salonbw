@@ -89,10 +89,17 @@ export class ReportsController {
         type: Number,
         description: 'Maximum number of services to return',
     })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        type: Number,
+        description: 'Page number (starting from 1)',
+    })
     topServices(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     ) {
-        return this.service.getTopServices(limit);
+        return this.service.getTopServices(limit, page);
     }
 
     @Get('top-products')
@@ -106,10 +113,17 @@ export class ReportsController {
         type: Number,
         description: 'Maximum number of products to return',
     })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        type: Number,
+        description: 'Page number (starting from 1)',
+    })
     topProducts(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     ) {
-        return this.service.getTopProducts(limit);
+        return this.service.getTopProducts(limit, page);
     }
 
     @Get('new-customers')
@@ -146,8 +160,25 @@ export class ReportsController {
         enum: ['financial', 'services', 'products', 'customers'],
         description: 'Type of report to export as CSV',
     })
-    async export(@Param('type') type: string, @Res() res: Response) {
-        const { fileName, csv } = await this.service.export(type);
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        type: Number,
+        description: 'Maximum number of records per page',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        type: Number,
+        description: 'Page number (starting from 1)',
+    })
+    async export(
+        @Param('type') type: string,
+        @Res() res: Response,
+        @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    ) {
+        const { fileName, csv } = await this.service.export(type, limit, page);
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         res.send(csv);
