@@ -67,13 +67,13 @@ describe('ReviewsModule (e2e)', () => {
         await request(app.getHttpServer())
             .post('/reviews')
             .set('Authorization', `Bearer ${token}`)
-            .send({ reservationId: appointment.id, rating: 5 })
+            .send({ appointmentId: appointment.id, rating: 5 })
             .expect(201);
 
         await request(app.getHttpServer())
             .post('/reviews')
             .set('Authorization', `Bearer ${token}`)
-            .send({ reservationId: appointment.id, rating: 4 })
+            .send({ appointmentId: appointment.id, rating: 4 })
             .expect(400);
     });
 });

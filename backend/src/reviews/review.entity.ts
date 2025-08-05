@@ -8,26 +8,32 @@ import {
 } from 'typeorm';
 import { Appointment } from '../appointments/appointment.entity';
 import { Customer } from '../customers/customer.entity';
+import { Employee } from '../employees/employee.entity';
+import { MaxLength } from 'class-validator';
 
-@Index(['reservationId'], { unique: true })
+@Index(['appointmentId'], { unique: true })
 @Entity()
 export class Review {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    reservationId: number;
+    appointmentId: number;
 
     @ManyToOne(() => Appointment, { onDelete: 'RESTRICT' })
-    reservation: Appointment;
+    appointment: Appointment;
 
     @ManyToOne(() => Customer, { eager: true, onDelete: 'RESTRICT' })
-    client: Customer;
+    author: Customer;
+
+    @ManyToOne(() => Employee, { eager: true, onDelete: 'RESTRICT' })
+    employee: Employee;
 
     @Column('int')
     rating: number;
 
     @Column('text', { nullable: true })
+    @MaxLength(500)
     comment?: string;
 
     @CreateDateColumn()

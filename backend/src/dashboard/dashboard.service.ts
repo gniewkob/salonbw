@@ -106,7 +106,7 @@ export class DashboardService {
                 relations: { service: true, employee: true },
             });
             const lastReview = await this.reviews.findOne({
-                where: { client: { id: userId } as any },
+                where: { author: { id: userId } as any },
                 order: { createdAt: 'DESC' },
             });
             const where: any[] = [];
