@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Request,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -26,8 +27,8 @@ export class ReviewsController {
     }
 
     @Post()
-    create(@Body() dto: CreateReviewDto) {
-        return this.service.create(dto);
+    create(@Body() dto: CreateReviewDto, @Request() req) {
+        return this.service.create(dto, req.user.id);
     }
 
     @Patch(':id')
