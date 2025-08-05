@@ -10,6 +10,8 @@ import { Sale } from '../sales/sale.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
+import { Log } from '../logs/log.entity';
+import { LogAction } from '../logs/action.enum';
 
 @Injectable()
 export class ReportsService {
@@ -22,6 +24,8 @@ export class ReportsService {
         private readonly commissions: Repository<CommissionRecord>,
         @InjectRepository(User)
         private readonly users: Repository<User>,
+        @InjectRepository(Log)
+        private readonly logs: Repository<Log>,
     ) {}
 
     getFinancial(from?: string, to?: string) {
@@ -166,8 +170,42 @@ export class ReportsService {
         }));
     }
 
-    getNewCustomers(from?: string, to?: string) {
-        return { from, to };
+    async getNewCustomers(from?: string, to?: string) {
+        const start = from ? new Date(from) : undefined;
+        const end = to ? new Date(to) : undefined;
+
+        const clientIds = new Set<number>();
+
+        const userQb = this.users
+            .createQueryBuilder('u')
+            .select('u.id', 'id')
+            .where('u.role = :role', { role: Role.Client });
+        if (start) {
+            userQb.andWhere('u.createdAt >= :start', { start });
+        }
+        if (end) {
+            userQb.andWhere('u.createdAt < :end', { end });
+        }
+        const users = await userQb.getRawMany();
+        users.forEach((row) => clientIds.add(Number(row.id)));
+
+        const logQb = this.logs
+            .createQueryBuilder('l')
+            .select('l.userId', 'id')
+            .leftJoin('l.user', 'u')
+            .where('l.action = :action', { action: LogAction.RegisterSuccess })
+            .andWhere('l.userId IS NOT NULL')
+            .andWhere('u.role = :role', { role: Role.Client });
+        if (start) {
+            logQb.andWhere('l.timestamp >= :start', { start });
+        }
+        if (end) {
+            logQb.andWhere('l.timestamp < :end', { end });
+        }
+        const logs = await logQb.getRawMany();
+        logs.forEach((row) => clientIds.add(Number(row.id)));
+
+        return { from: start, to: end, count: clientIds.size };
     }
 
     export(type: string) {
