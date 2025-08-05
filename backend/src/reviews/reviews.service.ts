@@ -1,9 +1,16 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    BadRequestException,
+    ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { Review } from './review.entity';
-import { Appointment } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -16,7 +23,7 @@ export class ReviewsService {
         private readonly appointments: Repository<Appointment>,
     ) {}
 
-    async create(dto: CreateReviewDto) {
+    async create(dto: CreateReviewDto, userId: number) {
         const existing = await this.repo.findOne({
             where: { appointment: { id: dto.appointmentId } },
         });
@@ -33,11 +40,21 @@ export class ReviewsService {
             throw new BadRequestException('Appointment not found');
         }
 
+        if (appointment.status !== AppointmentStatus.Completed) {
+            throw new BadRequestException(
+                'Cannot review an incomplete appointment',
+            );
+        }
+
+        if (appointment.client.id !== userId) {
+            throw new ForbiddenException();
+        }
+
         const review = this.repo.create({
-            appointment,
+            appointment: { id: dto.appointmentId } as any,
             appointmentId: dto.appointmentId,
-            author: appointment.client,
-            employee: appointment.employee,
+            author: { id: appointment.client.id } as any,
+            employee: { id: appointment.employee.id } as any,
             rating: dto.rating,
             comment: dto.comment,
         });
