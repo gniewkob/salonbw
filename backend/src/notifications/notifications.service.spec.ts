@@ -8,8 +8,8 @@ import { WhatsappService } from './whatsapp.service';
 import {
     Notification,
     NotificationStatus,
-    NotificationChannel,
 } from './notification.entity';
+import { NotificationChannel } from './notification-channel.enum';
 
 describe('NotificationsService', () => {
     let service: NotificationsService;
