@@ -80,4 +80,30 @@ describe('NotificationsService', () => {
         await service.followUpCron();
         expect(whatsapp.sendText).toHaveBeenCalled();
     });
+
+    it('sendAppointmentConfirmation sends WhatsApp message', async () => {
+        const when = new Date('2025-01-01T10:00:00Z');
+        await service.sendAppointmentConfirmation('123', when);
+        expect(whatsapp.sendText).toHaveBeenCalledWith(
+            '123',
+            `Twoja wizyta została umówiona na ${when.toLocaleString()}`,
+        );
+    });
+
+    it('sendAppointmentReminder sends WhatsApp message', async () => {
+        const when = new Date('2025-01-02T15:00:00Z');
+        await service.sendAppointmentReminder('456', when);
+        expect(whatsapp.sendText).toHaveBeenCalledWith(
+            '456',
+            `Przypomnienie: wizyta ${when.toLocaleString()}`,
+        );
+    });
+
+    it('sendThankYou sends WhatsApp message', async () => {
+        await service.sendThankYou('789');
+        expect(whatsapp.sendText).toHaveBeenCalledWith(
+            '789',
+            'Dziękujemy za wizytę!',
+        );
+    });
 });
