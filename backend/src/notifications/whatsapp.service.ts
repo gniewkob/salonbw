@@ -109,18 +109,4 @@ export class WhatsappService {
         }
     }
 
-    async sendAppointmentConfirmation(to: string, when: Date) {
-        const text = `Twoja wizyta została umówiona na ${when.toLocaleString()}`;
-        return this.sendText(to, text);
-    }
-
-    async sendAppointmentReminder(to: string, when: Date) {
-        const text = `Przypomnienie: wizyta ${when.toLocaleString()}`;
-        return this.sendText(to, text);
-    }
-
-    async sendThankYou(to: string) {
-        const text = 'Dziękujemy za wizytę!';
-        return this.sendText(to, text);
-    }
 }
