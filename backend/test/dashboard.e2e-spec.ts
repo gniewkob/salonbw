@@ -81,7 +81,7 @@ describe('Dashboard (e2e)', () => {
             1,
             new Date(Date.now() + 7200 * 1000).toISOString(),
         );
-        await reviews.create({ reservationId: appt.id, rating: 5 });
+        await reviews.create({ appointmentId: appt.id, rating: 5 });
         await notifications.sendNotification(
             client.phone as string,
             'hi',
