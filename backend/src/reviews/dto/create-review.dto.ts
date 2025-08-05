@@ -1,8 +1,8 @@
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min, MaxLength } from 'class-validator';
 
 export class CreateReviewDto {
     @IsInt()
-    reservationId: number;
+    appointmentId: number;
 
     @IsInt()
     @Min(1)
@@ -11,5 +11,6 @@ export class CreateReviewDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(500)
     comment?: string;
 }
