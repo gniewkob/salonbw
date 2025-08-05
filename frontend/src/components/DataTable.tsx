@@ -10,6 +10,7 @@ interface Props<T> {
   columns: Column<T>[];
   initialSort?: keyof T;
   renderActions?: (row: T) => React.ReactNode;
+  pageSize?: number;
 }
 
 export default function DataTable<T>({
@@ -17,12 +18,12 @@ export default function DataTable<T>({
   columns,
   initialSort,
   renderActions,
+  pageSize = 10,
 }: Props<T>) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<keyof T | undefined>(initialSort);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(0);
-  const pageSize = 10;
 
   const filtered = data.filter((item) =>
     columns.some((c) =>

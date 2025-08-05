@@ -6,15 +6,51 @@ export function useReviewApi() {
   const { apiFetch } = useAuth();
   const toast = useToast();
 
-  const create = async (data: { reservationId: number; rating: number; comment?: string }) => {
+  const create = async (
+    appointmentId: number,
+    data: { rating: number; comment?: string },
+  ) => {
     try {
-      const res = await apiFetch<Review>('/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const res = await apiFetch<Review>(
+        `/appointments/${appointmentId}/review`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        },
+      );
       toast.success('Review created');
       return res;
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
+
+  const get = async (appointmentId: number) => {
+    try {
+      return await apiFetch<Review>(
+        `/appointments/${appointmentId}/review`,
+      );
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+      throw err;
+    }
+  };
+
+  const listForEmployee = async (
+    employeeId: number,
+    params: { page?: number; limit?: number; rating?: number } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', String(params.page));
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.rating) query.set('rating', String(params.rating));
+    const qs = query.toString();
+    try {
+      return await apiFetch<{ data: Review[]; total: number; page: number; limit: number }>(
+        `/employees/${employeeId}/reviews${qs ? `?${qs}` : ''}`,
+      );
     } catch (err: any) {
       toast.error(err.message || 'Error');
       throw err;
@@ -46,5 +82,5 @@ export function useReviewApi() {
     }
   };
 
-  return { create, update, remove };
+  return { create, get, listForEmployee, update, remove };
 }
