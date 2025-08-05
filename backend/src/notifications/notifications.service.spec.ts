@@ -21,7 +21,10 @@ describe('NotificationsService', () => {
     beforeEach(async () => {
         sms = { sendSms: jest.fn() };
         whatsapp = { sendText: jest.fn() };
-        repo = { create: jest.fn((x) => x), save: jest.fn() } as any;
+        repo = {
+            create: jest.fn((x) => x),
+            save: jest.fn(async (x) => x),
+        } as any;
         appts = { find: jest.fn() };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -59,6 +62,17 @@ describe('NotificationsService', () => {
             NotificationChannel.Whatsapp,
         )) as Notification;
         expect(notif.status).toBe(NotificationStatus.Failed);
+    });
+
+    it('records skipped status when notifications are disabled', async () => {
+        process.env.NOTIFICATIONS_ENABLED = 'false';
+        const notif = (await service.sendNotification(
+            '1',
+            'msg',
+            NotificationChannel.Sms,
+        )) as Notification;
+        expect(notif.status).toBe(NotificationStatus.Skipped);
+        delete process.env.NOTIFICATIONS_ENABLED;
     });
 
     it('reminderCron dispatches reminders concurrently', async () => {
