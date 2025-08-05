@@ -4,6 +4,7 @@ import { Between, Repository } from 'typeorm';
 import {
     Appointment,
     PaymentStatus,
+    AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { Sale } from '../sales/sale.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
@@ -29,8 +30,91 @@ export class ReportsService {
         return this.getFinancialSummary(start, end);
     }
 
-    getEmployeeReport(id: number, from?: string, to?: string) {
-        return { id, from, to };
+    async getEmployeeReport(id: number, from?: string, to?: string) {
+        const now = new Date();
+        const start = from
+            ? new Date(from)
+            : new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = to
+            ? new Date(to)
+            : new Date(start.getFullYear(), start.getMonth() + 1, 1);
+
+        const serviceResult = await this.appointments
+            .createQueryBuilder('a')
+            .leftJoin('a.service', 's')
+            .select('SUM(s.price)', 'sum')
+            .where('a.employeeId = :id', { id })
+            .andWhere('a.paymentStatus = :status', {
+                status: PaymentStatus.Paid,
+            })
+            .andWhere('a.startTime >= :start AND a.startTime < :end', {
+                start,
+                end,
+            })
+            .getRawOne();
+        const serviceRevenue = Number(serviceResult?.sum ?? 0);
+
+        const appointmentCountResult = await this.appointments
+            .createQueryBuilder('a')
+            .select('COUNT(*)', 'count')
+            .where('a.employeeId = :id', { id })
+            .andWhere('a.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
+            .andWhere('a.startTime >= :start AND a.startTime < :end', {
+                start,
+                end,
+            })
+            .getRawOne();
+        const completedAppointments = Number(
+            appointmentCountResult?.count ?? 0,
+        );
+
+        const productResult = await this.sales
+            .createQueryBuilder('sale')
+            .leftJoin('sale.product', 'p')
+            .select('SUM(p.unitPrice * sale.quantity)', 'sum')
+            .where('sale.employeeId = :id', { id })
+            .andWhere('sale.soldAt >= :start AND sale.soldAt < :end', {
+                start,
+                end,
+            })
+            .getRawOne();
+        const productRevenue = Number(productResult?.sum ?? 0);
+
+        const salesCountResult = await this.sales
+            .createQueryBuilder('sale')
+            .select('COUNT(*)', 'count')
+            .where('sale.employeeId = :id', { id })
+            .andWhere('sale.soldAt >= :start AND sale.soldAt < :end', {
+                start,
+                end,
+            })
+            .getRawOne();
+        const productSales = Number(salesCountResult?.count ?? 0);
+
+        const commissionResult = await this.commissions
+            .createQueryBuilder('c')
+            .select('SUM(c.amount)', 'sum')
+            .where('c.employeeId = :id', { id })
+            .andWhere('c.createdAt >= :start AND c.createdAt < :end', {
+                start,
+                end,
+            })
+            .getRawOne();
+        const commissionTotal = Number(commissionResult?.sum ?? 0);
+
+        return {
+            employeeId: id,
+            from: start,
+            to: end,
+            serviceRevenue,
+            productRevenue,
+            totalRevenue: serviceRevenue + productRevenue,
+            commissionTotal,
+            completedAppointments,
+            productSales,
+        };
     }
 
     getTopServices(limit: number) {
