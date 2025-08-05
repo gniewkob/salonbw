@@ -3,20 +3,20 @@ import { z } from 'zod';
 import { Review } from '@/types';
 
 const schema = z.object({
-  reservationId: z.coerce.number().min(1, { message: 'Reservation is required' }),
+  appointmentId: z.coerce.number().min(1, { message: 'Appointment is required' }),
   rating: z.coerce.number().min(1).max(5),
   comment: z.string().optional(),
 });
 
 interface Props {
   initial?: Partial<Review>;
-  onSubmit: (data: { reservationId: number; rating: number; comment?: string }) => Promise<void>;
+  onSubmit: (data: { appointmentId: number; rating: number; comment?: string }) => Promise<void>;
   onCancel: () => void;
 }
 
 export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
   const [form, setForm] = useState({
-    reservationId: initial?.reservationId ?? 0,
+    appointmentId: initial?.appointmentId ?? 0,
     rating: initial?.rating ?? 1,
     comment: initial?.comment ?? '',
   });
@@ -40,7 +40,29 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
-      <input name="reservationId" value={form.reservationId} onChange={handleChange} className="border p-1 w-full" placeholder="Reservation" />
+      <input
+        name="appointmentId"
+        value={form.appointmentId}
+        onChange={handleChange}
+        className="border p-1 w-full"
+        placeholder="Appointment"
+      />
+      {initial?.employee && (
+        <input
+          value={initial.employee.fullName}
+          readOnly
+          className="border p-1 w-full bg-gray-100"
+          placeholder="Employee"
+        />
+      )}
+      {initial?.author && (
+        <input
+          value={initial.author.name}
+          readOnly
+          className="border p-1 w-full bg-gray-100"
+          placeholder="Author"
+        />
+      )}
       <input name="rating" value={form.rating} onChange={handleChange} className="border p-1 w-full" placeholder="Rating" />
       <textarea name="comment" value={form.comment} onChange={handleChange} className="border p-1 w-full" placeholder="Comment" />
       {error && (

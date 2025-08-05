@@ -1,3 +1,10 @@
 [
-  { "id": 1, "reservationId": 1, "rating": 5, "comment": "Great" }
+  {
+    "id": 1,
+    "appointmentId": 1,
+    "rating": 5,
+    "comment": "Great",
+    "employee": { "id": 1, "fullName": "John Doe" },
+    "author": { "id": 2, "name": "Jane" }
+  }
 ]
