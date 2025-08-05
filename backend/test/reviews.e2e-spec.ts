@@ -65,15 +65,15 @@ describe('ReviewsModule (e2e)', () => {
         const { access_token: token } = login.body as { access_token: string };
 
         await request(app.getHttpServer())
-            .post('/reviews')
+            .post(`/appointments/${appointment.id}/review`)
             .set('Authorization', `Bearer ${token}`)
-            .send({ appointmentId: appointment.id, rating: 5 })
+            .send({ rating: 5 })
             .expect(201);
 
         await request(app.getHttpServer())
-            .post('/reviews')
+            .post(`/appointments/${appointment.id}/review`)
             .set('Authorization', `Bearer ${token}`)
-            .send({ appointmentId: appointment.id, rating: 4 })
+            .send({ rating: 4 })
             .expect(400);
     });
 });

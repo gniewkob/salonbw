@@ -1,43 +1,23 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Patch,
-    Post,
-    Request,
-} from '@nestjs/common';
+import { Controller, Delete, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../users/role.enum';
 import { ReviewsService } from './reviews.service';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { UpdateReviewDto } from './dto/update-review.dto';
 
+@ApiTags('Reviews')
+@ApiBearerAuth()
 @Controller('reviews')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Admin)
 export class ReviewsController {
     constructor(private readonly service: ReviewsService) {}
 
-    @Get()
-    list() {
-        return this.service.findAll();
-    }
-
-    @Get(':id')
-    get(@Param('id') id: number) {
-        return this.service.findOne(Number(id));
-    }
-
-    @Post()
-    create(@Body() dto: CreateReviewDto, @Request() req) {
-        return this.service.create(dto, req.user.id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: number, @Body() dto: UpdateReviewDto) {
-        return this.service.update(Number(id), dto);
-    }
-
     @Delete(':id')
-    remove(@Param('id') id: number) {
-        return this.service.remove(Number(id));
+    @ApiOperation({ summary: 'Delete review' })
+    @ApiResponse({ status: 200 })
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.service.remove(id);
     }
 }
