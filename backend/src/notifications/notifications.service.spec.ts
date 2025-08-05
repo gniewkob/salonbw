@@ -61,7 +61,7 @@ describe('NotificationsService', () => {
         expect(notif.status).toBe(NotificationStatus.Failed);
     });
 
-    it('reminderCron notifies upcoming appointments', async () => {
+    it('reminderCron dispatches reminders concurrently', async () => {
         const apptDate = new Date();
         apptDate.setDate(apptDate.getDate() + 1);
         appts.find.mockResolvedValue([
@@ -70,12 +70,26 @@ describe('NotificationsService', () => {
                 status: AppointmentStatus.Scheduled,
                 client: { phone: '123' },
             } as Appointment,
+            {
+                startTime: apptDate,
+                status: AppointmentStatus.Scheduled,
+                client: { phone: '456' },
+            } as Appointment,
         ]);
+        let inFlight = 0;
+        let maxInFlight = 0;
+        whatsapp.sendText.mockImplementation(async () => {
+            inFlight++;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise((res) => setTimeout(res, 10));
+            inFlight--;
+        });
         await service.reminderCron();
-        expect(whatsapp.sendText).toHaveBeenCalled();
+        expect(whatsapp.sendText).toHaveBeenCalledTimes(2);
+        expect(maxInFlight).toBeGreaterThan(1);
     });
 
-    it('followUpCron notifies completed appointments', async () => {
+    it('followUpCron dispatches follow-ups concurrently', async () => {
         const apptDate = new Date();
         apptDate.setDate(apptDate.getDate() - 1);
         appts.find.mockResolvedValue([
@@ -84,9 +98,49 @@ describe('NotificationsService', () => {
                 status: AppointmentStatus.Completed,
                 client: { phone: '321' },
             } as Appointment,
+            {
+                startTime: apptDate,
+                status: AppointmentStatus.Completed,
+                client: { phone: '654' },
+            } as Appointment,
         ]);
+        let inFlight = 0;
+        let maxInFlight = 0;
+        whatsapp.sendText.mockImplementation(async () => {
+            inFlight++;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise((res) => setTimeout(res, 10));
+            inFlight--;
+        });
         await service.followUpCron();
-        expect(whatsapp.sendText).toHaveBeenCalled();
+        expect(whatsapp.sendText).toHaveBeenCalledTimes(2);
+        expect(maxInFlight).toBeGreaterThan(1);
+    });
+
+    it('followUpCron logs failures for individual appointments', async () => {
+        const apptDate = new Date();
+        apptDate.setDate(apptDate.getDate() - 1);
+        appts.find.mockResolvedValue([
+            {
+                startTime: apptDate,
+                status: AppointmentStatus.Completed,
+                client: { phone: '111' },
+            } as Appointment,
+            {
+                startTime: apptDate,
+                status: AppointmentStatus.Completed,
+                client: { phone: '222' },
+            } as Appointment,
+        ]);
+        const errorSpy = jest.spyOn((service as any).logger, 'error');
+        const thankSpy = jest
+            .spyOn(service, 'sendThankYou')
+            .mockRejectedValueOnce(new Error('fail1'))
+            .mockResolvedValueOnce(undefined as any);
+        await service.followUpCron();
+        expect(errorSpy).toHaveBeenCalledTimes(1);
+        expect(service.sendThankYou).toHaveBeenCalledTimes(2);
+        thankSpy.mockRestore();
     });
 
     it('sendAppointmentConfirmation sends WhatsApp message', async () => {
