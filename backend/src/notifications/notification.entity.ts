@@ -10,6 +10,7 @@ export enum NotificationStatus {
     Pending = 'pending',
     Sent = 'sent',
     Failed = 'failed',
+    Skipped = 'skipped',
 }
 
 @Entity()
