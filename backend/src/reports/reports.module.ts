@@ -6,6 +6,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { Sale } from '../sales/sale.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { User } from '../users/user.entity';
+import { Log } from '../logs/log.entity';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { User } from '../users/user.entity';
             Sale,
             CommissionRecord,
             User,
+            Log,
         ]),
     ],
     controllers: [ReportsController],
