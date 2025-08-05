@@ -10,18 +10,24 @@ import {
     NotificationStatus,
 } from './notification.entity';
 import { NotificationChannel } from './notification-channel.enum';
+import { NotificationLog } from './notification-log.entity';
 
 describe('NotificationsService', () => {
     let service: NotificationsService;
     let sms: { sendSms: jest.Mock };
     let whatsapp: { sendText: jest.Mock };
     let repo: Partial<Repository<Notification>>;
+    let logRepo: Partial<Repository<NotificationLog>>;
     let appts: { find: jest.Mock };
 
     beforeEach(async () => {
         sms = { sendSms: jest.fn() };
         whatsapp = { sendText: jest.fn() };
         repo = {
+            create: jest.fn((x) => x),
+            save: jest.fn(async (x) => x),
+        } as any;
+        logRepo = {
             create: jest.fn((x) => x),
             save: jest.fn(async (x) => x),
         } as any;
@@ -32,6 +38,7 @@ describe('NotificationsService', () => {
                 { provide: SmsService, useValue: sms },
                 { provide: WhatsappService, useValue: whatsapp },
                 { provide: getRepositoryToken(Notification), useValue: repo },
+                { provide: getRepositoryToken(NotificationLog), useValue: logRepo },
                 { provide: getRepositoryToken(Appointment), useValue: appts },
             ],
         }).compile();
@@ -73,6 +80,47 @@ describe('NotificationsService', () => {
         )) as Notification;
         expect(notif.status).toBe(NotificationStatus.Skipped);
         delete process.env.NOTIFICATIONS_ENABLED;
+    });
+
+    it('creates log for successful sends', async () => {
+        await service.sendNotification('1', 'msg', NotificationChannel.Whatsapp);
+        expect(logRepo.save).toHaveBeenCalledWith(
+            expect.objectContaining({
+                status: NotificationStatus.Sent,
+                recipient: '1',
+                type: NotificationChannel.Whatsapp,
+            }),
+        );
+    });
+
+    it('creates log with error on failure', async () => {
+        whatsapp.sendText.mockRejectedValue(new Error('fail'));
+        await service.sendNotification('1', 'msg', NotificationChannel.Whatsapp);
+        expect(logRepo.save).toHaveBeenCalledTimes(2);
+        expect(logRepo.save).toHaveBeenCalledWith(
+            expect.objectContaining({
+                status: NotificationStatus.Failed,
+                error: 'fail',
+            }),
+        );
+    });
+
+    it('logs retry attempts', async () => {
+        whatsapp.sendText
+            .mockRejectedValueOnce(new Error('nope'))
+            .mockResolvedValueOnce(undefined);
+        await service.sendNotification('1', 'msg', NotificationChannel.Whatsapp);
+        expect(logRepo.save).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                status: NotificationStatus.Failed,
+                error: 'nope',
+            }),
+        );
+        expect(logRepo.save).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({ status: NotificationStatus.Sent }),
+        );
     });
 
     it('reminderCron dispatches reminders concurrently', async () => {
