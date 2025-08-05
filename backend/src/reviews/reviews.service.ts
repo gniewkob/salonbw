@@ -2,6 +2,7 @@ import {
     Injectable,
     BadRequestException,
     ForbiddenException,
+    ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,7 +29,7 @@ export class ReviewsService {
             where: { appointment: { id: dto.appointmentId } },
         });
         if (existing) {
-            throw new BadRequestException(
+            throw new ConflictException(
                 'Review already exists for this appointment',
             );
         }
