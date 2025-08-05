@@ -3,22 +3,20 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    OneToMany,
+    ManyToOne,
 } from 'typeorm';
+import { Notification, NotificationStatus } from './notification.entity';
 import { NotificationChannel } from './notification-channel.enum';
-import { NotificationLog } from './notification-log.entity';
-
-export enum NotificationStatus {
-    Pending = 'pending',
-    Sent = 'sent',
-    Failed = 'failed',
-    Skipped = 'skipped',
-}
 
 @Entity()
-export class Notification {
+export class NotificationLog {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @ManyToOne(() => Notification, (notification) => notification.logs, {
+        onDelete: 'CASCADE',
+    })
+    notification: Notification;
 
     @Column()
     recipient: string;
@@ -26,15 +24,12 @@ export class Notification {
     @Column({ type: 'simple-enum', enum: NotificationChannel })
     type: NotificationChannel;
 
-    @Column('text')
-    message: string;
-
     @Column({ type: 'simple-enum', enum: NotificationStatus })
     status: NotificationStatus;
 
     @CreateDateColumn()
-    sentAt: Date;
+    timestamp: Date;
 
-    @OneToMany(() => NotificationLog, (log) => log.notification)
-    logs: NotificationLog[];
+    @Column('text', { nullable: true })
+    error?: string;
 }
