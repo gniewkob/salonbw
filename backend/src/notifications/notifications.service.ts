@@ -12,6 +12,7 @@ import {
     Notification,
     NotificationStatus,
 } from './notification.entity';
+import { NotificationLog } from './notification-log.entity';
 import { NotificationChannel } from './notification-channel.enum';
 
 @Injectable()
@@ -22,6 +23,8 @@ export class NotificationsService {
         private readonly whatsapp: WhatsappService,
         @InjectRepository(Notification)
         private readonly repo: Repository<Notification>,
+        @InjectRepository(NotificationLog)
+        private readonly logs: Repository<NotificationLog>,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
     ) {}
@@ -39,7 +42,16 @@ export class NotificationsService {
                 status: NotificationStatus.Skipped,
                 sentAt: new Date(),
             });
-            return this.repo.save(fake);
+            await this.repo.save(fake);
+            await this.logs.save(
+                this.logs.create({
+                    recipient: to,
+                    type,
+                    status: NotificationStatus.Skipped,
+                    notification: fake,
+                }),
+            );
+            return fake;
         }
         const notif = this.repo.create({
             recipient: to,
@@ -48,19 +60,45 @@ export class NotificationsService {
             status: NotificationStatus.Pending,
         });
         await this.repo.save(notif);
-        try {
-            if (type === NotificationChannel.Sms) {
-                await this.sms.sendSms(to, message);
-            } else {
-                await this.whatsapp.sendText(to, message);
+        const maxAttempts = 2;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                if (type === NotificationChannel.Sms) {
+                    await this.sms.sendSms(to, message);
+                } else {
+                    await this.whatsapp.sendText(to, message);
+                }
+                notif.status = NotificationStatus.Sent;
+                notif.sentAt = new Date();
+                await this.repo.save(notif);
+                await this.logs.save(
+                    this.logs.create({
+                        recipient: to,
+                        type,
+                        status: NotificationStatus.Sent,
+                        notification: notif,
+                    }),
+                );
+                return notif;
+            } catch (err) {
+                await this.logs.save(
+                    this.logs.create({
+                        recipient: to,
+                        type,
+                        status: NotificationStatus.Failed,
+                        error: err instanceof Error ? err.message : String(err),
+                        notification: notif,
+                    }),
+                );
+                this.logger.error(`Notification send failed: ${err}`);
+                if (attempt === maxAttempts) {
+                    notif.status = NotificationStatus.Failed;
+                    notif.sentAt = new Date();
+                    await this.repo.save(notif);
+                    return notif;
+                }
             }
-            notif.status = NotificationStatus.Sent;
-        } catch (err) {
-            notif.status = NotificationStatus.Failed;
-            this.logger.error(`Notification send failed: ${err}`);
         }
-        notif.sentAt = new Date();
-        await this.repo.save(notif);
         return notif;
     }
 
