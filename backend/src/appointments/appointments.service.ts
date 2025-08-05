@@ -20,7 +20,7 @@ import { UpdateAppointmentParams } from './dto/update-appointment-params';
 import { LogsService } from '../logs/logs.service';
 import { LogAction } from '../logs/action.enum';
 import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationChannel } from '../notifications/notification.entity';
+import { NotificationChannel } from '../notifications/notification-channel.enum';
 import { ClientWithPhone, EmployeeWithPhone } from './phone-interfaces';
 
 @Injectable()
