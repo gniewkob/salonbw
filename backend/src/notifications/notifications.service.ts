@@ -109,8 +109,8 @@ export class NotificationsService {
         for (const appt of appointments) {
             const phone = (appt.client as { phone?: string } | null)?.phone;
             if (phone) {
-                 
-                await this.sendReminder(phone, appt.startTime);
+
+                await this.sendAppointmentReminder(phone, appt.startTime);
             }
         }
     }
@@ -133,18 +133,10 @@ export class NotificationsService {
         for (const appt of appointments) {
             const phone = (appt.client as { phone?: string } | null)?.phone;
             if (phone) {
-                 
-                await this.sendFollowUp(phone);
+
+                await this.sendThankYou(phone);
             }
         }
-    }
-
-    sendReminder(to: string, when: Date) {
-        return this.sendAppointmentReminder(to, when);
-    }
-
-    sendFollowUp(to: string) {
-        return this.sendThankYou(to);
     }
 
     findAll() {
