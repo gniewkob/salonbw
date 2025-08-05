@@ -255,36 +255,36 @@ describe('ReportsService', () => {
         expect(report.productSales).toBe(2);
     });
 
-    it('returns top services with limit', async () => {
+    it('returns top services with pagination', async () => {
         const { cut, color } = await seedSampleData();
-        const topOne = await service.getTopServices(1);
-        expect(topOne).toHaveLength(1);
-        expect(topOne[0]).toMatchObject({
+        const pageOne = await service.getTopServices(1, 1);
+        expect(pageOne).toHaveLength(1);
+        expect(pageOne[0]).toMatchObject({
             serviceId: cut.id,
             count: 2,
             revenue: 60,
         });
-        const topTwo = await service.getTopServices(2);
-        expect(topTwo).toHaveLength(2);
-        expect(topTwo[1]).toMatchObject({
+        const pageTwo = await service.getTopServices(1, 2);
+        expect(pageTwo).toHaveLength(1);
+        expect(pageTwo[0]).toMatchObject({
             serviceId: color.id,
             count: 1,
             revenue: 50,
         });
     });
 
-    it('returns top products with limit', async () => {
+    it('returns top products with pagination', async () => {
         const { shampoo, brush } = await seedSampleData();
-        const topOne = await service.getTopProducts(1);
-        expect(topOne).toHaveLength(1);
-        expect(topOne[0]).toMatchObject({
+        const pageOne = await service.getTopProducts(1, 1);
+        expect(pageOne).toHaveLength(1);
+        expect(pageOne[0]).toMatchObject({
             productId: shampoo.id,
             quantity: 4,
             revenue: 40,
         });
-        const topTwo = await service.getTopProducts(2);
-        expect(topTwo).toHaveLength(2);
-        expect(topTwo[1]).toMatchObject({
+        const pageTwo = await service.getTopProducts(1, 2);
+        expect(pageTwo).toHaveLength(1);
+        expect(pageTwo[0]).toMatchObject({
             productId: brush.id,
             quantity: 2,
             revenue: 30,
@@ -359,6 +359,13 @@ describe('ReportsService', () => {
         expect(fileName).toBe('financial.csv');
         expect(csv).toContain('serviceRevenue');
         expect(csv).toContain('110');
+    });
+
+    it('exports services data with pagination', async () => {
+        const { cut, color } = await seedSampleData();
+        const { csv } = await service.export('services', 1, 2);
+        expect(csv).toContain(color.name);
+        expect(csv).not.toContain(cut.name);
     });
 });
 
