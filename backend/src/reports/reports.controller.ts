@@ -6,6 +6,7 @@ import {
     ParseIntPipe,
     UseGuards,
     DefaultValuePipe,
+    Res,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -18,6 +19,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { ReportsService } from './reports.service';
+import { Response } from 'express';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
@@ -88,8 +90,11 @@ export class ReportsController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Export report' })
-    @ApiResponse({ status: 200 })
-    export(@Param('type') type: string) {
-        return this.service.export(type);
+    @ApiResponse({ status: 200, description: 'CSV export' })
+    async export(@Param('type') type: string, @Res() res: Response) {
+        const { fileName, csv } = await this.service.export(type);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.send(csv);
     }
 }
