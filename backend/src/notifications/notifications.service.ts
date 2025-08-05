@@ -106,13 +106,23 @@ export class NotificationsService {
             },
         });
 
-        for (const appt of appointments) {
+        const tasks = appointments.flatMap((appt) => {
             const phone = (appt.client as { phone?: string } | null)?.phone;
-            if (phone) {
-
-                await this.sendAppointmentReminder(phone, appt.startTime);
+            if (!phone) {
+                return [] as Promise<void>[];
             }
-        }
+            return [
+                this.sendAppointmentReminder(phone, appt.startTime).catch(
+                    (err) => {
+                        this.logger.error(
+                            `Failed to send reminder to ${phone}: ${err}`,
+                        );
+                    },
+                ),
+            ];
+        });
+
+        await Promise.all(tasks);
     }
 
     @Cron('0 19 * * *')
@@ -130,13 +140,21 @@ export class NotificationsService {
             },
         });
 
-        for (const appt of appointments) {
+        const tasks = appointments.flatMap((appt) => {
             const phone = (appt.client as { phone?: string } | null)?.phone;
-            if (phone) {
-
-                await this.sendThankYou(phone);
+            if (!phone) {
+                return [] as Promise<void>[];
             }
-        }
+            return [
+                this.sendThankYou(phone).catch((err) => {
+                    this.logger.error(
+                        `Failed to send follow-up to ${phone}: ${err}`,
+                    );
+                }),
+            ];
+        });
+
+        await Promise.all(tasks);
     }
 
     findAll() {
