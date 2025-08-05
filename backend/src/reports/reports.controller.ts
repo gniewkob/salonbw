@@ -13,6 +13,8 @@ import {
     ApiOperation,
     ApiResponse,
     ApiTags,
+    ApiQuery,
+    ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -32,6 +34,18 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get financial report' })
     @ApiResponse({ status: 200 })
+    @ApiQuery({
+        name: 'from',
+        required: false,
+        type: String,
+        description: 'Start date in ISO format',
+    })
+    @ApiQuery({
+        name: 'to',
+        required: false,
+        type: String,
+        description: 'End date in ISO format',
+    })
     financial(
         @Query('from') from?: string,
         @Query('to') to?: string,
@@ -44,6 +58,18 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get employee report' })
     @ApiResponse({ status: 200 })
+    @ApiQuery({
+        name: 'from',
+        required: false,
+        type: String,
+        description: 'Start date in ISO format',
+    })
+    @ApiQuery({
+        name: 'to',
+        required: false,
+        type: String,
+        description: 'End date in ISO format',
+    })
     employee(
         @Param('id', ParseIntPipe) id: number,
         @Query('from') from?: string,
@@ -57,6 +83,12 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get top services' })
     @ApiResponse({ status: 200 })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        type: Number,
+        description: 'Maximum number of services to return',
+    })
     topServices(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     ) {
@@ -68,6 +100,12 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get top products' })
     @ApiResponse({ status: 200 })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        type: Number,
+        description: 'Maximum number of products to return',
+    })
     topProducts(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     ) {
@@ -79,6 +117,18 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get new customers report' })
     @ApiResponse({ status: 200 })
+    @ApiQuery({
+        name: 'from',
+        required: false,
+        type: String,
+        description: 'Start date in ISO format',
+    })
+    @ApiQuery({
+        name: 'to',
+        required: false,
+        type: String,
+        description: 'End date in ISO format',
+    })
     newCustomers(
         @Query('from') from?: string,
         @Query('to') to?: string,
@@ -91,6 +141,11 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Export report' })
     @ApiResponse({ status: 200, description: 'CSV export' })
+    @ApiParam({
+        name: 'type',
+        enum: ['financial', 'services', 'products', 'customers'],
+        description: 'Type of report to export as CSV',
+    })
     async export(@Param('type') type: string, @Res() res: Response) {
         const { fileName, csv } = await this.service.export(type);
         res.setHeader('Content-Type', 'text/csv');
