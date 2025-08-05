@@ -4,11 +4,7 @@ import {
     Column,
     CreateDateColumn,
 } from 'typeorm';
-
-export enum NotificationChannel {
-    Sms = 'sms',
-    Whatsapp = 'whatsapp',
-}
+import { NotificationChannel } from './notification-channel.enum';
 
 export enum NotificationStatus {
     Pending = 'pending',
