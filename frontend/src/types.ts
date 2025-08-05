@@ -34,9 +34,11 @@ export interface Product {
 
 export interface Review {
     id: number;
-    reservationId: number;
+    appointmentId: number;
     rating: number;
     comment?: string;
+    employee?: Employee;
+    author?: Client;
 }
 
 export interface DashboardResponse {

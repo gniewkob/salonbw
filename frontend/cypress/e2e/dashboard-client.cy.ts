@@ -25,15 +25,19 @@ describe('client dashboard reviews crud', () => {
   beforeEach(() => {
     localStorage.setItem('jwtToken', 'x');
     localStorage.setItem('role', 'client');
-    cy.intercept('GET', '**/reviews', { fixture: 'reviews.json' }).as('getReviews');
+    cy.intercept('GET', '**/employees/*/reviews', { fixture: 'reviews.json' }).as('getReviews');
   });
 
   it('creates a review', () => {
-    cy.intercept('POST', '**/reviews', { id: 2, reservationId: 1, rating: 5 }).as('createReview');
+    cy.intercept('POST', '**/appointments/*/review', {
+      id: 2,
+      appointmentId: 1,
+      rating: 5,
+    }).as('createReview');
     cy.visit('/reviews');
     cy.wait('@getReviews');
     cy.contains('Add Review').click();
-    cy.get('input[placeholder="Reservation"]').type('1');
+    cy.get('input[placeholder="Appointment"]').type('1');
     cy.get('input[placeholder="Rating"]').type('5');
     cy.contains('button', 'Save').click();
     cy.wait('@createReview');
