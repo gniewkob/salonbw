@@ -31,6 +31,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { CustomersModule } from './customers/customers.module';
 import { EmployeesModule } from './employees/employees.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
     imports: [
@@ -79,6 +80,7 @@ import { CategoriesModule } from './categories/categories.module';
         InvoicesModule,
         IntegrationsModule,
         EmailsModule,
+        ReportsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
