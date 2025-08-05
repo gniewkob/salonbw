@@ -22,7 +22,7 @@ describe('useReviewApi', () => {
     );
     const { result } = renderHook(() => useReviewApi(), { wrapper });
     await act(async () => {
-      await result.current.create({ reservationId: 1, rating: 5 });
+      await result.current.create(1, { rating: 5 });
     });
     expect(toast.success).toHaveBeenCalled();
   });
@@ -36,7 +36,7 @@ describe('useReviewApi', () => {
     const { result } = renderHook(() => useReviewApi(), { wrapper });
     await expect(
       act(async () => {
-        await result.current.create({ reservationId: 1, rating: 5 });
+        await result.current.create(1, { rating: 5 });
       })
     ).rejects.toThrow();
     expect(toast.error).toHaveBeenCalled();
