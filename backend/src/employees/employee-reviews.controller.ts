@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from '../reviews/reviews.service';
@@ -13,6 +14,7 @@ export class EmployeeReviewsController {
     @ApiQuery({ name: 'limit', required: false })
     @ApiQuery({ name: 'rating', required: false })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list(
         @Param('id', ParseIntPipe) id: number,
         @Query('page') page = '1',

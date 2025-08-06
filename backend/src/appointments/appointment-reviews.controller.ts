@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -27,6 +28,7 @@ export class AppointmentReviewsController {
     @Roles(Role.Client)
     @ApiOperation({ summary: 'Create review for appointment' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CreateAppointmentReviewDto,
@@ -42,6 +44,7 @@ export class AppointmentReviewsController {
     @Roles(Role.Client)
     @ApiOperation({ summary: 'Get review for appointment' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     find(@Param('id', ParseIntPipe) id: number) {
         return this.reviews.findByAppointment(id);
     }

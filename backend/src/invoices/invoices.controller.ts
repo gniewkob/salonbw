@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,6 +18,7 @@ export class InvoicesController {
     @Get()
     @ApiOperation({ summary: 'List invoices' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -24,6 +26,7 @@ export class InvoicesController {
     @Post('generate/:reservationId')
     @ApiOperation({ summary: 'Generate invoice for reservation' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     generate(@Param('reservationId') id: number) {
         return this.service.generate(Number(id));
     }
@@ -31,6 +34,7 @@ export class InvoicesController {
     @Get(':id/pdf')
     @ApiOperation({ summary: 'Get invoice PDF' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     getPdf(@Param('id') id: number) {
         return this.service.getPdf(Number(id));
     }

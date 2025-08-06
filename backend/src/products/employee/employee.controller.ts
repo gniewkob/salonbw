@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
@@ -17,6 +18,7 @@ export class EmployeeController {
     @Get()
     @ApiOperation({ summary: 'List products for employee' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }

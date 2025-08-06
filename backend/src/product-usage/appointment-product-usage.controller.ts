@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -49,8 +50,11 @@ export class AppointmentProductUsageController {
             'Records consumption of products. The usageType defaults to INTERNAL when not provided.',
     })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 409 })
+    @ApiErrorResponses()
     @ApiBody({
         type: [AppointmentProductUsageEntryDto],
         description:

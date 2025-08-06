@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Controller,
     Get,
@@ -34,6 +35,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get financial report' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'from',
         required: false,
@@ -58,6 +60,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get employee report' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'from',
         required: false,
@@ -83,6 +86,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get top services' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'limit',
         required: false,
@@ -107,6 +111,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get top products' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'limit',
         required: false,
@@ -131,6 +136,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Get new customers report' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'from',
         required: false,
@@ -155,6 +161,7 @@ export class ReportsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Export report' })
     @ApiResponse({ status: 200, description: 'CSV export' })
+    @ApiErrorResponses()
     @ApiParam({
         name: 'type',
         enum: ['financial', 'services', 'products', 'customers'],

@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     BadRequestException,
     Body,
@@ -19,6 +20,7 @@ export class EmailsController {
     @Public()
     @ApiOperation({ summary: 'List emails' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -27,6 +29,7 @@ export class EmailsController {
     @Public()
     @ApiOperation({ summary: 'Send email' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     send(@Body() body: EmailPayload) {
         return this.service.sendEmail(body);
     }
@@ -35,6 +38,7 @@ export class EmailsController {
     @Public()
     @ApiOperation({ summary: 'Send bulk emails' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     sendBulk(@Body() body: { emails: EmailPayload[] }) {
         return this.service.sendBulk(body.emails);
     }
@@ -43,6 +47,7 @@ export class EmailsController {
     @Public()
     @ApiOperation({ summary: 'Opt out email' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     optOut(@Body() body: { token?: string; email?: string }) {
         const tokenOrEmail = body.token || body.email;
         if (!tokenOrEmail) {
@@ -55,6 +60,7 @@ export class EmailsController {
     @Public()
     @ApiOperation({ summary: 'Unsubscribe email' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     unsubscribe(@Param('token') token: string) {
         return this.service.optOut(token);
     }
