@@ -11,6 +11,8 @@ export default function PublicNav() {
       <Link href="/contact">Contact</Link>
       <Link href="/auth/login">Login</Link>
       <Link href="/auth/register">Register</Link>
+      <Link href="/policy">Policy</Link>
+      <Link href="/privacy">Privacy</Link>
     </nav>
   );
 }
