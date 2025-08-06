@@ -3,14 +3,15 @@ import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import {
     ApiTags,
     ApiOperation,
-    ApiResponse,
-    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiOkResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterClientDto } from './dto/register-client.dto';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { SocialLoginDto } from './dto/social-login.dto';
+import { SocialLoginResponseDto } from './dto/social-login-response.dto';
 import { LocalAuthGuard } from './local-auth.guard';
 import { Public } from './public.decorator';
 import { Role } from '../users/role.enum';
@@ -30,7 +31,10 @@ export class AuthController {
     @Public()
     @UseGuards(LocalAuthGuard)
     @ApiOperation({ summary: 'Login with email and password' })
-    @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
+    @ApiCreatedResponse({
+        description: 'JWT access and refresh tokens',
+        type: AuthTokensDto,
+    })
     @ApiErrorResponses()
     login(@Request() req: AuthRequest): Promise<AuthTokensDto> {
         return this.authService.generateTokens(req.user.id, req.user.role);
@@ -39,7 +43,10 @@ export class AuthController {
     @Post('register')
     @Public()
     @ApiOperation({ summary: 'Register a new client account' })
-    @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
+    @ApiCreatedResponse({
+        description: 'JWT access and refresh tokens',
+        type: AuthTokensDto,
+    })
     @ApiErrorResponses()
     register(@Body() registerDto: RegisterClientDto): Promise<AuthTokensDto> {
         return this.authService.registerClient(registerDto);
@@ -48,9 +55,19 @@ export class AuthController {
     @Post('social-login')
     @Public()
     @ApiOperation({ summary: 'Login or register using social provider token' })
-    @ApiResponse({ status: 201, description: 'JWT tokens and user data' })
+    @ApiOkResponse({
+        description: 'JWT tokens and user data',
+        type: SocialLoginResponseDto,
+    })
+    @ApiCreatedResponse({
+        description: 'JWT tokens and user data',
+        type: SocialLoginResponseDto,
+    })
     @ApiErrorResponses()
-    async socialLogin(@Body() dto: SocialLoginDto, @Request() req): Promise<any> {
+    async socialLogin(
+        @Body() dto: SocialLoginDto,
+        @Request() req,
+    ): Promise<SocialLoginResponseDto> {
         const { tokens, user, isNew } = await this.authService.socialLogin(dto);
         const result = {
             ...tokens,
@@ -62,7 +79,6 @@ export class AuthController {
                 role: user.role,
             },
         };
-        // express Response not used due to Nest return style; handle status code
         (req.res as any).status(isNew ? 201 : 200);
         return result;
     }
@@ -70,7 +86,10 @@ export class AuthController {
     @Post('refresh')
     @Public()
     @ApiOperation({ summary: 'Refresh expired access token' })
-    @ApiResponse({ status: 201, description: 'New access and refresh tokens' })
+    @ApiCreatedResponse({
+        description: 'New access and refresh tokens',
+        type: AuthTokensDto,
+    })
     @ApiErrorResponses()
     refresh(@Body() dto: RefreshTokenDto): Promise<AuthTokensDto> {
         return this.authService.refresh(dto.refresh_token);

@@ -7,13 +7,20 @@ import {
     Request,
     UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiTags,
+    ApiOkResponse,
+    ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { Message } from './message.entity';
 
 @ApiTags('Messages')
 @ApiBearerAuth()
@@ -25,17 +32,27 @@ export class MessagesController {
 
     @Get()
     @ApiOperation({ summary: 'List messages for user' })
-    @ApiResponse({ status: 200 })
+    @ApiOkResponse({
+        description: 'Messages for the authenticated user',
+        type: Message,
+        isArray: true,
+    })
     @ApiErrorResponses()
-    list(@Request() req) {
+    list(@Request() req): Promise<Message[]> {
         return this.service.findForUser(Number(req.user.id));
     }
 
     @Post()
     @ApiOperation({ summary: 'Create message' })
-    @ApiResponse({ status: 201 })
+    @ApiCreatedResponse({
+        description: 'Message successfully created',
+        type: Message,
+    })
     @ApiErrorResponses()
-    create(@Request() req, @Body() dto: CreateMessageDto) {
+    create(
+        @Request() req,
+        @Body() dto: CreateMessageDto,
+    ): Promise<Message> {
         return this.service.create(
             Number(req.user.id),
             dto.recipientId,
