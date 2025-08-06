@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -18,6 +19,7 @@ export class CommunicationsController {
     @Roles(Role.Employee, Role.Admin)
     @ApiOperation({ summary: 'List communications for customer' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list(@Param('customerId') customerId: number) {
         return this.service.findForCustomer(Number(customerId));
     }
@@ -26,6 +28,7 @@ export class CommunicationsController {
     @Roles(Role.Employee, Role.Admin)
     @ApiOperation({ summary: 'Create communication' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Body() dto: CreateCommunicationDto) {
         return this.service.create(dto.customerId, dto.medium, dto.content);
     }

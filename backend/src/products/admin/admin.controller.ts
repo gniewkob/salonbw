@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -41,6 +42,7 @@ export class AdminController {
     @Get()
     @ApiOperation({ summary: 'List all products' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -48,6 +50,7 @@ export class AdminController {
     @Post()
     @ApiOperation({ summary: 'Create product' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Body() dto: CreateProductDto) {
         return this.service.create(dto);
     }
@@ -59,6 +62,7 @@ export class AdminController {
             'Adjusts stock levels for multiple products. Each change is logged with usageType STOCK_CORRECTION.',
     })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiBody({
         type: BulkUpdateStockDto,
         description: 'Stock levels to apply. Logged as usageType STOCK_CORRECTION.',
@@ -73,6 +77,7 @@ export class AdminController {
     @Patch(':id')
     @ApiOperation({ summary: 'Update product' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     update(@Param('id') id: number, @Body() dto: UpdateProductDto) {
         return this.service.update(Number(id), dto);
     }
@@ -83,6 +88,7 @@ export class AdminController {
         description: 'Increments or decrements stock. Logged with usageType STOCK_CORRECTION.',
     })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiBody({
         schema: {
             type: 'object',
@@ -110,6 +116,7 @@ export class AdminController {
     @Delete(':id')
     @ApiOperation({ summary: 'Delete product' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     remove(@Param('id') id: number) {
         return this.service.remove(Number(id));
     }

@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -37,9 +38,13 @@ export class CustomersController {
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
     @ApiOperation({ summary: 'List customers' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     async list() {
         return this.service.findAll();
     }
@@ -48,10 +53,15 @@ export class CustomersController {
     @Roles(Role.Client)
     @ApiOperation({ summary: 'Get own customer profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiErrorResponses()
     async getMe(@Request() req) {
         const customer = await this.service.findOne(req.user.id);
         if (!customer) {
@@ -64,9 +74,13 @@ export class CustomersController {
     @Roles(Role.Client)
     @ApiOperation({ summary: 'Update own customer profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     async updateMe(@Request() req, @Body() dto: UpdateCustomerDto) {
         return this.service.updateProfile(req.user.id, dto);
     }
@@ -75,10 +89,15 @@ export class CustomersController {
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
     @ApiOperation({ summary: 'Get customer by id' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiErrorResponses()
     async get(@Param('id', ParseIntPipe) id: number) {
         const customer = await this.service.findOne(id);
         if (!customer) {
@@ -91,10 +110,15 @@ export class CustomersController {
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
     @ApiOperation({ summary: 'Activate customer account' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiErrorResponses()
     async activate(@Param('id', ParseIntPipe) id: number) {
         const customer = await this.service.setActive(id, true);
         if (!customer) {
@@ -107,10 +131,15 @@ export class CustomersController {
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
     @ApiOperation({ summary: 'Deactivate customer account' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiErrorResponses()
     async deactivate(@Param('id', ParseIntPipe) id: number) {
         const customer = await this.service.setActive(id, false);
         if (!customer) {
@@ -123,10 +152,15 @@ export class CustomersController {
     @Roles(Role.Admin, EmployeeRole.RECEPTIONIST)
     @ApiOperation({ summary: 'Update customer marketing consent' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404, description: 'Not Found' })
+    @ApiErrorResponses()
     async updateMarketingConsent(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateMarketingConsentDto,
@@ -145,9 +179,13 @@ export class CustomersController {
     @Roles(Role.Client)
     @ApiOperation({ summary: 'Request account deletion' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 400, description: 'Bad Request' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiErrorResponses()
     @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiErrorResponses()
     async removeMe(@Request() req) {
         await this.service.forgetMe(req.user.id);
         return { success: true };

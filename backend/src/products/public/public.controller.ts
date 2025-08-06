@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import {
     Controller,
     Get,
@@ -29,6 +30,7 @@ export class PublicController {
     @Get()
     @ApiOperation({ summary: 'List all products' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -37,6 +39,7 @@ export class PublicController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List low stock products' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     listLowStock() {
         return this.service.findLowStock();
     }
@@ -45,7 +48,9 @@ export class PublicController {
     @Get(':id')
     @ApiOperation({ summary: 'Get product by id' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async get(@Param('id') id: number) {
         const prod = await this.service.findOne(Number(id));
         if (!prod) {

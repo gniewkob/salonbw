@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from './common/decorators/api-error-responses.decorator';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from './auth/public.decorator';
@@ -12,6 +13,7 @@ export class AppController {
     @Public()
     @ApiOperation({ summary: 'Get greeting message' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     getHello(): string {
         return this.appService.getHello();
     }

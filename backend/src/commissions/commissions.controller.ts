@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommissionsService } from './commissions.service';
@@ -17,6 +18,7 @@ export class CommissionsController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List all commissions' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     listAll() {
         return this.service.listAll();
     }
@@ -25,6 +27,7 @@ export class CommissionsController {
     @Roles(Role.Employee)
     @ApiOperation({ summary: 'List commissions for employee' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     listOwn(@Request() req) {
         return this.service.listForEmployee(Number(req.user.id));
     }

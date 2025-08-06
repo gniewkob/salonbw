@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Controller,
     Get,
@@ -33,6 +34,7 @@ export class MeAppointmentsController {
     @Get('me')
     @ApiOperation({ summary: 'List appointments for current user' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list(@Request() req: AuthRequest) {
         const { id, role } = req.user;
         if (role === Role.Client) {

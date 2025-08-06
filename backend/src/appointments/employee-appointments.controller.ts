@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -38,6 +39,7 @@ export class EmployeeAppointmentsController {
     @Get()
     @ApiOperation({ summary: 'List appointments assigned to employee' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list(@Request() req) {
         return this.service.findEmployeeAppointments(Number(req.user.id));
     }
