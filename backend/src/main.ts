@@ -17,14 +17,21 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
     app.enableCors({ origin: configService.get<string>('FRONTEND_URL') });
 
-    const config = new DocumentBuilder()
-        .setTitle('SalonBW API')
-        .setDescription('Dokumentacja API systemu zarządzania salonem')
-        .setVersion('1.0')
-        .addBearerAuth()
-        .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+    if (configService.get<string>('NODE_ENV') !== 'production') {
+        const config = new DocumentBuilder()
+            .setTitle('Salon Black & White API')
+            .setDescription('API documentation for the salon management system')
+            .setVersion('1.0')
+            .setContact(
+                'Salon Black & White',
+                'https://github.com/gniewkob/salonbw',
+                'contact@example.com',
+            )
+            .addBearerAuth()
+            .build();
+        const document = SwaggerModule.createDocument(app, config);
+        SwaggerModule.setup('api/docs', app, document);
+    }
 
     await app.listen(process.env.PORT ?? 3000);
 }
