@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -24,6 +25,7 @@ export class ProductUsageController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'List usage history for product' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({
         name: 'usageType',
         required: false,

@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -36,6 +37,7 @@ export class UsersController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Create a new user (admin only)' })
     @ApiResponse({ status: 201, description: 'User created' })
+    @ApiErrorResponses()
     create(@Body() createUserDto: CreateUserDto) {
         const {
             email,
@@ -67,6 +69,7 @@ export class UsersController {
     @Get('profile')
     @ApiOperation({ summary: 'Get current user profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async getProfile(@Request() req) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const user = await this.usersService.findOne(req.user.id);
@@ -81,6 +84,7 @@ export class UsersController {
     @Roles(EmployeeRole.RECEPTIONIST, EmployeeRole.ADMIN, Role.Admin)
     @ApiOperation({ summary: 'Update customer data' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     updateCustomer(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
          
         return this.usersService.updateCustomer(Number(id), dto);
@@ -90,6 +94,7 @@ export class UsersController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Delete customer' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     removeCustomer(
         @Param('id') id: string,
         @Request() req: AuthRequest,
@@ -102,6 +107,7 @@ export class UsersController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Delete employee' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     removeEmployee(
         @Param('id') id: string,
         @Request() req: AuthRequest,

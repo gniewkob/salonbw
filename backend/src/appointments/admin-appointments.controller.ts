@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -43,6 +44,7 @@ export class AdminAppointmentsController {
     @Get()
     @ApiOperation({ summary: 'List all appointments' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiQuery({ name: 'employeeId', required: false })
     @ApiQuery({ name: 'startDate', required: false })
     @ApiQuery({ name: 'endDate', required: false })
@@ -64,6 +66,7 @@ export class AdminAppointmentsController {
     @Post()
     @ApiOperation({ summary: 'Create appointment' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Body() dto: CreateAppointmentDto, @Request() req: AuthRequest) {
         return this.service.create(
             dto.clientId,
@@ -78,6 +81,7 @@ export class AdminAppointmentsController {
     @Patch(':id')
     @ApiOperation({ summary: 'Update appointment' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     update(@Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
         return this.service.update(Number(id), dto);
     }

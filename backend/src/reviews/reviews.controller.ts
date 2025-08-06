@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Delete, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,6 +18,7 @@ export class ReviewsController {
     @Delete(':id')
     @ApiOperation({ summary: 'Delete review' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.service.remove(id);
     }

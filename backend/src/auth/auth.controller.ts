@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import {
     ApiTags,
@@ -30,6 +31,7 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @ApiOperation({ summary: 'Login with email and password' })
     @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
+    @ApiErrorResponses()
     login(@Request() req: AuthRequest): Promise<AuthTokensDto> {
         return this.authService.generateTokens(req.user.id, req.user.role);
     }
@@ -38,6 +40,7 @@ export class AuthController {
     @Public()
     @ApiOperation({ summary: 'Register a new client account' })
     @ApiResponse({ status: 201, description: 'JWT access and refresh tokens' })
+    @ApiErrorResponses()
     register(@Body() registerDto: RegisterClientDto): Promise<AuthTokensDto> {
         return this.authService.registerClient(registerDto);
     }
@@ -46,6 +49,7 @@ export class AuthController {
     @Public()
     @ApiOperation({ summary: 'Login or register using social provider token' })
     @ApiResponse({ status: 201, description: 'JWT tokens and user data' })
+    @ApiErrorResponses()
     async socialLogin(@Body() dto: SocialLoginDto, @Request() req): Promise<any> {
         const { tokens, user, isNew } = await this.authService.socialLogin(dto);
         const result = {
@@ -67,6 +71,7 @@ export class AuthController {
     @Public()
     @ApiOperation({ summary: 'Refresh expired access token' })
     @ApiResponse({ status: 201, description: 'New access and refresh tokens' })
+    @ApiErrorResponses()
     refresh(@Body() dto: RefreshTokenDto): Promise<AuthTokensDto> {
         return this.authService.refresh(dto.refresh_token);
     }
