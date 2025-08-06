@@ -26,7 +26,6 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @ApiTags('Categories')
-@ApiBearerAuth()
 @Controller('categories')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CategoriesController {
@@ -52,6 +51,7 @@ export class CategoriesController {
 
     @Post()
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Create category' })
     create(@Body() dto: CreateCategoryDto) {
         return this.service.create(dto);
@@ -59,6 +59,7 @@ export class CategoriesController {
 
     @Put(':id')
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Update category' })
     update(@Param('id') id: number, @Body() dto: UpdateCategoryDto) {
         return this.service.update(Number(id), dto);
@@ -66,6 +67,7 @@ export class CategoriesController {
 
     @Delete(':id')
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete category' })
     remove(@Param('id') id: number) {
         return this.service.remove(Number(id));

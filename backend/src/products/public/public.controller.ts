@@ -20,7 +20,6 @@ import { Role } from '../../users/role.enum';
 import { ProductsService } from '../products.service';
 
 @ApiTags('Products')
-@ApiBearerAuth()
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PublicController {
@@ -37,6 +36,7 @@ export class PublicController {
 
     @Get('low-stock')
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'List low stock products' })
     @ApiResponse({ status: 200 })
     @ApiErrorResponses()
