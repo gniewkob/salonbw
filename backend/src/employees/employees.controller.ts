@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -45,6 +46,7 @@ export class EmployeesController {
     @Get()
     @ApiOperation({ summary: 'List employees' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -53,6 +55,7 @@ export class EmployeesController {
     @Roles(Role.Employee)
     @ApiOperation({ summary: 'Get own employee profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async getMe(@Request() req: AuthRequest) {
         const employee = await this.service.findMe(req.user.id);
         if (!employee) {
@@ -65,6 +68,7 @@ export class EmployeesController {
     @Roles(Role.Employee)
     @ApiOperation({ summary: 'Update own employee profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async updateMe(
         @Request() req: AuthRequest,
         @Body() dto: UpdateEmployeeProfileDto,
@@ -75,7 +79,9 @@ export class EmployeesController {
     @Get(':id')
     @ApiOperation({ summary: 'Get employee by id' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async get(@Param('id', ParseIntPipe) id: number) {
         const employee = await this.service.findOne(id);
         if (!employee) {
@@ -92,6 +98,7 @@ export class EmployeesController {
             'Employee created. The plaintext password is returned only in this response.',
         type: CreateEmployeeResponseDto,
     })
+    @ApiErrorResponses()
     create(
         @Body() dto: CreateEmployeeDto,
         @Request() req: AuthRequest,
@@ -102,7 +109,9 @@ export class EmployeesController {
     @Put(':id')
     @ApiOperation({ summary: 'Update employee profile' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateEmployeeDto,
@@ -118,7 +127,9 @@ export class EmployeesController {
     @Patch(':id/activate')
     @ApiOperation({ summary: 'Activate employee account' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async activate(
         @Param('id', ParseIntPipe) id: number,
         @Request() req: AuthRequest,
@@ -133,7 +144,9 @@ export class EmployeesController {
     @Patch(':id/deactivate')
     @ApiOperation({ summary: 'Deactivate employee account' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async deactivate(
         @Param('id', ParseIntPipe) id: number,
         @Request() req: AuthRequest,
@@ -149,7 +162,9 @@ export class EmployeesController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Update employee commission percentage' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async updateCommission(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateEmployeeCommissionDto,
@@ -169,7 +184,9 @@ export class EmployeesController {
     @Delete(':id')
     @ApiOperation({ summary: 'Soft delete employee' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async remove(
         @Param('id', ParseIntPipe) id: number,
         @Request() req: AuthRequest,

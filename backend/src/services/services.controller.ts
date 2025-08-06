@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -35,6 +36,7 @@ export class ServicesController {
     @Get()
     @ApiOperation({ summary: 'List all services' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list() {
         return this.service.findAll();
     }
@@ -43,7 +45,9 @@ export class ServicesController {
     @Get(':id')
     @ApiOperation({ summary: 'Get service by id' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     @ApiResponse({ status: 404 })
+    @ApiErrorResponses()
     async get(@Param('id') id: number) {
         const svc = await this.service.findOne(Number(id));
         if (!svc) {
@@ -56,6 +60,7 @@ export class ServicesController {
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Create service' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Body() dto: CreateServiceDto) {
         return this.service.create(dto);
     }

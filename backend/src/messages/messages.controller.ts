@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -25,6 +26,7 @@ export class MessagesController {
     @Get()
     @ApiOperation({ summary: 'List messages for user' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     list(@Request() req) {
         return this.service.findForUser(Number(req.user.id));
     }
@@ -32,6 +34,7 @@ export class MessagesController {
     @Post()
     @ApiOperation({ summary: 'Create message' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Request() req, @Body() dto: CreateMessageDto) {
         return this.service.create(
             Number(req.user.id),

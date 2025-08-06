@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Controller,
     Get,
@@ -28,6 +29,7 @@ export class AppointmentChatController {
     @Roles(Role.Client, Role.Employee)
     @ApiOperation({ summary: 'List chat messages for appointment' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async list(@Param('id') id: number, @Request() req) {
         const appt = await this.appointments.findOne(Number(id));
         if (!appt) {

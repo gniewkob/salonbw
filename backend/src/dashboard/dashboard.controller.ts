@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import {
     ApiTags,
@@ -25,6 +26,7 @@ export class DashboardController {
     @Get()
     @ApiOperation({ summary: 'Get dashboard summary for logged user' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     getDashboard(@Request() req: AuthRequest) {
         return this.service.getSummary(req.user.id, req.user.role);
     }

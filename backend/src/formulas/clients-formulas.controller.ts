@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Controller,
     Get,
@@ -24,6 +25,7 @@ export class ClientsFormulasController {
     @Roles(Role.Client, Role.Employee)
     @ApiOperation({ summary: 'List formulas for client' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async list(@Param('id') id: number, @Request() req) {
         if (req.user.role === Role.Client && req.user.id !== Number(id)) {
             throw new ForbiddenException();

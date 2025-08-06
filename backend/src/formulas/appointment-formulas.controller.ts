@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -30,6 +31,7 @@ export class AppointmentFormulasController {
     @Roles(Role.Employee, Role.Admin)
     @ApiOperation({ summary: 'Create formula for appointment' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     async create(
         @Param('id') id: number,
         @Body() dto: CreateAppointmentFormulaDto,

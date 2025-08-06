@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import {
     Body,
     Controller,
@@ -26,6 +27,7 @@ export class FormulasController {
     @Roles(Role.Client, Role.Employee)
     @ApiOperation({ summary: 'List formulas for current user' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     listOwn(@Request() req) {
         return this.service.findForUser(Number(req.user.id));
     }
@@ -34,6 +36,7 @@ export class FormulasController {
     @Roles(Role.Employee)
     @ApiOperation({ summary: 'List formulas for client' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     listForClient(@Param('clientId') clientId: string) {
         return this.service.findForUser(Number(clientId));
     }
@@ -42,6 +45,7 @@ export class FormulasController {
     @Roles(Role.Employee)
     @ApiOperation({ summary: 'Create formula' })
     @ApiResponse({ status: 201 })
+    @ApiErrorResponses()
     create(@Body() dto: CreateFormulaDto) {
         return this.service.create(
             dto.clientId,

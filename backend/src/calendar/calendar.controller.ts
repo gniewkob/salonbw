@@ -1,3 +1,4 @@
+import { ApiErrorResponses } from '../common/decorators/api-error-responses.decorator';
 import { Controller, Get, Param, Query, Headers } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/public.decorator';
@@ -12,6 +13,7 @@ export class CalendarController {
     @Public()
     @ApiOperation({ summary: 'Add event to calendar' })
     @ApiResponse({ status: 200 })
+    @ApiErrorResponses()
     async add(
         @Param('id') id: number,
         @Query('provider') provider = 'ics',
