@@ -7,6 +7,7 @@ import {
     Request,
     UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -15,6 +16,8 @@ import { AppointmentsService } from '../appointments/appointments.service';
 import { FormulasService } from './formulas.service';
 import { CreateAppointmentFormulaDto } from './dto/create-appointment-formula.dto';
 
+@ApiTags('Formulas')
+@ApiBearerAuth()
 @Controller('appointments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AppointmentFormulasController {
@@ -25,6 +28,8 @@ export class AppointmentFormulasController {
 
     @Post(':id/formulas')
     @Roles(Role.Employee, Role.Admin)
+    @ApiOperation({ summary: 'Create formula for appointment' })
+    @ApiResponse({ status: 201 })
     async create(
         @Param('id') id: number,
         @Body() dto: CreateAppointmentFormulaDto,
