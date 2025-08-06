@@ -26,7 +26,6 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
 @ApiTags('Services')
-@ApiBearerAuth()
 @Controller('services')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ServicesController {
@@ -58,6 +57,7 @@ export class ServicesController {
 
     @Post()
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Create service' })
     @ApiResponse({ status: 201 })
     @ApiErrorResponses()
@@ -67,6 +67,7 @@ export class ServicesController {
 
     @Patch(':id')
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Update service' })
     update(@Param('id') id: number, @Body() dto: UpdateServiceDto) {
         return this.service.update(Number(id), dto);
@@ -74,6 +75,7 @@ export class ServicesController {
 
     @Delete(':id')
     @Roles(Role.Admin)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete service' })
     remove(@Param('id') id: number) {
         return this.service.remove(Number(id));
