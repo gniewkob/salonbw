@@ -1,4 +1,5 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -6,6 +7,8 @@ import { Role } from '../users/role.enum';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 
+@ApiTags('Sales')
+@ApiBearerAuth()
 @Controller('sales')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SalesController {
@@ -13,6 +16,8 @@ export class SalesController {
 
     @Post()
     @Roles(Role.Admin, Role.Employee)
+    @ApiOperation({ summary: 'Create sale' })
+    @ApiResponse({ status: 201 })
     create(@Body() dto: CreateSaleDto) {
         return this.service.create(
             dto.clientId,
