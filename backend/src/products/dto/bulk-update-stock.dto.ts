@@ -3,7 +3,11 @@ import { IsArray, IsInt, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class BulkStockEntryDto {
-    @ApiProperty()
+    @ApiProperty({
+        description: 'Product identifier',
+        type: Number,
+        example: 1,
+    })
     @IsInt()
     id: number;
 
@@ -11,6 +15,8 @@ export class BulkStockEntryDto {
         minimum: 0,
         description:
             'New stock level. Adjustments are logged with usageType STOCK_CORRECTION.',
+        type: Number,
+        example: 20,
     })
     @IsInt()
     @Min(0)
@@ -22,6 +28,7 @@ export class BulkUpdateStockDto {
         type: [BulkStockEntryDto],
         description:
             'Array of stock updates. Each change is logged with usageType STOCK_CORRECTION.',
+        example: [{ id: 1, stock: 20 }],
     })
     @IsArray()
     @ValidateNested({ each: true })
