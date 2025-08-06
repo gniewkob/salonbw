@@ -1,0 +1,4196 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get greeting message",
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new user (admin only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/profile": {
+      "get": {
+        "operationId": "UsersController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/customers/{id}": {
+      "patch": {
+        "operationId": "UsersController_updateCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update customer data",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_removeCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete customer",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/employees/{id}": {
+      "delete": {
+        "operationId": "UsersController_removeEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete employee",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/logs": {
+      "get": {
+        "operationId": "LogsController_list",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "CREATE_APPOINTMENT",
+                "CREATE_SERVICE",
+                "UPDATE_SERVICE",
+                "LOGIN_FAIL",
+                "LOGIN_SUCCESS",
+                "REGISTER_SUCCESS",
+                "FORBIDDEN_ACCESS",
+                "CANCEL_APPOINTMENT",
+                "NO_SHOW_APPOINTMENT",
+                "COMPLETE_APPOINTMENT",
+                "DELETE_APPOINTMENT",
+                "DELETE_SERVICE",
+                "COMMISSION_GRANTED",
+                "PAYMENT_INIT",
+                "PAYMENT_PAID",
+                "INVOICE_GENERATED",
+                "CALENDAR_ADD",
+                "CALENDAR_UPDATE",
+                "CALENDAR_DELETE",
+                "CREATE_CATEGORY",
+                "UPDATE_CATEGORY",
+                "DELETE_CATEGORY",
+                "CREATE_PRODUCT",
+                "UPDATE_PRODUCT",
+                "UPDATE_PRODUCT_STOCK",
+                "BULK_UPDATE_PRODUCT_STOCK",
+                "PRODUCT_USED",
+                "DELETE_PRODUCT",
+                "PROFILE_UPDATE",
+                "MARKETING_CONSENT_CHANGE",
+                "CUSTOMER_DELETE",
+                "EMPLOYEE_CREATE",
+                "EMPLOYEE_UPDATE",
+                "EMPLOYEE_DELETE",
+                "EMPLOYEE_ACTIVATE",
+                "EMPLOYEE_DEACTIVATE",
+                "EMPLOYEE_COMMISSION_CHANGE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Logs"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "JWT access and refresh tokens"
+          }
+        },
+        "summary": "Login with email and password",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "JWT access and refresh tokens"
+          }
+        },
+        "summary": "Register a new client account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/social-login": {
+      "post": {
+        "operationId": "AuthController_socialLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "JWT tokens and user data"
+          }
+        },
+        "summary": "Login or register using social provider token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New access and refresh tokens"
+          }
+        },
+        "summary": "Refresh expired access token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/appointments/client": {
+      "get": {
+        "operationId": "ClientAppointmentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List appointments for logged in client",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "post": {
+        "operationId": "ClientAppointmentsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create new appointment for client",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/client/{id}": {
+      "get": {
+        "operationId": "ClientAppointmentsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get appointment for logged in client",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "patch": {
+        "operationId": "ClientAppointmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update client appointment",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "delete": {
+        "operationId": "ClientAppointmentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete client appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/client/{id}/cancel": {
+      "patch": {
+        "operationId": "ClientAppointmentsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel client appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/client/{id}/complete": {
+      "patch": {
+        "operationId": "ClientAppointmentsController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete client appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/employee": {
+      "get": {
+        "operationId": "EmployeeAppointmentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List appointments assigned to employee",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/employee/{id}": {
+      "get": {
+        "operationId": "EmployeeAppointmentsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get appointment assigned to employee",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "patch": {
+        "operationId": "EmployeeAppointmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update appointment by employee",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/employee/{id}/cancel": {
+      "patch": {
+        "operationId": "EmployeeAppointmentsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel appointment by employee",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/employee/{id}/no-show": {
+      "patch": {
+        "operationId": "EmployeeAppointmentsController_noShow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark appointment as no-show by employee",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/employee/{id}/complete": {
+      "patch": {
+        "operationId": "EmployeeAppointmentsController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark appointment completed by employee",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/admin": {
+      "get": {
+        "operationId": "AdminAppointmentsController_list",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "scheduled",
+                "completed",
+                "cancelled",
+                "no_show"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all appointments",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "post": {
+        "operationId": "AdminAppointmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/admin/{id}": {
+      "patch": {
+        "operationId": "AdminAppointmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update appointment",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminAppointmentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/admin/{id}/cancel": {
+      "patch": {
+        "operationId": "AdminAppointmentsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/admin/{id}/no-show": {
+      "patch": {
+        "operationId": "AdminAppointmentsController_noShow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark appointment as no-show",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/admin/{id}/complete": {
+      "patch": {
+        "operationId": "AdminAppointmentsController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark appointment completed",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/me": {
+      "get": {
+        "operationId": "MeAppointmentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List appointments for current user",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/review": {
+      "post": {
+        "operationId": "AppointmentReviewsController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create review for appointment",
+        "tags": [
+          "Appointments"
+        ]
+      },
+      "get": {
+        "operationId": "AppointmentReviewsController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get review for appointment",
+        "tags": [
+          "Appointments"
+        ]
+      }
+    },
+    "/formulas": {
+      "get": {
+        "operationId": "FormulasController_listOwn",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List formulas for current user",
+        "tags": [
+          "Formulas"
+        ]
+      },
+      "post": {
+        "operationId": "FormulasController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFormulaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create formula",
+        "tags": [
+          "Formulas"
+        ]
+      }
+    },
+    "/formulas/{clientId}": {
+      "get": {
+        "operationId": "FormulasController_listForClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List formulas for client",
+        "tags": [
+          "Formulas"
+        ]
+      }
+    },
+    "/appointments/{id}/formulas": {
+      "post": {
+        "operationId": "AppointmentFormulasController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentFormulaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create formula for appointment",
+        "tags": [
+          "Formulas"
+        ]
+      }
+    },
+    "/clients/{id}/formulas": {
+      "get": {
+        "operationId": "ClientsFormulasController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List formulas for client",
+        "tags": [
+          "Formulas"
+        ]
+      }
+    },
+    "/commissions/admin": {
+      "get": {
+        "operationId": "CommissionsController_listAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all commissions",
+        "tags": [
+          "Commissions"
+        ]
+      }
+    },
+    "/commissions/employee": {
+      "get": {
+        "operationId": "CommissionsController_listOwn",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List commissions for employee",
+        "tags": [
+          "Commissions"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List notifications",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "delete": {
+        "operationId": "ReviewsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/messages": {
+      "get": {
+        "operationId": "MessagesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List messages for user",
+        "tags": [
+          "Messages"
+        ]
+      },
+      "post": {
+        "operationId": "MessagesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create message",
+        "tags": [
+          "Messages"
+        ]
+      }
+    },
+    "/categories": {
+      "get": {
+        "operationId": "CategoriesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List categories",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get category by id",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "put": {
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/services": {
+      "get": {
+        "operationId": "ServicesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all services",
+        "tags": [
+          "Services"
+        ]
+      },
+      "post": {
+        "operationId": "ServicesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create service",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "operationId": "ServicesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get service by id",
+        "tags": [
+          "Services"
+        ]
+      },
+      "patch": {
+        "operationId": "ServicesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update service",
+        "tags": [
+          "Services"
+        ]
+      },
+      "delete": {
+        "operationId": "ServicesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete service",
+        "tags": [
+          "Services"
+        ]
+      }
+    },
+    "/products/admin": {
+      "get": {
+        "operationId": "AdminController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all products",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "operationId": "AdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/admin/bulk-stock": {
+      "patch": {
+        "description": "Adjusts stock levels for multiple products. Each change is logged with usageType STOCK_CORRECTION.",
+        "operationId": "AdminController_bulkUpdateStock",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Stock levels to apply. Logged as usageType STOCK_CORRECTION.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk update product stock",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/admin/{id}": {
+      "patch": {
+        "operationId": "AdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/admin/{id}/stock": {
+      "patch": {
+        "description": "Increments or decrements stock. Logged with usageType STOCK_CORRECTION.",
+        "operationId": "AdminController_updateStock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "description": "Change in stock (positive or negative). Logged as usageType STOCK_CORRECTION."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adjust product stock",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/employee": {
+      "get": {
+        "operationId": "EmployeeController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List products for employee",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "PublicController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all products",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/low-stock": {
+      "get": {
+        "operationId": "PublicController_listLowStock",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List low stock products",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "PublicController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product by id",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/appointments/{id}/product-usage": {
+      "post": {
+        "description": "Records consumption of products. The usageType defaults to INTERNAL when not provided.",
+        "operationId": "AppointmentProductUsageController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Each entry may specify a usageType; allowed values: INTERNAL or STOCK_CORRECTION. Defaults to INTERNAL.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AppointmentProductUsageEntryDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register product usage for appointment",
+        "tags": [
+          "Product Usage"
+        ]
+      }
+    },
+    "/products/{id}/usage-history": {
+      "get": {
+        "operationId": "ProductUsageController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "usageType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by usage type. Returns all records when omitted.",
+            "schema": {
+              "enum": [
+                "SALE",
+                "INTERNAL",
+                "STOCK_CORRECTION"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List usage history for product",
+        "tags": [
+          "Product Usage"
+        ]
+      }
+    },
+    "/sales": {
+      "post": {
+        "operationId": "SalesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create sale",
+        "tags": [
+          "Sales"
+        ]
+      }
+    },
+    "/appointments/{id}/chat": {
+      "get": {
+        "operationId": "AppointmentChatController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List chat messages for appointment",
+        "tags": [
+          "Chat Messages"
+        ]
+      }
+    },
+    "/communications/{customerId}": {
+      "get": {
+        "operationId": "CommunicationsController_list",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List communications for customer",
+        "tags": [
+          "Communications"
+        ]
+      }
+    },
+    "/communications": {
+      "post": {
+        "operationId": "CommunicationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommunicationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create communication",
+        "tags": [
+          "Communications"
+        ]
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "operationId": "DashboardController_getDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get dashboard summary for logged user",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/employees": {
+      "get": {
+        "operationId": "EmployeesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List employees",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "post": {
+        "operationId": "EmployeesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee created. The plaintext password is returned only in this response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEmployeeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create employee",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/me": {
+      "get": {
+        "operationId": "EmployeesController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get own employee profile",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "patch": {
+        "operationId": "EmployeesController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update own employee profile",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}": {
+      "get": {
+        "operationId": "EmployeesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get employee by id",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "put": {
+        "operationId": "EmployeesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update employee profile",
+        "tags": [
+          "Employees"
+        ]
+      },
+      "delete": {
+        "operationId": "EmployeesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete employee",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/activate": {
+      "patch": {
+        "operationId": "EmployeesController_activate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activate employee account",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/deactivate": {
+      "patch": {
+        "operationId": "EmployeesController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate employee account",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/commission": {
+      "patch": {
+        "operationId": "EmployeesController_updateCommission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeCommissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update employee commission percentage",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/employees/{id}/reviews": {
+      "get": {
+        "operationId": "EmployeeReviewsController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List reviews for employee",
+        "tags": [
+          "Employees"
+        ]
+      }
+    },
+    "/customers": {
+      "get": {
+        "operationId": "CustomersController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List customers",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/me": {
+      "get": {
+        "operationId": "CustomersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get own customer profile",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "put": {
+        "operationId": "CustomersController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update own customer profile",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "delete": {
+        "operationId": "CustomersController_removeMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Request account deletion",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "operationId": "CustomersController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get customer by id",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/{id}/activate": {
+      "patch": {
+        "operationId": "CustomersController_activate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activate customer account",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/{id}/deactivate": {
+      "patch": {
+        "operationId": "CustomersController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate customer account",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/customers/{id}/marketing-consent": {
+      "patch": {
+        "operationId": "CustomersController_updateMarketingConsent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMarketingConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update customer marketing consent",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/payments/create-session": {
+      "post": {
+        "operationId": "PaymentsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create Stripe checkout session",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/payments/webhook": {
+      "post": {
+        "operationId": "PaymentsController_webhook",
+        "parameters": [
+          {
+            "name": "stripe-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Stripe webhook endpoint",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/calendar/add/{id}": {
+      "get": {
+        "operationId": "CalendarController_add",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "authorization",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Add event to calendar",
+        "tags": [
+          "Calendar"
+        ]
+      }
+    },
+    "/invoices": {
+      "get": {
+        "operationId": "InvoicesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List invoices",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/invoices/generate/{reservationId}": {
+      "post": {
+        "operationId": "InvoicesController_generate",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate invoice for reservation",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/invoices/{id}/pdf": {
+      "get": {
+        "operationId": "InvoicesController_getPdf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get invoice PDF",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/gallery": {
+      "get": {
+        "operationId": "GalleryController_getGallery",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get gallery posts",
+        "tags": [
+          "Gallery"
+        ]
+      }
+    },
+    "/emails": {
+      "get": {
+        "operationId": "EmailsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List emails",
+        "tags": [
+          "Emails"
+        ]
+      }
+    },
+    "/emails/send": {
+      "post": {
+        "operationId": "EmailsController_send",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Send email",
+        "tags": [
+          "Emails"
+        ]
+      }
+    },
+    "/emails/send-bulk": {
+      "post": {
+        "operationId": "EmailsController_sendBulk",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Send bulk emails",
+        "tags": [
+          "Emails"
+        ]
+      }
+    },
+    "/emails/opt-out": {
+      "post": {
+        "operationId": "EmailsController_optOut",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Opt out email",
+        "tags": [
+          "Emails"
+        ]
+      }
+    },
+    "/emails/unsubscribe/{token}": {
+      "get": {
+        "operationId": "EmailsController_unsubscribe",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Unsubscribe email",
+        "tags": [
+          "Emails"
+        ]
+      }
+    },
+    "/reports/financial": {
+      "get": {
+        "operationId": "ReportsController_financial",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get financial report",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/employee/{id}": {
+      "get": {
+        "operationId": "ReportsController_employee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get employee report",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/top-services": {
+      "get": {
+        "operationId": "ReportsController_topServices",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of services to return",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (starting from 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get top services",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/top-products": {
+      "get": {
+        "operationId": "ReportsController_topProducts",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of products to return",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (starting from 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get top products",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/new-customers": {
+      "get": {
+        "operationId": "ReportsController_newCustomers",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in ISO format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get new customers report",
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/export/{type}": {
+      "get": {
+        "operationId": "ReportsController_export",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "description": "Type of report to export as CSV",
+            "schema": {
+              "enum": [
+                "financial",
+                "services",
+                "products",
+                "customers"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of records per page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (starting from 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV export"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export report",
+        "tags": [
+          "Reports"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Salon Black & White API",
+    "description": "API documentation for the salon management system",
+    "version": "1.0",
+    "contact": {
+      "name": "Salon Black & White",
+      "url": "https://github.com/gniewkob/salonbw",
+      "email": "contact@example.com"
+    }
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Account password",
+            "minLength": 6,
+            "example": "Secret123"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name of the user",
+            "example": "Jan"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the user",
+            "example": "Kowalski"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Optional contact phone number",
+            "example": "+48123123123"
+          },
+          "privacyConsent": {
+            "type": "boolean",
+            "description": "Whether the user accepted the privacy policy",
+            "example": true
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "description": "Whether the user consents to marketing messages",
+            "example": false
+          },
+          "role": {
+            "type": "string",
+            "description": "Role assigned to the user",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ],
+            "example": "client"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "UpdateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Updated email address",
+            "example": "new@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Updated first name",
+            "example": "Anna"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Updated last name",
+            "example": "Nowak"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Updated phone number",
+            "example": "+48123456789"
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "description": "Updated marketing consent",
+            "example": true
+          }
+        }
+      },
+      "RegisterClientDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "First name of the client",
+            "minLength": 2,
+            "example": "Jan"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the client",
+            "minLength": 2,
+            "example": "Kowalski"
+          },
+          "email": {
+            "type": "string",
+            "description": "Client email address",
+            "example": "jan@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number in EU format",
+            "example": "+48123123123"
+          },
+          "password": {
+            "type": "string",
+            "description": "Account password",
+            "example": "Secret123!"
+          },
+          "privacyConsent": {
+            "type": "boolean",
+            "description": "Confirmation of privacy policy acceptance",
+            "example": true
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "description": "Marketing consent flag",
+            "example": false
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "phone",
+          "password",
+          "privacyConsent"
+        ]
+      },
+      "SocialLoginDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Social provider used for authentication",
+            "enum": [
+              "google",
+              "facebook",
+              "apple"
+            ],
+            "example": "google"
+          },
+          "token": {
+            "type": "string",
+            "description": "Token issued by the social provider",
+            "example": "ya29.a0AfH6SMA..."
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "description": "Marketing consent provided during social login",
+            "example": true
+          }
+        },
+        "required": [
+          "provider",
+          "token"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token issued during authentication",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "UpdateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "number",
+            "description": "Updated employee assigned to the appointment",
+            "example": 3
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Updated start time in ISO 8601 format",
+            "example": "2024-01-01T10:00:00Z"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "Updated end time in ISO 8601 format",
+            "example": "2024-01-01T11:00:00Z"
+          },
+          "serviceId": {
+            "type": "number",
+            "description": "Updated service identifier",
+            "example": 4
+          },
+          "notes": {
+            "type": "string",
+            "description": "Updated notes for the appointment",
+            "example": "Customer requested a different stylist"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the appointment",
+            "enum": [
+              "scheduled",
+              "completed",
+              "cancelled",
+              "no_show"
+            ],
+            "example": "cancelled"
+          },
+          "formulaDescription": {
+            "type": "string",
+            "description": "Formula details used during the appointment",
+            "example": "Foil highlight mix"
+          }
+        }
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "number",
+            "description": "Unique identifier of the client",
+            "example": 1
+          },
+          "employeeId": {
+            "type": "number",
+            "description": "Employee assigned to the appointment",
+            "example": 2
+          },
+          "serviceId": {
+            "type": "number",
+            "description": "Service to be performed during the appointment",
+            "example": 3
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time in ISO 8601 format",
+            "example": "2024-01-01T09:00:00Z"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes for the appointment",
+            "example": "Customer requests a window seat"
+          }
+        },
+        "required": [
+          "clientId",
+          "employeeId",
+          "serviceId",
+          "startTime"
+        ]
+      },
+      "CreateAppointmentReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "description": "Rating given to the appointment from 1 (worst) to 5 (best)",
+            "minimum": 1,
+            "maximum": 5,
+            "example": 5
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional review comment",
+            "example": "Great service and friendly staff",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "CreateFormulaDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "number",
+            "description": "Identifier of the client for whom the formula is created",
+            "example": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the formula",
+            "example": "Custom hair color mix"
+          },
+          "appointmentId": {
+            "type": "number",
+            "description": "Associated appointment identifier",
+            "example": 10
+          }
+        },
+        "required": [
+          "clientId",
+          "description"
+        ]
+      },
+      "CreateAppointmentFormulaDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description of the formula used during the appointment",
+            "example": "2 parts developer to 1 part color"
+          }
+        },
+        "required": [
+          "description"
+        ]
+      },
+      "CreateMessageDto": {
+        "type": "object",
+        "properties": {
+          "recipientId": {
+            "type": "number",
+            "description": "Identifier of the message recipient",
+            "example": 1
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content",
+            "example": "Your order is ready for pickup."
+          }
+        },
+        "required": [
+          "recipientId",
+          "content"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Category name",
+            "minLength": 2,
+            "maxLength": 50,
+            "example": "Hair Care"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional category description",
+            "example": "Products for maintaining healthy hair"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Service name",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Haircut"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the service",
+            "example": "Includes wash and style"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration of the service in minutes",
+            "minimum": 10,
+            "maximum": 480,
+            "example": 60
+          },
+          "price": {
+            "type": "number",
+            "description": "Price of the service",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 49.99
+          },
+          "defaultCommissionPercent": {
+            "type": "number",
+            "description": "Default commission percentage for the service",
+            "example": 10,
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "number",
+            "description": "Category identifier to which the service belongs",
+            "example": 1
+          }
+        },
+        "required": [
+          "name",
+          "duration",
+          "price",
+          "categoryId"
+        ]
+      },
+      "UpdateServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Updated service name",
+            "example": "Deluxe Haircut"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated service description",
+            "example": "Includes wash, cut and style",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number",
+            "description": "Updated duration in minutes",
+            "minimum": 10,
+            "maximum": 480,
+            "example": 90
+          },
+          "price": {
+            "type": "number",
+            "description": "Updated service price",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 59.99
+          },
+          "defaultCommissionPercent": {
+            "type": "number",
+            "description": "Updated default commission percentage",
+            "example": 12,
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "number",
+            "description": "Updated category identifier",
+            "example": 2,
+            "nullable": true
+          }
+        }
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Product name",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Shampoo"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Product brand",
+            "example": "Acme"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Price per unit",
+            "minimum": 1.01,
+            "example": 19.99
+          },
+          "stock": {
+            "type": "number",
+            "description": "Number of items currently in stock",
+            "minimum": 0,
+            "example": 100
+          },
+          "lowStockThreshold": {
+            "type": "number",
+            "description": "Threshold below which stock is considered low",
+            "minimum": 0,
+            "example": 5
+          }
+        },
+        "required": [
+          "name",
+          "unitPrice",
+          "stock"
+        ]
+      },
+      "BulkStockEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Product identifier",
+            "example": 1
+          },
+          "stock": {
+            "type": "number",
+            "minimum": 0,
+            "description": "New stock level. Adjustments are logged with usageType STOCK_CORRECTION.",
+            "example": 20
+          }
+        },
+        "required": [
+          "id",
+          "stock"
+        ]
+      },
+      "BulkUpdateStockDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "description": "Array of stock updates. Each change is logged with usageType STOCK_CORRECTION.",
+            "example": [
+              {
+                "id": 1,
+                "stock": 20
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkStockEntryDto"
+            }
+          }
+        },
+        "required": [
+          "entries"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Updated product name",
+            "example": "Conditioner"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Updated product brand",
+            "example": "Acme",
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Updated unit price",
+            "minimum": 1.01,
+            "example": 15.99
+          },
+          "stock": {
+            "type": "number",
+            "description": "Updated stock level",
+            "minimum": 0,
+            "example": 50
+          },
+          "lowStockThreshold": {
+            "type": "number",
+            "description": "Updated low stock threshold",
+            "minimum": 0,
+            "example": 10
+          }
+        }
+      },
+      "AppointmentProductUsageEntryDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "Identifier of the product used",
+            "example": 1
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity of product used",
+            "minimum": 1,
+            "example": 2
+          },
+          "usageType": {
+            "type": "string",
+            "enum": [
+              "INTERNAL",
+              "STOCK_CORRECTION"
+            ],
+            "description": "Usage classification. Allowed values: INTERNAL or STOCK_CORRECTION. Defaults to INTERNAL when omitted.",
+            "example": "INTERNAL"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateSaleDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "number",
+            "description": "Identifier of the purchasing client",
+            "example": 1
+          },
+          "employeeId": {
+            "type": "number",
+            "description": "Identifier of the employee processing the sale",
+            "example": 2
+          },
+          "productId": {
+            "type": "number",
+            "description": "Identifier of the product sold",
+            "example": 3
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity of product sold",
+            "minimum": 1,
+            "example": 2
+          },
+          "appointmentId": {
+            "type": "number",
+            "description": "Optional related appointment identifier",
+            "example": 10
+          }
+        },
+        "required": [
+          "clientId",
+          "employeeId",
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateCommunicationDto": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "number",
+            "description": "Identifier of the customer receiving the communication",
+            "example": 1
+          },
+          "medium": {
+            "type": "string",
+            "description": "Medium used for the communication",
+            "example": "email"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content of the communication message",
+            "example": "Thank you for your visit!"
+          }
+        },
+        "required": [
+          "customerId",
+          "medium",
+          "content"
+        ]
+      },
+      "UpdateEmployeeProfileDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Updated email address",
+            "example": "employee.new@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Updated first name",
+            "example": "Eva"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Updated last name",
+            "example": "Kowalska"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Updated phone number",
+            "example": "+48123456789"
+          },
+          "password": {
+            "type": "string",
+            "description": "New account password",
+            "example": "NewPass123!"
+          }
+        }
+      },
+      "CreateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Employee email address",
+            "example": "employee@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name of the employee",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the employee",
+            "example": "Doe"
+          },
+          "commissionBase": {
+            "type": "number",
+            "description": "Base commission percentage for the employee",
+            "example": 20
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number",
+            "example": "+48123123123"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ],
+            "description": "Role assigned to the employee",
+            "example": "employee"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "commissionBase"
+        ]
+      },
+      "EmployeeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Unique identifier of the employee",
+            "example": 1
+          },
+          "email": {
+            "type": "string",
+            "description": "Employee email address",
+            "example": "employee@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name of the employee",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the employee",
+            "example": "Doe"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Full name of the employee",
+            "example": "Jane Doe"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number",
+            "nullable": true,
+            "example": "+48123123123"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role of the employee",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ],
+            "example": "employee"
+          },
+          "commissionBase": {
+            "type": "number",
+            "description": "Base commission percentage",
+            "example": 20
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "fullName",
+          "phone",
+          "role",
+          "commissionBase"
+        ]
+      },
+      "CreateEmployeeResponseDto": {
+        "type": "object",
+        "properties": {
+          "employee": {
+            "description": "Created employee details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmployeeDto"
+              }
+            ]
+          },
+          "password": {
+            "type": "string",
+            "description": "Plaintext password, returned only once.",
+            "example": "TempPass123!"
+          }
+        },
+        "required": [
+          "employee",
+          "password"
+        ]
+      },
+      "UpdateEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Updated email address",
+            "example": "employee.new@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Updated first name",
+            "example": "Eve"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Updated last name",
+            "example": "Smith"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Updated phone number",
+            "example": "+48123456789"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ],
+            "description": "Updated role of the employee",
+            "example": "admin"
+          }
+        }
+      },
+      "UpdateEmployeeCommissionDto": {
+        "type": "object",
+        "properties": {
+          "commissionBase": {
+            "type": "number",
+            "description": "Commission percentage for the employee",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 15
+          }
+        },
+        "required": [
+          "commissionBase"
+        ]
+      },
+      "UpdateMarketingConsentDto": {
+        "type": "object",
+        "properties": {
+          "marketingConsent": {
+            "type": "boolean",
+            "description": "Indicates if the customer consents to receive marketing communications",
+            "example": true
+          }
+        },
+        "required": [
+          "marketingConsent"
+        ]
+      }
+    }
+  }
+}

@@ -45,10 +45,16 @@ jobs:
         run: |
           cd backend
           npm test -- --coverage
-      - name: Build backend
+      - name: Generate OpenAPI docs
         run: |
           cd backend
-          npm run build
+          set -o pipefail
+          npm run swagger:generate 2>&1 | tee swagger.log
+          git diff --exit-code openapi.json
+          if grep -i warning swagger.log; then
+            echo "OpenAPI generation produced warnings"
+            exit 1
+          fi
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: echo "Deploying..."
