@@ -55,7 +55,7 @@ the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
 
 ## Environment setup
 
-- **Frontend** – create `frontend/.env.local` and set the base API URL:
+- **Frontend** – copy `frontend/.env.local.example` to `frontend/.env.local` and set the base API URL:
 
     ```bash
     NEXT_PUBLIC_API_URL=http://localhost:3001
