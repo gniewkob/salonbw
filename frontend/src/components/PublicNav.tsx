@@ -9,6 +9,7 @@ export default function PublicNav() {
       <Link href="/gallery">Gallery</Link>
       <Link href="/faq">FAQ</Link>
       <Link href="/contact">Contact</Link>
+      <Link href="/appointments">Book Now</Link>
       <Link href="/auth/login">Login</Link>
       <Link href="/auth/register">Register</Link>
       <Link href="/policy">Policy</Link>
