@@ -128,7 +128,7 @@ The `usageType` enum documents why stock changes:
   `usageType` `STOCK_CORRECTION`.
 - `POST /appointments/:id/product-usage` registers product consumption for an
   appointment. Send an array of `{ "productId": number, "quantity": number,
-  "usageType"?: "SALE" | "INTERNAL" | "STOCK_CORRECTION" }` objects. The
+"usageType"?: "SALE" | "INTERNAL" | "STOCK_CORRECTION" }` objects. The
   `usageType` defaults to `INTERNAL` when omitted. Employees may only log usage
   for their own appointments.
 - `GET /products/:id/usage-history` returns the usage records for a given
@@ -146,7 +146,7 @@ Chat history can be fetched with `GET /appointments/:id/chat` using the same JWT
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-**Important:** The API documentation generated with Swagger should not be publicly accessible in production. Disable the Swagger module or protect the `/api/docs` route with authentication when deploying.
+**Important:** The Swagger-generated API documentation is only enabled when `NODE_ENV` is not set to `production`. In production builds the `/api/docs` route is not registered. If you need to expose it publicly, protect the endpoint with authentication before removing this safeguard.
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
