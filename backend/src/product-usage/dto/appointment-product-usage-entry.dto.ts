@@ -6,11 +6,20 @@ const allowedUsageTypes = [UsageType.INTERNAL, UsageType.STOCK_CORRECTION] as co
 export type AppointmentUsageType = (typeof allowedUsageTypes)[number];
 
 export class AppointmentProductUsageEntryDto {
-    @ApiProperty()
+    @ApiProperty({
+        description: 'Identifier of the product used',
+        type: Number,
+        example: 1,
+    })
     @IsInt()
     productId: number;
 
-    @ApiProperty({ minimum: 1 })
+    @ApiProperty({
+        description: 'Quantity of product used',
+        type: Number,
+        minimum: 1,
+        example: 2,
+    })
     @IsInt()
     @Min(1)
     quantity: number;
@@ -20,6 +29,7 @@ export class AppointmentProductUsageEntryDto {
         enum: allowedUsageTypes,
         required: false,
         description: 'Usage classification. Allowed values: INTERNAL or STOCK_CORRECTION. Defaults to INTERNAL when omitted.',
+        example: UsageType.INTERNAL,
     })
     usageType?: AppointmentUsageType;
 }

@@ -10,28 +10,52 @@ import {
 import { Role } from '../../users/role.enum';
 
 export class CreateEmployeeDto {
-    @ApiProperty()
+    @ApiProperty({
+        description: 'Employee email address',
+        type: String,
+        example: 'employee@example.com',
+    })
     @IsEmail()
     email: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        description: 'First name of the employee',
+        type: String,
+        example: 'Jane',
+    })
     @IsString()
     firstName: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        description: 'Last name of the employee',
+        type: String,
+        example: 'Doe',
+    })
     @IsString()
     lastName: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        description: 'Base commission percentage for the employee',
+        type: Number,
+        example: 20,
+    })
     @IsNumber()
     commissionBase: number;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({
+        description: 'Contact phone number',
+        type: String,
+        example: '+48123123123',
+    })
     @IsMobilePhone()
     @IsOptional()
     phone?: string;
 
-    @ApiPropertyOptional({ enum: Role })
+    @ApiPropertyOptional({
+        enum: Role,
+        description: 'Role assigned to the employee',
+        example: Role.Employee,
+    })
     @IsEnum(Role)
     @IsOptional()
     role?: Role;

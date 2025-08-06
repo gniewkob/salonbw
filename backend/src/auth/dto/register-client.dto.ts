@@ -12,35 +12,66 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEuPhoneNumber } from '../../common/validators/is-eu-phone-number';
 
 export class RegisterClientDto {
-    @ApiProperty({ example: 'Jan' })
+    @ApiProperty({
+        description: 'First name of the client',
+        type: String,
+        minLength: 2,
+        example: 'Jan',
+    })
     @IsString()
     @MinLength(2)
     firstName: string;
 
-    @ApiProperty({ example: 'Kowalski' })
+    @ApiProperty({
+        description: 'Last name of the client',
+        type: String,
+        minLength: 2,
+        example: 'Kowalski',
+    })
     @IsString()
     @MinLength(2)
     lastName: string;
 
-    @ApiProperty({ example: 'jan@example.com' })
+    @ApiProperty({
+        description: 'Client email address',
+        type: String,
+        example: 'jan@example.com',
+    })
     @IsEmail()
     @IsNotEmpty()
     email: string;
 
-    @ApiProperty({ example: '+48123123123' })
+    @ApiProperty({
+        description: 'Contact phone number in EU format',
+        type: String,
+        example: '+48123123123',
+    })
     @IsEuPhoneNumber()
     phone: string;
 
-    @ApiProperty({ example: 'Secret123!' })
+    @ApiProperty({
+        description: 'Account password',
+        type: String,
+        example: 'Secret123!'
+    })
     @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
     password: string;
 
-    @ApiProperty({ example: true })
+    @ApiProperty({
+        description: 'Confirmation of privacy policy acceptance',
+        type: Boolean,
+        example: true,
+    })
     @IsBoolean()
     @Equals(true)
     privacyConsent: boolean;
 
-    @ApiProperty({ required: false, example: false })
+    @ApiProperty({
+        description: 'Marketing consent flag',
+        type: Boolean,
+        required: false,
+        example: false,
+    })
     @IsBoolean()
     @IsOptional()
     marketingConsent?: boolean;
