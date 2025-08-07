@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import LoginPage from '@/pages/auth/login';
 import { useAuth } from '@/contexts/AuthContext';
+import { createAuthValue } from '../testUtils';
 
 const push = jest.fn();
 jest.mock('next/router', () => ({ useRouter: () => ({ push, replace: jest.fn() }) }));
@@ -16,7 +17,7 @@ describe('LoginPage', () => {
 
   it('submits valid form', async () => {
     const login = jest.fn().mockResolvedValue(undefined);
-    mockedUseAuth.mockReturnValue({ login } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ login }));
     render(<LoginPage />);
     fireEvent.change(screen.getByPlaceholderText('email'), { target: { value: 'a@b.com' } });
     fireEvent.change(screen.getByPlaceholderText('password'), { target: { value: 'secret' } });
@@ -27,7 +28,7 @@ describe('LoginPage', () => {
 
   it('shows validation error', async () => {
     const login = jest.fn();
-    mockedUseAuth.mockReturnValue({ login } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ login }));
     render(<LoginPage />);
     fireEvent.change(screen.getByPlaceholderText('email'), { target: { value: 'bad' } });
     fireEvent.change(screen.getByPlaceholderText('password'), { target: { value: '' } });

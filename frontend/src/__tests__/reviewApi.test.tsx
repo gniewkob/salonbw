@@ -3,6 +3,7 @@ import React from 'react';
 import { useReviewApi } from '@/api/reviews';
 import { useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { createAuthValue } from '../testUtils';
 
 jest.mock('@/contexts/AuthContext');
 jest.mock('react-hot-toast', () => ({
@@ -16,7 +17,7 @@ const toast = require('react-hot-toast').toast;
 describe('useReviewApi', () => {
   it('shows success toast on create', async () => {
     const apiFetch = jest.fn().mockResolvedValue({ id: 1, rating: 5 });
-    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );
@@ -29,7 +30,7 @@ describe('useReviewApi', () => {
 
   it('shows error toast on failure', async () => {
     const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
-    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );
