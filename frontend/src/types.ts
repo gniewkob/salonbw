@@ -15,6 +15,14 @@ export interface Appointment {
 export interface Service {
     id: number;
     name: string;
+    duration: number;
+    price: number;
+    category?: Category | null;
+}
+
+export interface Category {
+    id: number;
+    name: string;
 }
 
 export interface Employee {
