@@ -136,7 +136,7 @@ export default function HomePage() {
                 <section className="p-4 space-y-4 text-center">
                     <h2 className="text-xl font-bold">Testimonials</h2>
                     <p className="italic max-w-md mx-auto">
-                        "{testimonials[testimonialIndex].text}"
+                        &quot;{testimonials[testimonialIndex].text}&quot;
                     </p>
                     <p className="mt-2 font-semibold">
                         - {testimonials[testimonialIndex].name}
