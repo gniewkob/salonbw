@@ -41,7 +41,7 @@ declare global {
 
 // polyfill for msw/node
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 global.ReadableStream = ReadableStream;
 global.WritableStream = WritableStream;
 global.TransformStream = TransformStream;
