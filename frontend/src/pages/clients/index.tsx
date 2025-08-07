@@ -75,7 +75,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   className="border px-2 py-1"
-                  onClick={() => handleDelete(c)}
+                  onClick={() => void handleDelete(c)}
                 >
                   Delete
                 </button>

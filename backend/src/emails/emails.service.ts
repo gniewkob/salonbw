@@ -74,10 +74,11 @@ export class EmailsService {
                 });
                 log.status = EmailStatus.Sent;
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             log.status = EmailStatus.Failed;
-            log.error = err.message;
-            this.logger.error(`Email send failed: ${err.message}`);
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            log.error = message;
+            this.logger.error(`Email send failed: ${message}`);
         }
         return this.logs.save(log);
     }

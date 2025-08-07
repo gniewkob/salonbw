@@ -106,7 +106,7 @@ export default function ProductsPage() {
                                 </button>
                                 <button
                                     className="border px-2 py-1"
-                                    onClick={() => handleDelete(r)}
+                                    onClick={() => void handleDelete(r)}
                                 >
                                     Delete
                                 </button>
