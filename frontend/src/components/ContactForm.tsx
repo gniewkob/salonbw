@@ -66,7 +66,8 @@ export default function ContactForm() {
       toast.success('formularz został wysłany');
       setSubmitted(true);
       setForm({ name: '', email: '', message: '' });
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
+      void _err;
       setSubmitError('Nie udało się wysłać formularza');
       toast.error('Nie udało się wysłać formularza');
     }
