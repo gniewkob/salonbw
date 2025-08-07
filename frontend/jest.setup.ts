@@ -6,11 +6,19 @@ process.env.NEXT_PUBLIC_API_URL = 'http://localhost';
 
 declare global {
   interface BroadcastChannel {
-    name: string;
-    postMessage(): void;
+    readonly name: string;
+    postMessage(message: any): void;
     close(): void;
-    addEventListener(): void;
-    removeEventListener(): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | EventListenerOptions,
+    ): void;
   }
 
   interface GlobalThis {
@@ -38,11 +46,19 @@ global.ReadableStream = ReadableStream;
 global.WritableStream = WritableStream;
 global.TransformStream = TransformStream;
 global.BroadcastChannel = class {
-  constructor(public name: string) {}
-  postMessage() {}
+  constructor(public readonly name: string) {}
+  postMessage(message: any) {}
   close() {}
-  addEventListener() {}
-  removeEventListener() {}
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
+  ) {}
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions,
+  ) {}
 };
 
 // polyfill window.matchMedia used by react-hot-toast
