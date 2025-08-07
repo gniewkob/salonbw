@@ -98,9 +98,7 @@ export default function AppointmentsPage() {
                         clients={clients}
                         services={services}
                         initial={{ startTime }}
-                        onSubmit={(data) => {
-                            void handleSubmit(data);
-                        }}
+                        onSubmit={handleSubmit}
                         onCancel={() => setFormOpen(false)}
                     />
                 </Modal>

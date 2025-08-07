@@ -40,6 +40,7 @@ declare global {
 }
 
 // polyfill for msw/node
+
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 global.ReadableStream = ReadableStream;
@@ -72,12 +73,12 @@ global.BroadcastChannel = class {
 };
 
 // polyfill window.matchMedia used by react-hot-toast
-global.matchMedia = (query: string) => ({
+global.matchMedia = ((query: string) => ({
   media: query,
   matches: false,
   addEventListener: () => {},
   removeEventListener: () => {},
-});
+})) as unknown as typeof globalThis.matchMedia;
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
