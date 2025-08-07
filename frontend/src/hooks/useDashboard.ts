@@ -11,7 +11,7 @@ export function useDashboard() {
 
   useEffect(() => {
     let mounted = true;
-    apiFetch<DashboardData>('/dashboard')
+    void apiFetch<DashboardData>('/dashboard')
       .then((d) => mounted && setData(d))
       .finally(() => mounted && setLoading(false));
     return () => {

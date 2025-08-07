@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ROLE_KEY);
-    router.push('/auth/login');
+    void router.push('/auth/login');
   };
 
   const client = useMemo(() => new ApiClient(() => token, handleLogout), [token]);

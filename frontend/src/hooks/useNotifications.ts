@@ -9,12 +9,15 @@ export function useNotifications() {
 
   useEffect(() => {
     let active = true;
-    const fetchData = () =>
-      apiFetch<Notification[]>('/notifications')
+    const fetchData = () => {
+      void apiFetch<Notification[]>('/notifications')
         .then((d) => active && setData(d))
         .catch((e) => active && setError(e));
+    };
     fetchData();
-    const id = setInterval(fetchData, 30000);
+    const id = setInterval(() => {
+      fetchData();
+    }, 30000);
     return () => {
       active = false;
       clearInterval(id);
