@@ -20,8 +20,8 @@ export function useAppointmentsApi() {
       });
       toast.success('Appointment created');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -35,8 +35,8 @@ export function useAppointmentsApi() {
       });
       toast.success('Appointment updated');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };

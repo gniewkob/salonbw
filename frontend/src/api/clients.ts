@@ -15,8 +15,8 @@ export function useClientApi() {
       });
       toast.success('Client created');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -30,8 +30,8 @@ export function useClientApi() {
       });
       toast.success('Client updated');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -40,8 +40,8 @@ export function useClientApi() {
     try {
       await apiFetch<void>(`/clients/${id}`, { method: 'DELETE' });
       toast.success('Client deleted');
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };

@@ -15,8 +15,8 @@ export function useEmployeeApi() {
       });
       toast.success('Employee created');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -30,8 +30,8 @@ export function useEmployeeApi() {
       });
       toast.success('Employee updated');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -40,8 +40,8 @@ export function useEmployeeApi() {
     try {
       await apiFetch<void>(`/employees/${id}`, { method: 'DELETE' });
       toast.success('Employee deleted');
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };

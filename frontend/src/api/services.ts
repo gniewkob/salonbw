@@ -15,8 +15,8 @@ export function useServiceApi() {
       });
       toast.success('Service created');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -30,8 +30,8 @@ export function useServiceApi() {
       });
       toast.success('Service updated');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -40,8 +40,8 @@ export function useServiceApi() {
     try {
       await apiFetch<void>(`/services/${id}`, { method: 'DELETE' });
       toast.success('Service deleted');
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
