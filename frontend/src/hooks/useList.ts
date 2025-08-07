@@ -14,8 +14,8 @@ export function useList<T>(endpoint: string) {
       .then((res) => {
         if (mounted) setData(res);
       })
-      .catch((err) => {
-        if (mounted) setError(err);
+      .catch((err: unknown) => {
+        if (mounted) setError(err instanceof Error ? err : new Error(String(err)));
       })
       .finally(() => {
         if (mounted) setLoading(false);

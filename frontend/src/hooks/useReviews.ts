@@ -37,7 +37,9 @@ export function useReviews(options: Options = {}) {
         setTotal(res.total);
         setLimit(res.limit);
       })
-      .catch((err) => setError(err))
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err : new Error(String(err)))
+      )
       .finally(() => setLoading(false));
   }, [options.employeeId, options.clientId, page, limit, rating, apiFetch]);
 
