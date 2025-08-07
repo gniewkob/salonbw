@@ -33,4 +33,25 @@ describe('ContactForm', () => {
       })
     );
   });
+
+  it('shows email validation error', async () => {
+    render(
+      <ToastProvider>
+        <ContactForm />
+      </ToastProvider>
+    );
+    fireEvent.change(screen.getByPlaceholderText('Your name'), {
+      target: { value: 'John' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Your email'), {
+      target: { value: 'invalid' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Message'), {
+      target: { value: 'Hello' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /send/i }));
+    expect(
+      await screen.findByText(/nieprawidłowy format adresu email/i)
+    ).toBeInTheDocument();
+  });
 });
