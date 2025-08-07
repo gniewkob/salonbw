@@ -1,5 +1,12 @@
 'use client';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useRouter } from 'next/router';
 import { ApiClient } from '@/api/apiClient';
 import type { Role } from '@/types';
@@ -38,15 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setToken(null);
     setRole(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ROLE_KEY);
     void router.push('/auth/login');
-  };
+  }, [router]);
 
-  const client = useMemo(() => new ApiClient(() => token, handleLogout), [token]);
+  const client = useMemo(
+    () => new ApiClient(() => token, handleLogout),
+    [token, handleLogout]
+  );
 
   const decodeRole = (jwt: string): Role | null => {
     try {

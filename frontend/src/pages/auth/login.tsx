@@ -20,7 +20,7 @@ export default function LoginPage() {
     try {
       const creds = schema.parse({ email, password });
       await login(creds.email, creds.password);
-      await router.push('/dashboard');
+      void router.push('/dashboard');
     } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         setError(err.issues[0]?.message ?? 'Login failed');
