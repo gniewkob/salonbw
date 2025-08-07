@@ -3,21 +3,25 @@ import { z } from 'zod';
 import { useToast } from '@/contexts/ToastContext';
 
 const schema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
-  email: z.string().email({ message: 'Email is invalid' }),
-  message: z.string().min(1, { message: 'Message is required' }),
+  name: z.string().min(1, { message: 'Imię jest wymagane' }),
+  email: z.string().email({ message: 'Nieprawidłowy email' }),
+  message: z.string().min(1, { message: 'Wiadomość jest wymagana' }),
 });
 
 export default function ContactForm() {
   const toast = useToast();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
+    setSubmitted(false);
+    setSubmitError('');
   };
 
   const isValid = schema.safeParse(form).success;
@@ -30,6 +34,7 @@ export default function ContactForm() {
       return;
     }
     setError('');
+    setSubmitError('');
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
@@ -45,10 +50,12 @@ export default function ContactForm() {
         }
       );
       if (!res.ok) throw new Error('Failed');
-      toast.success('Message sent');
+      toast.success('formularz został wysłany');
+      setSubmitted(true);
       setForm({ name: '', email: '', message: '' });
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error');
+      setSubmitError('Nie udało się wysłać formularza');
+      toast.error('Nie udało się wysłać formularza');
     }
   };
 
@@ -80,6 +87,22 @@ export default function ContactForm() {
       {error && (
         <p role="alert" className="text-red-600 text-sm">
           {error}
+        </p>
+      )}
+      {submitError && (
+        <p
+          data-testid="form-error-alert"
+          className="text-red-600 text-sm"
+        >
+          {submitError}
+        </p>
+      )}
+      {submitted && (
+        <p
+          data-testid="form-success-message"
+          className="text-green-600 text-sm"
+        >
+          formularz został wysłany
         </p>
       )}
       <button
