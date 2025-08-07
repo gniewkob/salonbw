@@ -21,10 +21,10 @@ export default function LoginPage() {
       const creds = schema.parse({ email, password });
       await login(creds.email, creds.password);
       router.push('/dashboard');
-    } catch (err: any) {
-      if (err.errors) {
-        setError(err.errors[0].message);
-      } else if (err.message) {
+    } catch (err: unknown) {
+      if (err instanceof z.ZodError) {
+        setError(err.issues[0]?.message ?? 'Login failed');
+      } else if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('Login failed');
@@ -33,7 +33,7 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={(e) => void handleSubmit(e)}>
       <input
         placeholder="email"
         value={email}

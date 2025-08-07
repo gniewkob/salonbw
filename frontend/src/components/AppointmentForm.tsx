@@ -20,14 +20,24 @@ export default function AppointmentForm({ clients, services, initial, onSubmit, 
     setError('');
     try {
       await onSubmit({ clientId: Number(clientId), serviceId: Number(serviceId), startTime });
-    } catch (err: any) {
-      if (err.status === 409) setError('Conflict');
-      else setError(err.message || 'Error');
+    } catch (err: unknown) {
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'status' in err &&
+        (err as { status?: number }).status === 409
+      ) {
+        setError('Conflict');
+      } else if (err instanceof Error) {
+        setError(err.message || 'Error');
+      } else {
+        setError('Error');
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
       <select value={clientId} onChange={(e) => setClientId(Number(e.target.value))} className="border p-1 w-full">
         {clients.map((c) => (
           <option key={c.id} value={c.id}>

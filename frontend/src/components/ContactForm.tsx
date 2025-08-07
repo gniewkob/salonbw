@@ -47,13 +47,13 @@ export default function ContactForm() {
       if (!res.ok) throw new Error('Failed');
       toast.success('Message sent');
       setForm({ name: '', email: '', message: '' });
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
       <input
         name="name"
         value={form.name}

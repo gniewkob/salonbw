@@ -32,14 +32,14 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
     try {
       const data = schema.parse(form);
       await onSubmit(data);
-    } catch (err: any) {
-      if (err.errors) setError(err.errors[0].message);
+    } catch (err: unknown) {
+      if (err instanceof z.ZodError) setError(err.issues[0]?.message ?? 'Error');
       else setError('Error');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
       <input
         name="appointmentId"
         value={form.appointmentId}

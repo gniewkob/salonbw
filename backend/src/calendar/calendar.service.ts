@@ -93,10 +93,11 @@ export class CalendarService {
                 JSON.stringify({ id, provider: 'ics' }),
             );
             return { ics: value };
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
             await this.logs.create(
                 LogAction.CalendarAdd,
-                JSON.stringify({ id, provider, error: e.message }),
+                JSON.stringify({ id, provider, error: message }),
             );
             throw e;
         }
@@ -119,10 +120,11 @@ export class CalendarService {
                 LogAction.CalendarUpdate,
                 JSON.stringify({ id, provider }),
             );
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
             await this.logs.create(
                 LogAction.CalendarUpdate,
-                JSON.stringify({ id, provider, error: e.message }),
+                JSON.stringify({ id, provider, error: message }),
             );
             throw e;
         }
@@ -139,10 +141,11 @@ export class CalendarService {
                 LogAction.CalendarDelete,
                 JSON.stringify({ provider, eventId }),
             );
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
             await this.logs.create(
                 LogAction.CalendarDelete,
-                JSON.stringify({ provider, eventId, error: e.message }),
+                JSON.stringify({ provider, eventId, error: message }),
             );
             throw e;
         }
