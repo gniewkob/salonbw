@@ -14,7 +14,7 @@ export default function DashboardRedirect() {
       role === 'admin'
         ? role
         : 'client';
-    void router.replace(`/dashboard/${current}`);
+    void router.replace(`/dashboard/${current}`).catch(() => {});
   }, [router, role]);
   return null;
 }
