@@ -53,10 +53,16 @@ export class WhatsappService {
                 },
             );
             return res.data;
-        } catch (err: any) {
-            const status = err.response?.status;
-            const body = err.response?.data;
-            throw new Error(`WhatsApp API error: ${status} ${body}`);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                const status = err.response?.status;
+                const body = err.response?.data;
+                throw new Error(`WhatsApp API error: ${status} ${body}`);
+            }
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('WhatsApp API error');
         }
     }
 
@@ -102,10 +108,16 @@ export class WhatsappService {
                 },
             );
             return res.data;
-        } catch (err: any) {
-            const status = err.response?.status;
-            const body = err.response?.data;
-            throw new Error(`WhatsApp API error: ${status} ${body}`);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                const status = err.response?.status;
+                const body = err.response?.data;
+                throw new Error(`WhatsApp API error: ${status} ${body}`);
+            }
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('WhatsApp API error');
         }
     }
 

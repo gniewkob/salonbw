@@ -34,14 +34,14 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
     try {
       const data = schema.parse(form);
       await onSubmit(data);
-    } catch (err: any) {
-      if (err.errors) setError(err.errors[0].message);
+    } catch (err: unknown) {
+      if (err instanceof z.ZodError) setError(err.issues[0]?.message ?? 'Error');
       else setError('Error');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
       <input name="name" value={form.name} onChange={handleChange} className="border p-1 w-full" placeholder="Name" />
       <input name="brand" value={form.brand} onChange={handleChange} className="border p-1 w-full" placeholder="Brand" />
       <input name="unitPrice" value={form.unitPrice} onChange={handleChange} className="border p-1 w-full" placeholder="Price" />

@@ -22,13 +22,13 @@ export default function RegisterPage() {
       );
       if (!res.ok) throw new Error('Registration failed');
       router.push('/auth/login');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2 p-4">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2 p-4">
       <h1 className="text-2xl font-bold">Register</h1>
       <input
         className="border p-1 w-full"

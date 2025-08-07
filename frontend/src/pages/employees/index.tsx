@@ -72,7 +72,7 @@ export default function EmployeesPage() {
                 >
                   Edit
                 </button>
-                <button className="border px-2 py-1" onClick={() => handleDelete(r)}>
+                <button className="border px-2 py-1" onClick={() => void handleDelete(r)}>
                   Delete
                 </button>
               </span>
