@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 
 interface GalleryItem {
-    id: number;
+    id: string;
     imageUrl: string;
     caption?: string;
 }
@@ -38,14 +38,24 @@ export default function GalleryPage({ items }: GalleryPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<
-    GalleryPageProps
-> = async () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async () => {
+    const token = process.env.INSTAGRAM_ACCESS_TOKEN;
+    if (!token) {
+        return { props: { items: [] } };
+    }
     try {
-        const res = await fetch(`${apiUrl}/gallery`);
-        const data = await res.json();
-        return { props: { items: data } };
+        const res = await fetch(
+            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type&access_token=${token}`,
+        );
+        const json = await res.json();
+        const items: GalleryItem[] = (json.data || [])
+            .filter((item: any) => item.media_type === 'IMAGE')
+            .map((item: any) => ({
+                id: item.id,
+                imageUrl: item.media_url,
+                caption: item.caption,
+            }));
+        return { props: { items } };
     } catch {
         return { props: { items: [] } };
     }
