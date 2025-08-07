@@ -7,7 +7,7 @@ process.env.NEXT_PUBLIC_API_URL = 'http://localhost';
 declare global {
   interface BroadcastChannel {
     readonly name: string;
-    postMessage(message: any): void;
+    postMessage(message: unknown): void;
     close(): void;
     addEventListener(
       type: string,
@@ -40,26 +40,37 @@ declare global {
 }
 
 // polyfill for msw/node
-global.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder;
-global.TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;
-global.ReadableStream = ReadableStream as unknown as typeof globalThis.ReadableStream;
-global.WritableStream = WritableStream as unknown as typeof globalThis.WritableStream;
-global.TransformStream = TransformStream as unknown as typeof globalThis.TransformStream;
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
+global.ReadableStream = ReadableStream;
+global.WritableStream = WritableStream;
+global.TransformStream = TransformStream;
 global.BroadcastChannel = class {
   constructor(public readonly name: string) {}
-  postMessage(message: any): void {}
-  close(): void {}
+  postMessage(_message: unknown) {
+    void _message;
+  }
+  close() {}
   addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
-  ): void {}
+    _type: string,
+    _listener: EventListenerOrEventListenerObject,
+    _options?: boolean | AddEventListenerOptions,
+  ) {
+    void _type;
+    void _listener;
+    void _options;
+  }
   removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void {}
-} as unknown as typeof globalThis.BroadcastChannel;
+    _type: string,
+    _listener: EventListenerOrEventListenerObject,
+    _options?: boolean | EventListenerOptions,
+  ) {
+    void _type;
+    void _listener;
+    void _options;
+  }
+};
 
 // polyfill window.matchMedia used by react-hot-toast
 global.matchMedia = ((query: string) => ({
