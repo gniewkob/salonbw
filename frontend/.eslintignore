@@ -1,3 +1,4 @@
 design/
 public/assets/js/
 cypress/
+jest.config.js
