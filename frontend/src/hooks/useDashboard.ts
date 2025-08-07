@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Appointment, DashboardResponse } from '@/types';
+import { DashboardResponse } from '@/types';
 
 export interface DashboardData extends DashboardResponse {}
 
@@ -11,9 +11,15 @@ export function useDashboard() {
 
   useEffect(() => {
     let mounted = true;
-    void apiFetch<DashboardData>('/dashboard')
-      .then((d) => mounted && setData(d))
-      .finally(() => mounted && setLoading(false));
+    const getDashboardData = async () => {
+      try {
+        const d = await apiFetch<DashboardData>('/dashboard');
+        if (mounted) setData(d);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    void getDashboardData();
     return () => {
       mounted = false;
     };
