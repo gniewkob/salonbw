@@ -4,7 +4,9 @@ import { useToast } from '@/contexts/ToastContext';
 
 const schema = z.object({
   name: z.string().min(1, { message: 'Imię jest wymagane' }),
-  email: z.string().email({ message: 'Nieprawidłowy email' }),
+  email: z
+    .string()
+    .email({ message: 'Nieprawidłowy format adresu email' }),
   message: z.string().min(1, { message: 'Wiadomość jest wymagana' }),
 });
 
@@ -12,6 +14,7 @@ export default function ContactForm() {
   const toast = useToast();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,6 +25,10 @@ export default function ContactForm() {
     setForm((f) => ({ ...f, [name]: value }));
     setSubmitted(false);
     setSubmitError('');
+    if (name === 'email') {
+      const result = schema.shape.email.safeParse(value);
+      setEmailError(result.success ? '' : result.error.issues[0].message);
+    }
   };
 
   const isValid = schema.safeParse(form).success;
@@ -30,10 +37,16 @@ export default function ContactForm() {
     e.preventDefault();
     const result = schema.safeParse(form);
     if (!result.success) {
-      setError(result.error.issues[0].message);
+      const issue = result.error.issues[0];
+      if (issue.path[0] === 'email') {
+        setEmailError(issue.message);
+      } else {
+        setError(issue.message);
+      }
       return;
     }
     setError('');
+    setEmailError('');
     setSubmitError('');
     try {
       const res = await fetch(
@@ -76,6 +89,11 @@ export default function ContactForm() {
         placeholder="Your email"
         className="w-full border p-2 rounded"
       />
+      {emailError && (
+        <p role="alert" className="text-red-600 text-sm">
+          {emailError}
+        </p>
+      )}
       <textarea
         name="message"
         value={form.message}
