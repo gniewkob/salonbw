@@ -20,8 +20,8 @@ export function useProductApi() {
             });
             toast.success('Product created');
             return res;
-        } catch (err: any) {
-            toast.error(err.message || 'Error');
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
             throw err;
         }
     };
@@ -43,8 +43,8 @@ export function useProductApi() {
             });
             toast.success('Product updated');
             return res;
-        } catch (err: any) {
-            toast.error(err.message || 'Error');
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
             throw err;
         }
     };
@@ -58,8 +58,8 @@ export function useProductApi() {
             });
             toast.success('Stock updated');
             return res;
-        } catch (err: any) {
-            toast.error(err.message || 'Error');
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
             throw err;
         }
     };
@@ -68,8 +68,8 @@ export function useProductApi() {
         try {
             await apiFetch<void>(`/products/admin/${id}`, { method: 'DELETE' });
             toast.success('Product deleted');
-        } catch (err: any) {
-            toast.error(err.message || 'Error');
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
             throw err;
         }
     };
