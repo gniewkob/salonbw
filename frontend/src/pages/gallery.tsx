@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import Image from 'next/image';
 
 interface GalleryItem {
     id: string;
@@ -9,6 +10,17 @@ interface GalleryItem {
 
 interface GalleryPageProps {
     items: GalleryItem[];
+}
+
+interface InstagramMedia {
+    id: string;
+    media_type: string;
+    media_url: string;
+    caption?: string;
+}
+
+interface InstagramResponse {
+    data?: InstagramMedia[];
 }
 
 export default function GalleryPage({ items }: GalleryPageProps) {
@@ -25,10 +37,12 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                 <h1 className="text-2xl font-bold">Gallery</h1>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {items.map((item) => (
-                        <img
+                        <Image
                             key={item.id}
                             src={item.imageUrl}
                             alt={item.caption ?? 'Gallery image'}
+                            width={500}
+                            height={500}
                             className="w-full h-auto object-cover"
                         />
                     ))}
@@ -47,13 +61,13 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
         const res = await fetch(
             `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type&access_token=${token}`,
         );
-        const json = await res.json();
-        const items: GalleryItem[] = (json.data || [])
-            .filter((item: any) => item.media_type === 'IMAGE')
-            .map((item: any) => ({
-                id: item.id,
-                imageUrl: item.media_url,
-                caption: item.caption,
+        const json: InstagramResponse = await res.json();
+        const items: GalleryItem[] = (json.data ?? [])
+            .filter((item) => item.media_type === 'IMAGE')
+            .map(({ id, media_url, caption }) => ({
+                id,
+                imageUrl: media_url,
+                caption,
             }));
         return { props: { items } };
     } catch {
