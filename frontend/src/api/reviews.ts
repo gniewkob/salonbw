@@ -21,8 +21,8 @@ export function useReviewApi() {
       );
       toast.success('Review created');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -32,8 +32,8 @@ export function useReviewApi() {
       return await apiFetch<Review>(
         `/appointments/${appointmentId}/review`,
       );
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -51,8 +51,8 @@ export function useReviewApi() {
       return await apiFetch<{ data: Review[]; total: number; page: number; limit: number }>(
         `/employees/${employeeId}/reviews${qs ? `?${qs}` : ''}`,
       );
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -66,8 +66,8 @@ export function useReviewApi() {
       });
       toast.success('Review updated');
       return res;
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
@@ -76,8 +76,8 @@ export function useReviewApi() {
     try {
       await apiFetch<void>(`/reviews/${id}`, { method: 'DELETE' });
       toast.success('Review deleted');
-    } catch (err: any) {
-      toast.error(err.message || 'Error');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error');
       throw err;
     }
   };
