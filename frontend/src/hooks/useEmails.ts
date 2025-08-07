@@ -9,12 +9,15 @@ export function useEmails() {
 
     useEffect(() => {
         let active = true;
-        const fetchData = () =>
-            apiFetch<EmailLog[]>('/emails')
+        const fetchData = () => {
+            void apiFetch<EmailLog[]>('/emails')
                 .then((d) => active && setData(d))
                 .catch((e) => active && setError(e));
+        };
         fetchData();
-        const id = setInterval(fetchData, 30000);
+        const id = setInterval(() => {
+            fetchData();
+        }, 30000);
         return () => {
             active = false;
             clearInterval(id);

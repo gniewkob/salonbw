@@ -21,7 +21,7 @@ export default function RegisterPage() {
         }
       );
       if (!res.ok) throw new Error('Registration failed');
-      router.push('/auth/login');
+      await router.push('/auth/login');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     }
