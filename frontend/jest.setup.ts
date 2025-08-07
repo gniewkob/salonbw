@@ -40,34 +40,34 @@ declare global {
 }
 
 // polyfill for msw/node
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-global.ReadableStream = ReadableStream;
-global.WritableStream = WritableStream;
-global.TransformStream = TransformStream;
+global.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder;
+global.TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;
+global.ReadableStream = ReadableStream as unknown as typeof globalThis.ReadableStream;
+global.WritableStream = WritableStream as unknown as typeof globalThis.WritableStream;
+global.TransformStream = TransformStream as unknown as typeof globalThis.TransformStream;
 global.BroadcastChannel = class {
   constructor(public readonly name: string) {}
-  postMessage(message: any) {}
-  close() {}
+  postMessage(message: any): void {}
+  close(): void {}
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions,
-  ) {}
+  ): void {}
   removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions,
-  ) {}
-};
+  ): void {}
+} as unknown as typeof globalThis.BroadcastChannel;
 
 // polyfill window.matchMedia used by react-hot-toast
-global.matchMedia = (query: string) => ({
+global.matchMedia = ((query: string) => ({
   media: query,
   matches: false,
   addEventListener: () => {},
   removeEventListener: () => {},
-});
+})) as unknown as typeof globalThis.matchMedia;
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
