@@ -5,7 +5,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 
 describe('ContactForm', () => {
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => ({}) }) as any;
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => ({}) }) as jest.MockedFunction<typeof fetch>;
   });
 
   it('posts form data', async () => {

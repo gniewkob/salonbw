@@ -3,6 +3,7 @@ import React from 'react';
 import { useEmployeeApi } from '@/api/employees';
 import { useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { createAuthValue } from '../testUtils';
 
 jest.mock('@/contexts/AuthContext');
 jest.mock('react-hot-toast', () => ({
@@ -23,7 +24,7 @@ describe('useEmployeeApi', () => {
         lastName: 'B',
         fullName: 'A B',
       });
-    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );
@@ -36,7 +37,7 @@ describe('useEmployeeApi', () => {
 
   it('shows error toast on failure', async () => {
     const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
-    mockedUseAuth.mockReturnValue({ apiFetch } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );

@@ -21,7 +21,7 @@ describe('auth flow', () => {
   it('login fetches token and fetches clients then logout clears token', async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(AuthProvider, null, children);
-    const { result, waitForNextUpdate } = renderHook(() => useAuth(), { wrapper });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
       await result.current.login('a', 'b');
