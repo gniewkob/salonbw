@@ -12,8 +12,14 @@ export class OutlookCalendarAdapter {
                 },
             );
             return res.data;
-        } catch (err: any) {
-            throw new Error(`Outlook API error: ${err.response?.status}`);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                throw new Error(`Outlook API error: ${err.response?.status}`);
+            }
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('Outlook API error');
         }
     }
 
@@ -28,8 +34,14 @@ export class OutlookCalendarAdapter {
                 },
             );
             return res.data;
-        } catch (err: any) {
-            throw new Error(`Outlook API error: ${err.response?.status}`);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                throw new Error(`Outlook API error: ${err.response?.status}`);
+            }
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('Outlook API error');
         }
     }
 
@@ -42,8 +54,14 @@ export class OutlookCalendarAdapter {
                     proxy: false,
                 },
             );
-        } catch (err: any) {
-            throw new Error(`Outlook API error: ${err.response?.status}`);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                throw new Error(`Outlook API error: ${err.response?.status}`);
+            }
+            if (err instanceof Error) {
+                throw err;
+            }
+            throw new Error('Outlook API error');
         }
     }
 }

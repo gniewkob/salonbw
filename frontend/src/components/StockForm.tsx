@@ -18,13 +18,13 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
         }
         try {
             await onSubmit(num);
-        } catch (err: any) {
-            setError(err.message || 'Error');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Error');
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
             <input
                 type="number"
                 value={amount}
