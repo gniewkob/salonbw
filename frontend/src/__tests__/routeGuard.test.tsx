@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
+import { createAuthValue } from '../testUtils';
 
 const replace = jest.fn();
 jest.mock('next/router', () => ({ useRouter: () => ({ replace, push: jest.fn() }) }));
@@ -14,7 +15,7 @@ describe('RouteGuard', () => {
     replace.mockClear();
   });
   it('redirects when unauthenticated', () => {
-    mockedUseAuth.mockReturnValue({ isAuthenticated: false } as any);
+    mockedUseAuth.mockReturnValue(createAuthValue({ isAuthenticated: false }));
     render(
       <RouteGuard>
         <div>Secret</div>
@@ -25,7 +26,9 @@ describe('RouteGuard', () => {
   });
 
   it('renders children when authenticated and role allowed', () => {
-    mockedUseAuth.mockReturnValue({ isAuthenticated: true, role: 'receptionist' } as any);
+    mockedUseAuth.mockReturnValue(
+      createAuthValue({ isAuthenticated: true, role: 'receptionist' })
+    );
     render(
       <RouteGuard roles={['receptionist']}>
         <div>Secret</div>
@@ -36,7 +39,9 @@ describe('RouteGuard', () => {
   });
 
   it('redirects when role not permitted', () => {
-    mockedUseAuth.mockReturnValue({ isAuthenticated: true, role: 'client' } as any);
+    mockedUseAuth.mockReturnValue(
+      createAuthValue({ isAuthenticated: true, role: 'client' })
+    );
     render(
       <RouteGuard roles={['admin']}>
         <div>Secret</div>
