@@ -1,6 +1,5 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     async headers() {
@@ -16,7 +15,7 @@ const nextConfig: NextConfig = {
                     { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
                 ]
             }
-        ]
+        ];
     }
 };
 
