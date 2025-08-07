@@ -11,11 +11,19 @@ import dynamic from 'next/dynamic';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import type { DateClickArg } from '@fullcalendar/interaction';
+import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
 });
 import { useState } from 'react';
+
+interface AppointmentPayload {
+    clientId: number;
+    serviceId: number;
+    startTime: string;
+}
 
 export default function AppointmentsPage() {
     const { data: appointments, loading, error } = useAppointments();
@@ -36,34 +44,30 @@ export default function AppointmentsPage() {
         start: a.startTime,
     }));
 
-    const handleDateClick = (arg: any) => {
+    const handleDateClick = (arg: DateClickArg) => {
         setEditId(null);
         setStartTime(arg.dateStr);
         setFormOpen(true);
     };
 
-    const handleEventClick = (info: any) => {
+    const handleEventClick = (info: EventClickArg) => {
         setEditId(Number(info.event.id));
         setStartTime(info.event.startStr);
         setFormOpen(true);
     };
 
-    const handleDrop = async (arg: any) => {
+    const handleDrop = async (arg: EventDropArg): Promise<void> => {
         try {
             await api.update(Number(arg.event.id), {
                 startTime: arg.event.start!.toISOString(),
             });
-        } catch (err) {
+        } catch {
             alert('Conflict');
             arg.revert();
         }
     };
 
-    const handleSubmit = async (data: {
-        clientId: number;
-        serviceId: number;
-        startTime: string;
-    }) => {
+    const handleSubmit = async (data: AppointmentPayload): Promise<void> => {
         if (editId) {
             await api.update(editId, { startTime: data.startTime });
         } else {
@@ -84,7 +88,9 @@ export default function AppointmentsPage() {
                     events={events}
                     dateClick={handleDateClick}
                     eventClick={handleEventClick}
-                    eventDrop={handleDrop}
+                    eventDrop={(arg) => {
+                        void handleDrop(arg);
+                    }}
                     editable
                 />
                 <Modal open={formOpen} onClose={() => setFormOpen(false)}>
@@ -92,7 +98,9 @@ export default function AppointmentsPage() {
                         clients={clients}
                         services={services}
                         initial={{ startTime }}
-                        onSubmit={handleSubmit}
+                        onSubmit={(data) => {
+                            void handleSubmit(data);
+                        }}
                         onCancel={() => setFormOpen(false)}
                     />
                 </Modal>
