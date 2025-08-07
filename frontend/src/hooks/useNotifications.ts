@@ -9,14 +9,21 @@ export function useNotifications() {
 
   useEffect(() => {
     let active = true;
-    const fetchData = () => {
-      void apiFetch<Notification[]>('/notifications')
-        .then((d) => active && setData(d))
-        .catch((e) => active && setError(e));
+    const fetchData = async () => {
+      try {
+        const d = await apiFetch<Notification[]>('/notifications');
+        if (active) {
+          setData(d);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError(err instanceof Error ? err : new Error(String(err)));
+        }
+      }
     };
-    fetchData();
+    void fetchData();
     const id = setInterval(() => {
-      fetchData();
+      void fetchData();
     }, 30000);
     return () => {
       active = false;
