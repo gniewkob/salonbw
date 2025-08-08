@@ -122,6 +122,9 @@ export class ProductUsageService {
         employeeId: number,
         appointmentId?: number,
     ) {
+        if (quantity <= 0) {
+            throw new BadRequestException('quantity must be > 0');
+        }
         const usage = this.repo.create({
             appointment: appointmentId
                 ? ({ id: appointmentId } as EntityRef<Appointment>)
