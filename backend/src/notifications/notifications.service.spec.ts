@@ -19,6 +19,7 @@ describe('NotificationsService', () => {
     let repo: Partial<Repository<Notification>>;
     let logRepo: Partial<Repository<NotificationLog>>;
     let appts: { find: jest.Mock };
+    let loggerErrorSpy: jest.SpyInstance;
 
     beforeEach(async () => {
         sms = { sendSms: jest.fn() };
@@ -43,6 +44,11 @@ describe('NotificationsService', () => {
             ],
         }).compile();
         service = module.get<NotificationsService>(NotificationsService);
+        loggerErrorSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        loggerErrorSpy.mockRestore();
     });
 
     it('uses SMS adapter when type sms', async () => {
@@ -180,6 +186,8 @@ describe('NotificationsService', () => {
     });
 
     it('followUpCron logs failures for individual appointments', async () => {
+        // Restore the default error spy to actually test error logging
+        loggerErrorSpy.mockRestore();
         const apptDate = new Date();
         apptDate.setDate(apptDate.getDate() - 1);
         appts.find.mockResolvedValue([
@@ -194,7 +202,7 @@ describe('NotificationsService', () => {
                 client: { phone: '222' },
             } as Appointment,
         ]);
-        const errorSpy = jest.spyOn((service as any).logger, 'error');
+        const errorSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
         const thankSpy = jest
             .spyOn(service, 'sendThankYou')
             .mockRejectedValueOnce(new Error('fail1'))
@@ -203,6 +211,9 @@ describe('NotificationsService', () => {
         expect(errorSpy).toHaveBeenCalledTimes(1);
         expect(service.sendThankYou).toHaveBeenCalledTimes(2);
         thankSpy.mockRestore();
+        errorSpy.mockRestore();
+        // Re-establish the mocked logger for other tests
+        loggerErrorSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
     });
 
     it('sendAppointmentConfirmation sends WhatsApp message', async () => {
