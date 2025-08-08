@@ -56,6 +56,8 @@ export class UpdateServiceDto {
     })
     @IsOptional()
     @IsNumber()
+    @Min(0)
+    @Max(100)
     defaultCommissionPercent?: number | null;
 
     @ApiPropertyOptional({
