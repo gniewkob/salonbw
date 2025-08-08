@@ -25,12 +25,14 @@ export default function ProductsPage() {
         { header: 'Brand', accessor: 'brand' },
         { header: 'Price', accessor: 'unitPrice' },
         { header: 'Stock', accessor: 'stock' },
+        { header: 'Low Threshold', accessor: 'lowStockThreshold' },
     ];
 
     const handleCreate = async (values: {
         name: string;
         unitPrice: number;
         stock: number;
+        lowStockThreshold: number;
         brand?: string;
     }) => {
         const created = await api.create(values);
@@ -42,6 +44,7 @@ export default function ProductsPage() {
         name: string;
         unitPrice: number;
         stock: number;
+        lowStockThreshold: number;
         brand?: string;
     }) => {
         if (!editing) return;

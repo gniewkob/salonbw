@@ -9,6 +9,7 @@ import {
 
 @Check('CHK_product_unit_price', '"unitPrice" >= 0')
 @Check('CHK_product_stock', '"stock" >= 0')
+@Check('CHK_product_low_stock_threshold', '"lowStockThreshold" >= 0')
 @Entity()
 export class Product {
     @PrimaryGeneratedColumn()
