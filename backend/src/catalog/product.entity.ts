@@ -20,6 +20,9 @@ export class Product {
     @Column({ nullable: true })
     brand: string;
 
+    @Column('text', { nullable: true })
+    description: string | null;
+
     @Column('decimal', { precision: 10, scale: 2 })
     unitPrice: number;
 
