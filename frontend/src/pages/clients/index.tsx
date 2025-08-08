@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ClientForm from '@/components/ClientForm';
@@ -45,7 +45,7 @@ export default function ClientsPage() {
 
   return (
     <RouteGuard>
-      <Layout>
+      <DashboardLayout>
         <div className="mb-2 flex justify-end">
           <button
             className="border px-2 py-1"
@@ -99,7 +99,7 @@ export default function ClientsPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
           />
         </Modal>
-      </Layout>
+      </DashboardLayout>
     </RouteGuard>
   );
 }

@@ -1,13 +1,13 @@
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import EmailList from '@/components/EmailList';
 
 export default function EmailsPage() {
     return (
         <RouteGuard>
-            <Layout>
+            <DashboardLayout>
                 <EmailList />
-            </Layout>
+            </DashboardLayout>
         </RouteGuard>
     );
 }

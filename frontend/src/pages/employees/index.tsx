@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import EmployeeForm from '@/components/EmployeeForm';
@@ -44,7 +44,7 @@ export default function EmployeesPage() {
 
   return (
     <RouteGuard>
-      <Layout>
+      <DashboardLayout>
         <div className="mb-2 flex justify-end">
           <button
             className="border px-2 py-1"
@@ -95,7 +95,7 @@ export default function EmployeesPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
           />
         </Modal>
-      </Layout>
+      </DashboardLayout>
     </RouteGuard>
   );
 }

@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
+import PublicLayout from '@/components/PublicLayout';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -33,24 +34,26 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)}>
-      <input
-        placeholder="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        placeholder="password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Login</button>
-      {error && (
-        <p role="alert" style={{ color: 'red' }}>
-          {error}
-        </p>
-      )}
-    </form>
+    <PublicLayout>
+      <form onSubmit={(e) => void handleSubmit(e)}>
+        <input
+          placeholder="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          placeholder="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
+        {error && (
+          <p role="alert" style={{ color: 'red' }}>
+            {error}
+          </p>
+        )}
+      </form>
+    </PublicLayout>
   );
 }

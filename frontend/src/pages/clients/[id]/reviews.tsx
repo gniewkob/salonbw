@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useReviews } from '@/hooks/useReviews';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import RouteGuard from '@/components/RouteGuard';
 import DataTable, { Column } from '@/components/DataTable';
 import { Review } from '@/types';
@@ -20,7 +20,7 @@ export default function ClientReviewsPage() {
   ];
   return (
     <RouteGuard>
-      <Layout>
+      <DashboardLayout>
         <div className="mb-2 flex justify-between">
           <div className="flex items-center gap-2">
             <label>
@@ -56,7 +56,7 @@ export default function ClientReviewsPage() {
             Next
           </button>
         </div>
-      </Layout>
+      </DashboardLayout>
     </RouteGuard>
   );
 }

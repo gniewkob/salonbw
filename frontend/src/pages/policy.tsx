@@ -1,8 +1,9 @@
 import Head from 'next/head';
+import PublicLayout from '@/components/PublicLayout';
 
 export default function PolicyPage() {
   return (
-    <>
+    <PublicLayout>
       <Head>
         <title>Policy | Salon Black & White</title>
         <meta
@@ -14,6 +15,6 @@ export default function PolicyPage() {
         <h1 className="text-2xl font-bold">Policy</h1>
         <p>Placeholder for the salon&apos;s policy information.</p>
       </div>
-    </>
+    </PublicLayout>
   );
 }
