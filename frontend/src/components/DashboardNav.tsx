@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 
@@ -31,6 +32,7 @@ const navLinks: Record<Role, { href: string; label: string }[]> = {
 
 export default function DashboardNav() {
     const { logout, role } = useAuth();
+    const router = useRouter();
     const currentRole: Role =
         role === 'client' ||
         role === 'employee' ||
@@ -40,15 +42,22 @@ export default function DashboardNav() {
             : 'client';
 
     return (
-        <aside className="w-48 bg-gray-200 p-4 space-y-2">
+        <aside className="w-48 bg-gray-200 p-4 space-y-2 border-r-2 border-gray-300">
             <h2 className="font-bold mb-2">Menu</h2>
             <nav className="space-y-1">
                 {navLinks[currentRole].map((l) => (
-                    <Link key={l.href} href={l.href} className="block">
+                    <Link
+                        key={l.href}
+                        href={l.href}
+                        className={`block px-2 py-1 ${router.pathname.startsWith(l.href) ? 'font-bold text-blue-600 border-l-4 border-blue-500 pl-2' : ''}`}
+                    >
                         {l.label}
                     </Link>
                 ))}
-                <button className="block text-left" onClick={logout}>
+                <button
+                    className="block text-left px-2 py-1 hover:underline"
+                    onClick={logout}
+                >
                     Logout
                 </button>
             </nav>
