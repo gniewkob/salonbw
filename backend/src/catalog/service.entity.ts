@@ -6,10 +6,12 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     Index,
+    Check,
 } from 'typeorm';
 import { Category } from './category.entity';
 
 @Index(['category', 'name'], { unique: true })
+@Check('"defaultCommissionPercent" >= 0 AND "defaultCommissionPercent" <= 100')
 @Entity()
 export class Service {
     @PrimaryGeneratedColumn()
