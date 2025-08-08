@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
+import Layout from '@/components/Layout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ServiceForm from '@/components/ServiceForm';
@@ -43,57 +44,58 @@ export default function ServicesPage() {
 
   return (
     <RouteGuard>
-              <div className="mb-2 flex justify-end">
-          <button
-            className="border px-2 py-1"
-            onClick={() => {
-              setEditing(null);
-              setOpenForm(true);
-            }}
-          >
-            Add Service
-          </button>
-        </div>
-        {rows && (
-          <DataTable
-            data={rows}
-            columns={columns}
-            initialSort="id"
-            renderActions={(r) => (
-              <span className="space-x-2">
-                <button
-                  className="border px-2 py-1"
-                  onClick={() => {
-                    setEditing(r);
-                    setOpenForm(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button className="border px-2 py-1" onClick={() => void handleDelete(r)}>
-                  Delete
-                </button>
-              </span>
-            )}
-          />
-        )}
-        <Modal
-          open={openForm || Boolean(editing)}
-          onClose={() => {
-            setOpenForm(false);
-            setEditing(null);
-          }}
-        >
-          <ServiceForm
-            initial={editing ?? undefined}
-            onCancel={() => {
+      <Layout>
+                <div className="mb-2 flex justify-end">
+            <button
+              className="border px-2 py-1"
+              onClick={() => {
+                setEditing(null);
+                setOpenForm(true);
+              }}
+            >
+              Add Service
+            </button>
+          </div>
+          {rows && (
+            <DataTable
+              data={rows}
+              columns={columns}
+              initialSort="id"
+              renderActions={(r) => (
+                <span className="space-x-2">
+                  <button
+                    className="border px-2 py-1"
+                    onClick={() => {
+                      setEditing(r);
+                      setOpenForm(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button className="border px-2 py-1" onClick={() => void handleDelete(r)}>
+                    Delete
+                  </button>
+                </span>
+              )}
+            />
+          )}
+          <Modal
+            open={openForm || Boolean(editing)}
+            onClose={() => {
               setOpenForm(false);
               setEditing(null);
             }}
-            onSubmit={editing ? handleUpdate : handleCreate}
-          />
-        </Modal>
-      
+          >
+            <ServiceForm
+              initial={editing ?? undefined}
+              onCancel={() => {
+                setOpenForm(false);
+                setEditing(null);
+              }}
+              onSubmit={editing ? handleUpdate : handleCreate}
+            />
+          </Modal>
+      </Layout>
     </RouteGuard>
   );
 }
