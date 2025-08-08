@@ -7362,6 +7362,11 @@
             "description": "Product brand",
             "example": "Acme"
           },
+          "description": {
+            "type": "string",
+            "description": "Product description",
+            "example": "Nourishing shampoo with natural ingredients"
+          },
           "unitPrice": {
             "type": "number",
             "description": "Price per unit",
@@ -7440,6 +7445,12 @@
             "type": "string",
             "description": "Updated product brand",
             "example": "Acme",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated product description",
+            "example": "Nourishing shampoo with natural ingredients",
             "nullable": true
           },
           "unitPrice": {

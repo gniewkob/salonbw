@@ -11,7 +11,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateProductDto } from './create-product.dto';
 
 export class UpdateProductDto extends PartialType(
-    OmitType(CreateProductDto, ['brand'] as const),
+    OmitType(CreateProductDto, ['brand', 'description'] as const),
 ) {
     @ApiPropertyOptional({
         description: 'Updated product name',
@@ -32,6 +32,16 @@ export class UpdateProductDto extends PartialType(
     @IsOptional()
     @IsString()
     brand?: string | null;
+
+    @ApiPropertyOptional({
+        description: 'Updated product description',
+        type: String,
+        example: 'Nourishing shampoo with natural ingredients',
+        nullable: true,
+    })
+    @IsOptional()
+    @IsString()
+    description?: string | null;
 
     @ApiPropertyOptional({
         description: 'Updated unit price',
