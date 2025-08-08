@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import Layout from '@/components/Layout';
 import DashboardWidget from '@/components/DashboardWidget';
 import { useDashboard } from '@/hooks/useDashboard';
 
@@ -7,7 +7,7 @@ export default function ClientDashboard() {
     const { data, loading } = useDashboard();
     return (
         <RouteGuard roles={['client']}>
-            <DashboardLayout>
+            <Layout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <DashboardWidget
                         label="Upcoming"
@@ -15,7 +15,7 @@ export default function ClientDashboard() {
                         loading={loading}
                     />
                 </div>
-            </DashboardLayout>
+            </Layout>
         </RouteGuard>
     );
 }
