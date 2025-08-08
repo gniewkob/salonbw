@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
 import AppointmentForm from '@/components/AppointmentForm';
 import { useAppointments } from '@/hooks/useAppointments';
@@ -78,7 +78,7 @@ export default function AppointmentsPage() {
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
-            <Layout>
+            <DashboardLayout>
                 {role === 'receptionist' && (
                     <div>Viewing appointments for all employees</div>
                 )}
@@ -102,7 +102,7 @@ export default function AppointmentsPage() {
                         onCancel={() => setFormOpen(false)}
                     />
                 </Modal>
-            </Layout>
+            </DashboardLayout>
         </RouteGuard>
     );
 }

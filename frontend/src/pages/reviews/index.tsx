@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ReviewForm from '@/components/ReviewForm';
@@ -64,7 +64,7 @@ export default function ReviewsPage() {
 
   return (
     <RouteGuard>
-      <Layout>
+      <DashboardLayout>
         <div className="mb-2 flex justify-between">
           <div className="flex items-center gap-2">
             <label>
@@ -156,7 +156,7 @@ export default function ReviewsPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
           />
         </Modal>
-      </Layout>
+      </DashboardLayout>
     </RouteGuard>
   );
 }

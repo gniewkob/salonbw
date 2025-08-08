@@ -1,3 +1,9 @@
+import PublicLayout from '@/components/PublicLayout';
+
 export default function AboutPage() {
-    return <div>About Page</div>;
+    return (
+        <PublicLayout>
+            <div>About Page</div>
+        </PublicLayout>
+    );
 }

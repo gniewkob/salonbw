@@ -1,5 +1,6 @@
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
 import Head from 'next/head';
+import PublicLayout from '@/components/PublicLayout';
 
 const faqs: FAQItem[] = [
     {
@@ -18,7 +19,7 @@ const faqs: FAQItem[] = [
 
 export default function FAQPage() {
     return (
-        <>
+        <PublicLayout>
             <Head>
                 <title>
                     Frequently Asked Questions | Salon Black &amp; White
@@ -34,6 +35,6 @@ export default function FAQPage() {
                 </h1>
                 <FAQAccordion items={faqs} />
             </div>
-        </>
+        </PublicLayout>
     );
 }

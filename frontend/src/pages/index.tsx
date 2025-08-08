@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
+import PublicLayout from '@/components/PublicLayout';
 
 export default function HomePage() {
     const heroImages = [
@@ -65,7 +66,7 @@ export default function HomePage() {
     }, [testimonials.length]);
 
     return (
-        <>
+        <PublicLayout>
             <Head>
                 <title>
                     Salon Black &amp; White | Professional Hair &amp; Beauty
@@ -171,7 +172,7 @@ export default function HomePage() {
                     </div>
                 </section>
             </div>
-        </>
+        </PublicLayout>
     );
 }
 

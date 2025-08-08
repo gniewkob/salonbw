@@ -1,6 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { Service } from '@/types';
+import PublicLayout from '@/components/PublicLayout';
 
 interface ServiceCategory {
     id: number | null;
@@ -14,7 +15,7 @@ interface ServicesPageProps {
 
 export default function ServicesPage({ categories }: ServicesPageProps) {
     return (
-        <>
+        <PublicLayout>
             <Head>
                 <title>Our Services | Salon Black &amp; White</title>
                 <meta
@@ -40,7 +41,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     </div>
                 ))}
             </div>
-        </>
+        </PublicLayout>
     );
 }
 
