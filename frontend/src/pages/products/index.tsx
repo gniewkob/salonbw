@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ProductForm from '@/components/ProductForm';
@@ -73,7 +73,7 @@ export default function ProductsPage() {
 
     return (
         <RouteGuard>
-            <Layout>
+            <DashboardLayout>
                 <div className="mb-2 flex justify-end">
                     <button
                         className="border px-2 py-1"
@@ -142,7 +142,7 @@ export default function ProductsPage() {
                         onSubmit={handleStockUpdate}
                     />
                 </Modal>
-            </Layout>
+            </DashboardLayout>
         </RouteGuard>
     );
 }

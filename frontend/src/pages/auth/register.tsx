@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
+import PublicLayout from '@/components/PublicLayout';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,36 +29,38 @@ export default function RegisterPage() {
   };
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2 p-4">
-      <h1 className="text-2xl font-bold">Register</h1>
-      <input
-        className="border p-1 w-full"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        className="border p-1 w-full"
-        placeholder="Email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        className="border p-1 w-full"
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button className="border px-2 py-1" type="submit">
-        Register
-      </button>
-      {error && (
-        <p role="alert" className="text-red-600">
-          {error}
-        </p>
-      )}
-    </form>
+    <PublicLayout>
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2 p-4">
+        <h1 className="text-2xl font-bold">Register</h1>
+        <input
+          className="border p-1 w-full"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="border p-1 w-full"
+          placeholder="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          className="border p-1 w-full"
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="border px-2 py-1" type="submit">
+          Register
+        </button>
+        {error && (
+          <p role="alert" className="text-red-600">
+            {error}
+          </p>
+        )}
+      </form>
+    </PublicLayout>
   );
 }

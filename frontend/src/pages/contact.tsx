@@ -1,9 +1,10 @@
 import ContactForm from '@/components/ContactForm';
 import Head from 'next/head';
+import PublicLayout from '@/components/PublicLayout';
 
 export default function ContactPage() {
     return (
-        <>
+        <PublicLayout>
             <Head>
                 <title>Contact Us | Salon Black &amp; White</title>
                 <meta
@@ -22,6 +23,6 @@ export default function ContactPage() {
                 <p>Phone: 123-456-789</p>
                 <ContactForm />
             </div>
-        </>
+        </PublicLayout>
     );
 }
