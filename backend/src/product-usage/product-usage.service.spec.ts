@@ -177,10 +177,13 @@ describe('ProductUsageService', () => {
     });
 
     it('creates sale usage linked to appointment when provided', async () => {
-        repo.create.mockImplementation((d: any) => d);
-        repo.save.mockImplementation(async (d: any) => d);
-        const res = await service.createSale(1, 2, 3, 4, 5);
-        expect(repo.create).toHaveBeenCalledWith(
+        const manager = {
+            create: jest.fn((_: any, d: any) => d),
+            save: jest.fn(async (_: any, d: any) => d),
+        } as any;
+        const res = await service.createSale(manager, 1, 2, 3, 4, 5);
+        expect(manager.create).toHaveBeenCalledWith(
+            ProductUsage,
             expect.objectContaining({
                 appointment: { id: 5 },
                 product: { id: 1 },
@@ -188,6 +191,10 @@ describe('ProductUsageService', () => {
                 usageType: UsageType.SALE,
                 usedByEmployee: { id: 4 },
             }),
+        );
+        expect(manager.save).toHaveBeenCalledWith(
+            ProductUsage,
+            expect.objectContaining({ usageType: UsageType.SALE }),
         );
         expect(res.appointment).toEqual({ id: 5 });
         expect(logs.create).toHaveBeenCalledWith(

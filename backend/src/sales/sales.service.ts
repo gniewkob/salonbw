@@ -30,7 +30,6 @@ export class SalesService {
         if (quantity <= 0) {
             throw new BadRequestException('quantity must be > 0');
         }
-        let updatedStock = 0;
         const saved = await this.repo.manager.transaction(async (manager) => {
             const product = await manager.findOne(Product, {
                 where: { id: productId },
@@ -43,7 +42,6 @@ export class SalesService {
                 throw new ConflictException('insufficient stock');
             }
             product.stock -= quantity;
-            updatedStock = product.stock;
             await manager.save(Product, product);
 
             const sale = manager.create(Sale, {
@@ -70,17 +68,17 @@ export class SalesService {
                 });
                 await manager.save(CommissionRecord, record);
             }
+            await this.usage.createSale(
+                manager,
+                productId,
+                quantity,
+                product.stock,
+                employeeId,
+                appointmentId,
+            );
 
             return persisted;
         });
-
-        await this.usage.createSale(
-            productId,
-            quantity,
-            updatedStock,
-            employeeId,
-            appointmentId,
-        );
 
         return saved;
     }

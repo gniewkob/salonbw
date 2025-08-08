@@ -116,6 +116,7 @@ export class ProductUsageService {
     }
 
     async createSale(
+        manager: EntityManager,
         productId: number,
         quantity: number,
         stock: number,
@@ -126,6 +127,7 @@ export class ProductUsageService {
             throw new BadRequestException('quantity must be > 0');
         }
         const usage = this.repo.create({
+
             appointment: appointmentId
                 ? ({ id: appointmentId } as EntityRef<Appointment>)
                 : null,
@@ -134,7 +136,7 @@ export class ProductUsageService {
             usageType: UsageType.SALE,
             usedByEmployee: { id: employeeId } as EntityRef<User>,
         });
-        await this.repo.save(usage);
+        await manager.save(ProductUsage, usage);
         await this.logs.create(
             LogAction.ProductUsed,
             JSON.stringify({
