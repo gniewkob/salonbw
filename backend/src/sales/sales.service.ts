@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Sale } from './sale.entity';
+import { Appointment } from '../appointments/appointment.entity';
 import { Product } from '../catalog/product.entity';
 import { CommissionRecord } from '../commissions/commission-record.entity';
 import { CommissionsService } from '../commissions/commissions.service';
@@ -31,6 +32,15 @@ export class SalesService {
             throw new BadRequestException('quantity must be > 0');
         }
         const saved = await this.repo.manager.transaction(async (manager) => {
+            if (appointmentId) {
+                try {
+                    await manager
+                        .getRepository(Appointment)
+                        .findOneOrFail({ where: { id: appointmentId } });
+                } catch {
+                    throw new BadRequestException('invalid appointment');
+                }
+            }
             const product = await manager.findOne(Product, {
                 where: { id: productId },
                 lock: { mode: 'pessimistic_write' },
