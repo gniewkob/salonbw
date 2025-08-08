@@ -1,6 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import PublicLayout from '@/components/PublicLayout';
 
 interface GalleryItem {
     id: string;
@@ -25,7 +26,7 @@ interface InstagramResponse {
 
 export default function GalleryPage({ items }: GalleryPageProps) {
     return (
-        <>
+        <PublicLayout>
             <Head>
                 <title>Gallery | Salon Black &amp; White</title>
                 <meta
@@ -48,7 +49,7 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                     ))}
                 </div>
             </div>
-        </>
+        </PublicLayout>
     );
 }
 

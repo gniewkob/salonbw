@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import Layout from '@/components/Layout';
+import DashboardLayout from '@/components/DashboardLayout';
 import { useInvoices } from '@/hooks/useInvoices';
 
 export default function InvoicesPage() {
@@ -7,7 +7,7 @@ export default function InvoicesPage() {
 
     return (
         <RouteGuard>
-            <Layout>
+            <DashboardLayout>
                 {loading ? (
                     <div>Loading...</div>
                 ) : (
@@ -36,7 +36,7 @@ export default function InvoicesPage() {
                         </tbody>
                     </table>
                 )}
-            </Layout>
+            </DashboardLayout>
         </RouteGuard>
     );
 }
