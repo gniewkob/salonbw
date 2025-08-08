@@ -54,6 +54,8 @@ export class CreateServiceDto {
     })
     @IsOptional()
     @IsNumber()
+    @Min(0)
+    @Max(100)
     defaultCommissionPercent?: number | null;
 
     @ApiProperty({
