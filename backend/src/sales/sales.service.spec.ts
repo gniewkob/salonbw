@@ -58,7 +58,14 @@ describe('SalesService', () => {
             stock: 3,
             unitPrice: 10,
         });
-        expect(usage.createSale).toHaveBeenCalledWith(1, 2, 3, 2, 3);
+        expect(usage.createSale).toHaveBeenCalledWith(
+            manager,
+            1,
+            2,
+            3,
+            2,
+            3,
+        );
         expect(sale.id).toBe(1);
     });
 });
