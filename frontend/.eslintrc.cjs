@@ -18,4 +18,18 @@ module.exports = {
         '@typescript-eslint/no-misused-promises': 'error',
         'no-unused-vars': 'error',
     },
+    overrides: [
+        {
+            files: ['src/__tests__/**/*', 'jest.setup.ts'],
+            parserOptions: {
+                project: './tsconfig.jest.json',
+            },
+        },
+        {
+            files: ['cypress.config.ts', 'tailwind.config.ts'],
+            parserOptions: {
+                project: null,
+            },
+        },
+    ],
 };
