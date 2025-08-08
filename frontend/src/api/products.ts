@@ -10,6 +10,7 @@ export function useProductApi() {
         name: string;
         unitPrice: number;
         stock: number;
+        lowStockThreshold: number;
         brand?: string;
     }) => {
         try {
@@ -32,6 +33,7 @@ export function useProductApi() {
             name?: string;
             unitPrice?: number;
             stock?: number;
+            lowStockThreshold?: number;
             brand?: string;
         },
     ) => {
