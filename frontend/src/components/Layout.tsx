@@ -6,12 +6,25 @@ import DashboardNav from './DashboardNav';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const onDashboard = router.pathname.startsWith('/dashboard');
+  const isPublicPage =
+    router.pathname === '/' ||
+    router.pathname.startsWith('/services') ||
+    router.pathname.startsWith('/gallery') ||
+    router.pathname.startsWith('/contact') ||
+    router.pathname.startsWith('/faq') ||
+    router.pathname.startsWith('/policy') ||
+    router.pathname.startsWith('/privacy') ||
+    router.pathname.startsWith('/auth');
+
   return (
     <div className="min-h-screen flex flex-col">
-      {!onDashboard && <PublicNav />}
+      {isPublicPage && <PublicNav />}
       <div className="flex flex-1">
-        {onDashboard && <DashboardNav />}
+        {!isPublicPage && (
+          <aside>
+            <DashboardNav />
+          </aside>
+        )}
         <main className="flex-1 p-4">{children}</main>
       </div>
     </div>
