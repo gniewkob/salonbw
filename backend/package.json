@@ -63,7 +63,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",
         "@eslint/js": "^9.31.0",
-        "@nestjs/cli": "^10.4.9",
+        "@nestjs/cli": "^11.0.10",
         "@nestjs/schematics": "^11.0.0",
         "@nestjs/testing": "^11.1.5",
         "@swc/cli": "^0.5.2",
@@ -93,6 +93,9 @@
         "tsconfig-paths": "^4.2.0",
         "typescript": "^5.7.3",
         "typescript-eslint": "^8.37.0"
+    },
+    "overrides": {
+        "tmp": "^0.2.4"
     },
     "jest": {
         "moduleFileExtensions": [
