@@ -29,12 +29,18 @@ export class UpdateProductSchema20250711192027 implements MigrationInterface {
             'product',
             new TableUnique({ columnNames: ['name'] }),
         );
+        await queryRunner.query(
+            'ALTER TABLE "product" ADD CONSTRAINT "CHK_product_low_stock_threshold" CHECK ("lowStockThreshold" >= 0)',
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.dropUniqueConstraint(
             'product',
             new TableUnique({ columnNames: ['name'] }),
+        );
+        await queryRunner.query(
+            'ALTER TABLE "product" DROP CONSTRAINT "CHK_product_low_stock_threshold"',
         );
         await queryRunner.dropColumn('product', 'lowStockThreshold');
         await queryRunner.dropColumn('product', 'createdAt');

@@ -16,14 +16,27 @@ const toast = require('react-hot-toast').toast;
 
 describe('useProductApi', () => {
   it('shows success toast on create', async () => {
-    const apiFetch = jest.fn().mockResolvedValue({ id: 1, name: 'A' });
+    const apiFetch = jest
+      .fn()
+      .mockResolvedValue({
+        id: 1,
+        name: 'A',
+        unitPrice: 1,
+        stock: 1,
+        lowStockThreshold: 5,
+      });
     mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>{children}</ToastProvider>
     );
     const { result } = renderHook(() => useProductApi(), { wrapper });
     await act(async () => {
-      await result.current.create({ name: 'A', unitPrice: 1, stock: 1 });
+      await result.current.create({
+        name: 'A',
+        unitPrice: 1,
+        stock: 1,
+        lowStockThreshold: 5,
+      });
     });
     expect(toast.success).toHaveBeenCalled();
   });
@@ -37,7 +50,12 @@ describe('useProductApi', () => {
     const { result } = renderHook(() => useProductApi(), { wrapper });
     await expect(
       act(async () => {
-        await result.current.create({ name: 'A', unitPrice: 1, stock: 1 });
+        await result.current.create({
+          name: 'A',
+          unitPrice: 1,
+          stock: 1,
+          lowStockThreshold: 5,
+        });
       })
     ).rejects.toThrow();
     expect(toast.error).toHaveBeenCalled();

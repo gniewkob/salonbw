@@ -38,6 +38,7 @@ export interface Product {
     brand?: string;
     unitPrice: number;
     stock: number;
+    lowStockThreshold: number;
 }
 
 export interface Review {
