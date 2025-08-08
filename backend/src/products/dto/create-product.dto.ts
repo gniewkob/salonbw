@@ -29,6 +29,15 @@ export class CreateProductDto {
     @IsString()
     brand?: string;
 
+    @ApiPropertyOptional({
+        description: 'Product description',
+        type: String,
+        example: 'Nourishing shampoo with natural ingredients',
+    })
+    @IsOptional()
+    @IsString()
+    description?: string;
+
     @ApiProperty({
         description: 'Price per unit',
         type: Number,
