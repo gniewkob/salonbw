@@ -17,6 +17,7 @@ describe('EmailsService', () => {
         findOne: jest.Mock;
     };
     let optouts: { findOne: jest.Mock; save: jest.Mock };
+    let loggerErrorSpy: jest.SpyInstance;
 
     beforeEach(async () => {
         logs = {
@@ -34,10 +35,14 @@ describe('EmailsService', () => {
             ],
         }).compile();
         service = module.get<EmailsService>(EmailsService);
+        loggerErrorSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
         jest.resetAllMocks();
+        if (loggerErrorSpy) {
+            loggerErrorSpy.mockRestore();
+        }
     });
 
     it('sends email via sendgrid', async () => {

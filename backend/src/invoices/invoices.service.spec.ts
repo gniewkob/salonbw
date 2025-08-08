@@ -11,6 +11,7 @@ const axiosMock = axios as jest.Mocked<typeof axios>;
 
 describe('InvoicesService', () => {
     let service: InvoicesService;
+    let loggerErrorSpy: jest.SpyInstance;
     const repo = {
         create: jest.fn(),
         save: jest.fn(),
@@ -34,6 +35,13 @@ describe('InvoicesService', () => {
             ],
         }).compile();
         service = module.get(InvoicesService);
+        loggerErrorSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        if (loggerErrorSpy) {
+            loggerErrorSpy.mockRestore();
+        }
     });
 
     it('generates invoice', async () => {

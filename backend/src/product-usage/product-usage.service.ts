@@ -126,8 +126,7 @@ export class ProductUsageService {
         if (quantity <= 0) {
             throw new BadRequestException('quantity must be > 0');
         }
-        const usage = this.repo.create({
-
+        const usage = manager.create(ProductUsage, {
             appointment: appointmentId
                 ? ({ id: appointmentId } as EntityRef<Appointment>)
                 : null,
