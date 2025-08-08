@@ -12,6 +12,8 @@ import { Category } from './category.entity';
 
 @Index(['category', 'name'], { unique: true })
 @Check('"defaultCommissionPercent" >= 0 AND "defaultCommissionPercent" <= 100')
+@Check('"price" >= 0')
+@Check('"duration" > 0')
 @Entity()
 export class Service {
     @PrimaryGeneratedColumn()
