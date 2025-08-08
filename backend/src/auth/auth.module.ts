@@ -17,6 +17,7 @@ import { LogsModule } from '../logs/logs.module';
         LogsModule,
         ConfigModule,
         JwtModule.registerAsync({
+            imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => {
                 const secret = config.get<string>('JWT_SECRET');
