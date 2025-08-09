@@ -7,8 +7,9 @@
    - `sudo service postgresql start`
    - `sudo -u postgres psql -c "CREATE USER \"user\" WITH PASSWORD 'password';"`
    - `sudo -u postgres psql -c "CREATE DATABASE database OWNER \"user\";"`
-3. From `backend/salonbw-backend` run `npm run start:dev` and confirm it connects to the database without errors.
-4. In a separate terminal, check the health endpoint:
+3. In `backend/salonbw-backend`, install dependencies with `npm ci` (or `npm install`). Run this before `npm run start:dev` or `npm test`.
+4. From `backend/salonbw-backend` run `npm run start:dev` and confirm it connects to the database without errors.
+5. In a separate terminal, check the health endpoint:
    ```bash
    curl http://localhost:3000/health
    ```
