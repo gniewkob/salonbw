@@ -13,3 +13,7 @@
    curl http://localhost:3000/health
    ```
    Expected output: `{"status":"ok"}` with HTTP status `200`.
+
+## Notes
+
+- TypeORM synchronization is enabled only for development. In production environments set `NODE_ENV=production` and run migrations instead of relying on synchronization.
