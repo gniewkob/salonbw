@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -6,15 +8,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    async getProfile() {
-        const user = await this.usersService.findByEmail('test@example.com');
-        if (!user) {
-            return { email: 'test@example.com', name: 'Test User' };
-        }
-        const { password: _password, ...result } = user;
-        void _password;
-        return result;
+    getProfile(@Req() req: Request) {
+        return req.user;
     }
 
     @Post()
