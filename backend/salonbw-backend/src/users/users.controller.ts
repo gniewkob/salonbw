@@ -12,14 +12,16 @@ export class UsersController {
         if (!user) {
             return { email: 'test@example.com', name: 'Test User' };
         }
-        const { password, ...result } = user;
+        const { password: _password, ...result } = user;
+        void _password;
         return result;
     }
 
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
         const user = await this.usersService.createUser(createUserDto);
-        const { password, ...result } = user;
+        const { password: _password, ...result } = user;
+        void _password;
         return result;
     }
 }
