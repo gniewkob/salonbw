@@ -1,17 +1,36 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { JwtService } from '@nestjs/jwt';
 import { Request as ExpressRequest } from 'express';
+import { RegisterDto } from './dto/register.dto';
+import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly jwtService: JwtService) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly usersService: UsersService,
+    ) {}
 
     @UseGuards(AuthGuard('local'))
     @Post('login')
     login(@Request() req: ExpressRequest & { user: Omit<User, 'password'> }) {
-        const payload = { sub: req.user.id, role: req.user.role };
-        return { access_token: this.jwtService.sign(payload) };
+        return this.authService.login(req.user);
+    }
+
+    @Post('register')
+    @HttpCode(HttpStatus.CREATED)
+    async register(@Body() dto: RegisterDto) {
+        const user = await this.usersService.createUser(dto);
+        return this.authService.login(user);
     }
 }
