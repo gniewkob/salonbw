@@ -25,14 +25,7 @@ export class UsersService {
             throw new Error('Email already exists');
         }
 
-        const hashedPassword: string = await (
-            bcrypt as unknown as {
-                hash(
-                    data: string,
-                    saltOrRounds: string | number,
-                ): Promise<string>;
-            }
-        ).hash(dto.password, 10);
+        const hashedPassword: string = await bcrypt.hash(dto.password, 10);
 
         const user = this.usersRepository.create({
             email: dto.email,
