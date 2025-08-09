@@ -14,7 +14,9 @@ export class UsersService {
     ) {}
 
     async findByEmail(email: string): Promise<User | null> {
-        return await this.usersRepository.findOne({ where: { email } });
+        const user = await this.usersRepository.findOne({ where: { email } });
+        // Ensure null is returned instead of undefined for unknown emails
+        return user ?? null;
     }
 
     async createUser(dto: CreateUserDto): Promise<User> {
