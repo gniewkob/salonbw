@@ -1,0 +1,60 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install frontend deps
+        run: |
+          cd frontend
+          npm ci
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+      - name: Test frontend
+        run: |
+          cd frontend
+          npm test -- --coverage
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+      - name: Install backend deps
+        run: |
+          cd backend
+          npm ci
+      - name: Lint backend
+        run: |
+          cd backend
+          npm run lint
+      - name: Test backend
+        run: |
+          cd backend
+          npm test -- --coverage
+      - name: Generate OpenAPI docs
+        run: |
+          cd backend
+          set -o pipefail
+          npm run swagger:generate 2>&1 | tee swagger.log
+          git diff --exit-code openapi.json
+          if grep -i warning swagger.log; then
+            echo "OpenAPI generation produced warnings"
+            exit 1
+          fi
+      - name: Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: echo "Deploying..."

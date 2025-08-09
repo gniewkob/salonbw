@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './modal-fix.css';
+
+/* Hide elements until Alpine initializes */
+[x-cloak] {
+    display: none !important;
+}

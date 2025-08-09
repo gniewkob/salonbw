@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Klienci - Versum</title>
+    
+    <!-- Local CSS -->
+    <link href="assets/styles.css" rel="stylesheet"/>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&subset=latin,latin-ext" rel="stylesheet"/>
+</head>
+<body>
+    <!-- SVG Sprites -->
+    <div id="svg-sprites" style="display: none;">
+        <!-- Include SVG sprites here -->
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <a href="#" class="navbar-brand">
+                    <svg class="svg-icon-lg" style="margin-right: 10px;">
+                        <use xlink:href="#svg-logo"></use>
+                    </svg>
+                    Versum
+                </a>
+                
+                <ul class="navbar-nav">
+                    <li><a href="calendar_template.html">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-calendar-nav"></use>
+                        </svg>
+                        Kalendarz
+                    </a></li>
+                    <li><a href="customers_template_optimized.html" class="active">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-customers-nav"></use>
+                        </svg>
+                        Klienci
+                    </a></li>
+                    <li><a href="products_template.html">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-stock-nav"></use>
+                        </svg>
+                        Magazyn
+                    </a></li>
+                    <li><a href="services_template.html">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-services-nav"></use>
+                        </svg>
+                        Usługi
+                    </a></li>
+                    <li><a href="communication_template.html">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-communication-nav"></use>
+                        </svg>
+                        Łączność
+                    </a></li>
+                    <li><a href="settings_categories_template.html">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-settings-nav"></use>
+                        </svg>
+                        Ustawienia
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="card-title">Klienci</h1>
+                    <p>Zarządzaj bazą klientów salonu</p>
+                </div>
+                
+                <!-- Search and Filters -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <input type="text" class="form-control" placeholder="Szukaj klientów..." id="searchInput">
+                    </div>
+                    <button class="btn btn-primary" data-modal="addCustomerModal">
+                        <svg class="svg-icon" style="margin-right: 5px;">
+                            <use xlink:href="#svg-plus"></use>
+                        </svg>
+                        Dodaj klienta
+                    </button>
+                </div>
+
+                <!-- Customers Table -->
+                <div class="card">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th data-sort="name">Imię i nazwisko</th>
+                                <th data-sort="email">Email</th>
+                                <th data-sort="phone">Telefon</th>
+                                <th data-sort="visits">Wizyty</th>
+                                <th data-sort="lastVisit">Ostatnia wizyta</th>
+                                <th>Status</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-name="Anna Kowalska">Anna Kowalska</td>
+                                <td data-email="anna.kowalska@email.com">anna.kowalska@email.com</td>
+                                <td data-phone="+48 123 456 789">+48 123 456 789</td>
+                                <td data-visits="12">12</td>
+                                <td data-lastVisit="2024-01-15">15.01.2024</td>
+                                <td><span class="badge badge-success">Aktywny</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edytuj</button>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Historia</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-name="Jan Nowak">Jan Nowak</td>
+                                <td data-email="jan.nowak@email.com">jan.nowak@email.com</td>
+                                <td data-phone="+48 987 654 321">+48 987 654 321</td>
+                                <td data-visits="8">8</td>
+                                <td data-lastVisit="2024-01-10">10.01.2024</td>
+                                <td><span class="badge badge-success">Aktywny</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edytuj</button>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Historia</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td data-name="Maria Wiśniewska">Maria Wiśniewska</td>
+                                <td data-email="maria.wisniewska@email.com">maria.wisniewska@email.com</td>
+                                <td data-phone="+48 555 123 456">+48 555 123 456</td>
+                                <td data-visits="3">3</td>
+                                <td data-lastVisit="2024-01-05">05.01.2024</td>
+                                <td><span class="badge badge-warning">Nowy</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edytuj</button>
+                                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">Historia</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <h3>Dodaj nowego klienta</h3>
+            <form id="addCustomerForm">
+                <div class="form-group">
+                    <label class="form-label">Imię i nazwisko</label>
+                    <input type="text" class="form-control" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefon</label>
+                    <input type="tel" class="form-control" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data urodzenia</label>
+                    <input type="date" class="form-control" name="birthDate">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="VersumUI.closeModal('addCustomerModal')">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Dodaj klienta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Local JavaScript -->
+    <script src="assets/script.js"></script>
+    
+    <!-- Load SVG sprites -->
+    <script>
+        // Load SVG sprites
+        fetch('assets/svg-sprites.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('svg-sprites').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading SVG sprites:', error);
+            });
+    </script>
+</body>
+</html> 
