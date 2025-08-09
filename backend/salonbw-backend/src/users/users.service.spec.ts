@@ -10,6 +10,12 @@ jest.mock('bcrypt', () => ({
     hash: jest.fn(),
 }));
 
+type BcryptMock = {
+    hash: jest.Mock;
+};
+
+const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
+
 describe('UsersService', () => {
     let service: UsersService;
     let repo: {
@@ -48,20 +54,20 @@ describe('UsersService', () => {
                 name: 'Test User',
                 password: 'plainPass',
             };
-            (repo.findOne as jest.Mock).mockResolvedValue(null);
-            (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPass');
+            repo.findOne.mockResolvedValue(null);
+            bcryptMock.hash.mockResolvedValue('hashedPass');
             const created = {
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
             };
-            (repo.create as jest.Mock).mockReturnValue(created);
-            (repo.save as jest.Mock).mockResolvedValue({ ...created, id: 1 });
+            repo.create.mockReturnValue(created);
+            repo.save.mockResolvedValue({ ...created, id: 1 });
 
             const result = await service.createUser(dto);
 
-            expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, 10);
+            expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
             expect(repo.create).toHaveBeenCalledWith({
                 email: dto.email,
                 name: dto.name,
@@ -77,22 +83,25 @@ describe('UsersService', () => {
     describe('findByEmail', () => {
         it('returns an existing user', async () => {
             const user = { id: 1, email: 'known@example.com' } as User;
-            (repo.findOne as jest.Mock).mockResolvedValue(user);
+            repo.findOne.mockResolvedValue(user);
 
             const result = await service.findByEmail('known@example.com');
 
             expect(result).toEqual(user);
-            expect(repo.findOne).toHaveBeenCalledWith({ where: { email: 'known@example.com' } });
+            expect(repo.findOne).toHaveBeenCalledWith({
+                where: { email: 'known@example.com' },
+            });
         });
 
         it('returns undefined for unknown email', async () => {
-            (repo.findOne as jest.Mock).mockResolvedValue(undefined);
+            repo.findOne.mockResolvedValue(undefined);
 
             const result = await service.findByEmail('unknown@example.com');
 
             expect(result).toBeUndefined();
-            expect(repo.findOne).toHaveBeenCalledWith({ where: { email: 'unknown@example.com' } });
+            expect(repo.findOne).toHaveBeenCalledWith({
+                where: { email: 'unknown@example.com' },
+            });
         });
     });
 });
-

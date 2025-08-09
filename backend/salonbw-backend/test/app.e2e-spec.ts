@@ -25,10 +25,12 @@ describe('Health (e2e)', () => {
     });
 
     it('/health (GET)', () => {
-        return request(app.getHttpServer())
+        const server = app.getHttpServer() as unknown as Parameters<
+            typeof request
+        >[0];
+        return request(server)
             .get('/health')
             .expect(200)
             .expect({ status: 'ok' });
     });
 });
-
