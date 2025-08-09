@@ -93,12 +93,12 @@ describe('UsersService', () => {
             });
         });
 
-        it('returns undefined for unknown email', async () => {
-            repo.findOne.mockResolvedValue(undefined);
+        it('returns null for unknown email', async () => {
+            repo.findOne.mockResolvedValue(null);
 
             const result = await service.findByEmail('unknown@example.com');
 
-            expect(result).toBeUndefined();
+            expect(result).toBeNull();
             expect(repo.findOne).toHaveBeenCalledWith({
                 where: { email: 'unknown@example.com' },
             });
