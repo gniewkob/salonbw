@@ -35,19 +35,19 @@ jobs:
           npm run build
       - name: Install backend deps
         run: |
-          cd backend
+          cd backend/salonbw-backend
           npm ci
       - name: Lint backend
         run: |
-          cd backend
+          cd backend/salonbw-backend
           npm run lint
       - name: Test backend
         run: |
-          cd backend
+          cd backend/salonbw-backend
           npm test -- --coverage
       - name: Generate OpenAPI docs
         run: |
-          cd backend
+          cd backend/salonbw-backend
           set -o pipefail
           npm run swagger:generate 2>&1 | tee swagger.log
           git diff --exit-code openapi.json
