@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly jwtService: JwtService,
+    ) {}
 
     async validateUser(
         email: string,
@@ -18,5 +22,10 @@ export class AuthService {
             return result as Omit<User, 'password'>;
         }
         return null;
+    }
+
+    login(user: Omit<User, 'password'>) {
+        const payload = { sub: user.id, role: user.role };
+        return { access_token: this.jwtService.sign(payload) };
     }
 }
