@@ -14,14 +14,14 @@ export class AuthService {
     async validateUser(
         email: string,
         pass: string,
-    ): Promise<Omit<User, 'password'> | null> {
+    ): Promise<Omit<User, 'password'>> {
         const user = await this.usersService.findByEmail(email);
-        if (user && (await bcrypt.compare(pass, user.password))) {
-            const { password: _password, ...result } = user;
-            void _password;
-            return result as Omit<User, 'password'>;
+        if (!user || !(await bcrypt.compare(pass, user.password))) {
+            throw new UnauthorizedException('Invalid credentials');
         }
-        return null;
+        const { password: _password, ...result } = user;
+        void _password;
+        return result as Omit<User, 'password'>;
     }
 
     login(user: Omit<User, 'password'>) {
