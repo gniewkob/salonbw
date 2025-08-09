@@ -45,15 +45,19 @@ export default function DashboardNav() {
         <aside className="w-48 bg-gray-200 p-4 space-y-2 border-r-2 border-gray-300">
             <h2 className="font-bold mb-2">Menu</h2>
             <nav className="space-y-1">
-                {navLinks[currentRole].map((l) => (
-                    <Link
-                        key={l.href}
-                        href={l.href}
-                        className={`block px-2 py-1 ${router.pathname.startsWith(l.href) ? 'font-bold text-blue-600 border-l-4 border-blue-500 pl-2' : ''}`}
-                    >
-                        {l.label}
-                    </Link>
-                ))}
+                {navLinks[currentRole].map((l) => {
+                    const isActive = router.pathname.startsWith(l.href);
+                    return (
+                        <Link
+                            key={l.href}
+                            href={l.href}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={`block px-2 py-1 ${isActive ? 'font-bold text-blue-600 border-l-4 border-blue-500 pl-2 bg-white' : ''}`}
+                        >
+                            {l.label}
+                        </Link>
+                    );
+                })}
                 <button
                     className="block text-left px-2 py-1 hover:underline"
                     onClick={logout}
