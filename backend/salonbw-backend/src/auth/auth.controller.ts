@@ -5,11 +5,13 @@ import {
     HttpStatus,
     Post,
     Request,
+    UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request as ExpressRequest } from 'express';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -32,5 +34,22 @@ export class AuthController {
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
         return this.authService.login(user);
+    }
+
+    @Post('refresh')
+    @HttpCode(HttpStatus.OK)
+    refresh(
+        @Body() dto: RefreshTokenDto,
+        @Request()
+        req: ExpressRequest & { cookies?: Record<string, string | undefined> },
+    ) {
+        const cookieToken = req.cookies
+            ? (req.cookies as Record<string, string>).refreshToken
+            : undefined;
+        const token = dto.refreshToken ?? cookieToken;
+        if (!token) {
+            throw new UnauthorizedException('Refresh token not provided');
+        }
+        return this.authService.refresh(token);
     }
 }
