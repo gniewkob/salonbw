@@ -18,6 +18,12 @@
             <form action="{{ route('admin.kontakt.update') }}" method="POST">
                 @csrf
                 @method('PUT')
+
+                <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 border-b">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Zapisz zmiany
+                    </button>
+                </div>
                 
                 <div class="px-4 py-5 sm:p-6">
                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
