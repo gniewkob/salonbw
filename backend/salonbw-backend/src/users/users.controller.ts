@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { Request } from 'express';
+import { CurrentUser } from '../auth/current-user.decorator';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -10,8 +10,8 @@ export class UsersController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    getProfile(@Req() req: Request) {
-        return req.user;
+    getProfile(@CurrentUser() user: { userId: number; role: string }) {
+        return user;
     }
 
     @Post()
