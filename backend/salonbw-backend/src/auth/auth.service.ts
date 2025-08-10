@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -9,6 +10,7 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) {}
 
     async validateUser(
@@ -34,7 +36,10 @@ export class AuthService {
 
     getRefreshToken(user: Pick<User, 'id' | 'role'>) {
         const payload = { sub: user.id, role: user.role };
-        return this.jwtService.sign(payload, { expiresIn: '7d' });
+        return this.jwtService.sign(payload, {
+            expiresIn: '7d',
+            secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        });
     }
 
     refresh(refreshToken: string) {
@@ -42,7 +47,9 @@ export class AuthService {
             const payload = this.jwtService.verify<{
                 sub: number;
                 role: User['role'];
-            }>(refreshToken);
+            }>(refreshToken, {
+                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+            });
             const userPayload: Pick<User, 'id' | 'role'> = {
                 id: payload.sub,
                 role: payload.role,
