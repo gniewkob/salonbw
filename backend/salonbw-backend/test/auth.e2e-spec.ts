@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 
+// Typed response bodies for request assertions
 interface AuthTokens {
     access_token: string;
     refresh_token: string;
