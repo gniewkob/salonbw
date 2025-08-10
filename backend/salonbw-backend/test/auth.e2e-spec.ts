@@ -29,8 +29,15 @@ describe('Auth & Users (e2e)', () => {
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
 
-        AuthModule = (await import('../src/auth/auth.module')).AuthModule;
-        User = (await import('../src/users/user.entity')).User;
+        const authImports = (await import(
+            '../src/auth/auth.module'
+        )) as typeof import('../src/auth/auth.module');
+        AuthModule = authImports.AuthModule;
+
+        const userImports = (await import(
+            '../src/users/user.entity'
+        )) as typeof import('../src/users/user.entity');
+        User = userImports.User;
 
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
@@ -138,4 +145,3 @@ describe('Auth & Users (e2e)', () => {
         expect(userId).toBe(1);
     });
 });
-
