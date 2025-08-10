@@ -15,7 +15,7 @@ type BcryptMock = {
 };
 
 const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
-// Extend as needed for future tests (e.g., add `verify` when necessary)
+// Extend as needed for future tests (e.g., mock `verify` when necessary)
 const jwtService = { sign: jest.fn() } as unknown as JwtService;
 
 describe('AuthService.validateUser', () => {
