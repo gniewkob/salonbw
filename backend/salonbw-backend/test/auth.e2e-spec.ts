@@ -16,8 +16,8 @@ interface ProfileResponse {
     userId: number;
 }
 
-let AuthModule: typeof import('../src/auth/auth.module')['AuthModule'];
-let User: typeof import('../src/users/user.entity')['User'];
+let AuthModule: typeof import('../src/auth/auth.module').AuthModule;
+let User: typeof import('../src/users/user.entity').User;
 
 describe('Auth & Users (e2e)', () => {
     let app: INestApplication;
