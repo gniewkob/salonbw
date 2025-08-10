@@ -15,6 +15,6 @@ export class User {
     @Column()
     name: string;
 
-    @Column({ type: 'enum', enum: Role, default: Role.Client })
+    @Column({ type: 'simple-enum', enum: Role, default: Role.Client })
     role: Role;
 }
