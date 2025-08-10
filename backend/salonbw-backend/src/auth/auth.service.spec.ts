@@ -21,11 +21,11 @@ const jwtService = { sign: jest.fn() } as unknown as JwtService;
 
 describe('AuthService.validateUser', () => {
     let service: AuthService;
-    let usersService: { findByEmail: jest.Mock };
+    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
     let configService: { get: jest.Mock };
 
     beforeEach(() => {
-        usersService = { findByEmail: jest.fn() };
+        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
         configService = { get: jest.fn() };
         service = new AuthService(
             usersService as unknown as UsersService,
