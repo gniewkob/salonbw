@@ -31,11 +31,12 @@ describe('Auth & Users (e2e)', () => {
         process.env.JWT_SECRET = 'test-secret';
         process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
 
-        const authImports = require('../src/auth/auth.module') as typeof import('../src/auth/auth.module');
-        AuthModule = authImports.AuthModule;
-
-        const userImports = require('../src/users/user.entity') as typeof import('../src/users/user.entity');
-        User = userImports.User;
+        ({ AuthModule } = (await import(
+            '../src/auth/auth.module'
+        )) as typeof import('../src/auth/auth.module'));
+        ({ User } = (await import(
+            '../src/users/user.entity'
+        )) as typeof import('../src/users/user.entity'));
 
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
