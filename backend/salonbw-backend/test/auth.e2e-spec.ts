@@ -3,6 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
+import { AuthModule } from '../src/auth/auth.module';
+import { User } from '../src/users/user.entity';
+import cookieParser from 'cookie-parser';
 
 // Typed response bodies for request assertions
 interface AuthTokens {
@@ -18,9 +21,6 @@ interface ProfileResponse {
     userId: number;
 }
 
-let AuthModule: typeof import('../src/auth/auth.module').AuthModule;
-let User: typeof import('../src/users/user.entity').User;
-
 describe('Auth & Users (e2e)', () => {
     let app: INestApplication;
     let server: Parameters<typeof request>[0];
@@ -30,13 +30,6 @@ describe('Auth & Users (e2e)', () => {
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
         process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
-
-        ({ AuthModule } = (await import(
-            '../src/auth/auth.module'
-        )) as typeof import('../src/auth/auth.module'));
-        ({ User } = (await import(
-            '../src/users/user.entity'
-        )) as typeof import('../src/users/user.entity'));
 
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
@@ -53,6 +46,7 @@ describe('Auth & Users (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
+        app.use(cookieParser());
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
     });
@@ -121,6 +115,23 @@ describe('Auth & Users (e2e)', () => {
         const res = await request(server)
             .post('/auth/refresh')
             .send({ refreshToken })
+            .expect(200);
+        const { access_token, refresh_token } = res.body as AuthTokens;
+
+        expect(access_token).toBeDefined();
+        expect(refresh_token).toBeDefined();
+        expect(access_token).not.toBe(accessToken);
+        accessToken = access_token;
+        refreshToken = refresh_token;
+    });
+
+    it('refreshes token using cookie when body token is missing', async () => {
+        // Wait to ensure new token differs from previous one
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const res = await request(server)
+            .post('/auth/refresh')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .send({})
             .expect(200);
         const { access_token, refresh_token } = res.body as AuthTokens;
 
