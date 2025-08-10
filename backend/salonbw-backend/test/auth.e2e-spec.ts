@@ -3,6 +3,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 
+interface AuthTokens {
+    access_token: string;
+    refresh_token: string;
+}
+
+interface ErrorResponse {
+    message: string;
+}
+
+interface ProfileResponse {
+    userId: number;
+}
+
 let AuthModule: typeof import('../src/auth/auth.module')['AuthModule'];
 let User: typeof import('../src/users/user.entity')['User'];
 
@@ -49,11 +62,12 @@ describe('Auth & Users (e2e)', () => {
                 name: 'John',
             })
             .expect(201);
+        const { access_token, refresh_token } = res.body as AuthTokens;
 
-        expect(res.body.access_token).toBeDefined();
-        expect(res.body.refresh_token).toBeDefined();
-        accessToken = res.body.access_token;
-        refreshToken = res.body.refresh_token;
+        expect(access_token).toBeDefined();
+        expect(refresh_token).toBeDefined();
+        accessToken = access_token;
+        refreshToken = refresh_token;
     });
 
     it('fails to register with duplicate email', async () => {
@@ -65,8 +79,9 @@ describe('Auth & Users (e2e)', () => {
                 name: 'John',
             })
             .expect(400);
+        const { message } = res.body as ErrorResponse;
 
-        expect(res.body.message).toBe('Email already exists');
+        expect(message).toBe('Email already exists');
     });
 
     it('logs in with valid credentials', async () => {
@@ -74,11 +89,12 @@ describe('Auth & Users (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'john@example.com', password: 'password123' })
             .expect(201);
+        const { access_token, refresh_token } = res.body as AuthTokens;
 
-        expect(res.body.access_token).toBeDefined();
-        expect(res.body.refresh_token).toBeDefined();
-        accessToken = res.body.access_token;
-        refreshToken = res.body.refresh_token;
+        expect(access_token).toBeDefined();
+        expect(refresh_token).toBeDefined();
+        accessToken = access_token;
+        refreshToken = refresh_token;
     });
 
     it('fails to log in with invalid credentials', async () => {
@@ -86,8 +102,9 @@ describe('Auth & Users (e2e)', () => {
             .post('/auth/login')
             .send({ email: 'john@example.com', password: 'wrongpass' })
             .expect(401);
+        const { message } = res.body as ErrorResponse;
 
-        expect(res.body.message).toBe('Invalid credentials');
+        expect(message).toBe('Invalid credentials');
     });
 
     it('refreshes token and returns new access token', async () => {
@@ -97,12 +114,13 @@ describe('Auth & Users (e2e)', () => {
             .post('/auth/refresh')
             .send({ refreshToken })
             .expect(200);
+        const { access_token, refresh_token } = res.body as AuthTokens;
 
-        expect(res.body.access_token).toBeDefined();
-        expect(res.body.refresh_token).toBeDefined();
-        expect(res.body.access_token).not.toBe(accessToken);
-        accessToken = res.body.access_token;
-        refreshToken = res.body.refresh_token;
+        expect(access_token).toBeDefined();
+        expect(refresh_token).toBeDefined();
+        expect(access_token).not.toBe(accessToken);
+        accessToken = access_token;
+        refreshToken = refresh_token;
     });
 
     it('denies access to profile without token', async () => {
@@ -114,7 +132,9 @@ describe('Auth & Users (e2e)', () => {
             .get('/users/profile')
             .set('Authorization', `Bearer ${accessToken}`)
             .expect(200);
-        expect(res.body.userId).toBe(1);
+        const { userId } = res.body as ProfileResponse;
+
+        expect(userId).toBe(1);
     });
 });
 
