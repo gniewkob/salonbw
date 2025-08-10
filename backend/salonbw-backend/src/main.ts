@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 
@@ -11,6 +12,12 @@ async function bootstrap() {
     );
     app.use(cookieParser());
     const config = app.get(ConfigService);
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('SalonBW API')
+        .setVersion('1.0')
+        .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api', app, document);
     app.enableCors({
         origin: config.get<string>('FRONTEND_URL'),
         credentials: true,
