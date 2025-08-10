@@ -96,7 +96,7 @@ describe('Auth & Users (e2e)', () => {
         const res = await request(server)
             .post('/auth/login')
             .send({ email: 'john@example.com', password: 'password123' })
-            .expect(201);
+            .expect(200);
         const { access_token, refresh_token } = res.body as AuthTokens;
 
         expect(access_token).toBeDefined();
