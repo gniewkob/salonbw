@@ -1,5 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as jwt from 'jsonwebtoken';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -16,8 +17,16 @@ type BcryptMock = {
 };
 
 const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
-// Extend as needed for future tests (e.g., mock `verify` when necessary)
-const jwtService = { sign: jest.fn() } as unknown as JwtService;
+const accessSecret = 'access-secret';
+const refreshSecret = 'refresh-secret';
+const jwtService = {
+    sign: jest.fn((payload: unknown, options?: { secret?: string }) =>
+        jwt.sign(payload as object, options?.secret ?? accessSecret),
+    ),
+    verify: jest.fn((token: string, options?: { secret?: string }) =>
+        jwt.verify(token, options?.secret ?? accessSecret) as unknown,
+    ),
+} as unknown as JwtService;
 
 describe('AuthService.validateUser', () => {
     let service: AuthService;
@@ -88,5 +97,96 @@ describe('AuthService.validateUser', () => {
         await expect(
             service.validateUser('test@example.com', 'wrong'),
         ).rejects.toThrow(UnauthorizedException);
+    });
+});
+
+describe('AuthService.login', () => {
+    let service: AuthService;
+    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
+    let configService: { get: jest.Mock };
+
+    beforeEach(() => {
+        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
+        configService = { get: jest.fn().mockReturnValue(refreshSecret) };
+        service = new AuthService(
+            usersService as unknown as UsersService,
+            jwtService,
+            configService as unknown as ConfigService,
+        );
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns valid access and refresh tokens', () => {
+        const user: User = {
+            id: 1,
+            email: 'test@example.com',
+            name: 'Test',
+            role: Role.Client,
+        } as User;
+
+        const { access_token, refresh_token } = service.login(user);
+
+        const accessPayload = jwt.verify(access_token, accessSecret) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe(Role.Client);
+
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            refreshSecret,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe(Role.Client);
+    });
+});
+
+describe('AuthService.refresh', () => {
+    let service: AuthService;
+    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
+    let configService: { get: jest.Mock };
+
+    beforeEach(() => {
+        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
+        configService = { get: jest.fn().mockReturnValue(refreshSecret) };
+        service = new AuthService(
+            usersService as unknown as UsersService,
+            jwtService,
+            configService as unknown as ConfigService,
+        );
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns new valid tokens for a valid refresh token', async () => {
+        const user: User = {
+            id: 1,
+            email: 'test@example.com',
+            name: 'Test',
+            password: 'hashed',
+            role: Role.Client,
+        } as User;
+        usersService.findById.mockResolvedValue(user);
+
+        const refreshToken = service.getRefreshToken(user);
+        const { access_token, refresh_token } = await service.refresh(
+            refreshToken,
+        );
+
+        expect(usersService.findById).toHaveBeenCalledWith(1);
+
+        const accessPayload = jwt.verify(access_token, accessSecret) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe(Role.Client);
+
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            refreshSecret,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe(Role.Client);
     });
 });

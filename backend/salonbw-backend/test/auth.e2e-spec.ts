@@ -6,6 +6,7 @@ import request from 'supertest';
 import { AuthModule } from '../src/auth/auth.module';
 import { User } from '../src/users/user.entity';
 import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
 
 // Typed response bodies for request assertions
 interface AuthTokens {
@@ -68,6 +69,18 @@ describe('Auth & Users (e2e)', () => {
 
         expect(access_token).toBeDefined();
         expect(refresh_token).toBeDefined();
+        const accessPayload = jwt.verify(
+            access_token,
+            process.env.JWT_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe('client');
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            process.env.JWT_REFRESH_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
     });
@@ -95,6 +108,18 @@ describe('Auth & Users (e2e)', () => {
 
         expect(access_token).toBeDefined();
         expect(refresh_token).toBeDefined();
+        const accessPayload = jwt.verify(
+            access_token,
+            process.env.JWT_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe('client');
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            process.env.JWT_REFRESH_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
     });
@@ -121,6 +146,18 @@ describe('Auth & Users (e2e)', () => {
         expect(access_token).toBeDefined();
         expect(refresh_token).toBeDefined();
         expect(access_token).not.toBe(accessToken);
+        const accessPayload = jwt.verify(
+            access_token,
+            process.env.JWT_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe('client');
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            process.env.JWT_REFRESH_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
     });
@@ -138,6 +175,18 @@ describe('Auth & Users (e2e)', () => {
         expect(access_token).toBeDefined();
         expect(refresh_token).toBeDefined();
         expect(access_token).not.toBe(accessToken);
+        const accessPayload = jwt.verify(
+            access_token,
+            process.env.JWT_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.role).toBe('client');
+        const refreshPayload = jwt.verify(
+            refresh_token,
+            process.env.JWT_REFRESH_SECRET as string,
+        ) as jwt.JwtPayload;
+        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
     });
