@@ -25,6 +25,7 @@ export class AuthController {
 
     @UseGuards(AuthGuard('local'))
     @Post('login')
+    @HttpCode(HttpStatus.OK)
     login(@Request() req: ExpressRequest & { user: Omit<User, 'password'> }) {
         return this.authService.login(req.user);
     }
