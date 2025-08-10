@@ -66,6 +66,71 @@
           "Users"
         ]
       }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tokens successfully generated"
+          }
+        },
+        "summary": "Log in user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered"
+          }
+        },
+        "summary": "Register new user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens successfully refreshed"
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "auth"
+        ]
+      }
     }
   },
   "info": {
@@ -79,6 +144,14 @@
   "components": {
     "schemas": {
       "CreateUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RefreshTokenDto": {
         "type": "object",
         "properties": {}
       }
