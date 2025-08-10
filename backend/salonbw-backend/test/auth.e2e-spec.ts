@@ -1,27 +1,10 @@
-import { INestApplication, Module } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 
-process.env.JWT_SECRET = 'test-secret';
-
-// Use require to ensure env variables are set before modules load
-const { AuthModule } = require('../src/auth/auth.module');
-const { User } = require('../src/users/user.entity');
-
-@Module({
-    imports: [
-        TypeOrmModule.forRoot({
-            type: 'sqlite',
-            database: ':memory:',
-            dropSchema: true,
-            entities: [User],
-            synchronize: true,
-        }),
-        AuthModule,
-    ],
-})
-class TestAppModule {}
+let AuthModule: typeof import('../src/auth/auth.module')['AuthModule'];
+let User: typeof import('../src/users/user.entity')['User'];
 
 describe('Auth & Users (e2e)', () => {
     let app: INestApplication;
@@ -30,8 +13,22 @@ describe('Auth & Users (e2e)', () => {
     let refreshToken: string;
 
     beforeAll(async () => {
+        process.env.JWT_SECRET = 'test-secret';
+
+        AuthModule = (await import('../src/auth/auth.module')).AuthModule;
+        User = (await import('../src/users/user.entity')).User;
+
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [TestAppModule],
+            imports: [
+                TypeOrmModule.forRoot({
+                    type: 'sqlite',
+                    database: ':memory:',
+                    dropSchema: true,
+                    entities: [User],
+                    synchronize: true,
+                }),
+                AuthModule,
+            ],
         }).compile();
 
         app = moduleFixture.createNestApplication();
