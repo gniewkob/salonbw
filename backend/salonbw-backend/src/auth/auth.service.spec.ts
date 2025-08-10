@@ -1,4 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -14,6 +15,8 @@ type BcryptMock = {
 };
 
 const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
+// Extend as needed for future tests (e.g., add `verify` when necessary)
+const jwtService = { sign: jest.fn() } as unknown as JwtService;
 
 describe('AuthService.validateUser', () => {
     let service: AuthService;
@@ -23,7 +26,7 @@ describe('AuthService.validateUser', () => {
         usersService = { findByEmail: jest.fn() };
         service = new AuthService(
             usersService as unknown as UsersService,
-            {} as any,
+            jwtService,
         );
     });
 
