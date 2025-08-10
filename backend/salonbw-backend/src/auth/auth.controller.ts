@@ -16,6 +16,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
+import { CurrentUser } from './current-user.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -30,8 +31,8 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Log in user' })
     @ApiResponse({ status: 200, description: 'Tokens successfully generated' })
-    login(@Request() req: ExpressRequest & { user: Omit<User, 'password'> }) {
-        return this.authService.login(req.user);
+    login(@CurrentUser() user: Omit<User, 'password'>) {
+        return this.authService.login(user);
     }
 
     @Post('register')
