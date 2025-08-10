@@ -42,7 +42,7 @@ export class AuthService {
         });
     }
 
-    refresh(refreshToken: string) {
+    async refresh(refreshToken: string) {
         try {
             const payload = this.jwtService.verify<{
                 sub: number;
@@ -50,14 +50,21 @@ export class AuthService {
             }>(refreshToken, {
                 secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
             });
+
+            const user = await this.usersService.findById(payload.sub);
+            if (!user) {
+                throw new UnauthorizedException('Invalid or expired refresh token');
+            }
+
             const userPayload: Pick<User, 'id' | 'role'> = {
-                id: payload.sub,
-                role: payload.role,
+                id: user.id,
+                role: user.role,
             };
+
             return {
                 access_token: this.jwtService.sign({
-                    sub: payload.sub,
-                    role: payload.role,
+                    sub: user.id,
+                    role: user.role,
                 }),
                 refresh_token: this.getRefreshToken(userPayload),
             };
