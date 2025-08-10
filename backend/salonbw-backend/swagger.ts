@@ -7,16 +7,26 @@ import { AppService } from './src/app.service';
 import { HealthController } from './src/health.controller';
 import { UsersController } from './src/users/users.controller';
 import { UsersService } from './src/users/users.service';
+import { AuthController } from './src/auth/auth.controller';
+import { AuthService } from './src/auth/auth.service';
 
 @Module({
-  controllers: [AppController, HealthController, UsersController],
+  controllers: [AppController, HealthController, UsersController, AuthController],
   providers: [
     AppService,
     {
       provide: UsersService,
       useValue: {
         findByEmail: async () => null,
-        createUser: async () => ({ id: 0 }),
+        findById: async () => ({ id: 0, role: 'Client' }),
+        createUser: async () => ({ id: 0, role: 'Client' }),
+      },
+    },
+    {
+      provide: AuthService,
+      useValue: {
+        login: () => ({}),
+        refresh: () => ({}),
       },
     },
   ],
