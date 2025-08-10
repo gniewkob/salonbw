@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 jest.mock('bcrypt', () => ({
     compare: jest.fn(),
@@ -21,12 +22,15 @@ const jwtService = { sign: jest.fn() } as unknown as JwtService;
 describe('AuthService.validateUser', () => {
     let service: AuthService;
     let usersService: { findByEmail: jest.Mock };
+    let configService: { get: jest.Mock };
 
     beforeEach(() => {
         usersService = { findByEmail: jest.fn() };
+        configService = { get: jest.fn() };
         service = new AuthService(
             usersService as unknown as UsersService,
             jwtService,
+            configService as unknown as ConfigService,
         );
     });
 

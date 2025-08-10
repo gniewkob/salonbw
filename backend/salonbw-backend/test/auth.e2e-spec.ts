@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
 
 // Typed response bodies for request assertions
@@ -28,19 +29,17 @@ describe('Auth & Users (e2e)', () => {
 
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
+        process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
 
-        const authImports = (await import(
-            '../src/auth/auth.module'
-        )) as typeof import('../src/auth/auth.module');
+        const authImports = require('../src/auth/auth.module') as typeof import('../src/auth/auth.module');
         AuthModule = authImports.AuthModule;
 
-        const userImports = (await import(
-            '../src/users/user.entity'
-        )) as typeof import('../src/users/user.entity');
+        const userImports = require('../src/users/user.entity') as typeof import('../src/users/user.entity');
         User = userImports.User;
 
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
+                ConfigModule.forRoot({ isGlobal: true }),
                 TypeOrmModule.forRoot({
                     type: 'sqlite',
                     database: ':memory:',

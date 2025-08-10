@@ -1,6 +1,6 @@
-import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -8,7 +8,8 @@ async function bootstrap() {
     app.useGlobalPipes(
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
-    app.enableCors({ origin: process.env.FRONTEND_URL });
-    await app.listen(process.env.PORT ?? 3000);
+    const config = app.get(ConfigService);
+    app.enableCors({ origin: config.get<string>('FRONTEND_URL') });
+    await app.listen(config.get<number>('PORT') ?? 3000);
 }
 void bootstrap();
