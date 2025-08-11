@@ -44,6 +44,18 @@
       }
     },
     "/users": {
+      "get": {
+        "operationId": "UsersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
       "post": {
         "operationId": "UsersController_create",
         "parameters": [],
