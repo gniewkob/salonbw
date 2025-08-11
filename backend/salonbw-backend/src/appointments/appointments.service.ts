@@ -27,19 +27,22 @@ export class AppointmentsService {
             );
         }
         const appointment = this.appointmentsRepository.create(data);
-        return this.appointmentsRepository.save(appointment);
+        const saved = await this.appointmentsRepository.save(appointment);
+        return this.findOne(saved.id);
     }
 
     findForUser(userId: number): Promise<Appointment[]> {
         return this.appointmentsRepository.find({
             where: [{ client: { id: userId } }, { employee: { id: userId } }],
             order: { startTime: 'ASC' },
+            relations: ['formulas'],
         });
     }
 
     async findOne(id: number): Promise<Appointment | null> {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
+            relations: ['formulas'],
         });
         return appointment ?? null;
     }
