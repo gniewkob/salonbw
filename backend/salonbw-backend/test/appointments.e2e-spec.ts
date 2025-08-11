@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import request from 'supertest';
-import jwt from 'jsonwebtoken';
+import request, { type Response } from 'supertest';
+import * as jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { Repository } from 'typeorm';
 
@@ -71,10 +72,18 @@ describe('Appointments integration', () => {
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
 
-        userRepo = moduleFixture.get<Repository<User>>(getRepositoryToken(User));
-        serviceRepo = moduleFixture.get<Repository<Service>>(getRepositoryToken(Service));
-        commissionRepo = moduleFixture.get<Repository<Commission>>(getRepositoryToken(Commission));
-        formulaRepo = moduleFixture.get<Repository<Formula>>(getRepositoryToken(Formula));
+        userRepo = moduleFixture.get<Repository<User>>(
+            getRepositoryToken(User),
+        );
+        serviceRepo = moduleFixture.get<Repository<Service>>(
+            getRepositoryToken(Service),
+        );
+        commissionRepo = moduleFixture.get<Repository<Commission>>(
+            getRepositoryToken(Commission),
+        );
+        formulaRepo = moduleFixture.get<Repository<Formula>>(
+            getRepositoryToken(Formula),
+        );
 
         client = await userRepo.save({
             email: 'client@example.com',
@@ -109,10 +118,17 @@ describe('Appointments integration', () => {
             commissionPercent: 10,
         });
 
-        clientToken = jwt.sign({ sub: client.id, role: 'client' }, process.env.JWT_SECRET!);
-        employeeToken = jwt.sign({ sub: employee.id, role: 'employee' }, process.env.JWT_SECRET!);
-        otherEmployeeToken = jwt.sign({ sub: otherEmployee.id, role: 'employee' }, process.env.JWT_SECRET!);
-        adminToken = jwt.sign({ sub: admin.id, role: 'admin' }, process.env.JWT_SECRET!);
+        const jwtSecret = process.env.JWT_SECRET ?? '';
+        clientToken = jwt.sign({ sub: client.id, role: 'client' }, jwtSecret);
+        employeeToken = jwt.sign(
+            { sub: employee.id, role: 'employee' },
+            jwtSecret,
+        );
+        otherEmployeeToken = jwt.sign(
+            { sub: otherEmployee.id, role: 'employee' },
+            jwtSecret,
+        );
+        adminToken = jwt.sign({ sub: admin.id, role: 'admin' }, jwtSecret);
     });
 
     afterAll(async () => {
@@ -122,7 +138,7 @@ describe('Appointments integration', () => {
     it('allows clients to create appointments and prevents employee creation', async () => {
         const start = new Date('2024-01-01T10:00:00Z').toISOString();
         const end = new Date('2024-01-01T11:00:00Z').toISOString();
-        const res = await request(server)
+        const res: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({
@@ -132,7 +148,9 @@ describe('Appointments integration', () => {
                 endTime: end,
             })
             .expect(201);
-        expect(res.body.employee.id).toBe(employee.id);
+        expect((res.body as { employee: { id: number } }).employee.id).toBe(
+            employee.id,
+        );
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
@@ -176,7 +194,7 @@ describe('Appointments integration', () => {
     it('allows only assigned employees or admins to complete appointments and creates commissions', async () => {
         const start = new Date('2024-01-03T09:00:00Z').toISOString();
         const end = new Date('2024-01-03T10:00:00Z').toISOString();
-        const createRes = await request(server)
+        const createRes: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({
@@ -198,11 +216,13 @@ describe('Appointments integration', () => {
             .set('Authorization', `Bearer ${otherEmployeeToken}`)
             .expect(403);
 
-        const completeRes = await request(server)
+        const completeRes: Response = await request(server)
             .patch(`/appointments/${appointmentId}/complete`)
             .set('Authorization', `Bearer ${employeeToken}`)
             .expect(200);
-        expect((completeRes.body as AppointmentResponse).status).toBe('completed');
+        expect((completeRes.body as AppointmentResponse).status).toBe(
+            'completed',
+        );
 
         const commissions = await commissionRepo.find();
         expect(commissions).toHaveLength(1);
@@ -212,7 +232,7 @@ describe('Appointments integration', () => {
         // Admin can also complete
         const start2 = new Date('2024-01-04T09:00:00Z').toISOString();
         const end2 = new Date('2024-01-04T10:00:00Z').toISOString();
-        const createRes2 = await request(server)
+        const createRes2: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({
@@ -224,17 +244,19 @@ describe('Appointments integration', () => {
             .expect(201);
         const appointmentId2 = (createRes2.body as AppointmentResponse).id;
 
-        const adminComplete = await request(server)
+        const adminComplete: Response = await request(server)
             .patch(`/appointments/${appointmentId2}/complete`)
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
-        expect((adminComplete.body as AppointmentResponse).status).toBe('completed');
+        expect((adminComplete.body as AppointmentResponse).status).toBe(
+            'completed',
+        );
     });
 
     it('restricts formula creation to employees or admins', async () => {
         const start = new Date('2024-01-05T09:00:00Z').toISOString();
         const end = new Date('2024-01-05T10:00:00Z').toISOString();
-        const createRes = await request(server)
+        const createRes: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
             .send({
@@ -268,4 +290,3 @@ describe('Appointments integration', () => {
         expect(formulas[0].appointment!.id).toBe(appointmentId);
     });
 });
-
