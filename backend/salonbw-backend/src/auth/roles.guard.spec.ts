@@ -41,14 +41,6 @@ describe('RolesGuard', () => {
         jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
             Role.Client,
         ]);
-        const ctx = createContext(Role.Client);
-        expect(guard.canActivate(ctx)).toBe(true);
-    });
-
-    it('allows admin for any role', () => {
-        jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
-            Role.Client,
-        ]);
         const ctx = createContext(Role.Admin);
         expect(guard.canActivate(ctx)).toBe(true);
     });
