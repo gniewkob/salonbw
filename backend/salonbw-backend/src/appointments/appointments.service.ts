@@ -1,8 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThan, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
+import { Role } from '../users/role.enum';
 
 @Injectable()
 export class AppointmentsService {
@@ -12,7 +13,16 @@ export class AppointmentsService {
         private readonly commissionsService: CommissionsService,
     ) {}
 
-    async create(data: Partial<Appointment>): Promise<Appointment> {
+    async create(
+        data: Partial<Appointment>,
+        booker: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        if (
+            booker.role === Role.Employee &&
+            (!data.client || !data.client.id)
+        ) {
+            throw new BadRequestException('clientId is required');
+        }
         const conflict = await this.appointmentsRepository.findOne({
             where: {
                 employee: { id: data.employee!.id },
