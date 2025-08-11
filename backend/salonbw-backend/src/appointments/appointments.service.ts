@@ -2,12 +2,14 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThan, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
+import { CommissionsService } from '../commissions/commissions.service';
 
 @Injectable()
 export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
+        private readonly commissionsService: CommissionsService,
     ) {}
 
     async create(data: Partial<Appointment>): Promise<Appointment> {
@@ -20,7 +22,9 @@ export class AppointmentsService {
             },
         });
         if (conflict) {
-            throw new ConflictException('Employee is already booked for this time');
+            throw new ConflictException(
+                'Employee is already booked for this time',
+            );
         }
         const appointment = this.appointmentsRepository.create(data);
         return this.appointmentsRepository.save(appointment);
@@ -47,10 +51,15 @@ export class AppointmentsService {
         return this.findOne(id);
     }
 
-    async complete(id: number): Promise<Appointment | null> {
+    async completeAppointment(id: number): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
         await this.appointmentsRepository.update(id, {
             status: AppointmentStatus.Completed,
         });
+        await this.commissionsService.createFromAppointment(appointment);
         return this.findOne(id);
     }
 }
