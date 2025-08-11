@@ -7,6 +7,7 @@ import {
     Post,
     UseGuards,
     ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -23,7 +24,7 @@ export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
     create(
         @Body()
@@ -33,17 +34,28 @@ export class AppointmentsController {
             startTime: string;
             endTime: string;
             notes?: string;
+            clientId?: number;
         },
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
-        return this.appointmentsService.create({
-            client: { id: user.userId } as User,
-            employee: { id: body.employeeId } as User,
-            service: { id: body.serviceId } as SalonService,
-            startTime: new Date(body.startTime),
-            endTime: new Date(body.endTime),
-            notes: body.notes,
-        });
+        const clientId =
+            user.role === Role.Client || user.role === Role.Admin
+                ? user.userId
+                : body.clientId;
+        if (user.role === Role.Employee && !clientId) {
+            throw new BadRequestException('clientId is required');
+        }
+        return this.appointmentsService.create(
+            {
+                client: { id: clientId } as User,
+                employee: { id: body.employeeId } as User,
+                service: { id: body.serviceId } as SalonService,
+                startTime: new Date(body.startTime),
+                endTime: new Date(body.endTime),
+                notes: body.notes,
+            },
+            user,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

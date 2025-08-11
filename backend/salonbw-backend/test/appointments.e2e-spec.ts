@@ -139,7 +139,7 @@ describe('Appointments integration', () => {
         await app.close();
     });
 
-    it('allows clients to create appointments and prevents employee creation', async () => {
+    it('allows clients and employees to create appointments when clientId is provided', async () => {
         const start = new Date('2024-01-01T10:00:00Z').toISOString();
         const end = new Date('2024-01-01T11:00:00Z').toISOString();
         const res: Response = await request(server)
@@ -156,16 +156,31 @@ describe('Appointments integration', () => {
             employee: { id },
         } = res.body as AppointmentWithEmployee;
         expect(id).toBe(employee.id);
+
+        const empStart = new Date('2024-01-01T12:00:00Z').toISOString();
+        const empEnd = new Date('2024-01-01T13:00:00Z').toISOString();
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({
                 employeeId: employee.id,
                 serviceId: service.id,
-                startTime: start,
-                endTime: end,
+                startTime: empStart,
+                endTime: empEnd,
             })
-            .expect(403);
+            .expect(400);
+
+        await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({
+                employeeId: employee.id,
+                clientId: client.id,
+                serviceId: service.id,
+                startTime: empStart,
+                endTime: empEnd,
+            })
+            .expect(201);
     });
 
     it('detects scheduling conflicts for the same employee', async () => {
