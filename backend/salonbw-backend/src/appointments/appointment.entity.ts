@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    OneToMany,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { Service } from '../services/service.entity';
+import { Formula } from '../formulas/formula.entity';
 
 export enum AppointmentStatus {
     Scheduled = 'scheduled',
@@ -28,9 +35,16 @@ export class Appointment {
     @Column()
     endTime: Date;
 
-    @Column({ type: 'simple-enum', enum: AppointmentStatus, default: AppointmentStatus.Scheduled })
+    @Column({
+        type: 'simple-enum',
+        enum: AppointmentStatus,
+        default: AppointmentStatus.Scheduled,
+    })
     status: AppointmentStatus;
 
     @Column({ nullable: true })
     notes?: string;
+
+    @OneToMany(() => Formula, (f) => f.appointment)
+    formulas: Formula[];
 }
