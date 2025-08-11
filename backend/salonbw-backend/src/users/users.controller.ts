@@ -33,6 +33,8 @@ export class UsersController {
         });
     }
 
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
         const user = await this.usersService.createUser(createUserDto);
