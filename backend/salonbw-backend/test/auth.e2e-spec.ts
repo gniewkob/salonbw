@@ -226,6 +226,18 @@ describe('Auth & Users (e2e)', () => {
             .expect(403);
     });
 
+    it('denies client from creating a user', async () => {
+        await request(server)
+            .post('/users')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .send({
+                email: 'clientcreate@example.com',
+                password: 'password123',
+                name: 'ClientCreate',
+            })
+            .expect(403);
+    });
+
     it('logs in admin user', async () => {
         const res = await request(server)
             .post('/auth/login')
@@ -242,6 +254,18 @@ describe('Auth & Users (e2e)', () => {
             .expect(200);
         const users = res.body as unknown[];
         expect(users.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('allows admin to create a user', async () => {
+        await request(server)
+            .post('/users')
+            .set('Authorization', `Bearer ${adminAccessToken}`)
+            .send({
+                email: 'newuser@example.com',
+                password: 'password123',
+                name: 'New User',
+            })
+            .expect(201);
     });
 
     it('allows admin to access client endpoint', async () => {
