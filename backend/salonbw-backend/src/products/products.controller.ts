@@ -20,14 +20,14 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @Get()
     findAll(): Promise<Product[]> {
         return this.productsService.findAll();
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee)
     @Get(':id')
     findOne(@Param('id') id: string): Promise<Product | null> {
         return this.productsService.findOne(Number(id));
