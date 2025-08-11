@@ -16,7 +16,9 @@ export class Formula {
     @ManyToOne(() => User, { eager: true })
     client: User;
 
-    @ManyToOne(() => Appointment, { eager: true, nullable: true })
+    @ManyToOne(() => Appointment, (a) => a.formulas, {
+        eager: true,
+        nullable: true,
+    })
     appointment?: Appointment;
 }
-
