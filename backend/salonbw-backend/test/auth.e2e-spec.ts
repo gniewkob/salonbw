@@ -1,12 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
 import { AuthModule } from '../src/auth/auth.module';
 import { User } from '../src/users/user.entity';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
+import { Repository } from 'typeorm';
+import bcrypt from 'bcrypt';
 
 // Typed response bodies for request assertions
 interface AuthTokens {
@@ -27,12 +29,14 @@ describe('Auth & Users (e2e)', () => {
     let server: Parameters<typeof request>[0];
     let accessToken: string;
     let refreshToken: string;
+    let adminAccessToken: string;
+    let moduleFixture: TestingModule;
 
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
         process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
 
-        const moduleFixture: TestingModule = await Test.createTestingModule({
+        moduleFixture = await Test.createTestingModule({
             imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
                 TypeOrmModule.forRoot({
@@ -49,6 +53,14 @@ describe('Auth & Users (e2e)', () => {
         app = moduleFixture.createNestApplication();
         app.use(cookieParser());
         await app.init();
+        const userRepo = moduleFixture.get<Repository<User>>(getRepositoryToken(User));
+        const adminPassword = await bcrypt.hash('adminpass', 10);
+        await userRepo.save({
+            email: 'admin@example.com',
+            password: adminPassword,
+            name: 'Admin',
+            role: 'admin',
+        });
         server = app.getHttpServer() as Parameters<typeof request>[0];
     });
 
@@ -73,13 +85,13 @@ describe('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
             process.env.JWT_REFRESH_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.sub).toBe(2);
         expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
@@ -112,13 +124,13 @@ describe('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
             process.env.JWT_REFRESH_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.sub).toBe(2);
         expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
@@ -150,13 +162,13 @@ describe('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
             process.env.JWT_REFRESH_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.sub).toBe(2);
         expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
@@ -179,13 +191,13 @@ describe('Auth & Users (e2e)', () => {
             access_token,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBe(1);
+        expect(accessPayload.sub).toBe(2);
         expect(accessPayload.role).toBe('client');
         const refreshPayload = jwt.verify(
             refresh_token,
             process.env.JWT_REFRESH_SECRET as string,
         ) as jwt.JwtPayload;
-        expect(refreshPayload.sub).toBe(1);
+        expect(refreshPayload.sub).toBe(2);
         expect(refreshPayload.role).toBe('client');
         accessToken = access_token;
         refreshToken = refresh_token;
@@ -202,6 +214,37 @@ describe('Auth & Users (e2e)', () => {
             .expect(200);
         const { userId } = res.body as ProfileResponse;
 
-        expect(userId).toBe(1);
+        expect(userId).toBe(2);
+    });
+
+    it('denies access to admin endpoint for client', async () => {
+        await request(server)
+            .get('/users')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(403);
+    });
+
+    it('logs in admin user', async () => {
+        const res = await request(server)
+            .post('/auth/login')
+            .send({ email: 'admin@example.com', password: 'adminpass' })
+            .expect(200);
+        const { access_token } = res.body as AuthTokens;
+        adminAccessToken = access_token;
+    });
+
+    it('allows access to admin endpoint for admin', async () => {
+        const res = await request(server)
+            .get('/users')
+            .set('Authorization', `Bearer ${adminAccessToken}`)
+            .expect(200);
+        expect(res.body.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('allows admin to access client endpoint', async () => {
+        await request(server)
+            .get('/users/profile')
+            .set('Authorization', `Bearer ${adminAccessToken}`)
+            .expect(200);
     });
 });
