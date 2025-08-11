@@ -24,6 +24,10 @@ interface AppointmentResponse {
     status: string;
 }
 
+interface AppointmentWithEmployee extends AppointmentResponse {
+    employee: { id: number };
+}
+
 describe('Appointments integration', () => {
     let app: INestApplication;
     let server: Parameters<typeof request>[0];
@@ -148,9 +152,10 @@ describe('Appointments integration', () => {
                 endTime: end,
             })
             .expect(201);
-        expect((res.body as { employee: { id: number } }).employee.id).toBe(
-            employee.id,
-        );
+        const {
+            employee: { id },
+        } = res.body as AppointmentWithEmployee;
+        expect(id).toBe(employee.id);
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
