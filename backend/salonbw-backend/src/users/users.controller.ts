@@ -23,7 +23,10 @@ export class UsersController {
     @Get()
     async findAll() {
         const users = await this.usersService.findAll();
-        return users.map(({ password, ...rest }) => rest);
+        return users.map(({ password: _password, ...rest }) => {
+            void _password;
+            return rest;
+        });
     }
 
     @Post()

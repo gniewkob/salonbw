@@ -53,7 +53,9 @@ describe('Auth & Users (e2e)', () => {
         app = moduleFixture.createNestApplication();
         app.use(cookieParser());
         await app.init();
-        const userRepo = moduleFixture.get<Repository<User>>(getRepositoryToken(User));
+        const userRepo = moduleFixture.get<Repository<User>>(
+            getRepositoryToken(User),
+        );
         const adminPassword = await bcrypt.hash('adminpass', 10);
         await userRepo.save({
             email: 'admin@example.com',
@@ -238,7 +240,8 @@ describe('Auth & Users (e2e)', () => {
             .get('/users')
             .set('Authorization', `Bearer ${adminAccessToken}`)
             .expect(200);
-        expect(res.body.length).toBeGreaterThanOrEqual(1);
+        const users = res.body as unknown[];
+        expect(users.length).toBeGreaterThanOrEqual(1);
     });
 
     it('allows admin to access client endpoint', async () => {
