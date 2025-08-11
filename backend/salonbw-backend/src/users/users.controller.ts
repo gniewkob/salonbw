@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserDto } from './dto/user.dto';
 import { Role } from './role.enum';
 
 @Controller('users')
@@ -21,7 +23,9 @@ export class UsersController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Get()
-    async findAll() {
+    @ApiBearerAuth()
+    @ApiOkResponse({ type: UserDto, isArray: true })
+    async findAll(): Promise<UserDto[]> {
         const users = await this.usersService.findAll();
         return users.map(({ password: _password, ...rest }) => {
             void _password;
