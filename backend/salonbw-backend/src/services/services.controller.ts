@@ -14,6 +14,8 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { ServicesService } from './services.service';
 import { Service } from './service.entity';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Controller('services')
 export class ServicesController {
@@ -36,8 +38,8 @@ export class ServicesController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() body: Service): Promise<Service> {
-        return this.servicesService.create(body);
+    create(@Body() createServiceDto: CreateServiceDto): Promise<Service> {
+        return this.servicesService.create(createServiceDto);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -45,9 +47,9 @@ export class ServicesController {
     @Patch(':id')
     update(
         @Param('id') id: string,
-        @Body() body: Partial<Service>,
+        @Body() updateServiceDto: UpdateServiceDto,
     ): Promise<Service | null> {
-        return this.servicesService.update(Number(id), body);
+        return this.servicesService.update(Number(id), updateServiceDto);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
