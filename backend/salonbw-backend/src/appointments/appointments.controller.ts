@@ -82,10 +82,11 @@ export class AppointmentsController {
         const appointment = await this.appointmentsService.findOne(Number(id));
         if (
             !appointment ||
-            (user.role !== Role.Admin && appointment.employee.id !== user.userId)
+            (user.role !== Role.Admin &&
+                appointment.employee.id !== user.userId)
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.complete(Number(id));
+        return this.appointmentsService.completeAppointment(Number(id));
     }
 }
