@@ -32,5 +32,12 @@ export class FormulasController {
     ): Promise<Formula[]> {
         return this.formulasService.findForClient(user.userId);
     }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @Get('clients/:id')
+    findForClient(@Param('id') id: string): Promise<Formula[]> {
+        return this.formulasService.findForClient(Number(id));
+    }
 }
 
