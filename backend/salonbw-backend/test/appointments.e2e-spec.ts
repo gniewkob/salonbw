@@ -168,6 +168,7 @@ describe('Appointments integration', () => {
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({
+                clientId: client.id,
                 employeeId: employee.id,
                 serviceId: service.id,
                 startTime: empStart,
