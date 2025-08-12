@@ -12,6 +12,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { AppointmentsModule } from '../src/appointments/appointments.module';
 import { ServicesModule } from '../src/services/services.module';
 import { FormulasModule } from '../src/formulas/formulas.module';
+import { ProductsModule } from '../src/products/products.module';
 import { User } from '../src/users/user.entity';
 import { Service } from '../src/services/service.entity';
 import { Appointment } from '../src/appointments/appointment.entity';
@@ -69,6 +70,7 @@ describe('Appointments integration', () => {
                 ServicesModule,
                 AppointmentsModule,
                 FormulasModule,
+                ProductsModule,
             ],
         }).compile();
 
@@ -363,5 +365,38 @@ describe('Appointments integration', () => {
         const formulas = await formulaRepo.find();
         expect(formulas).toHaveLength(1);
         expect(formulas[0].appointment!.id).toBe(appointmentId);
+    });
+
+    it('rejects non-numeric service id', async () => {
+        await request(server).get('/services/abc').expect(400);
+    });
+
+    it('rejects non-numeric product id', async () => {
+        await request(server)
+            .get('/products/abc')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(400);
+    });
+
+    it('rejects non-numeric appointment id', async () => {
+        await request(server)
+            .patch('/appointments/abc/cancel')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(400);
+    });
+
+    it('rejects non-numeric appointment id when adding formulas', async () => {
+        await request(server)
+            .post('/appointments/abc/formulas')
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({ description: 'x', date: new Date().toISOString() })
+            .expect(400);
+    });
+
+    it('rejects non-numeric client id for formulas', async () => {
+        await request(server)
+            .get('/clients/abc/formulas')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(400);
     });
 });

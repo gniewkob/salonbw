@@ -7,6 +7,7 @@ import {
     Patch,
     Post,
     UseGuards,
+    ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
@@ -27,8 +28,8 @@ export class ServicesController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<Service> {
-        return this.servicesService.findOne(Number(id));
+    findOne(@Param('id', ParseIntPipe) id: number): Promise<Service> {
+        return this.servicesService.findOne(id);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -42,16 +43,16 @@ export class ServicesController {
     @Roles(Role.Admin)
     @Patch(':id')
     update(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @Body() updateServiceDto: UpdateServiceDto,
     ): Promise<Service> {
-        return this.servicesService.update(Number(id), updateServiceDto);
+        return this.servicesService.update(id, updateServiceDto);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Delete(':id')
-    remove(@Param('id') id: string): Promise<void> {
-        return this.servicesService.remove(Number(id));
+    remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return this.servicesService.remove(id);
     }
 }

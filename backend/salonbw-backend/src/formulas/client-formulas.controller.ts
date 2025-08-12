@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -21,7 +21,9 @@ export class ClientFormulasController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @Get(':id/formulas')
-    findForClient(@Param('id') id: string): Promise<Formula[]> {
-        return this.formulasService.findForClient(Number(id));
+    findForClient(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<Formula[]> {
+        return this.formulasService.findForClient(id);
     }
 }

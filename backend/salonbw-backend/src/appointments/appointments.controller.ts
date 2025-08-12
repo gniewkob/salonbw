@@ -9,6 +9,7 @@ import {
     ForbiddenException,
     BadRequestException,
     NotFoundException,
+    ParseIntPipe,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -78,10 +79,10 @@ export class AppointmentsController {
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Patch(':id/cancel')
     async cancel(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
-        const appointment = await this.appointmentsService.findOne(Number(id));
+        const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
         }
@@ -92,17 +93,17 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.cancel(Number(id));
+        return this.appointmentsService.cancel(id);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @Patch(':id/complete')
     async complete(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
-        const appointment = await this.appointmentsService.findOne(Number(id));
+        const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
         }
@@ -112,6 +113,6 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.completeAppointment(Number(id));
+        return this.appointmentsService.completeAppointment(id);
     }
 }
