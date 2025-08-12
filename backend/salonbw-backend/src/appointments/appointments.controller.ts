@@ -8,6 +8,7 @@ import {
     UseGuards,
     ForbiddenException,
     BadRequestException,
+    NotFoundException,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -81,11 +82,13 @@ export class AppointmentsController {
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
         const appointment = await this.appointmentsService.findOne(Number(id));
+        if (!appointment) {
+            throw new NotFoundException();
+        }
         if (
-            !appointment ||
-            (user.role !== Role.Admin &&
-                appointment.client.id !== user.userId &&
-                appointment.employee.id !== user.userId)
+            user.role !== Role.Admin &&
+            appointment.client.id !== user.userId &&
+            appointment.employee.id !== user.userId
         ) {
             throw new ForbiddenException();
         }
@@ -100,10 +103,12 @@ export class AppointmentsController {
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
         const appointment = await this.appointmentsService.findOne(Number(id));
+        if (!appointment) {
+            throw new NotFoundException();
+        }
         if (
-            !appointment ||
-            (user.role !== Role.Admin &&
-                appointment.employee.id !== user.userId)
+            user.role !== Role.Admin &&
+            appointment.employee.id !== user.userId
         ) {
             throw new ForbiddenException();
         }
