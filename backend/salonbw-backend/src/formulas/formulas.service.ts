@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ForbiddenException,
     Injectable,
     NotFoundException,
@@ -6,7 +7,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Formula } from './formula.entity';
-import { Appointment } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 
 @Injectable()
 export class FormulasService {
@@ -24,13 +28,17 @@ export class FormulasService {
     ): Promise<Formula> {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id: appointmentId },
-            relations: ['employee'],
+            select: ['id', 'status'],
+            relations: ['employee', 'client'],
         });
         if (!appointment) {
             throw new NotFoundException('Appointment not found');
         }
         if (appointment.employee.id !== userId) {
             throw new ForbiddenException();
+        }
+        if (appointment.status !== AppointmentStatus.Completed) {
+            throw new BadRequestException('Appointment not completed');
         }
         const formula = this.formulasRepository.create({
             description: data.description,
