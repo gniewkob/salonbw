@@ -316,19 +316,54 @@ describe('Appointments integration', () => {
             'completed',
         );
     });
+    it('prevents cancelling completed appointments', async () => {
+        const startBase = Date.now() + 13 * hour;
+        const start = new Date(startBase).toISOString();
+        const createRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: start,
+            })
+            .expect(201);
+        const appointmentId = (createRes.body as AppointmentResponse).id;
 
-    it('returns 404 when completing a non-existent appointment', async () => {
         await request(server)
-            .patch('/appointments/999999/complete')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .expect(404);
+            .patch(`/appointments/${appointmentId}/complete`)
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .expect(200);
+
+        await request(server)
+            .patch(`/appointments/${appointmentId}/cancel`)
+            .set('Authorization', `Bearer ${clientToken}`)
+            .expect(400);
     });
 
-    it('returns 404 when cancelling a non-existent appointment', async () => {
+    it('prevents completing cancelled appointments', async () => {
+        const startBase = Date.now() + 15 * hour;
+        const start = new Date(startBase).toISOString();
+        const createRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: start,
+            })
+            .expect(201);
+        const appointmentId = (createRes.body as AppointmentResponse).id;
+
         await request(server)
-            .patch('/appointments/999999/cancel')
-            .set('Authorization', `Bearer ${adminToken}`)
-            .expect(404);
+            .patch(`/appointments/${appointmentId}/cancel`)
+            .set('Authorization', `Bearer ${clientToken}`)
+            .expect(200);
+
+        await request(server)
+            .patch(`/appointments/${appointmentId}/complete`)
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .expect(400);
     });
 
     it('restricts formula creation to employees or admins', async () => {
