@@ -315,6 +315,20 @@ describe('Appointments integration', () => {
         );
     });
 
+    it('returns 404 when completing a non-existent appointment', async () => {
+        await request(server)
+            .patch('/appointments/999999/complete')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(404);
+    });
+
+    it('returns 404 when cancelling a non-existent appointment', async () => {
+        await request(server)
+            .patch('/appointments/999999/cancel')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(404);
+    });
+
     it('restricts formula creation to employees or admins', async () => {
         const startBase = Date.now() + 11 * hour;
         const start = new Date(startBase).toISOString();
