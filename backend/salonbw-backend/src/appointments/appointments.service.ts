@@ -133,9 +133,9 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (appointment.status !== AppointmentStatus.Scheduled) {
+        if (appointment.status === AppointmentStatus.Cancelled) {
             throw new BadRequestException(
-                'Only scheduled appointments can be completed',
+                'Cannot complete a cancelled appointment',
             );
         }
         await this.appointmentsRepository.update(id, {
