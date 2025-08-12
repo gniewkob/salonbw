@@ -74,7 +74,7 @@ export function useReviewApi() {
 
   const remove = async (id: number) => {
     try {
-      await apiFetch<void>(`/reviews/${id}`, { method: 'DELETE' });
+      await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
       toast.success('Review deleted');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
