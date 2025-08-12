@@ -9,6 +9,7 @@ import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -17,20 +18,47 @@ export class AppointmentsService {
         private readonly appointmentsRepository: Repository<Appointment>,
         @InjectRepository(SalonService)
         private readonly servicesRepository: Repository<SalonService>,
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
     ) {}
 
-    async create(
-        data: Partial<Appointment>,
-        booker: { userId: number; role: Role },
-    ): Promise<Appointment> {
-        if (
-            booker.role === Role.Employee &&
-            (!data.client || !data.client.id)
-        ) {
+    async create(data: Partial<Appointment>): Promise<Appointment> {
+        if (!data.client?.id) {
             throw new BadRequestException('clientId is required');
         }
-        if (!data.startTime || data.startTime < new Date()) {
+        if (!data.employee?.id) {
+            throw new BadRequestException('employeeId is required');
+        }
+        const client = await this.usersRepository.findOne({
+            where: { id: data.client.id },
+        });
+        if (!client) {
+            throw new BadRequestException('Invalid clientId');
+        }
+        if (client.role !== Role.Client) {
+            throw new BadRequestException(
+                'Provided clientId does not belong to a client',
+            );
+        }
+        const employee = await this.usersRepository.findOne({
+            where: { id: data.employee.id },
+        });
+        if (!employee) {
+            throw new BadRequestException('Invalid employeeId');
+        }
+        if (employee.role !== Role.Employee) {
+            throw new BadRequestException(
+                'Provided employeeId does not belong to an employee',
+            );
+        }
+        data.client = client;
+        data.employee = employee;
+        if (
+            !data.startTime ||
+            isNaN(new Date(data.startTime).getTime()) ||
+            data.startTime < new Date()
+        ) {
             throw new BadRequestException('startTime must be in the future');
         }
         const service = await this.servicesRepository.findOne({
@@ -41,14 +69,14 @@ export class AppointmentsService {
         }
         data.service = service;
         data.endTime = new Date(
-            (data.startTime as Date).getTime() + service.duration * 60 * 1000,
+            data.startTime.getTime() + service.duration * 60 * 1000,
         );
         const conflict = await this.appointmentsRepository.findOne({
             where: {
-                employee: { id: data.employee!.id },
+                employee: { id: data.employee.id },
                 status: Not(AppointmentStatus.Cancelled),
-                startTime: LessThan(data.endTime as Date),
-                endTime: MoreThan(data.startTime as Date),
+                startTime: LessThan(data.endTime),
+                endTime: MoreThan(data.startTime),
             },
         });
         if (conflict) {
@@ -58,7 +86,11 @@ export class AppointmentsService {
         }
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
-        return this.findOne(saved.id);
+        const result = await this.findOne(saved.id);
+        if (!result) {
+            throw new Error('Appointment not found after creation');
+        }
+        return result;
     }
 
     findForUser(userId: number): Promise<Appointment[]> {
@@ -82,9 +114,12 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (appointment.status === AppointmentStatus.Completed) {
+        if (
+            appointment.status === AppointmentStatus.Completed ||
+            appointment.status === AppointmentStatus.Cancelled
+        ) {
             throw new BadRequestException(
-                'Cannot cancel a completed appointment',
+                'Cannot cancel a completed or already cancelled appointment',
             );
         }
         await this.appointmentsRepository.update(id, {

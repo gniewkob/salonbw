@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { ColumnNumericTransformer } from '../column-numeric.transformer';
 
 @Entity('services')
 export class Service {
@@ -14,12 +15,15 @@ export class Service {
     @Column('int')
     duration: number;
 
-    @Column('decimal')
+    @Column('decimal', { transformer: new ColumnNumericTransformer() })
     price: number;
 
     @Column({ nullable: true })
     category?: string;
 
-    @Column('decimal', { nullable: true })
+    @Column('decimal', {
+        nullable: true,
+        transformer: new ColumnNumericTransformer(),
+    })
     commissionPercent?: number;
 }

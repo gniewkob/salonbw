@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { ColumnNumericTransformer } from '../column-numeric.transformer';
 
 @Entity('products')
 export class Product {
@@ -11,7 +12,7 @@ export class Product {
     @Column()
     brand: string;
 
-    @Column('decimal')
+    @Column('decimal', { transformer: new ColumnNumericTransformer() })
     unitPrice: number;
 
     @Column('int')
