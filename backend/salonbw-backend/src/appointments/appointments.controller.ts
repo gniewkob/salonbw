@@ -7,7 +7,6 @@ import {
     Post,
     UseGuards,
     ForbiddenException,
-    BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -32,29 +31,15 @@ export class AppointmentsController {
             employeeId: number;
             serviceId: number;
             startTime: string;
-            endTime?: string;
-            notes?: string;
-            clientId?: number;
         },
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
-        const clientId =
-            user.role === Role.Client || user.role === Role.Admin
-                ? user.userId
-                : body.clientId;
-        if (user.role === Role.Employee && !clientId) {
-            throw new BadRequestException('clientId is required');
-        }
         return this.appointmentsService.create(
             {
-                client: { id: clientId } as User,
+                client: { id: user.userId } as User,
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
                 startTime: new Date(body.startTime),
-                endTime: body.endTime
-                    ? new Date(body.endTime)
-                    : undefined,
-                notes: body.notes,
             },
             user,
         );

@@ -3,7 +3,6 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
 import AppointmentForm from '@/components/AppointmentForm';
 import { useAppointments } from '@/hooks/useAppointments';
-import { useClients } from '@/hooks/useClients';
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,14 +19,12 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
 import { useState } from 'react';
 
 interface AppointmentPayload {
-    clientId: number;
     serviceId: number;
     startTime: string;
 }
 
 export default function AppointmentsPage() {
     const { data: appointments, loading, error } = useAppointments();
-    const { data: clients } = useClients();
     const { data: services } = useServices();
     const api = useAppointmentsApi();
     const { role } = useAuth();
@@ -35,7 +32,7 @@ export default function AppointmentsPage() {
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
 
-    if (loading || !clients || !services) return <div>Loading...</div>;
+    if (loading || !services) return <div>Loading...</div>;
     if (error) return <div>Error</div>;
 
     const events = appointments?.map((a) => ({
@@ -95,7 +92,6 @@ export default function AppointmentsPage() {
                 />
                 <Modal open={formOpen} onClose={() => setFormOpen(false)}>
                     <AppointmentForm
-                        clients={clients}
                         services={services}
                         initial={{ startTime }}
                         onSubmit={handleSubmit}
