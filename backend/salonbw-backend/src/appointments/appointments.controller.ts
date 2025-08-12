@@ -32,7 +32,7 @@ export class AppointmentsController {
             employeeId: number;
             serviceId: number;
             startTime: string;
-            endTime: string;
+            endTime?: string;
             notes?: string;
             clientId?: number;
         },
@@ -51,7 +51,9 @@ export class AppointmentsController {
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
                 startTime: new Date(body.startTime),
-                endTime: new Date(body.endTime),
+                endTime: body.endTime
+                    ? new Date(body.endTime)
+                    : undefined,
                 notes: body.notes,
             },
             user,
