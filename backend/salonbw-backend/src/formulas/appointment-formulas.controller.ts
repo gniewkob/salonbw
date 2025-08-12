@@ -1,4 +1,11 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Param,
+    Post,
+    UseGuards,
+    ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -16,11 +23,11 @@ export class AppointmentFormulasController {
     @Roles(Role.Employee, Role.Admin)
     @Post()
     addFormula(
-        @Param('appointmentId') id: string,
+        @Param('appointmentId', ParseIntPipe) appointmentId: number,
         @Body() body: CreateFormulaDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Formula> {
-        return this.formulasService.addToAppointment(Number(id), user.userId, {
+        return this.formulasService.addToAppointment(appointmentId, user.userId, {
             description: body.description,
             date: new Date(body.date),
         });
