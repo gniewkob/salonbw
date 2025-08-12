@@ -42,6 +42,7 @@ describe('Appointments integration', () => {
     let service: Service;
     let client: User;
     let employee: User;
+    const hour = 60 * 60 * 1000;
 
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
@@ -140,8 +141,9 @@ describe('Appointments integration', () => {
     });
 
     it('allows clients and employees to create appointments when clientId is provided', async () => {
-        const start = new Date('2024-01-01T10:00:00Z').toISOString();
-        const end = new Date('2024-01-01T11:00:00Z').toISOString();
+        const startBase = Date.now() + hour;
+        const start = new Date(startBase).toISOString();
+        const end = new Date(startBase + hour).toISOString();
         const res: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
@@ -154,11 +156,14 @@ describe('Appointments integration', () => {
             .expect(201);
         const {
             employee: { id },
-        } = res.body as AppointmentWithEmployee;
+            endTime: returnedEnd,
+        } = res.body as AppointmentWithEmployee & { endTime: string };
         expect(id).toBe(employee.id);
+        expect(returnedEnd).toBe(end);
 
-        const empStart = new Date('2024-01-01T12:00:00Z').toISOString();
-        const empEnd = new Date('2024-01-01T13:00:00Z').toISOString();
+        const empStartBase = Date.now() + 3 * hour;
+        const empStart = new Date(empStartBase).toISOString();
+        const empEnd = new Date(empStartBase + hour).toISOString();
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
@@ -170,7 +175,7 @@ describe('Appointments integration', () => {
             })
             .expect(400);
 
-        await request(server)
+        const empRes: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({
@@ -178,14 +183,34 @@ describe('Appointments integration', () => {
                 clientId: client.id,
                 serviceId: service.id,
                 startTime: empStart,
-                endTime: empEnd,
             })
             .expect(201);
+        const expectedEnd = new Date(
+            empStartBase + service.duration * 60 * 1000,
+        ).toISOString();
+        expect((empRes.body as { endTime: string }).endTime).toBe(expectedEnd);
+    });
+
+    it('rejects appointments scheduled in the past', async () => {
+        const pastStartBase = Date.now() - 2 * hour;
+        const pastStart = new Date(pastStartBase).toISOString();
+        const pastEnd = new Date(pastStartBase + hour).toISOString();
+        await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: pastStart,
+                endTime: pastEnd,
+            })
+            .expect(400);
     });
 
     it('detects scheduling conflicts for the same employee', async () => {
-        const start1 = new Date('2024-01-02T10:00:00Z').toISOString();
-        const end1 = new Date('2024-01-02T11:00:00Z').toISOString();
+        const start1Base = Date.now() + 5 * hour;
+        const start1 = new Date(start1Base).toISOString();
+        const end1 = new Date(start1Base + hour).toISOString();
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
@@ -197,8 +222,8 @@ describe('Appointments integration', () => {
             })
             .expect(201);
 
-        const start2 = new Date('2024-01-02T10:30:00Z').toISOString();
-        const end2 = new Date('2024-01-02T11:30:00Z').toISOString();
+        const start2 = new Date(start1Base + 0.5 * hour).toISOString();
+        const end2 = new Date(start1Base + 1.5 * hour).toISOString();
         await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
@@ -212,8 +237,9 @@ describe('Appointments integration', () => {
     });
 
     it('allows only assigned employees or admins to complete appointments and creates commissions', async () => {
-        const start = new Date('2024-01-03T09:00:00Z').toISOString();
-        const end = new Date('2024-01-03T10:00:00Z').toISOString();
+        const startBase = Date.now() + 7 * hour;
+        const start = new Date(startBase).toISOString();
+        const end = new Date(startBase + hour).toISOString();
         const createRes: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
@@ -250,8 +276,9 @@ describe('Appointments integration', () => {
         expect(Number(commissions[0].amount)).toBeCloseTo(10);
 
         // Admin can also complete
-        const start2 = new Date('2024-01-04T09:00:00Z').toISOString();
-        const end2 = new Date('2024-01-04T10:00:00Z').toISOString();
+        const start2Base = Date.now() + 9 * hour;
+        const start2 = new Date(start2Base).toISOString();
+        const end2 = new Date(start2Base + hour).toISOString();
         const createRes2: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
@@ -274,8 +301,9 @@ describe('Appointments integration', () => {
     });
 
     it('restricts formula creation to employees or admins', async () => {
-        const start = new Date('2024-01-05T09:00:00Z').toISOString();
-        const end = new Date('2024-01-05T10:00:00Z').toISOString();
+        const startBase = Date.now() + 11 * hour;
+        const start = new Date(startBase).toISOString();
+        const end = new Date(startBase + hour).toISOString();
         const createRes: Response = await request(server)
             .post('/appointments')
             .set('Authorization', `Bearer ${clientToken}`)
