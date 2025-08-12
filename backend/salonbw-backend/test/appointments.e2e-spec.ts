@@ -334,13 +334,13 @@ describe('Appointments integration', () => {
             .expect(200);
 
         await request(server)
-            .post(`/formulas/appointments/${appointmentId}`)
+            .post(`/appointments/${appointmentId}/formulas`)
             .set('Authorization', `Bearer ${clientToken}`)
             .send({ description: 'test', date: new Date().toISOString() })
             .expect(403);
 
         await request(server)
-            .post(`/formulas/appointments/${appointmentId}`)
+            .post(`/appointments/${appointmentId}/formulas`)
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({ description: 'formula', date: new Date().toISOString() })
             .expect(201);
