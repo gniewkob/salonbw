@@ -1,15 +1,22 @@
-import { ConflictException, Injectable, BadRequestException } from '@nestjs/common';
+import {
+    ConflictException,
+    Injectable,
+    BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThan, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
+import { Service as SalonService } from '../services/service.entity';
 
 @Injectable()
 export class AppointmentsService {
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
+        @InjectRepository(SalonService)
+        private readonly servicesRepository: Repository<SalonService>,
         private readonly commissionsService: CommissionsService,
     ) {}
 
@@ -22,6 +29,20 @@ export class AppointmentsService {
             (!data.client || !data.client.id)
         ) {
             throw new BadRequestException('clientId is required');
+        }
+        if (!data.startTime || data.startTime < new Date()) {
+            throw new BadRequestException('startTime must be in the future');
+        }
+        if (!data.endTime && data.service?.id) {
+            const service = await this.servicesRepository.findOne({
+                where: { id: data.service.id },
+            });
+            if (service) {
+                data.endTime = new Date(
+                    (data.startTime as Date).getTime() +
+                        service.duration * 60 * 1000,
+                );
+            }
         }
         const conflict = await this.appointmentsRepository.findOne({
             where: {
