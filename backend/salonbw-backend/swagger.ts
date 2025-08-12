@@ -9,9 +9,31 @@ import { UsersController } from './src/users/users.controller';
 import { UsersService } from './src/users/users.service';
 import { AuthController } from './src/auth/auth.controller';
 import { AuthService } from './src/auth/auth.service';
+import { AppointmentsController } from './src/appointments/appointments.controller';
+import { AppointmentsService } from './src/appointments/appointments.service';
+import { ServicesController } from './src/services/services.controller';
+import { ServicesService } from './src/services/services.service';
+import { ProductsController } from './src/products/products.controller';
+import { ProductsService } from './src/products/products.service';
+import { AppointmentFormulasController } from './src/formulas/appointment-formulas.controller';
+import { ClientFormulasController } from './src/formulas/client-formulas.controller';
+import { FormulasService } from './src/formulas/formulas.service';
+import { CommissionsController } from './src/commissions/commissions.controller';
+import { CommissionsService } from './src/commissions/commissions.service';
 
 @Module({
-  controllers: [AppController, HealthController, UsersController, AuthController],
+  controllers: [
+    AppController,
+    HealthController,
+    UsersController,
+    AuthController,
+    AppointmentsController,
+    ServicesController,
+    ProductsController,
+    AppointmentFormulasController,
+    ClientFormulasController,
+    CommissionsController,
+  ],
   providers: [
     AppService,
     {
@@ -27,6 +49,50 @@ import { AuthService } from './src/auth/auth.service';
       useValue: {
         login: () => ({}),
         refresh: () => ({}),
+      },
+    },
+    {
+      provide: AppointmentsService,
+      useValue: {
+        create: () => ({}),
+        findForUser: () => [],
+        findOne: () => ({}),
+        cancel: () => ({}),
+        completeAppointment: () => ({}),
+      },
+    },
+    {
+      provide: ServicesService,
+      useValue: {
+        create: () => ({}),
+        findAll: () => [],
+        findOne: () => ({}),
+        update: () => ({}),
+        remove: () => undefined,
+      },
+    },
+    {
+      provide: ProductsService,
+      useValue: {
+        create: () => ({}),
+        findAll: () => [],
+        findOne: () => ({}),
+        update: () => ({}),
+        remove: () => undefined,
+      },
+    },
+    {
+      provide: FormulasService,
+      useValue: {
+        addToAppointment: () => ({}),
+        findForClient: () => [],
+      },
+    },
+    {
+      provide: CommissionsService,
+      useValue: {
+        findForUser: () => [],
+        findAll: () => [],
       },
     },
   ],

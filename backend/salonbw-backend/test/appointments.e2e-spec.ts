@@ -168,6 +168,7 @@ describe('Appointments integration', () => {
             .post('/appointments')
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({
+                clientId: client.id,
                 employeeId: employee.id,
                 serviceId: service.id,
                 startTime: empStart,
@@ -218,6 +219,40 @@ describe('Appointments integration', () => {
                 startTime: start2,
             })
             .expect(409);
+    });
+
+    it('allows employees and admins to create appointments for clients', async () => {
+        const startEmpBase = Date.now() + 13 * hour;
+        const startEmp = new Date(startEmpBase).toISOString();
+        const empRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: startEmp,
+                clientId: client.id,
+            })
+            .expect(201);
+        expect((empRes.body as { client: { id: number } }).client.id).toBe(
+            client.id,
+        );
+
+        const startAdminBase = Date.now() + 15 * hour;
+        const startAdmin = new Date(startAdminBase).toISOString();
+        const adminRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: startAdmin,
+                clientId: client.id,
+            })
+            .expect(201);
+        expect((adminRes.body as { client: { id: number } }).client.id).toBe(
+            client.id,
+        );
     });
 
     it('allows only assigned employees or admins to complete appointments and creates commissions', async () => {
@@ -279,7 +314,6 @@ describe('Appointments integration', () => {
             'completed',
         );
     });
-
     it('prevents cancelling completed appointments', async () => {
         const startBase = Date.now() + 13 * hour;
         const start = new Date(startBase).toISOString();
@@ -350,13 +384,13 @@ describe('Appointments integration', () => {
             .expect(200);
 
         await request(server)
-            .post(`/formulas/appointments/${appointmentId}`)
+            .post(`/appointments/${appointmentId}/formulas`)
             .set('Authorization', `Bearer ${clientToken}`)
             .send({ description: 'test', date: new Date().toISOString() })
             .expect(403);
 
         await request(server)
-            .post(`/formulas/appointments/${appointmentId}`)
+            .post(`/appointments/${appointmentId}/formulas`)
             .set('Authorization', `Bearer ${employeeToken}`)
             .send({ description: 'formula', date: new Date().toISOString() })
             .expect(201);

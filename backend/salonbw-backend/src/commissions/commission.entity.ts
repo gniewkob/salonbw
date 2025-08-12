@@ -5,6 +5,7 @@ import {
     Column,
     CreateDateColumn,
 } from 'typeorm';
+import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Product } from '../products/product.entity';
@@ -23,10 +24,10 @@ export class Commission {
     @ManyToOne(() => Product, { nullable: true, eager: true })
     product?: Product | null;
 
-    @Column('decimal')
+    @Column('decimal', { transformer: new ColumnNumericTransformer() })
     amount: number;
 
-    @Column('decimal')
+    @Column('decimal', { transformer: new ColumnNumericTransformer() })
     percent: number;
 
     @CreateDateColumn()

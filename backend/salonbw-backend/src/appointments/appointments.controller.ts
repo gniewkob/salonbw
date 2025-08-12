@@ -7,7 +7,10 @@ import {
     Post,
     UseGuards,
     ForbiddenException,
+    BadRequestException,
+    NotFoundException,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -17,7 +20,9 @@ import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
 import { User } from '../users/user.entity';
 import { Service as SalonService } from '../services/service.entity';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 
+@ApiTags('appointments')
 @Controller('appointments')
 export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
@@ -25,24 +30,41 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
+    @ApiOperation({
+        summary: 'Create appointment',
+        description:
+            'Employees or admins must specify clientId in the request body.',
+    })
+    @ApiResponse({ status: 201, description: 'Appointment created' })
+    @ApiResponse({
+        status: 400,
+        description:
+            'clientId must be provided when creating appointments as staff',
+    })
     create(
-        @Body()
-        body: {
-            employeeId: number;
-            serviceId: number;
-            startTime: string;
-        },
+        @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
-        return this.appointmentsService.create(
-            {
-                client: { id: user.userId } as User,
-                employee: { id: body.employeeId } as User,
-                service: { id: body.serviceId } as SalonService,
-                startTime: new Date(body.startTime),
-            },
-            user,
-        );
+        if (
+            (user.role === Role.Employee || user.role === Role.Admin) &&
+            !body.clientId
+        ) {
+            throw new BadRequestException(
+                'clientId must be provided when creating appointments as staff',
+            );
+        }
+
+        const client =
+            body.clientId &&
+            (user.role === Role.Employee || user.role === Role.Admin)
+                ? ({ id: body.clientId } as User)
+                : ({ id: user.userId } as User);
+        return this.appointmentsService.create({
+            client,
+            employee: { id: body.employeeId } as User,
+            service: { id: body.serviceId } as SalonService,
+            startTime: new Date(body.startTime),
+        });
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -60,11 +82,13 @@ export class AppointmentsController {
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
         const appointment = await this.appointmentsService.findOne(Number(id));
+        if (!appointment) {
+            throw new NotFoundException();
+        }
         if (
-            !appointment ||
-            (user.role !== Role.Admin &&
-                appointment.client.id !== user.userId &&
-                appointment.employee.id !== user.userId)
+            user.role !== Role.Admin &&
+            appointment.client.id !== user.userId &&
+            appointment.employee.id !== user.userId
         ) {
             throw new ForbiddenException();
         }
@@ -79,10 +103,12 @@ export class AppointmentsController {
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
         const appointment = await this.appointmentsService.findOne(Number(id));
+        if (!appointment) {
+            throw new NotFoundException();
+        }
         if (
-            !appointment ||
-            (user.role !== Role.Admin &&
-                appointment.employee.id !== user.userId)
+            user.role !== Role.Admin &&
+            appointment.employee.id !== user.userId
         ) {
             throw new ForbiddenException();
         }
