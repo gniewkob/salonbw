@@ -38,7 +38,7 @@ export function useClientApi() {
 
   const remove = async (id: number) => {
     try {
-      await apiFetch<void>(`/clients/${id}`, { method: 'DELETE' });
+      await apiFetch(`/clients/${id}`, { method: 'DELETE' });
       toast.success('Client deleted');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
