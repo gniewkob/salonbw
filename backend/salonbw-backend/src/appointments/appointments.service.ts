@@ -9,6 +9,7 @@ import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -17,6 +18,8 @@ export class AppointmentsService {
         private readonly appointmentsRepository: Repository<Appointment>,
         @InjectRepository(SalonService)
         private readonly servicesRepository: Repository<SalonService>,
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
     ) {}
 
@@ -24,12 +27,27 @@ export class AppointmentsService {
         data: Partial<Appointment>,
         booker: { userId: number; role: Role },
     ): Promise<Appointment> {
-        if (
-            booker.role === Role.Employee &&
-            (!data.client || !data.client.id)
-        ) {
+        void booker;
+        if (!data.client?.id) {
             throw new BadRequestException('clientId is required');
         }
+        if (!data.employee?.id) {
+            throw new BadRequestException('employeeId is required');
+        }
+        const client = await this.usersRepository.findOne({
+            where: { id: data.client.id },
+        });
+        if (!client) {
+            throw new BadRequestException('Invalid clientId');
+        }
+        const employee = await this.usersRepository.findOne({
+            where: { id: data.employee.id },
+        });
+        if (!employee) {
+            throw new BadRequestException('Invalid employeeId');
+        }
+        data.client = client;
+        data.employee = employee;
         if (
             !data.startTime ||
             isNaN(new Date(data.startTime).getTime()) ||
@@ -45,14 +63,14 @@ export class AppointmentsService {
         }
         data.service = service;
         data.endTime = new Date(
-            (data.startTime as Date).getTime() + service.duration * 60 * 1000,
+            data.startTime.getTime() + service.duration * 60 * 1000,
         );
         const conflict = await this.appointmentsRepository.findOne({
             where: {
-                employee: { id: data.employee!.id },
+                employee: { id: data.employee.id },
                 status: Not(AppointmentStatus.Cancelled),
-                startTime: LessThan(data.endTime as Date),
-                endTime: MoreThan(data.startTime as Date),
+                startTime: LessThan(data.endTime),
+                endTime: MoreThan(data.startTime),
             },
         });
         if (conflict) {
