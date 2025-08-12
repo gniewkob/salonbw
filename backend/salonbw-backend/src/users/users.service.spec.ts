@@ -19,9 +19,14 @@ const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
 describe('UsersService', () => {
     let service: UsersService;
     let repo: {
-        findOne: jest.Mock;
+        createQueryBuilder: jest.Mock;
         create: jest.Mock;
         save: jest.Mock;
+    };
+    let qb: {
+        addSelect: jest.Mock;
+        where: jest.Mock;
+        getOne: jest.Mock;
     };
 
     beforeEach(async () => {
@@ -31,7 +36,7 @@ describe('UsersService', () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: {
-                        findOne: jest.fn(),
+                        createQueryBuilder: jest.fn(),
                         create: jest.fn(),
                         save: jest.fn(),
                     },
@@ -41,6 +46,12 @@ describe('UsersService', () => {
 
         service = module.get<UsersService>(UsersService);
         repo = module.get(getRepositoryToken(User));
+        qb = {
+            addSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            getOne: jest.fn(),
+        };
+        repo.createQueryBuilder.mockReturnValue(qb);
     });
 
     afterEach(() => {
@@ -54,7 +65,7 @@ describe('UsersService', () => {
                 name: 'Test User',
                 password: 'plainPass',
             };
-            repo.findOne.mockResolvedValue(null);
+            qb.getOne.mockResolvedValue(null);
             bcryptMock.hash.mockResolvedValue('hashedPass');
             const created = {
                 email: dto.email,
@@ -83,24 +94,27 @@ describe('UsersService', () => {
     describe('findByEmail', () => {
         it('returns an existing user', async () => {
             const user = { id: 1, email: 'known@example.com' } as User;
-            repo.findOne.mockResolvedValue(user);
+            qb.getOne.mockResolvedValue(user);
 
             const result = await service.findByEmail('known@example.com');
 
             expect(result).toEqual(user);
-            expect(repo.findOne).toHaveBeenCalledWith({
-                where: { email: 'known@example.com' },
+            expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(qb.addSelect).toHaveBeenCalledWith('user.password');
+            expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
+                email: 'known@example.com',
             });
         });
 
         it('returns null for unknown email', async () => {
-            repo.findOne.mockResolvedValue(null);
+            qb.getOne.mockResolvedValue(null);
 
             const result = await service.findByEmail('unknown@example.com');
 
             expect(result).toBeNull();
-            expect(repo.findOne).toHaveBeenCalledWith({
-                where: { email: 'unknown@example.com' },
+            expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
+                email: 'unknown@example.com',
             });
         });
     });
