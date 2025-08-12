@@ -17,8 +17,9 @@ export class FormulasController {
     addFormula(
         @Param('id') id: string,
         @Body() body: { description: string; date: string },
+        @CurrentUser() user: { userId: number },
     ): Promise<Formula> {
-        return this.formulasService.addToAppointment(Number(id), {
+        return this.formulasService.addToAppointment(Number(id), user.userId, {
             description: body.description,
             date: new Date(body.date),
         });
@@ -27,9 +28,7 @@ export class FormulasController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Admin)
     @Get('me')
-    findMine(
-        @CurrentUser() user: { userId: number },
-    ): Promise<Formula[]> {
+    findMine(@CurrentUser() user: { userId: number }): Promise<Formula[]> {
         return this.formulasService.findForClient(user.userId);
     }
 
@@ -40,4 +39,3 @@ export class FormulasController {
         return this.formulasService.findForClient(Number(id));
     }
 }
-
