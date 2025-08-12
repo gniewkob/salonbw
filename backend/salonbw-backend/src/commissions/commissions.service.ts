@@ -17,8 +17,9 @@ export class CommissionsService {
     }
 
     async createFromAppointment(appointment: Appointment): Promise<Commission> {
-        const percent = appointment.service.commissionPercent ?? 0;
-        const amount = (appointment.service.price * percent) / 100;
+        const price = Number(appointment.service.price);
+        const percent = Number(appointment.service.commissionPercent ?? 0);
+        const amount = (price * percent) / 100;
         return this.create({
             employee: appointment.employee,
             appointment,
