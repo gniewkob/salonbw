@@ -23,11 +23,7 @@ export class AppointmentsService {
         private readonly commissionsService: CommissionsService,
     ) {}
 
-    async create(
-        data: Partial<Appointment>,
-        booker: { userId: number; role: Role },
-    ): Promise<Appointment> {
-        void booker;
+    async create(data: Partial<Appointment>): Promise<Appointment> {
         if (!data.client?.id) {
             throw new BadRequestException('clientId is required');
         }
@@ -40,11 +36,21 @@ export class AppointmentsService {
         if (!client) {
             throw new BadRequestException('Invalid clientId');
         }
+        if (client.role !== Role.Client) {
+            throw new BadRequestException(
+                'Provided clientId does not belong to a client',
+            );
+        }
         const employee = await this.usersRepository.findOne({
             where: { id: data.employee.id },
         });
         if (!employee) {
             throw new BadRequestException('Invalid employeeId');
+        }
+        if (employee.role !== Role.Employee) {
+            throw new BadRequestException(
+                'Provided employeeId does not belong to an employee',
+            );
         }
         data.client = client;
         data.employee = employee;
