@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsPositive, IsString, IsOptional } from 'class-validator';
+import { IsPositive, IsOptional, IsISO8601 } from 'class-validator';
 
 export class CreateAppointmentDto {
     @ApiProperty()
@@ -11,7 +11,7 @@ export class CreateAppointmentDto {
     serviceId: number;
 
     @ApiProperty()
-    @IsString()
+    @IsISO8601()
     startTime: string;
 
     @ApiProperty({ required: false })

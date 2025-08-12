@@ -30,7 +30,11 @@ export class AppointmentsService {
         ) {
             throw new BadRequestException('clientId is required');
         }
-        if (!data.startTime || data.startTime < new Date()) {
+        if (
+            !data.startTime ||
+            isNaN(new Date(data.startTime).getTime()) ||
+            data.startTime < new Date()
+        ) {
             throw new BadRequestException('startTime must be in the future');
         }
         const service = await this.servicesRepository.findOne({
