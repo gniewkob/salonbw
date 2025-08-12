@@ -7,6 +7,7 @@ import {
     Post,
     UseGuards,
     ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -28,12 +29,30 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
-    @ApiOperation({ summary: 'Create appointment' })
+    @ApiOperation({
+        summary: 'Create appointment',
+        description:
+            'Employees or admins must specify clientId in the request body.',
+    })
     @ApiResponse({ status: 201, description: 'Appointment created' })
+    @ApiResponse({
+        status: 400,
+        description:
+            'clientId must be provided when creating appointments as staff',
+    })
     create(
         @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
+        if (
+            (user.role === Role.Employee || user.role === Role.Admin) &&
+            !body.clientId
+        ) {
+            throw new BadRequestException(
+                'clientId must be provided when creating appointments as staff',
+            );
+        }
+
         const client =
             body.clientId &&
             (user.role === Role.Employee || user.role === Role.Admin)
