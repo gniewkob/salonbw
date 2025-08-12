@@ -1,16 +1,14 @@
 import { FormEvent, useState } from 'react';
-import { Client, Service } from '@/types';
+import { Service } from '@/types';
 
 interface Props {
-  clients: Client[];
   services: Service[];
-  initial?: { clientId?: number; serviceId?: number; startTime?: string };
-  onSubmit: (data: { clientId: number; serviceId: number; startTime: string }) => Promise<void>;
+  initial?: { serviceId?: number; startTime?: string };
+  onSubmit: (data: { serviceId: number; startTime: string }) => Promise<void>;
   onCancel: () => void;
 }
 
-export default function AppointmentForm({ clients, services, initial, onSubmit, onCancel }: Props) {
-  const [clientId, setClientId] = useState(initial?.clientId ?? clients[0]?.id);
+export default function AppointmentForm({ services, initial, onSubmit, onCancel }: Props) {
   const [serviceId, setServiceId] = useState(initial?.serviceId ?? services[0]?.id);
   const [startTime, setStartTime] = useState(initial?.startTime ?? '');
   const [error, setError] = useState('');
@@ -19,7 +17,7 @@ export default function AppointmentForm({ clients, services, initial, onSubmit, 
     e.preventDefault();
     setError('');
     try {
-      await onSubmit({ clientId: Number(clientId), serviceId: Number(serviceId), startTime });
+      await onSubmit({ serviceId: Number(serviceId), startTime });
     } catch (err: unknown) {
       if (
         typeof err === 'object' &&
@@ -38,13 +36,6 @@ export default function AppointmentForm({ clients, services, initial, onSubmit, 
 
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
-      <select value={clientId} onChange={(e) => setClientId(Number(e.target.value))} className="border p-1 w-full">
-        {clients.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
       <select value={serviceId} onChange={(e) => setServiceId(Number(e.target.value))} className="border p-1 w-full">
         {services.map((s) => (
           <option key={s.id} value={s.id}>
