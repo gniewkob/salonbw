@@ -33,17 +33,16 @@ export class AppointmentsService {
         if (!data.startTime || data.startTime < new Date()) {
             throw new BadRequestException('startTime must be in the future');
         }
-        if (!data.endTime && data.service?.id) {
-            const service = await this.servicesRepository.findOne({
-                where: { id: data.service.id },
-            });
-            if (service) {
-                data.endTime = new Date(
-                    (data.startTime as Date).getTime() +
-                        service.duration * 60 * 1000,
-                );
-            }
+        const service = await this.servicesRepository.findOne({
+            where: { id: data.service?.id },
+        });
+        if (!service) {
+            throw new BadRequestException('Invalid serviceId');
         }
+        data.service = service;
+        data.endTime = new Date(
+            (data.startTime as Date).getTime() + service.duration * 60 * 1000,
+        );
         const conflict = await this.appointmentsRepository.findOne({
             where: {
                 employee: { id: data.employee!.id },

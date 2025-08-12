@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
 jest.mock('@/hooks/useAppointments', () => ({ useAppointments: () => ({ data: [], loading: false, error: null }) }));
-jest.mock('@/hooks/useClients', () => ({ useClients: () => ({ data: [], loading: false }) }));
 jest.mock('@/hooks/useServices', () => ({ useServices: () => ({ data: [], loading: false }) }));
 jest.mock('@/api/appointments', () => ({ useAppointmentsApi: () => ({ create: jest.fn(), update: jest.fn() }) }));
 // eslint-disable-next-line react/display-name

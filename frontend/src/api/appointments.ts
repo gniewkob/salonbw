@@ -7,7 +7,6 @@ export function useAppointmentsApi() {
   const toast = useToast();
 
   const create = async (data: {
-    clientId: number;
     employeeId: number;
     serviceId: number;
     startTime: string;
