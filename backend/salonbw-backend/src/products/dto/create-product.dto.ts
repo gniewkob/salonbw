@@ -1,4 +1,4 @@
-import { IsString, IsPositive } from 'class-validator';
+import { IsString, IsPositive, IsInt, Min } from 'class-validator';
 
 export class CreateProductDto {
     @IsString()
@@ -10,6 +10,7 @@ export class CreateProductDto {
     @IsPositive()
     unitPrice: number;
 
-    @IsPositive()
+    @IsInt()
+    @Min(0)
     stock: number;
 }
