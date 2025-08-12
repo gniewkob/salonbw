@@ -82,6 +82,18 @@ export class AppointmentsService {
     }
 
     async cancel(id: number): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+        if (
+            appointment.status === AppointmentStatus.Completed ||
+            appointment.status === AppointmentStatus.Cancelled
+        ) {
+            throw new BadRequestException(
+                'Cannot cancel a completed or already cancelled appointment',
+            );
+        }
         await this.appointmentsRepository.update(id, {
             status: AppointmentStatus.Cancelled,
         });
@@ -92,6 +104,11 @@ export class AppointmentsService {
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
+        }
+        if (appointment.status !== AppointmentStatus.Scheduled) {
+            throw new BadRequestException(
+                'Only scheduled appointments can be completed',
+            );
         }
         await this.appointmentsRepository.update(id, {
             status: AppointmentStatus.Completed,
