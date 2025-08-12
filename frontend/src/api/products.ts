@@ -68,7 +68,7 @@ export function useProductApi() {
 
     const remove = async (id: number) => {
         try {
-            await apiFetch<void>(`/products/admin/${id}`, { method: 'DELETE' });
+            await apiFetch(`/products/admin/${id}`, { method: 'DELETE' });
             toast.success('Product deleted');
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');

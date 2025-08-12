@@ -38,7 +38,7 @@ export function useServiceApi() {
 
   const remove = async (id: number) => {
     try {
-      await apiFetch<void>(`/services/${id}`, { method: 'DELETE' });
+      await apiFetch(`/services/${id}`, { method: 'DELETE' });
       toast.success('Service deleted');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');

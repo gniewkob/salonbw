@@ -38,7 +38,7 @@ export function useEmployeeApi() {
 
   const remove = async (id: number) => {
     try {
-      await apiFetch<void>(`/employees/${id}`, { method: 'DELETE' });
+      await apiFetch(`/employees/${id}`, { method: 'DELETE' });
       toast.success('Employee deleted');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error');
