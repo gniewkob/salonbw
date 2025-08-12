@@ -9,9 +9,17 @@ import { UsersController } from './src/users/users.controller';
 import { UsersService } from './src/users/users.service';
 import { AuthController } from './src/auth/auth.controller';
 import { AuthService } from './src/auth/auth.service';
+import { AppointmentsController } from './src/appointments/appointments.controller';
+import { AppointmentsService } from './src/appointments/appointments.service';
 
 @Module({
-  controllers: [AppController, HealthController, UsersController, AuthController],
+  controllers: [
+    AppController,
+    HealthController,
+    UsersController,
+    AuthController,
+    AppointmentsController,
+  ],
   providers: [
     AppService,
     {
@@ -27,6 +35,16 @@ import { AuthService } from './src/auth/auth.service';
       useValue: {
         login: () => ({}),
         refresh: () => ({}),
+      },
+    },
+    {
+      provide: AppointmentsService,
+      useValue: {
+        create: () => ({}),
+        findForUser: () => [],
+        findOne: () => ({}),
+        cancel: () => ({}),
+        completeAppointment: () => ({}),
       },
     },
   ],

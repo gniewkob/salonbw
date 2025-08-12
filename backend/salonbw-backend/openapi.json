@@ -158,6 +158,91 @@
           "auth"
         ]
       }
+    },
+    "/appointments": {
+      "post": {
+        "operationId": "AppointmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Appointment created"
+          }
+        },
+        "summary": "Create appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/me": {
+      "get": {
+        "operationId": "AppointmentsController_findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/cancel": {
+      "patch": {
+        "operationId": "AppointmentsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/complete": {
+      "patch": {
+        "operationId": "AppointmentsController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "appointments"
+        ]
+      }
     }
   },
   "info": {
@@ -185,6 +270,28 @@
       "RefreshTokenDto": {
         "type": "object",
         "properties": {}
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "employeeId",
+          "serviceId",
+          "startTime"
+        ]
       }
     }
   }

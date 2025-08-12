@@ -220,6 +220,40 @@ describe('Appointments integration', () => {
             .expect(409);
     });
 
+    it('allows employees and admins to create appointments for clients', async () => {
+        const startEmpBase = Date.now() + 13 * hour;
+        const startEmp = new Date(startEmpBase).toISOString();
+        const empRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${employeeToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: startEmp,
+                clientId: client.id,
+            })
+            .expect(201);
+        expect((empRes.body as { client: { id: number } }).client.id).toBe(
+            client.id,
+        );
+
+        const startAdminBase = Date.now() + 15 * hour;
+        const startAdmin = new Date(startAdminBase).toISOString();
+        const adminRes: Response = await request(server)
+            .post('/appointments')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: startAdmin,
+                clientId: client.id,
+            })
+            .expect(201);
+        expect((adminRes.body as { client: { id: number } }).client.id).toBe(
+            client.id,
+        );
+    });
+
     it('allows only assigned employees or admins to complete appointments and creates commissions', async () => {
         const startBase = Date.now() + 7 * hour;
         const start = new Date(startBase).toISOString();
