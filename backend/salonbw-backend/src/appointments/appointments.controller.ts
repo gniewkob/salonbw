@@ -8,6 +8,7 @@ import {
     UseGuards,
     ForbiddenException,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -17,7 +18,9 @@ import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
 import { User } from '../users/user.entity';
 import { Service as SalonService } from '../services/service.entity';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 
+@ApiTags('appointments')
 @Controller('appointments')
 export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
@@ -25,18 +28,20 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
+    @ApiOperation({ summary: 'Create appointment' })
+    @ApiResponse({ status: 201, description: 'Appointment created' })
     create(
-        @Body()
-        body: {
-            employeeId: number;
-            serviceId: number;
-            startTime: string;
-        },
+        @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
+        const client =
+            body.clientId &&
+            (user.role === Role.Employee || user.role === Role.Admin)
+                ? ({ id: body.clientId } as User)
+                : ({ id: user.userId } as User);
         return this.appointmentsService.create(
             {
-                client: { id: user.userId } as User,
+                client,
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
                 startTime: new Date(body.startTime),

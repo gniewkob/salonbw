@@ -58,7 +58,11 @@ export class AppointmentsService {
         }
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
-        return this.findOne(saved.id);
+        const result = await this.findOne(saved.id);
+        if (!result) {
+            throw new Error('Appointment not found after creation');
+        }
+        return result;
     }
 
     findForUser(userId: number): Promise<Appointment[]> {
