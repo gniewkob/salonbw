@@ -58,15 +58,12 @@ export class AppointmentsController {
             (user.role === Role.Employee || user.role === Role.Admin)
                 ? ({ id: body.clientId } as User)
                 : ({ id: user.userId } as User);
-        return this.appointmentsService.create(
-            {
-                client,
-                employee: { id: body.employeeId } as User,
-                service: { id: body.serviceId } as SalonService,
-                startTime: new Date(body.startTime),
-            },
-            user,
-        );
+        return this.appointmentsService.create({
+            client,
+            employee: { id: body.employeeId } as User,
+            service: { id: body.serviceId } as SalonService,
+            startTime: new Date(body.startTime),
+        });
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
