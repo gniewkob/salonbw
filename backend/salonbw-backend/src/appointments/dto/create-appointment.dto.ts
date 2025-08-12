@@ -14,7 +14,10 @@ export class CreateAppointmentDto {
     @IsISO8601()
     startTime: string;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({
+        required: false,
+        description: 'Required when creating appointments as Employee or Admin',
+    })
     @IsOptional()
     @IsPositive()
     clientId?: number;
