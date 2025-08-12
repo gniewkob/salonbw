@@ -14,6 +14,8 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -36,7 +38,7 @@ export class ProductsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() body: Product): Promise<Product> {
+    create(@Body() body: CreateProductDto): Promise<Product> {
         return this.productsService.create(body);
     }
 
@@ -45,7 +47,7 @@ export class ProductsController {
     @Patch(':id')
     update(
         @Param('id') id: string,
-        @Body() body: Partial<Product>,
+        @Body() body: UpdateProductDto,
     ): Promise<Product | null> {
         return this.productsService.update(Number(id), body);
     }
