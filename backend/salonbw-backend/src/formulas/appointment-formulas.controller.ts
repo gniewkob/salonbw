@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -7,15 +7,15 @@ import { Role } from '../users/role.enum';
 import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
 
-@Controller('formulas')
-export class FormulasController {
+@Controller('appointments/:appointmentId/formulas')
+export class AppointmentFormulasController {
     constructor(private readonly formulasService: FormulasService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
-    @Post('appointments/:id')
+    @Post()
     addFormula(
-        @Param('id') id: string,
+        @Param('appointmentId') id: string,
         @Body() body: { description: string; date: string },
         @CurrentUser() user: { userId: number },
     ): Promise<Formula> {
@@ -23,19 +23,5 @@ export class FormulasController {
             description: body.description,
             date: new Date(body.date),
         });
-    }
-
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Admin)
-    @Get('me')
-    findMine(@CurrentUser() user: { userId: number }): Promise<Formula[]> {
-        return this.formulasService.findForClient(user.userId);
-    }
-
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Employee, Role.Admin)
-    @Get('clients/:id')
-    findForClient(@Param('id') id: string): Promise<Formula[]> {
-        return this.formulasService.findForClient(Number(id));
     }
 }
