@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
+import { CreateFormulaDto } from './dto/create-formula.dto';
 
 @Controller('appointments/:appointmentId/formulas')
 export class AppointmentFormulasController {
@@ -16,7 +17,7 @@ export class AppointmentFormulasController {
     @Post()
     addFormula(
         @Param('appointmentId') id: string,
-        @Body() body: { description: string; date: string },
+        @Body() body: CreateFormulaDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Formula> {
         return this.formulasService.addToAppointment(Number(id), user.userId, {
