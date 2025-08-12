@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsPositive } from 'class-validator';
+import { IsString, IsOptional, IsPositive, IsInt, Min, Max } from 'class-validator';
 
 export class CreateServiceDto {
     @IsString()
@@ -7,7 +7,8 @@ export class CreateServiceDto {
     @IsString()
     description: string;
 
-    @IsPositive()
+    @IsInt()
+    @Min(1)
     duration: number;
 
     @IsPositive()
@@ -18,6 +19,7 @@ export class CreateServiceDto {
     category?: string;
 
     @IsOptional()
-    @IsPositive()
+    @Min(0)
+    @Max(100)
     commissionPercent?: number;
 }
