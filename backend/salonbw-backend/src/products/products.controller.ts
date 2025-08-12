@@ -31,7 +31,7 @@ export class ProductsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Employee)
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<Product | null> {
+    findOne(@Param('id') id: string): Promise<Product> {
         return this.productsService.findOne(Number(id));
     }
 
@@ -48,7 +48,7 @@ export class ProductsController {
     update(
         @Param('id') id: string,
         @Body() body: UpdateProductDto,
-    ): Promise<Product | null> {
+    ): Promise<Product> {
         return this.productsService.update(Number(id), body);
     }
 

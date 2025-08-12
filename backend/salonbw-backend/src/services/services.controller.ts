@@ -31,7 +31,7 @@ export class ServicesController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<Service | null> {
+    findOne(@Param('id') id: string): Promise<Service> {
         return this.servicesService.findOne(Number(id));
     }
 
@@ -48,7 +48,7 @@ export class ServicesController {
     update(
         @Param('id') id: string,
         @Body() updateServiceDto: UpdateServiceDto,
-    ): Promise<Service | null> {
+    ): Promise<Service> {
         return this.servicesService.update(Number(id), updateServiceDto);
     }
 
