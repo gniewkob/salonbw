@@ -21,15 +21,11 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 export class ServicesController {
     constructor(private readonly servicesService: ServicesService) {}
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get()
     findAll(): Promise<Service[]> {
         return this.servicesService.findAll();
     }
 
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get(':id')
     findOne(@Param('id') id: string): Promise<Service> {
         return this.servicesService.findOne(Number(id));
