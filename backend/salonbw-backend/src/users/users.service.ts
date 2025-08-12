@@ -14,7 +14,11 @@ export class UsersService {
     ) {}
 
     async findByEmail(email: string): Promise<User | null> {
-        const user = await this.usersRepository.findOne({ where: { email } });
+        const user = await this.usersRepository
+            .createQueryBuilder('user')
+            .addSelect('user.password')
+            .where('user.email = :email', { email })
+            .getOne();
         // Ensure null is returned instead of undefined for unknown emails
         return user ?? null;
     }
