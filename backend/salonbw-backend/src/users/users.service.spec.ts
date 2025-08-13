@@ -10,11 +10,7 @@ jest.mock('bcrypt', () => ({
     hash: jest.fn(),
 }));
 
-type BcryptMock = {
-    hash: jest.Mock;
-};
-
-const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
+const bcryptMock = jest.mocked(bcrypt);
 
 describe('UsersService', () => {
     let service: UsersService;
