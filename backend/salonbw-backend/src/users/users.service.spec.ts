@@ -95,6 +95,7 @@ describe('UsersService', () => {
 
     describe('findByEmail', () => {
         it('returns an existing user', async () => {
+            const { createQueryBuilder } = repo;
             const user = { id: 1, email: 'known@example.com' } as User;
             qb.getOne.mockResolvedValue(user);
 
@@ -102,7 +103,7 @@ describe('UsersService', () => {
             const result = await findByEmail.call(service, 'known@example.com');
 
             expect(result).toEqual(user);
-            expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(createQueryBuilder).toHaveBeenCalledWith('user');
             expect(qb.addSelect).toHaveBeenCalledWith('user.password');
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'known@example.com',
@@ -110,6 +111,7 @@ describe('UsersService', () => {
         });
 
         it('returns null for unknown email', async () => {
+            const { createQueryBuilder } = repo;
             qb.getOne.mockResolvedValue(null);
 
             const { findByEmail } = service;
@@ -119,7 +121,7 @@ describe('UsersService', () => {
             );
 
             expect(result).toBeNull();
-            expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(createQueryBuilder).toHaveBeenCalledWith('user');
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'unknown@example.com',
             });
