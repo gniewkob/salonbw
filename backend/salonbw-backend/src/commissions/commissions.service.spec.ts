@@ -66,7 +66,8 @@ describe('CommissionsService', () => {
 
     it('finds commissions for user', async () => {
         await service.findForUser(2);
-        expect(repo.find).toHaveBeenCalledWith({
+        const { find } = repo;
+        expect(find).toHaveBeenCalledWith({
             where: { employee: { id: 2 } },
             order: { createdAt: 'DESC' },
         });
@@ -74,7 +75,8 @@ describe('CommissionsService', () => {
 
     it('finds all commissions', async () => {
         await service.findAll();
-        expect(repo.find).toHaveBeenCalledWith({
+        const { find } = repo;
+        expect(find).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
         });
     });
