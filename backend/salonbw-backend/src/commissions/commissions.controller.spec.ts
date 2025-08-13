@@ -26,6 +26,12 @@ describe('CommissionsController', () => {
         expect(findForUserSpy).toHaveBeenCalledWith(1);
     });
 
+    it('delegates findForEmployee to service', async () => {
+        const findForUserSpy = jest.spyOn(service, 'findForUser');
+        await expect(controller.findForEmployee(2)).resolves.toEqual([mine]);
+        expect(findForUserSpy).toHaveBeenCalledWith(2);
+    });
+
     it('delegates findAll to service', async () => {
         const findAllSpy = jest.spyOn(service, 'findAll');
         await expect(controller.findAll()).resolves.toEqual([all]);
