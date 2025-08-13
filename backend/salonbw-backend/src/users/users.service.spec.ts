@@ -77,7 +77,8 @@ describe('UsersService', () => {
             create.mockReturnValue(created);
             save.mockResolvedValue({ ...created, id: 1 });
 
-            const result = await service.createUser(dto);
+            const { createUser } = service;
+            const result = await createUser.call(service, dto);
 
             expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
             expect(create).toHaveBeenCalledWith({
@@ -97,7 +98,8 @@ describe('UsersService', () => {
             const user = { id: 1, email: 'known@example.com' } as User;
             qb.getOne.mockResolvedValue(user);
 
-            const result = await service.findByEmail('known@example.com');
+            const { findByEmail } = service;
+            const result = await findByEmail.call(service, 'known@example.com');
 
             expect(result).toEqual(user);
             expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');
@@ -110,7 +112,11 @@ describe('UsersService', () => {
         it('returns null for unknown email', async () => {
             qb.getOne.mockResolvedValue(null);
 
-            const result = await service.findByEmail('unknown@example.com');
+            const { findByEmail } = service;
+            const result = await findByEmail.call(
+                service,
+                'unknown@example.com',
+            );
 
             expect(result).toBeNull();
             expect(repo.createQueryBuilder).toHaveBeenCalledWith('user');

@@ -51,51 +51,57 @@ describe('ServicesService', () => {
     });
 
     it('creates a service', async () => {
-        const { create, save } = repo;
+        const { create: repoCreate, save } = repo;
+        const { create } = service;
         const dto = {
             name: 'Cut',
             description: 'Hair cut',
             duration: 30,
             price: 10,
         };
-        const callCreate = () => service.create(dto);
+        const callCreate = () => create.call(service, dto);
         await expect(callCreate()).resolves.toEqual(serviceEntity);
-        expect(create).toHaveBeenCalledWith(dto);
+        expect(repoCreate).toHaveBeenCalledWith(dto);
         expect(save).toHaveBeenCalled();
     });
 
     it('returns all services', async () => {
         const { find } = repo;
-        const callFindAll = () => service.findAll();
+        const { findAll } = service;
+        const callFindAll = () => findAll.call(service);
         await expect(callFindAll()).resolves.toEqual([serviceEntity]);
         expect(find).toHaveBeenCalled();
     });
 
     it('returns a service by id', async () => {
-        const { findOne } = repo;
-        const callFindOne = () => service.findOne(1);
+        const { findOne: repoFindOne } = repo;
+        const { findOne } = service;
+        const callFindOne = () => findOne.call(service, 1);
         await expect(callFindOne()).resolves.toBe(serviceEntity);
-        expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+        expect(repoFindOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
     it('throws when service not found', async () => {
-        const { findOne } = repo;
-        findOne.mockResolvedValue(null);
-        const callFindOne = () => service.findOne(2);
+        const { findOne: repoFindOne } = repo;
+        const { findOne } = service;
+        repoFindOne.mockResolvedValue(null);
+        const callFindOne = () => findOne.call(service, 2);
         await expect(callFindOne()).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('updates a service', async () => {
-        const { update } = repo;
+        const { update: repoUpdate } = repo;
+        const { update } = service;
         const dto: UpdateServiceDto = { name: 'New' };
-        const callUpdate = () => service.update(1, dto);
+        const callUpdate = () => update.call(service, 1, dto);
         await expect(callUpdate()).resolves.toBe(serviceEntity);
-        expect(update).toHaveBeenCalledWith(1, dto);
+        expect(repoUpdate).toHaveBeenCalledWith(1, dto);
     });
 
     it('removes a service', async () => {
         const { delete: remove } = repo;
-        const callRemove = () => service.remove(1);
+        const { remove: removeService } = service;
+        const callRemove = () => removeService.call(service, 1);
         await expect(callRemove()).resolves.toBeUndefined();
         expect(remove).toHaveBeenCalledWith(1);
     });

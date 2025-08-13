@@ -35,12 +35,13 @@ describe('CommissionsService', () => {
     });
 
     it('creates a commission', async () => {
-        const { create, save } = repo;
-        await expect(service.create({ amount: 10 })).resolves.toEqual({
+        const { create: repoCreate, save } = repo;
+        const { create } = service;
+        await expect(create.call(service, { amount: 10 })).resolves.toEqual({
             id: 1,
             amount: 10,
         });
-        expect(create).toHaveBeenCalledWith({ amount: 10 });
+        expect(repoCreate).toHaveBeenCalledWith({ amount: 10 });
         expect(save).toHaveBeenCalled();
     });
 
@@ -59,15 +60,17 @@ describe('CommissionsService', () => {
         const spy = jest
             .spyOn(service, 'create')
             .mockImplementation(() => Promise.resolve(created));
-        await expect(service.createFromAppointment(appointment)).resolves.toBe(
-            created,
-        );
+        const { createFromAppointment } = service;
+        await expect(
+            createFromAppointment.call(service, appointment),
+        ).resolves.toBe(created);
         expect(spy).toHaveBeenCalledWith(expected);
     });
 
     it('finds commissions for user', async () => {
         const { find } = repo;
-        await service.findForUser(2);
+        const { findForUser } = service;
+        await findForUser.call(service, 2);
         expect(find).toHaveBeenCalledWith({
             where: { employee: { id: 2 } },
             order: { createdAt: 'DESC' },
@@ -76,7 +79,8 @@ describe('CommissionsService', () => {
 
     it('finds all commissions', async () => {
         const { find } = repo;
-        await service.findAll();
+        const { findAll } = service;
+        await findAll.call(service);
         expect(find).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
         });
