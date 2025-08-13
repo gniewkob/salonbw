@@ -8,11 +8,6 @@ describe('ProductsController', () => {
   let controller: ProductsController;
   let service: jest.Mocked<ProductsService>;
   let product: Product;
-  let findAll: jest.Mock;
-  let findOne: jest.Mock;
-  let create: jest.Mock;
-  let update: jest.Mock;
-  let remove: jest.Mock;
 
   beforeEach(() => {
     product = {
@@ -42,23 +37,25 @@ describe('ProductsController', () => {
         ),
       remove: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<ProductsService>;
-    ({ findAll, findOne, create, update, remove } = service);
     controller = new ProductsController(service);
   });
 
   it('delegates findAll to service', async () => {
+    const { findAll } = service;
     const callFindAll = () => controller.findAll();
     await expect(callFindAll()).resolves.toEqual([product]);
     expect(findAll).toHaveBeenCalled();
   });
 
   it('delegates findOne to service', async () => {
+    const { findOne } = service;
     const callFindOne = () => controller.findOne(1);
     await expect(callFindOne()).resolves.toBe(product);
     expect(findOne).toHaveBeenCalledWith(1);
   });
 
   it('delegates create to service', async () => {
+    const { create } = service;
     const dto: CreateProductDto = {
       name: 'Shampoo',
       brand: 'Brand',
@@ -71,6 +68,7 @@ describe('ProductsController', () => {
   });
 
   it('delegates update to service', async () => {
+    const { update } = service;
     const dto: UpdateProductDto = { name: 'New' };
     const updated = { ...product, ...dto };
     const callUpdate = () => controller.update(1, dto);
@@ -79,6 +77,7 @@ describe('ProductsController', () => {
   });
 
   it('delegates remove to service', async () => {
+    const { remove } = service;
     const callRemove = () => controller.remove(1);
     await expect(callRemove()).resolves.toBeUndefined();
     expect(remove).toHaveBeenCalledWith(1);
