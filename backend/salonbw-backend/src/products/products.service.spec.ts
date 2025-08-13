@@ -8,12 +8,6 @@ import { NotFoundException } from '@nestjs/common';
 describe('ProductsService', () => {
   let service: ProductsService;
   let repo: jest.Mocked<Repository<Product>>;
-  let create: jest.Mock;
-  let save: jest.Mock;
-  let find: jest.Mock;
-  let findOne: jest.Mock;
-  let update: jest.Mock;
-  let remove: jest.Mock;
 
   const mockRepository = () => ({
     create: jest.fn((dto: Partial<Product>) => dto as Product),
@@ -36,10 +30,10 @@ describe('ProductsService', () => {
 
     service = module.get<ProductsService>(ProductsService);
     repo = module.get(getRepositoryToken(Product));
-    ({ create, save, find, findOne, update, delete: remove } = repo);
   });
 
   it('creates a product', async () => {
+    const { create, save } = repo;
     const dto: Partial<Product> = {
       name: 'Shampoo',
       brand: 'Brand',
@@ -52,27 +46,32 @@ describe('ProductsService', () => {
   });
 
   it('returns all products', async () => {
+    const { find } = repo;
     await expect(service.findAll()).resolves.toEqual([{ id: 1 }]);
     expect(find).toHaveBeenCalled();
   });
 
   it('returns a product by id', async () => {
+    const { findOne } = repo;
     await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
     expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
   it('throws when product not found', async () => {
-    repo.findOne.mockResolvedValue(null);
+    const { findOne } = repo;
+    findOne.mockResolvedValue(null);
     await expect(service.findOne(2)).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('updates a product', async () => {
+    const { update } = repo;
     const dto: Partial<Product> = { name: 'New' };
     await expect(service.update(1, dto as Product)).resolves.toEqual({ id: 1 });
     expect(update).toHaveBeenCalledWith(1, dto);
   });
 
   it('removes a product', async () => {
+    const { delete: remove } = repo;
     await service.remove(1);
     expect(remove).toHaveBeenCalledWith(1);
   });

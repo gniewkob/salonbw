@@ -11,12 +11,6 @@ describe('ServicesService', () => {
     let service: ServicesService;
     let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
-    let create: jest.Mock;
-    let save: jest.Mock;
-    let find: jest.Mock;
-    let findOne: jest.Mock;
-    let update: jest.Mock;
-    let remove: jest.Mock;
 
     const mockRepository = () => ({
         create: jest
@@ -54,10 +48,10 @@ describe('ServicesService', () => {
 
         service = module.get<ServicesService>(ServicesService);
         repo = module.get(getRepositoryToken(Service));
-        ({ create, save, find, findOne, update, delete: remove } = repo);
     });
 
     it('creates a service', async () => {
+        const { create, save } = repo;
         const dto = {
             name: 'Cut',
             description: 'Hair cut',
@@ -71,24 +65,28 @@ describe('ServicesService', () => {
     });
 
     it('returns all services', async () => {
+        const { find } = repo;
         const callFindAll = () => service.findAll();
         await expect(callFindAll()).resolves.toEqual([serviceEntity]);
         expect(find).toHaveBeenCalled();
     });
 
     it('returns a service by id', async () => {
+        const { findOne } = repo;
         const callFindOne = () => service.findOne(1);
         await expect(callFindOne()).resolves.toBe(serviceEntity);
         expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
     it('throws when service not found', async () => {
-        repo.findOne.mockResolvedValue(null);
+        const { findOne } = repo;
+        findOne.mockResolvedValue(null);
         const callFindOne = () => service.findOne(2);
         await expect(callFindOne()).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('updates a service', async () => {
+        const { update } = repo;
         const dto: UpdateServiceDto = { name: 'New' };
         const callUpdate = () => service.update(1, dto);
         await expect(callUpdate()).resolves.toBe(serviceEntity);
@@ -96,6 +94,7 @@ describe('ServicesService', () => {
     });
 
     it('removes a service', async () => {
+        const { delete: remove } = repo;
         const callRemove = () => service.remove(1);
         await expect(callRemove()).resolves.toBeUndefined();
         expect(remove).toHaveBeenCalledWith(1);
