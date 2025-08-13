@@ -34,16 +34,23 @@ const jwtService = {
 
 describe('AuthService.validateUser', () => {
     let service: AuthService;
-    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
-    let configService: { get: jest.Mock };
+    let usersService: jest.Mocked<
+        Pick<UsersService, 'findByEmail' | 'findById'>
+    >;
+    let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
 
     beforeEach(() => {
-        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
-        configService = { get: jest.fn() };
+        usersService = {
+            findByEmail: jest.fn(),
+            findById: jest.fn(),
+        } as jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById'>>;
+        configService = { get: jest.fn() } as jest.Mocked<
+            Pick<ConfigService, 'get'>
+        >;
         service = new AuthService(
-            usersService as Partial<UsersService> as UsersService,
+            usersService as UsersService,
             jwtService,
-            configService as Partial<ConfigService> as ConfigService,
+            configService as ConfigService,
         );
     });
 
@@ -106,16 +113,23 @@ describe('AuthService.validateUser', () => {
 
 describe('AuthService.login', () => {
     let service: AuthService;
-    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
-    let configService: { get: jest.Mock };
+    let usersService: jest.Mocked<
+        Pick<UsersService, 'findByEmail' | 'findById'>
+    >;
+    let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
 
     beforeEach(() => {
-        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
-        configService = { get: jest.fn().mockReturnValue(refreshSecret) };
+        usersService = {
+            findByEmail: jest.fn(),
+            findById: jest.fn(),
+        } as jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById'>>;
+        configService = {
+            get: jest.fn().mockReturnValue(refreshSecret),
+        } as jest.Mocked<Pick<ConfigService, 'get'>>;
         service = new AuthService(
-            usersService as Partial<UsersService> as UsersService,
+            usersService as UsersService,
             jwtService,
-            configService as Partial<ConfigService> as ConfigService,
+            configService as ConfigService,
         );
     });
 
@@ -128,6 +142,7 @@ describe('AuthService.login', () => {
             id: 1,
             email: 'test@example.com',
             name: 'Test',
+            password: 'hashed',
             role: Role.Client,
         };
 
@@ -151,16 +166,23 @@ describe('AuthService.login', () => {
 
 describe('AuthService.refresh', () => {
     let service: AuthService;
-    let usersService: { findByEmail: jest.Mock; findById: jest.Mock };
-    let configService: { get: jest.Mock };
+    let usersService: jest.Mocked<
+        Pick<UsersService, 'findByEmail' | 'findById'>
+    >;
+    let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
 
     beforeEach(() => {
-        usersService = { findByEmail: jest.fn(), findById: jest.fn() };
-        configService = { get: jest.fn().mockReturnValue(refreshSecret) };
+        usersService = {
+            findByEmail: jest.fn(),
+            findById: jest.fn(),
+        } as jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById'>>;
+        configService = {
+            get: jest.fn().mockReturnValue(refreshSecret),
+        } as jest.Mocked<Pick<ConfigService, 'get'>>;
         service = new AuthService(
-            usersService as Partial<UsersService> as UsersService,
+            usersService as UsersService,
             jwtService,
-            configService as Partial<ConfigService> as ConfigService,
+            configService as ConfigService,
         );
     });
 
