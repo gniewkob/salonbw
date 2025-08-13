@@ -42,7 +42,7 @@ declare global {
 // polyfill for msw/node
 
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
+global.TextDecoder = TextDecoder as typeof global.TextDecoder;
 global.ReadableStream = ReadableStream;
 global.WritableStream = WritableStream;
 global.TransformStream = TransformStream;
@@ -78,7 +78,7 @@ global.matchMedia = ((query: string) => ({
   matches: false,
   addEventListener: () => {},
   removeEventListener: () => {},
-})) as unknown as typeof globalThis.matchMedia;
+})) as typeof globalThis.matchMedia;
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),

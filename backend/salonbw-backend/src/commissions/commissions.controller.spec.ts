@@ -9,12 +9,12 @@ describe('CommissionsController', () => {
     let all: Commission;
 
     beforeEach(() => {
-        mine = {} as Commission;
-        all = {} as Commission;
+        mine = { id: 1 } as Commission;
+        all = { id: 2 } as Commission;
         service = {
             findForUser: jest.fn().mockResolvedValue([mine]),
             findAll: jest.fn().mockResolvedValue([all]),
-        } as unknown as jest.Mocked<CommissionsService>;
+        } as jest.Mocked<CommissionsService>;
         controller = new CommissionsController(service);
     });
 

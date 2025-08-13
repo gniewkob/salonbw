@@ -25,9 +25,7 @@ describe('Health (e2e)', () => {
     });
 
     it('/health (GET)', () => {
-        const server = app.getHttpServer() as unknown as Parameters<
-            typeof request
-        >[0];
+        const server = app.getHttpServer() as Parameters<typeof request>[0];
         return request(server)
             .get('/health')
             .expect(200)
