@@ -66,13 +66,15 @@ describe('ServicesService', () => {
     it('returns all services', async () => {
         const callFindAll = () => service.findAll();
         await expect(callFindAll()).resolves.toEqual([serviceEntity]);
-        expect(repo.find).toHaveBeenCalled();
+        const { find } = repo;
+        expect(find).toHaveBeenCalled();
     });
 
     it('returns a service by id', async () => {
         const callFindOne = () => service.findOne(1);
         await expect(callFindOne()).resolves.toBe(serviceEntity);
-        expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+        const { findOne } = repo;
+        expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
     it('throws when service not found', async () => {
@@ -85,12 +87,14 @@ describe('ServicesService', () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const callUpdate = () => service.update(1, dto);
         await expect(callUpdate()).resolves.toBe(serviceEntity);
-        expect(repo.update).toHaveBeenCalledWith(1, dto);
+        const { update } = repo;
+        expect(update).toHaveBeenCalledWith(1, dto);
     });
 
     it('removes a service', async () => {
         const callRemove = () => service.remove(1);
         await expect(callRemove()).resolves.toBeUndefined();
-        expect(repo.delete).toHaveBeenCalledWith(1);
+        const { delete: deleteFn } = repo;
+        expect(deleteFn).toHaveBeenCalledWith(1);
     });
 });
