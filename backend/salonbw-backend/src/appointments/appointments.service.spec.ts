@@ -186,6 +186,10 @@ describe('AppointmentsService', () => {
 
         const cancelled = await service.cancel(id);
         expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
+        expect(mockAppointmentsRepo.update.mock.calls[0]).toEqual([
+            id,
+            { status: AppointmentStatus.Cancelled },
+        ]);
     });
 
     it('should not cancel a completed appointment', async () => {
