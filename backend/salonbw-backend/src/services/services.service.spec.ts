@@ -11,6 +11,12 @@ describe('ServicesService', () => {
     let service: ServicesService;
     let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
+    let create: jest.Mock;
+    let save: jest.Mock;
+    let find: jest.Mock;
+    let findOne: jest.Mock;
+    let update: jest.Mock;
+    let remove: jest.Mock;
 
     const mockRepository = () => ({
         create: jest
@@ -48,6 +54,7 @@ describe('ServicesService', () => {
 
         service = module.get<ServicesService>(ServicesService);
         repo = module.get(getRepositoryToken(Service));
+        ({ create, save, find, findOne, update, delete: remove } = repo);
     });
 
     it('creates a service', async () => {
@@ -59,7 +66,6 @@ describe('ServicesService', () => {
         };
         const callCreate = () => service.create(dto);
         await expect(callCreate()).resolves.toEqual(serviceEntity);
-        const { create, save } = repo;
         expect(create).toHaveBeenCalledWith(dto);
         expect(save).toHaveBeenCalled();
     });
@@ -67,14 +73,12 @@ describe('ServicesService', () => {
     it('returns all services', async () => {
         const callFindAll = () => service.findAll();
         await expect(callFindAll()).resolves.toEqual([serviceEntity]);
-        const { find } = repo;
         expect(find).toHaveBeenCalled();
     });
 
     it('returns a service by id', async () => {
         const callFindOne = () => service.findOne(1);
         await expect(callFindOne()).resolves.toBe(serviceEntity);
-        const { findOne } = repo;
         expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
@@ -88,14 +92,12 @@ describe('ServicesService', () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const callUpdate = () => service.update(1, dto);
         await expect(callUpdate()).resolves.toBe(serviceEntity);
-        const { update } = repo;
         expect(update).toHaveBeenCalledWith(1, dto);
     });
 
     it('removes a service', async () => {
         const callRemove = () => service.remove(1);
         await expect(callRemove()).resolves.toBeUndefined();
-        const { delete: deleteFn } = repo;
-        expect(deleteFn).toHaveBeenCalledWith(1);
+        expect(remove).toHaveBeenCalledWith(1);
     });
 });

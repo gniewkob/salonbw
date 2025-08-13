@@ -8,6 +8,12 @@ import { NotFoundException } from '@nestjs/common';
 describe('ProductsService', () => {
   let service: ProductsService;
   let repo: jest.Mocked<Repository<Product>>;
+  let create: jest.Mock;
+  let save: jest.Mock;
+  let find: jest.Mock;
+  let findOne: jest.Mock;
+  let update: jest.Mock;
+  let remove: jest.Mock;
 
   const mockRepository = () => ({
     create: jest.fn((dto: Partial<Product>) => dto as Product),
@@ -30,6 +36,7 @@ describe('ProductsService', () => {
 
     service = module.get<ProductsService>(ProductsService);
     repo = module.get(getRepositoryToken(Product));
+    ({ create, save, find, findOne, update, delete: remove } = repo);
   });
 
   it('creates a product', async () => {
@@ -40,20 +47,17 @@ describe('ProductsService', () => {
       stock: 10,
     };
     await expect(service.create(dto as Product)).resolves.toEqual({ id: 1, ...dto });
-    const { create, save } = repo;
     expect(create).toHaveBeenCalledWith(dto);
     expect(save).toHaveBeenCalled();
   });
 
   it('returns all products', async () => {
     await expect(service.findAll()).resolves.toEqual([{ id: 1 }]);
-    const { find } = repo;
     expect(find).toHaveBeenCalled();
   });
 
   it('returns a product by id', async () => {
     await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
-    const { findOne } = repo;
     expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
@@ -65,14 +69,12 @@ describe('ProductsService', () => {
   it('updates a product', async () => {
     const dto: Partial<Product> = { name: 'New' };
     await expect(service.update(1, dto as Product)).resolves.toEqual({ id: 1 });
-    const { update } = repo;
     expect(update).toHaveBeenCalledWith(1, dto);
   });
 
   it('removes a product', async () => {
     await service.remove(1);
-    const { delete: deleteFn } = repo;
-    expect(deleteFn).toHaveBeenCalledWith(1);
+    expect(remove).toHaveBeenCalledWith(1);
   });
 });
 
