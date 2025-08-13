@@ -66,43 +66,38 @@ describe('ServicesService', () => {
     });
 
     it('returns all services', async () => {
-        const { find } = repo;
         const { findAll } = service;
         const callFindAll = () => findAll.call(service);
         await expect(callFindAll()).resolves.toEqual([serviceEntity]);
-        expect(find).toHaveBeenCalled();
+        expect(repo.find).toHaveBeenCalled();
     });
 
     it('returns a service by id', async () => {
-        const { findOne: repoFindOne } = repo;
         const { findOne } = service;
         const callFindOne = () => findOne.call(service, 1);
         await expect(callFindOne()).resolves.toBe(serviceEntity);
-        expect(repoFindOne).toHaveBeenCalledWith({ where: { id: 1 } });
+        expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
     it('throws when service not found', async () => {
-        const { findOne: repoFindOne } = repo;
         const { findOne } = service;
-        repoFindOne.mockResolvedValue(null);
+        repo.findOne.mockResolvedValue(null);
         const callFindOne = () => findOne.call(service, 2);
         await expect(callFindOne()).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('updates a service', async () => {
-        const { update: repoUpdate } = repo;
         const { update } = service;
         const dto: UpdateServiceDto = { name: 'New' };
         const callUpdate = () => update.call(service, 1, dto);
         await expect(callUpdate()).resolves.toBe(serviceEntity);
-        expect(repoUpdate).toHaveBeenCalledWith(1, dto);
+        expect(repo.update).toHaveBeenCalledWith(1, dto);
     });
 
     it('removes a service', async () => {
-        const { delete: remove } = repo;
         const { remove: removeService } = service;
         const callRemove = () => removeService.call(service, 1);
         await expect(callRemove()).resolves.toBeUndefined();
-        expect(remove).toHaveBeenCalledWith(1);
+        expect(repo.delete).toHaveBeenCalledWith(1);
     });
 });
