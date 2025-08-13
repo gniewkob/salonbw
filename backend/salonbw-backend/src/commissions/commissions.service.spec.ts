@@ -35,14 +35,14 @@ describe('CommissionsService', () => {
     });
 
     it('creates a commission', async () => {
-        const { create: repoCreate, save } = repo;
-        const { create } = service;
-        await expect(create.call(service, { amount: 10 })).resolves.toEqual({
+        const createSpy = jest.spyOn(repo, 'create');
+        const saveSpy = jest.spyOn(repo, 'save');
+        await expect(service.create({ amount: 10 })).resolves.toEqual({
             id: 1,
             amount: 10,
         });
-        expect(repoCreate).toHaveBeenCalledWith({ amount: 10 });
-        expect(save).toHaveBeenCalled();
+        expect(createSpy).toHaveBeenCalledWith({ amount: 10 });
+        expect(saveSpy).toHaveBeenCalled();
     });
 
     it('creates commission from appointment', async () => {
@@ -60,28 +60,25 @@ describe('CommissionsService', () => {
         const spy = jest
             .spyOn(service, 'create')
             .mockImplementation(() => Promise.resolve(created));
-        const { createFromAppointment } = service;
-        await expect(
-            createFromAppointment.call(service, appointment),
-        ).resolves.toBe(created);
+        await expect(service.createFromAppointment(appointment)).resolves.toBe(
+            created,
+        );
         expect(spy).toHaveBeenCalledWith(expected);
     });
 
     it('finds commissions for user', async () => {
-        const { find } = repo;
-        const { findForUser } = service;
-        await findForUser.call(service, 2);
-        expect(find).toHaveBeenCalledWith({
+        const findSpy = jest.spyOn(repo, 'find');
+        await service.findForUser(2);
+        expect(findSpy).toHaveBeenCalledWith({
             where: { employee: { id: 2 } },
             order: { createdAt: 'DESC' },
         });
     });
 
     it('finds all commissions', async () => {
-        const { find } = repo;
-        const { findAll } = service;
-        await findAll.call(service);
-        expect(find).toHaveBeenCalledWith({
+        const findSpy = jest.spyOn(repo, 'find');
+        await service.findAll();
+        expect(findSpy).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
         });
     });

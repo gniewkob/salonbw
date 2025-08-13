@@ -23,8 +23,9 @@ const jwtService = {
     sign: jest.fn((payload: unknown, options?: { secret?: string }) =>
         jwt.sign(payload as object, options?.secret ?? accessSecret),
     ),
-    verify: jest.fn((token: string, options?: { secret?: string }) =>
-        jwt.verify(token, options?.secret ?? accessSecret) as unknown,
+    verify: jest.fn(
+        (token: string, options?: { secret?: string }) =>
+            jwt.verify(token, options?.secret ?? accessSecret) as unknown,
     ),
 } as unknown as JwtService;
 
@@ -58,9 +59,7 @@ describe('AuthService.validateUser', () => {
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(true);
 
-        const { validateUser } = service;
-        const result = await validateUser.call(
-            service,
+        const result = await service.validateUser(
             'test@example.com',
             'password',
         );
@@ -80,9 +79,8 @@ describe('AuthService.validateUser', () => {
     it('throws UnauthorizedException if user not found', async () => {
         usersService.findByEmail.mockResolvedValue(null);
 
-        const { validateUser } = service;
         await expect(
-            validateUser.call(service, 'unknown@example.com', 'password'),
+            service.validateUser('unknown@example.com', 'password'),
         ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -97,9 +95,8 @@ describe('AuthService.validateUser', () => {
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(false);
 
-        const { validateUser } = service;
         await expect(
-            validateUser.call(service, 'test@example.com', 'wrong'),
+            service.validateUser('test@example.com', 'wrong'),
         ).rejects.toThrow(UnauthorizedException);
     });
 });
@@ -131,10 +128,12 @@ describe('AuthService.login', () => {
             role: Role.Client,
         } as User;
 
-        const { login } = service;
-        const { access_token, refresh_token } = login.call(service, user);
+        const { access_token, refresh_token } = service.login(user);
 
-        const accessPayload = jwt.verify(access_token, accessSecret) as jwt.JwtPayload;
+        const accessPayload = jwt.verify(
+            access_token,
+            accessSecret,
+        ) as jwt.JwtPayload;
         expect(accessPayload.sub).toBe(1);
         expect(accessPayload.role).toBe(Role.Client);
 
@@ -176,16 +175,16 @@ describe('AuthService.refresh', () => {
         } as User;
         usersService.findById.mockResolvedValue(user);
 
-        const { getRefreshToken, refresh } = service;
-        const refreshToken = getRefreshToken.call(service, user);
-        const { access_token, refresh_token } = await refresh.call(
-            service,
-            refreshToken,
-        );
+        const refreshToken = service.getRefreshToken(user);
+        const { access_token, refresh_token } =
+            await service.refresh(refreshToken);
 
         expect(usersService.findById).toHaveBeenCalledWith(1);
 
-        const accessPayload = jwt.verify(access_token, accessSecret) as jwt.JwtPayload;
+        const accessPayload = jwt.verify(
+            access_token,
+            accessSecret,
+        ) as jwt.JwtPayload;
         expect(accessPayload.sub).toBe(1);
         expect(accessPayload.role).toBe(Role.Client);
 
