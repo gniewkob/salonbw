@@ -58,7 +58,9 @@ describe('AuthService.validateUser', () => {
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(true);
 
-        const result = await service.validateUser(
+        const { validateUser } = service;
+        const result = await validateUser.call(
+            service,
             'test@example.com',
             'password',
         );
@@ -78,8 +80,9 @@ describe('AuthService.validateUser', () => {
     it('throws UnauthorizedException if user not found', async () => {
         usersService.findByEmail.mockResolvedValue(null);
 
+        const { validateUser } = service;
         await expect(
-            service.validateUser('unknown@example.com', 'password'),
+            validateUser.call(service, 'unknown@example.com', 'password'),
         ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -94,8 +97,9 @@ describe('AuthService.validateUser', () => {
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(false);
 
+        const { validateUser } = service;
         await expect(
-            service.validateUser('test@example.com', 'wrong'),
+            validateUser.call(service, 'test@example.com', 'wrong'),
         ).rejects.toThrow(UnauthorizedException);
     });
 });
@@ -127,7 +131,8 @@ describe('AuthService.login', () => {
             role: Role.Client,
         } as User;
 
-        const { access_token, refresh_token } = service.login(user);
+        const { login } = service;
+        const { access_token, refresh_token } = login.call(service, user);
 
         const accessPayload = jwt.verify(access_token, accessSecret) as jwt.JwtPayload;
         expect(accessPayload.sub).toBe(1);
@@ -171,8 +176,10 @@ describe('AuthService.refresh', () => {
         } as User;
         usersService.findById.mockResolvedValue(user);
 
-        const refreshToken = service.getRefreshToken(user);
-        const { access_token, refresh_token } = await service.refresh(
+        const { getRefreshToken, refresh } = service;
+        const refreshToken = getRefreshToken.call(service, user);
+        const { access_token, refresh_token } = await refresh.call(
+            service,
             refreshToken,
         );
 

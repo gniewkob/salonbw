@@ -33,46 +33,59 @@ describe('ProductsService', () => {
   });
 
   it('creates a product', async () => {
-    const { create, save } = repo;
+    const { create: repoCreate, save } = repo;
+    const { create } = service;
     const dto: Partial<Product> = {
       name: 'Shampoo',
       brand: 'Brand',
       unitPrice: 5,
       stock: 10,
     };
-    await expect(service.create(dto as Product)).resolves.toEqual({ id: 1, ...dto });
-    expect(create).toHaveBeenCalledWith(dto);
+    await expect(create.call(service, dto as Product)).resolves.toEqual({
+      id: 1,
+      ...dto,
+    });
+    expect(repoCreate).toHaveBeenCalledWith(dto);
     expect(save).toHaveBeenCalled();
   });
 
   it('returns all products', async () => {
     const { find } = repo;
-    await expect(service.findAll()).resolves.toEqual([{ id: 1 }]);
+    const { findAll } = service;
+    await expect(findAll.call(service)).resolves.toEqual([{ id: 1 }]);
     expect(find).toHaveBeenCalled();
   });
 
   it('returns a product by id', async () => {
-    const { findOne } = repo;
-    await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
-    expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+    const { findOne: repoFindOne } = repo;
+    const { findOne } = service;
+    await expect(findOne.call(service, 1)).resolves.toEqual({ id: 1 });
+    expect(repoFindOne).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
   it('throws when product not found', async () => {
-    const { findOne } = repo;
-    findOne.mockResolvedValue(null);
-    await expect(service.findOne(2)).rejects.toBeInstanceOf(NotFoundException);
+    const { findOne: repoFindOne } = repo;
+    const { findOne } = service;
+    repoFindOne.mockResolvedValue(null);
+    await expect(findOne.call(service, 2)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('updates a product', async () => {
-    const { update } = repo;
+    const { update: repoUpdate } = repo;
+    const { update } = service;
     const dto: Partial<Product> = { name: 'New' };
-    await expect(service.update(1, dto as Product)).resolves.toEqual({ id: 1 });
-    expect(update).toHaveBeenCalledWith(1, dto);
+    await expect(update.call(service, 1, dto as Product)).resolves.toEqual({
+      id: 1,
+    });
+    expect(repoUpdate).toHaveBeenCalledWith(1, dto);
   });
 
   it('removes a product', async () => {
     const { delete: remove } = repo;
-    await service.remove(1);
+    const { remove: removeProduct } = service;
+    await removeProduct.call(service, 1);
     expect(remove).toHaveBeenCalledWith(1);
   });
 });
