@@ -23,6 +23,12 @@ describe('UsersService', () => {
         create: jest.Mock;
         save: jest.Mock;
     };
+    let create: jest.Mock;
+    let save: jest.Mock;
+    let find: jest.Mock;
+    let findOne: jest.Mock;
+    let update: jest.Mock;
+    let remove: jest.Mock;
     let qb: {
         addSelect: jest.Mock;
         where: jest.Mock;
@@ -46,6 +52,7 @@ describe('UsersService', () => {
 
         service = module.get<UsersService>(UsersService);
         repo = module.get(getRepositoryToken(User));
+        ({ create, save, find, findOne, update, delete: remove } = repo);
         qb = {
             addSelect: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
@@ -79,7 +86,6 @@ describe('UsersService', () => {
             const result = await service.createUser(dto);
 
             expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
-            const { create, save } = repo;
             expect(create).toHaveBeenCalledWith({
                 email: dto.email,
                 name: dto.name,
