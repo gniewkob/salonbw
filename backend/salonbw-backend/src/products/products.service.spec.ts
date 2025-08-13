@@ -10,12 +10,14 @@ describe('ProductsService', () => {
   let repo: jest.Mocked<Repository<Product>>;
 
   const mockRepository = () => ({
-    create: jest.fn().mockImplementation((dto) => dto),
-    save: jest.fn().mockImplementation(async (entity) => ({ id: 1, ...entity })),
-    find: jest.fn().mockResolvedValue([{ id: 1 } as Product]),
-    findOne: jest.fn().mockResolvedValue({ id: 1 } as Product),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(undefined),
+    create: jest.fn((dto: Partial<Product>) => dto as Product),
+    save: jest.fn((entity: Product) =>
+      Promise.resolve({ id: 1, ...entity } as Product),
+    ),
+    find: jest.fn(() => Promise.resolve([{ id: 1 } as Product])),
+    findOne: jest.fn(() => Promise.resolve({ id: 1 } as Product)),
+    update: jest.fn(() => Promise.resolve(undefined)),
+    delete: jest.fn(() => Promise.resolve(undefined)),
   });
 
   beforeEach(async () => {
@@ -31,8 +33,13 @@ describe('ProductsService', () => {
   });
 
   it('creates a product', async () => {
-    const dto = { name: 'Shampoo', brand: 'Brand', unitPrice: 5, stock: 10 } as any;
-    await expect(service.create(dto)).resolves.toEqual({ id: 1, ...dto });
+    const dto: Partial<Product> = {
+      name: 'Shampoo',
+      brand: 'Brand',
+      unitPrice: 5,
+      stock: 10,
+    };
+    await expect(service.create(dto as Product)).resolves.toEqual({ id: 1, ...dto });
     expect(repo.create).toHaveBeenCalledWith(dto);
     expect(repo.save).toHaveBeenCalled();
   });
@@ -53,8 +60,8 @@ describe('ProductsService', () => {
   });
 
   it('updates a product', async () => {
-    const dto = { name: 'New' } as any;
-    await expect(service.update(1, dto)).resolves.toEqual({ id: 1 });
+    const dto: Partial<Product> = { name: 'New' };
+    await expect(service.update(1, dto as Product)).resolves.toEqual({ id: 1 });
     expect(repo.update).toHaveBeenCalledWith(1, dto);
   });
 
