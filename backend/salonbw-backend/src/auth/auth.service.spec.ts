@@ -12,22 +12,25 @@ jest.mock('bcrypt', () => ({
     compare: jest.fn(),
 }));
 
-type BcryptMock = {
-    compare: jest.Mock;
-};
-
-const bcryptMock: BcryptMock = bcrypt as unknown as BcryptMock;
+const bcryptMock = jest.mocked(bcrypt);
 const accessSecret = 'access-secret';
 const refreshSecret = 'refresh-secret';
 const jwtService = {
-    sign: jest.fn((payload: unknown, options?: { secret?: string }) =>
-        jwt.sign(payload as object, options?.secret ?? accessSecret),
+    sign: jest.fn(
+        (payload: string | object | Buffer, options?: { secret?: string }) =>
+            jwt.sign(
+                payload as jwt.JwtPayload,
+                options?.secret ?? accessSecret,
+            ),
     ),
     verify: jest.fn(
         (token: string, options?: { secret?: string }) =>
-            jwt.verify(token, options?.secret ?? accessSecret) as unknown,
+            jwt.verify(
+                token,
+                options?.secret ?? accessSecret,
+            ) as jwt.JwtPayload,
     ),
-} as unknown as JwtService;
+} as Partial<JwtService> as jest.Mocked<JwtService>;
 
 describe('AuthService.validateUser', () => {
     let service: AuthService;
@@ -38,9 +41,9 @@ describe('AuthService.validateUser', () => {
         usersService = { findByEmail: jest.fn(), findById: jest.fn() };
         configService = { get: jest.fn() };
         service = new AuthService(
-            usersService as unknown as UsersService,
+            usersService as Partial<UsersService> as UsersService,
             jwtService,
-            configService as unknown as ConfigService,
+            configService as Partial<ConfigService> as ConfigService,
         );
     });
 
@@ -55,7 +58,7 @@ describe('AuthService.validateUser', () => {
             name: 'Test User',
             password: 'hashed',
             role: Role.Client,
-        } as User;
+        };
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(true);
 
@@ -91,7 +94,7 @@ describe('AuthService.validateUser', () => {
             name: 'Test User',
             password: 'hashed',
             role: Role.Client,
-        } as User;
+        };
         usersService.findByEmail.mockResolvedValue(user);
         bcryptMock.compare.mockResolvedValue(false);
 
@@ -110,9 +113,9 @@ describe('AuthService.login', () => {
         usersService = { findByEmail: jest.fn(), findById: jest.fn() };
         configService = { get: jest.fn().mockReturnValue(refreshSecret) };
         service = new AuthService(
-            usersService as unknown as UsersService,
+            usersService as Partial<UsersService> as UsersService,
             jwtService,
-            configService as unknown as ConfigService,
+            configService as Partial<ConfigService> as ConfigService,
         );
     });
 
@@ -126,7 +129,7 @@ describe('AuthService.login', () => {
             email: 'test@example.com',
             name: 'Test',
             role: Role.Client,
-        } as User;
+        };
 
         const { access_token, refresh_token } = service.login(user);
 
@@ -155,9 +158,9 @@ describe('AuthService.refresh', () => {
         usersService = { findByEmail: jest.fn(), findById: jest.fn() };
         configService = { get: jest.fn().mockReturnValue(refreshSecret) };
         service = new AuthService(
-            usersService as unknown as UsersService,
+            usersService as Partial<UsersService> as UsersService,
             jwtService,
-            configService as unknown as ConfigService,
+            configService as Partial<ConfigService> as ConfigService,
         );
     });
 
@@ -172,7 +175,7 @@ describe('AuthService.refresh', () => {
             name: 'Test',
             password: 'hashed',
             role: Role.Client,
-        } as User;
+        };
         usersService.findById.mockResolvedValue(user);
 
         const refreshToken = service.getRefreshToken(user);

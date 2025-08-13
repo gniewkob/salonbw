@@ -26,7 +26,7 @@ describe('RolesGuard', () => {
             switchToHttp: () => ({ getRequest: () => request }),
             getHandler: () => ({}),
             getClass: () => ({}),
-        } as unknown as ExecutionContext;
+        } as Partial<ExecutionContext> as ExecutionContext;
     };
 
     it('throws UnauthorizedException if no user is present', () => {

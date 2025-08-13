@@ -23,20 +23,20 @@ describe('ProductsController', () => {
             findOne: jest.fn().mockResolvedValue(product),
             create: jest
                 .fn()
-                .mockImplementation((dto: CreateProductDto) =>
-                    Promise.resolve({ id: 1, ...dto }),
+                .mockImplementation(
+                    (dto: CreateProductDto): Promise<Product> =>
+                        Promise.resolve({ id: 1, ...dto }),
                 ),
-            update: jest
-                .fn()
-                .mockImplementation((id: number, dto: UpdateProductDto) =>
+            update: jest.fn().mockImplementation(
+                (id: number, dto: UpdateProductDto): Promise<Product> =>
                     Promise.resolve({
                         ...product,
                         ...dto,
                         id,
                     }),
-                ),
+            ),
             remove: jest.fn().mockResolvedValue(undefined),
-        } as unknown as jest.Mocked<ProductsService>;
+        } as jest.Mocked<ProductsService>;
         controller = new ProductsController(service);
     });
 

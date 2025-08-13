@@ -26,7 +26,7 @@ describe('ServicesController', () => {
             create: jest.fn().mockResolvedValue(serviceEntity),
             update: jest.fn().mockResolvedValue(serviceEntity),
             remove: jest.fn().mockResolvedValue(undefined),
-        } as unknown as jest.Mocked<ServicesService>;
+        } as jest.Mocked<ServicesService>;
         controller = new ServicesController(service);
     });
 

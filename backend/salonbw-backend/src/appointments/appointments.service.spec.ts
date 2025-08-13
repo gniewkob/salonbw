@@ -13,16 +13,10 @@ describe('AppointmentsService', () => {
     let appointments: Appointment[];
     let users: User[];
     let services: SalonService[];
-    let mockAppointmentsRepo: jest.Mocked<
-        Pick<Repository<Appointment>, 'findOne' | 'create' | 'save' | 'update'>
-    >;
-    let mockUsersRepo: jest.Mocked<Pick<Repository<User>, 'findOne'>>;
-    let mockServicesRepo: jest.Mocked<
-        Pick<Repository<SalonService>, 'findOne'>
-    >;
-    let mockCommissionsService: jest.Mocked<
-        Pick<CommissionsService, 'createFromAppointment'>
-    >;
+    let mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
+    let mockUsersRepo: jest.Mocked<Repository<User>>;
+    let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
+    let mockCommissionsService: jest.Mocked<CommissionsService>;
     let nextId: number;
 
     beforeEach(() => {
@@ -61,7 +55,7 @@ describe('AppointmentsService', () => {
                         users.find((u) => u.id === where.id) ?? null,
                     ),
             ),
-        };
+        } as Partial<Repository<User>> as jest.Mocked<Repository<User>>;
 
         mockServicesRepo = {
             findOne: jest.fn<
@@ -72,7 +66,9 @@ describe('AppointmentsService', () => {
                     services.find((s) => s.id === where.id) ?? null,
                 ),
             ),
-        };
+        } as Partial<Repository<SalonService>> as jest.Mocked<
+            Repository<SalonService>
+        >;
 
         mockAppointmentsRepo = {
             findOne: jest.fn<
@@ -106,54 +102,42 @@ describe('AppointmentsService', () => {
                 }
                 return Promise.resolve(null);
             }),
-            create: jest
-                .fn()
-                .mockImplementation((data: Partial<Appointment>) => ({
-                    id: nextId++,
-                    status: AppointmentStatus.Scheduled,
-                    ...data,
-                })),
-            save: jest.fn((appt: Appointment) => {
+            create: jest.fn<Appointment, [Partial<Appointment>]>((data) => ({
+                id: nextId++,
+                status: AppointmentStatus.Scheduled,
+                ...data,
+            })),
+            save: jest.fn<Promise<Appointment>, [Appointment]>((appt) => {
                 appointments.push(appt);
                 return Promise.resolve(appt);
             }),
-            update: jest.fn((id: number, partial: Partial<Appointment>) => {
+            update: jest.fn<
+                Promise<UpdateResult>,
+                [number, Partial<Appointment>]
+            >((id, partial) => {
                 const idx = appointments.findIndex((a) => a.id === id);
                 if (idx >= 0) {
-                    appointments[idx] = {
-                        ...appointments[idx],
-                        ...partial,
-                    };
+                    appointments[idx] = { ...appointments[idx], ...partial };
                 }
                 return Promise.resolve({
                     affected: idx >= 0 ? 1 : 0,
                 } as UpdateResult);
             }),
-            update: jest.fn<Promise<void>, [number, Partial<Appointment>]>(
-                (id, partial) => {
-                    const idx = appointments.findIndex((a) => a.id === id);
-                    if (idx >= 0) {
-                        appointments[idx] = {
-                            ...appointments[idx],
-                            ...partial,
-                        };
-                    }
-                    return Promise.resolve();
-                },
-            ),
-        };
+        } as Partial<Repository<Appointment>> as jest.Mocked<
+            Repository<Appointment>
+        >;
 
         mockCommissionsService = {
             createFromAppointment: jest.fn<Promise<void>, [Appointment]>(() =>
                 Promise.resolve(),
             ),
-        };
+        } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
 
         service = new AppointmentsService(
-            mockAppointmentsRepo as unknown as Repository<Appointment>,
-            mockServicesRepo as unknown as Repository<SalonService>,
-            mockUsersRepo as unknown as Repository<User>,
-            mockCommissionsService as unknown as CommissionsService,
+            mockAppointmentsRepo,
+            mockServicesRepo,
+            mockUsersRepo,
+            mockCommissionsService,
         );
     });
 
