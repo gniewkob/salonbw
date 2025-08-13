@@ -9,17 +9,18 @@ describe('CommissionsService', () => {
     let service: CommissionsService;
     let repo: jest.Mocked<Repository<Commission>>;
 
-    const mockRepository = () => ({
-        create: jest.fn<Commission, [Partial<Commission>]>(
-            (dto) => dto as Commission,
-        ),
-        save: jest
-            .fn<Promise<Commission>, [Commission]>()
-            .mockImplementation((entity) =>
-                Promise.resolve({ id: 1, ...entity }),
+    const mockRepository = (): jest.Mocked<Repository<Commission>> =>
+        ({
+            create: jest.fn<Commission, [Partial<Commission>]>(
+                (dto) => dto as Commission,
             ),
-        find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
-    });
+            save: jest
+                .fn<Promise<Commission>, [Commission]>()
+                .mockImplementation((entity) =>
+                    Promise.resolve({ id: 1, ...entity }),
+                ),
+            find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
+        }) as jest.Mocked<Repository<Commission>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -33,7 +34,9 @@ describe('CommissionsService', () => {
         }).compile();
 
         service = module.get<CommissionsService>(CommissionsService);
-        repo = module.get(getRepositoryToken(Commission));
+        repo = module.get<jest.Mocked<Repository<Commission>>>(
+            getRepositoryToken(Commission),
+        );
     });
 
     it('creates a commission', async () => {

@@ -8,25 +8,29 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 
 describe('ServicesService', () => {
     let service: ServicesService;
-    let repo: jest.Mocked<Partial<Repository<Service>>>;
+    let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
 
-    const mockRepository = (): jest.Mocked<Partial<Repository<Service>>> => ({
-        create: jest.fn<Service, [Partial<Service>]>((dto) => dto as Service),
-        save: jest.fn<Promise<Service>, [Service]>((entity) =>
-            Promise.resolve({ ...serviceEntity, ...entity }),
-        ),
-        find: jest.fn<Promise<Service[]>, []>(() =>
-            Promise.resolve([serviceEntity]),
-        ),
-        findOne: jest.fn<Promise<Service | null>, [{ where: { id: number } }]>(
-            () => Promise.resolve(serviceEntity),
-        ),
-        update: jest.fn<Promise<void>, [number, Partial<Service>]>(() =>
-            Promise.resolve(),
-        ),
-        delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
-    });
+    const mockRepository = (): jest.Mocked<Repository<Service>> =>
+        ({
+            create: jest.fn<Service, [Partial<Service>]>(
+                (dto) => dto as Service,
+            ),
+            save: jest.fn<Promise<Service>, [Service]>((entity) =>
+                Promise.resolve({ ...serviceEntity, ...entity }),
+            ),
+            find: jest.fn<Promise<Service[]>, []>(() =>
+                Promise.resolve([serviceEntity]),
+            ),
+            findOne: jest.fn<
+                Promise<Service | null>,
+                [{ where: { id: number } }]
+            >(() => Promise.resolve(serviceEntity)),
+            update: jest.fn<Promise<void>, [number, Partial<Service>]>(() =>
+                Promise.resolve(),
+            ),
+            delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
+        }) as jest.Mocked<Repository<Service>>;
 
     beforeEach(async () => {
         serviceEntity = {
@@ -48,7 +52,7 @@ describe('ServicesService', () => {
         }).compile();
 
         service = module.get<ServicesService>(ServicesService);
-        repo = module.get<jest.Mocked<Partial<Repository<Service>>>>(
+        repo = module.get<jest.Mocked<Repository<Service>>>(
             getRepositoryToken(Service),
         );
     });
