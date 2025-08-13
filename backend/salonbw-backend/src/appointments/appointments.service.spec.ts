@@ -1,6 +1,6 @@
 import { ConflictException, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import type { FindOneOptions, UpdateResult } from 'typeorm';
+import type { UpdateResult } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Role } from '../users/role.enum';
@@ -97,7 +97,7 @@ describe('AppointmentsService', () => {
                     return Promise.resolve(
                         appointments.find(
                             (a) =>
-                                a.employee.id === criteria.employee.id &&
+                                a.employee.id === where.employee.id &&
                                 a.status !== AppointmentStatus.Cancelled &&
                                 a.startTime < (where.startTime?._value ?? 0) &&
                                 a.endTime > (where.endTime?._value ?? 0),
