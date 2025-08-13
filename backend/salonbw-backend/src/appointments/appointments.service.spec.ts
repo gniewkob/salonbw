@@ -159,7 +159,8 @@ describe('AppointmentsService', () => {
 
     it('should create an appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const result = await service.create({
+        const { create } = service;
+        const result = await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
@@ -173,7 +174,8 @@ describe('AppointmentsService', () => {
 
     it('should reject overlapping appointments', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        await service.create({
+        const { create } = service;
+        await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
@@ -182,7 +184,7 @@ describe('AppointmentsService', () => {
 
         const overlap = new Date(start.getTime() + 15 * 60 * 1000);
         await expect(
-            service.create({
+            create.call(service, {
                 client: users[0],
                 employee: users[1],
                 service: services[0],
@@ -193,59 +195,63 @@ describe('AppointmentsService', () => {
 
     it('should cancel a scheduled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
+        const { create, cancel } = service;
+        const { id } = await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
             startTime: start,
         });
 
-        const cancelled = await service.cancel(id);
+        const cancelled = await cancel.call(service, id);
         expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
     });
 
     it('should not cancel a completed appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
+        const { create, cancel, completeAppointment } = service;
+        const { id } = await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
             startTime: start,
         });
 
-        await service.completeAppointment(id);
-        await expect(service.cancel(id)).rejects.toBeInstanceOf(
+        await completeAppointment.call(service, id);
+        await expect(cancel.call(service, id)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('should not cancel an already cancelled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
+        const { create, cancel } = service;
+        const { id } = await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
             startTime: start,
         });
 
-        await service.cancel(id);
-        await expect(service.cancel(id)).rejects.toBeInstanceOf(
+        await cancel.call(service, id);
+        await expect(cancel.call(service, id)).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('should not complete a cancelled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
+        const { create, cancel, completeAppointment } = service;
+        const { id } = await create.call(service, {
             client: users[0],
             employee: users[1],
             service: services[0],
             startTime: start,
         });
 
-        await service.cancel(id);
-        await expect(service.completeAppointment(id)).rejects.toBeInstanceOf(
-            BadRequestException,
-        );
+        await cancel.call(service, id);
+        await expect(
+            completeAppointment.call(service, id),
+        ).rejects.toBeInstanceOf(BadRequestException);
     });
 });
