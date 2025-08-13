@@ -23,12 +23,6 @@ describe('UsersService', () => {
         create: jest.Mock;
         save: jest.Mock;
     };
-    let create: jest.Mock;
-    let save: jest.Mock;
-    let find: jest.Mock;
-    let findOne: jest.Mock;
-    let update: jest.Mock;
-    let remove: jest.Mock;
     let qb: {
         addSelect: jest.Mock;
         where: jest.Mock;
@@ -52,7 +46,6 @@ describe('UsersService', () => {
 
         service = module.get<UsersService>(UsersService);
         repo = module.get(getRepositoryToken(User));
-        ({ create, save, find, findOne, update, delete: remove } = repo);
         qb = {
             addSelect: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
@@ -67,6 +60,7 @@ describe('UsersService', () => {
 
     describe('createUser', () => {
         it('hashes the password, sets default role and saves user', async () => {
+            const { create, save } = repo;
             const dto: CreateUserDto = {
                 email: 'test@example.com',
                 name: 'Test User',
@@ -80,8 +74,8 @@ describe('UsersService', () => {
                 password: 'hashedPass',
                 role: Role.Client,
             };
-            repo.create.mockReturnValue(created);
-            repo.save.mockResolvedValue({ ...created, id: 1 });
+            create.mockReturnValue(created);
+            save.mockResolvedValue({ ...created, id: 1 });
 
             const result = await service.createUser(dto);
 
