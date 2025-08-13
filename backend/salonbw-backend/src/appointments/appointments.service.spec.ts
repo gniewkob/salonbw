@@ -1,5 +1,6 @@
 import { ConflictException, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import type { FindOneOptions, UpdateResult } from 'typeorm';
 import { AppointmentsService } from './appointments.service';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { Role } from '../users/role.enum';
@@ -12,9 +13,13 @@ describe('AppointmentsService', () => {
     let appointments: Appointment[];
     let users: User[];
     let services: SalonService[];
-    let mockAppointmentsRepo: jest.Mocked<Partial<Repository<Appointment>>>;
-    let mockUsersRepo: jest.Mocked<Partial<Repository<User>>>;
-    let mockServicesRepo: jest.Mocked<Partial<Repository<SalonService>>>;
+    let mockAppointmentsRepo: jest.Mocked<
+        Pick<Repository<Appointment>, 'findOne' | 'create' | 'save' | 'update'>
+    >;
+    let mockUsersRepo: jest.Mocked<Pick<Repository<User>, 'findOne'>>;
+    let mockServicesRepo: jest.Mocked<
+        Pick<Repository<SalonService>, 'findOne'>
+    >;
     let mockCommissionsService: jest.Mocked<
         Pick<CommissionsService, 'createFromAppointment'>
     >;
@@ -92,7 +97,7 @@ describe('AppointmentsService', () => {
                     return Promise.resolve(
                         appointments.find(
                             (a) =>
-                                a.employee.id === where.employee.id &&
+                                a.employee.id === criteria.employee.id &&
                                 a.status !== AppointmentStatus.Cancelled &&
                                 a.startTime < (where.startTime?._value ?? 0) &&
                                 a.endTime > (where.endTime?._value ?? 0),
@@ -101,20 +106,28 @@ describe('AppointmentsService', () => {
                 }
                 return Promise.resolve(null);
             }),
-            create: jest.fn<Appointment, [Partial<Appointment>]>((data) => ({
-                id: nextId++,
-                status: AppointmentStatus.Scheduled,
-                client: data.client!,
-                employee: data.employee!,
-                service: data.service!,
-                startTime: data.startTime!,
-                endTime: data.endTime!,
-                notes: data.notes,
-                formulas: [],
-            })),
-            save: jest.fn<Promise<Appointment>, [Appointment]>((appt) => {
+            create: jest
+                .fn()
+                .mockImplementation((data: Partial<Appointment>) => ({
+                    id: nextId++,
+                    status: AppointmentStatus.Scheduled,
+                    ...data,
+                })),
+            save: jest.fn((appt: Appointment) => {
                 appointments.push(appt);
                 return Promise.resolve(appt);
+            }),
+            update: jest.fn((id: number, partial: Partial<Appointment>) => {
+                const idx = appointments.findIndex((a) => a.id === id);
+                if (idx >= 0) {
+                    appointments[idx] = {
+                        ...appointments[idx],
+                        ...partial,
+                    };
+                }
+                return Promise.resolve({
+                    affected: idx >= 0 ? 1 : 0,
+                } as UpdateResult);
             }),
             update: jest.fn<Promise<void>, [number, Partial<Appointment>]>(
                 (id, partial) => {
