@@ -65,21 +65,13 @@ describe('AppointmentsService', () => {
                     criteria.startTime &&
                     criteria.endTime
                 ) {
-                    const start =
-                        criteria.startTime instanceof Date
-                            ? criteria.startTime
-                            : criteria.startTime.value;
-                    const end =
-                        criteria.endTime instanceof Date
-                            ? criteria.endTime
-                            : criteria.endTime.value;
                     return Promise.resolve(
                         appointments.find(
                             (a) =>
                                 a.employee.id === criteria.employee.id &&
                                 a.status !== AppointmentStatus.Cancelled &&
-                                a.startTime < end &&
-                                a.endTime > start,
+                                a.startTime < criteria.startTime.value &&
+                                a.endTime > criteria.endTime.value,
                         ) ?? null,
                     );
                 }
