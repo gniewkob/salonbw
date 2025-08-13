@@ -70,6 +70,37 @@ describe('AppointmentsService', () => {
             Repository<SalonService>
         >;
 
+        const update = jest.fn<
+            Promise<UpdateResult>,
+            [number, Partial<Appointment>]
+        >((id, partial) => {
+            const idx = appointments.findIndex((a) => a.id === id);
+            if (idx >= 0) {
+                appointments[idx] = { ...appointments[idx], ...partial };
+            }
+            return Promise.resolve({
+                affected: idx >= 0 ? 1 : 0,
+            } as UpdateResult);
+        });
+
+        const repoUpdate = jest.fn<
+            Promise<UpdateResult>,
+            [number, Partial<Appointment>]
+        >((id, partial) => {
+            const idx = appointments.findIndex((a) => a.id === id);
+            if (idx >= 0) {
+                appointments[idx] = { ...appointments[idx], ...partial };
+            }
+            return Promise.resolve({
+                affected: idx >= 0 ? 1 : 0,
+            } as UpdateResult);
+        });
+
+        const managerUpdate = jest.fn<
+            Promise<UpdateResult>,
+            [any, number, Partial<Appointment>]
+        >((_entity, id, partial) => repoUpdate(id, partial));
+
         mockAppointmentsRepo = {
             findOne: jest.fn<
                 Promise<Appointment | null>,
@@ -118,18 +149,18 @@ describe('AppointmentsService', () => {
                 appointments.push(appt);
                 return Promise.resolve(appt);
             }),
-            update: jest.fn<
-                Promise<UpdateResult>,
-                [number, Partial<Appointment>]
-            >((id, partial) => {
-                const idx = appointments.findIndex((a) => a.id === id);
-                if (idx >= 0) {
-                    appointments[idx] = { ...appointments[idx], ...partial };
-                }
-                return Promise.resolve({
-                    affected: idx >= 0 ? 1 : 0,
-                } as UpdateResult);
-            }),
+            update: repoUpdate,
+            manager: {
+                transaction: jest.fn(async (cb: any) => {
+                    const snapshot = appointments.map((a) => ({ ...a }));
+                    try {
+                        return await cb({ update: managerUpdate });
+                    } catch (e) {
+                        appointments = snapshot;
+                        throw e;
+                    }
+                }),
+            },
         } as Partial<Repository<Appointment>> as jest.Mocked<
             Repository<Appointment>
         >;
@@ -242,5 +273,23 @@ describe('AppointmentsService', () => {
         await expect(service.completeAppointment(id)).rejects.toBeInstanceOf(
             BadRequestException,
         );
+    });
+
+    it('should revert completion if commission creation fails', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create({
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+            startTime: start,
+        });
+
+        mockCommissionsService.createFromAppointment.mockRejectedValueOnce(
+            new Error('fail'),
+        );
+
+        await expect(service.completeAppointment(id)).rejects.toThrow('fail');
+        const appt = await service.findOne(id);
+        expect(appt?.status).toBe(AppointmentStatus.Scheduled);
     });
 });
