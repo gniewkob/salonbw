@@ -50,43 +50,38 @@ describe('ProductsService', () => {
   });
 
   it('returns all products', async () => {
-    const { find } = repo;
     const { findAll } = service;
     await expect(findAll.call(service)).resolves.toEqual([{ id: 1 }]);
-    expect(find).toHaveBeenCalled();
+    expect(repo.find).toHaveBeenCalled();
   });
 
   it('returns a product by id', async () => {
-    const { findOne: repoFindOne } = repo;
     const { findOne } = service;
     await expect(findOne.call(service, 1)).resolves.toEqual({ id: 1 });
-    expect(repoFindOne).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
   it('throws when product not found', async () => {
-    const { findOne: repoFindOne } = repo;
     const { findOne } = service;
-    repoFindOne.mockResolvedValue(null);
+    repo.findOne.mockResolvedValue(null);
     await expect(findOne.call(service, 2)).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
 
   it('updates a product', async () => {
-    const { update: repoUpdate } = repo;
     const { update } = service;
     const dto: Partial<Product> = { name: 'New' };
     await expect(update.call(service, 1, dto as Product)).resolves.toEqual({
       id: 1,
     });
-    expect(repoUpdate).toHaveBeenCalledWith(1, dto);
+    expect(repo.update).toHaveBeenCalledWith(1, dto);
   });
 
   it('removes a product', async () => {
-    const { delete: remove } = repo;
     const { remove: removeProduct } = service;
     await removeProduct.call(service, 1);
-    expect(remove).toHaveBeenCalledWith(1);
+    expect(repo.delete).toHaveBeenCalledWith(1);
   });
 });
 
