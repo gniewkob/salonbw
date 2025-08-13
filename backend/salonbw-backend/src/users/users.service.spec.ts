@@ -15,7 +15,7 @@ const bcryptMock = jest.mocked(bcrypt);
 
 describe('UsersService', () => {
     let service: UsersService;
-    let repo: jest.Mocked<Partial<Repository<User>>>;
+    let repo: jest.Mocked<Repository<User>>;
     let qb: jest.Mocked<
         Pick<SelectQueryBuilder<User>, 'addSelect' | 'where' | 'getOne'>
     >;
@@ -47,13 +47,13 @@ describe('UsersService', () => {
                             .mockReturnValue(qb),
                         create: jest.fn<User, [Partial<User>]>(),
                         save: jest.fn<Promise<User>, [User]>(),
-                    } as jest.Mocked<Partial<Repository<User>>>,
+                    } as jest.Mocked<Repository<User>>,
                 },
             ],
         }).compile();
 
         service = module.get<UsersService>(UsersService);
-        repo = module.get<jest.Mocked<Partial<Repository<User>>>>(
+        repo = module.get<jest.Mocked<Repository<User>>>(
             getRepositoryToken(User),
         );
     });
