@@ -85,7 +85,7 @@ describe('AppointmentsService', () => {
 
         const managerUpdate = jest.fn<
             Promise<UpdateResult>,
-            [any, number, Partial<Appointment>]
+            [unknown, number, Partial<Appointment>]
         >((_entity, id, partial) => repoUpdate(id, partial));
 
         mockAppointmentsRepo = {
@@ -138,21 +138,18 @@ describe('AppointmentsService', () => {
             }),
             update: repoUpdate,
             manager: {
-                transaction: jest.fn(
-                    async (
-                        cb: (em: {
-                            update: typeof managerUpdate;
-                        }) => Promise<unknown>,
-                    ) => {
-                        const snapshot = appointments.map((a) => ({ ...a }));
-                        try {
-                            return await cb({ update: managerUpdate });
-                        } catch (e) {
-                            appointments = snapshot;
-                            throw e;
-                        }
-                    },
-                ),
+                transaction: jest.fn<
+                    Promise<unknown>,
+                    [(em: { update: typeof managerUpdate }) => Promise<unknown>]
+                >(async (cb) => {
+                    const snapshot = appointments.map((a) => ({ ...a }));
+                    try {
+                        return await cb({ update: managerUpdate });
+                    } catch (e) {
+                        appointments = snapshot;
+                        throw e;
+                    }
+                }),
             },
         } as Partial<Repository<Appointment>> as jest.Mocked<
             Repository<Appointment>
