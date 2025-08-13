@@ -39,8 +39,9 @@ describe('CommissionsService', () => {
             id: 1,
             amount: 10,
         });
-        expect(repo.create).toHaveBeenCalledWith({ amount: 10 });
-        expect(repo.save).toHaveBeenCalled();
+        const { create, save } = repo;
+        expect(create).toHaveBeenCalledWith({ amount: 10 });
+        expect(save).toHaveBeenCalled();
     });
 
     it('creates commission from appointment', async () => {

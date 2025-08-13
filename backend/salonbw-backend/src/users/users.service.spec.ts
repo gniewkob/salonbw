@@ -79,13 +79,14 @@ describe('UsersService', () => {
             const result = await service.createUser(dto);
 
             expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
-            expect(repo.create).toHaveBeenCalledWith({
+            const { create, save } = repo;
+            expect(create).toHaveBeenCalledWith({
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
             });
-            expect(repo.save).toHaveBeenCalledWith(created);
+            expect(save).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
         });
