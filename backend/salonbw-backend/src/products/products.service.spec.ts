@@ -7,24 +7,28 @@ import { NotFoundException } from '@nestjs/common';
 
 describe('ProductsService', () => {
     let service: ProductsService;
-    let repo: jest.Mocked<Partial<Repository<Product>>>;
+    let repo: jest.Mocked<Repository<Product>>;
 
-    const mockRepository = (): jest.Mocked<Partial<Repository<Product>>> => ({
-        create: jest.fn<Product, [Partial<Product>]>((dto) => dto as Product),
-        save: jest.fn<Promise<Product>, [Product]>((entity) =>
-            Promise.resolve({ id: 1, ...entity } as Product),
-        ),
-        find: jest.fn<Promise<Product[]>, []>(() =>
-            Promise.resolve([{ id: 1 } as Product]),
-        ),
-        findOne: jest.fn<Promise<Product | null>, [{ where: { id: number } }]>(
-            () => Promise.resolve({ id: 1 } as Product),
-        ),
-        update: jest.fn<Promise<void>, [number, Partial<Product>]>(() =>
-            Promise.resolve(),
-        ),
-        delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
-    });
+    const mockRepository = (): jest.Mocked<Repository<Product>> =>
+        ({
+            create: jest.fn<Product, [Partial<Product>]>(
+                (dto) => dto as Product,
+            ),
+            save: jest.fn<Promise<Product>, [Product]>((entity) =>
+                Promise.resolve({ id: 1, ...entity } as Product),
+            ),
+            find: jest.fn<Promise<Product[]>, []>(() =>
+                Promise.resolve([{ id: 1 } as Product]),
+            ),
+            findOne: jest.fn<
+                Promise<Product | null>,
+                [{ where: { id: number } }]
+            >(() => Promise.resolve({ id: 1 } as Product)),
+            update: jest.fn<Promise<void>, [number, Partial<Product>]>(() =>
+                Promise.resolve(),
+            ),
+            delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
+        }) as jest.Mocked<Repository<Product>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -38,7 +42,7 @@ describe('ProductsService', () => {
         }).compile();
 
         service = module.get<ProductsService>(ProductsService);
-        repo = module.get<jest.Mocked<Partial<Repository<Product>>>>(
+        repo = module.get<jest.Mocked<Repository<Product>>>(
             getRepositoryToken(Product),
         );
     });
