@@ -74,16 +74,23 @@ describe('AppointmentsService', () => {
             findOne: jest.fn<
                 Promise<Appointment | null>,
                 [
-                    {
-                        where?: {
-                            id?: number;
-                            employee?: { id: number };
-                            startTime?: { _value: Date };
-                            endTime?: { _value: Date };
-                        };
-                    },
+                    | number
+                    | {
+                          where?: {
+                              id?: number;
+                              employee?: { id: number };
+                              startTime?: { _value: Date };
+                              endTime?: { _value: Date };
+                          };
+                      },
                 ]
-            >(({ where }) => {
+            >((criteria) => {
+                if (typeof criteria === 'number') {
+                    return Promise.resolve(
+                        appointments.find((a) => a.id === criteria) ?? null,
+                    );
+                }
+                const { where } = criteria;
                 if (where?.id !== undefined) {
                     return Promise.resolve(
                         appointments.find((a) => a.id === where.id) ?? null,
