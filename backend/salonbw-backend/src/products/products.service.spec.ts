@@ -40,8 +40,9 @@ describe('ProductsService', () => {
       stock: 10,
     };
     await expect(service.create(dto as Product)).resolves.toEqual({ id: 1, ...dto });
-    expect(repo.create).toHaveBeenCalledWith(dto);
-    expect(repo.save).toHaveBeenCalled();
+    const { create, save } = repo;
+    expect(create).toHaveBeenCalledWith(dto);
+    expect(save).toHaveBeenCalled();
   });
 
   it('returns all products', async () => {

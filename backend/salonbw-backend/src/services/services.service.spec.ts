@@ -59,8 +59,9 @@ describe('ServicesService', () => {
         };
         const callCreate = () => service.create(dto);
         await expect(callCreate()).resolves.toEqual(serviceEntity);
-        expect(repo.create).toHaveBeenCalledWith(dto);
-        expect(repo.save).toHaveBeenCalled();
+        const { create, save } = repo;
+        expect(create).toHaveBeenCalledWith(dto);
+        expect(save).toHaveBeenCalled();
     });
 
     it('returns all services', async () => {
