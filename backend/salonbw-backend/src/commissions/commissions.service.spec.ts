@@ -10,13 +10,15 @@ describe('CommissionsService', () => {
     let repo: jest.Mocked<Repository<Commission>>;
 
     const mockRepository = () => ({
-        create: jest.fn().mockImplementation((dto) => dto as Commission),
+        create: jest.fn<Commission, [Partial<Commission>]>(
+            (dto) => dto as Commission,
+        ),
         save: jest
-            .fn()
-            .mockImplementation((entity: Commission) =>
+            .fn<Promise<Commission>, [Commission]>()
+            .mockImplementation((entity) =>
                 Promise.resolve({ id: 1, ...entity }),
             ),
-        find: jest.fn().mockResolvedValue([] as Commission[]),
+        find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
     });
 
     beforeEach(async () => {
@@ -49,7 +51,7 @@ describe('CommissionsService', () => {
         const appointment = {
             service: { price: 100, commissionPercent: 10 },
             employee: { id: 1 },
-        } as unknown as Appointment;
+        } as Appointment;
         const expected = {
             employee: appointment.employee,
             appointment,
