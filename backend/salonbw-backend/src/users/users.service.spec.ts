@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { Role } from './role.enum';
@@ -14,40 +15,47 @@ const bcryptMock = jest.mocked(bcrypt);
 
 describe('UsersService', () => {
     let service: UsersService;
-    let repo: {
-        createQueryBuilder: jest.Mock;
-        create: jest.Mock;
-        save: jest.Mock;
-    };
-    let qb: {
-        addSelect: jest.Mock;
-        where: jest.Mock;
-        getOne: jest.Mock;
-    };
+    let repo: jest.Mocked<Partial<Repository<User>>>;
+    let qb: jest.Mocked<
+        Pick<SelectQueryBuilder<User>, 'addSelect' | 'where' | 'getOne'>
+    >;
 
     beforeEach(async () => {
+        qb = {
+            addSelect: jest
+                .fn<SelectQueryBuilder<User>, [string]>()
+                .mockReturnThis(),
+            where: jest
+                .fn<
+                    SelectQueryBuilder<User>,
+                    [string, Record<string, unknown>]
+                >()
+                .mockReturnThis(),
+            getOne: jest.fn<Promise<User | null>, []>(),
+        } as unknown as jest.Mocked<
+            Pick<SelectQueryBuilder<User>, 'addSelect' | 'where' | 'getOne'>
+        >;
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UsersService,
                 {
                     provide: getRepositoryToken(User),
                     useValue: {
-                        createQueryBuilder: jest.fn(),
-                        create: jest.fn(),
-                        save: jest.fn(),
-                    },
+                        createQueryBuilder: jest
+                            .fn<SelectQueryBuilder<User>, [string]>()
+                            .mockReturnValue(qb),
+                        create: jest.fn<User, [Partial<User>]>(),
+                        save: jest.fn<Promise<User>, [User]>(),
+                    } as jest.Mocked<Partial<Repository<User>>>,
                 },
             ],
         }).compile();
 
         service = module.get<UsersService>(UsersService);
-        repo = module.get(getRepositoryToken(User));
-        qb = {
-            addSelect: jest.fn().mockReturnThis(),
-            where: jest.fn().mockReturnThis(),
-            getOne: jest.fn(),
-        };
-        repo.createQueryBuilder.mockReturnValue(qb);
+        repo = module.get<jest.Mocked<Partial<Repository<User>>>>(
+            getRepositoryToken(User),
+        );
     });
 
     afterEach(() => {
