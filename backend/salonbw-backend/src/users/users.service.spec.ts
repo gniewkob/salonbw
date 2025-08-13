@@ -60,7 +60,6 @@ describe('UsersService', () => {
 
     describe('createUser', () => {
         it('hashes the password, sets default role and saves user', async () => {
-            const { create, save } = repo;
             const dto: CreateUserDto = {
                 email: 'test@example.com',
                 name: 'Test User',
@@ -74,20 +73,23 @@ describe('UsersService', () => {
                 password: 'hashedPass',
                 role: Role.Client,
             };
-            create.mockReturnValue(created);
-            save.mockResolvedValue({ ...created, id: 1 });
+            const createSpy = jest
+                .spyOn(repo, 'create')
+                .mockReturnValue(created);
+            const saveSpy = jest
+                .spyOn(repo, 'save')
+                .mockResolvedValue({ ...created, id: 1 });
 
-            const { createUser } = service;
-            const result = await createUser.call(service, dto);
+            const result = await service.createUser(dto);
 
             expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
-            expect(create).toHaveBeenCalledWith({
+            expect(createSpy).toHaveBeenCalledWith({
                 email: dto.email,
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
             });
-            expect(save).toHaveBeenCalledWith(created);
+            expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
         });
@@ -95,15 +97,14 @@ describe('UsersService', () => {
 
     describe('findByEmail', () => {
         it('returns an existing user', async () => {
-            const { createQueryBuilder } = repo;
             const user = { id: 1, email: 'known@example.com' } as User;
             qb.getOne.mockResolvedValue(user);
+            const qbSpy = jest.spyOn(repo, 'createQueryBuilder');
 
-            const { findByEmail } = service;
-            const result = await findByEmail.call(service, 'known@example.com');
+            const result = await service.findByEmail('known@example.com');
 
             expect(result).toEqual(user);
-            expect(createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(qbSpy).toHaveBeenCalledWith('user');
             expect(qb.addSelect).toHaveBeenCalledWith('user.password');
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'known@example.com',
@@ -111,17 +112,13 @@ describe('UsersService', () => {
         });
 
         it('returns null for unknown email', async () => {
-            const { createQueryBuilder } = repo;
             qb.getOne.mockResolvedValue(null);
+            const qbSpy = jest.spyOn(repo, 'createQueryBuilder');
 
-            const { findByEmail } = service;
-            const result = await findByEmail.call(
-                service,
-                'unknown@example.com',
-            );
+            const result = await service.findByEmail('unknown@example.com');
 
             expect(result).toBeNull();
-            expect(createQueryBuilder).toHaveBeenCalledWith('user');
+            expect(qbSpy).toHaveBeenCalledWith('user');
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'unknown@example.com',
             });

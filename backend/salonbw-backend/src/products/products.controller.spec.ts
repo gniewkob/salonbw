@@ -5,82 +5,79 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 describe('ProductsController', () => {
-  let controller: ProductsController;
-  let service: jest.Mocked<ProductsService>;
-  let product: Product;
+    let controller: ProductsController;
+    let service: jest.Mocked<ProductsService>;
+    let product: Product;
 
-  beforeEach(() => {
-    product = {
-      id: 1,
-      name: 'Shampoo',
-      brand: 'Brand',
-      unitPrice: 10,
-      stock: 5,
-    };
+    beforeEach(() => {
+        product = {
+            id: 1,
+            name: 'Shampoo',
+            brand: 'Brand',
+            unitPrice: 10,
+            stock: 5,
+        };
 
-    service = {
-      findAll: jest.fn().mockResolvedValue([product]),
-      findOne: jest.fn().mockResolvedValue(product),
-      create: jest
-        .fn()
-        .mockImplementation((dto: CreateProductDto) =>
-          Promise.resolve({ id: 1, ...dto }),
-        ),
-      update: jest
-        .fn()
-        .mockImplementation((id: number, dto: UpdateProductDto) =>
-          Promise.resolve({
-            ...product,
+        service = {
+            findAll: jest.fn().mockResolvedValue([product]),
+            findOne: jest.fn().mockResolvedValue(product),
+            create: jest
+                .fn()
+                .mockImplementation((dto: CreateProductDto) =>
+                    Promise.resolve({ id: 1, ...dto }),
+                ),
+            update: jest
+                .fn()
+                .mockImplementation((id: number, dto: UpdateProductDto) =>
+                    Promise.resolve({
+                        ...product,
+                        ...dto,
+                        id,
+                    }),
+                ),
+            remove: jest.fn().mockResolvedValue(undefined),
+        } as unknown as jest.Mocked<ProductsService>;
+        controller = new ProductsController(service);
+    });
+
+    it('delegates findAll to service', async () => {
+        const findAllSpy = jest.spyOn(service, 'findAll');
+        await expect(controller.findAll()).resolves.toEqual([product]);
+        expect(findAllSpy).toHaveBeenCalled();
+    });
+
+    it('delegates findOne to service', async () => {
+        const findOneSpy = jest.spyOn(service, 'findOne');
+        await expect(controller.findOne(1)).resolves.toBe(product);
+        expect(findOneSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('delegates create to service', async () => {
+        const dto: CreateProductDto = {
+            name: 'Shampoo',
+            brand: 'Brand',
+            unitPrice: 10,
+            stock: 5,
+        };
+        const createSpy = jest.spyOn(service, 'create');
+        await expect(controller.create(dto)).resolves.toEqual({
+            id: 1,
             ...dto,
-            id,
-          }),
-        ),
-      remove: jest.fn().mockResolvedValue(undefined),
-    } as unknown as jest.Mocked<ProductsService>;
-    controller = new ProductsController(service);
-  });
+        });
+        expect(createSpy).toHaveBeenCalledWith(dto);
+    });
 
-  it('delegates findAll to service', async () => {
-    const { findAll } = service;
-    const callFindAll = () => controller.findAll();
-    await expect(callFindAll()).resolves.toEqual([product]);
-    expect(findAll).toHaveBeenCalled();
-  });
+    it('delegates update to service', async () => {
+        const dto: UpdateProductDto = { name: 'New' };
+        const updated = { ...product, ...dto };
+        const updateSpy = jest.spyOn(service, 'update');
+        await expect(controller.update(1, dto)).resolves.toEqual(updated);
+        expect(updateSpy).toHaveBeenCalledWith(1, dto);
+    });
 
-  it('delegates findOne to service', async () => {
-    const { findOne } = service;
-    const callFindOne = () => controller.findOne(1);
-    await expect(callFindOne()).resolves.toBe(product);
-    expect(findOne).toHaveBeenCalledWith(1);
-  });
-
-  it('delegates create to service', async () => {
-    const { create } = service;
-    const dto: CreateProductDto = {
-      name: 'Shampoo',
-      brand: 'Brand',
-      unitPrice: 10,
-      stock: 5,
-    };
-    const callCreate = () => controller.create(dto);
-    await expect(callCreate()).resolves.toEqual({ id: 1, ...dto });
-    expect(create).toHaveBeenCalledWith(dto);
-  });
-
-  it('delegates update to service', async () => {
-    const { update } = service;
-    const dto: UpdateProductDto = { name: 'New' };
-    const updated = { ...product, ...dto };
-    const callUpdate = () => controller.update(1, dto);
-    await expect(callUpdate()).resolves.toEqual(updated);
-    expect(update).toHaveBeenCalledWith(1, dto);
-  });
-
-  it('delegates remove to service', async () => {
-    const { remove } = service;
-    const callRemove = () => controller.remove(1);
-    await expect(callRemove()).resolves.toBeUndefined();
-    expect(remove).toHaveBeenCalledWith(1);
-  });
+    it('delegates remove to service', async () => {
+        const removeSpy = jest.spyOn(service, 'remove');
+        await expect(controller.remove(1)).resolves.toBeUndefined();
+        expect(removeSpy).toHaveBeenCalledWith(1);
+    });
 });
-
