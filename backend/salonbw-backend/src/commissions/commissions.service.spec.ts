@@ -35,7 +35,7 @@ describe('CommissionsService', () => {
     });
 
     it('creates a commission', async () => {
-        const { create, save, find } = repo;
+        const { create, save } = repo;
         await expect(service.create({ amount: 10 })).resolves.toEqual({
             id: 1,
             amount: 10,
@@ -66,7 +66,7 @@ describe('CommissionsService', () => {
     });
 
     it('finds commissions for user', async () => {
-        const { create, save, find } = repo;
+        const { find } = repo;
         await service.findForUser(2);
         expect(find).toHaveBeenCalledWith({
             where: { employee: { id: 2 } },
@@ -75,7 +75,7 @@ describe('CommissionsService', () => {
     });
 
     it('finds all commissions', async () => {
-        const { create, save, find } = repo;
+        const { find } = repo;
         await service.findAll();
         expect(find).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
