@@ -34,13 +34,15 @@ describe('ServicesController', () => {
   it('delegates findAll to service', async () => {
     const callFindAll = () => controller.findAll();
     await expect(callFindAll()).resolves.toEqual([serviceEntity]);
-    expect(service.findAll).toHaveBeenCalled();
+    const { findAll } = service;
+    expect(findAll).toHaveBeenCalled();
   });
 
   it('delegates findOne to service', async () => {
     const callFindOne = () => controller.findOne(1);
     await expect(callFindOne()).resolves.toBe(serviceEntity);
-    expect(service.findOne).toHaveBeenCalledWith(1);
+    const { findOne } = service;
+    expect(findOne).toHaveBeenCalledWith(1);
   });
 
   it('delegates create to service', async () => {
@@ -54,20 +56,23 @@ describe('ServicesController', () => {
     };
     const callCreate = () => controller.create(dto);
     await expect(callCreate()).resolves.toBe(serviceEntity);
-    expect(service.create).toHaveBeenCalledWith(dto);
+    const { create } = service;
+    expect(create).toHaveBeenCalledWith(dto);
   });
 
   it('delegates update to service', async () => {
     const dto: UpdateServiceDto = { name: 'New' };
     const callUpdate = () => controller.update(1, dto);
     await expect(callUpdate()).resolves.toBe(serviceEntity);
-    expect(service.update).toHaveBeenCalledWith(1, dto);
+    const { update } = service;
+    expect(update).toHaveBeenCalledWith(1, dto);
   });
 
   it('delegates remove to service', async () => {
     const callRemove = () => controller.remove(1);
     await expect(callRemove()).resolves.toBeUndefined();
-    expect(service.remove).toHaveBeenCalledWith(1);
+    const { remove } = service;
+    expect(remove).toHaveBeenCalledWith(1);
   });
 });
 

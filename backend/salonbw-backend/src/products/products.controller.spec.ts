@@ -23,27 +23,35 @@ describe('ProductsController', () => {
       findOne: jest.fn().mockResolvedValue(product),
       create: jest
         .fn()
-        .mockImplementation(async (dto: CreateProductDto) => ({ id: 1, ...dto })),
+        .mockImplementation((dto: CreateProductDto) =>
+          Promise.resolve({ id: 1, ...dto }),
+        ),
       update: jest
         .fn()
-        .mockImplementation(async (id: number, dto: UpdateProductDto) => ({
-          ...product,
-          ...dto,
-          id,
-        })),
+        .mockImplementation((id: number, dto: UpdateProductDto) =>
+          Promise.resolve({
+            ...product,
+            ...dto,
+            id,
+          }),
+        ),
       remove: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<ProductsService>;
     controller = new ProductsController(service);
   });
 
   it('delegates findAll to service', async () => {
-    await expect(controller.findAll()).resolves.toEqual([product]);
-    expect(service.findAll).toHaveBeenCalled();
+    const callFindAll = () => controller.findAll();
+    await expect(callFindAll()).resolves.toEqual([product]);
+    const { findAll } = service;
+    expect(findAll).toHaveBeenCalled();
   });
 
   it('delegates findOne to service', async () => {
-    await expect(controller.findOne(1)).resolves.toBe(product);
-    expect(service.findOne).toHaveBeenCalledWith(1);
+    const callFindOne = () => controller.findOne(1);
+    await expect(callFindOne()).resolves.toBe(product);
+    const { findOne } = service;
+    expect(findOne).toHaveBeenCalledWith(1);
   });
 
   it('delegates create to service', async () => {
@@ -53,20 +61,26 @@ describe('ProductsController', () => {
       unitPrice: 10,
       stock: 5,
     };
-    await expect(controller.create(dto)).resolves.toEqual({ id: 1, ...dto });
-    expect(service.create).toHaveBeenCalledWith(dto);
+    const callCreate = () => controller.create(dto);
+    await expect(callCreate()).resolves.toEqual({ id: 1, ...dto });
+    const { create } = service;
+    expect(create).toHaveBeenCalledWith(dto);
   });
 
   it('delegates update to service', async () => {
     const dto: UpdateProductDto = { name: 'New' };
     const updated = { ...product, ...dto };
-    await expect(controller.update(1, dto)).resolves.toEqual(updated);
-    expect(service.update).toHaveBeenCalledWith(1, dto);
+    const callUpdate = () => controller.update(1, dto);
+    await expect(callUpdate()).resolves.toEqual(updated);
+    const { update } = service;
+    expect(update).toHaveBeenCalledWith(1, dto);
   });
 
   it('delegates remove to service', async () => {
-    await expect(controller.remove(1)).resolves.toBeUndefined();
-    expect(service.remove).toHaveBeenCalledWith(1);
+    const callRemove = () => controller.remove(1);
+    await expect(callRemove()).resolves.toBeUndefined();
+    const { remove } = service;
+    expect(remove).toHaveBeenCalledWith(1);
   });
 });
 
