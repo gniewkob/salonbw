@@ -19,14 +19,14 @@ describe('CommissionsController', () => {
   });
 
   it('delegates findMine to service', async () => {
-    const findMine = controller.findMine.bind(controller);
-    await expect(findMine({ userId: 1 })).resolves.toEqual([mine]);
+    const callFindMine = (dto: { userId: number }) => controller.findMine(dto);
+    await expect(callFindMine({ userId: 1 })).resolves.toEqual([mine]);
     expect(service.findForUser).toHaveBeenCalledWith(1);
   });
 
   it('delegates findAll to service', async () => {
-    const list = controller.findAll.bind(controller);
-    await expect(list()).resolves.toEqual([all]);
+    const callFindAll = () => controller.findAll();
+    await expect(callFindAll()).resolves.toEqual([all]);
     expect(service.findAll).toHaveBeenCalled();
   });
 });
