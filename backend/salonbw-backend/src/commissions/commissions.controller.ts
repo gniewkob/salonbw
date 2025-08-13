@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CommissionsService } from './commissions.service';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -16,6 +16,14 @@ export class CommissionsController {
     @Get('me')
     findMine(@CurrentUser() user: { userId: number }): Promise<Commission[]> {
         return this.commissionsService.findForUser(user.userId);
+    }
+
+    @Roles(Role.Admin)
+    @Get('employees/:id')
+    findForEmployee(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<Commission[]> {
+        return this.commissionsService.findForUser(id);
     }
 
     @Roles(Role.Admin)
