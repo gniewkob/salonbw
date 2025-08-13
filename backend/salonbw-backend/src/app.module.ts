@@ -11,6 +11,7 @@ import { ProductsModule } from './products/products.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { FormulasModule } from './formulas/formulas.module';
 import { CommissionsModule } from './commissions/commissions.module';
+import { LogsModule } from './logs/logs.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { CommissionsModule } from './commissions/commissions.module';
         AppointmentsModule,
         FormulasModule,
         CommissionsModule,
+        LogsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
