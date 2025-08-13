@@ -46,12 +46,14 @@ describe('ProductsService', () => {
 
   it('returns all products', async () => {
     await expect(service.findAll()).resolves.toEqual([{ id: 1 }]);
-    expect(repo.find).toHaveBeenCalled();
+    const { find } = repo;
+    expect(find).toHaveBeenCalled();
   });
 
   it('returns a product by id', async () => {
     await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
-    expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+    const { findOne } = repo;
+    expect(findOne).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
   it('throws when product not found', async () => {
@@ -62,12 +64,14 @@ describe('ProductsService', () => {
   it('updates a product', async () => {
     const dto: Partial<Product> = { name: 'New' };
     await expect(service.update(1, dto as Product)).resolves.toEqual({ id: 1 });
-    expect(repo.update).toHaveBeenCalledWith(1, dto);
+    const { update } = repo;
+    expect(update).toHaveBeenCalledWith(1, dto);
   });
 
   it('removes a product', async () => {
     await service.remove(1);
-    expect(repo.delete).toHaveBeenCalledWith(1);
+    const { delete: deleteFn } = repo;
+    expect(deleteFn).toHaveBeenCalledWith(1);
   });
 });
 
