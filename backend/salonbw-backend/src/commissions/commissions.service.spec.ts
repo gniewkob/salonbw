@@ -35,11 +35,11 @@ describe('CommissionsService', () => {
     });
 
     it('creates a commission', async () => {
+        const { create, save, find } = repo;
         await expect(service.create({ amount: 10 })).resolves.toEqual({
             id: 1,
             amount: 10,
         });
-        const { create, save } = repo;
         expect(create).toHaveBeenCalledWith({ amount: 10 });
         expect(save).toHaveBeenCalled();
     });
@@ -66,8 +66,8 @@ describe('CommissionsService', () => {
     });
 
     it('finds commissions for user', async () => {
+        const { create, save, find } = repo;
         await service.findForUser(2);
-        const { find } = repo;
         expect(find).toHaveBeenCalledWith({
             where: { employee: { id: 2 } },
             order: { createdAt: 'DESC' },
@@ -75,8 +75,8 @@ describe('CommissionsService', () => {
     });
 
     it('finds all commissions', async () => {
+        const { create, save, find } = repo;
         await service.findAll();
-        const { find } = repo;
         expect(find).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
         });
