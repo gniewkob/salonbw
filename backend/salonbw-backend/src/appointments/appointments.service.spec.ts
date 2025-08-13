@@ -70,19 +70,6 @@ describe('AppointmentsService', () => {
             Repository<SalonService>
         >;
 
-        const update = jest.fn<
-            Promise<UpdateResult>,
-            [number, Partial<Appointment>]
-        >((id, partial) => {
-            const idx = appointments.findIndex((a) => a.id === id);
-            if (idx >= 0) {
-                appointments[idx] = { ...appointments[idx], ...partial };
-            }
-            return Promise.resolve({
-                affected: idx >= 0 ? 1 : 0,
-            } as UpdateResult);
-        });
-
         const repoUpdate = jest.fn<
             Promise<UpdateResult>,
             [number, Partial<Appointment>]
@@ -151,15 +138,21 @@ describe('AppointmentsService', () => {
             }),
             update: repoUpdate,
             manager: {
-                transaction: jest.fn(async (cb: any) => {
-                    const snapshot = appointments.map((a) => ({ ...a }));
-                    try {
-                        return await cb({ update: managerUpdate });
-                    } catch (e) {
-                        appointments = snapshot;
-                        throw e;
-                    }
-                }),
+                transaction: jest.fn(
+                    async (
+                        cb: (em: {
+                            update: typeof managerUpdate;
+                        }) => Promise<unknown>,
+                    ) => {
+                        const snapshot = appointments.map((a) => ({ ...a }));
+                        try {
+                            return await cb({ update: managerUpdate });
+                        } catch (e) {
+                            appointments = snapshot;
+                            throw e;
+                        }
+                    },
+                ),
             },
         } as Partial<Repository<Appointment>> as jest.Mocked<
             Repository<Appointment>
