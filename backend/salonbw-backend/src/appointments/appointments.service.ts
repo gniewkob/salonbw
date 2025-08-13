@@ -138,10 +138,12 @@ export class AppointmentsService {
                 'Cannot complete a cancelled appointment',
             );
         }
-        await this.appointmentsRepository.update(id, {
-            status: AppointmentStatus.Completed,
+        await this.appointmentsRepository.manager.transaction(async (manager) => {
+            await manager.update(Appointment, id, {
+                status: AppointmentStatus.Completed,
+            });
+            await this.commissionsService.createFromAppointment(appointment);
         });
-        await this.commissionsService.createFromAppointment(appointment);
         return this.findOne(id);
     }
 }
