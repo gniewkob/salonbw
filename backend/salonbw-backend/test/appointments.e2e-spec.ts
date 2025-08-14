@@ -19,6 +19,7 @@ import { Appointment } from '../src/appointments/appointment.entity';
 import { Commission } from '../src/commissions/commission.entity';
 import { Formula } from '../src/formulas/formula.entity';
 import { Product } from '../src/products/product.entity';
+import { Log } from '../src/logs/log.entity';
 
 interface AppointmentResponse {
     id: number;
@@ -63,6 +64,7 @@ describe('Appointments integration', () => {
                         Commission,
                         Formula,
                         Product,
+                        Log,
                     ],
                     synchronize: true,
                 }),
@@ -317,7 +319,7 @@ describe('Appointments integration', () => {
         );
     });
     it('prevents cancelling completed appointments', async () => {
-        const startBase = Date.now() + 13 * hour;
+        const startBase = Date.now() + 17 * hour;
         const start = new Date(startBase).toISOString();
         const createRes: Response = await request(server)
             .post('/appointments')
@@ -342,7 +344,7 @@ describe('Appointments integration', () => {
     });
 
     it('prevents completing cancelled appointments', async () => {
-        const startBase = Date.now() + 15 * hour;
+        const startBase = Date.now() + 19 * hour;
         const start = new Date(startBase).toISOString();
         const createRes: Response = await request(server)
             .post('/appointments')
