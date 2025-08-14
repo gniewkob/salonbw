@@ -6,15 +6,7 @@ import {
     CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
-
-export enum LogAction {
-    Login = 'login',
-    Logout = 'logout',
-    Create = 'create',
-    Update = 'update',
-    Delete = 'delete',
-    AUTHORIZATION_FAIL = 'authorization_fail',
-}
+import { LogAction } from './log-action.enum';
 
 @Entity('logs')
 export class Log {

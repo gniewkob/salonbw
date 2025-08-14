@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
-import { LogAction } from './log.entity';
+import { LogAction } from './log-action.enum';
 import { LogService } from './log.service';
 
 @Controller('logs')

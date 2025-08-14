@@ -7,7 +7,8 @@ import {
     Repository,
     FindOptionsWhere,
 } from 'typeorm';
-import { Log, LogAction } from './log.entity';
+import { Log } from './log.entity';
+import { LogAction } from './log-action.enum';
 import { User } from '../users/user.entity';
 
 @Injectable()
