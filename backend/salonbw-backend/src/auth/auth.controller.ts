@@ -49,7 +49,7 @@ export class AuthController {
     @ApiResponse({ status: 201, description: 'User successfully registered' })
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
-        const result = await this.authService.login(user);
+        const result = this.authService.login(user);
         await this.logService.logAction(user, LogAction.Create, {
             userId: user.id,
             email: user.email,
