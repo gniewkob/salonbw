@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
+import { CurrentUser } from '../auth/current-user.decorator';
 import { ServicesService } from './services.service';
 import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -35,8 +36,11 @@ export class ServicesController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() createServiceDto: CreateServiceDto): Promise<Service> {
-        return this.servicesService.create(createServiceDto);
+    create(
+        @Body() createServiceDto: CreateServiceDto,
+        @CurrentUser() user: { userId: number },
+    ): Promise<Service> {
+        return this.servicesService.create(createServiceDto, user);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -45,14 +49,18 @@ export class ServicesController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateServiceDto: UpdateServiceDto,
+        @CurrentUser() user: { userId: number },
     ): Promise<Service> {
-        return this.servicesService.update(id, updateServiceDto);
+        return this.servicesService.update(id, updateServiceDto, user);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.servicesService.remove(id);
+    remove(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number },
+    ): Promise<void> {
+        return this.servicesService.remove(id, user);
     }
 }

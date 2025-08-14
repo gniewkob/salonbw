@@ -6,6 +6,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class ProductsService {
@@ -15,13 +16,20 @@ export class ProductsService {
         private readonly logService: LogService,
     ) {}
 
-    async create(dto: CreateProductDto): Promise<Product> {
+    async create(
+        dto: CreateProductDto,
+        user: { userId: number },
+    ): Promise<Product> {
         const product = this.productsRepository.create(dto);
         const saved = await this.productsRepository.save(product);
-        await this.logService.logAction(null, LogAction.PRODUCT_CREATED, {
+        await this.logService.logAction(
+            { id: user.userId } as User,
+            LogAction.PRODUCT_CREATED,
+            {
             productId: saved.id,
             name: saved.name,
-        });
+            },
+        );
         return saved;
     }
 
@@ -39,22 +47,34 @@ export class ProductsService {
         return product;
     }
 
-    async update(id: number, dto: UpdateProductDto): Promise<Product> {
+    async update(
+        id: number,
+        dto: UpdateProductDto,
+        user: { userId: number },
+    ): Promise<Product> {
         await this.productsRepository.update(id, dto);
         const updated = await this.findOne(id);
-        await this.logService.logAction(null, LogAction.PRODUCT_UPDATED, {
+        await this.logService.logAction(
+            { id: user.userId } as User,
+            LogAction.PRODUCT_UPDATED,
+            {
             productId: updated.id,
             name: updated.name,
-        });
+            },
+        );
         return updated;
     }
 
-    async remove(id: number): Promise<void> {
+    async remove(id: number, user: { userId: number }): Promise<void> {
         const product = await this.findOne(id);
         await this.productsRepository.delete(id);
-        await this.logService.logAction(null, LogAction.PRODUCT_DELETED, {
-            productId: product.id,
-            name: product.name,
-        });
+        await this.logService.logAction(
+            { id: user.userId } as User,
+            LogAction.PRODUCT_DELETED,
+            {
+                productId: product.id,
+                name: product.name,
+            },
+        );
     }
 }

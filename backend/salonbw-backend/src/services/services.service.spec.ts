@@ -12,6 +12,7 @@ describe('ServicesService', () => {
     let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
     let logService: LogService;
+    const user = { userId: 1 };
 
     const mockRepository = (): jest.Mocked<Repository<Service>> =>
         ({
@@ -74,10 +75,14 @@ describe('ServicesService', () => {
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.create(dto)).resolves.toEqual(serviceEntity);
+        await expect(service.create(dto, user)).resolves.toEqual(serviceEntity);
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ id: user.userId }),
+            expect.anything(),
+            expect.anything(),
+        );
     });
 
     it('returns all services', async () => {
@@ -104,16 +109,24 @@ describe('ServicesService', () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const updateSpy = jest.spyOn(repo, 'update');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.update(1, dto)).resolves.toBe(serviceEntity);
+        await expect(service.update(1, dto, user)).resolves.toBe(serviceEntity);
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ id: user.userId }),
+            expect.anything(),
+            expect.anything(),
+        );
     });
 
     it('removes a service', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.remove(1)).resolves.toBeUndefined();
+        await expect(service.remove(1, user)).resolves.toBeUndefined();
         expect(deleteSpy).toHaveBeenCalledWith(1);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ id: user.userId }),
+            expect.anything(),
+            expect.anything(),
+        );
     });
 });

@@ -160,9 +160,10 @@ describe('AppointmentsService', () => {
         >;
 
         mockCommissionsService = {
-            createFromAppointment: jest.fn<Promise<void>, [Appointment]>(() =>
-                Promise.resolve(),
-            ),
+            createFromAppointment: jest.fn<
+                Promise<void>,
+                [Appointment, User]
+            >(() => Promise.resolve()),
         } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
 
         mockLogService = {
@@ -181,18 +182,21 @@ describe('AppointmentsService', () => {
 
     it('should create an appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const result = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const result = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
         expect(result.id).toBeDefined();
         expect(result.endTime.getTime()).toBe(start.getTime() + 30 * 60 * 1000);
         expect(appointments).toHaveLength(1);
         expect(logActionSpy).toHaveBeenCalledWith(
-            null,
+            users[0],
             LogAction.APPOINTMENT_CREATED,
             expect.objectContaining({ id: result.id }),
         );
@@ -200,34 +204,43 @@ describe('AppointmentsService', () => {
 
     it('should reject overlapping appointments', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
-
-        const overlap = new Date(start.getTime() + 15 * 60 * 1000);
-        await expect(
-            service.create({
+        await service.create(
+            {
                 client: users[0],
                 employee: users[1],
                 service: services[0],
-                startTime: overlap,
-            }),
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const overlap = new Date(start.getTime() + 15 * 60 * 1000);
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: overlap,
+                },
+                users[0],
+            ),
         ).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('should cancel a scheduled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
-        const cancelled = await service.cancel(id);
+        const cancelled = await service.cancel(id, users[0]);
         expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
         expect(mockAppointmentsRepo.update.mock.calls[0]).toEqual([
             id,
@@ -235,7 +248,7 @@ describe('AppointmentsService', () => {
         ]);
         expect(logActionSpy).toHaveBeenNthCalledWith(
             2,
-            null,
+            users[0],
             LogAction.APPOINTMENT_CANCELLED,
             expect.objectContaining({
                 appointmentId: id,
@@ -246,80 +259,97 @@ describe('AppointmentsService', () => {
 
     it('should not cancel a completed appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
-        await service.completeAppointment(id);
-        await expect(service.cancel(id)).rejects.toBeInstanceOf(
+        await service.completeAppointment(id, users[1]);
+        await expect(service.cancel(id, users[0])).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('should not cancel an already cancelled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
-        await service.cancel(id);
-        await expect(service.cancel(id)).rejects.toBeInstanceOf(
+        await service.cancel(id, users[0]);
+        await expect(service.cancel(id, users[0])).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('should not complete a cancelled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
-        await service.cancel(id);
-        await expect(service.completeAppointment(id)).rejects.toBeInstanceOf(
+        await service.cancel(id, users[0]);
+        await expect(service.completeAppointment(id, users[1])).rejects.toBeInstanceOf(
             BadRequestException,
         );
     });
 
     it('should revert completion if commission creation fails', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
         mockCommissionsService.createFromAppointment.mockRejectedValueOnce(
             new Error('fail'),
         );
 
-        await expect(service.completeAppointment(id)).rejects.toThrow('fail');
+        await expect(service.completeAppointment(id, users[1])).rejects.toThrow(
+            'fail',
+        );
         const appt = await service.findOne(id);
         expect(appt?.status).toBe(AppointmentStatus.Scheduled);
     });
 
     it('should log when completing an appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
-        const { id } = await service.create({
-            client: users[0],
-            employee: users[1],
-            service: services[0],
-            startTime: start,
-        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
 
-        await service.completeAppointment(id);
+        await service.completeAppointment(id, users[1]);
         expect(logActionSpy).toHaveBeenNthCalledWith(
             2,
-            null,
+            users[1],
             LogAction.APPOINTMENT_COMPLETED,
             expect.objectContaining({
                 appointmentId: id,

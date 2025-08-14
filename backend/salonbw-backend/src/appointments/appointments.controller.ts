@@ -60,12 +60,15 @@ export class AppointmentsController {
             (user.role === Role.Employee || user.role === Role.Admin)
                 ? ({ id: body.clientId } as User)
                 : ({ id: user.userId } as User);
-        return this.appointmentsService.create({
-            client,
-            employee: { id: body.employeeId } as User,
-            service: { id: body.serviceId } as SalonService,
-            startTime: new Date(body.startTime),
-        });
+        return this.appointmentsService.create(
+            {
+                client,
+                employee: { id: body.employeeId } as User,
+                service: { id: body.serviceId } as SalonService,
+                startTime: new Date(body.startTime),
+            },
+            { id: user.userId } as User,
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -93,7 +96,7 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.cancel(id);
+        return this.appointmentsService.cancel(id, { id: user.userId } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -113,6 +116,9 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.completeAppointment(id);
+        return this.appointmentsService.completeAppointment(
+            id,
+            { id: user.userId } as User,
+        );
     }
 }

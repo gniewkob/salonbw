@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
+import { CurrentUser } from '../auth/current-user.decorator';
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -39,8 +40,11 @@ export class ProductsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() body: CreateProductDto): Promise<Product> {
-        return this.productsService.create(body);
+    create(
+        @Body() body: CreateProductDto,
+        @CurrentUser() user: { userId: number },
+    ): Promise<Product> {
+        return this.productsService.create(body, user);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -49,14 +53,18 @@ export class ProductsController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: UpdateProductDto,
+        @CurrentUser() user: { userId: number },
     ): Promise<Product> {
-        return this.productsService.update(id, body);
+        return this.productsService.update(id, body, user);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.productsService.remove(id);
+    remove(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number },
+    ): Promise<void> {
+        return this.productsService.remove(id, user);
     }
 }
