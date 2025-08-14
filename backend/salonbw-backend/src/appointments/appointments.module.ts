@@ -6,11 +6,13 @@ import { AppointmentsController } from './appointments.controller';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Appointment, SalonService, User]),
         CommissionsModule,
+        LogsModule,
     ],
     providers: [AppointmentsService],
     controllers: [AppointmentsController],
