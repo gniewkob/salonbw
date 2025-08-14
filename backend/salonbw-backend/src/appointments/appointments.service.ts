@@ -10,6 +10,8 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -21,6 +23,7 @@ export class AppointmentsService {
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
+        private readonly logService: LogService,
     ) {}
 
     async create(data: Partial<Appointment>): Promise<Appointment> {
@@ -90,6 +93,10 @@ export class AppointmentsService {
         if (!result) {
             throw new Error('Appointment not found after creation');
         }
+        await this.logService.logAction(null, LogAction.Create, {
+            entity: 'appointment',
+            id: result.id,
+        });
         return result;
     }
 
@@ -125,7 +132,13 @@ export class AppointmentsService {
         await this.appointmentsRepository.update(id, {
             status: AppointmentStatus.Cancelled,
         });
-        return this.findOne(id);
+        const updated = await this.findOne(id);
+        await this.logService.logAction(null, LogAction.Update, {
+            entity: 'appointment',
+            id,
+            action: 'cancel',
+        });
+        return updated;
     }
 
     async completeAppointment(id: number): Promise<Appointment | null> {
@@ -144,6 +157,12 @@ export class AppointmentsService {
             });
             await this.commissionsService.createFromAppointment(appointment);
         });
-        return this.findOne(id);
+        const completed = await this.findOne(id);
+        await this.logService.logAction(null, LogAction.Update, {
+            entity: 'appointment',
+            id,
+            action: 'complete',
+        });
+        return completed;
     }
 }
