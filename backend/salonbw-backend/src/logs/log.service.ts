@@ -23,6 +23,34 @@ export class LogService {
         action: LogAction,
         description?: string | Record<string, any>,
     ): Promise<Log> {
+        if (description) {
+            const containsSensitiveKey = (obj: Record<string, any>): boolean =>
+                Object.entries(obj).some(([key, value]) => {
+                    if (['password', 'token'].includes(key.toLowerCase())) {
+                        return true;
+                    }
+                    if (typeof value === 'object' && value !== null) {
+                        return containsSensitiveKey(value);
+                    }
+                    return false;
+                });
+
+            if (typeof description === 'string') {
+                const lower = description.toLowerCase();
+                if (lower.includes('password') || lower.includes('token')) {
+                    throw new Error(
+                        'Description contains sensitive information',
+                    );
+                }
+            } else if (typeof description === 'object' && description !== null) {
+                if (containsSensitiveKey(description)) {
+                    throw new Error(
+                        'Description contains sensitive information',
+                    );
+                }
+            }
+        }
+
         const log = this.logRepository.create({
             user: user ?? null,
             action,
