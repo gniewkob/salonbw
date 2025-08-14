@@ -1,10 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
-import { LogAction } from './log-action.enum';
 import { LogService } from './log.service';
+import { GetLogsDto } from './dto/get-logs.dto';
 
 @Controller('logs')
 export class LogsController {
@@ -14,20 +14,15 @@ export class LogsController {
     @Roles(Role.Admin)
     @Get()
     getLogs(
-        @Query('userId') userId?: string,
-        @Query('action') action?: LogAction,
-        @Query('from') from?: string,
-        @Query('to') to?: string,
-        @Query('page') page = '1',
-        @Query('limit') limit = '10',
+        @Query(new ValidationPipe({ transform: true })) dto: GetLogsDto,
     ) {
         return this.logService.findAll({
-            userId: userId ? Number(userId) : undefined,
-            action,
-            from: from ? new Date(from) : undefined,
-            to: to ? new Date(to) : undefined,
-            page: Number(page),
-            limit: Number(limit),
+            userId: dto.userId,
+            action: dto.action,
+            from: dto.from ? new Date(dto.from) : undefined,
+            to: dto.to ? new Date(dto.to) : undefined,
+            page: dto.page,
+            limit: dto.limit,
         });
     }
 }
