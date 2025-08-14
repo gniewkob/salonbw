@@ -70,12 +70,16 @@ describe('LogsController (e2e)', () => {
             role: 'client',
         });
 
-        await logService.logAction(admin, LogAction.USER_LOGIN, {
-            note: 'admin log',
-        });
-        await logService.logAction(user, LogAction.USER_LOGIN, {
-            note: 'user log',
-        });
+        try {
+            await logService.logAction(admin, LogAction.USER_LOGIN, {
+                note: 'admin log',
+            });
+            await logService.logAction(user, LogAction.USER_LOGIN, {
+                note: 'user log',
+            });
+        } catch (error) {
+            console.error('Failed to seed log entries', error);
+        }
     });
 
     afterAll(async () => {

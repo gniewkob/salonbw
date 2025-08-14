@@ -128,4 +128,56 @@ describe('ProductsService', () => {
             expect.objectContaining({ productId: 1 }),
         );
     });
+
+    describe('when logging fails', () => {
+        it('allows creation to succeed', async () => {
+            logService.logAction = jest
+                .fn()
+                .mockRejectedValue(new Error('fail')) as any;
+            const consoleSpy = jest
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            const dto: Partial<Product> = {
+                name: 'Shampoo',
+                brand: 'Brand',
+                unitPrice: 5,
+                stock: 10,
+            };
+            const user = { id: 1 } as User;
+            await expect(service.create(dto as Product, user)).resolves.toEqual({
+                id: 1,
+                ...dto,
+            });
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+
+        it('allows update to succeed', async () => {
+            logService.logAction = jest
+                .fn()
+                .mockRejectedValue(new Error('fail')) as any;
+            const consoleSpy = jest
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            const user = { id: 1 } as User;
+            await expect(service.update(1, {}, user)).resolves.toEqual({
+                id: 1,
+            });
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+
+        it('allows removal to succeed', async () => {
+            logService.logAction = jest
+                .fn()
+                .mockRejectedValue(new Error('fail')) as any;
+            const consoleSpy = jest
+                .spyOn(console, 'error')
+                .mockImplementation(() => {});
+            const user = { id: 1 } as User;
+            await expect(service.remove(1, user)).resolves.toBeUndefined();
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+    });
 });
