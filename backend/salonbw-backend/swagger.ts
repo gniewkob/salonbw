@@ -20,6 +20,7 @@ import { ClientFormulasController } from './src/formulas/client-formulas.control
 import { FormulasService } from './src/formulas/formulas.service';
 import { CommissionsController } from './src/commissions/commissions.controller';
 import { CommissionsService } from './src/commissions/commissions.service';
+import { LogService } from './src/logs/log.service';
 
 @Module({
   controllers: [
@@ -93,6 +94,13 @@ import { CommissionsService } from './src/commissions/commissions.service';
       useValue: {
         findForUser: () => [],
         findAll: () => [],
+      },
+    },
+    {
+      provide: LogService,
+      useValue: {
+        logAction: () => undefined,
+        findAll: () => ({ data: [], total: 0, page: 1, limit: 0 }),
       },
     },
   ],
