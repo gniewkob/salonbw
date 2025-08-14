@@ -23,9 +23,19 @@ describe('ServicesController', () => {
         service = {
             findAll: jest.fn().mockResolvedValue([serviceEntity]),
             findOne: jest.fn().mockResolvedValue(serviceEntity),
-            create: jest.fn().mockResolvedValue(serviceEntity),
-            update: jest.fn().mockResolvedValue(serviceEntity),
-            remove: jest.fn().mockResolvedValue(undefined),
+            create: jest.fn((dto: CreateServiceDto) => {
+                void dto;
+                return Promise.resolve(serviceEntity);
+            }),
+            update: jest.fn((id: number, dto: UpdateServiceDto) => {
+                void id;
+                void dto;
+                return Promise.resolve(serviceEntity);
+            }),
+            remove: jest.fn((id: number) => {
+                void id;
+                return Promise.resolve(undefined);
+            }),
         } as jest.Mocked<ServicesService>;
         controller = new ServicesController(service);
     });
