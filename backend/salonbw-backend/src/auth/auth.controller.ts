@@ -34,11 +34,15 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Log in user' })
     @ApiResponse({ status: 200, description: 'Tokens successfully generated' })
-    login(@CurrentUser() user: Omit<User, 'password'>) {
+    async login(@CurrentUser() user: Omit<User, 'password'>) {
         const result = this.authService.login(user);
-        void this.logService.logAction(user as User, LogAction.USER_LOGIN, {
-            userId: user.id,
-        });
+        try {
+            await this.logService.logAction(user as User, LogAction.USER_LOGIN, {
+                userId: user.id,
+            });
+        } catch (error) {
+            console.error('Failed to log user login action', error);
+        }
         return result;
     }
 
