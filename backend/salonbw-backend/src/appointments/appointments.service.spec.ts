@@ -10,7 +10,6 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log.entity';
 
-
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
     let appointments: Appointment[];
@@ -21,6 +20,7 @@ describe('AppointmentsService', () => {
     let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     let mockCommissionsService: jest.Mocked<CommissionsService>;
     let mockLogService: jest.Mocked<LogService>;
+    let logActionSpy: jest.SpyInstance;
     let nextId: number;
 
     beforeEach(() => {
@@ -176,6 +176,7 @@ describe('AppointmentsService', () => {
             mockCommissionsService,
             mockLogService,
         );
+        logActionSpy = jest.spyOn(mockLogService, 'logAction');
     });
 
     it('should create an appointment', async () => {
@@ -190,7 +191,7 @@ describe('AppointmentsService', () => {
         expect(result.id).toBeDefined();
         expect(result.endTime.getTime()).toBe(start.getTime() + 30 * 60 * 1000);
         expect(appointments).toHaveLength(1);
-        expect(mockLogService.logAction).toHaveBeenCalledWith(
+        expect(logActionSpy).toHaveBeenCalledWith(
             null,
             LogAction.Create,
             expect.objectContaining({ id: result.id }),
@@ -232,7 +233,7 @@ describe('AppointmentsService', () => {
             id,
             { status: AppointmentStatus.Cancelled },
         ]);
-        expect(mockLogService.logAction).toHaveBeenCalledWith(
+        expect(logActionSpy).toHaveBeenCalledWith(
             null,
             LogAction.Update,
             expect.objectContaining({ action: 'cancel', id }),
@@ -312,7 +313,7 @@ describe('AppointmentsService', () => {
         });
 
         await service.completeAppointment(id);
-        expect(mockLogService.logAction).toHaveBeenCalledWith(
+        expect(logActionSpy).toHaveBeenCalledWith(
             null,
             LogAction.Update,
             expect.objectContaining({ action: 'complete', id }),
