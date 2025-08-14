@@ -3,6 +3,7 @@ import { ServicesService } from './services.service';
 import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { User } from '../users/user.entity';
 
 describe('ServicesController', () => {
     let controller: ServicesController;
@@ -23,17 +24,20 @@ describe('ServicesController', () => {
         service = {
             findAll: jest.fn().mockResolvedValue([serviceEntity]),
             findOne: jest.fn().mockResolvedValue(serviceEntity),
-            create: jest.fn((dto: CreateServiceDto) => {
+            create: jest.fn((dto: CreateServiceDto, user: User) => {
                 void dto;
+                void user;
                 return Promise.resolve(serviceEntity);
             }),
-            update: jest.fn((id: number, dto: UpdateServiceDto) => {
+            update: jest.fn((id: number, dto: UpdateServiceDto, user: User) => {
                 void id;
                 void dto;
+                void user;
                 return Promise.resolve(serviceEntity);
             }),
-            remove: jest.fn((id: number) => {
+            remove: jest.fn((id: number, user: User) => {
                 void id;
+                void user;
                 return Promise.resolve(undefined);
             }),
         } as jest.Mocked<ServicesService>;
@@ -62,20 +66,23 @@ describe('ServicesController', () => {
             commissionPercent: 10,
         };
         const createSpy = jest.spyOn(service, 'create');
-        await expect(controller.create(dto)).resolves.toBe(serviceEntity);
-        expect(createSpy).toHaveBeenCalledWith(dto);
+        const user = { userId: 1 };
+        await expect(controller.create(dto, user)).resolves.toBe(serviceEntity);
+        expect(createSpy).toHaveBeenCalledWith(dto, { id: 1 });
     });
 
     it('delegates update to service', async () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const updateSpy = jest.spyOn(service, 'update');
-        await expect(controller.update(1, dto)).resolves.toBe(serviceEntity);
-        expect(updateSpy).toHaveBeenCalledWith(1, dto);
+        const user = { userId: 1 };
+        await expect(controller.update(1, dto, user)).resolves.toBe(serviceEntity);
+        expect(updateSpy).toHaveBeenCalledWith(1, dto, { id: 1 });
     });
 
     it('delegates remove to service', async () => {
         const removeSpy = jest.spyOn(service, 'remove');
-        await expect(controller.remove(1)).resolves.toBeUndefined();
-        expect(removeSpy).toHaveBeenCalledWith(1);
+        const user = { userId: 1 };
+        await expect(controller.remove(1, user)).resolves.toBeUndefined();
+        expect(removeSpy).toHaveBeenCalledWith(1, { id: 1 });
     });
 });
