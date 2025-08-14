@@ -96,15 +96,19 @@ export class AppointmentsService {
         if (!result) {
             throw new Error('Appointment not found after creation');
         }
-        await this.logService.logAction(user, LogAction.APPOINTMENT_CREATED, {
-            appointmentId: result.id,
-            serviceId: result.service.id,
-            serviceName: result.service.name,
-            clientId: result.client.id,
-            employeeId: result.employee.id,
-            entity: 'appointment',
-            id: result.id,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.APPOINTMENT_CREATED, {
+                appointmentId: result.id,
+                serviceId: result.service.id,
+                serviceName: result.service.name,
+                clientId: result.client.id,
+                employeeId: result.employee.id,
+                entity: 'appointment',
+                id: result.id,
+            });
+        } catch (error) {
+            console.error('Failed to log appointment creation action', error);
+        }
         return result;
     }
 
@@ -142,12 +146,20 @@ export class AppointmentsService {
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(user, LogAction.APPOINTMENT_CANCELLED, {
-                action: 'cancel',
-                id: updated.id,
-                appointmentId: updated.id,
-                status: AppointmentStatus.Cancelled,
-            });
+            try {
+                await this.logService.logAction(
+                    user,
+                    LogAction.APPOINTMENT_CANCELLED,
+                    {
+                        action: 'cancel',
+                        id: updated.id,
+                        appointmentId: updated.id,
+                        status: AppointmentStatus.Cancelled,
+                    },
+                );
+            } catch (error) {
+                console.error('Failed to log appointment cancellation action', error);
+            }
         }
         return updated;
     }
@@ -176,12 +188,20 @@ export class AppointmentsService {
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(user, LogAction.APPOINTMENT_COMPLETED, {
-                action: 'complete',
-                id: updated.id,
-                appointmentId: updated.id,
-                status: AppointmentStatus.Completed,
-            });
+            try {
+                await this.logService.logAction(
+                    user,
+                    LogAction.APPOINTMENT_COMPLETED,
+                    {
+                        action: 'complete',
+                        id: updated.id,
+                        appointmentId: updated.id,
+                        status: AppointmentStatus.Completed,
+                    },
+                );
+            } catch (error) {
+                console.error('Failed to log appointment completion action', error);
+            }
         }
         return updated;
     }
