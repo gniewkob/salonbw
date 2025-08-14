@@ -35,7 +35,10 @@ describe('ProductsController', () => {
                         id,
                     }),
             ),
-            remove: jest.fn().mockResolvedValue(undefined),
+            remove: jest.fn().mockImplementation((id: number) => {
+                void id;
+                return Promise.resolve(undefined);
+            }),
         } as jest.Mocked<ProductsService>;
         controller = new ProductsController(service);
     });
