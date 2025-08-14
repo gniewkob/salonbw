@@ -99,6 +99,8 @@ export class AppointmentsService {
             serviceName: result.service.name,
             clientId: result.client.id,
             employeeId: result.employee.id,
+            entity: 'appointment',
+            id: result.id,
         });
         return result;
     }
