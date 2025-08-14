@@ -10,6 +10,7 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log.entity';
 
+
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
     let appointments: Appointment[];

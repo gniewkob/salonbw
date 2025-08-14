@@ -94,6 +94,11 @@ export class AppointmentsService {
             throw new Error('Appointment not found after creation');
         }
         await this.logService.logAction(null, LogAction.Create, {
+            appointmentId: result.id,
+            serviceId: result.service.id,
+            serviceName: result.service.name,
+            clientId: result.client.id,
+            employeeId: result.employee.id,
             entity: 'appointment',
             id: result.id,
         });
@@ -133,11 +138,12 @@ export class AppointmentsService {
             status: AppointmentStatus.Cancelled,
         });
         const updated = await this.findOne(id);
-        await this.logService.logAction(null, LogAction.Update, {
-            entity: 'appointment',
-            id,
-            action: 'cancel',
-        });
+        if (updated) {
+            await this.logService.logAction(null, LogAction.Update, {
+                appointmentId: updated.id,
+                status: AppointmentStatus.Cancelled,
+            });
+        }
         return updated;
     }
 
@@ -157,12 +163,13 @@ export class AppointmentsService {
             });
             await this.commissionsService.createFromAppointment(appointment);
         });
-        const completed = await this.findOne(id);
-        await this.logService.logAction(null, LogAction.Update, {
-            entity: 'appointment',
-            id,
-            action: 'complete',
-        });
-        return completed;
+        const updated = await this.findOne(id);
+        if (updated) {
+            await this.logService.logAction(null, LogAction.Update, {
+                appointmentId: updated.id,
+                status: AppointmentStatus.Completed,
+            });
+        }
+        return updated;
     }
 }

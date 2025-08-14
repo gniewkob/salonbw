@@ -3,17 +3,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log.entity';
 
 @Injectable()
 export class CommissionsService {
     constructor(
         @InjectRepository(Commission)
         private readonly commissionsRepository: Repository<Commission>,
+        private readonly logService: LogService,
     ) {}
 
-    create(data: Partial<Commission>): Promise<Commission> {
+    async create(data: Partial<Commission>): Promise<Commission> {
         const commission = this.commissionsRepository.create(data);
-        return this.commissionsRepository.save(commission);
+        const saved = await this.commissionsRepository.save(commission);
+        await this.logService.logAction(null, LogAction.Create, {
+            commissionId: saved.id,
+            appointmentId: saved.appointment?.id,
+            employeeId: saved.employee?.id,
+            amount: saved.amount,
+        });
+        return saved;
     }
 
     async createFromAppointment(appointment: Appointment): Promise<Commission> {

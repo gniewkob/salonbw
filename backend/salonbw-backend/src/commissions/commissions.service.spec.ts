@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { LogService } from '../logs/log.service';
 
 describe('CommissionsService', () => {
     let service: CommissionsService;
@@ -29,6 +30,10 @@ describe('CommissionsService', () => {
                 {
                     provide: getRepositoryToken(Commission),
                     useValue: mockRepository(),
+                },
+                {
+                    provide: LogService,
+                    useValue: { logAction: jest.fn() },
                 },
             ],
         }).compile();
