@@ -11,7 +11,7 @@ import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log.entity';
+import { LogAction } from '../logs/log-action.enum';
 
 @Injectable()
 export class AppointmentsService {
@@ -93,7 +93,7 @@ export class AppointmentsService {
         if (!result) {
             throw new Error('Appointment not found after creation');
         }
-        await this.logService.logAction(null, LogAction.Create, {
+        await this.logService.logAction(null, LogAction.APPOINTMENT_CREATED, {
             appointmentId: result.id,
             serviceId: result.service.id,
             serviceName: result.service.name,
@@ -139,7 +139,7 @@ export class AppointmentsService {
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(null, LogAction.Update, {
+            await this.logService.logAction(null, LogAction.APPOINTMENT_CANCELLED, {
                 action: 'cancel',
                 id: updated.id,
                 appointmentId: updated.id,
@@ -167,7 +167,7 @@ export class AppointmentsService {
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(null, LogAction.Update, {
+            await this.logService.logAction(null, LogAction.APPOINTMENT_COMPLETED, {
                 action: 'complete',
                 id: updated.id,
                 appointmentId: updated.id,

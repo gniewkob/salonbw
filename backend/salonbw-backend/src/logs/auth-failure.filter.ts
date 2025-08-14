@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { LogService } from './log.service';
-import { LogAction } from './log.entity';
+import { LogAction } from './log-action.enum';
 
 @Catch(UnauthorizedException, ForbiddenException)
 export class AuthFailureFilter implements ExceptionFilter {
@@ -24,7 +24,7 @@ export class AuthFailureFilter implements ExceptionFilter {
         const req = ctx.getRequest<RequestWithUser>();
         const res = ctx.getResponse<Response>();
 
-        await this.logService.logAction(null, LogAction.AUTHORIZATION_FAIL, {
+        await this.logService.logAction(null, LogAction.AUTHORIZATION_FAILURE, {
             endpoint: req.url,
             userId: req.user?.id,
         });

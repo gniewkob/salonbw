@@ -18,7 +18,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { CurrentUser } from './current-user.decorator';
 import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log.entity';
+import { LogAction } from '../logs/log-action.enum';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,7 +36,7 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Tokens successfully generated' })
     login(@CurrentUser() user: Omit<User, 'password'>) {
         const result = this.authService.login(user);
-        void this.logService.logAction(user as User, LogAction.Login, {
+        void this.logService.logAction(user as User, LogAction.USER_LOGIN, {
             userId: user.id,
             email: user.email,
         });
@@ -50,7 +50,7 @@ export class AuthController {
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
         const result = this.authService.login(user);
-        await this.logService.logAction(user, LogAction.Create, {
+        await this.logService.logAction(user, LogAction.USER_REGISTERED, {
             userId: user.id,
             email: user.email,
         });
