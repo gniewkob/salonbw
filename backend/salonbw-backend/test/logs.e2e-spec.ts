@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import cookieParser from 'cookie-parser';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
 
 import { AuthModule } from '../src/auth/auth.module';
@@ -24,8 +24,8 @@ describe('LogsController (e2e)', () => {
     let server: Parameters<typeof request>[0];
     let logService: LogService;
     let userRepo: Repository<User>;
-    let adminToken: string;
-    let userToken: string;
+    let admin: User;
+    let user: User;
 
     beforeAll(async () => {
         process.env.JWT_SECRET = 'test-secret';
@@ -53,25 +53,25 @@ describe('LogsController (e2e)', () => {
         await app.init();
         server = app.getHttpServer() as Parameters<typeof request>[0];
 
-        userRepo = moduleFixture.get<Repository<User>>(getRepositoryToken(User));
-        const admin = await userRepo.save({
+        userRepo = moduleFixture.get<Repository<User>>(
+            getRepositoryToken(User),
+        );
+        admin = await userRepo.save({
             email: 'admin@example.com',
             password: 'pass',
             name: 'Admin',
             role: 'admin',
         });
-        const user = await userRepo.save({
+        user = await userRepo.save({
             email: 'user@example.com',
             password: 'pass',
             name: 'User',
             role: 'client',
         });
 
-        const secret = process.env.JWT_SECRET ?? '';
-        adminToken = jwt.sign({ sub: admin.id, role: 'admin' }, secret);
-        userToken = jwt.sign({ sub: user.id, role: 'client' }, secret);
-
-        await logService.logAction(admin, LogAction.Login, { note: 'admin log' });
+        await logService.logAction(admin, LogAction.Login, {
+            note: 'admin log',
+        });
         await logService.logAction(user, LogAction.Login, { note: 'user log' });
     });
 
@@ -80,6 +80,10 @@ describe('LogsController (e2e)', () => {
     });
 
     it('returns logs for admin users', async () => {
+        const adminToken: string = jwt.sign(
+            { sub: admin.id, role: 'admin' },
+            process.env.JWT_SECRET ?? '',
+        );
         const res = await request(server)
             .get('/logs')
             .set('Authorization', `Bearer ${adminToken}`)
@@ -95,6 +99,10 @@ describe('LogsController (e2e)', () => {
             action: LogAction.AUTHORIZATION_FAIL,
         });
 
+        const userToken: string = jwt.sign(
+            { sub: user.id, role: 'client' },
+            process.env.JWT_SECRET ?? '',
+        );
         await request(server)
             .get('/logs')
             .set('Authorization', `Bearer ${userToken}`)
