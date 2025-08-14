@@ -23,8 +23,13 @@ export class AuthFailureFilter implements ExceptionFilter {
         }
         const req = ctx.getRequest<RequestWithUser>();
         const res = ctx.getResponse<Response>();
+        const action =
+            exception instanceof UnauthorizedException &&
+            exception.message === 'Invalid credentials'
+                ? LogAction.LOGIN_FAIL
+                : LogAction.AUTHORIZATION_FAILURE;
 
-        await this.logService.logAction(null, LogAction.AUTHORIZATION_FAILURE, {
+        await this.logService.logAction(null, action, {
             endpoint: req.url,
             userId: req.user?.id,
         });

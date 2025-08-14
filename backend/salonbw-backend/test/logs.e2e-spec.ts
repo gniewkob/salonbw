@@ -73,7 +73,9 @@ describe('LogsController (e2e)', () => {
         await logService.logAction(admin, LogAction.USER_LOGIN, {
             note: 'admin log',
         });
-        await logService.logAction(user, LogAction.USER_LOGIN, { note: 'user log' });
+        await logService.logAction(user, LogAction.USER_LOGIN, {
+            note: 'user log',
+        });
     });
 
     afterAll(async () => {
@@ -111,6 +113,22 @@ describe('LogsController (e2e)', () => {
 
         const after = await logService.findAll({
             action: LogAction.AUTHORIZATION_FAILURE,
+        });
+        expect(after.total).toBe(before.total + 1);
+    });
+
+    it('logs failed login attempts', async () => {
+        const before = await logService.findAll({
+            action: LogAction.LOGIN_FAIL,
+        });
+
+        await request(server)
+            .post('/auth/login')
+            .send({ email: 'user@example.com', password: 'wrong' })
+            .expect(401);
+
+        const after = await logService.findAll({
+            action: LogAction.LOGIN_FAIL,
         });
         expect(after.total).toBe(before.total + 1);
     });
