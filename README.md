@@ -26,7 +26,6 @@ sub‑pages depending on the user role:
 - `employee` – manage bookings and availability
 - `admin` – administration tools for managing users and services
 
-
 The old Laravel-based frontend has been archived in
 [`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
 maintained.
@@ -61,7 +60,7 @@ the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
     NEXT_PUBLIC_API_URL=http://localhost:3001
     ```
 
-  `NEXT_PUBLIC_API_URL` must point to the backend API used by the frontend.
+    `NEXT_PUBLIC_API_URL` must point to the backend API used by the frontend.
 
 - **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
   values for your local database, JWT secrets and other settings.
@@ -141,6 +140,21 @@ npm run start:prod
 
 Use `npm run lint` to check the code and `npm run format` to apply Prettier. A
 pre‑commit hook powered by Husky runs Prettier on staged files automatically.
+
+## Log management
+
+Application logs can grow quickly. To keep disk usage in check, archive or
+remove log files older than a set number of days (30 by default). An example
+script is available in [`scripts/archive-logs.ts`](scripts/archive-logs.ts) and
+can be scheduled via cron:
+
+```bash
+0 0 * * * MAX_LOG_AGE_DAYS=30 LOG_DIR=/var/log/app \
+  npx ts-node /path/to/repo/scripts/archive-logs.ts
+```
+
+The script moves old logs to `ARCHIVE_DIR` if provided, or deletes them when no
+archive destination is configured.
 
 ## Instagram integration
 
