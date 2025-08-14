@@ -41,7 +41,8 @@ export class AuthController {
     @ApiResponse({ status: 201, description: 'User successfully registered' })
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
-        return this.authService.login(user);
+        const result = this.authService.login(user);
+        return result;
     }
 
     @Post('refresh')
