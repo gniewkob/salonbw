@@ -16,29 +16,34 @@ describe('LogService', () => {
                 {
                     provide: getRepositoryToken(Log),
                     useValue: {
-                        create: jest.fn().mockImplementation((entity) => entity),
-                        save: jest.fn().mockImplementation((log) => Promise.resolve(log)),
+                        create: jest.fn<Log, [Log]>((entity) => entity),
+                        save: jest.fn<Promise<Log>, [Log]>((log) =>
+                            Promise.resolve(log),
+                        ),
                     },
                 },
             ],
         }).compile();
 
         service = module.get(LogService);
-        repo = module.get<Repository<Log>>(getRepositoryToken(Log)) as jest.Mocked<Repository<Log>>;
+        repo = module.get<Repository<Log>>(
+            getRepositoryToken(Log),
+        ) as jest.Mocked<Repository<Log>>;
     });
 
     it('rejects description with password key', async () => {
         await expect(
-            service.logAction(null, LogAction.USER_LOGIN, { password: 'secret' }),
+            service.logAction(null, LogAction.USER_LOGIN, {
+                password: 'secret',
+            }),
         ).rejects.toThrow('Description contains sensitive information');
-        expect(repo.save).not.toHaveBeenCalled();
+        expect(repo.save.mock.calls.length).toBe(0);
     });
 
     it('rejects description with token key', async () => {
         await expect(
             service.logAction(null, LogAction.USER_LOGIN, { token: 'abc' }),
         ).rejects.toThrow('Description contains sensitive information');
-        expect(repo.save).not.toHaveBeenCalled();
+        expect(repo.save.mock.calls.length).toBe(0);
     });
 });
-
