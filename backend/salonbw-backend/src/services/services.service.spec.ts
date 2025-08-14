@@ -6,6 +6,7 @@ import { Service } from './service.entity';
 import { ServicesService } from './services.service';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
 
 describe('ServicesService', () => {
     let service: ServicesService;
@@ -77,7 +78,14 @@ describe('ServicesService', () => {
         await expect(service.create(dto)).resolves.toEqual(serviceEntity);
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.SERVICE_CREATED,
+            expect.objectContaining({
+                serviceId: serviceEntity.id,
+                name: serviceEntity.name,
+            }),
+        );
     });
 
     it('returns all services', async () => {
@@ -106,7 +114,14 @@ describe('ServicesService', () => {
         const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.update(1, dto)).resolves.toBe(serviceEntity);
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.SERVICE_UPDATED,
+            expect.objectContaining({
+                serviceId: serviceEntity.id,
+                name: serviceEntity.name,
+            }),
+        );
     });
 
     it('removes a service', async () => {
@@ -114,6 +129,13 @@ describe('ServicesService', () => {
         const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.remove(1)).resolves.toBeUndefined();
         expect(deleteSpy).toHaveBeenCalledWith(1);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.SERVICE_DELETED,
+            expect.objectContaining({
+                serviceId: serviceEntity.id,
+                name: serviceEntity.name,
+            }),
+        );
     });
 });

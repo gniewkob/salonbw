@@ -5,6 +5,7 @@ import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
 
 describe('CommissionsService', () => {
     let service: CommissionsService;
@@ -56,7 +57,11 @@ describe('CommissionsService', () => {
         });
         expect(createSpy).toHaveBeenCalledWith({ amount: 10 });
         expect(saveSpy).toHaveBeenCalled();
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.COMMISSION_CREATED,
+            expect.objectContaining({ commissionId: 1, amount: 10 }),
+        );
     });
 
     it('creates commission from appointment', async () => {
