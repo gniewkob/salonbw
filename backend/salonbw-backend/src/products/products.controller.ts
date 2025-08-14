@@ -17,6 +17,8 @@ import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../users/user.entity';
 
 @Controller('products')
 export class ProductsController {
@@ -39,8 +41,11 @@ export class ProductsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() body: CreateProductDto): Promise<Product> {
-        return this.productsService.create(body);
+    create(
+        @Body() body: CreateProductDto,
+        @CurrentUser() user: { userId: number },
+    ): Promise<Product> {
+        return this.productsService.create(body, { id: user.userId } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -49,14 +54,18 @@ export class ProductsController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: UpdateProductDto,
+        @CurrentUser() user: { userId: number },
     ): Promise<Product> {
-        return this.productsService.update(id, body);
+        return this.productsService.update(id, body, { id: user.userId } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.productsService.remove(id);
+    remove(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number },
+    ): Promise<void> {
+        return this.productsService.remove(id, { id: user.userId } as User);
     }
 }

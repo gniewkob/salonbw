@@ -6,6 +6,7 @@ import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 describe('CommissionsService', () => {
     let service: CommissionsService;
@@ -51,14 +52,15 @@ describe('CommissionsService', () => {
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.create({ amount: 10 })).resolves.toEqual({
+        const user = { id: 1 } as User;
+        await expect(service.create({ amount: 10 }, user)).resolves.toEqual({
             id: 1,
             amount: 10,
         });
         expect(createSpy).toHaveBeenCalledWith({ amount: 10 });
         expect(saveSpy).toHaveBeenCalled();
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.COMMISSION_CREATED,
             expect.objectContaining({ commissionId: 1, amount: 10 }),
         );
@@ -76,13 +78,14 @@ describe('CommissionsService', () => {
             percent: 10,
         };
         const created = { id: 1, ...expected } as Commission;
+        const user = { id: 1 } as User;
         const spy = jest
             .spyOn(service, 'create')
             .mockImplementation(() => Promise.resolve(created));
-        await expect(service.createFromAppointment(appointment)).resolves.toBe(
-            created,
-        );
-        expect(spy).toHaveBeenCalledWith(expected);
+        await expect(
+            service.createFromAppointment(appointment, user),
+        ).resolves.toBe(created);
+        expect(spy).toHaveBeenCalledWith(expected, user);
     });
 
     it('finds commissions for user', async () => {

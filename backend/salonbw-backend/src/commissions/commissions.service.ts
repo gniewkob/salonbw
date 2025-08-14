@@ -5,6 +5,7 @@ import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class CommissionsService {
@@ -14,10 +15,10 @@ export class CommissionsService {
         private readonly logService: LogService,
     ) {}
 
-    async create(data: Partial<Commission>): Promise<Commission> {
+    async create(data: Partial<Commission>, user: User): Promise<Commission> {
         const commission = this.commissionsRepository.create(data);
         const saved = await this.commissionsRepository.save(commission);
-        await this.logService.logAction(null, LogAction.COMMISSION_CREATED, {
+        await this.logService.logAction(user, LogAction.COMMISSION_CREATED, {
             commissionId: saved.id,
             appointmentId: saved.appointment?.id,
             employeeId: saved.employee?.id,
@@ -26,16 +27,22 @@ export class CommissionsService {
         return saved;
     }
 
-    async createFromAppointment(appointment: Appointment): Promise<Commission> {
+    async createFromAppointment(
+        appointment: Appointment,
+        user: User,
+    ): Promise<Commission> {
         const price = Number(appointment.service.price);
         const percent = Number(appointment.service.commissionPercent ?? 0);
         const amount = (price * percent) / 100;
-        return this.create({
-            employee: appointment.employee,
-            appointment,
-            amount,
-            percent,
-        });
+        return this.create(
+            {
+                employee: appointment.employee,
+                appointment,
+                amount,
+                percent,
+            },
+            user,
+        );
     }
 
     findForUser(userId: number): Promise<Commission[]> {

@@ -3,6 +3,7 @@ import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { User } from '../users/user.entity';
 
 describe('ProductsController', () => {
     let controller: ProductsController;
@@ -24,19 +25,30 @@ describe('ProductsController', () => {
             create: jest
                 .fn()
                 .mockImplementation(
-                    (dto: CreateProductDto): Promise<Product> =>
-                        Promise.resolve({ id: 1, ...dto }),
+                    (dto: CreateProductDto, user: User): Promise<Product> => {
+                        void user;
+                        return Promise.resolve({ id: 1, ...dto });
+                    },
                 ),
-            update: jest.fn().mockImplementation(
-                (id: number, dto: UpdateProductDto): Promise<Product> =>
-                    Promise.resolve({
-                        ...product,
-                        ...dto,
-                        id,
-                    }),
-            ),
-            remove: jest.fn().mockImplementation((id: number) => {
+            update: jest
+                .fn()
+                .mockImplementation(
+                    (
+                        id: number,
+                        dto: UpdateProductDto,
+                        user: User,
+                    ): Promise<Product> => {
+                        void user;
+                        return Promise.resolve({
+                            ...product,
+                            ...dto,
+                            id,
+                        });
+                    },
+                ),
+            remove: jest.fn().mockImplementation((id: number, user: User) => {
                 void id;
+                void user;
                 return Promise.resolve(undefined);
             }),
         } as jest.Mocked<ProductsService>;
@@ -63,24 +75,27 @@ describe('ProductsController', () => {
             stock: 5,
         };
         const createSpy = jest.spyOn(service, 'create');
-        await expect(controller.create(dto)).resolves.toEqual({
+        const user = { userId: 1 };
+        await expect(controller.create(dto, user)).resolves.toEqual({
             id: 1,
             ...dto,
         });
-        expect(createSpy).toHaveBeenCalledWith(dto);
+        expect(createSpy).toHaveBeenCalledWith(dto, { id: 1 });
     });
 
     it('delegates update to service', async () => {
         const dto: UpdateProductDto = { name: 'New' };
         const updated = { ...product, ...dto };
         const updateSpy = jest.spyOn(service, 'update');
-        await expect(controller.update(1, dto)).resolves.toEqual(updated);
-        expect(updateSpy).toHaveBeenCalledWith(1, dto);
+        const user = { userId: 1 };
+        await expect(controller.update(1, dto, user)).resolves.toEqual(updated);
+        expect(updateSpy).toHaveBeenCalledWith(1, dto, { id: 1 });
     });
 
     it('delegates remove to service', async () => {
         const removeSpy = jest.spyOn(service, 'remove');
-        await expect(controller.remove(1)).resolves.toBeUndefined();
-        expect(removeSpy).toHaveBeenCalledWith(1);
+        const user = { userId: 1 };
+        await expect(controller.remove(1, user)).resolves.toBeUndefined();
+        expect(removeSpy).toHaveBeenCalledWith(1, { id: 1 });
     });
 });

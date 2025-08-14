@@ -17,6 +17,8 @@ import { ServicesService } from './services.service';
 import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../users/user.entity';
 
 @Controller('services')
 export class ServicesController {
@@ -35,8 +37,11 @@ export class ServicesController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Post()
-    create(@Body() createServiceDto: CreateServiceDto): Promise<Service> {
-        return this.servicesService.create(createServiceDto);
+    create(
+        @Body() createServiceDto: CreateServiceDto,
+        @CurrentUser() user: { userId: number },
+    ): Promise<Service> {
+        return this.servicesService.create(createServiceDto, { id: user.userId } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -45,14 +50,18 @@ export class ServicesController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateServiceDto: UpdateServiceDto,
+        @CurrentUser() user: { userId: number },
     ): Promise<Service> {
-        return this.servicesService.update(id, updateServiceDto);
+        return this.servicesService.update(id, updateServiceDto, { id: user.userId } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @Delete(':id')
-    remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.servicesService.remove(id);
+    remove(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number },
+    ): Promise<void> {
+        return this.servicesService.remove(id, { id: user.userId } as User);
     }
 }
