@@ -11,6 +11,7 @@ describe('ServicesService', () => {
     let service: ServicesService;
     let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
+    let logService: LogService;
 
     const mockRepository = (): jest.Mocked<Repository<Service>> =>
         ({
@@ -60,6 +61,7 @@ describe('ServicesService', () => {
         repo = module.get<jest.Mocked<Repository<Service>>>(
             getRepositoryToken(Service),
         );
+        logService = module.get<LogService>(LogService);
     });
 
     it('creates a service', async () => {
@@ -71,9 +73,11 @@ describe('ServicesService', () => {
         };
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.create(dto)).resolves.toEqual(serviceEntity);
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalled();
     });
 
     it('returns all services', async () => {
@@ -99,13 +103,17 @@ describe('ServicesService', () => {
     it('updates a service', async () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const updateSpy = jest.spyOn(repo, 'update');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.update(1, dto)).resolves.toBe(serviceEntity);
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
+        expect(logSpy).toHaveBeenCalled();
     });
 
     it('removes a service', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.remove(1)).resolves.toBeUndefined();
         expect(deleteSpy).toHaveBeenCalledWith(1);
+        expect(logSpy).toHaveBeenCalled();
     });
 });
