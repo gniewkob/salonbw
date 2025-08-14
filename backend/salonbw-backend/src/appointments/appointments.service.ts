@@ -140,6 +140,8 @@ export class AppointmentsService {
         const updated = await this.findOne(id);
         if (updated) {
             await this.logService.logAction(null, LogAction.Update, {
+                action: 'cancel',
+                id: updated.id,
                 appointmentId: updated.id,
                 status: AppointmentStatus.Cancelled,
             });
@@ -166,6 +168,8 @@ export class AppointmentsService {
         const updated = await this.findOne(id);
         if (updated) {
             await this.logService.logAction(null, LogAction.Update, {
+                action: 'complete',
+                id: updated.id,
                 appointmentId: updated.id,
                 status: AppointmentStatus.Completed,
             });
