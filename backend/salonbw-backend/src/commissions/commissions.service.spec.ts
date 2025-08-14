@@ -9,6 +9,7 @@ import { LogService } from '../logs/log.service';
 describe('CommissionsService', () => {
     let service: CommissionsService;
     let repo: jest.Mocked<Repository<Commission>>;
+    let logService: LogService;
 
     const mockRepository = (): jest.Mocked<Repository<Commission>> =>
         ({
@@ -42,17 +43,20 @@ describe('CommissionsService', () => {
         repo = module.get<jest.Mocked<Repository<Commission>>>(
             getRepositoryToken(Commission),
         );
+        logService = module.get<LogService>(LogService);
     });
 
     it('creates a commission', async () => {
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.create({ amount: 10 })).resolves.toEqual({
             id: 1,
             amount: 10,
         });
         expect(createSpy).toHaveBeenCalledWith({ amount: 10 });
         expect(saveSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalled();
     });
 
     it('creates commission from appointment', async () => {
