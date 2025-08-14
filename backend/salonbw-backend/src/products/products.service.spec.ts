@@ -9,6 +9,7 @@ import { LogService } from '../logs/log.service';
 describe('ProductsService', () => {
     let service: ProductsService;
     let repo: jest.Mocked<Repository<Product>>;
+    let logService: LogService;
 
     const mockRepository = (): jest.Mocked<Repository<Product>> =>
         ({
@@ -50,6 +51,7 @@ describe('ProductsService', () => {
         repo = module.get<jest.Mocked<Repository<Product>>>(
             getRepositoryToken(Product),
         );
+        logService = module.get<LogService>(LogService);
     });
 
     it('creates a product', async () => {
@@ -61,12 +63,14 @@ describe('ProductsService', () => {
         };
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.create(dto as Product)).resolves.toEqual({
             id: 1,
             ...dto,
         });
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalled();
     });
 
     it('returns all products', async () => {
@@ -92,15 +96,19 @@ describe('ProductsService', () => {
     it('updates a product', async () => {
         const dto: Partial<Product> = { name: 'New' };
         const updateSpy = jest.spyOn(repo, 'update');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await expect(service.update(1, dto as Product)).resolves.toEqual({
             id: 1,
         });
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
+        expect(logSpy).toHaveBeenCalled();
     });
 
     it('removes a product', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
+        const logSpy = jest.spyOn(logService, 'logAction');
         await service.remove(1);
         expect(deleteSpy).toHaveBeenCalledWith(1);
+        expect(logSpy).toHaveBeenCalled();
     });
 });
