@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
 import { AuthModule } from '../src/auth/auth.module';
 import { User } from '../src/users/user.entity';
+import { Log } from '../src/logs/log.entity';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
@@ -43,7 +44,7 @@ describe('Auth & Users (e2e)', () => {
                     type: 'sqlite',
                     database: ':memory:',
                     dropSchema: true,
-                    entities: [User],
+                    entities: [User, Log],
                     synchronize: true,
                 }),
                 AuthModule,

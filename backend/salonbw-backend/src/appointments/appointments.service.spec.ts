@@ -8,7 +8,7 @@ import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log.entity';
+import { LogAction } from '../logs/log-action.enum';
 
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
@@ -193,7 +193,7 @@ describe('AppointmentsService', () => {
         expect(appointments).toHaveLength(1);
         expect(logActionSpy).toHaveBeenCalledWith(
             null,
-            LogAction.Create,
+            LogAction.APPOINTMENT_CREATED,
             expect.objectContaining({ id: result.id }),
         );
     });
@@ -236,7 +236,7 @@ describe('AppointmentsService', () => {
         expect(logActionSpy).toHaveBeenNthCalledWith(
             2,
             null,
-            LogAction.Update,
+            LogAction.APPOINTMENT_CANCELLED,
             expect.objectContaining({
                 appointmentId: id,
                 status: AppointmentStatus.Cancelled,
@@ -320,7 +320,7 @@ describe('AppointmentsService', () => {
         expect(logActionSpy).toHaveBeenNthCalledWith(
             2,
             null,
-            LogAction.Update,
+            LogAction.APPOINTMENT_COMPLETED,
             expect.objectContaining({
                 appointmentId: id,
                 status: AppointmentStatus.Completed,

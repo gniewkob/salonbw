@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Commission } from './commission.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log.entity';
+import { LogAction } from '../logs/log-action.enum';
 
 @Injectable()
 export class CommissionsService {
@@ -17,7 +17,7 @@ export class CommissionsService {
     async create(data: Partial<Commission>): Promise<Commission> {
         const commission = this.commissionsRepository.create(data);
         const saved = await this.commissionsRepository.save(commission);
-        await this.logService.logAction(null, LogAction.Create, {
+        await this.logService.logAction(null, LogAction.COMMISSION_CREATED, {
             commissionId: saved.id,
             appointmentId: saved.appointment?.id,
             employeeId: saved.employee?.id,
