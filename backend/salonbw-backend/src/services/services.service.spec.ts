@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Service } from './service.entity';
 import { ServicesService } from './services.service';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { LogService } from '../logs/log.service';
 
 describe('ServicesService', () => {
     let service: ServicesService;
@@ -47,6 +48,10 @@ describe('ServicesService', () => {
                 {
                     provide: getRepositoryToken(Service),
                     useValue: mockRepository(),
+                },
+                {
+                    provide: LogService,
+                    useValue: { logAction: jest.fn() },
                 },
             ],
         }).compile();
