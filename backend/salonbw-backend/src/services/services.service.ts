@@ -19,10 +19,14 @@ export class ServicesService {
     async create(dto: CreateServiceDto, user: User): Promise<Service> {
         const service = this.servicesRepository.create(dto);
         const saved = await this.servicesRepository.save(service);
-        await this.logService.logAction(user, LogAction.SERVICE_CREATED, {
-            serviceId: saved.id,
-            name: saved.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.SERVICE_CREATED, {
+                serviceId: saved.id,
+                name: saved.name,
+            });
+        } catch (error) {
+            console.error('Failed to log service creation action', error);
+        }
         return saved;
     }
 
@@ -47,19 +51,27 @@ export class ServicesService {
     ): Promise<Service> {
         await this.servicesRepository.update(id, dto);
         const updated = await this.findOne(id);
-        await this.logService.logAction(user, LogAction.SERVICE_UPDATED, {
-            serviceId: updated.id,
-            name: updated.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.SERVICE_UPDATED, {
+                serviceId: updated.id,
+                name: updated.name,
+            });
+        } catch (error) {
+            console.error('Failed to log service update action', error);
+        }
         return updated;
     }
 
     async remove(id: number, user: User): Promise<void> {
         const service = await this.findOne(id);
         await this.servicesRepository.delete(id);
-        await this.logService.logAction(user, LogAction.SERVICE_DELETED, {
-            serviceId: service.id,
-            name: service.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.SERVICE_DELETED, {
+                serviceId: service.id,
+                name: service.name,
+            });
+        } catch (error) {
+            console.error('Failed to log service deletion action', error);
+        }
     }
 }
