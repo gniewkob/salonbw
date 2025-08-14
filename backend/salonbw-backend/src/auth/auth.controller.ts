@@ -17,6 +17,8 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { CurrentUser } from './current-user.decorator';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log.entity';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -24,6 +26,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
+        private readonly logService: LogService,
     ) {}
 
     @UseGuards(AuthGuard('local'))
@@ -32,7 +35,12 @@ export class AuthController {
     @ApiOperation({ summary: 'Log in user' })
     @ApiResponse({ status: 200, description: 'Tokens successfully generated' })
     login(@CurrentUser() user: Omit<User, 'password'>) {
-        return this.authService.login(user);
+        const result = this.authService.login(user);
+        void this.logService.logAction(user as User, LogAction.Login, {
+            userId: user.id,
+            email: user.email,
+        });
+        return result;
     }
 
     @Post('register')
@@ -41,7 +49,12 @@ export class AuthController {
     @ApiResponse({ status: 201, description: 'User successfully registered' })
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
-        return this.authService.login(user);
+        const result = await this.authService.login(user);
+        await this.logService.logAction(user, LogAction.Create, {
+            userId: user.id,
+            email: user.email,
+        });
+        return result;
     }
 
     @Post('refresh')

@@ -7,6 +7,7 @@ import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
+import { LogService } from '../logs/log.service';
 
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
@@ -17,6 +18,7 @@ describe('AppointmentsService', () => {
     let mockUsersRepo: jest.Mocked<Repository<User>>;
     let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     let mockCommissionsService: jest.Mocked<CommissionsService>;
+    let mockLogService: jest.Mocked<LogService>;
     let nextId: number;
 
     beforeEach(() => {
@@ -161,11 +163,16 @@ describe('AppointmentsService', () => {
             ),
         } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
 
+        mockLogService = {
+            logAction: jest.fn(),
+        } as Partial<LogService> as jest.Mocked<LogService>;
+
         service = new AppointmentsService(
             mockAppointmentsRepo,
             mockServicesRepo,
             mockUsersRepo,
             mockCommissionsService,
+            mockLogService,
         );
     });
 

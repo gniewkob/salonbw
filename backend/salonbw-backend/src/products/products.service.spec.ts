@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { NotFoundException } from '@nestjs/common';
+import { LogService } from '../logs/log.service';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -37,6 +38,10 @@ describe('ProductsService', () => {
                 {
                     provide: getRepositoryToken(Product),
                     useValue: mockRepository(),
+                },
+                {
+                    provide: LogService,
+                    useValue: { logAction: jest.fn() },
                 },
             ],
         }).compile();

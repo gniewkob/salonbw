@@ -4,17 +4,25 @@ import { Repository } from 'typeorm';
 import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log.entity';
 
 @Injectable()
 export class ServicesService {
     constructor(
         @InjectRepository(Service)
         private readonly servicesRepository: Repository<Service>,
+        private readonly logService: LogService,
     ) {}
 
     async create(dto: CreateServiceDto): Promise<Service> {
         const service = this.servicesRepository.create(dto);
-        return this.servicesRepository.save(service);
+        const saved = await this.servicesRepository.save(service);
+        await this.logService.logAction(null, LogAction.Create, {
+            serviceId: saved.id,
+            name: saved.name,
+        });
+        return saved;
     }
 
     findAll(): Promise<Service[]> {
@@ -33,10 +41,20 @@ export class ServicesService {
 
     async update(id: number, dto: UpdateServiceDto): Promise<Service> {
         await this.servicesRepository.update(id, dto);
-        return this.findOne(id);
+        const updated = await this.findOne(id);
+        await this.logService.logAction(null, LogAction.Update, {
+            serviceId: updated.id,
+            name: updated.name,
+        });
+        return updated;
     }
 
     async remove(id: number): Promise<void> {
+        const service = await this.findOne(id);
         await this.servicesRepository.delete(id);
+        await this.logService.logAction(null, LogAction.Delete, {
+            serviceId: service.id,
+            name: service.name,
+        });
     }
 }
