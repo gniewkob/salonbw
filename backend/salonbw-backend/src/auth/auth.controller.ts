@@ -38,7 +38,6 @@ export class AuthController {
         const result = this.authService.login(user);
         void this.logService.logAction(user as User, LogAction.USER_LOGIN, {
             userId: user.id,
-            email: user.email,
         });
         return result;
     }
@@ -52,7 +51,6 @@ export class AuthController {
         const result = this.authService.login(user);
         await this.logService.logAction(user, LogAction.USER_REGISTERED, {
             userId: user.id,
-            email: user.email,
         });
         return result;
     }
