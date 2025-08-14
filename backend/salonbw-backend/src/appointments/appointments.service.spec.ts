@@ -233,10 +233,14 @@ describe('AppointmentsService', () => {
             id,
             { status: AppointmentStatus.Cancelled },
         ]);
-        expect(logActionSpy).toHaveBeenCalledWith(
+        expect(logActionSpy).toHaveBeenNthCalledWith(
+            2,
             null,
             LogAction.Update,
-            expect.objectContaining({ action: 'cancel', id }),
+            expect.objectContaining({
+                appointmentId: id,
+                status: AppointmentStatus.Cancelled,
+            }),
         );
     });
 
@@ -313,10 +317,14 @@ describe('AppointmentsService', () => {
         });
 
         await service.completeAppointment(id);
-        expect(logActionSpy).toHaveBeenCalledWith(
+        expect(logActionSpy).toHaveBeenNthCalledWith(
+            2,
             null,
             LogAction.Update,
-            expect.objectContaining({ action: 'complete', id }),
+            expect.objectContaining({
+                appointmentId: id,
+                status: AppointmentStatus.Completed,
+            }),
         );
     });
 });
