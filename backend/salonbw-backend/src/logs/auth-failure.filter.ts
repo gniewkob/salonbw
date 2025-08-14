@@ -8,6 +8,7 @@ import {
 import { Request, Response } from 'express';
 import { LogService } from './log.service';
 import { LogAction } from './log-action.enum';
+import { User } from '../users/user.entity';
 
 @Catch(UnauthorizedException, ForbiddenException)
 export class AuthFailureFilter implements ExceptionFilter {
@@ -29,7 +30,7 @@ export class AuthFailureFilter implements ExceptionFilter {
                 ? LogAction.LOGIN_FAIL
                 : LogAction.AUTHORIZATION_FAILURE;
 
-        await this.logService.logAction(null, action, {
+        await this.logService.logAction(req.user as User, action, {
             endpoint: req.url,
             userId: req.user?.id,
         });

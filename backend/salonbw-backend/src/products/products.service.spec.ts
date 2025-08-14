@@ -6,6 +6,7 @@ import { Product } from './product.entity';
 import { NotFoundException } from '@nestjs/common';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -65,14 +66,15 @@ describe('ProductsService', () => {
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.create(dto as Product)).resolves.toEqual({
+        const user = { id: 1 } as User;
+        await expect(service.create(dto as Product, user)).resolves.toEqual({
             id: 1,
             ...dto,
         });
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.PRODUCT_CREATED,
             expect.objectContaining({ productId: 1, name: 'Shampoo' }),
         );
@@ -102,12 +104,13 @@ describe('ProductsService', () => {
         const dto: Partial<Product> = { name: 'New' };
         const updateSpy = jest.spyOn(repo, 'update');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.update(1, dto as Product)).resolves.toEqual({
+        const user = { id: 1 } as User;
+        await expect(service.update(1, dto as Product, user)).resolves.toEqual({
             id: 1,
         });
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.PRODUCT_UPDATED,
             expect.objectContaining({ productId: 1 }),
         );
@@ -116,10 +119,11 @@ describe('ProductsService', () => {
     it('removes a product', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await service.remove(1);
+        const user = { id: 1 } as User;
+        await service.remove(1, user);
         expect(deleteSpy).toHaveBeenCalledWith(1);
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.PRODUCT_DELETED,
             expect.objectContaining({ productId: 1 }),
         );
