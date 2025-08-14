@@ -4,9 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import { LogService } from './logs/log.service';
+import { AuthFailureFilter } from './logs/auth-failure.filter';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    const logService = app.get(LogService);
+    app.useGlobalFilters(new AuthFailureFilter(logService));
     app.useGlobalPipes(
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
