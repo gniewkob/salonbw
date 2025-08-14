@@ -7,6 +7,8 @@ import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log.entity';
 
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
@@ -17,6 +19,7 @@ describe('AppointmentsService', () => {
     let mockUsersRepo: jest.Mocked<Repository<User>>;
     let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     let mockCommissionsService: jest.Mocked<CommissionsService>;
+    let mockLogService: jest.Mocked<LogService>;
     let nextId: number;
 
     beforeEach(() => {
@@ -161,11 +164,16 @@ describe('AppointmentsService', () => {
             ),
         } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
 
+        mockLogService = {
+            logAction: jest.fn(),
+        } as Partial<LogService> as jest.Mocked<LogService>;
+
         service = new AppointmentsService(
             mockAppointmentsRepo,
             mockServicesRepo,
             mockUsersRepo,
             mockCommissionsService,
+            mockLogService,
         );
     });
 
@@ -181,6 +189,11 @@ describe('AppointmentsService', () => {
         expect(result.id).toBeDefined();
         expect(result.endTime.getTime()).toBe(start.getTime() + 30 * 60 * 1000);
         expect(appointments).toHaveLength(1);
+        expect(mockLogService.logAction).toHaveBeenCalledWith(
+            null,
+            LogAction.Create,
+            expect.objectContaining({ id: result.id }),
+        );
     });
 
     it('should reject overlapping appointments', async () => {
@@ -218,6 +231,11 @@ describe('AppointmentsService', () => {
             id,
             { status: AppointmentStatus.Cancelled },
         ]);
+        expect(mockLogService.logAction).toHaveBeenCalledWith(
+            null,
+            LogAction.Update,
+            expect.objectContaining({ action: 'cancel', id }),
+        );
     });
 
     it('should not cancel a completed appointment', async () => {
@@ -281,5 +299,22 @@ describe('AppointmentsService', () => {
         await expect(service.completeAppointment(id)).rejects.toThrow('fail');
         const appt = await service.findOne(id);
         expect(appt?.status).toBe(AppointmentStatus.Scheduled);
+    });
+
+    it('should log when completing an appointment', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create({
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+            startTime: start,
+        });
+
+        await service.completeAppointment(id);
+        expect(mockLogService.logAction).toHaveBeenCalledWith(
+            null,
+            LogAction.Update,
+            expect.objectContaining({ action: 'complete', id }),
+        );
     });
 });

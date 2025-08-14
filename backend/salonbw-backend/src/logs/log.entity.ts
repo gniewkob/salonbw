@@ -27,7 +27,7 @@ export class Log {
     @Column({ type: 'simple-enum', enum: LogAction })
     action: LogAction;
 
-    @Column({ type: 'jsonb', nullable: true })
+    @Column({ type: 'simple-json', nullable: true })
     description?: string | Record<string, any>;
 
     @CreateDateColumn()
