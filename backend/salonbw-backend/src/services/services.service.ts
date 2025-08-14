@@ -5,7 +5,7 @@ import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log.entity';
+import { LogAction } from '../logs/log-action.enum';
 
 @Injectable()
 export class ServicesService {
@@ -18,7 +18,7 @@ export class ServicesService {
     async create(dto: CreateServiceDto): Promise<Service> {
         const service = this.servicesRepository.create(dto);
         const saved = await this.servicesRepository.save(service);
-        await this.logService.logAction(null, LogAction.Create, {
+        await this.logService.logAction(null, LogAction.SERVICE_CREATED, {
             serviceId: saved.id,
             name: saved.name,
         });
@@ -42,7 +42,7 @@ export class ServicesService {
     async update(id: number, dto: UpdateServiceDto): Promise<Service> {
         await this.servicesRepository.update(id, dto);
         const updated = await this.findOne(id);
-        await this.logService.logAction(null, LogAction.Update, {
+        await this.logService.logAction(null, LogAction.SERVICE_UPDATED, {
             serviceId: updated.id,
             name: updated.name,
         });
@@ -52,7 +52,7 @@ export class ServicesService {
     async remove(id: number): Promise<void> {
         const service = await this.findOne(id);
         await this.servicesRepository.delete(id);
-        await this.logService.logAction(null, LogAction.Delete, {
+        await this.logService.logAction(null, LogAction.SERVICE_DELETED, {
             serviceId: service.id,
             name: service.name,
         });

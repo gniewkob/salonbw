@@ -10,7 +10,8 @@ import { Repository } from 'typeorm';
 import { AuthModule } from '../src/auth/auth.module';
 import { LogsModule } from '../src/logs/logs.module';
 import { LogService } from '../src/logs/log.service';
-import { Log, LogAction } from '../src/logs/log.entity';
+import { Log } from '../src/logs/log.entity';
+import { LogAction } from '../src/logs/log-action.enum';
 import { User } from '../src/users/user.entity';
 import { AuthFailureFilter } from '../src/logs/auth-failure.filter';
 
@@ -69,10 +70,10 @@ describe('LogsController (e2e)', () => {
             role: 'client',
         });
 
-        await logService.logAction(admin, LogAction.Login, {
+        await logService.logAction(admin, LogAction.USER_LOGIN, {
             note: 'admin log',
         });
-        await logService.logAction(user, LogAction.Login, { note: 'user log' });
+        await logService.logAction(user, LogAction.USER_LOGIN, { note: 'user log' });
     });
 
     afterAll(async () => {
@@ -96,7 +97,7 @@ describe('LogsController (e2e)', () => {
 
     it('forbids access for non-admin and logs the attempt', async () => {
         const before = await logService.findAll({
-            action: LogAction.AUTHORIZATION_FAIL,
+            action: LogAction.AUTHORIZATION_FAILURE,
         });
 
         const userToken: string = jwt.sign(
@@ -109,7 +110,7 @@ describe('LogsController (e2e)', () => {
             .expect(403);
 
         const after = await logService.findAll({
-            action: LogAction.AUTHORIZATION_FAIL,
+            action: LogAction.AUTHORIZATION_FAILURE,
         });
         expect(after.total).toBe(before.total + 1);
     });
