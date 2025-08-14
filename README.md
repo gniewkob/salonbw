@@ -156,6 +156,17 @@ can be scheduled via cron:
 The script moves old logs to `ARCHIVE_DIR` if provided, or deletes them when no
 archive destination is configured.
 
+Database audit entries stored in the `logs` table can also accumulate. Remove
+rows older than your retention period with
+[`scripts/prune-audit-logs.ts`](scripts/prune-audit-logs.ts):
+
+```bash
+MAX_LOG_AGE_DAYS=90 DATABASE_URL=postgres://user:pass@host/db \
+  npx ts-node -p pg scripts/prune-audit-logs.ts
+```
+
+Schedule this command via cron to keep the table size manageable.
+
 ## Instagram integration
 
 The backend fetches the latest posts from Instagram for the gallery page.
