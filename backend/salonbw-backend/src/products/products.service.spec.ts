@@ -5,6 +5,7 @@ import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { NotFoundException } from '@nestjs/common';
 import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -70,7 +71,11 @@ describe('ProductsService', () => {
         });
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.PRODUCT_CREATED,
+            expect.objectContaining({ productId: 1, name: 'Shampoo' }),
+        );
     });
 
     it('returns all products', async () => {
@@ -101,7 +106,11 @@ describe('ProductsService', () => {
             id: 1,
         });
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.PRODUCT_UPDATED,
+            expect.objectContaining({ productId: 1 }),
+        );
     });
 
     it('removes a product', async () => {
@@ -109,6 +118,10 @@ describe('ProductsService', () => {
         const logSpy = jest.spyOn(logService, 'logAction');
         await service.remove(1);
         expect(deleteSpy).toHaveBeenCalledWith(1);
-        expect(logSpy).toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledWith(
+            null,
+            LogAction.PRODUCT_DELETED,
+            expect.objectContaining({ productId: 1 }),
+        );
     });
 });
