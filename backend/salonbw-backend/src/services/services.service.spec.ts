@@ -7,6 +7,7 @@ import { ServicesService } from './services.service';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 describe('ServicesService', () => {
     let service: ServicesService;
@@ -75,11 +76,12 @@ describe('ServicesService', () => {
         const createSpy = jest.spyOn(repo, 'create');
         const saveSpy = jest.spyOn(repo, 'save');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.create(dto)).resolves.toEqual(serviceEntity);
+        const user = { id: 1 } as User;
+        await expect(service.create(dto, user)).resolves.toEqual(serviceEntity);
         expect(createSpy).toHaveBeenCalledWith(dto);
         expect(saveSpy).toHaveBeenCalled();
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.SERVICE_CREATED,
             expect.objectContaining({
                 serviceId: serviceEntity.id,
@@ -112,10 +114,11 @@ describe('ServicesService', () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const updateSpy = jest.spyOn(repo, 'update');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.update(1, dto)).resolves.toBe(serviceEntity);
+        const user = { id: 1 } as User;
+        await expect(service.update(1, dto, user)).resolves.toBe(serviceEntity);
         expect(updateSpy).toHaveBeenCalledWith(1, dto);
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.SERVICE_UPDATED,
             expect.objectContaining({
                 serviceId: serviceEntity.id,
@@ -127,10 +130,11 @@ describe('ServicesService', () => {
     it('removes a service', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
         const logSpy = jest.spyOn(logService, 'logAction');
-        await expect(service.remove(1)).resolves.toBeUndefined();
+        const user = { id: 1 } as User;
+        await expect(service.remove(1, user)).resolves.toBeUndefined();
         expect(deleteSpy).toHaveBeenCalledWith(1);
         expect(logSpy).toHaveBeenCalledWith(
-            null,
+            user,
             LogAction.SERVICE_DELETED,
             expect.objectContaining({
                 serviceId: serviceEntity.id,

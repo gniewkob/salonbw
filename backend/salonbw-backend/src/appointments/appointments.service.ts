@@ -26,7 +26,10 @@ export class AppointmentsService {
         private readonly logService: LogService,
     ) {}
 
-    async create(data: Partial<Appointment>): Promise<Appointment> {
+    async create(
+        data: Partial<Appointment>,
+        user: User,
+    ): Promise<Appointment> {
         if (!data.client?.id) {
             throw new BadRequestException('clientId is required');
         }
@@ -93,7 +96,7 @@ export class AppointmentsService {
         if (!result) {
             throw new Error('Appointment not found after creation');
         }
-        await this.logService.logAction(null, LogAction.APPOINTMENT_CREATED, {
+        await this.logService.logAction(user, LogAction.APPOINTMENT_CREATED, {
             appointmentId: result.id,
             serviceId: result.service.id,
             serviceName: result.service.name,
@@ -121,7 +124,7 @@ export class AppointmentsService {
         return appointment ?? null;
     }
 
-    async cancel(id: number): Promise<Appointment | null> {
+    async cancel(id: number, user: User): Promise<Appointment | null> {
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
@@ -139,7 +142,7 @@ export class AppointmentsService {
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(null, LogAction.APPOINTMENT_CANCELLED, {
+            await this.logService.logAction(user, LogAction.APPOINTMENT_CANCELLED, {
                 action: 'cancel',
                 id: updated.id,
                 appointmentId: updated.id,
@@ -149,7 +152,10 @@ export class AppointmentsService {
         return updated;
     }
 
-    async completeAppointment(id: number): Promise<Appointment | null> {
+    async completeAppointment(
+        id: number,
+        user: User,
+    ): Promise<Appointment | null> {
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
@@ -163,11 +169,14 @@ export class AppointmentsService {
             await manager.update(Appointment, id, {
                 status: AppointmentStatus.Completed,
             });
-            await this.commissionsService.createFromAppointment(appointment);
+            await this.commissionsService.createFromAppointment(
+                appointment,
+                user,
+            );
         });
         const updated = await this.findOne(id);
         if (updated) {
-            await this.logService.logAction(null, LogAction.APPOINTMENT_COMPLETED, {
+            await this.logService.logAction(user, LogAction.APPOINTMENT_COMPLETED, {
                 action: 'complete',
                 id: updated.id,
                 appointmentId: updated.id,
