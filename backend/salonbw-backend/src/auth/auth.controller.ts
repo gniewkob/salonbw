@@ -53,9 +53,13 @@ export class AuthController {
     async register(@Body() dto: RegisterDto) {
         const user = await this.usersService.createUser(dto);
         const result = this.authService.login(user);
-        await this.logService.logAction(user, LogAction.USER_REGISTERED, {
-            userId: user.id,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.USER_REGISTERED, {
+                userId: user.id,
+            });
+        } catch (error) {
+            console.error('Failed to log user registration action', error);
+        }
         return result;
     }
 

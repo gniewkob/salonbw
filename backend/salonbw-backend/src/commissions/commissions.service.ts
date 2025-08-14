@@ -18,12 +18,16 @@ export class CommissionsService {
     async create(data: Partial<Commission>, user: User): Promise<Commission> {
         const commission = this.commissionsRepository.create(data);
         const saved = await this.commissionsRepository.save(commission);
-        await this.logService.logAction(user, LogAction.COMMISSION_CREATED, {
-            commissionId: saved.id,
-            appointmentId: saved.appointment?.id,
-            employeeId: saved.employee?.id,
-            amount: saved.amount,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.COMMISSION_CREATED, {
+                commissionId: saved.id,
+                appointmentId: saved.appointment?.id,
+                employeeId: saved.employee?.id,
+                amount: saved.amount,
+            });
+        } catch (error) {
+            console.error('Failed to log commission creation action', error);
+        }
         return saved;
     }
 

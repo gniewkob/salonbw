@@ -19,10 +19,14 @@ export class ProductsService {
     async create(dto: CreateProductDto, user: User): Promise<Product> {
         const product = this.productsRepository.create(dto);
         const saved = await this.productsRepository.save(product);
-        await this.logService.logAction(user, LogAction.PRODUCT_CREATED, {
-            productId: saved.id,
-            name: saved.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.PRODUCT_CREATED, {
+                productId: saved.id,
+                name: saved.name,
+            });
+        } catch (error) {
+            console.error('Failed to log product creation action', error);
+        }
         return saved;
     }
 
@@ -47,19 +51,27 @@ export class ProductsService {
     ): Promise<Product> {
         await this.productsRepository.update(id, dto);
         const updated = await this.findOne(id);
-        await this.logService.logAction(user, LogAction.PRODUCT_UPDATED, {
-            productId: updated.id,
-            name: updated.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.PRODUCT_UPDATED, {
+                productId: updated.id,
+                name: updated.name,
+            });
+        } catch (error) {
+            console.error('Failed to log product update action', error);
+        }
         return updated;
     }
 
     async remove(id: number, user: User): Promise<void> {
         const product = await this.findOne(id);
         await this.productsRepository.delete(id);
-        await this.logService.logAction(user, LogAction.PRODUCT_DELETED, {
-            productId: product.id,
-            name: product.name,
-        });
+        try {
+            await this.logService.logAction(user, LogAction.PRODUCT_DELETED, {
+                productId: product.id,
+                name: product.name,
+            });
+        } catch (error) {
+            console.error('Failed to log product deletion action', error);
+        }
     }
 }

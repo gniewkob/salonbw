@@ -30,10 +30,18 @@ export class AuthFailureFilter implements ExceptionFilter {
                 ? LogAction.LOGIN_FAIL
                 : LogAction.AUTHORIZATION_FAILURE;
 
-        await this.logService.logAction(req.user as User, action, {
-            endpoint: req.url,
-            userId: req.user?.id,
-        });
+        const userId = (req.user as { id?: number; userId?: number } | undefined)
+            ?.id ?? (req.user as { userId?: number } | undefined)?.userId;
+        const user = userId ? ({ id: userId } as User) : null;
+
+        try {
+            await this.logService.logAction(user, action, {
+                endpoint: req.url,
+                userId,
+            });
+        } catch (error) {
+            console.error('Failed to log authentication failure action', error);
+        }
 
         res.status(exception.getStatus()).json(exception.getResponse());
     }
