@@ -13,6 +13,7 @@ export enum LogAction {
     Create = 'create',
     Update = 'update',
     Delete = 'delete',
+    AUTHORIZATION_FAIL = 'authorization_fail',
 }
 
 @Entity('logs')
