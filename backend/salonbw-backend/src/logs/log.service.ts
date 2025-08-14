@@ -24,13 +24,17 @@ export class LogService {
         description?: string | Record<string, any>,
     ): Promise<Log> {
         if (description) {
-            const containsSensitiveKey = (obj: Record<string, any>): boolean =>
+            const containsSensitiveKey = (
+                obj: Record<string, unknown>,
+            ): boolean =>
                 Object.entries(obj).some(([key, value]) => {
                     if (['password', 'token'].includes(key.toLowerCase())) {
                         return true;
                     }
                     if (typeof value === 'object' && value !== null) {
-                        return containsSensitiveKey(value);
+                        return containsSensitiveKey(
+                            value as Record<string, unknown>,
+                        );
                     }
                     return false;
                 });
@@ -42,7 +46,10 @@ export class LogService {
                         'Description contains sensitive information',
                     );
                 }
-            } else if (typeof description === 'object' && description !== null) {
+            } else if (
+                typeof description === 'object' &&
+                description !== null
+            ) {
                 if (containsSensitiveKey(description)) {
                     throw new Error(
                         'Description contains sensitive information',
