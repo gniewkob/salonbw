@@ -577,6 +577,45 @@
         ]
       }
     },
+    "/commissions/employees/{id}/commissions/summary": {
+      "get": {
+        "operationId": "CommissionsController_getSummaryForEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Commissions"
+        ]
+      }
+    },
     "/commissions": {
       "get": {
         "operationId": "CommissionsController_findAll",

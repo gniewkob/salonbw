@@ -28,6 +28,7 @@ describe('CommissionsService', () => {
                 ),
             find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
             findOne: jest.fn(),
+            createQueryBuilder: jest.fn(),
         }) as jest.Mocked<Repository<Commission>>;
 
     const mockRulesRepository = (): jest.Mocked<Repository<CommissionRule>> =>
@@ -210,5 +211,26 @@ describe('CommissionsService', () => {
         expect(findSpy).toHaveBeenCalledWith({
             order: { createdAt: 'DESC' },
         });
+    });
+
+    it('sums commissions for user in date range', async () => {
+        const qb: any = {
+            select: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getRawOne: jest.fn().mockResolvedValue({ total: '100' }),
+        };
+        repo.createQueryBuilder.mockReturnValue(qb);
+        const result = await service.sumForUser(
+            1,
+            new Date('2024-01-01'),
+            new Date('2024-01-31'),
+        );
+        expect(repo.createQueryBuilder).toHaveBeenCalledWith('commission');
+        expect(qb.select).toHaveBeenCalledWith(
+            'COALESCE(SUM(commission.amount), 0)',
+            'total',
+        );
+        expect(result).toBe(100);
     });
 });
