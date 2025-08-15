@@ -128,6 +128,23 @@ export class CommissionsService {
         });
     }
 
+    async sumForUser(
+        userId: number,
+        from: Date,
+        to: Date,
+    ): Promise<number> {
+        const result = await this.commissionsRepository
+            .createQueryBuilder('commission')
+            .select('COALESCE(SUM(commission.amount), 0)', 'total')
+            .where('commission.employeeId = :userId', { userId })
+            .andWhere('commission.createdAt BETWEEN :from AND :to', {
+                from,
+                to,
+            })
+            .getRawOne<{ total: string }>();
+        return Number(result?.total ?? 0);
+    }
+
     findAll(): Promise<Commission[]> {
         return this.commissionsRepository.find({
             order: { createdAt: 'DESC' },
