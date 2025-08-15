@@ -26,10 +26,7 @@ export class AppointmentsService {
         private readonly logService: LogService,
     ) {}
 
-    async create(
-        data: Partial<Appointment>,
-        user: User,
-    ): Promise<Appointment> {
+    async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
         if (!data.client?.id) {
             throw new BadRequestException('clientId is required');
         }
@@ -97,15 +94,19 @@ export class AppointmentsService {
             throw new Error('Appointment not found after creation');
         }
         try {
-            await this.logService.logAction(user, LogAction.APPOINTMENT_CREATED, {
-                appointmentId: result.id,
-                serviceId: result.service.id,
-                serviceName: result.service.name,
-                clientId: result.client.id,
-                employeeId: result.employee.id,
-                entity: 'appointment',
-                id: result.id,
-            });
+            await this.logService.logAction(
+                user,
+                LogAction.APPOINTMENT_CREATED,
+                {
+                    appointmentId: result.id,
+                    serviceId: result.service.id,
+                    serviceName: result.service.name,
+                    clientId: result.client.id,
+                    employeeId: result.employee.id,
+                    entity: 'appointment',
+                    id: result.id,
+                },
+            );
         } catch (error) {
             console.error('Failed to log appointment creation action', error);
         }
@@ -158,7 +159,10 @@ export class AppointmentsService {
                     },
                 );
             } catch (error) {
-                console.error('Failed to log appointment cancellation action', error);
+                console.error(
+                    'Failed to log appointment cancellation action',
+                    error,
+                );
             }
         }
         return updated;
@@ -177,15 +181,18 @@ export class AppointmentsService {
                 'Cannot complete a cancelled appointment',
             );
         }
-        await this.appointmentsRepository.manager.transaction(async (manager) => {
-            await manager.update(Appointment, id, {
-                status: AppointmentStatus.Completed,
-            });
-            await this.commissionsService.createFromAppointment(
-                appointment,
-                user,
-            );
-        });
+        await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                await manager.update(Appointment, id, {
+                    status: AppointmentStatus.Completed,
+                });
+                await this.commissionsService.createFromAppointment(
+                    appointment,
+                    user,
+                    manager,
+                );
+            },
+        );
         const updated = await this.findOne(id);
         if (updated) {
             try {
@@ -200,7 +207,10 @@ export class AppointmentsService {
                     },
                 );
             } catch (error) {
-                console.error('Failed to log appointment completion action', error);
+                console.error(
+                    'Failed to log appointment completion action',
+                    error,
+                );
             }
         }
         return updated;

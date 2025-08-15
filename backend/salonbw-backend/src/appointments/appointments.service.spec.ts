@@ -160,9 +160,10 @@ describe('AppointmentsService', () => {
         >;
 
         mockCommissionsService = {
-            createFromAppointment: jest.fn<Promise<void>, [Appointment]>(() =>
-                Promise.resolve(),
-            ),
+            createFromAppointment: jest.fn<
+                Promise<unknown>,
+                [Appointment, User, unknown]
+            >(() => Promise.resolve({})),
         } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
 
         mockLogService = {
@@ -339,9 +340,9 @@ describe('AppointmentsService', () => {
         );
 
         await service.cancel(id, users[0]);
-        await expect(service.completeAppointment(id, users[1])).rejects.toBeInstanceOf(
-            BadRequestException,
-        );
+        await expect(
+            service.completeAppointment(id, users[1]),
+        ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should revert completion if commission creation fails', async () => {
