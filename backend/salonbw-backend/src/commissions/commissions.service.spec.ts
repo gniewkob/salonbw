@@ -8,10 +8,12 @@ import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { Service as SalonService } from '../services/service.entity';
 
 describe('CommissionsService', () => {
     let service: CommissionsService;
     let repo: jest.Mocked<Repository<Commission>>;
+    let rulesRepo: jest.Mocked<Repository<CommissionRule>>;
     let logService: LogService;
 
     const mockRepository = (): jest.Mocked<Repository<Commission>> =>
@@ -27,6 +29,11 @@ describe('CommissionsService', () => {
             find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
         }) as jest.Mocked<Repository<Commission>>;
 
+    const mockRulesRepository = (): jest.Mocked<Repository<CommissionRule>> =>
+        ({ findOne: jest.fn() }) as unknown as jest.Mocked<
+            Repository<CommissionRule>
+        >;
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -37,7 +44,7 @@ describe('CommissionsService', () => {
                 },
                 {
                     provide: getRepositoryToken(CommissionRule),
-                    useValue: {},
+                    useValue: mockRulesRepository(),
                 },
                 {
                     provide: LogService,
@@ -49,6 +56,9 @@ describe('CommissionsService', () => {
         service = module.get<CommissionsService>(CommissionsService);
         repo = module.get<jest.Mocked<Repository<Commission>>>(
             getRepositoryToken(Commission),
+        );
+        rulesRepo = module.get<jest.Mocked<Repository<CommissionRule>>>(
+            getRepositoryToken(CommissionRule),
         );
         logService = module.get<LogService>(LogService);
     });
@@ -73,24 +83,95 @@ describe('CommissionsService', () => {
 
     it('creates commission from appointment', async () => {
         const appointment = {
-            service: { price: 100, commissionPercent: 10 },
-            employee: { id: 1 },
+            service: { price: 100 } as SalonService,
+            employee: { id: 1 } as User,
         } as Appointment;
-        const expected = {
-            employee: appointment.employee,
-            appointment,
-            amount: 10,
-            percent: 10,
-        };
-        const created = { id: 1, ...expected } as Commission;
+        const created = { id: 1 } as Commission;
         const user = { id: 1 } as User;
         const spy = jest
-            .spyOn(service, 'create')
-            .mockImplementation(() => Promise.resolve(created));
+            .spyOn(service, 'calculateAndSaveCommission')
+            .mockResolvedValue(created);
         await expect(
             service.createFromAppointment(appointment, user),
         ).resolves.toBe(created);
-        expect(spy).toHaveBeenCalledWith(expected, user);
+        expect(spy).toHaveBeenCalledWith(
+            appointment.employee,
+            appointment.service,
+            appointment,
+            user,
+        );
+    });
+
+    it('calculates and saves commission', async () => {
+        const employee = { id: 1 } as User;
+        const salonService = { id: 1, price: 200 } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        jest.spyOn(service, 'resolveCommissionPercent').mockResolvedValue(25);
+        const createSpy = jest
+            .spyOn(service, 'create')
+            .mockResolvedValue({ id: 1 } as Commission);
+        await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(service.resolveCommissionPercent).toHaveBeenCalledWith(
+            employee,
+            salonService,
+        );
+        expect(createSpy).toHaveBeenCalledWith(
+            {
+                employee,
+                appointment,
+                amount: 50,
+                percent: 25,
+            },
+            user,
+        );
+    });
+
+    describe('resolveCommissionPercent', () => {
+        it('uses service rule when available', async () => {
+            rulesRepo.findOne.mockReset();
+            const employee = { id: 1, commissionBase: 5 } as User;
+            const salonService = { id: 2, category: 'cat' } as SalonService;
+            rulesRepo.findOne.mockResolvedValueOnce({
+                commissionPercent: 30,
+            } as CommissionRule);
+            await expect(
+                service.resolveCommissionPercent(employee, salonService),
+            ).resolves.toBe(30);
+            expect(rulesRepo.findOne).toHaveBeenCalledTimes(1);
+        });
+
+        it('uses category rule when service rule missing', async () => {
+            rulesRepo.findOne.mockReset();
+            const employee = { id: 1, commissionBase: 5 } as User;
+            const salonService = { id: 2, category: 'cat' } as SalonService;
+            rulesRepo.findOne
+                .mockResolvedValueOnce(null)
+                .mockResolvedValueOnce({
+                    commissionPercent: 20,
+                } as CommissionRule);
+            await expect(
+                service.resolveCommissionPercent(employee, salonService),
+            ).resolves.toBe(20);
+            expect(rulesRepo.findOne).toHaveBeenCalledTimes(2);
+        });
+
+        it('falls back to employee base when no rule', async () => {
+            rulesRepo.findOne.mockReset();
+            const employee = { id: 1, commissionBase: 5 } as User;
+            const salonService = { id: 2, category: 'cat' } as SalonService;
+            rulesRepo.findOne
+                .mockResolvedValueOnce(null)
+                .mockResolvedValueOnce(null);
+            await expect(
+                service.resolveCommissionPercent(employee, salonService),
+            ).resolves.toBe(5);
+        });
     });
 
     it('finds commissions for user', async () => {
