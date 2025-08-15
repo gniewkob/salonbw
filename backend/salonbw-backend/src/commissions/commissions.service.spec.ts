@@ -107,7 +107,9 @@ describe('CommissionsService', () => {
         const salonService = { id: 1, price: 200 } as SalonService;
         const appointment = { id: 2 } as Appointment;
         const user = { id: 3 } as User;
-        jest.spyOn(service, 'resolveCommissionPercent').mockResolvedValue(25);
+        const percentSpy = jest
+            .spyOn(service, 'resolveCommissionPercent')
+            .mockResolvedValue(25);
         const createSpy = jest
             .spyOn(service, 'create')
             .mockResolvedValue({ id: 1 } as Commission);
@@ -117,10 +119,7 @@ describe('CommissionsService', () => {
             appointment,
             user,
         );
-        expect(service.resolveCommissionPercent).toHaveBeenCalledWith(
-            employee,
-            salonService,
-        );
+        expect(percentSpy).toHaveBeenCalledWith(employee, salonService);
         expect(createSpy).toHaveBeenCalledWith(
             {
                 employee,
@@ -135,30 +134,30 @@ describe('CommissionsService', () => {
     describe('resolveCommissionPercent', () => {
         it('uses service rule when available', async () => {
             rulesRepo.findOne.mockReset();
+            const findOneSpy = jest.spyOn(rulesRepo, 'findOne');
             const employee = { id: 1, commissionBase: 5 } as User;
             const salonService = { id: 2, category: 'cat' } as SalonService;
-            rulesRepo.findOne.mockResolvedValueOnce({
+            findOneSpy.mockResolvedValueOnce({
                 commissionPercent: 30,
             } as CommissionRule);
             await expect(
                 service.resolveCommissionPercent(employee, salonService),
             ).resolves.toBe(30);
-            expect(rulesRepo.findOne).toHaveBeenCalledTimes(1);
+            expect(findOneSpy).toHaveBeenCalledTimes(1);
         });
 
         it('uses category rule when service rule missing', async () => {
             rulesRepo.findOne.mockReset();
+            const findOneSpy = jest.spyOn(rulesRepo, 'findOne');
             const employee = { id: 1, commissionBase: 5 } as User;
             const salonService = { id: 2, category: 'cat' } as SalonService;
-            rulesRepo.findOne
-                .mockResolvedValueOnce(null)
-                .mockResolvedValueOnce({
-                    commissionPercent: 20,
-                } as CommissionRule);
+            findOneSpy.mockResolvedValueOnce(null).mockResolvedValueOnce({
+                commissionPercent: 20,
+            } as CommissionRule);
             await expect(
                 service.resolveCommissionPercent(employee, salonService),
             ).resolves.toBe(20);
-            expect(rulesRepo.findOne).toHaveBeenCalledTimes(2);
+            expect(findOneSpy).toHaveBeenCalledTimes(2);
         });
 
         it('falls back to employee base when no rule', async () => {
