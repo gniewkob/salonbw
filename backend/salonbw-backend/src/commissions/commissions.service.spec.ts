@@ -154,6 +154,93 @@ describe('CommissionsService', () => {
         expect(repo.save).not.toHaveBeenCalled();
     });
 
+    it('calculates commission using employee base when no rule applies', async () => {
+        const employee = { id: 1, commissionBase: 10 } as User;
+        const salonService = { id: 1, price: 100 } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        repo.findOne.mockResolvedValueOnce(null);
+        rulesRepo.findOne.mockResolvedValue(null);
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(result).toEqual(
+            expect.objectContaining({ amount: 10, percent: 10 }),
+        );
+    });
+
+    it('calculates commission using service rule when available', async () => {
+        const employee = { id: 1, commissionBase: 5 } as User;
+        const salonService = { id: 1, price: 100 } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        repo.findOne.mockResolvedValueOnce(null);
+        rulesRepo.findOne.mockResolvedValueOnce({
+            commissionPercent: 30,
+        } as CommissionRule);
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(result).toEqual(
+            expect.objectContaining({ amount: 30, percent: 30 }),
+        );
+    });
+
+    it('calculates commission using category rule when service rule missing', async () => {
+        const employee = { id: 1, commissionBase: 5 } as User;
+        const salonService = {
+            id: 1,
+            price: 100,
+            category: 'hair',
+        } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        repo.findOne.mockResolvedValueOnce(null);
+        rulesRepo.findOne
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ commissionPercent: 20 } as CommissionRule);
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(result).toEqual(
+            expect.objectContaining({ amount: 20, percent: 20 }),
+        );
+    });
+
+    it('does not create duplicate commission for the same appointment', async () => {
+        const employee = { id: 1, commissionBase: 10 } as User;
+        const salonService = { id: 1, price: 100 } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        const createSpy = jest.spyOn(service, 'create');
+        repo.findOne.mockResolvedValueOnce(null);
+        rulesRepo.findOne.mockResolvedValueOnce(null);
+        const first = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        repo.findOne.mockResolvedValueOnce(first);
+        const second = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(second).toBe(first);
+        expect(createSpy).toHaveBeenCalledTimes(1);
+    });
+
     describe('resolveCommissionPercent', () => {
         it('uses service rule when available', async () => {
             rulesRepo.findOne.mockReset();
