@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
 import { CommissionRule } from './commission-rule.entity';
@@ -214,20 +214,23 @@ describe('CommissionsService', () => {
     });
 
     it('sums commissions for user in date range', async () => {
-        const qb: any = {
-            select: jest.fn().mockReturnThis(),
+        const selectSpy = jest.fn().mockReturnThis();
+        const qb = {
+            select: selectSpy,
             where: jest.fn().mockReturnThis(),
             andWhere: jest.fn().mockReturnThis(),
             getRawOne: jest.fn().mockResolvedValue({ total: '100' }),
-        };
-        repo.createQueryBuilder.mockReturnValue(qb);
+        } as unknown as SelectQueryBuilder<Commission>;
+        const createQueryBuilderSpy = jest
+            .spyOn(repo, 'createQueryBuilder')
+            .mockReturnValue(qb);
         const result = await service.sumForUser(
             1,
             new Date('2024-01-01'),
             new Date('2024-01-31'),
         );
-        expect(repo.createQueryBuilder).toHaveBeenCalledWith('commission');
-        expect(qb.select).toHaveBeenCalledWith(
+        expect(createQueryBuilderSpy).toHaveBeenCalledWith('commission');
+        expect(selectSpy).toHaveBeenCalledWith(
             'COALESCE(SUM(commission.amount), 0)',
             'total',
         );
