@@ -90,6 +90,20 @@ describe('ServicesService', () => {
         );
     });
 
+    it('creates a service even if logging fails', async () => {
+        const dto = {
+            name: 'Cut',
+            description: 'Hair cut',
+            duration: 30,
+            price: 10,
+        };
+        jest
+            .spyOn(logService, 'logAction')
+            .mockRejectedValueOnce(new Error('fail'));
+        const user = { id: 1 } as User;
+        await expect(service.create(dto, user)).resolves.toEqual(serviceEntity);
+    });
+
     it('returns all services', async () => {
         const findSpy = jest.spyOn(repo, 'find');
         await expect(service.findAll()).resolves.toEqual([serviceEntity]);
@@ -127,6 +141,15 @@ describe('ServicesService', () => {
         );
     });
 
+    it('updates a service even if logging fails', async () => {
+        const dto: UpdateServiceDto = { name: 'New' };
+        jest
+            .spyOn(logService, 'logAction')
+            .mockRejectedValueOnce(new Error('fail'));
+        const user = { id: 1 } as User;
+        await expect(service.update(1, dto, user)).resolves.toBe(serviceEntity);
+    });
+
     it('removes a service', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
         const logSpy = jest.spyOn(logService, 'logAction');
@@ -141,5 +164,13 @@ describe('ServicesService', () => {
                 name: serviceEntity.name,
             }),
         );
+    });
+
+    it('removes a service even if logging fails', async () => {
+        const user = { id: 1 } as User;
+        jest
+            .spyOn(logService, 'logAction')
+            .mockRejectedValueOnce(new Error('fail'));
+        await expect(service.remove(1, user)).resolves.toBeUndefined();
     });
 });
