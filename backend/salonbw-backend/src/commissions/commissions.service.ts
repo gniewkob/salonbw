@@ -7,6 +7,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { Service as SalonService } from '../services/service.entity';
 
 @Injectable()
 export class CommissionsService {
@@ -38,20 +39,61 @@ export class CommissionsService {
         return saved;
     }
 
-    async createFromAppointment(
-        appointment: Appointment,
+    async resolveCommissionPercent(
+        employee: User,
+        service: SalonService,
+    ): Promise<number> {
+        const ruleForService = await this.commissionRulesRepository.findOne({
+            where: {
+                employee: { id: employee.id },
+                service: { id: service.id },
+            },
+        });
+        if (ruleForService) {
+            return Number(ruleForService.commissionPercent);
+        }
+        if (service.category) {
+            const ruleForCategory = await this.commissionRulesRepository.findOne({
+                where: {
+                    employee: { id: employee.id },
+                    category: service.category,
+                },
+            });
+            if (ruleForCategory) {
+                return Number(ruleForCategory.commissionPercent);
+            }
+        }
+        return Number(employee.commissionBase ?? 0);
+    }
+
+    async calculateAndSaveCommission(
+        employee: User,
+        service: SalonService,
+        appointment: Appointment | null,
         user: User,
     ): Promise<Commission> {
-        const price = Number(appointment.service.price);
-        const percent = Number(appointment.service.commissionPercent ?? 0);
+        const price = Number(service.price);
+        const percent = await this.resolveCommissionPercent(employee, service);
         const amount = (price * percent) / 100;
         return this.create(
             {
-                employee: appointment.employee,
+                employee,
                 appointment,
                 amount,
                 percent,
             },
+            user,
+        );
+    }
+
+    async createFromAppointment(
+        appointment: Appointment,
+        user: User,
+    ): Promise<Commission> {
+        return this.calculateAndSaveCommission(
+            appointment.employee,
+            appointment.service,
+            appointment,
             user,
         );
     }
