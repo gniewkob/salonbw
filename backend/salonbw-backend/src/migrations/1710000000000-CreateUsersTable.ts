@@ -32,6 +32,11 @@ export class CreateUsersTable1710000000000 implements MigrationInterface {
                         enum: ['client', 'employee', 'admin'],
                         default: `'client'`,
                     },
+                    {
+                        name: 'commissionBase',
+                        type: 'decimal',
+                        default: 0,
+                    },
                 ],
             }),
         );

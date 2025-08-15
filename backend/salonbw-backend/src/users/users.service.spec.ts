@@ -63,11 +63,12 @@ describe('UsersService', () => {
     });
 
     describe('createUser', () => {
-        it('hashes the password, sets default role and saves user', async () => {
+        it('hashes the password, sets default role and saves user with commissionBase', async () => {
             const dto: CreateUserDto = {
                 email: 'test@example.com',
                 name: 'Test User',
                 password: 'plainPass',
+                commissionBase: 10,
             };
             qb.getOne.mockResolvedValue(null);
             bcryptMock.hash.mockResolvedValue('hashedPass');
@@ -76,6 +77,7 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                commissionBase: dto.commissionBase,
             };
             const createSpy = jest
                 .spyOn(repo, 'create')
@@ -92,10 +94,48 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                commissionBase: dto.commissionBase,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
+            expect(result.commissionBase).toBe(dto.commissionBase);
+        });
+
+        it('defaults commissionBase to zero when not provided', async () => {
+            const dto: CreateUserDto = {
+                email: 'test2@example.com',
+                name: 'Test User2',
+                password: 'plainPass',
+            };
+            qb.getOne.mockResolvedValue(null);
+            bcryptMock.hash.mockResolvedValue('hashedPass');
+            const created = {
+                email: dto.email,
+                name: dto.name,
+                password: 'hashedPass',
+                role: Role.Client,
+                commissionBase: 0,
+            };
+            const createSpy = jest
+                .spyOn(repo, 'create')
+                .mockReturnValue(created);
+            const saveSpy = jest
+                .spyOn(repo, 'save')
+                .mockResolvedValue({ ...created, id: 2 });
+
+            const result = await service.createUser(dto);
+
+            expect(bcryptMock.hash).toHaveBeenCalledWith(dto.password, 10);
+            expect(createSpy).toHaveBeenCalledWith({
+                email: dto.email,
+                name: dto.name,
+                password: 'hashedPass',
+                role: Role.Client,
+                commissionBase: 0,
+            });
+            expect(saveSpy).toHaveBeenCalledWith(created);
+            expect(result.commissionBase).toBe(0);
         });
     });
 
