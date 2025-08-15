@@ -5,4 +5,5 @@ export class UserDto {
     email: string;
     name: string;
     role: Role;
+    commissionBase: number;
 }

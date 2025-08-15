@@ -45,6 +45,7 @@ export class UsersService {
             name: dto.name,
             password: hashedPassword,
             role: Role.Client,
+            commissionBase: dto.commissionBase ?? 0,
         });
 
         return await this.usersRepository.save(user);
