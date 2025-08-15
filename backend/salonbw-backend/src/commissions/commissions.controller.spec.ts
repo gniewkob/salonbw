@@ -14,6 +14,7 @@ describe('CommissionsController', () => {
         service = {
             findForUser: jest.fn().mockResolvedValue([mine]),
             findAll: jest.fn().mockResolvedValue([all]),
+            sumForUser: jest.fn().mockResolvedValue(10),
         } as jest.Mocked<CommissionsService>;
         controller = new CommissionsController(service);
     });
@@ -30,6 +31,22 @@ describe('CommissionsController', () => {
         const findForUserSpy = jest.spyOn(service, 'findForUser');
         await expect(controller.findForEmployee(2)).resolves.toEqual([mine]);
         expect(findForUserSpy).toHaveBeenCalledWith(2);
+    });
+
+    it('delegates getSummaryForEmployee to service', async () => {
+        const sumSpy = jest.spyOn(service, 'sumForUser');
+        await expect(
+            controller.getSummaryForEmployee(
+                1,
+                '2024-01-01',
+                '2024-01-31',
+            ),
+        ).resolves.toEqual({ amount: 10 });
+        expect(sumSpy).toHaveBeenCalledWith(
+            1,
+            new Date('2024-01-01'),
+            new Date('2024-01-31'),
+        );
     });
 
     it('delegates findAll to service', async () => {
