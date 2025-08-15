@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Commission } from './commission.entity';
+import { CommissionRule } from './commission-rule.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -12,6 +13,8 @@ export class CommissionsService {
     constructor(
         @InjectRepository(Commission)
         private readonly commissionsRepository: Repository<Commission>,
+        @InjectRepository(CommissionRule)
+        private readonly commissionRulesRepository: Repository<CommissionRule>,
         private readonly logService: LogService,
     ) {}
 
@@ -19,12 +22,16 @@ export class CommissionsService {
         const commission = this.commissionsRepository.create(data);
         const saved = await this.commissionsRepository.save(commission);
         try {
-            await this.logService.logAction(user, LogAction.COMMISSION_CREATED, {
-                commissionId: saved.id,
-                appointmentId: saved.appointment?.id,
-                employeeId: saved.employee?.id,
-                amount: saved.amount,
-            });
+            await this.logService.logAction(
+                user,
+                LogAction.COMMISSION_CREATED,
+                {
+                    commissionId: saved.id,
+                    appointmentId: saved.appointment?.id,
+                    employeeId: saved.employee?.id,
+                    amount: saved.amount,
+                },
+            );
         } catch (error) {
             console.error('Failed to log commission creation action', error);
         }
