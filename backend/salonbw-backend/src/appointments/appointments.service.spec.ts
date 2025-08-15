@@ -201,6 +201,23 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('should create an appointment even if logging fails', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        logActionSpy.mockRejectedValueOnce(new Error('fail'));
+        const result = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(result.id).toBeDefined();
+        expect(appointments).toHaveLength(1);
+    });
+
     it('should reject overlapping appointments', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         await service.create(
@@ -254,6 +271,23 @@ describe('AppointmentsService', () => {
                 status: AppointmentStatus.Cancelled,
             }),
         );
+    });
+
+    it('should cancel an appointment even if logging fails', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        logActionSpy.mockRejectedValueOnce(new Error('fail'));
+        const cancelled = await service.cancel(id, users[0]);
+        expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
     });
 
     it('should not cancel a completed appointment', async () => {
@@ -331,6 +365,23 @@ describe('AppointmentsService', () => {
         );
         const appt = await service.findOne(id);
         expect(appt?.status).toBe(AppointmentStatus.Scheduled);
+    });
+
+    it('should complete an appointment even if logging fails', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        logActionSpy.mockRejectedValueOnce(new Error('fail'));
+        const completed = await service.completeAppointment(id, users[1]);
+        expect(completed?.status).toBe(AppointmentStatus.Completed);
     });
 
     it('should log when completing an appointment', async () => {
