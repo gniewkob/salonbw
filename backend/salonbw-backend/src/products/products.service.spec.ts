@@ -131,9 +131,9 @@ describe('ProductsService', () => {
 
     describe('when logging fails', () => {
         it('allows creation to succeed', async () => {
-            logService.logAction = jest
-                .fn()
-                .mockRejectedValue(new Error('fail')) as any;
+            const logActionSpy = jest
+                .spyOn(logService, 'logAction')
+                .mockRejectedValue(new Error('fail'));
             const consoleSpy = jest
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
@@ -144,18 +144,21 @@ describe('ProductsService', () => {
                 stock: 10,
             };
             const user = { id: 1 } as User;
-            await expect(service.create(dto as Product, user)).resolves.toEqual({
-                id: 1,
-                ...dto,
-            });
+            await expect(service.create(dto as Product, user)).resolves.toEqual(
+                {
+                    id: 1,
+                    ...dto,
+                },
+            );
             expect(consoleSpy).toHaveBeenCalled();
             consoleSpy.mockRestore();
+            logActionSpy.mockRestore();
         });
 
         it('allows update to succeed', async () => {
-            logService.logAction = jest
-                .fn()
-                .mockRejectedValue(new Error('fail')) as any;
+            const logActionSpy = jest
+                .spyOn(logService, 'logAction')
+                .mockRejectedValue(new Error('fail'));
             const consoleSpy = jest
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
@@ -165,12 +168,13 @@ describe('ProductsService', () => {
             });
             expect(consoleSpy).toHaveBeenCalled();
             consoleSpy.mockRestore();
+            logActionSpy.mockRestore();
         });
 
         it('allows removal to succeed', async () => {
-            logService.logAction = jest
-                .fn()
-                .mockRejectedValue(new Error('fail')) as any;
+            const logActionSpy = jest
+                .spyOn(logService, 'logAction')
+                .mockRejectedValue(new Error('fail'));
             const consoleSpy = jest
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
@@ -178,6 +182,7 @@ describe('ProductsService', () => {
             await expect(service.remove(1, user)).resolves.toBeUndefined();
             expect(consoleSpy).toHaveBeenCalled();
             consoleSpy.mockRestore();
+            logActionSpy.mockRestore();
         });
     });
 });
