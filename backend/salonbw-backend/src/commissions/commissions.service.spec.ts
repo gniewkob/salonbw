@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
+import { CommissionRule } from './commission-rule.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -33,6 +34,10 @@ describe('CommissionsService', () => {
                 {
                     provide: getRepositoryToken(Commission),
                     useValue: mockRepository(),
+                },
+                {
+                    provide: getRepositoryToken(CommissionRule),
+                    useValue: {},
                 },
                 {
                     provide: LogService,
