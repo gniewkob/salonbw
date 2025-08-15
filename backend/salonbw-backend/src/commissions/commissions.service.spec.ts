@@ -27,6 +27,7 @@ describe('CommissionsService', () => {
                     Promise.resolve({ id: 1, ...entity }),
                 ),
             find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
+            findOne: jest.fn(),
         }) as jest.Mocked<Repository<Commission>>;
 
     const mockRulesRepository = (): jest.Mocked<Repository<CommissionRule>> =>
@@ -99,6 +100,7 @@ describe('CommissionsService', () => {
             appointment.service,
             appointment,
             user,
+            undefined,
         );
     });
 
@@ -113,6 +115,7 @@ describe('CommissionsService', () => {
         const createSpy = jest
             .spyOn(service, 'create')
             .mockResolvedValue({ id: 1 } as Commission);
+        repo.findOne.mockResolvedValueOnce(null);
         await service.calculateAndSaveCommission(
             employee,
             salonService,
@@ -128,7 +131,26 @@ describe('CommissionsService', () => {
                 percent: 25,
             },
             user,
+            undefined,
         );
+    });
+
+    it('returns existing commission for appointment', async () => {
+        const employee = { id: 1 } as User;
+        const salonService = { id: 1, price: 200 } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        const existing = { id: 10 } as Commission;
+        repo.findOne.mockResolvedValueOnce(existing);
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(result).toBe(existing);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(repo.save).not.toHaveBeenCalled();
     });
 
     describe('resolveCommissionPercent', () => {

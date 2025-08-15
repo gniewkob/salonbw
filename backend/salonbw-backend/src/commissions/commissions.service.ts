@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { Commission } from './commission.entity';
 import { CommissionRule } from './commission-rule.entity';
 import { Appointment } from '../appointments/appointment.entity';
@@ -19,9 +19,16 @@ export class CommissionsService {
         private readonly logService: LogService,
     ) {}
 
-    async create(data: Partial<Commission>, user: User): Promise<Commission> {
-        const commission = this.commissionsRepository.create(data);
-        const saved = await this.commissionsRepository.save(commission);
+    async create(
+        data: Partial<Commission>,
+        user: User,
+        manager?: EntityManager,
+    ): Promise<Commission> {
+        const repo = manager
+            ? manager.getRepository(Commission)
+            : this.commissionsRepository;
+        const commission = repo.create(data);
+        const saved = await repo.save(commission);
         try {
             await this.logService.logAction(
                 user,
@@ -53,12 +60,13 @@ export class CommissionsService {
             return Number(ruleForService.commissionPercent);
         }
         if (service.category) {
-            const ruleForCategory = await this.commissionRulesRepository.findOne({
-                where: {
-                    employee: { id: employee.id },
-                    category: service.category,
-                },
-            });
+            const ruleForCategory =
+                await this.commissionRulesRepository.findOne({
+                    where: {
+                        employee: { id: employee.id },
+                        category: service.category,
+                    },
+                });
             if (ruleForCategory) {
                 return Number(ruleForCategory.commissionPercent);
             }
@@ -71,7 +79,19 @@ export class CommissionsService {
         service: SalonService,
         appointment: Appointment | null,
         user: User,
+        manager?: EntityManager,
     ): Promise<Commission> {
+        const repo = manager
+            ? manager.getRepository(Commission)
+            : this.commissionsRepository;
+        if (appointment) {
+            const existing = await repo.findOne({
+                where: { appointment: { id: appointment.id } },
+            });
+            if (existing) {
+                return existing;
+            }
+        }
         const price = Number(service.price);
         const percent = await this.resolveCommissionPercent(employee, service);
         const amount = (price * percent) / 100;
@@ -83,18 +103,21 @@ export class CommissionsService {
                 percent,
             },
             user,
+            manager,
         );
     }
 
     async createFromAppointment(
         appointment: Appointment,
         user: User,
+        manager?: EntityManager,
     ): Promise<Commission> {
         return this.calculateAndSaveCommission(
             appointment.employee,
             appointment.service,
             appointment,
             user,
+            manager,
         );
     }
 
