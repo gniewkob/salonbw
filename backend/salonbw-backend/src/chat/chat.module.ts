@@ -3,6 +3,7 @@ import { WebSocketModule } from '@nestjs/websockets';
 import { AppointmentsModule } from '../appointments/appointments.module';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
+import { ChatController } from './chat.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,6 +24,7 @@ import { User } from '../users/user.entity';
             }),
         }),
     ],
+    controllers: [ChatController],
     providers: [ChatGateway, ChatService],
     exports: [ChatService],
 })
