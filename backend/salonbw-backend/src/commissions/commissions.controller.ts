@@ -13,6 +13,7 @@ import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { Commission } from './commission.entity';
+import { GetSummaryDto } from './dto/get-summary.dto';
 
 @Controller()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -37,8 +38,7 @@ export class CommissionsController {
     @Get('employees/:id/commissions/summary')
     getSummaryForEmployee(
         @Param('id', ParseIntPipe) id: number,
-        @Query('from') from: string,
-        @Query('to') to: string,
+        @Query() { from, to }: GetSummaryDto,
     ): Promise<{ amount: number }> {
         return this.commissionsService
             .sumForUser(id, new Date(from), new Date(to))
