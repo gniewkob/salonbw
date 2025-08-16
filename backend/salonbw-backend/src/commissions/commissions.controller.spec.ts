@@ -48,16 +48,28 @@ describe('CommissionsController', () => {
     });
 
     it('maps getSummaryForEmployee to GET /employees/:id/commissions/summary', () => {
-        const path = Reflect.getMetadata(
-            PATH_METADATA,
-            CommissionsController.prototype.getSummaryForEmployee,
+        const descriptor = Object.getOwnPropertyDescriptor(
+            CommissionsController.prototype,
+            'getSummaryForEmployee',
         );
-        const method = Reflect.getMetadata(
-            METHOD_METADATA,
-            CommissionsController.prototype.getSummaryForEmployee,
-        );
-        expect(path).toBe('employees/:id/commissions/summary');
-        expect(method).toBe(RequestMethod.GET);
+        expect(typeof descriptor?.value).toBe('function');
+
+        const handler = descriptor!.value as (
+            this: CommissionsController,
+            ...args: unknown[]
+        ) => unknown;
+
+        const path: unknown = Reflect.getMetadata(PATH_METADATA, handler);
+        expect(typeof path).toBe('string');
+        if (typeof path === 'string') {
+            expect(path).toBe('employees/:id/commissions/summary');
+        }
+
+        const method: unknown = Reflect.getMetadata(METHOD_METADATA, handler);
+        expect(typeof method).toBe('number');
+        if (typeof method === 'number') {
+            expect(method).toBe(RequestMethod.GET);
+        }
     });
 
     it('delegates findAll to service', async () => {
