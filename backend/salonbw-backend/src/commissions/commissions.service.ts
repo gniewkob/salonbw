@@ -71,6 +71,9 @@ export class CommissionsService {
                 return Number(ruleForCategory.commissionPercent);
             }
         }
+        if (service.commissionPercent != null) {
+            return Number(service.commissionPercent);
+        }
         return Number(employee.commissionBase ?? 0);
     }
 
