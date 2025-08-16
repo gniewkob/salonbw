@@ -1,6 +1,8 @@
 import { CommissionsController } from './commissions.controller';
 import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
+import { RequestMethod } from '@nestjs/common';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 
 describe('CommissionsController', () => {
     let controller: CommissionsController;
@@ -36,17 +38,27 @@ describe('CommissionsController', () => {
     it('delegates getSummaryForEmployee to service', async () => {
         const sumSpy = jest.spyOn(service, 'sumForUser');
         await expect(
-            controller.getSummaryForEmployee(
-                1,
-                '2024-01-01',
-                '2024-01-31',
-            ),
+            controller.getSummaryForEmployee(1, '2024-01-01', '2024-01-31'),
         ).resolves.toEqual({ amount: 10 });
         expect(sumSpy).toHaveBeenCalledWith(
             1,
             new Date('2024-01-01'),
             new Date('2024-01-31'),
         );
+    });
+
+    it('maps getSummaryForEmployee to GET /employees/:id/commissions/summary', () => {
+        const handler = Object.getOwnPropertyDescriptor(
+            CommissionsController.prototype,
+            'getSummaryForEmployee',
+        )?.value as unknown;
+        const path = Reflect.getMetadata(PATH_METADATA, handler) as string;
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            handler,
+        ) as RequestMethod;
+        expect(path).toBe('employees/:id/commissions/summary');
+        expect(method).toBe(RequestMethod.GET);
     });
 
     it('delegates findAll to service', async () => {

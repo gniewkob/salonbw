@@ -577,7 +577,7 @@
         ]
       }
     },
-    "/commissions/employees/{id}/commissions/summary": {
+    "/employees/{id}/commissions/summary": {
       "get": {
         "operationId": "CommissionsController_getSummaryForEmployee",
         "parameters": [
