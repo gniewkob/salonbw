@@ -107,12 +107,12 @@ describe('CommissionsService', () => {
 
     it('calculates and saves commission', async () => {
         const employee = { id: 1 } as User;
-        const salonService = { id: 1, price: 200 } as SalonService;
+        const salonService = { id: 1, price: 123.45 } as SalonService;
         const appointment = { id: 2 } as Appointment;
         const user = { id: 3 } as User;
         const percentSpy = jest
             .spyOn(service, 'resolveCommissionPercent')
-            .mockResolvedValue(25);
+            .mockResolvedValue(12.5);
         const createSpy = jest
             .spyOn(service, 'create')
             .mockResolvedValue({ id: 1 } as Commission);
@@ -128,8 +128,8 @@ describe('CommissionsService', () => {
             {
                 employee,
                 appointment,
-                amount: 50,
-                percent: 25,
+                amount: 15.43,
+                percent: 12.5,
             },
             user,
             undefined,
@@ -156,7 +156,7 @@ describe('CommissionsService', () => {
 
     it('calculates commission using employee base when no rule applies', async () => {
         const employee = { id: 1, commissionBase: 10 } as User;
-        const salonService = { id: 1, price: 100 } as SalonService;
+        const salonService = { id: 1, price: 99.99 } as SalonService;
         const appointment = { id: 2 } as Appointment;
         const user = { id: 3 } as User;
         repo.findOne.mockResolvedValueOnce(null);
@@ -176,7 +176,7 @@ describe('CommissionsService', () => {
         const employee = { id: 1, commissionBase: 5 } as User;
         const salonService = {
             id: 1,
-            price: 100,
+            price: 99.99,
             commissionPercent: 15,
         } as SalonService;
         const appointment = { id: 2 } as Appointment;
@@ -196,7 +196,7 @@ describe('CommissionsService', () => {
 
     it('calculates commission using service rule when available', async () => {
         const employee = { id: 1, commissionBase: 5 } as User;
-        const salonService = { id: 1, price: 100 } as SalonService;
+        const salonService = { id: 1, price: 99.99 } as SalonService;
         const appointment = { id: 2 } as Appointment;
         const user = { id: 3 } as User;
         repo.findOne.mockResolvedValueOnce(null);
@@ -218,7 +218,7 @@ describe('CommissionsService', () => {
         const employee = { id: 1, commissionBase: 5 } as User;
         const salonService = {
             id: 1,
-            price: 100,
+            price: 99.99,
             category: 'hair',
         } as SalonService;
         const appointment = { id: 2 } as Appointment;
