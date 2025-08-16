@@ -97,7 +97,9 @@ export class CommissionsService {
         }
         const price = Number(service.price);
         const percent = await this.resolveCommissionPercent(employee, service);
-        const amount = (price * percent) / 100;
+        const priceCents = Math.round(price * 100);
+        const amountCents = Math.round((priceCents * percent) / 100);
+        const amount = amountCents / 100;
         return this.create(
             {
                 employee,
@@ -131,11 +133,7 @@ export class CommissionsService {
         });
     }
 
-    async sumForUser(
-        userId: number,
-        from: Date,
-        to: Date,
-    ): Promise<number> {
+    async sumForUser(userId: number, from: Date, to: Date): Promise<number> {
         const result = await this.commissionsRepository
             .createQueryBuilder('commission')
             .select('COALESCE(SUM(commission.amount), 0)', 'total')
