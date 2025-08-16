@@ -9,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
 
-
 interface TokenPayload {
     sub: number;
     role: string;
@@ -35,10 +34,13 @@ export class ChatGateway implements OnGatewayConnection {
         private readonly chatService: ChatService,
     ) {}
 
-    async handleConnection(client: Socket) {
+    async handleConnection(client: ChatSocket) {
         const authHeader = client.handshake.headers.authorization;
         let token: string | undefined;
-        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+        if (
+            typeof authHeader === 'string' &&
+            authHeader.startsWith('Bearer ')
+        ) {
             token = authHeader.slice(7);
         } else if (typeof client.handshake.query.token === 'string') {
             token = client.handshake.query.token;
@@ -48,18 +50,21 @@ export class ChatGateway implements OnGatewayConnection {
             return;
         }
         try {
-            const payload = await this.jwtService.verifyAsync(token, {
-                secret: process.env.JWT_SECRET,
-            });
+            const payload = await this.jwtService.verifyAsync<TokenPayload>(
+                token,
+                {
+                    secret: process.env.JWT_SECRET,
+                },
+            );
             client.data.userId = payload.sub;
             client.data.role = payload.role;
-        } catch (err) {
+        } catch {
             client.disconnect();
         }
     }
 
     @SubscribeMessage('joinRoom')
-    async joinRoom(client: Socket, payload: { appointmentId: number }) {
+    async joinRoom(client: ChatSocket, payload: { appointmentId: number }) {
         const appointment = await this.appointmentsService.findOne(
             Number(payload.appointmentId),
         );
@@ -78,7 +83,7 @@ export class ChatGateway implements OnGatewayConnection {
 
     @SubscribeMessage('message')
     async handleMessage(
-        client: Socket,
+        client: ChatSocket,
         payload: { appointmentId: number; message: string },
     ) {
         const roomName = `room-${payload.appointmentId}`;
