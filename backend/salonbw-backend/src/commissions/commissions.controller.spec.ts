@@ -1,6 +1,8 @@
 import { CommissionsController } from './commissions.controller';
 import { CommissionsService } from './commissions.service';
 import { Commission } from './commission.entity';
+import { RequestMethod } from '@nestjs/common';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 
 describe('CommissionsController', () => {
     let controller: CommissionsController;
@@ -47,6 +49,19 @@ describe('CommissionsController', () => {
             new Date('2024-01-01'),
             new Date('2024-01-31'),
         );
+    });
+
+    it('maps getSummaryForEmployee to GET /employees/:id/commissions/summary', () => {
+        const path = Reflect.getMetadata(
+            PATH_METADATA,
+            CommissionsController.prototype.getSummaryForEmployee,
+        );
+        const method = Reflect.getMetadata(
+            METHOD_METADATA,
+            CommissionsController.prototype.getSummaryForEmployee,
+        );
+        expect(path).toBe('employees/:id/commissions/summary');
+        expect(method).toBe(RequestMethod.GET);
     });
 
     it('delegates findAll to service', async () => {

@@ -14,19 +14,19 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { Commission } from './commission.entity';
 
-@Controller('commissions')
+@Controller()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CommissionsController {
     constructor(private readonly commissionsService: CommissionsService) {}
 
     @Roles(Role.Employee, Role.Admin)
-    @Get('me')
+    @Get('commissions/me')
     findMine(@CurrentUser() user: { userId: number }): Promise<Commission[]> {
         return this.commissionsService.findForUser(user.userId);
     }
 
     @Roles(Role.Admin)
-    @Get('employees/:id')
+    @Get('commissions/employees/:id')
     findForEmployee(
         @Param('id', ParseIntPipe) id: number,
     ): Promise<Commission[]> {
@@ -46,7 +46,7 @@ export class CommissionsController {
     }
 
     @Roles(Role.Admin)
-    @Get()
+    @Get('commissions')
     findAll(): Promise<Commission[]> {
         return this.commissionsService.findAll();
     }
