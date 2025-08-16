@@ -90,7 +90,13 @@ export class ChatGateway implements OnGatewayConnection {
             payload.appointmentId,
             payload.message,
         );
-        this.server.to(roomName).emit('message', saved);
+        this.server.to(roomName).emit('message', {
+            id: saved.id,
+            userId: saved.user.id,
+            appointmentId: saved.appointment.id,
+            content: saved.content,
+            timestamp: saved.timestamp,
+        });
         return { status: 'ok' };
     }
 }
