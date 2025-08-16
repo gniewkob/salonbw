@@ -172,6 +172,28 @@ describe('CommissionsService', () => {
         );
     });
 
+    it('calculates commission using service percent when no rule applies', async () => {
+        const employee = { id: 1, commissionBase: 5 } as User;
+        const salonService = {
+            id: 1,
+            price: 100,
+            commissionPercent: 15,
+        } as SalonService;
+        const appointment = { id: 2 } as Appointment;
+        const user = { id: 3 } as User;
+        repo.findOne.mockResolvedValueOnce(null);
+        rulesRepo.findOne.mockResolvedValue(null);
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            appointment,
+            user,
+        );
+        expect(result).toEqual(
+            expect.objectContaining({ amount: 15, percent: 15 }),
+        );
+    });
+
     it('calculates commission using service rule when available', async () => {
         const employee = { id: 1, commissionBase: 5 } as User;
         const salonService = { id: 1, price: 100 } as SalonService;
@@ -270,7 +292,23 @@ describe('CommissionsService', () => {
             expect(findOneSpy).toHaveBeenCalledTimes(2);
         });
 
-        it('falls back to employee base when no rule', async () => {
+        it('falls back to service commission percent when no rule', async () => {
+            rulesRepo.findOne.mockReset();
+            const employee = { id: 1, commissionBase: 5 } as User;
+            const salonService = {
+                id: 2,
+                category: 'cat',
+                commissionPercent: 15,
+            } as SalonService;
+            rulesRepo.findOne
+                .mockResolvedValueOnce(null)
+                .mockResolvedValueOnce(null);
+            await expect(
+                service.resolveCommissionPercent(employee, salonService),
+            ).resolves.toBe(15);
+        });
+
+        it('falls back to employee base when no rule and service has no commission percent', async () => {
             rulesRepo.findOne.mockReset();
             const employee = { id: 1, commissionBase: 5 } as User;
             const salonService = { id: 2, category: 'cat' } as SalonService;
