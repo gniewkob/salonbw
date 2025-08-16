@@ -4,10 +4,13 @@ import {
     SubscribeMessage,
     OnGatewayConnection,
 } from '@nestjs/websockets';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
+import { JoinRoomDto } from './dto/join-room.dto';
+import { MessageDto } from './dto/message.dto';
 
 interface TokenPayload {
     sub: number;
@@ -24,6 +27,7 @@ interface ChatSocket extends Socket {
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 @WebSocketGateway({ cors: { origin: FRONTEND_URL } })
+@UsePipes(new ValidationPipe())
 export class ChatGateway implements OnGatewayConnection {
     @WebSocketServer()
     server: Server;
@@ -64,7 +68,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
 
     @SubscribeMessage('joinRoom')
-    async joinRoom(client: ChatSocket, payload: { appointmentId: number }) {
+    async joinRoom(client: ChatSocket, payload: JoinRoomDto) {
         const appointment = await this.appointmentsService.findOne(
             Number(payload.appointmentId),
         );
@@ -82,10 +86,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
 
     @SubscribeMessage('message')
-    async handleMessage(
-        client: ChatSocket,
-        payload: { appointmentId: number; message: string },
-    ) {
+    async handleMessage(client: ChatSocket, payload: MessageDto) {
         const roomName = `room-${payload.appointmentId}`;
         if (!client.rooms.has(roomName)) {
             return { status: 'error' };
