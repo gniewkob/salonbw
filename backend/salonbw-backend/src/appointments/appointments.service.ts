@@ -176,6 +176,9 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
+        if (appointment.status === AppointmentStatus.Completed) {
+            throw new BadRequestException('Appointment already completed');
+        }
         if (appointment.status === AppointmentStatus.Cancelled) {
             throw new BadRequestException(
                 'Cannot complete a cancelled appointment',
