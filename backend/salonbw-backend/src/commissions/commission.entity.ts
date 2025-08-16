@@ -4,6 +4,7 @@ import {
     ManyToOne,
     Column,
     CreateDateColumn,
+    Index,
 } from 'typeorm';
 import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { User } from '../users/user.entity';
@@ -18,6 +19,7 @@ export class Commission {
     @ManyToOne(() => User, { eager: true })
     employee: User;
 
+    @Index({ unique: true, where: 'appointmentId IS NOT NULL' })
     @ManyToOne(() => Appointment, { nullable: true, eager: true })
     appointment?: Appointment | null;
 
