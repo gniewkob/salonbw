@@ -48,15 +48,14 @@ describe('CommissionsController', () => {
     });
 
     it('maps getSummaryForEmployee to GET /employees/:id/commissions/summary', () => {
-        const handler = Object.getOwnPropertyDescriptor(
-            CommissionsController.prototype,
-            'getSummaryForEmployee',
-        )?.value as unknown;
-        const path = Reflect.getMetadata(PATH_METADATA, handler) as string;
+        const path = Reflect.getMetadata(
+            PATH_METADATA,
+            CommissionsController.prototype.getSummaryForEmployee,
+        );
         const method = Reflect.getMetadata(
             METHOD_METADATA,
-            handler,
-        ) as RequestMethod;
+            CommissionsController.prototype.getSummaryForEmployee,
+        );
         expect(path).toBe('employees/:id/commissions/summary');
         expect(method).toBe(RequestMethod.GET);
     });
