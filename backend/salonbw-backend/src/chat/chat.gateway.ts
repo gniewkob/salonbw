@@ -93,7 +93,7 @@ export class ChatGateway implements OnGatewayConnection {
         if (!client.rooms.has(roomName)) {
             return { status: 'error' };
         }
-        const saved = await this.chatService.createMessage(
+        const saved = await this.chatService.saveMessage(
             client.data.userId,
             payload.appointmentId,
             payload.message,
@@ -102,7 +102,7 @@ export class ChatGateway implements OnGatewayConnection {
             id: saved.id,
             userId: saved.user.id,
             appointmentId: saved.appointment.id,
-            content: saved.content,
+            text: saved.text,
             timestamp: saved.timestamp,
         });
         return { status: 'ok' };

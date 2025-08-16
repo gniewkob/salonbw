@@ -12,19 +12,26 @@ export class ChatService {
         private readonly chatMessageRepository: Repository<ChatMessage>,
     ) {}
 
-    async createMessage(
+    async saveMessage(
         userId: number,
         appointmentId: number,
-        content: string,
+        text: string,
     ): Promise<ChatMessage> {
         const message = this.chatMessageRepository.create({
             user: { id: userId } as User,
             appointment: { id: appointmentId } as Appointment,
-            content,
+            text,
         });
         const saved = await this.chatMessageRepository.save(message);
         return this.chatMessageRepository.findOneOrFail({
             where: { id: saved.id },
+        });
+    }
+
+    async findMessages(appointmentId: number): Promise<ChatMessage[]> {
+        return this.chatMessageRepository.find({
+            where: { appointment: { id: appointmentId } },
+            order: { timestamp: 'ASC' },
         });
     }
 }

@@ -5,23 +5,23 @@ import {
     ManyToOne,
     CreateDateColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { User } from '../users/user.entity';
 
 @Entity('chat_messages')
 export class ChatMessage {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, { eager: true })
-    user: User;
-
-    @ManyToOne(() => Appointment, { eager: true })
-    appointment: Appointment;
-
     @Column()
-    content: string;
+    text: string;
 
     @CreateDateColumn()
     timestamp: Date;
+
+    @ManyToOne(() => Appointment)
+    appointment: Appointment;
+
+    @ManyToOne(() => User, { eager: true })
+    user: User;
 }
