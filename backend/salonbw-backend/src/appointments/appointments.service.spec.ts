@@ -424,11 +424,9 @@ describe('AppointmentsService', () => {
         await service.completeAppointment(id, users[1]);
         const calls =
             mockCommissionsService.createFromAppointment.mock.calls.length;
-
         await expect(
             service.completeAppointment(id, users[1]),
-        ).rejects.toThrow();
-
+        ).rejects.toBeInstanceOf(BadRequestException);
         expect(
             mockCommissionsService.createFromAppointment.mock.calls.length,
         ).toBe(calls);
