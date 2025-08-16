@@ -408,4 +408,29 @@ describe('AppointmentsService', () => {
             }),
         );
     });
+
+    it('should not create duplicate commissions when completing twice', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        await service.completeAppointment(id, users[1]);
+        const calls =
+            mockCommissionsService.createFromAppointment.mock.calls.length;
+
+        try {
+            await service.completeAppointment(id, users[1]);
+        } catch {}
+
+        expect(
+            mockCommissionsService.createFromAppointment.mock.calls.length,
+        ).toBe(calls);
+    });
 });
