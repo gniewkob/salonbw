@@ -38,7 +38,10 @@ describe('CommissionsController', () => {
     it('delegates getSummaryForEmployee to service', async () => {
         const sumSpy = jest.spyOn(service, 'sumForUser');
         await expect(
-            controller.getSummaryForEmployee(1, '2024-01-01', '2024-01-31'),
+            controller.getSummaryForEmployee(1, {
+                from: '2024-01-01',
+                to: '2024-01-31',
+            }),
         ).resolves.toEqual({ amount: 10 });
         expect(sumSpy).toHaveBeenCalledWith(
             1,
