@@ -7,12 +7,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatMessage } from './chat-message.entity';
+import { Appointment } from '../appointments/appointment.entity';
+import { User } from '../users/user.entity';
 
 @Module({
     imports: [
         WebSocketModule,
         AppointmentsModule,
-        TypeOrmModule.forFeature([ChatMessage]),
+        TypeOrmModule.forFeature([ChatMessage, Appointment, User]),
         JwtModule.registerAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
