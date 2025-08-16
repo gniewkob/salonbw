@@ -3,6 +3,7 @@
 ## Verification
 
 1. Copy `.env.example` to `.env` and ensure it contains `DATABASE_URL` (e.g., `postgres://user:password@localhost:5432/database`).
+   `FRONTEND_URL` is optional; when omitted, WebSocket CORS allows requests from any origin.
 2. Start PostgreSQL using those credentials. One way is:
    - `sudo service postgresql start`
    - `sudo -u postgres psql -c "CREATE USER \"user\" WITH PASSWORD 'password';"`

@@ -7,6 +7,7 @@ import {
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
 import { JoinRoomDto } from './dto/join-room.dto';
@@ -24,7 +25,8 @@ interface ChatSocket extends Socket {
     };
 }
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const FRONTEND_URL =
+    new ConfigService().get<string>('FRONTEND_URL') ?? true;
 
 @WebSocketGateway({ cors: { origin: FRONTEND_URL } })
 @UsePipes(new ValidationPipe())
