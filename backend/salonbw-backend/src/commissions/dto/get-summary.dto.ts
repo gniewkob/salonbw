@@ -1,9 +1,12 @@
-import { IsDateString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsISO8601 } from 'class-validator';
 
 export class GetSummaryDto {
-    @IsDateString()
+    @ApiProperty({ required: true, type: String, format: 'date-time' })
+    @IsISO8601()
     from: string;
 
-    @IsDateString()
+    @ApiProperty({ required: true, type: String, format: 'date-time' })
+    @IsISO8601()
     to: string;
 }
