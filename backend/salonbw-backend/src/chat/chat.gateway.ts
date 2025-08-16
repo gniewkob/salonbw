@@ -9,6 +9,19 @@ import { JwtService } from '@nestjs/jwt';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
 
+
+interface TokenPayload {
+    sub: number;
+    role: string;
+}
+
+interface ChatSocket extends Socket {
+    data: {
+        userId: number;
+        role: string;
+    };
+}
+
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 @WebSocketGateway({ cors: { origin: FRONTEND_URL } })
