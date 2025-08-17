@@ -6,6 +6,9 @@ import { ChatGateway } from './chat.gateway';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
 import { Appointment } from '../appointments/appointment.entity';
+import { User } from '../users/user.entity';
+import { Server } from 'http';
+import type { AddressInfo } from 'net';
 
 interface Message {
     id: number;
@@ -20,7 +23,9 @@ describe('ChatGateway', () => {
     let jwtService: JwtService;
     let baseUrl: string;
     let mockAppointmentsService: jest.Mocked<AppointmentsService>;
-    let mockChatService: { saveMessage: jest.Mock };
+    let mockChatService: {
+        saveMessage: jest.Mock<Promise<Message>, [number, number, string]>;
+    };
     let messages: Message[];
     let appointment: Appointment;
 
@@ -28,40 +33,37 @@ describe('ChatGateway', () => {
         messages = [];
         appointment = {
             id: 1,
-            client: { id: 1 } as any,
-            employee: { id: 2 } as any,
+            client: { id: 1 } as unknown as User,
+            employee: { id: 2 } as unknown as User,
         } as Appointment;
 
         mockAppointmentsService = {
             findOne: jest.fn().mockResolvedValue(appointment),
-        } as any;
+        } as Partial<AppointmentsService> as jest.Mocked<AppointmentsService>;
 
         mockChatService = {
-            saveMessage: jest
-                .fn()
-                .mockImplementation(
-                    async (
-                        userId: number,
-                        appointmentId: number,
-                        text: string,
-                    ) => {
-                        const msg = {
-                            id: messages.length + 1,
-                            user: { id: userId },
-                            appointment: { id: appointmentId },
-                            text,
-                            timestamp: new Date(),
-                        };
-                        messages.push(msg);
-                        return msg;
-                    },
-                ),
+            saveMessage: jest.fn<Promise<Message>, [number, number, string]>(
+                (userId, appointmentId, text) => {
+                    const msg: Message = {
+                        id: messages.length + 1,
+                        user: { id: userId },
+                        appointment: { id: appointmentId },
+                        text,
+                        timestamp: new Date(),
+                    };
+                    messages.push(msg);
+                    return Promise.resolve(msg);
+                },
+            ),
         };
 
         const moduleRef = await Test.createTestingModule({
             providers: [
                 ChatGateway,
-                { provide: AppointmentsService, useValue: mockAppointmentsService },
+                {
+                    provide: AppointmentsService,
+                    useValue: mockAppointmentsService,
+                },
                 { provide: ChatService, useValue: mockChatService },
             ],
             imports: [JwtModule.register({ secret: 'test' })],
@@ -69,8 +71,8 @@ describe('ChatGateway', () => {
 
         app = moduleRef.createNestApplication();
         await app.listen(0);
-        const server = app.getHttpServer();
-        const address = server.address();
+        const server = app.getHttpServer() as Server;
+        const address = server.address() as AddressInfo;
         baseUrl = `http://localhost:${address.port}`;
         jwtService = moduleRef.get(JwtService);
     });
@@ -119,9 +121,10 @@ describe('ChatGateway', () => {
         expect(join1).toEqual({ status: 'ok' });
         expect(join2).toEqual({ status: 'ok' });
 
-        const received = new Promise<any>((resolve) =>
-            socket2.on('message', resolve),
-        );
+        const received = new Promise<{
+            text: string;
+            userId: number;
+        }>((resolve) => socket2.on('message', resolve));
         const sendRes = await new Promise((resolve) =>
             socket1.emit(
                 'message',
