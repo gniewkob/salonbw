@@ -27,7 +27,11 @@ interface ChatSocket extends Socket {
 }
 
 @WebSocketGateway()
-@UsePipes(new ValidationPipe())
+@UsePipes(
+    new ValidationPipe({
+        transform: true,
+    }),
+)
 export class ChatGateway implements OnGatewayConnection, OnGatewayInit {
     @WebSocketServer()
     server: Server;

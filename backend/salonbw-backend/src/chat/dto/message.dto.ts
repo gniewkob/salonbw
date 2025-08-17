@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class MessageDto {
@@ -9,5 +9,6 @@ export class MessageDto {
 
     @IsString()
     @IsNotEmpty()
+    @MaxLength(500)
     message: string;
 }
