@@ -151,4 +151,44 @@ describe('ChatGateway', () => {
         socket1.close();
         socket2.close();
     });
+
+    it('should reject messages exceeding maximum length', async () => {
+        const token1 = await jwtService.signAsync({ sub: 1, role: 'Client' });
+        const token2 = await jwtService.signAsync({ sub: 2, role: 'Employee' });
+
+        const socket1 = io(baseUrl, {
+            transports: ['websocket'],
+            forceNew: true,
+            extraHeaders: { Authorization: `Bearer ${token1}` },
+        });
+        const socket2 = io(baseUrl, {
+            transports: ['websocket'],
+            forceNew: true,
+            extraHeaders: { Authorization: `Bearer ${token2}` },
+        });
+
+        await Promise.all([
+            new Promise((resolve) => socket1.on('connect', resolve)),
+            new Promise((resolve) => socket2.on('connect', resolve)),
+        ]);
+
+        await new Promise((resolve) =>
+            socket1.emit('joinRoom', { appointmentId: 1 }, resolve),
+        );
+        await new Promise((resolve) =>
+            socket2.emit('joinRoom', { appointmentId: 1 }, resolve),
+        );
+
+        const longText = 'a'.repeat(501);
+        const errorPromise = new Promise<unknown>((resolve) =>
+            socket1.on('exception', resolve),
+        );
+        socket1.emit('message', { appointmentId: 1, message: longText });
+        const error = await errorPromise;
+
+        expect(error).toBeDefined();
+
+        socket1.close();
+        socket2.close();
+    });
 });
