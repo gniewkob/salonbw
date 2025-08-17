@@ -180,7 +180,7 @@ describe('ChatGateway', () => {
         );
 
         const longText = 'a'.repeat(501);
-        const errorPromise = new Promise<any>((resolve) =>
+        const errorPromise = new Promise<unknown>((resolve) =>
             socket1.on('exception', resolve),
         );
         socket1.emit('message', { appointmentId: 1, message: longText });
