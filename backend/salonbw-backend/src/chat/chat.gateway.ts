@@ -3,6 +3,7 @@ import {
     WebSocketServer,
     SubscribeMessage,
     OnGatewayConnection,
+    OnGatewayInit,
 } from '@nestjs/websockets';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
@@ -25,12 +26,9 @@ interface ChatSocket extends Socket {
     };
 }
 
-const FRONTEND_URL =
-    new ConfigService().get<string>('FRONTEND_URL') ?? true;
-
-@WebSocketGateway({ cors: { origin: FRONTEND_URL } })
+@WebSocketGateway()
 @UsePipes(new ValidationPipe())
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayInit {
     @WebSocketServer()
     server: Server;
 
@@ -38,7 +36,14 @@ export class ChatGateway implements OnGatewayConnection {
         private readonly jwtService: JwtService,
         private readonly appointmentsService: AppointmentsService,
         private readonly chatService: ChatService,
+        private readonly configService: ConfigService,
     ) {}
+
+    afterInit(server: Server) {
+        server.engine.opts.cors = {
+            origin: this.configService.get<string>('FRONTEND_URL') ?? true,
+        };
+    }
 
     async handleConnection(client: ChatSocket) {
         const authHeader = client.handshake.headers.authorization;
@@ -59,7 +64,7 @@ export class ChatGateway implements OnGatewayConnection {
             const payload = await this.jwtService.verifyAsync<TokenPayload>(
                 token,
                 {
-                    secret: process.env.JWT_SECRET,
+                    secret: this.configService.get<string>('JWT_SECRET'),
                 },
             );
             client.data.userId = payload.sub;
