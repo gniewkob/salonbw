@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { ChatGateway } from './chat.gateway';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';

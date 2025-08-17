@@ -77,6 +77,7 @@ describe('ChatController', () => {
                     provide: getRepositoryToken(Appointment),
                     useValue: mockAppointmentRepo,
                 },
+
             ],
         })
             .overrideGuard(AuthGuard('jwt'))
@@ -85,6 +86,7 @@ describe('ChatController', () => {
                     const req = context
                         .switchToHttp()
                         .getRequest<{ user?: typeof currentUser }>();
+
                     req.user = currentUser;
                     return true;
                 },
@@ -111,14 +113,16 @@ describe('ChatController', () => {
 
         await chatService.saveMessage(1, 1, 'hello');
 
-        const res = await request(server)
+        const res = await request(app.getHttpServer())
             .get('/appointments/1/chat')
             .expect(200);
-        const body = res.body as ChatMessage[];
-        expect(body).toHaveLength(1);
-        expect(body[0].text).toBe('hello');
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0].text).toBe('hello');
 
         currentUser = { userId: 3, role: Role.Client };
-        await request(server).get('/appointments/1/chat').expect(403);
+        await request(app.getHttpServer())
+            .get('/appointments/1/chat')
+            .expect(403);
+
     });
 });
