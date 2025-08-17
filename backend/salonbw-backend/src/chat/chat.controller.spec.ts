@@ -8,6 +8,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
+import { User } from '../users/user.entity';
 
 interface ChatMessage {
     id: number;
@@ -20,8 +21,8 @@ interface ChatMessage {
 describe('ChatController', () => {
     let app: INestApplication;
     let chatService: {
-        findMessages: jest.Mock;
-        saveMessage: jest.Mock;
+        findMessages: jest.Mock<Promise<ChatMessage[]>, [number]>;
+        saveMessage: jest.Mock<Promise<ChatMessage>, [number, number, string]>;
     };
     let currentUser: { userId: number; role: Role };
     let messages: ChatMessage[];
@@ -31,34 +32,38 @@ describe('ChatController', () => {
         messages = [];
         appointment = {
             id: 1,
-            client: { id: 1, role: Role.Client } as any,
-            employee: { id: 2, role: Role.Employee } as any,
+            client: { id: 1, role: Role.Client } as unknown as User,
+            employee: { id: 2, role: Role.Employee } as unknown as User,
         } as Appointment;
 
         chatService = {
-            findMessages: jest
-                .fn<Promise<ChatMessage[]>, [number]>(async (id) =>
+            findMessages: jest.fn<Promise<ChatMessage[]>, [number]>((id) =>
+                Promise.resolve(
                     messages.filter((m) => m.appointment.id === id),
                 ),
-            saveMessage: jest
-                .fn<Promise<ChatMessage>, [number, number, string]>(
-                    async (userId, appointmentId, text) => {
-                        const msg = {
-                            id: messages.length + 1,
-                            user: { id: userId },
-                            appointment: { id: appointmentId },
-                            text,
-                            timestamp: new Date(),
-                        };
-                        messages.push(msg);
-                        return msg;
-                    },
-                ),
+            ),
+            saveMessage: jest.fn<
+                Promise<ChatMessage>,
+                [number, number, string]
+            >((userId, appointmentId, text) => {
+                const msg: ChatMessage = {
+                    id: messages.length + 1,
+                    user: { id: userId },
+                    appointment: { id: appointmentId },
+                    text,
+                    timestamp: new Date(),
+                };
+                messages.push(msg);
+                return Promise.resolve(msg);
+            }),
         };
 
         const mockAppointmentRepo = {
-            findOne: jest.fn(async ({ where: { id } }) =>
-                id === appointment.id ? appointment : null,
+            findOne: jest.fn<
+                Promise<Appointment | null>,
+                [{ where: { id: number } }]
+            >(({ where: { id } }) =>
+                Promise.resolve(id === appointment.id ? appointment : null),
             ),
         };
 
@@ -68,13 +73,20 @@ describe('ChatController', () => {
             controllers: [ChatController],
             providers: [
                 { provide: ChatService, useValue: chatService },
-                { provide: getRepositoryToken(Appointment), useValue: mockAppointmentRepo },
+                {
+                    provide: getRepositoryToken(Appointment),
+                    useValue: mockAppointmentRepo,
+                },
+
             ],
         })
             .overrideGuard(AuthGuard('jwt'))
             .useValue({
                 canActivate: (context: ExecutionContext) => {
-                    const req = context.switchToHttp().getRequest();
+                    const req = context
+                        .switchToHttp()
+                        .getRequest<{ user?: typeof currentUser }>();
+
                     req.user = currentUser;
                     return true;
                 },
@@ -92,7 +104,9 @@ describe('ChatController', () => {
     });
 
     it('should return messages for authorized user and forbid others', async () => {
-        await request(app.getHttpServer())
+        const server = app.getHttpServer() as Parameters<typeof request>[0];
+
+        await request(server)
             .get('/appointments/1/chat')
             .expect(200)
             .expect([]);
@@ -109,5 +123,6 @@ describe('ChatController', () => {
         await request(app.getHttpServer())
             .get('/appointments/1/chat')
             .expect(403);
+
     });
 });
