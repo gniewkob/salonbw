@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { ChatGateway } from './chat.gateway';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { ChatService } from './chat.service';
+import { ConfigService } from '@nestjs/config';
 import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Server } from 'http';
@@ -65,6 +66,16 @@ describe('ChatGateway', () => {
                     useValue: mockAppointmentsService,
                 },
                 { provide: ChatService, useValue: mockChatService },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string) => {
+                            if (key === 'JWT_SECRET') return 'test';
+                            if (key === 'FRONTEND_URL') return true;
+                            return null;
+                        }),
+                    },
+                },
             ],
             imports: [JwtModule.register({ secret: 'test' })],
         }).compile();
