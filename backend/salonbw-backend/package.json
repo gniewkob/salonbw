@@ -43,7 +43,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
     "ts-node": "^10.9.2",
     "typeorm": "^0.3.25"
   },
@@ -68,6 +67,7 @@
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
     "@types/socket.io-client": "^3.0.0",
+    "socket.io-client": "^4.8.1",
     "source-map-support": "^0.5.21",
     "sqlite3": "^5.1.7",
     "supertest": "^7.0.0",
