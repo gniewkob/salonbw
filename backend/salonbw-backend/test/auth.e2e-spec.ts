@@ -63,6 +63,7 @@ describe('Auth & Users (e2e)', () => {
             password: adminPassword,
             name: 'Admin',
             role: 'admin',
+            commissionBase: 0,
         });
         server = app.getHttpServer() as Parameters<typeof request>[0];
     });
