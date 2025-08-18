@@ -222,6 +222,25 @@ describe('AppointmentsService', () => {
         ).toHaveBeenCalledWith(users[0].phone, [result.id.toString()]);
     });
 
+    it('should not send booking confirmation if client has no phone', async () => {
+        users[0].phone = undefined;
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation,
+        ).not.toHaveBeenCalled();
+    });
+
     it('should create an appointment even if logging fails', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         logActionSpy.mockRejectedValueOnce(new Error('fail'));
@@ -431,6 +450,27 @@ describe('AppointmentsService', () => {
             // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendFollowUp,
         ).toHaveBeenCalledWith(users[0].phone, [id.toString()]);
+    });
+
+    it('should not send follow up if client has no phone', async () => {
+        users[0].phone = undefined;
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        await service.completeAppointment(id, users[1]);
+
+        expect(
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendFollowUp,
+        ).not.toHaveBeenCalled();
     });
 
     it('should not create duplicate commissions when completing twice', async () => {
