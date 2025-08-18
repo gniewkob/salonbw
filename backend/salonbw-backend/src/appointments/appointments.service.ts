@@ -12,6 +12,7 @@ import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { WhatsappService } from '../notifications/whatsapp.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -24,6 +25,7 @@ export class AppointmentsService {
         private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
         private readonly logService: LogService,
+        private readonly whatsappService: WhatsappService,
     ) {}
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
@@ -109,6 +111,13 @@ export class AppointmentsService {
             );
         } catch (error) {
             console.error('Failed to log appointment creation action', error);
+        }
+        try {
+            await this.whatsappService.sendBookingConfirmation(client.phone, [
+                result.id.toString(),
+            ]);
+        } catch (error) {
+            console.error('Failed to send booking confirmation', error);
         }
         return result;
     }
@@ -214,6 +223,13 @@ export class AppointmentsService {
                     'Failed to log appointment completion action',
                     error,
                 );
+            }
+            try {
+                await this.whatsappService.sendFollowUp(updated.client.phone, [
+                    updated.id.toString(),
+                ]);
+            } catch (error) {
+                console.error('Failed to send follow up message', error);
             }
         }
         return updated;
