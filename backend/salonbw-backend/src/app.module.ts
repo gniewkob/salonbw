@@ -13,6 +13,7 @@ import { FormulasModule } from './formulas/formulas.module';
 import { CommissionsModule } from './commissions/commissions.module';
 import { LogsModule } from './logs/logs.module';
 import { ChatModule } from './chat/chat.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import { ChatModule } from './chat/chat.module';
         CommissionsModule,
         LogsModule,
         ChatModule,
+        NotificationsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
