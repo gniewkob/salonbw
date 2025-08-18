@@ -62,12 +62,14 @@ describe('LogsController (e2e)', () => {
             password: 'pass',
             name: 'Admin',
             role: 'admin',
+            commissionBase: 0,
         });
         user = await userRepo.save({
             email: 'user@example.com',
             password: 'pass',
             name: 'User',
             role: 'client',
+            commissionBase: 0,
         });
 
         try {

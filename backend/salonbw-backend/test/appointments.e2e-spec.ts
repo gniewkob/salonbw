@@ -17,6 +17,7 @@ import { User } from '../src/users/user.entity';
 import { Service } from '../src/services/service.entity';
 import { Appointment } from '../src/appointments/appointment.entity';
 import { Commission } from '../src/commissions/commission.entity';
+import { CommissionRule } from '../src/commissions/commission-rule.entity';
 import { Formula } from '../src/formulas/formula.entity';
 import { Product } from '../src/products/product.entity';
 import { Log } from '../src/logs/log.entity';
@@ -62,6 +63,7 @@ describe('Appointments integration', () => {
                         Appointment,
                         Service,
                         Commission,
+                        CommissionRule,
                         Formula,
                         Product,
                         Log,
@@ -99,24 +101,28 @@ describe('Appointments integration', () => {
             password: 'pass',
             name: 'Client',
             role: 'client',
+            commissionBase: 0,
         });
         employee = await userRepo.save({
             email: 'emp@example.com',
             password: 'pass',
             name: 'Emp',
             role: 'employee',
+            commissionBase: 0,
         });
         const otherEmployee = await userRepo.save({
             email: 'emp2@example.com',
             password: 'pass',
             name: 'Emp2',
             role: 'employee',
+            commissionBase: 0,
         });
         const admin = await userRepo.save({
             email: 'admin@example.com',
             password: 'pass',
             name: 'Admin',
             role: 'admin',
+            commissionBase: 0,
         });
 
         service = await serviceRepo.save({
@@ -405,7 +411,10 @@ describe('Appointments integration', () => {
     });
 
     it('rejects non-numeric service id', async () => {
-        await request(server).get('/services/abc').expect(400);
+        await request(server)
+            .get('/services/abc')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(400);
     });
 
     it('rejects non-numeric product id', async () => {

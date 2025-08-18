@@ -24,11 +24,15 @@ import { User } from '../users/user.entity';
 export class ServicesController {
     constructor(private readonly servicesService: ServicesService) {}
 
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get()
     findAll(): Promise<Service[]> {
         return this.servicesService.findAll();
     }
 
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number): Promise<Service> {
         return this.servicesService.findOne(id);
@@ -41,7 +45,9 @@ export class ServicesController {
         @Body() createServiceDto: CreateServiceDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Service> {
-        return this.servicesService.create(createServiceDto, { id: user.userId } as User);
+        return this.servicesService.create(createServiceDto, {
+            id: user.userId,
+        } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -52,7 +58,9 @@ export class ServicesController {
         @Body() updateServiceDto: UpdateServiceDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Service> {
-        return this.servicesService.update(id, updateServiceDto, { id: user.userId } as User);
+        return this.servicesService.update(id, updateServiceDto, {
+            id: user.userId,
+        } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

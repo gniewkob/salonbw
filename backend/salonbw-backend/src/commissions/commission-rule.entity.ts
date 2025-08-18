@@ -14,7 +14,7 @@ export class CommissionRule {
     @ManyToOne(() => Service, { nullable: true, eager: true })
     service?: Service | null;
 
-    @Column({ nullable: true })
+    @Column('text', { nullable: true })
     category?: string | null;
 
     @Column('decimal', { transformer: new ColumnNumericTransformer() })
