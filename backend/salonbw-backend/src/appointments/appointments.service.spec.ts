@@ -9,6 +9,7 @@ import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { WhatsappService } from '../notifications/whatsapp.service';
 
 describe('AppointmentsService', () => {
     let service: AppointmentsService;
@@ -20,6 +21,7 @@ describe('AppointmentsService', () => {
     let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     let mockCommissionsService: jest.Mocked<CommissionsService>;
     let mockLogService: jest.Mocked<LogService>;
+    let mockWhatsappService: jest.Mocked<WhatsappService>;
     let logActionSpy: jest.SpyInstance;
     let nextId: number;
 
@@ -32,6 +34,7 @@ describe('AppointmentsService', () => {
                 email: '',
                 password: '',
                 name: '',
+                phone: '123',
             },
             {
                 id: 2,
@@ -39,6 +42,7 @@ describe('AppointmentsService', () => {
                 email: '',
                 password: '',
                 name: '',
+                phone: '456',
             },
         ];
         services = [
@@ -170,12 +174,23 @@ describe('AppointmentsService', () => {
             logAction: jest.fn(),
         } as Partial<LogService> as jest.Mocked<LogService>;
 
+        mockWhatsappService = {
+            sendBookingConfirmation: jest.fn<Promise<void>, [string, string[]]>(
+                () => Promise.resolve(),
+            ),
+            sendReminder: jest.fn(),
+            sendFollowUp: jest.fn<Promise<void>, [string, string[]]>(() =>
+                Promise.resolve(),
+            ),
+        } as Partial<WhatsappService> as jest.Mocked<WhatsappService>;
+
         service = new AppointmentsService(
             mockAppointmentsRepo,
             mockServicesRepo,
             mockUsersRepo,
             mockCommissionsService,
             mockLogService,
+            mockWhatsappService,
         );
         logActionSpy = jest.spyOn(mockLogService, 'logAction');
     });
@@ -200,6 +215,11 @@ describe('AppointmentsService', () => {
             LogAction.APPOINTMENT_CREATED,
             expect.objectContaining({ id: result.id }),
         );
+
+        expect(
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation,
+        ).toHaveBeenCalledWith(users[0].phone, [result.id.toString()]);
     });
 
     it('should create an appointment even if logging fails', async () => {
@@ -407,6 +427,10 @@ describe('AppointmentsService', () => {
                 status: AppointmentStatus.Completed,
             }),
         );
+        expect(
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendFollowUp,
+        ).toHaveBeenCalledWith(users[0].phone, [id.toString()]);
     });
 
     it('should not create duplicate commissions when completing twice', async () => {
