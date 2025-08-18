@@ -19,6 +19,9 @@ export class User {
     @Column({ type: 'simple-enum', enum: Role, default: Role.Client })
     role: Role;
 
+    @Column({ nullable: true })
+    phone?: string;
+
     @Column('decimal', {
         transformer: new ColumnNumericTransformer(),
         default: 0,
