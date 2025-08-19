@@ -47,13 +47,14 @@ export class ApiClient {
           return undefined as T;
         }
         return JSON.parse(text) as T;
-      } catch (error: any) {
-        console.error('API request failed', error?.response?.data || error.message);
+      } catch (error: unknown) {
+        const err = error as ApiError & { response?: { data?: unknown } };
+        console.error('API request failed', err.response?.data || err.message);
         if (
           attempt === retries - 1 ||
-          (typeof error.status === 'number' && error.status < 500)
+          (typeof err.status === 'number' && err.status < 500)
         ) {
-          throw error;
+          throw err;
         }
         await new Promise((res) => setTimeout(res, 1000));
       }
