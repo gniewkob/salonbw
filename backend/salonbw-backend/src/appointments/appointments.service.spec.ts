@@ -223,7 +223,7 @@ describe('AppointmentsService', () => {
     });
 
     it('should not send booking confirmation if client has no phone', async () => {
-        users[0].phone = undefined;
+        users[0].phone = null;
         const start = new Date(Date.now() + 60 * 60 * 1000);
         await service.create(
             {
@@ -453,7 +453,7 @@ describe('AppointmentsService', () => {
     });
 
     it('should not send follow up if client has no phone', async () => {
-        users[0].phone = undefined;
+        users[0].phone = null;
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
             {
