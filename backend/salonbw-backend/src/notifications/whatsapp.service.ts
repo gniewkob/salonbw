@@ -40,11 +40,15 @@ export class WhatsappService {
                 ],
             },
         };
-        await firstValueFrom(
-            this.http.post(url, body, {
-                headers: { Authorization: `Bearer ${this.token}` },
-            }),
-        );
+        try {
+            await firstValueFrom(
+                this.http.post(url, body, {
+                    headers: { Authorization: `Bearer ${this.token}` },
+                }),
+            );
+        } catch (error) {
+            console.error('Failed to send WhatsApp message', error);
+        }
     }
 
     async sendBookingConfirmation(to: string, params: string[]): Promise<void> {
