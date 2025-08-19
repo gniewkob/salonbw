@@ -48,27 +48,40 @@ export default function ContactForm() {
     setError('');
     setEmailError('');
     setSubmitError('');
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: 'contact@example.com',
-            subject: 'Contact form',
-            template: '<p>{{message}}</p>',
-            data: form,
-          }),
+    const retries = 3;
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: 'contact@example.com',
+              subject: 'Contact form',
+              template: '<p>{{message}}</p>',
+              data: form,
+            }),
+          }
+        );
+        if (!res.ok) throw new Error('Failed');
+        toast.success('formularz został wysłany');
+        setSubmitted(true);
+        setForm({ name: '', email: '', message: '' });
+        return;
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: unknown }; message?: string };
+        console.error(
+          'Failed to submit contact form',
+          err.response?.data || err.message,
+        );
+        if (attempt === retries - 1) {
+          setSubmitError('Nie udało się wysłać formularza');
+          toast.error('Nie udało się wysłać formularza');
+        } else {
+          await new Promise((res) => setTimeout(res, 1000));
         }
-      );
-      if (!res.ok) throw new Error('Failed');
-      toast.success('formularz został wysłany');
-      setSubmitted(true);
-      setForm({ name: '', email: '', message: '' });
-    } catch {
-      setSubmitError('Nie udało się wysłać formularza');
-      toast.error('Nie udało się wysłać formularza');
+      }
     }
   };
 
