@@ -3,7 +3,10 @@ import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { WhatsappService } from './whatsapp.service';
 
 @Injectable()
@@ -16,10 +19,10 @@ export class ReminderService {
         private readonly whatsapp: WhatsappService,
         private readonly config: ConfigService,
     ) {
-        this.hoursBefore = this.config.get<number>(
-            'REMINDER_HOURS_BEFORE',
-            24,
-            { infer: true },
+        this.hoursBefore = Number(
+            this.config.get<string>('REMINDER_HOURS_BEFORE', '24', {
+                infer: true,
+            }),
         );
     }
 
