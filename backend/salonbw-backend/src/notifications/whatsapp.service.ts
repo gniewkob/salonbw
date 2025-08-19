@@ -12,8 +12,8 @@ export class WhatsappService {
         private readonly http: HttpService,
         private readonly config: ConfigService,
     ) {
-        this.token = this.config.get<string>('WHATSAPP_TOKEN')!;
-        this.phoneId = this.config.get<string>('WHATSAPP_PHONE_ID')!;
+        this.token = this.config.getOrThrow<string>('WHATSAPP_TOKEN');
+        this.phoneId = this.config.getOrThrow<string>('WHATSAPP_PHONE_ID');
     }
 
     async sendTemplate(
