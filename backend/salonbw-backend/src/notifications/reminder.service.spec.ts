@@ -9,6 +9,7 @@ describe('ReminderService', () => {
     let service: ReminderService;
     let whatsapp: WhatsappService;
     let repo: { find: jest.Mock };
+    let sendReminder: jest.Mock;
 
     beforeEach(async () => {
         repo = { find: jest.fn() };
@@ -26,6 +27,7 @@ describe('ReminderService', () => {
 
         service = module.get<ReminderService>(ReminderService);
         whatsapp = module.get<WhatsappService>(WhatsappService);
+        sendReminder = whatsapp.sendReminder as jest.Mock;
     });
 
     afterEach(() => {
@@ -48,7 +50,7 @@ describe('ReminderService', () => {
 
         await service.handleCron();
 
-        expect(whatsapp.sendReminder).toHaveBeenCalledWith('1234567890', ['1']);
+        expect(sendReminder).toHaveBeenCalledWith('1234567890', ['1']);
     });
 });
 
