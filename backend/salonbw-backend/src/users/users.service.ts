@@ -45,6 +45,7 @@ export class UsersService {
             name: dto.name,
             password: hashedPassword,
             role: Role.Client,
+            phone: dto.phone ?? null,
             commissionBase: dto.commissionBase ?? 0,
         });
 

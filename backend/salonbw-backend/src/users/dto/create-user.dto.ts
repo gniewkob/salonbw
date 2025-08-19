@@ -1,4 +1,11 @@
-import { IsEmail, IsString, MinLength, IsOptional, Min } from 'class-validator';
+import {
+    IsEmail,
+    IsString,
+    MinLength,
+    IsOptional,
+    Min,
+    Matches,
+} from 'class-validator';
 
 export class CreateUserDto {
     @IsEmail()
@@ -10,6 +17,13 @@ export class CreateUserDto {
 
     @IsString()
     name: string;
+
+    @IsOptional()
+    @IsString()
+    @Matches(/^\+?[1-9]\d{1,14}$/, {
+        message: 'phone must be a valid international number',
+    })
+    phone?: string;
 
     @IsOptional()
     @Min(0)
