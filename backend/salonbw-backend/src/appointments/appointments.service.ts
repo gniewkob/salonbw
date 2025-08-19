@@ -112,12 +112,19 @@ export class AppointmentsService {
         } catch (error) {
             console.error('Failed to log appointment creation action', error);
         }
-        try {
-            await this.whatsappService.sendBookingConfirmation(client.phone, [
-                result.id.toString(),
-            ]);
-        } catch (error) {
-            console.error('Failed to send booking confirmation', error);
+        if (client.phone) {
+            try {
+                await this.whatsappService.sendBookingConfirmation(
+                    client.phone,
+                    [result.id.toString()],
+                );
+            } catch (error) {
+                console.error('Failed to send booking confirmation', error);
+            }
+        } else {
+            console.warn(
+                'Client has no phone number; skipping booking confirmation',
+            );
         }
         return result;
     }
@@ -224,12 +231,19 @@ export class AppointmentsService {
                     error,
                 );
             }
-            try {
-                await this.whatsappService.sendFollowUp(updated.client.phone, [
-                    updated.id.toString(),
-                ]);
-            } catch (error) {
-                console.error('Failed to send follow up message', error);
+            if (updated.client.phone) {
+                try {
+                    await this.whatsappService.sendFollowUp(
+                        updated.client.phone,
+                        [updated.id.toString()],
+                    );
+                } catch (error) {
+                    console.error('Failed to send follow up message', error);
+                }
+            } else {
+                console.warn(
+                    'Client has no phone number; skipping follow up message',
+                );
             }
         }
         return updated;
