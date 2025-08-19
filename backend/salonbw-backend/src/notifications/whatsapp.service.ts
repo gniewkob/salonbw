@@ -40,14 +40,25 @@ export class WhatsappService {
                 ],
             },
         };
-        try {
-            await firstValueFrom(
-                this.http.post(url, body, {
-                    headers: { Authorization: `Bearer ${this.token}` },
-                }),
-            );
-        } catch (error) {
-            console.error('Failed to send WhatsApp message', error);
+        const retries = 3;
+        const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+        for (let attempt = 0; attempt < retries; attempt++) {
+            try {
+                await firstValueFrom(
+                    this.http.post(url, body, {
+                        headers: { Authorization: `Bearer ${this.token}` },
+                    }),
+                );
+                return;
+            } catch (error: any) {
+                console.error(
+                    'Failed to send WhatsApp message',
+                    error?.response?.data || error,
+                );
+                if (attempt < retries - 1) {
+                    await delay(1000);
+                }
+            }
         }
     }
 
