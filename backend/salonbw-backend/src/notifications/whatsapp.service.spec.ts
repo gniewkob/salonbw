@@ -4,6 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import nock from 'nock';
 import { WhatsappService } from './whatsapp.service';
 
+interface WhatsAppTemplateRequest {
+    to: string;
+    template: {
+        name: string;
+        components: { parameters: { text: string }[] }[];
+    };
+}
+
 describe('WhatsappService', () => {
     let service: WhatsappService;
 
@@ -35,11 +43,11 @@ describe('WhatsappService', () => {
 
     it('should post template with correct body', async () => {
         const scope = nock('https://graph.facebook.com')
-            .post('/v17.0/123456/messages', (body) => {
+            .post('/v17.0/123456/messages', (body: WhatsAppTemplateRequest) => {
                 expect(body.to).toBe('987654321');
                 expect(body.template.name).toBe('test_template');
                 expect(
-                    body.template.components[0].parameters.map((p: any) => p.text),
+                    body.template.components[0].parameters.map((p) => p.text),
                 ).toEqual(['one', 'two']);
                 return true;
             })
