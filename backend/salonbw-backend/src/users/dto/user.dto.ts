@@ -5,5 +5,6 @@ export class UserDto {
     email: string;
     name: string;
     role: Role;
+    phone: string | null;
     commissionBase: number;
 }

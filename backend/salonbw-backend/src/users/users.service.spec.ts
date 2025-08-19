@@ -68,6 +68,7 @@ describe('UsersService', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 password: 'plainPass',
+                phone: '+15551234567',
                 commissionBase: 10,
             };
             qb.getOne.mockResolvedValue(null);
@@ -77,6 +78,7 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                phone: dto.phone,
                 commissionBase: dto.commissionBase,
             };
             const createSpy = jest
@@ -94,12 +96,14 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                phone: dto.phone,
                 commissionBase: dto.commissionBase,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
             expect(result.commissionBase).toBe(dto.commissionBase);
+            expect(result.phone).toBe(dto.phone);
         });
 
         it('defaults commissionBase to zero when not provided', async () => {
@@ -115,6 +119,7 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                phone: null,
                 commissionBase: 0,
             };
             const createSpy = jest
@@ -132,10 +137,12 @@ describe('UsersService', () => {
                 name: dto.name,
                 password: 'hashedPass',
                 role: Role.Client,
+                phone: null,
                 commissionBase: 0,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.commissionBase).toBe(0);
+            expect(result.phone).toBeNull();
         });
     });
 

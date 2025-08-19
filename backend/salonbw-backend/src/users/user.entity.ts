@@ -19,8 +19,8 @@ export class User {
     @Column({ type: 'simple-enum', enum: Role, default: Role.Client })
     role: Role;
 
-    @Column({ nullable: true })
-    phone?: string;
+    @Column({ type: 'varchar', nullable: true })
+    phone: string | null;
 
     @Column('decimal', {
         transformer: new ColumnNumericTransformer(),
