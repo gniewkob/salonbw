@@ -16,7 +16,11 @@ export class ReminderService {
         private readonly whatsapp: WhatsappService,
         private readonly config: ConfigService,
     ) {
-        this.hoursBefore = this.config.get<number>('REMINDER_HOURS_BEFORE', 24);
+        this.hoursBefore = this.config.get<number>(
+            'REMINDER_HOURS_BEFORE',
+            24,
+            { infer: true },
+        );
     }
 
     @Cron('0 7 * * *')
