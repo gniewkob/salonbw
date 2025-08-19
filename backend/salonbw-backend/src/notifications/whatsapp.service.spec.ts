@@ -23,10 +23,10 @@ describe('WhatsappService', () => {
                 {
                     provide: ConfigService,
                     useValue: {
-                        get: (key: string) => {
+                        getOrThrow: (key: string) => {
                             if (key === 'WHATSAPP_TOKEN') return 'token';
                             if (key === 'WHATSAPP_PHONE_ID') return '123456';
-                            return null;
+                            throw new Error(`Missing env ${key}`);
                         },
                     },
                 },
