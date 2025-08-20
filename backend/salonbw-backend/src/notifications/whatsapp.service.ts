@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { isAxiosError } from 'axios';
 
 @Injectable()
 export class WhatsappService {
@@ -50,11 +51,15 @@ export class WhatsappService {
                     }),
                 );
                 return;
-            } catch (error: any) {
-                console.error(
-                    'Failed to send WhatsApp message',
-                    error?.response?.data || error,
-                );
+            } catch (error: unknown) {
+                if (isAxiosError(error)) {
+                    console.error(
+                        'Failed to send WhatsApp message',
+                        error.response?.data,
+                    );
+                } else {
+                    console.error('Failed to send WhatsApp message', error);
+                }
                 if (attempt < retries - 1) {
                     await delay(1000);
                 }
