@@ -8,6 +8,7 @@ interface WhatsAppTemplateRequest {
     to: string;
     template: {
         name: string;
+        language: { code: string };
         components: { parameters: { text: string }[] }[];
     };
 }
@@ -28,6 +29,8 @@ describe('WhatsappService', () => {
                             if (key === 'WHATSAPP_PHONE_ID') return '123456';
                             throw new Error(`Missing env ${key}`);
                         },
+                        get: (key: string, defaultValue?: string) =>
+                            key === 'WHATSAPP_LANG' ? 'pl' : defaultValue,
                     },
                 },
             ],
@@ -46,6 +49,7 @@ describe('WhatsappService', () => {
             .post('/v17.0/123456/messages', (body: WhatsAppTemplateRequest) => {
                 expect(body.to).toBe('987654321');
                 expect(body.template.name).toBe('test_template');
+                expect(body.template.language.code).toBe('pl');
                 expect(
                     body.template.components[0].parameters.map((p) => p.text),
                 ).toEqual(['one', 'two']);
@@ -53,7 +57,10 @@ describe('WhatsappService', () => {
             })
             .reply(200, {});
 
-        await service.sendTemplate('987654321', 'test_template', ['one', 'two']);
+        await service.sendTemplate('987654321', 'test_template', [
+            'one',
+            'two',
+        ]);
         expect(scope.isDone()).toBe(true);
     });
 
