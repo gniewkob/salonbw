@@ -36,9 +36,14 @@ export class ReminderService {
                 continue;
             }
             try {
-                await this.whatsapp.sendReminder(phone, [
-                    appointment.id.toString(),
-                ]);
+                const date = appointment.startTime
+                    .toISOString()
+                    .split('T')[0];
+                const time = appointment.startTime
+                    .toISOString()
+                    .split('T')[1]
+                    .slice(0, 5);
+                await this.whatsapp.sendReminder(phone, date, time);
             } catch (error) {
                 console.error('Failed to send reminder', error);
             }

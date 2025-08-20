@@ -175,13 +175,15 @@ describe('AppointmentsService', () => {
         } as Partial<LogService> as jest.Mocked<LogService>;
 
         mockWhatsappService = {
-            sendBookingConfirmation: jest.fn<Promise<void>, [string, string[]]>(
-                () => Promise.resolve(),
-            ),
-            sendReminder: jest.fn(),
-            sendFollowUp: jest.fn<Promise<void>, [string, string[]]>(() =>
-                Promise.resolve(),
-            ),
+            sendBookingConfirmation: jest.fn<
+                Promise<void>,
+                [string, string, string]
+            >(() => Promise.resolve()),
+            sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
+            sendFollowUp: jest.fn<
+                Promise<void>,
+                [string, string, string]
+            >(() => Promise.resolve()),
         } as Partial<WhatsappService> as jest.Mocked<WhatsappService>;
 
         service = new AppointmentsService(
@@ -216,10 +218,12 @@ describe('AppointmentsService', () => {
             expect.objectContaining({ id: result.id }),
         );
 
+        const date = start.toISOString().split('T')[0];
+        const time = start.toISOString().split('T')[1].slice(0, 5);
         expect(
             // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
-        ).toHaveBeenCalledWith(users[0].phone, [result.id.toString()]);
+        ).toHaveBeenCalledWith(users[0].phone, date, time);
     });
 
     it('should not send booking confirmation if client has no phone', async () => {
@@ -446,10 +450,12 @@ describe('AppointmentsService', () => {
                 status: AppointmentStatus.Completed,
             }),
         );
+        const date = start.toISOString().split('T')[0];
+        const time = start.toISOString().split('T')[1].slice(0, 5);
         expect(
             // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendFollowUp,
-        ).toHaveBeenCalledWith(users[0].phone, [id.toString()]);
+        ).toHaveBeenCalledWith(users[0].phone, date, time);
     });
 
     it('should not send follow up if client has no phone', async () => {
