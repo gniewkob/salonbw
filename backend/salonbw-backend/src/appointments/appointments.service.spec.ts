@@ -224,6 +224,12 @@ describe('AppointmentsService', () => {
             // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
         ).toHaveBeenCalledWith(users[0].phone, date, time);
+        expect(
+            mockAppointmentsRepo.save.mock.invocationCallOrder[0],
+        ).toBeLessThan(
+            mockWhatsappService.sendBookingConfirmation.mock
+                .invocationCallOrder[0],
+        );
     });
 
     it('should not send booking confirmation if client has no phone', async () => {
@@ -451,11 +457,17 @@ describe('AppointmentsService', () => {
             }),
         );
         const date = start.toISOString().split('T')[0];
-        const time = start.toISOString().split('T')[1].slice(0, 5);
+       const time = start.toISOString().split('T')[1].slice(0, 5);
+       expect(
+           // eslint-disable-next-line @typescript-eslint/unbound-method
+           mockWhatsappService.sendFollowUp,
+       ).toHaveBeenCalledWith(users[0].phone, date, time);
         expect(
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockWhatsappService.sendFollowUp,
-        ).toHaveBeenCalledWith(users[0].phone, date, time);
+            mockAppointmentsRepo.manager.transaction.mock
+                .invocationCallOrder[0],
+        ).toBeLessThan(
+            mockWhatsappService.sendFollowUp.mock.invocationCallOrder[0],
+        );
     });
 
     it('should not send follow up if client has no phone', async () => {
