@@ -52,14 +52,11 @@ export class WhatsappService {
                 );
                 return;
             } catch (error: unknown) {
-                if (isAxiosError(error)) {
-                    console.error(
-                        'Failed to send WhatsApp message',
-                        error.response?.data,
-                    );
-                } else {
-                    console.error('Failed to send WhatsApp message', error);
-                }
+                const response = isAxiosError(error) ? error.response : undefined;
+                console.error(
+                    'Failed to send WhatsApp message',
+                    response?.data ?? error,
+                );
                 if (attempt < retries - 1) {
                     await delay(1000);
                 }
