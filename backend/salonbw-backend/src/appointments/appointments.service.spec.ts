@@ -463,10 +463,13 @@ describe('AppointmentsService', () => {
            mockWhatsappService.sendFollowUp,
        ).toHaveBeenCalledWith(users[0].phone, date, time);
         expect(
-            mockAppointmentsRepo.manager.transaction.mock
-                .invocationCallOrder[0],
+            (
+                mockAppointmentsRepo.manager.transaction as jest.Mock
+            ).mock.invocationCallOrder[0],
         ).toBeLessThan(
-            mockWhatsappService.sendFollowUp.mock.invocationCallOrder[0],
+            (
+                mockWhatsappService.sendFollowUp as jest.Mock
+            ).mock.invocationCallOrder[0],
         );
     });
 
