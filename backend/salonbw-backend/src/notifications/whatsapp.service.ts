@@ -71,15 +71,19 @@ export class WhatsappService {
         }
     }
 
-    async sendBookingConfirmation(to: string, params: string[]): Promise<void> {
-        await this.sendTemplate(to, 'booking_confirmation', params);
+    async sendBookingConfirmation(
+        to: string,
+        date: string,
+        time: string,
+    ): Promise<void> {
+        await this.sendTemplate(to, 'booking_confirmation', [date, time]);
     }
 
-    async sendReminder(to: string, params: string[]): Promise<void> {
-        await this.sendTemplate(to, 'appointment_reminder', params);
+    async sendReminder(to: string, date: string, time: string): Promise<void> {
+        await this.sendTemplate(to, 'appointment_reminder', [date, time]);
     }
 
-    async sendFollowUp(to: string, params: string[]): Promise<void> {
-        await this.sendTemplate(to, 'follow_up', params);
+    async sendFollowUp(to: string, date: string, time: string): Promise<void> {
+        await this.sendTemplate(to, 'follow_up', [date, time]);
     }
 }
