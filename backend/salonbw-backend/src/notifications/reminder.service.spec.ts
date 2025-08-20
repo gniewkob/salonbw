@@ -13,8 +13,7 @@ describe('ReminderService', () => {
 
     beforeEach(async () => {
         repo = { find: jest.fn() };
-        const whatsappMock = { sendReminder: jest.fn() };
-        jest.spyOn(whatsappMock, 'sendReminder').mockResolvedValue();
+        const whatsappMock = { sendReminder: jest.fn().mockResolvedValue(undefined) };
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -27,7 +26,7 @@ describe('ReminderService', () => {
 
         service = module.get<ReminderService>(ReminderService);
         whatsapp = module.get<WhatsappService>(WhatsappService);
-        sendReminder = whatsapp.sendReminder as jest.Mock;
+        sendReminder = jest.spyOn(whatsapp, 'sendReminder');
     });
 
     afterEach(() => {
