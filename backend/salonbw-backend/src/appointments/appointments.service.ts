@@ -113,10 +113,13 @@ export class AppointmentsService {
             console.error('Failed to log appointment creation action', error);
         }
         if (client.phone) {
+            const date = result.startTime.toISOString().split('T')[0];
+            const time = result.startTime.toISOString().split('T')[1].slice(0, 5);
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
-                    [result.id.toString()],
+                    date,
+                    time,
                 );
             } catch (error) {
                 console.error('Failed to send booking confirmation', error);
@@ -232,10 +235,18 @@ export class AppointmentsService {
                 );
             }
             if (updated.client.phone) {
+                const date = updated.startTime
+                    .toISOString()
+                    .split('T')[0];
+                const time = updated.startTime
+                    .toISOString()
+                    .split('T')[1]
+                    .slice(0, 5);
                 try {
                     await this.whatsappService.sendFollowUp(
                         updated.client.phone,
-                        [updated.id.toString()],
+                        date,
+                        time,
                     );
                 } catch (error) {
                     console.error('Failed to send follow up message', error);
