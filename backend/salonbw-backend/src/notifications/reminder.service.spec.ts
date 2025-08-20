@@ -16,7 +16,9 @@ describe('ReminderService', () => {
     beforeEach(async () => {
         repo = { find: jest.fn() };
         const whatsappMock = {
-            sendReminder: jest.fn().mockResolvedValue(undefined),
+            sendReminder: jest
+                .fn<Promise<void>, [string, string, string]>()
+                .mockResolvedValue(undefined),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -52,6 +54,8 @@ describe('ReminderService', () => {
 
         await service.handleCron();
 
-        expect(sendReminder).toHaveBeenCalledWith('1234567890', ['1']);
+        const date = appointment.startTime.toISOString().split('T')[0];
+        const time = appointment.startTime.toISOString().split('T')[1].slice(0, 5);
+        expect(sendReminder).toHaveBeenCalledWith('1234567890', date, time);
     });
 });
