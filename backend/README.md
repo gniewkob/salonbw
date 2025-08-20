@@ -16,6 +16,14 @@
    ```
    Expected output: `{"status":"ok"}` with HTTP status `200`.
 
+## Environment variables
+
+Set the following values in your `.env` based on `.env.example`:
+
+- `WHATSAPP_TOKEN` – token for authenticating with the WhatsApp Cloud API.
+- `WHATSAPP_PHONE_ID` – phone number ID for the WhatsApp Business account.
+- `REMINDER_HOURS_BEFORE` – hours before an appointment to send reminder messages.
+
 ## Notes
 
 - TypeORM synchronization is enabled only for development. In production environments set `NODE_ENV=production` and run migrations instead of relying on synchronization.
