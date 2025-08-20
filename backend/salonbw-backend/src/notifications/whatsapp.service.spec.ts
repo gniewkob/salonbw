@@ -78,4 +78,26 @@ describe('WhatsappService', () => {
         expect(consoleSpy).toHaveBeenCalled();
         expect(scope.isDone()).toBe(true);
     });
+
+    it('should retry twice and succeed on third attempt', async () => {
+        const consoleSpy = jest
+            .spyOn(console, 'error')
+            .mockImplementation(() => {});
+        let attempts = 0;
+        const scope = nock('https://graph.facebook.com')
+            .post('/v17.0/123456/messages')
+            .times(3)
+            .reply(() => {
+                attempts++;
+                return attempts < 3 ? [500, {}] : [200, {}];
+            });
+
+        await expect(
+            service.sendTemplate('987654321', 'test_template', ['x']),
+        ).resolves.toBeUndefined();
+
+        expect(consoleSpy).toHaveBeenCalledTimes(2);
+        expect(attempts).toBe(3);
+        expect(scope.isDone()).toBe(true);
+    });
 });
