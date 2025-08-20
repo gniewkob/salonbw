@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { isAxiosError } from 'axios';
 
 @Injectable()
 export class WhatsappService {
@@ -52,11 +51,16 @@ export class WhatsappService {
                 );
                 return;
             } catch (error: unknown) {
-                const response = isAxiosError(error) ? error.response : undefined;
-                console.error(
-                    'Failed to send WhatsApp message',
-                    response?.data ?? error,
-                );
+                if (typeof error === 'object' && error && 'response' in error) {
+                    const response = (error as { response?: { data?: unknown } })
+                        .response;
+                    console.error(
+                        'Failed to send WhatsApp message',
+                        response?.data,
+                    );
+                } else {
+                    console.error('Failed to send WhatsApp message', error);
+                }
                 if (attempt < retries - 1) {
                     await delay(1000);
                 }
