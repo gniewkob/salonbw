@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 export class WhatsappService {
     private readonly token: string;
     private readonly phoneId: string;
+    private readonly lang: string;
 
     constructor(
         private readonly http: HttpService,
@@ -14,6 +15,7 @@ export class WhatsappService {
     ) {
         this.token = this.config.getOrThrow<string>('WHATSAPP_TOKEN');
         this.phoneId = this.config.getOrThrow<string>('WHATSAPP_PHONE_ID');
+        this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
     }
 
     async sendTemplate(
@@ -28,7 +30,7 @@ export class WhatsappService {
             type: 'template',
             template: {
                 name: templateName,
-                language: { code: 'en_US' },
+                language: { code: this.lang },
                 components: [
                     {
                         type: 'body',
@@ -52,8 +54,9 @@ export class WhatsappService {
                 return;
             } catch (error: unknown) {
                 if (typeof error === 'object' && error && 'response' in error) {
-                    const response = (error as { response?: { data?: unknown } })
-                        .response;
+                    const response = (
+                        error as { response?: { data?: unknown } }
+                    ).response;
                     console.error(
                         'Failed to send WhatsApp message',
                         response?.data,
