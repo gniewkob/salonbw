@@ -462,8 +462,10 @@ describe('AppointmentsService', () => {
            // eslint-disable-next-line @typescript-eslint/unbound-method
            mockWhatsappService.sendFollowUp,
        ).toHaveBeenCalledWith(users[0].phone, date, time);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         const transactionMock =
             mockAppointmentsRepo.manager.transaction as jest.Mock;
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         const sendFollowUpMock =
             mockWhatsappService.sendFollowUp as jest.Mock;
         expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
