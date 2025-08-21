@@ -459,18 +459,24 @@ describe('AppointmentsService', () => {
         );
         const date = start.toISOString().split('T')[0];
         const time = start.toISOString().split('T')[1].slice(0, 5);
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockWhatsappService.sendFollowUp).toHaveBeenCalledWith(
+        const sendFollowUpMock =
+            mockWhatsappService.sendFollowUp.bind(
+                mockWhatsappService,
+            ) as jest.Mock;
+        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
+        const transactionMock =
+            mockAppointmentsRepo.manager.transaction.bind(
+                mockAppointmentsRepo.manager,
+            ) as jest.Mock;
+        Object.assign(
+            transactionMock,
+            mockAppointmentsRepo.manager.transaction,
+        );
+        expect(sendFollowUpMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
             time,
         );
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        const transactionMock =
-            mockAppointmentsRepo.manager.transaction as jest.Mock;
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        const sendFollowUpMock =
-            mockWhatsappService.sendFollowUp as jest.Mock;
         expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
             sendFollowUpMock.mock.invocationCallOrder[0],
         );
@@ -491,8 +497,12 @@ describe('AppointmentsService', () => {
 
         await service.completeAppointment(id, users[1]);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockWhatsappService.sendFollowUp).not.toHaveBeenCalled();
+        const sendFollowUpMock =
+            mockWhatsappService.sendFollowUp.bind(
+                mockWhatsappService,
+            ) as jest.Mock;
+        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
+        expect(sendFollowUpMock).not.toHaveBeenCalled();
     });
 
     it('should not create duplicate commissions when completing twice', async () => {
