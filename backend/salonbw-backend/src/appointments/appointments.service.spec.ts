@@ -462,14 +462,12 @@ describe('AppointmentsService', () => {
            // eslint-disable-next-line @typescript-eslint/unbound-method
            mockWhatsappService.sendFollowUp,
        ).toHaveBeenCalledWith(users[0].phone, date, time);
-        expect(
-            (
-                mockAppointmentsRepo.manager.transaction as jest.Mock
-            ).mock.invocationCallOrder[0],
-        ).toBeLessThan(
-            (
-                mockWhatsappService.sendFollowUp as jest.Mock
-            ).mock.invocationCallOrder[0],
+        const transactionMock =
+            mockAppointmentsRepo.manager.transaction as jest.Mock;
+        const sendFollowUpMock =
+            mockWhatsappService.sendFollowUp as jest.Mock;
+        expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
+            sendFollowUpMock.mock.invocationCallOrder[0],
         );
     });
 
