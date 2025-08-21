@@ -220,8 +220,9 @@ describe('AppointmentsService', () => {
 
         const date = start.toISOString().split('T')[0];
         const time = start.toISOString().split('T')[1].slice(0, 5);
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockWhatsappService.sendBookingConfirmation).toHaveBeenCalledWith(
+        const sendBookingConfirmationMock =
+            mockWhatsappService.sendBookingConfirmation as jest.Mock;
+        expect(sendBookingConfirmationMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
             time,
@@ -229,8 +230,7 @@ describe('AppointmentsService', () => {
         expect(
             mockAppointmentsRepo.save.mock.invocationCallOrder[0],
         ).toBeLessThan(
-            mockWhatsappService.sendBookingConfirmation.mock
-                .invocationCallOrder[0],
+            sendBookingConfirmationMock.mock.invocationCallOrder[0],
         );
     });
 
@@ -247,8 +247,9 @@ describe('AppointmentsService', () => {
             users[0],
         );
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
+        const sendBookingConfirmationMock =
+            mockWhatsappService.sendBookingConfirmation as jest.Mock;
+        expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
     });
 
     it('should create an appointment even if logging fails', async () => {
