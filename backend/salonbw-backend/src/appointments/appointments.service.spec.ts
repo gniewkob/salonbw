@@ -220,10 +220,12 @@ describe('AppointmentsService', () => {
 
         const date = start.toISOString().split('T')[0];
         const time = start.toISOString().split('T')[1].slice(0, 5);
-        expect(
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockWhatsappService.sendBookingConfirmation,
-        ).toHaveBeenCalledWith(users[0].phone, date, time);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockWhatsappService.sendBookingConfirmation).toHaveBeenCalledWith(
+            users[0].phone,
+            date,
+            time,
+        );
         expect(
             mockAppointmentsRepo.save.mock.invocationCallOrder[0],
         ).toBeLessThan(
@@ -245,10 +247,8 @@ describe('AppointmentsService', () => {
             users[0],
         );
 
-        expect(
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockWhatsappService.sendBookingConfirmation,
-        ).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
     });
 
     it('should create an appointment even if logging fails', async () => {
@@ -457,16 +457,18 @@ describe('AppointmentsService', () => {
             }),
         );
         const date = start.toISOString().split('T')[0];
-       const time = start.toISOString().split('T')[1].slice(0, 5);
-       expect(
-           // eslint-disable-next-line @typescript-eslint/unbound-method
-           mockWhatsappService.sendFollowUp,
-       ).toHaveBeenCalledWith(users[0].phone, date, time);
+        const time = start.toISOString().split('T')[1].slice(0, 5);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockWhatsappService.sendFollowUp).toHaveBeenCalledWith(
+            users[0].phone,
+            date,
+            time,
+        );
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         const transactionMock =
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockAppointmentsRepo.manager.transaction as jest.Mock;
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         const sendFollowUpMock =
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendFollowUp as jest.Mock;
         expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
             sendFollowUpMock.mock.invocationCallOrder[0],
@@ -488,10 +490,8 @@ describe('AppointmentsService', () => {
 
         await service.completeAppointment(id, users[1]);
 
-        expect(
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockWhatsappService.sendFollowUp,
-        ).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(mockWhatsappService.sendFollowUp).not.toHaveBeenCalled();
     });
 
     it('should not create duplicate commissions when completing twice', async () => {
