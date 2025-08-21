@@ -209,6 +209,15 @@ describe('AppointmentsService', () => {
             users[0],
         );
 
+        const sendBookingConfirmationMock =
+            mockWhatsappService.sendBookingConfirmation.bind(
+                mockWhatsappService,
+            ) as jest.Mock;
+        Object.assign(
+            sendBookingConfirmationMock,
+            mockWhatsappService.sendBookingConfirmation,
+        );
+
         expect(result.id).toBeDefined();
         expect(result.endTime.getTime()).toBe(start.getTime() + 30 * 60 * 1000);
         expect(appointments).toHaveLength(1);
@@ -220,8 +229,6 @@ describe('AppointmentsService', () => {
 
         const date = start.toISOString().split('T')[0];
         const time = start.toISOString().split('T')[1].slice(0, 5);
-        const sendBookingConfirmationMock =
-            mockWhatsappService.sendBookingConfirmation as jest.Mock;
         expect(sendBookingConfirmationMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
@@ -248,7 +255,13 @@ describe('AppointmentsService', () => {
         );
 
         const sendBookingConfirmationMock =
-            mockWhatsappService.sendBookingConfirmation as jest.Mock;
+            mockWhatsappService.sendBookingConfirmation.bind(
+                mockWhatsappService,
+            ) as jest.Mock;
+        Object.assign(
+            sendBookingConfirmationMock,
+            mockWhatsappService.sendBookingConfirmation,
+        );
         expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
     });
 
