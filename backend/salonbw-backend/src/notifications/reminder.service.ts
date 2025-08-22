@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import {
@@ -14,19 +15,22 @@ export class ReminderService {
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
         private readonly whatsapp: WhatsappService,
+        private readonly config: ConfigService,
     ) {}
 
-    @Cron('0 7 * * *')
+    @Cron('0 * * * *')
     async handleCron() {
+        const hoursBefore = Number(
+            this.config.get<string>('REMINDER_HOURS_BEFORE', '24'),
+        );
         const now = new Date();
-        const nextDayStart = new Date(now);
-        nextDayStart.setDate(now.getDate() + 1);
-        nextDayStart.setHours(0, 0, 0, 0);
-        const nextDayEnd = new Date(nextDayStart);
-        nextDayEnd.setHours(23, 59, 59, 999);
+        const windowStart = new Date(
+            now.getTime() + hoursBefore * 60 * 60 * 1000,
+        );
+        const windowEnd = new Date(windowStart.getTime() + 60 * 60 * 1000 - 1);
         const appointments = await this.appointmentsRepository.find({
             where: {
-                startTime: Between(nextDayStart, nextDayEnd),
+                startTime: Between(windowStart, windowEnd),
                 status: AppointmentStatus.Scheduled,
             },
         });
