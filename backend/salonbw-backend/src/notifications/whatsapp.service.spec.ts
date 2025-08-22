@@ -46,6 +46,7 @@ describe('WhatsappService', () => {
 
     it('should post template with correct body', async () => {
         const scope = nock('https://graph.facebook.com')
+            .matchHeader('content-type', 'application/json')
             .post('/v17.0/123456/messages', (body: WhatsAppTemplateRequest) => {
                 expect(body.to).toBe('987654321');
                 expect(body.template.name).toBe('test_template');
@@ -69,6 +70,7 @@ describe('WhatsappService', () => {
             .spyOn(console, 'error')
             .mockImplementation(() => {});
         const scope = nock('https://graph.facebook.com')
+            .matchHeader('content-type', 'application/json')
             .post('/v17.0/123456/messages')
             .reply(401, {});
 
@@ -85,6 +87,7 @@ describe('WhatsappService', () => {
             .mockImplementation(() => {});
         let attempts = 0;
         const scope = nock('https://graph.facebook.com')
+            .matchHeader('content-type', 'application/json')
             .post('/v17.0/123456/messages')
             .times(3)
             .reply(() => {
