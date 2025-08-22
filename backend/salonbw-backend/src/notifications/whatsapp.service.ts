@@ -49,7 +49,10 @@ export class WhatsappService {
             try {
                 await firstValueFrom(
                     this.http.post(url, body, {
-                        headers: { Authorization: `Bearer ${this.token}` },
+                        headers: {
+                            Authorization: `Bearer ${this.token}`,
+                            'Content-Type': 'application/json',
+                        },
                     }),
                 );
                 return;
