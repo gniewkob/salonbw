@@ -8,7 +8,7 @@ import {
     ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -31,11 +31,13 @@ export class ChatController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get(':id/chat')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Get chat messages for an appointment' })
     @ApiResponse({
         status: 200,
         description: 'List of chat messages',
-        type: [ChatMessage],
+        type: ChatMessage,
+        isArray: true,
     })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })

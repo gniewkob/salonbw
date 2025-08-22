@@ -7,6 +7,7 @@ import {
     ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -15,6 +16,7 @@ import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
 import { CreateFormulaDto } from './dto/create-formula.dto';
 
+@ApiTags('formulas')
 @Controller('appointments/:appointmentId/formulas')
 export class AppointmentFormulasController {
     constructor(private readonly formulasService: FormulasService) {}
@@ -22,6 +24,9 @@ export class AppointmentFormulasController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @Post()
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Add formula to appointment' })
+    @ApiResponse({ status: 201, type: Formula })
     addFormula(
         @Param('appointmentId', ParseIntPipe) appointmentId: number,
         @Body() body: CreateFormulaDto,
