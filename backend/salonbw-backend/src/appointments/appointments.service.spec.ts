@@ -24,6 +24,9 @@ describe('AppointmentsService', () => {
     let mockWhatsappService: jest.Mocked<WhatsappService>;
     let logActionSpy: jest.SpyInstance;
     let nextId: number;
+    let sendFollowUpMock: jest.Mock;
+    let transactionMock: jest.Mock;
+    let createFromAppointmentMock: jest.Mock;
 
     beforeEach(() => {
         appointments = [];
@@ -185,6 +188,28 @@ describe('AppointmentsService', () => {
                 [string, string, string]
             >(() => Promise.resolve()),
         } as Partial<WhatsappService> as jest.Mocked<WhatsappService>;
+
+        sendFollowUpMock = mockWhatsappService.sendFollowUp.bind(
+            mockWhatsappService,
+        ) as jest.Mock;
+        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
+
+        transactionMock = mockAppointmentsRepo.manager.transaction.bind(
+            mockAppointmentsRepo.manager,
+        ) as jest.Mock;
+        Object.assign(
+            transactionMock,
+            mockAppointmentsRepo.manager.transaction,
+        );
+
+        createFromAppointmentMock =
+            mockCommissionsService.createFromAppointment.bind(
+                mockCommissionsService,
+            ) as jest.Mock;
+        Object.assign(
+            createFromAppointmentMock,
+            mockCommissionsService.createFromAppointment,
+        );
 
         service = new AppointmentsService(
             mockAppointmentsRepo,
@@ -420,9 +445,7 @@ describe('AppointmentsService', () => {
             users[0],
         );
 
-        mockCommissionsService.createFromAppointment.mockRejectedValueOnce(
-            new Error('fail'),
-        );
+        createFromAppointmentMock.mockRejectedValueOnce(new Error('fail'));
 
         await expect(service.completeAppointment(id, users[1])).rejects.toThrow(
             'fail',
@@ -472,19 +495,6 @@ describe('AppointmentsService', () => {
         );
         const date = start.toISOString().split('T')[0];
         const time = start.toISOString().split('T')[1].slice(0, 5);
-        const sendFollowUpMock =
-            mockWhatsappService.sendFollowUp.bind(
-                mockWhatsappService,
-            ) as jest.Mock;
-        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
-        const transactionMock =
-            mockAppointmentsRepo.manager.transaction.bind(
-                mockAppointmentsRepo.manager,
-            ) as jest.Mock;
-        Object.assign(
-            transactionMock,
-            mockAppointmentsRepo.manager.transaction,
-        );
         expect(sendFollowUpMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
@@ -509,12 +519,6 @@ describe('AppointmentsService', () => {
         );
 
         await service.completeAppointment(id, users[1]);
-
-        const sendFollowUpMock =
-            mockWhatsappService.sendFollowUp.bind(
-                mockWhatsappService,
-            ) as jest.Mock;
-        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
         expect(sendFollowUpMock).not.toHaveBeenCalled();
     });
 
@@ -531,13 +535,10 @@ describe('AppointmentsService', () => {
         );
 
         await service.completeAppointment(id, users[1]);
-        const calls =
-            mockCommissionsService.createFromAppointment.mock.calls.length;
+        const calls = createFromAppointmentMock.mock.calls.length;
         await expect(
             service.completeAppointment(id, users[1]),
         ).rejects.toBeInstanceOf(BadRequestException);
-        expect(
-            mockCommissionsService.createFromAppointment.mock.calls.length,
-        ).toBe(calls);
+        expect(createFromAppointmentMock.mock.calls.length).toBe(calls);
     });
 });
