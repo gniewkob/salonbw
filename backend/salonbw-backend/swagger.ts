@@ -111,7 +111,9 @@ async function generate() {
   const app = await NestFactory.create(SwaggerAppModule, { logger: false });
   const config = new DocumentBuilder()
     .setTitle('SalonBW API')
+    .setDescription('The SalonBW API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   writeFileSync('openapi.json', JSON.stringify(document, null, 2) + '\n');

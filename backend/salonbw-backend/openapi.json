@@ -635,13 +635,20 @@
   },
   "info": {
     "title": "SalonBW API",
-    "description": "",
+    "description": "The SalonBW API description",
     "version": "1.0",
     "contact": {}
   },
   "tags": [],
   "servers": [],
   "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
     "schemas": {
       "UserDto": {
         "type": "object",
