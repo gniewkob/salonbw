@@ -5,6 +5,7 @@ import {
     IsOptional,
     Min,
     Matches,
+    IsBoolean,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -28,4 +29,8 @@ export class CreateUserDto {
     @IsOptional()
     @Min(0)
     commissionBase?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    receiveNotifications?: boolean;
 }

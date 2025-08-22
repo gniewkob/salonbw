@@ -7,4 +7,5 @@ export class UserDto {
     role: Role;
     phone: string | null;
     commissionBase: number;
+    receiveNotifications: boolean;
 }

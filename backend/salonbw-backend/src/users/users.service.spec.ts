@@ -70,6 +70,7 @@ describe('UsersService', () => {
                 password: 'plainPass',
                 phone: '+15551234567',
                 commissionBase: 10,
+                receiveNotifications: true,
             };
             qb.getOne.mockResolvedValue(null);
             bcryptMock.hash.mockResolvedValue('hashedPass');
@@ -80,6 +81,7 @@ describe('UsersService', () => {
                 role: Role.Client,
                 phone: dto.phone,
                 commissionBase: dto.commissionBase,
+                receiveNotifications: dto.receiveNotifications,
             };
             const createSpy = jest
                 .spyOn(repo, 'create')
@@ -98,12 +100,14 @@ describe('UsersService', () => {
                 role: Role.Client,
                 phone: dto.phone,
                 commissionBase: dto.commissionBase,
+                receiveNotifications: dto.receiveNotifications,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
             expect(result.password).toBe('hashedPass');
             expect(result.commissionBase).toBe(dto.commissionBase);
             expect(result.phone).toBe(dto.phone);
+            expect(result.receiveNotifications).toBe(true);
         });
 
         it('defaults commissionBase to zero when not provided', async () => {
@@ -121,6 +125,7 @@ describe('UsersService', () => {
                 role: Role.Client,
                 phone: null,
                 commissionBase: 0,
+                receiveNotifications: true,
             };
             const createSpy = jest
                 .spyOn(repo, 'create')
@@ -139,10 +144,12 @@ describe('UsersService', () => {
                 role: Role.Client,
                 phone: null,
                 commissionBase: 0,
+                receiveNotifications: true,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.commissionBase).toBe(0);
             expect(result.phone).toBeNull();
+            expect(result.receiveNotifications).toBe(true);
         });
     });
 

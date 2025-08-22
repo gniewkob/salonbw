@@ -36,7 +36,7 @@ export class ReminderService {
         });
         for (const appointment of appointments) {
             const phone = appointment.client?.phone;
-            if (!phone) {
+            if (!phone || appointment.client?.receiveNotifications === false) {
                 continue;
             }
             try {
