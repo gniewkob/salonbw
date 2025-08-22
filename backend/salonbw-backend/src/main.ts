@@ -16,12 +16,16 @@ async function bootstrap() {
     );
     app.use(cookieParser());
     const config = app.get(ConfigService);
-    const swaggerConfig = new DocumentBuilder()
-        .setTitle('SalonBW API')
-        .setVersion('1.0')
-        .build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('api', app, document);
+    if (process.env.NODE_ENV !== 'production') {
+        const swaggerConfig = new DocumentBuilder()
+            .setTitle('SalonBW API')
+            .setDescription('The SalonBW API description')
+            .setVersion('1.0')
+            .addBearerAuth()
+            .build();
+        const document = SwaggerModule.createDocument(app, swaggerConfig);
+        SwaggerModule.setup('api/docs', app, document);
+    }
     app.enableCors({
         origin: config.get<string>('FRONTEND_URL'),
         credentials: true,
