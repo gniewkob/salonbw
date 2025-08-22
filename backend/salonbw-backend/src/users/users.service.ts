@@ -47,6 +47,7 @@ export class UsersService {
             role: Role.Client,
             phone: dto.phone ?? null,
             commissionBase: dto.commissionBase ?? 0,
+            receiveNotifications: dto.receiveNotifications ?? true,
         });
 
         return await this.usersRepository.save(user);
