@@ -11,7 +11,7 @@ import {
     NotFoundException,
     ParseIntPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -31,6 +31,7 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Post()
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Create appointment',
         description:
@@ -74,6 +75,9 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get('me')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get appointments for current user' })
+    @ApiResponse({ status: 200, type: Appointment, isArray: true })
     findMine(@CurrentUser() user: { userId: number }): Promise<Appointment[]> {
         return this.appointmentsService.findForUser(user.userId);
     }
@@ -81,6 +85,11 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
     @Patch(':id/cancel')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Cancel appointment' })
+    @ApiResponse({ status: 200, description: 'Appointment cancelled', type: Appointment })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
     async cancel(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
@@ -102,6 +111,11 @@ export class AppointmentsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @Patch(':id/complete')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Complete appointment' })
+    @ApiResponse({ status: 200, description: 'Appointment completed', type: Appointment })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
     async complete(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
