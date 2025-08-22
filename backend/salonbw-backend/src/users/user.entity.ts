@@ -22,6 +22,9 @@ export class User {
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
+    @Column({ default: true })
+    receiveNotifications: boolean;
+
     @Column('decimal', {
         transformer: new ColumnNumericTransformer(),
         default: 0,
