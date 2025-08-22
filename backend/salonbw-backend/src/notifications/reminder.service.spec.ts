@@ -52,7 +52,7 @@ describe('ReminderService', () => {
             startTime: new Date('2024-01-02T07:30:00Z'),
             endTime: new Date('2024-01-02T08:30:00Z'),
             status: AppointmentStatus.Scheduled,
-            client: { phone: '1234567890' },
+            client: { phone: '1234567890', receiveNotifications: true },
         } as unknown as Appointment;
         repo.find.mockResolvedValue([appointment]);
 
@@ -61,5 +61,23 @@ describe('ReminderService', () => {
         const date = appointment.startTime.toISOString().split('T')[0];
         const time = appointment.startTime.toISOString().split('T')[1].slice(0, 5);
         expect(sendReminder).toHaveBeenCalledWith('1234567890', date, time);
+    });
+
+    it('does not send reminders if client disabled notifications', async () => {
+        const now = new Date('2024-01-01T07:00:00Z');
+        jest.useFakeTimers().setSystemTime(now);
+
+        const appointment = {
+            id: 2,
+            startTime: new Date('2024-01-02T07:30:00Z'),
+            endTime: new Date('2024-01-02T08:30:00Z'),
+            status: AppointmentStatus.Scheduled,
+            client: { phone: '1234567890', receiveNotifications: false },
+        } as unknown as Appointment;
+        repo.find.mockResolvedValue([appointment]);
+
+        await service.handleCron();
+
+        expect(sendReminder).not.toHaveBeenCalled();
     });
 });

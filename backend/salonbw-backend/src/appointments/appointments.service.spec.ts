@@ -38,6 +38,7 @@ describe('AppointmentsService', () => {
                 password: '',
                 name: '',
                 phone: '123',
+                receiveNotifications: true,
             },
             {
                 id: 2,
@@ -46,6 +47,7 @@ describe('AppointmentsService', () => {
                 password: '',
                 name: '',
                 phone: '456',
+                receiveNotifications: true,
             },
         ];
         services = [
@@ -306,6 +308,33 @@ describe('AppointmentsService', () => {
         expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
     });
 
+    it('should not send booking confirmation if client disabled notifications', async () => {
+        users[0].receiveNotifications = false;
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        const sendBookingConfirmationMock =
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation.bind(
+                mockWhatsappService,
+            ) as jest.Mock;
+
+        Object.assign(
+            sendBookingConfirmationMock,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation,
+        );
+        expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
+    });
+
     it('should create an appointment even if logging fails', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         logActionSpy.mockRejectedValueOnce(new Error('fail'));
@@ -534,6 +563,23 @@ describe('AppointmentsService', () => {
             users[0],
         );
 
+        await service.completeAppointment(id, users[1]);
+        expect(sendFollowUpMock).not.toHaveBeenCalled();
+    });
+
+    it('should not send follow up if client disabled notifications', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        users[0].receiveNotifications = false;
         await service.completeAppointment(id, users[1]);
         expect(sendFollowUpMock).not.toHaveBeenCalled();
     });

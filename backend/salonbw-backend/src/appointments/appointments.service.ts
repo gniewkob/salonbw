@@ -112,7 +112,7 @@ export class AppointmentsService {
         } catch (error) {
             console.error('Failed to log appointment creation action', error);
         }
-        if (client.phone) {
+        if (client.phone && client.receiveNotifications) {
             const date = result.startTime.toISOString().split('T')[0];
             const time = result.startTime.toISOString().split('T')[1].slice(0, 5);
             try {
@@ -126,7 +126,7 @@ export class AppointmentsService {
             }
         } else {
             console.warn(
-                'Client has no phone number; skipping booking confirmation',
+                'Client has no phone number or notifications disabled; skipping booking confirmation',
             );
         }
         return result;
@@ -234,7 +234,7 @@ export class AppointmentsService {
                     error,
                 );
             }
-            if (updated.client.phone) {
+            if (updated.client.phone && updated.client.receiveNotifications) {
                 const date = updated.startTime
                     .toISOString()
                     .split('T')[0];
@@ -253,7 +253,7 @@ export class AppointmentsService {
                 }
             } else {
                 console.warn(
-                    'Client has no phone number; skipping follow up message',
+                    'Client has no phone number or notifications disabled; skipping follow up message',
                 );
             }
         }
