@@ -201,6 +201,12 @@ describe('AppointmentsService', () => {
         Object.assign(
             transactionMock,
             // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockAppointmentsRepo.manager.transaction.bind(
+                mockAppointmentsRepo.manager,
+            ) as jest.Mock;
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        Object.assign(
+            transactionMock,
             mockAppointmentsRepo.manager.transaction,
         );
 
@@ -208,10 +214,9 @@ describe('AppointmentsService', () => {
             mockCommissionsService.createFromAppointment.bind(
                 mockCommissionsService,
             ) as jest.Mock;
-
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             createFromAppointmentMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockCommissionsService.createFromAppointment,
         );
 
@@ -242,10 +247,9 @@ describe('AppointmentsService', () => {
             mockWhatsappService.sendBookingConfirmation.bind(
                 mockWhatsappService,
             ) as jest.Mock;
-
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             sendBookingConfirmationMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
         );
 
@@ -287,10 +291,9 @@ describe('AppointmentsService', () => {
             mockWhatsappService.sendBookingConfirmation.bind(
                 mockWhatsappService,
             ) as jest.Mock;
-
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             sendBookingConfirmationMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
         );
         expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
