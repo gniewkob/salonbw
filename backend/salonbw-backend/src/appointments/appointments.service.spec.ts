@@ -194,19 +194,26 @@ describe('AppointmentsService', () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
 
-        transactionMock =
+        transactionMock = mockAppointmentsRepo.manager.transaction.bind(
+            mockAppointmentsRepo.manager,
+        ) as jest.Mock;
+
+        Object.assign(
+            transactionMock,
             // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockAppointmentsRepo.manager.transaction.bind(
-                mockAppointmentsRepo.manager,
-            ) as jest.Mock;
-        Object.assign(transactionMock, mockAppointmentsRepo.manager.transaction);
+            mockAppointmentsRepo.manager.transaction,
+        );
 
         createFromAppointmentMock =
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockCommissionsService.createFromAppointment.bind(
                 mockCommissionsService,
             ) as jest.Mock;
-        Object.assign(createFromAppointmentMock, mockCommissionsService.createFromAppointment);
+
+        Object.assign(
+            createFromAppointmentMock,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockCommissionsService.createFromAppointment,
+        );
 
         service = new AppointmentsService(
             mockAppointmentsRepo,
@@ -232,11 +239,15 @@ describe('AppointmentsService', () => {
         );
 
         const sendBookingConfirmationMock =
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation.bind(
                 mockWhatsappService,
             ) as jest.Mock;
-        Object.assign(sendBookingConfirmationMock, mockWhatsappService.sendBookingConfirmation);
+
+        Object.assign(
+            sendBookingConfirmationMock,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation,
+        );
 
         expect(result.id).toBeDefined();
         expect(result.endTime.getTime()).toBe(start.getTime() + 30 * 60 * 1000);
@@ -273,11 +284,15 @@ describe('AppointmentsService', () => {
         );
 
         const sendBookingConfirmationMock =
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation.bind(
                 mockWhatsappService,
             ) as jest.Mock;
-        Object.assign(sendBookingConfirmationMock, mockWhatsappService.sendBookingConfirmation);
+
+        Object.assign(
+            sendBookingConfirmationMock,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            mockWhatsappService.sendBookingConfirmation,
+        );
         expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
     });
 
