@@ -200,7 +200,6 @@ describe('AppointmentsService', () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             transactionMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockAppointmentsRepo.manager.transaction,
         );
 
@@ -211,7 +210,6 @@ describe('AppointmentsService', () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             createFromAppointmentMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockCommissionsService.createFromAppointment,
         );
 
@@ -245,7 +243,6 @@ describe('AppointmentsService', () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             sendBookingConfirmationMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
         );
 
@@ -290,7 +287,6 @@ describe('AppointmentsService', () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Object.assign(
             sendBookingConfirmationMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
             mockWhatsappService.sendBookingConfirmation,
         );
         expect(sendBookingConfirmationMock).not.toHaveBeenCalled();
