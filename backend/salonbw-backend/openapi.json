@@ -7,11 +7,12 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Hello world message"
           }
         },
+        "summary": "Root endpoint",
         "tags": [
-          "App"
+          "app"
         ]
       }
     },
@@ -21,11 +22,12 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Service is up"
           }
         },
+        "summary": "Health check",
         "tags": [
-          "Health"
+          "health"
         ]
       }
     },
@@ -35,9 +37,15 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Current user profile"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile",
         "tags": [
           "Users"
         ]
@@ -67,6 +75,7 @@
             "bearer": []
           }
         ],
+        "summary": "List users",
         "tags": [
           "Users"
         ]
@@ -86,9 +95,22 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create user",
         "tags": [
           "Users"
         ]
@@ -182,6 +204,11 @@
             "description": "clientId must be provided when creating appointments as staff"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Create appointment",
         "tags": [
           "appointments"
@@ -194,9 +221,25 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Appointment"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get appointments for current user",
         "tags": [
           "appointments"
         ]
@@ -217,9 +260,28 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Appointment cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel appointment",
         "tags": [
           "appointments"
         ]
@@ -240,9 +302,28 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Appointment completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete appointment",
         "tags": [
           "appointments"
         ]
@@ -254,11 +335,27 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all services",
         "tags": [
-          "Services"
+          "services"
         ]
       },
       "post": {
@@ -276,11 +373,24 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create service",
         "tags": [
-          "Services"
+          "services"
         ]
       }
     },
@@ -299,11 +409,24 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get service by id",
         "tags": [
-          "Services"
+          "services"
         ]
       },
       "patch": {
@@ -330,11 +453,24 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update service",
         "tags": [
-          "Services"
+          "services"
         ]
       },
       "delete": {
@@ -351,11 +487,17 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Service removed"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove service",
         "tags": [
-          "Services"
+          "services"
         ]
       }
     },
@@ -365,11 +507,27 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all products",
         "tags": [
-          "Products"
+          "products"
         ]
       },
       "post": {
@@ -387,11 +545,24 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create product",
         "tags": [
-          "Products"
+          "products"
         ]
       }
     },
@@ -410,11 +581,24 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product by id",
         "tags": [
-          "Products"
+          "products"
         ]
       },
       "patch": {
@@ -441,11 +625,24 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update product",
         "tags": [
-          "Products"
+          "products"
         ]
       },
       "delete": {
@@ -462,11 +659,17 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Product removed"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove product",
         "tags": [
-          "Products"
+          "products"
         ]
       }
     },
@@ -495,11 +698,24 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add formula to appointment",
         "tags": [
-          "AppointmentFormulas"
+          "formulas"
         ]
       }
     },
@@ -509,11 +725,27 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Formula"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get formulas for current user",
         "tags": [
-          "ClientFormulas"
+          "formulas"
         ]
       }
     },
@@ -532,11 +764,27 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Formula"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get formulas for client",
         "tags": [
-          "ClientFormulas"
+          "formulas"
         ]
       }
     },
@@ -546,11 +794,27 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Commission"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get commissions for current user",
         "tags": [
-          "Commissions"
+          "commissions"
         ]
       }
     },
@@ -569,11 +833,27 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Commission"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get commissions for employee",
         "tags": [
-          "Commissions"
+          "commissions"
         ]
       }
     },
@@ -610,11 +890,26 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Summary amount",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "amount": 0
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get commission summary for employee",
         "tags": [
-          "Commissions"
+          "commissions"
         ]
       }
     },
@@ -624,11 +919,27 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Commission"
+                  }
+                }
+              }
+            }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all commissions",
         "tags": [
-          "Commissions"
+          "commissions"
         ]
       }
     }
@@ -652,19 +963,124 @@
     "schemas": {
       "UserDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Unique identifier",
+            "example": 1
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "User full name",
+            "example": "John Doe"
+          },
+          "role": {
+            "type": "string",
+            "description": "User role",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ],
+            "example": "client"
+          },
+          "phone": {
+            "type": "object",
+            "description": "International phone number",
+            "example": "+123456789",
+            "nullable": true
+          },
+          "commissionBase": {
+            "type": "number",
+            "description": "Commission base for the user",
+            "example": 0
+          },
+          "receiveNotifications": {
+            "type": "boolean",
+            "description": "Whether the user receives notifications",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "phone",
+          "commissionBase",
+          "receiveNotifications"
+        ]
       },
       "CreateUserDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "User full name",
+            "example": "John Doe"
+          },
+          "phone": {
+            "type": "string",
+            "description": "International phone number",
+            "example": "+123456789"
+          },
+          "commissionBase": {
+            "type": "number",
+            "description": "Commission base for the user",
+            "example": 0
+          },
+          "receiveNotifications": {
+            "type": "boolean",
+            "description": "Whether the user receives notifications",
+            "example": true
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ]
       },
       "RegisterDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "User full name",
+            "example": "John Doe"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ]
       },
       "RefreshTokenDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "JWT refresh token",
+            "example": "eyJhbGci..."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
       },
       "CreateAppointmentDto": {
         "type": "object",
@@ -689,11 +1105,23 @@
           "startTime"
         ]
       },
+      "Appointment": {
+        "type": "object",
+        "properties": {}
+      },
+      "Service": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateServiceDto": {
         "type": "object",
         "properties": {}
       },
       "UpdateServiceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Product": {
         "type": "object",
         "properties": {}
       },
@@ -719,6 +1147,14 @@
           "description",
           "date"
         ]
+      },
+      "Formula": {
+        "type": "object",
+        "properties": {}
+      },
+      "Commission": {
+        "type": "object",
+        "properties": {}
       }
     }
   }
