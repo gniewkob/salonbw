@@ -12,24 +12,24 @@ const mockedUseRouter = useRouter as jest.Mock;
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('Layout', () => {
-  beforeEach(() => {
-    mockedUseRouter.mockReset();
-    mockedUseAuth.mockReset();
-  });
+    beforeEach(() => {
+        mockedUseRouter.mockReset();
+        mockedUseAuth.mockReset();
+    });
 
-  it('renders PublicNav on public routes', () => {
-    mockedUseRouter.mockReturnValue({ pathname: '/services' });
-    mockedUseAuth.mockReturnValue(createAuthValue());
-    render(<Layout>content</Layout>);
-    expect(screen.getByText('Login')).toBeInTheDocument();
-  });
+    it('renders PublicNav on public routes', () => {
+        mockedUseRouter.mockReturnValue({ pathname: '/services' });
+        mockedUseAuth.mockReturnValue(createAuthValue());
+        render(<Layout>content</Layout>);
+        expect(screen.getByText('Login')).toBeInTheDocument();
+    });
 
-  it('renders dashboard navigation on private routes', () => {
-    mockedUseRouter.mockReturnValue({ pathname: '/products' });
-    mockedUseAuth.mockReturnValue(
-      createAuthValue({ isAuthenticated: true, role: 'admin' })
-    );
-    render(<Layout>content</Layout>);
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-  });
+    it('renders dashboard navigation on private routes', () => {
+        mockedUseRouter.mockReturnValue({ pathname: '/products' });
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ isAuthenticated: true, role: 'admin' }),
+        );
+        render(<Layout>content</Layout>);
+        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    });
 });
