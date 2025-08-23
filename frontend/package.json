@@ -10,7 +10,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint src",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
     "test": "jest",
     "e2e": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
