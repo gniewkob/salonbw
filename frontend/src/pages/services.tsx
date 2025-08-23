@@ -30,7 +30,10 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <h2 className="text-xl font-semibold">{cat.name}</h2>
                         <ul className="space-y-1">
                             {cat.services.map((s) => (
-                                <li key={s.id} className="flex justify-between border-b pb-1">
+                                <li
+                                    key={s.id}
+                                    className="flex justify-between border-b pb-1"
+                                >
                                     <span>{s.name}</span>
                                     <span className="text-sm text-gray-600">
                                         {s.duration} min - {s.price} zł
@@ -45,7 +48,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+    ServicesPageProps
+> = async () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
     try {
         const res = await fetch(`${apiUrl}/services`);

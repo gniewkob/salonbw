@@ -17,7 +17,9 @@ export function useEmails() {
                 }
             } catch (err: unknown) {
                 if (active) {
-                    setError(err instanceof Error ? err : new Error(String(err)));
+                    setError(
+                        err instanceof Error ? err : new Error(String(err)),
+                    );
                 }
             }
         };

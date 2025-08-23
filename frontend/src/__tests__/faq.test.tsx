@@ -8,11 +8,11 @@ jest.mock('@/contexts/AuthContext');
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('FAQ page', () => {
-  it('renders without crashing', () => {
-    mockedUseAuth.mockReturnValue(createAuthValue());
-    render(<FAQPage />);
-    expect(
-      screen.getByText(/Frequently Asked Questions/i)
-    ).toBeInTheDocument();
-  });
+    it('renders without crashing', () => {
+        mockedUseAuth.mockReturnValue(createAuthValue());
+        render(<FAQPage />);
+        expect(
+            screen.getByText(/Frequently Asked Questions/i),
+        ).toBeInTheDocument();
+    });
 });
