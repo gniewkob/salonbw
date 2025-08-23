@@ -53,7 +53,9 @@ export default function GalleryPage({ items }: GalleryPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+    GalleryPageProps
+> = async () => {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
         return { props: { items: [] } };
