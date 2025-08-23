@@ -47,6 +47,11 @@ frontend/
 The NestJS backend lives in `backend/` with typical controllers,
 services and entities under `src/`.
 
+## API documentation
+
+In development, the API is documented with Swagger and available at `/api/docs`.
+Make sure to secure or disable Swagger in production.
+
 ## Prerequisites
 
 Install [Node.js](https://nodejs.org/) and npm. The project uses Node.js 20 (see
