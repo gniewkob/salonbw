@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function PublicNav() {
+export default function Navbar() {
     const { role } = useAuth();
     const linkClass = 'transition duration-150 hover:text-blue-700';
 
