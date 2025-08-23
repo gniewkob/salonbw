@@ -17,7 +17,7 @@ describe('Layout', () => {
         mockedUseAuth.mockReset();
     });
 
-    it('renders PublicNav on public routes', () => {
+    it('renders Navbar on public routes', () => {
         mockedUseRouter.mockReturnValue({ pathname: '/services' });
         mockedUseAuth.mockReturnValue(createAuthValue());
         render(<Layout>content</Layout>);

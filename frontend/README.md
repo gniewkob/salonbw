@@ -35,7 +35,7 @@ using the configuration in `tailwind.config.ts` and the global styles in
 - **Marketing pages** under `src/pages` (`index`, `services`, `gallery`, `contact`).
 - **Authentication** routes in `src/pages/auth` with login and registration forms.
 - **Role-based dashboard** pages under `src/pages/dashboard` for clients, employees and admins.
-- Navigation components in `src/components` (`PublicNav` and `DashboardNav`) rendered via the global `Layout`.
+- Navigation components in `src/components` (`Navbar` and `DashboardNav`) rendered via the global `Layout`.
 - Configure the backend API URL via `NEXT_PUBLIC_API_URL` in `.env.local` (copied from `.env.local.example`).
 
 ## Manual Testing
