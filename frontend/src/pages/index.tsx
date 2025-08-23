@@ -86,7 +86,9 @@ export default function HomePage() {
                             alt="Salon highlight"
                             fill
                             className={`object-cover transition-opacity duration-700 ${
-                                index === currentSlide ? 'opacity-100' : 'opacity-0'
+                                index === currentSlide
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
                             }`}
                             priority={index === 0}
                         />
@@ -104,7 +106,9 @@ export default function HomePage() {
                                 key={service.title}
                                 className="p-4 border rounded text-center"
                             >
-                                <h3 className="font-semibold">{service.title}</h3>
+                                <h3 className="font-semibold">
+                                    {service.title}
+                                </h3>
                                 <p className="text-sm text-gray-600">
                                     {service.description}
                                 </p>
@@ -159,7 +163,9 @@ export default function HomePage() {
 
                 {/* Contact Section with Map */}
                 <section className="p-4 space-y-4">
-                    <h2 className="text-xl font-bold text-center">Contact Us</h2>
+                    <h2 className="text-xl font-bold text-center">
+                        Contact Us
+                    </h2>
                     <div className="flex flex-col items-center space-y-2">
                         <p>123 Salon Street, Beauty City</p>
                         <iframe
@@ -175,4 +181,3 @@ export default function HomePage() {
         </PublicLayout>
     );
 }
-

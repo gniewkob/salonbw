@@ -4,23 +4,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 
 interface Props {
-  children: ReactNode;
-  roles?: Role[];
+    children: ReactNode;
+    roles?: Role[];
 }
 
 export default function RouteGuard({ children, roles }: Props) {
-  const { isAuthenticated, role } = useAuth();
-  const router = useRouter();
+    const { isAuthenticated, role } = useAuth();
+    const router = useRouter();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      void router.replace('/auth/login');
-    } else if (roles && role && !roles.includes(role)) {
-      void router.replace('/dashboard');
-    }
-  }, [isAuthenticated, role, roles, router]);
+    useEffect(() => {
+        if (!isAuthenticated) {
+            void router.replace('/auth/login');
+        } else if (roles && role && !roles.includes(role)) {
+            void router.replace('/dashboard');
+        }
+    }, [isAuthenticated, role, roles, router]);
 
-  if (!isAuthenticated) return null;
-  if (roles && role && !roles.includes(role)) return null;
-  return <>{children}</>;
+    if (!isAuthenticated) return null;
+    if (roles && role && !roles.includes(role)) return null;
+    return <>{children}</>;
 }
