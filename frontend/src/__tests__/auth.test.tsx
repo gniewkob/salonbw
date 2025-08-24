@@ -1,21 +1,24 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { setupServer } from 'msw/node';
-import { http, HttpResponse } from 'msw';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
-const server = setupServer(
-    http.post('http://localhost/auth/login', () =>
-        HttpResponse.json({ accessToken: 'abc', refreshToken: 'def' }),
-    ),
-    http.get('http://localhost/clients', () =>
-        HttpResponse.json([{ id: 1, name: 'John' }]),
-    ),
-);
+jest.mock('@/api/auth', () => ({
+    login: jest
+        .fn()
+        .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),
+    refreshToken: jest
+        .fn()
+        .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),
+    REFRESH_TOKEN_KEY: 'refreshToken',
+    setLogoutCallback: jest.fn(),
+}));
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+const requestMock = jest.fn();
+jest.mock('@/api/apiClient', () => ({
+    ApiClient: jest.fn().mockImplementation(() => ({
+        request: requestMock,
+    })),
+}));
 
 describe('auth flow', () => {
     it('login fetches token and fetches clients then logout clears token', async () => {
@@ -28,6 +31,7 @@ describe('auth flow', () => {
         });
         expect(result.current.token).toBe('abc');
 
+        requestMock.mockResolvedValueOnce([{ id: 1, name: 'John' }]);
         await act(async () => {
             const clients =
                 await result.current.apiFetch<{ id: number; name: string }[]>(
@@ -52,11 +56,8 @@ describe('auth flow', () => {
         });
         expect(result.current.token).toBe('abc');
 
-        server.use(
-            http.post('http://localhost/auth/refresh', () =>
-                HttpResponse.json({}, { status: 401 }),
-            ),
-        );
+        const { refreshToken: refreshMock } = require('@/api/auth');
+        (refreshMock as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
         await act(async () => {
             await expect(result.current.refreshToken()).rejects.toThrow();
