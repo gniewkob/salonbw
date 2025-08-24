@@ -6,6 +6,7 @@ jest.mock('@/api/auth', () => ({
     login: jest
         .fn()
         .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),
+    register: jest.fn(),
     refreshToken: jest
         .fn()
         .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),
@@ -26,10 +27,10 @@ describe('auth flow', () => {
             React.createElement(AuthProvider, null, children);
         const { result } = renderHook(() => useAuth(), { wrapper });
 
+        requestMock.mockResolvedValueOnce({ role: 'admin' });
         await act(async () => {
             await result.current.login('a', 'b');
         });
-        expect(result.current.token).toBe('abc');
 
         requestMock.mockResolvedValueOnce([{ id: 1, name: 'John' }]);
         await act(async () => {
@@ -43,7 +44,7 @@ describe('auth flow', () => {
         act(() => {
             result.current.logout();
         });
-        expect(result.current.token).toBeNull();
+        expect(result.current.isAuthenticated).toBe(false);
     });
 
     it('logs out when refresh token fails', async () => {
@@ -51,18 +52,18 @@ describe('auth flow', () => {
             React.createElement(AuthProvider, null, children);
         const { result } = renderHook(() => useAuth(), { wrapper });
 
+        requestMock.mockResolvedValueOnce({ role: 'admin' });
         await act(async () => {
             await result.current.login('a', 'b');
         });
-        expect(result.current.token).toBe('abc');
 
         const { refreshToken: refreshMock } = require('@/api/auth');
         (refreshMock as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
         await act(async () => {
-            await expect(result.current.refreshToken()).rejects.toThrow();
+            await expect(result.current.refresh()).rejects.toThrow();
         });
 
-        expect(result.current.token).toBeNull();
+        expect(result.current.isAuthenticated).toBe(false);
     });
 });
