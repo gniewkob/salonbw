@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
 const server = setupServer(
     http.post('http://localhost/auth/login', () =>
-        HttpResponse.json({ access_token: 'abc' }),
+        HttpResponse.json({ accessToken: 'abc', refreshToken: 'def' }),
     ),
     http.get('http://localhost/clients', () =>
         HttpResponse.json([{ id: 1, name: 'John' }]),

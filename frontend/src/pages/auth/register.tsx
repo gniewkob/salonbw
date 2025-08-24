@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import PublicLayout from '@/components/PublicLayout';
+import { register as registerUser } from '@/api/auth';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -14,20 +15,10 @@ export default function RegisterPage() {
         e.preventDefault();
         setError('');
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, phone, password }),
-                },
-            );
-            if (!res.ok) throw new Error('Registration failed');
+            await registerUser({ name, email, phone, password });
             void router.push('/auth/login');
         } catch (err: unknown) {
-            setError(
-                err instanceof Error ? err.message : 'Registration failed',
-            );
+            setError(err instanceof Error ? err.message : 'Registration failed');
         }
     };
 
