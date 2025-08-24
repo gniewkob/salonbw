@@ -1,9 +1,15 @@
 import { ApiClient } from './apiClient';
 import { User } from '@/types';
 
+let logoutCallback: () => void = () => {};
+
+export function setLogoutCallback(cb: () => void) {
+    logoutCallback = cb;
+}
+
 const client = new ApiClient(
     () => null,
-    () => {},
+    () => logoutCallback(),
 );
 
 export interface LoginCredentials {
