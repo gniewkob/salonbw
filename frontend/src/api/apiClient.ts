@@ -1,69 +1,120 @@
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+
 export interface ApiError extends Error {
     status?: number;
 }
 
+interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+}
+
 export class ApiClient {
+    private axios: AxiosInstance;
+
     constructor(
         private getToken: () => string | null,
         private onLogout: () => void,
-    ) {}
+        private onTokenRefresh?: (tokens: AuthTokens) => void,
+    ) {
+        this.axios = axios.create({
+            baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost',
+            withCredentials: true,
+        });
 
-    async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-        const headers = new Headers(init.headers);
-        const token = this.getToken();
-        if (token) {
-            headers.set('Authorization', `Bearer ${token}`);
-        }
-        const retries = 3;
-        for (let attempt = 0; attempt < retries; attempt++) {
-            try {
-                const response = await fetch(`${baseUrl}${endpoint}`, {
-                    ...init,
-                    headers,
-                    credentials: 'include',
-                });
+        this.axios.interceptors.request.use((config) => {
+            const token = this.getToken();
+            if (token) {
+                config.headers = config.headers ?? {};
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        });
 
-                if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) {
+        this.axios.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const err = error as AxiosError<{ message?: string }> & {
+                    config: AxiosRequestConfig & { _retry?: boolean };
+                };
+
+                const { response, config } = err;
+
+                if (
+                    response?.status === 401 &&
+                    !config._retry &&
+                    config.url !== '/auth/refresh'
+                ) {
+                    const refreshToken =
+                        typeof localStorage !== 'undefined'
+                            ? localStorage.getItem('refreshToken')
+                            : null;
+                    if (refreshToken) {
+                        try {
+                            const { data } = await this.axios.post<AuthTokens>(
+                                '/auth/refresh',
+                                { refreshToken },
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                },
+                            );
+                            this.onTokenRefresh?.(data);
+                            config._retry = true;
+                            config.headers = config.headers ?? {};
+                            config.headers.Authorization = `Bearer ${data.accessToken}`;
+                            return this.axios(config);
+                        } catch (refreshErr) {
+                            this.onLogout();
+                            return Promise.reject(
+                                this.createError(refreshErr as AxiosError),
+                            );
+                        }
+                    } else {
                         this.onLogout();
                     }
-                    let message: string;
-                    try {
-                        const data = await response.json();
-                        message = data.message || response.statusText;
-                    } catch {
-                        message = response.statusText;
-                    }
-                    const error: ApiError = new Error(message);
-                    error.status = response.status;
-                    throw error;
                 }
-                if (response.status === 204) {
-                    return undefined as T;
-                }
-                const text = await response.text();
-                if (!text) {
-                    return undefined as T;
-                }
-                return JSON.parse(text) as T;
-            } catch (error: unknown) {
-                const err = error as ApiError & {
-                    response?: { data?: unknown };
-                };
-                console.error(
-                    'API request failed',
-                    err.response?.data || err.message,
-                );
-                if (
-                    attempt === retries - 1 ||
-                    (typeof err.status === 'number' && err.status < 500)
-                ) {
-                    throw err;
-                }
-                await new Promise((res) => setTimeout(res, 1000));
-            }
+
+                return Promise.reject(this.createError(err));
+            },
+        );
+    }
+
+    private createError(error: AxiosError<{ message?: string }>): ApiError {
+        let message: string;
+        if (error.response) {
+            message = error.response.data?.message || error.response.statusText;
+        } else if (error.request) {
+            message = 'Network error';
+        } else {
+            message = error.message;
         }
-        throw new Error('Request failed');
+        const apiError: ApiError = new Error(message);
+        apiError.status = error.response?.status;
+        return apiError;
+    }
+
+    async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
+        const config: AxiosRequestConfig = {
+            url: endpoint,
+            method: init.method as AxiosRequestConfig['method'],
+            headers: init.headers as Record<string, string>,
+            data: init.body as unknown,
+        };
+        try {
+            const res = await this.axios.request<T>(config);
+            if (res.status === 204 || res.data === '') {
+                return undefined as T;
+            }
+            return res.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError;
+            console.error(
+                'API request failed',
+                err.response?.data || err.message,
+            );
+            throw this.createError(err);
+        }
     }
 }
