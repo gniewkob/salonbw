@@ -34,7 +34,7 @@ export class ApiClient {
         this.axios.interceptors.response.use(
             (response) => response,
             async (error) => {
-                const err = error as AxiosError<{ message?: string }> & {
+                const err = error as AxiosError<unknown> & {
                     config: AxiosRequestConfig & { _retry?: boolean };
                 };
 
@@ -68,7 +68,9 @@ export class ApiClient {
                         } catch (refreshErr) {
                             this.onLogout();
                             return Promise.reject(
-                                this.createError(refreshErr as AxiosError),
+                                this.createError(
+                                    refreshErr as AxiosError<unknown>,
+                                ),
                             );
                         }
                     } else {
@@ -76,15 +78,18 @@ export class ApiClient {
                     }
                 }
 
-                return Promise.reject(this.createError(err));
+                return Promise.reject(
+                    this.createError(err as AxiosError<unknown>),
+                );
             },
         );
     }
 
-    private createError(error: AxiosError<{ message?: string }>): ApiError {
+    private createError(error: AxiosError<unknown>): ApiError {
         let message: string;
         if (error.response) {
-            message = error.response.data?.message || error.response.statusText;
+            const data = error.response.data as { message?: string } | undefined;
+            message = data?.message || error.response.statusText;
         } else if (error.request) {
             message = 'Network error';
         } else {
@@ -109,7 +114,7 @@ export class ApiClient {
             }
             return res.data;
         } catch (error: unknown) {
-            const err = error as AxiosError;
+            const err = error as AxiosError<unknown>;
             console.error(
                 'API request failed',
                 err.response?.data || err.message,
