@@ -9,7 +9,11 @@ import {
 } from 'react';
 import { useRouter } from 'next/router';
 import { ApiClient } from '@/api/apiClient';
-import { login as apiLogin, refreshToken as apiRefreshToken, REFRESH_TOKEN_KEY } from '@/api/auth';
+import {
+    login as apiLogin,
+    refreshToken as apiRefreshToken,
+    REFRESH_TOKEN_KEY,
+} from '@/api/auth';
 import type { Role } from '@/types';
 
 interface AuthContextValue {
