@@ -1,7 +1,10 @@
 import { ApiClient } from './apiClient';
 import { User } from '@/types';
 
-const client = new ApiClient(() => null, () => {});
+const client = new ApiClient(
+    () => null,
+    () => {},
+);
 
 export interface LoginCredentials {
     email: string;
@@ -22,7 +25,9 @@ export interface AuthTokens {
 
 export const REFRESH_TOKEN_KEY = 'refreshToken';
 
-export async function login(credentials: LoginCredentials): Promise<AuthTokens> {
+export async function login(
+    credentials: LoginCredentials,
+): Promise<AuthTokens> {
     try {
         return await client.request<AuthTokens>('/auth/login', {
             method: 'POST',
@@ -30,9 +35,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthTokens> 
             body: JSON.stringify(credentials),
         });
     } catch (err: unknown) {
-        throw new Error(
-            err instanceof Error ? err.message : 'Login failed',
-        );
+        throw new Error(err instanceof Error ? err.message : 'Login failed');
     }
 }
 
