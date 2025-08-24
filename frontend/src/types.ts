@@ -5,6 +5,16 @@ export interface Client {
 
 export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
 
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+    role: Role;
+    phone: string | null;
+    commissionBase: number;
+    receiveNotifications: boolean;
+}
+
 export interface Appointment {
     id: number;
     startTime: string;

@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/router';
 import { ApiClient } from '@/api/apiClient';
+import { login as apiLogin, refreshToken as apiRefreshToken, REFRESH_TOKEN_KEY } from '@/api/auth';
 import type { Role } from '@/types';
 
 interface AuthContextValue {
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(null);
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(ROLE_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
         void router.push('/auth/login');
     }, [router]);
 
@@ -77,31 +79,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const login = async (email: string, password: string) => {
-        const data = await client.request<{ access_token: string }>(
-            '/auth/login',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            },
-        );
-        setToken(data.access_token);
-        localStorage.setItem(TOKEN_KEY, data.access_token);
-        const r = decodeRole(data.access_token);
+        const data = await apiLogin({ email, password });
+        setToken(data.accessToken);
+        localStorage.setItem(TOKEN_KEY, data.accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        const r = decodeRole(data.accessToken);
         setRole(r);
         if (r) localStorage.setItem(ROLE_KEY, r);
     };
 
     const refreshToken = async () => {
-        const data = await client.request<{ access_token: string }>(
-            '/auth/refresh',
-            {
-                method: 'POST',
-            },
-        );
-        setToken(data.access_token);
-        localStorage.setItem(TOKEN_KEY, data.access_token);
-        const r = decodeRole(data.access_token);
+        const data = await apiRefreshToken();
+        setToken(data.accessToken);
+        localStorage.setItem(TOKEN_KEY, data.accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        const r = decodeRole(data.accessToken);
         setRole(r);
         if (r) localStorage.setItem(ROLE_KEY, r);
     };
