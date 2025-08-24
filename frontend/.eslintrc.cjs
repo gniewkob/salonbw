@@ -4,8 +4,13 @@ module.exports = {
         project: true,
         tsconfigRootDir: __dirname,
     },
-    plugins: ['@typescript-eslint'],
-    extends: ['next', 'next/core-web-vitals', 'plugin:@typescript-eslint/recommended'],
+    plugins: ['@typescript-eslint', 'prettier'],
+    extends: [
+        'next',
+        'next/core-web-vitals',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:prettier/recommended',
+    ],
     rules: {
         '@typescript-eslint/no-explicit-any': 'error',
         '@typescript-eslint/no-floating-promises': 'warn',
