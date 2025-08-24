@@ -13,6 +13,7 @@ import {
     login as apiLogin,
     refreshToken as apiRefreshToken,
     REFRESH_TOKEN_KEY,
+    setLogoutCallback,
 } from '@/api/auth';
 import type { Role } from '@/types';
 
@@ -59,6 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         void router.push('/auth/login');
     }, [router]);
 
+    useEffect(() => {
+        setLogoutCallback(handleLogout);
+    }, [handleLogout]);
+
     const client = useMemo(
         () => new ApiClient(() => token, handleLogout),
         [token, handleLogout],
@@ -93,13 +98,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const refreshToken = async () => {
-        const data = await apiRefreshToken();
-        setToken(data.accessToken);
-        localStorage.setItem(TOKEN_KEY, data.accessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        const r = decodeRole(data.accessToken);
-        setRole(r);
-        if (r) localStorage.setItem(ROLE_KEY, r);
+        try {
+            const data = await apiRefreshToken();
+            setToken(data.accessToken);
+            localStorage.setItem(TOKEN_KEY, data.accessToken);
+            localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+            const r = decodeRole(data.accessToken);
+            setRole(r);
+            if (r) localStorage.setItem(ROLE_KEY, r);
+        } catch (err) {
+            handleLogout();
+            throw err;
+        }
     };
 
     const value: AuthContextValue = {
