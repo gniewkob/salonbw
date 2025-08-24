@@ -41,4 +41,27 @@ describe('auth flow', () => {
         });
         expect(result.current.token).toBeNull();
     });
+
+    it('logs out when refresh token fails', async () => {
+        const wrapper = ({ children }: { children: React.ReactNode }) =>
+            React.createElement(AuthProvider, null, children);
+        const { result } = renderHook(() => useAuth(), { wrapper });
+
+        await act(async () => {
+            await result.current.login('a', 'b');
+        });
+        expect(result.current.token).toBe('abc');
+
+        server.use(
+            http.post('http://localhost/auth/refresh', () =>
+                HttpResponse.json({}, { status: 401 }),
+            ),
+        );
+
+        await act(async () => {
+            await expect(result.current.refreshToken()).rejects.toThrow();
+        });
+
+        expect(result.current.token).toBeNull();
+    });
 });
