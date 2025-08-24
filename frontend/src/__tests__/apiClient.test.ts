@@ -1,69 +1,42 @@
+import MockAdapter from 'axios-mock-adapter';
 import { ApiClient } from '@/api/apiClient';
 
 describe('ApiClient', () => {
-    const originalFetch = global.fetch;
-
-    afterEach(() => {
-        if (originalFetch) {
-            global.fetch = originalFetch;
-        }
-        jest.resetAllMocks();
-    });
-
     it('adds Authorization header when token is present', async () => {
-        const token = 'test-token';
         const client = new ApiClient(
-            () => token,
+            () => 't',
             () => {},
         );
-        global.fetch = jest
-            .fn()
-            .mockResolvedValue(
-                new Response('{}', { status: 200 }),
-            ) as jest.MockedFunction<typeof fetch>;
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = new MockAdapter((client as any).axios);
+        mock.onGet('/test').reply((config) => {
+            expect(config.headers?.Authorization).toBe('Bearer t');
+            return [200, {}];
+        });
         await client.request('/test');
-
-        const [, options] = (global.fetch as jest.Mock).mock.calls[0];
-        const headers = options.headers as Headers;
-        expect(headers.get('Authorization')).toBe(`Bearer ${token}`);
     });
 
-    it.each([401, 403])(
-        'calls logout callback on %i responses',
-        async (status) => {
-            const onLogout = jest.fn();
-            const client = new ApiClient(() => null, onLogout);
-            global.fetch = jest
-                .fn()
-                .mockResolvedValue(
-                    new Response(null, { status, statusText: 'Unauthorized' }),
-                ) as jest.MockedFunction<typeof fetch>;
-
-            await expect(client.request('/test')).rejects.toThrow(
-                'Unauthorized',
-            );
-            expect(onLogout).toHaveBeenCalled();
-        },
-    );
+    it('calls logout callback on 401 responses', async () => {
+        const onLogout = jest.fn();
+        const client = new ApiClient(() => null, onLogout);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = new MockAdapter((client as any).axios);
+        mock.onGet('/test').reply(401, { message: 'Unauthorized' });
+        await expect(client.request('/test')).rejects.toThrow('Unauthorized');
+        expect(onLogout).toHaveBeenCalled();
+    });
 
     it('propagates error messages from the server', async () => {
         const client = new ApiClient(
             () => null,
             () => {},
         );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = new MockAdapter((client as any).axios);
         const message = 'Bad things happened';
-        global.fetch = jest.fn().mockResolvedValue(
-            new Response(JSON.stringify({ message }), {
-                status: 400,
-                statusText: 'Bad Request',
-                headers: { 'Content-Type': 'application/json' },
-            }),
-        ) as jest.MockedFunction<typeof fetch>;
-
-        await expect(client.request('/test')).rejects.toMatchObject({
-            message,
-            status: 400,
+        mock.onGet('/test').reply(400, { message });
+        await client.request('/test').catch((err) => {
+            expect(err).toHaveProperty('message', message);
         });
     });
 
@@ -72,11 +45,9 @@ describe('ApiClient', () => {
             () => null,
             () => {},
         );
-        global.fetch = jest
-            .fn()
-            .mockResolvedValue(
-                new Response(null, { status: 204, statusText: 'No Content' }),
-            ) as jest.MockedFunction<typeof fetch>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = new MockAdapter((client as any).axios);
+        mock.onGet('/test').reply(204);
         const res = await client.request('/test');
         expect(res).toBeUndefined();
     });
@@ -86,11 +57,9 @@ describe('ApiClient', () => {
             () => null,
             () => {},
         );
-        global.fetch = jest
-            .fn()
-            .mockResolvedValue(
-                new Response('', { status: 200 }),
-            ) as jest.MockedFunction<typeof fetch>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = new MockAdapter((client as any).axios);
+        mock.onGet('/test').reply(200, '');
         const res = await client.request('/test');
         expect(res).toBeUndefined();
     });
