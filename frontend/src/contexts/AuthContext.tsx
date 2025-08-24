@@ -14,6 +14,7 @@ import {
     refreshToken as apiRefreshToken,
     REFRESH_TOKEN_KEY,
     setLogoutCallback,
+    type AuthTokens,
 } from '@/api/auth';
 import type { Role } from '@/types';
 
@@ -64,12 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLogoutCallback(handleLogout);
     }, [handleLogout]);
 
-    const client = useMemo(
-        () => new ApiClient(() => token, handleLogout),
-        [token, handleLogout],
-    );
-
-    const decodeRole = (jwt: string): Role | null => {
+    const decodeRole = useCallback((jwt: string): Role | null => {
         try {
             const payload = JSON.parse(atob(jwt.split('.')[1]));
             const r = payload.role as Role | undefined;
@@ -85,27 +81,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
             return null;
         }
-    };
+    }, []);
 
-    const login = async (email: string, password: string) => {
-        const data = await apiLogin({ email, password });
-        setToken(data.accessToken);
-        localStorage.setItem(TOKEN_KEY, data.accessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        const r = decodeRole(data.accessToken);
-        setRole(r);
-        if (r) localStorage.setItem(ROLE_KEY, r);
-    };
-
-    const refreshToken = async () => {
-        try {
-            const data = await apiRefreshToken();
+    const applyTokens = useCallback(
+        (data: AuthTokens) => {
             setToken(data.accessToken);
             localStorage.setItem(TOKEN_KEY, data.accessToken);
             localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
             const r = decodeRole(data.accessToken);
             setRole(r);
             if (r) localStorage.setItem(ROLE_KEY, r);
+        },
+        [decodeRole],
+    );
+
+    const client = useMemo(
+        () => new ApiClient(() => token, handleLogout, applyTokens),
+        [token, handleLogout, applyTokens],
+    );
+
+    const login = async (email: string, password: string) => {
+        const data = await apiLogin({ email, password });
+        applyTokens(data);
+    };
+
+    const refreshToken = async () => {
+        try {
+            const data = await apiRefreshToken();
+            applyTokens(data);
         } catch (err) {
             handleLogout();
             throw err;
