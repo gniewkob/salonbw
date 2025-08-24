@@ -88,7 +88,9 @@ export class ApiClient {
     private createError(error: AxiosError<unknown>): ApiError {
         let message: string;
         if (error.response) {
-            const data = error.response.data as { message?: string } | undefined;
+            const data = error.response.data as
+                | { message?: string }
+                | undefined;
             message = data?.message || error.response.statusText;
         } else if (error.request) {
             message = 'Network error';
