@@ -3,12 +3,15 @@ import type { useAuth } from '@/contexts/AuthContext';
 export const createAuthValue = (
     overrides: Partial<ReturnType<typeof useAuth>> = {},
 ): ReturnType<typeof useAuth> => ({
-    token: null,
+    user: null,
+    accessToken: null,
+    refreshToken: null,
     role: null,
     isAuthenticated: false,
     login: jest.fn(),
+    register: jest.fn(),
     logout: jest.fn(),
-    refreshToken: jest.fn(),
+    refresh: jest.fn(),
     apiFetch: jest.fn(),
     ...overrides,
 });
