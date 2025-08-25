@@ -1,12 +1,15 @@
+import { mockAdminLogin } from '../support/mockLogin';
+
 describe('basic', () => {
     it('loads home', () => {
         cy.visit('/');
         cy.contains('Featured Services');
     });
 });
+
 describe('products crud', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
+        mockAdminLogin();
     });
 
     it('loads and creates product', () => {
