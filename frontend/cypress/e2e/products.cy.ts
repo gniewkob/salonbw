@@ -13,10 +13,10 @@ describe('products crud', () => {
     });
 
     it('loads and creates product', () => {
-        cy.intercept('GET', '/api/products/admin', {
+        cy.intercept('GET', '/api/products*', {
             fixture: 'products.json',
         }).as('getProd');
-        cy.intercept('POST', '/api/products/admin', {
+        cy.intercept('POST', '/api/products', {
             id: 2,
             name: 'New',
             unitPrice: 1,

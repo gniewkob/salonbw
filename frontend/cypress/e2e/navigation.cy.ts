@@ -4,7 +4,7 @@ describe('navigation visibility', () => {
     describe('authenticated admin', () => {
         beforeEach(() => {
             mockAdminLogin();
-            cy.intercept('GET', '/api/products/admin', {
+            cy.intercept('GET', '/api/products*', {
                 fixture: 'products.json',
             }).as('getProd');
         });
@@ -23,7 +23,7 @@ describe('navigation visibility', () => {
     });
 
     it('renders public navigation on public pages', () => {
-        cy.intercept('GET', '/api/services', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
             'getServices',
         );
         cy.visit('/services');
