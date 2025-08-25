@@ -1,9 +1,10 @@
 import type { useAuth } from '@/contexts/AuthContext';
+import type { User } from '@/types';
 
 export const createAuthValue = (
     overrides: Partial<ReturnType<typeof useAuth>> = {},
 ): ReturnType<typeof useAuth> => ({
-    user: null,
+    user: null as User | null,
     accessToken: null,
     refreshToken: null,
     role: null,
