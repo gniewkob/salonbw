@@ -10,6 +10,7 @@ describe('employee dashboard navigation', () => {
 
     it('redirects to employee dashboard and shows widgets', () => {
         cy.visit('/dashboard');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/employee');
         cy.contains('Today Appointments');
@@ -18,6 +19,7 @@ describe('employee dashboard navigation', () => {
 
     it('navigates to clients via sidebar', () => {
         cy.visit('/dashboard/employee');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.contains('Clients').click();
         cy.url().should('include', '/clients');
@@ -37,6 +39,7 @@ describe('employee dashboard clients crud', () => {
             'createClient',
         );
         cy.visit('/clients');
+        cy.wait('@profile');
         cy.wait('@getClients');
         cy.contains('Add Client').click();
         cy.get('input[placeholder="Name"]').type('New');
