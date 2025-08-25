@@ -10,6 +10,7 @@ describe('client dashboard navigation', () => {
 
     it('redirects to client dashboard and shows widgets', () => {
         cy.visit('/dashboard');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/client');
         cy.contains('Upcoming');
@@ -17,6 +18,7 @@ describe('client dashboard navigation', () => {
 
     it('navigates to reviews via sidebar', () => {
         cy.visit('/dashboard/client');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.contains('Reviews').click();
         cy.url().should('include', '/reviews');
@@ -38,6 +40,7 @@ describe('client dashboard reviews crud', () => {
             rating: 5,
         }).as('createReview');
         cy.visit('/reviews');
+        cy.wait('@profile');
         cy.wait('@getReviews');
         cy.contains('Add Review').click();
         cy.get('input[placeholder="Appointment"]').type('1');
