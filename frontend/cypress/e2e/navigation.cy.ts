@@ -1,14 +1,20 @@
+import { mockAdminLogin } from '../support/mockLogin';
+
 describe('navigation visibility', () => {
-    it('shows dashboard navigation for authenticated users on /products', () => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'admin');
-        cy.intercept('GET', '/api/products/admin', { fixture: 'products.json' }).as(
-            'getProd',
-        );
-        cy.visit('/products');
-        cy.wait('@getProd');
-        cy.contains('Dashboard');
-        cy.contains('Products');
+    describe('authenticated admin', () => {
+        beforeEach(() => {
+            mockAdminLogin();
+            cy.intercept('GET', '/api/products/admin', {
+                fixture: 'products.json',
+            }).as('getProd');
+        });
+
+        it('shows dashboard navigation for authenticated users on /products', () => {
+            cy.visit('/products');
+            cy.wait('@getProd');
+            cy.contains('Dashboard');
+            cy.contains('Products');
+        });
     });
 
     it('redirects unauthenticated users away from /products', () => {
