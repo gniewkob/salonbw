@@ -51,6 +51,6 @@ describe('RouteGuard', () => {
                 <div>Secret</div>
             </RouteGuard>,
         );
-        expect(replace).toHaveBeenCalledWith('/dashboard');
+        expect(replace).toHaveBeenCalledWith('/dashboard/client');
     });
 });
