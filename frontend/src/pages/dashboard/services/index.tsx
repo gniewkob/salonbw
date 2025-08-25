@@ -43,7 +43,7 @@ export default function ServicesPage() {
     };
 
     return (
-        <RouteGuard>
+        <RouteGuard roles={['admin']}>
             <DashboardLayout>
                 <div className="mb-2 flex justify-end">
                     <button

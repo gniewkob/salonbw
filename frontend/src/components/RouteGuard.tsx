@@ -16,7 +16,7 @@ export default function RouteGuard({ children, roles }: Props) {
         if (!isAuthenticated) {
             void router.replace('/auth/login');
         } else if (roles && role && !roles.includes(role)) {
-            void router.replace('/dashboard');
+            void router.replace(`/dashboard/${role}`);
         }
     }, [isAuthenticated, role, roles, router]);
 
