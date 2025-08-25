@@ -20,6 +20,7 @@ describe('employees crud', () => {
             'createEmp',
         );
         cy.visit('/employees');
+        cy.wait('@profile');
         cy.wait('@getEmps');
         cy.contains('Add Employee').click();
         cy.get('input[placeholder="Name"]').type('New');

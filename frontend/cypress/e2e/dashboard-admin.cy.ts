@@ -10,6 +10,7 @@ describe('admin dashboard navigation', () => {
 
     it('redirects to admin dashboard and shows widgets', () => {
         cy.visit('/dashboard');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/admin');
         cy.contains('Clients');
@@ -18,6 +19,7 @@ describe('admin dashboard navigation', () => {
 
     it('navigates to employees via sidebar', () => {
         cy.visit('/dashboard/admin');
+        cy.wait('@profile');
         cy.wait('@dashboard');
         cy.contains('Employees').click();
         cy.url().should('include', '/employees');
@@ -37,6 +39,7 @@ describe('admin dashboard services crud', () => {
             'createSvc',
         );
         cy.visit('/dashboard/services');
+        cy.wait('@profile');
         cy.wait('@getSvc');
         cy.contains('Add Service').click();
         cy.get('input[placeholder="Name"]').type('Wax');
