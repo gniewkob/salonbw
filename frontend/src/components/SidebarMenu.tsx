@@ -51,6 +51,7 @@ export default function SidebarMenu({ open, onClose }: Props) {
                     key={l.href}
                     href={l.href}
                     className="block rounded px-2 py-1 hover:bg-gray-700"
+                    data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                     {l.label}
                 </Link>
