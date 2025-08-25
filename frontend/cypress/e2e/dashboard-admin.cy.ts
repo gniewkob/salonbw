@@ -1,26 +1,21 @@
+import { mockAdminLogin } from '../support/mockLogin';
+
 describe('admin dashboard navigation', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'admin');
+        mockAdminLogin();
     });
 
     it('redirects to admin dashboard and shows widgets', () => {
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/admin');
         cy.contains('Clients');
         cy.contains('Employees');
     });
 
     it('navigates to employees via sidebar', () => {
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard/admin');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.contains('Employees').click();
         cy.url().should('include', '/employees');
     });
@@ -28,8 +23,7 @@ describe('admin dashboard navigation', () => {
 
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'admin');
+        mockAdminLogin();
         cy.intercept('GET', '**/api/services', { fixture: 'services.json' }).as(
             'getSvc',
         );
