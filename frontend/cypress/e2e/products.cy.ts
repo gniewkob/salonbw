@@ -23,6 +23,7 @@ describe('products crud', () => {
             stock: 1,
         }).as('createProd');
         cy.visit('/products');
+        cy.wait('@profile');
         cy.wait('@getProd');
         cy.contains('Add Product').click();
         cy.get('input[placeholder="Name"]').type('New');
