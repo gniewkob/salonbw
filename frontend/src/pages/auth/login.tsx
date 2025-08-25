@@ -1,59 +1,100 @@
-import { FormEvent, useState } from 'react';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicLayout from '@/components/PublicLayout';
 
 export default function LoginPage() {
     const { login } = useAuth();
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
 
-    const schema = z.object({
-        email: z.string().email({ message: 'Invalid email' }),
-        password: z.string().min(1, { message: 'Password is required' }),
+    const validationSchema = Yup.object({
+        email: Yup.string()
+            .email('Invalid email')
+            .required('Email is required'),
+        password: Yup.string().required('Password is required'),
     });
-
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        try {
-            const creds = schema.parse({ email, password });
-            await login(creds.email, creds.password);
-            void router.push('/dashboard');
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError) {
-                setError(err.issues[0]?.message ?? 'Login failed');
-            } else if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError('Login failed');
-            }
-        }
-    };
 
     return (
         <PublicLayout>
-            <form onSubmit={(e) => void handleSubmit(e)}>
-                <input
-                    placeholder="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    placeholder="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
-                {error && (
-                    <p role="alert" style={{ color: 'red' }}>
-                        {error}
-                    </p>
+            <Formik
+                initialValues={{ email: '', password: '' }}
+                validationSchema={validationSchema}
+                onSubmit={async (
+                    values,
+                    { setSubmitting, setStatus, setFieldValue },
+                ) => {
+                    try {
+                        await login(values.email, values.password);
+                        void router.push('/dashboard');
+                    } catch (err: unknown) {
+                        setStatus(
+                            err instanceof Error ? err.message : 'Login failed',
+                        );
+                        void setFieldValue('password', '', false);
+                    } finally {
+                        setSubmitting(false);
+                    }
+                }}
+            >
+                {({
+                    errors,
+                    touched,
+                    isSubmitting,
+                    status,
+                    handleChange,
+                    handleBlur,
+                    values,
+                }) => (
+                    <Form>
+                        <div>
+                            <label htmlFor="email">Email</label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={values.email}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                            />
+                            {touched.email && errors.email && (
+                                <p role="alert" style={{ color: 'red' }}>
+                                    {errors.email}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label htmlFor="password">Password</label>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                value={values.password}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                            />
+                            {touched.password && errors.password && (
+                                <p role="alert" style={{ color: 'red' }}>
+                                    {errors.password}
+                                </p>
+                            )}
+                        </div>
+                        <button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Loading...' : 'Login'}
+                        </button>
+                        {status && (
+                            <p role="alert" style={{ color: 'red' }}>
+                                {status}
+                            </p>
+                        )}
+                    </Form>
                 )}
-            </form>
+            </Formik>
+            <p>
+                Nie masz konta?{' '}
+                <Link href="/auth/register">Zarejestruj się</Link>
+            </p>
         </PublicLayout>
     );
 }
