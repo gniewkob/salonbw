@@ -19,7 +19,7 @@ describe('services crud', () => {
         cy.intercept('POST', '/api/services', { id: 3, name: 'New' }).as(
             'createSvc',
         );
-        cy.visit('/services');
+        cy.visit('/dashboard/services');
         cy.wait('@profile');
         cy.wait('@getSvc');
         cy.contains('Cut');
@@ -28,6 +28,6 @@ describe('services crud', () => {
         cy.contains('button', 'Save').click();
         cy.wait('@createSvc');
         cy.contains('Service created');
-        cy.contains('New');
+        cy.get('table').should('contain', 'New');
     });
 });
