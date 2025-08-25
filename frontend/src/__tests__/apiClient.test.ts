@@ -1,5 +1,9 @@
 import MockAdapter from 'axios-mock-adapter';
+import type { AxiosInstance } from 'axios';
 import { ApiClient } from '@/api/apiClient';
+
+const axiosInstance = (client: ApiClient): AxiosInstance =>
+    (client as unknown as { axios: AxiosInstance }).axios;
 
 describe('ApiClient', () => {
     it('adds Authorization header when token is present', async () => {
@@ -7,8 +11,7 @@ describe('ApiClient', () => {
             () => 't',
             () => {},
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mock = new MockAdapter((client as any).axios);
+        const mock = new MockAdapter(axiosInstance(client));
         mock.onGet('/test').reply((config) => {
             expect(config.headers?.Authorization).toBe('Bearer t');
             return [200, {}];
@@ -19,8 +22,7 @@ describe('ApiClient', () => {
     it('calls logout callback on 401 responses', async () => {
         const onLogout = jest.fn();
         const client = new ApiClient(() => null, onLogout);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mock = new MockAdapter((client as any).axios);
+        const mock = new MockAdapter(axiosInstance(client));
         mock.onGet('/test').reply(401, { message: 'Unauthorized' });
         await expect(client.request('/test')).rejects.toThrow('Unauthorized');
         expect(onLogout).toHaveBeenCalled();
@@ -31,8 +33,7 @@ describe('ApiClient', () => {
             () => null,
             () => {},
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mock = new MockAdapter((client as any).axios);
+        const mock = new MockAdapter(axiosInstance(client));
         const message = 'Bad things happened';
         mock.onGet('/test').reply(400, { message });
         await client.request('/test').catch((err) => {
@@ -45,8 +46,7 @@ describe('ApiClient', () => {
             () => null,
             () => {},
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mock = new MockAdapter((client as any).axios);
+        const mock = new MockAdapter(axiosInstance(client));
         mock.onGet('/test').reply(204);
         const res = await client.request('/test');
         expect(res).toBeUndefined();
@@ -57,8 +57,7 @@ describe('ApiClient', () => {
             () => null,
             () => {},
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mock = new MockAdapter((client as any).axios);
+        const mock = new MockAdapter(axiosInstance(client));
         mock.onGet('/test').reply(200, '');
         const res = await client.request('/test');
         expect(res).toBeUndefined();
