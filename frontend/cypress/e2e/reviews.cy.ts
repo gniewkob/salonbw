@@ -10,10 +10,10 @@ describe('reviews crud', () => {
     });
 
     it('loads and creates review', () => {
-        cy.intercept('GET', '**/employees/*/reviews', {
+        cy.intercept('GET', '**/api/employees/*/reviews', {
             fixture: 'reviews.json',
         }).as('getRev');
-        cy.intercept('POST', '**/appointments/*/review', {
+        cy.intercept('POST', '**/api/appointments/*/review', {
             id: 2,
             appointmentId: 1,
             rating: 5,
