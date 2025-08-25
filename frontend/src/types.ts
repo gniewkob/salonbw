@@ -10,9 +10,6 @@ export interface User {
     email: string;
     name: string;
     role: Role;
-    phone: string | null;
-    commissionBase: number;
-    receiveNotifications: boolean;
 }
 
 export interface Appointment {
