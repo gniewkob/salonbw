@@ -5,7 +5,7 @@ describe('client dashboard navigation', () => {
     });
 
     it('redirects to client dashboard and shows widgets', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dash',
         );
         cy.visit('/dashboard');
@@ -15,7 +15,7 @@ describe('client dashboard navigation', () => {
     });
 
     it('navigates to reviews via sidebar', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dash',
         );
         cy.visit('/dashboard/client');
@@ -29,13 +29,13 @@ describe('client dashboard reviews crud', () => {
     beforeEach(() => {
         localStorage.setItem('jwtToken', 'x');
         localStorage.setItem('role', 'client');
-        cy.intercept('GET', '**/employees/*/reviews', {
+        cy.intercept('GET', '**/api/employees/*/reviews', {
             fixture: 'reviews.json',
         }).as('getReviews');
     });
 
     it('creates a review', () => {
-        cy.intercept('POST', '**/appointments/*/review', {
+        cy.intercept('POST', '**/api/appointments/*/review', {
             id: 2,
             appointmentId: 1,
             rating: 5,
