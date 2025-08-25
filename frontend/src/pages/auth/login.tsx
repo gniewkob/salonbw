@@ -5,22 +5,20 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicLayout from '@/components/PublicLayout';
 
+export const loginValidationSchema = Yup.object({
+    email: Yup.string().email('Invalid email').required('Email is required'),
+    password: Yup.string().required('Password is required'),
+});
+
 export default function LoginPage() {
     const { login } = useAuth();
     const router = useRouter();
-
-    const validationSchema = Yup.object({
-        email: Yup.string()
-            .email('Invalid email')
-            .required('Email is required'),
-        password: Yup.string().required('Password is required'),
-    });
 
     return (
         <PublicLayout>
             <Formik
                 initialValues={{ email: '', password: '' }}
-                validationSchema={validationSchema}
+                validationSchema={loginValidationSchema}
                 onSubmit={async (
                     values,
                     { setSubmitting, setStatus, setFieldValue },
