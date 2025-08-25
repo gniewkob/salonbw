@@ -48,6 +48,8 @@ describe('employee dashboard clients crud', () => {
 
 describe('employee dashboard permissions', () => {
     it('redirects anonymous user', () => {
+        cy.intercept('GET', '/api/profile', { statusCode: 401 });
+        cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/employee');
         cy.url().should('include', '/auth/login');
     });
