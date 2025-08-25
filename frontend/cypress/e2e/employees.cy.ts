@@ -11,10 +11,10 @@ describe('employees crud', () => {
     });
 
     it('loads and creates employee', () => {
-        cy.intercept('GET', '**/api/employees', { fixture: 'employees.json' }).as(
+        cy.intercept('GET', '/api/employees', { fixture: 'employees.json' }).as(
             'getEmps',
         );
-        cy.intercept('POST', '**/api/employees', { id: 3, name: 'New' }).as(
+        cy.intercept('POST', '/api/employees', { id: 3, name: 'New' }).as(
             'createEmp',
         );
         cy.visit('/employees');

@@ -24,13 +24,13 @@ describe('employee dashboard navigation', () => {
 describe('employee dashboard clients crud', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '**/clients', { fixture: 'clients.json' }).as(
+        cy.intercept('GET', '/api/clients', { fixture: 'clients.json' }).as(
             'getClients',
         );
     });
 
     it('creates a client', () => {
-        cy.intercept('POST', '**/clients', { id: 3, name: 'New' }).as(
+        cy.intercept('POST', '/api/clients', { id: 3, name: 'New' }).as(
             'createClient',
         );
         cy.visit('/clients');

@@ -24,13 +24,13 @@ describe('admin dashboard navigation', () => {
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '**/api/services', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '/api/services', { fixture: 'services.json' }).as(
             'getSvc',
         );
     });
 
     it('creates a service', () => {
-        cy.intercept('POST', '**/api/services', { id: 3, name: 'Wax' }).as(
+        cy.intercept('POST', '/api/services', { id: 3, name: 'Wax' }).as(
             'createSvc',
         );
         cy.visit('/dashboard/services');
