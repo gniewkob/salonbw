@@ -1,25 +1,20 @@
+import { mockClientLogin } from '../support/mockLogin';
+
 describe('client dashboard navigation', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'client');
+        mockClientLogin();
     });
 
     it('redirects to client dashboard and shows widgets', () => {
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/client');
         cy.contains('Upcoming');
     });
 
     it('navigates to reviews via sidebar', () => {
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard/client');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.contains('Reviews').click();
         cy.url().should('include', '/reviews');
     });
@@ -27,8 +22,7 @@ describe('client dashboard navigation', () => {
 
 describe('client dashboard reviews crud', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'client');
+        mockClientLogin();
         cy.intercept('GET', '**/api/employees/*/reviews', {
             fixture: 'reviews.json',
         }).as('getReviews');
