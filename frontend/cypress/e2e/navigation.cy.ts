@@ -6,12 +6,12 @@ describe('navigation visibility', () => {
             mockAdminLogin();
             cy.intercept('GET', '/api/products*', {
                 fixture: 'products.json',
-            }).as('getProd');
+            });
         });
 
         it('shows dashboard navigation for authenticated users on /products', () => {
             cy.visit('/products');
-            cy.wait('@getProd');
+            cy.contains('Shampoo');
             cy.contains('Dashboard');
             cy.contains('Products');
         });
@@ -23,11 +23,9 @@ describe('navigation visibility', () => {
     });
 
     it('renders public navigation on public pages', () => {
-        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
-            'getServices',
-        );
+        cy.intercept('GET', '/api/services*', { fixture: 'services.json' });
         cy.visit('/services');
-        cy.wait('@getServices');
+        cy.contains('Cut');
         cy.get('nav').contains('Login');
         cy.get('nav').contains('Services');
     });
