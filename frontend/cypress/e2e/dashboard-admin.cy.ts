@@ -27,7 +27,7 @@ describe('admin dashboard navigation', () => {
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '/api/services', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
             'getSvc',
         );
     });
