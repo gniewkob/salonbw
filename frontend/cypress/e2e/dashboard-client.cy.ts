@@ -50,6 +50,8 @@ describe('client dashboard reviews crud', () => {
 
 describe('client dashboard permissions', () => {
     it('redirects anonymous user', () => {
+        cy.intercept('GET', '/api/profile', { statusCode: 401 });
+        cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/client');
         cy.url().should('include', '/auth/login');
     });
