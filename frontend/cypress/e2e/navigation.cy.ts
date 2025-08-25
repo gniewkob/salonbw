@@ -2,7 +2,7 @@ describe('navigation visibility', () => {
     it('shows dashboard navigation for authenticated users on /products', () => {
         localStorage.setItem('jwtToken', 'x');
         localStorage.setItem('role', 'admin');
-        cy.intercept('GET', '**/products**', { fixture: 'products.json' }).as(
+        cy.intercept('GET', '**/api/products**', { fixture: 'products.json' }).as(
             'getProd',
         );
         cy.visit('/products');
@@ -17,7 +17,7 @@ describe('navigation visibility', () => {
     });
 
     it('renders public navigation on public pages', () => {
-        cy.intercept('GET', '**/services**', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '**/api/services**', { fixture: 'services.json' }).as(
             'getServices',
         );
         cy.visit('/services');

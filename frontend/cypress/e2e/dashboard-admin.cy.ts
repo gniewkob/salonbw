@@ -5,7 +5,7 @@ describe('admin dashboard navigation', () => {
     });
 
     it('redirects to admin dashboard and shows widgets', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dash',
         );
         cy.visit('/dashboard');
@@ -16,7 +16,7 @@ describe('admin dashboard navigation', () => {
     });
 
     it('navigates to employees via sidebar', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dash',
         );
         cy.visit('/dashboard/admin');
@@ -30,13 +30,13 @@ describe('admin dashboard services crud', () => {
     beforeEach(() => {
         localStorage.setItem('jwtToken', 'x');
         localStorage.setItem('role', 'admin');
-        cy.intercept('GET', '**/services', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '**/api/services', { fixture: 'services.json' }).as(
             'getSvc',
         );
     });
 
     it('creates a service', () => {
-        cy.intercept('POST', '**/services', { id: 3, name: 'Wax' }).as(
+        cy.intercept('POST', '**/api/services', { id: 3, name: 'Wax' }).as(
             'createSvc',
         );
         cy.visit('/dashboard/services');
