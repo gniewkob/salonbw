@@ -1,26 +1,21 @@
+import { mockEmployeeLogin } from '../support/mockLogin';
+
 describe('employee dashboard navigation', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'employee');
+        mockEmployeeLogin();
     });
 
     it('redirects to employee dashboard and shows widgets', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/employee');
         cy.contains('Today Appointments');
         cy.contains('Clients');
     });
 
     it('navigates to clients via sidebar', () => {
-        cy.intercept('GET', '**/dashboard', { fixture: 'dashboard.json' }).as(
-            'dash',
-        );
         cy.visit('/dashboard/employee');
-        cy.wait('@dash');
+        cy.wait('@dashboard');
         cy.contains('Clients').click();
         cy.url().should('include', '/clients');
     });
@@ -28,8 +23,7 @@ describe('employee dashboard navigation', () => {
 
 describe('employee dashboard clients crud', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
-        localStorage.setItem('role', 'employee');
+        mockEmployeeLogin();
         cy.intercept('GET', '**/clients', { fixture: 'clients.json' }).as(
             'getClients',
         );
