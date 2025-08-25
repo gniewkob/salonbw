@@ -1,3 +1,5 @@
+import { mockAdminLogin } from '../support/mockLogin';
+
 describe('basic', () => {
     it('loads home', () => {
         cy.visit('/');
@@ -7,7 +9,7 @@ describe('basic', () => {
 
 describe('employees crud', () => {
     beforeEach(() => {
-        localStorage.setItem('jwtToken', 'x');
+        mockAdminLogin();
     });
 
     it('loads and creates employee', () => {

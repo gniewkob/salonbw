@@ -3,6 +3,9 @@ import { mockClientLogin } from '../support/mockLogin';
 describe('client dashboard navigation', () => {
     beforeEach(() => {
         mockClientLogin();
+        cy.intercept('GET', '/api/dashboard', { fixture: 'dashboard.json' }).as(
+            'dashboard',
+        );
     });
 
     it('redirects to client dashboard and shows widgets', () => {
