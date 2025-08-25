@@ -13,13 +13,20 @@ describe('services crud', () => {
     });
 
     it('loads and creates service', () => {
-        cy.intercept('GET', '/api/services*', { fixture: 'services.json' });
-        cy.intercept('POST', '/api/services', { id: 3, name: 'New' });
+        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
+            'getSvc',
+        );
+        cy.intercept('POST', '/api/services', { id: 3, name: 'New' }).as(
+            'createSvc',
+        );
         cy.visit('/services');
+        cy.wait('@profile');
+        cy.wait('@getSvc');
         cy.contains('Cut');
         cy.contains('Add Service').click();
         cy.get('input[placeholder="Name"]').type('New');
         cy.contains('button', 'Save').click();
+        cy.wait('@createSvc');
         cy.contains('Service created');
         cy.contains('New');
     });
