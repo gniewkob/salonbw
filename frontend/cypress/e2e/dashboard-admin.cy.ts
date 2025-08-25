@@ -3,6 +3,9 @@ import { mockAdminLogin } from '../support/mockLogin';
 describe('admin dashboard navigation', () => {
     beforeEach(() => {
         mockAdminLogin();
+        cy.intercept('GET', '/api/dashboard', { fixture: 'dashboard.json' }).as(
+            'dashboard',
+        );
     });
 
     it('redirects to admin dashboard and shows widgets', () => {
