@@ -13,21 +13,21 @@ describe('reviews crud', () => {
     });
 
     it('loads and creates review', () => {
-        cy.intercept('GET', '/api/reviews', {
+        cy.intercept('GET', '/api/employees/*/reviews*', {
             fixture: 'reviews.json',
-        }).as('getRev');
-        cy.intercept('POST', '/api/reviews', {
+        }).as('getReviews');
+        cy.intercept('POST', '/api/employees/*/reviews*', {
             id: 2,
             appointmentId: 1,
             rating: 5,
-        }).as('createRev');
+        }).as('createReview');
         cy.visit('/reviews');
-        cy.wait('@getRev');
+        cy.wait('@getReviews');
         cy.contains('Add Review').click();
         cy.get('input[placeholder="Appointment"]').type('1');
         cy.get('input[placeholder="Rating"]').type('5');
         cy.contains('button', 'Save').click();
-        cy.wait('@createRev');
+        cy.wait('@createReview');
         cy.contains('Review created');
     });
 });
