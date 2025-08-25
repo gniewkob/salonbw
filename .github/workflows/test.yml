@@ -62,7 +62,7 @@ jobs:
       - name: Install Cypress dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libatk1.0-0 libgtk-3-0 libnss3 libxss1 libasound2
+          sudo apt-get install -y libatk1.0-0 libgtk-3-0 libnss3 libxss1 libasound2t64
       - name: E2E tests
         run: |
           cd frontend
