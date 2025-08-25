@@ -55,6 +55,14 @@ jobs:
             echo "OpenAPI generation produced warnings"
             exit 1
           fi
+      - name: Install Cypress dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libatk1.0-0 libgtk-3-0 libnss3 libxss1 libasound2
+      - name: E2E tests
+        run: |
+          cd frontend
+          npm run e2e
       - name: Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: echo "Deploying..."
