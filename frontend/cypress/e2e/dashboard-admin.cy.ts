@@ -8,21 +8,32 @@ describe('admin dashboard navigation', () => {
         );
     });
 
-    it('redirects to admin dashboard and shows widgets', () => {
+    it('redirects to admin dashboard and navigates to employees', () => {
         cy.visit('/dashboard');
         cy.wait('@profile');
         cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/admin');
         cy.contains('Clients');
-        cy.contains('Employees');
+        cy.intercept('GET', '/api/employees*', {
+            fixture: 'employees.json',
+        }).as('getEmployees');
+        cy.get('[data-testid="nav-employees"]').click();
+        cy.wait('@getEmployees');
+        cy.url().should('include', '/employees');
+        cy.get('table').should('be.visible');
     });
 
     it('navigates to employees via sidebar', () => {
         cy.visit('/dashboard/admin');
         cy.wait('@profile');
         cy.wait('@dashboard');
-        cy.contains('Employees').click();
+        cy.intercept('GET', '/api/employees*', {
+            fixture: 'employees.json',
+        }).as('getEmployees');
+        cy.get('[data-testid="nav-employees"]').click();
+        cy.wait('@getEmployees');
         cy.url().should('include', '/employees');
+        cy.get('table').should('be.visible');
     });
 });
 

@@ -21,8 +21,13 @@ describe('employee dashboard navigation', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@dashboard');
-        cy.contains('Clients').click();
+        cy.intercept('GET', '/api/clients', {
+            fixture: 'clients.json',
+        }).as('getClients');
+        cy.get('[data-testid="nav-clients"]').click();
+        cy.wait('@getClients');
         cy.url().should('include', '/clients');
+        cy.get('table').should('be.visible');
     });
 });
 

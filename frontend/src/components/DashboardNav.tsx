@@ -53,6 +53,7 @@ export default function DashboardNav() {
                             href={l.href}
                             aria-current={isActive ? 'page' : undefined}
                             className={`block px-2 py-1 transition duration-150 hover:text-blue-700 ${isActive ? 'font-bold text-blue-600 border-l-4 border-blue-500 pl-2 bg-white' : ''}`}
+                            data-testid={`nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`}
                         >
                             {l.label}
                         </Link>
