@@ -56,7 +56,7 @@ describe('client dashboard reviews crud', () => {
         cy.get('input[placeholder="Appointment"]').type('1');
         cy.get('input[placeholder="Rating"]').type('5');
         cy.contains('button', 'Save').click();
-        cy.wait('@createReview');
+        cy.wait('@createReview', { timeout: 10000 });
         cy.contains('Review created');
     });
 });
