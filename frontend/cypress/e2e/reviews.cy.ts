@@ -19,8 +19,10 @@ describe('reviews crud', () => {
             );
         });
         cy.intercept(
-            'POST',
-            /\/(api\/)?appointments\/\d+\/review$/,
+            {
+                method: 'POST',
+                url: /\/(api\/)?appointments\/\d+\/review(?:\/)?(?:\?.*)?$/,
+            },
             {
                 statusCode: 201,
                 body: {
@@ -28,6 +30,8 @@ describe('reviews crud', () => {
                     appointmentId: 1,
                     rating: 5,
                     comment: 'Great',
+                    employee: { id: 1, fullName: 'John Doe' },
+                    author: { id: 1, name: 'Test Client' },
                 },
             },
         ).as('createReview');
