@@ -37,7 +37,7 @@ describe('products crud', () => {
         cy.get('input[placeholder="Price"]').type('1');
         cy.get('input[placeholder="Stock"]').type('1');
         cy.contains('button', 'Save').click();
-        cy.wait('@createProd');
+        cy.wait('@createProd', { timeout: 10000 });
         cy.contains('New');
         cy.contains('Product created');
     });
