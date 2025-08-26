@@ -17,7 +17,8 @@ describe('admin dashboard navigation', () => {
         cy.intercept('GET', '/api/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.get('[data-testid="nav-employees"]').click();
+        cy.get('[data-testid="nav-employees"]').as('navEmployees');
+        cy.get('@navEmployees').click();
         cy.wait('@getEmployees');
         cy.url().should('include', '/employees');
         cy.get('table').should('be.visible');
@@ -30,7 +31,8 @@ describe('admin dashboard navigation', () => {
         cy.intercept('GET', '/api/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.get('[data-testid="nav-employees"]').click();
+        cy.get('[data-testid="nav-employees"]').as('navEmployees');
+        cy.get('@navEmployees').click();
         cy.wait('@getEmployees');
         cy.url().should('include', '/employees');
         cy.get('table').should('be.visible');
