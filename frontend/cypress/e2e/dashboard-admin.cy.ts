@@ -54,7 +54,9 @@ describe('admin dashboard services crud', () => {
         cy.visit('/dashboard/services');
         cy.wait('@profile');
         cy.wait('@getSvc');
-        cy.contains('Add Service').click();
+        cy.contains('Add Service', { timeout: 10000 })
+            .should('be.visible')
+            .click();
         cy.get('input[placeholder="Name"]').type('Wax');
         cy.contains('button', 'Save').click();
         cy.wait('@createSvc');

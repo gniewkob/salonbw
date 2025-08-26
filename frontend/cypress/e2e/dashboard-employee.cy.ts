@@ -47,7 +47,9 @@ describe('employee dashboard clients crud', () => {
         cy.visit('/clients');
         cy.wait('@profile');
         cy.wait('@getClients');
-        cy.contains('Add Client').click();
+        cy.contains('Add Client', { timeout: 10000 })
+            .should('be.visible')
+            .click();
         cy.get('input[placeholder="Name"]').type('New');
         cy.contains('button', 'Save').click();
         cy.wait('@createClient');
