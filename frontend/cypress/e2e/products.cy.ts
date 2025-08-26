@@ -17,11 +17,16 @@ describe('products crud', () => {
             fixture: 'products.json',
         }).as('getProd');
         cy.intercept('POST', '/api/products/admin', {
-            id: 2,
-            name: 'New',
-            unitPrice: 1,
-            stock: 1,
-        }).as('createProdAdmin');
+            statusCode: 201,
+            body: {
+                id: 999,
+                name: 'New',
+                brand: 'B',
+                unitPrice: 1,
+                stock: 1,
+                lowStockThreshold: 5,
+            },
+        }).as('createProd');
         cy.visit('/products');
         cy.wait('@profile');
         cy.wait('@getProd');
@@ -32,7 +37,7 @@ describe('products crud', () => {
         cy.get('input[placeholder="Price"]').type('1');
         cy.get('input[placeholder="Stock"]').type('1');
         cy.contains('button', 'Save').click();
-        cy.wait('@createProdAdmin');
+        cy.wait('@createProd');
         cy.contains('New');
         cy.contains('Product created');
     });
