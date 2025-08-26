@@ -13,22 +13,24 @@ describe('employees crud', () => {
     });
 
     it('loads and creates employee', () => {
-        cy.intercept('GET', '/api/employees', { fixture: 'employees.json' }).as(
+        cy.intercept('GET', '/api/employees*', { fixture: 'employees.json' }).as(
             'getEmps',
         );
-        cy.intercept('POST', '/api/employees', { id: 3, name: 'New' }).as(
-            'createEmp',
-        );
+        cy.intercept('POST', '/api/employees', {
+            id: 3,
+            firstName: 'New',
+            lastName: 'Employee',
+            fullName: 'New Employee',
+        }).as('createEmp');
         cy.visit('/employees');
-        cy.wait('@profile');
-        cy.wait('@getEmps');
         cy.contains('Add Employee', { timeout: 10000 })
             .should('be.visible')
             .click();
-        cy.get('input[placeholder="Name"]').type('New');
+        cy.get('input[placeholder="First name"]').type('New');
+        cy.get('input[placeholder="Last name"]').type('Employee');
         cy.contains('button', 'Save').click();
         cy.wait('@createEmp');
-        cy.contains('New');
+        cy.contains('New Employee');
         cy.contains('Employee created');
     });
 });
