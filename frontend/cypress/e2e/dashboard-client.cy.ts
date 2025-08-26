@@ -20,7 +20,10 @@ describe('client dashboard navigation', () => {
         cy.visit('/dashboard/client');
         cy.wait('@profile');
         cy.wait('@dashboard');
-        cy.contains('Reviews').click();
+        cy.get('[data-testid="nav-reviews"]', { timeout: 10000 }).as(
+            'navReviews',
+        );
+        cy.get('@navReviews').click();
         cy.url().should('include', '/reviews');
     });
 });

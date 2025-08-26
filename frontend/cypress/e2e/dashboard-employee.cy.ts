@@ -24,7 +24,9 @@ describe('employee dashboard navigation', () => {
         cy.intercept('GET', '/api/clients', {
             fixture: 'clients.json',
         }).as('getClients');
-        cy.get('[data-testid="nav-clients"]').as('navClients');
+        cy.get('[data-testid="nav-clients"]', { timeout: 10000 }).as(
+            'navClients',
+        );
         cy.get('@navClients').click();
         cy.wait('@getClients');
         cy.url().should('include', '/clients');
