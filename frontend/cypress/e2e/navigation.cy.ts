@@ -11,6 +11,7 @@ describe('navigation visibility', () => {
 
         it('shows dashboard navigation for authenticated users on /products', () => {
             cy.visit('/products');
+            cy.wait('@profile');
             cy.wait('@getProd');
             cy.contains('Shampoo');
             cy.contains('Dashboard');
