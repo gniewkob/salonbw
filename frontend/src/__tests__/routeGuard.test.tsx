@@ -29,6 +29,19 @@ describe('RouteGuard', () => {
         expect(screen.queryByText('Secret')).toBeNull();
     });
 
+    it('does not redirect before initialization', () => {
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ isAuthenticated: false, initialized: false }),
+        );
+        render(
+            <RouteGuard>
+                <div>Secret</div>
+            </RouteGuard>,
+        );
+        expect(replace).not.toHaveBeenCalled();
+        expect(screen.queryByText('Secret')).toBeNull();
+    });
+
     it('renders children when authenticated and role allowed', () => {
         mockedUseAuth.mockReturnValue(
             createAuthValue({ isAuthenticated: true, role: 'receptionist' }),

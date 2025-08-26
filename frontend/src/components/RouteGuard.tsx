@@ -9,17 +9,19 @@ interface Props {
 }
 
 export default function RouteGuard({ children, roles }: Props) {
-    const { isAuthenticated, role } = useAuth();
+    const { isAuthenticated, role, initialized } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
+        if (!initialized) return;
         if (!isAuthenticated) {
             void router.replace('/auth/login');
         } else if (roles && role && !roles.includes(role)) {
             void router.replace(`/dashboard/${role}`);
         }
-    }, [isAuthenticated, role, roles, router]);
+    }, [initialized, isAuthenticated, role, roles, router]);
 
+    if (!initialized) return null;
     if (!isAuthenticated) return null;
     if (roles && role && !roles.includes(role)) return null;
     return <>{children}</>;
