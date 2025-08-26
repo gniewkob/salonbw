@@ -31,13 +31,15 @@ describe('client dashboard navigation', () => {
 describe('client dashboard reviews crud', () => {
     beforeEach(() => {
         mockClientLogin();
-        cy.intercept('GET', '/api/employees/*/reviews*', {
-            fixture: 'reviews.json',
-        }).as('getReviews');
+        cy.fixture('reviews.json').then((reviews) => {
+            cy.intercept('GET', '/api/employees/*/reviews*', reviews).as(
+                'getReviews',
+            );
+        });
     });
 
     it('creates a review', () => {
-        cy.intercept('POST', '/api/employees/*/reviews*', {
+        cy.intercept('POST', '**/appointments/*/review', {
             id: 2,
             appointmentId: 1,
             rating: 5,
