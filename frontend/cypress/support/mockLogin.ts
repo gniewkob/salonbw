@@ -15,12 +15,16 @@ function applyMockLogin(role: 'admin' | 'client' | 'employee', name: string) {
         role,
     }).as('profile');
 
+    cy.visit('/');
+
     cy.setCookie('jwtToken', token);
     cy.setCookie('refreshToken', 'refresh');
 
-    localStorage.setItem('jwtToken', token);
-    localStorage.setItem('refreshToken', 'refresh');
-    localStorage.setItem('role', role);
+    cy.window().then((win) => {
+        win.localStorage.setItem('jwtToken', token);
+        win.localStorage.setItem('refreshToken', 'refresh');
+        win.localStorage.setItem('role', role);
+    });
 }
 
 export function mockAdminLogin() {
