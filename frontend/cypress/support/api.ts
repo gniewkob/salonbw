@@ -1,6 +1,9 @@
 export function interceptAppointmentsList() {
   cy.intercept(
-    { method: 'GET', url: /\/(api\/)?appointments(?:\/)?(?:\?.*)?$/ },
+    {
+      method: 'GET',
+      url: /\/api\/appointments(?:\/)?(?:\?.*)?$/,
+    },
     {
       statusCode: 200,
       body: [
@@ -19,7 +22,10 @@ export function interceptAppointmentsList() {
 
 export function interceptReviewsList() {
   cy.intercept(
-    { method: 'GET', url: /\/(api\/)?reviews(?:\/)?(?:\?.*)?$/ },
+    {
+      method: 'GET',
+      url: /\/api\/reviews(?:\/)?(?:\?.*)?$/,
+    },
     {
       statusCode: 200,
       body: [
@@ -40,7 +46,7 @@ export function interceptCreateReview() {
   cy.intercept(
     {
       method: 'POST',
-      url: /\/(api\/)?(appointments\/\d+\/review|reviews)(?:\/)?(?:\?.*)?$/,
+      url: /\/api\/(appointments\/\d+\/review|reviews)(?:\/)?(?:\?.*)?$/,
     },
     {
       statusCode: 201,
