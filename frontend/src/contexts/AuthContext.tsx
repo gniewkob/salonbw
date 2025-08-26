@@ -25,6 +25,7 @@ interface AuthContextValue {
     accessToken: string | null;
     refreshToken: string | null;
     role: Role | null;
+    initialized: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
@@ -40,11 +41,6 @@ const ROLE_KEY = 'role';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [refreshToken, setRefreshToken] = useState<string | null>(null);
-    const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<Role | null>(null);
-
     const decodeRole = useCallback((jwt: string): Role | null => {
         try {
             const payload = JSON.parse(atob(jwt.split('.')[1]));
@@ -62,26 +58,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return null;
         }
     }, []);
-
-    useEffect(() => {
-        const storedAccess = localStorage.getItem(ACCESS_TOKEN_KEY);
-        const storedRefresh = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const [accessToken, setAccessToken] = useState<string | null>(() =>
+        typeof window !== 'undefined'
+            ? localStorage.getItem(ACCESS_TOKEN_KEY)
+            : null,
+    );
+    const [refreshToken, setRefreshToken] = useState<string | null>(() =>
+        typeof window !== 'undefined'
+            ? localStorage.getItem(REFRESH_TOKEN_KEY)
+            : null,
+    );
+    const [role, setRole] = useState<Role | null>(() => {
+        if (typeof window === 'undefined') return null;
         const storedRole = localStorage.getItem(ROLE_KEY) as Role | null;
-        if (storedAccess) {
-            setAccessToken(storedAccess);
-            const r = decodeRole(storedAccess);
-            setRole(r);
-        }
-        if (storedRefresh) setRefreshToken(storedRefresh);
         if (
             storedRole === 'client' ||
             storedRole === 'employee' ||
             storedRole === 'receptionist' ||
             storedRole === 'admin'
         ) {
-            setRole(storedRole);
+            return storedRole;
         }
-    }, [decodeRole]);
+        const storedAccess = localStorage.getItem(ACCESS_TOKEN_KEY);
+        return storedAccess ? decodeRole(storedAccess) : null;
+    });
+    const [user, setUser] = useState<User | null>(null);
+    const [initialized, setInitialized] = useState(false);
 
     const handleLogout = useCallback(() => {
         setAccessToken(null);
@@ -124,7 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (accessToken) {
-            void fetchProfile().catch(handleLogout);
+            void fetchProfile()
+                .catch(handleLogout)
+                .finally(() => setInitialized(true));
+        } else {
+            setInitialized(true);
         }
     }, [accessToken, fetchProfile, handleLogout]);
 
@@ -153,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         accessToken,
         refreshToken,
         role,
+        initialized,
         isAuthenticated: Boolean(accessToken),
         login,
         register,
