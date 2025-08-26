@@ -1,5 +1,9 @@
 import { mockClientLogin } from '../support/mockLogin';
-import { interceptAppointmentsList, interceptCreateReview } from '../support/api';
+import {
+    interceptAppointmentsList,
+    interceptReviewsList,
+    interceptCreateReview,
+} from '../support/api';
 
 describe('client dashboard navigation', () => {
     beforeEach(() => {
@@ -35,48 +39,27 @@ describe('client dashboard reviews crud', () => {
         cy.intercept('GET', '/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dashboard',
         );
-        cy.fixture('reviews.json').then((reviews) => {
-            cy.intercept('GET', '/api/employees/*/reviews*', reviews).as(
-                'getReviews',
-            );
-        });
-        interceptAppointmentsList();
-        interceptCreateReview();
     });
 
     it('creates a review', () => {
         cy.visit('/dashboard/client');
         cy.wait('@profile');
         cy.wait('@dashboard');
+        interceptAppointmentsList();
+        interceptReviewsList();
+        interceptCreateReview();
+
         cy.contains('Reviews', { timeout: 10000 }).click();
-        cy.wait('@getAppointments');
+        cy.wait('@getReviews', { timeout: 10000 });
 
-        cy.contains('Add Review', { timeout: 10000 }).click();
-
-        cy.get('input[placeholder="Rating"], input[name="rating"]').first().clear().type('5');
-
-        cy.get('textarea[placeholder="Comment"], textarea[name="comment"]').first().then(($el) => {
-            if ($el.length) cy.wrap($el).type('Great');
-        });
-
-        cy.get('input[placeholder*="Appointment"], input[name="appointmentId"]').then(($in) => {
-            if ($in.length) {
-                cy.wrap($in[0]).clear().type('1');
-            } else {
-                cy.get('select[name="appointmentId"]').then(($sel) => {
-                    if ($sel.length) {
-                        cy.wrap($sel[0]).select('1');
-                    } else {
-                        cy.get('[data-testid="appointment-select-trigger"], [role="combobox"]').first().click();
-                        cy.get('[data-radix-select-collection-item], [role="option"]').first().click();
-                    }
-                });
-            }
-        });
-
+        cy.contains('Add Review', { timeout: 10000 })
+            .should('be.visible')
+            .click();
+        cy.get('input[placeholder="Appointment"], input[name="appointmentId"]').first().type('1');
+        cy.get('input[placeholder="Rating"], input[name="rating"]').first().type('5');
         cy.contains('button', 'Save').click();
         cy.wait('@createReview', { timeout: 10000 });
-        cy.contains('Review created', { timeout: 10000 });
+        cy.contains('Review created');
     });
 });
 
