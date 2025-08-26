@@ -49,7 +49,7 @@ describe('client dashboard reviews crud', () => {
         interceptReviewsList();
         interceptCreateReview();
 
-        cy.contains('Reviews', { timeout: 10000 }).click();
+        cy.get('[data-testid="nav-reviews"]', { timeout: 10000 }).click();
         cy.wait('@getReviews', { timeout: 10000 });
 
         cy.contains('Add Review', { timeout: 10000 })
