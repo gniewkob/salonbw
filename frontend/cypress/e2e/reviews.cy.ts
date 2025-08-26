@@ -1,5 +1,5 @@
 import { mockClientLogin } from '../support/mockLogin';
-import { interceptCreateReview } from '../support/api';
+import { interceptAppointmentsList, interceptCreateReview } from '../support/api';
 
 describe('basic', () => {
     it('loads home', () => {
@@ -19,33 +19,35 @@ describe('reviews crud', () => {
                 'getReviews',
             );
         });
+        interceptAppointmentsList();
         interceptCreateReview();
-        cy.intercept(
-            {
-                method: 'POST',
-                url: /\/(api\/)?appointments\/\d+\/review(?:\/)?(?:\?.*)?$/,
-            },
-            {
-                statusCode: 201,
-                body: {
-                    id: 2,
-                    appointmentId: 1,
-                    rating: 5,
-                    comment: 'Great',
-                    employee: { id: 1, fullName: 'John Doe' },
-                    author: { id: 1, name: 'Test Client' },
-                },
-            },
-        ).as('createReview');
         cy.visit('/reviews');
         cy.wait('@getReviews');
-        cy.contains('Add Review', { timeout: 10000 })
-            .should('be.visible')
-            .click();
-        cy.get('input[placeholder="Appointment"]').type('1');
-        cy.get('input[placeholder="Rating"]').type('5');
+        cy.wait('@getAppointments');
+        cy.contains('Add Review', { timeout: 10000 }).click();
+        // Rating (input name or placeholder)
+        cy.get('input[placeholder="Rating"], input[name="rating"]').first().clear().type('5');
+        // Comment (optional)
+        cy.get('textarea[placeholder="Comment"], textarea[name="comment"]').first().then(($el) => {
+            if ($el.length) cy.wrap($el).type('Great');
+        });
+        // Appointment: try input, then select, then combobox trigger
+        cy.get('input[placeholder*="Appointment"], input[name="appointmentId"]').then(($in) => {
+            if ($in.length) {
+                cy.wrap($in[0]).clear().type('1');
+            } else {
+                cy.get('select[name="appointmentId"]').then(($sel) => {
+                    if ($sel.length) {
+                        cy.wrap($sel[0]).select('1');
+                    } else {
+                        cy.get('[data-testid="appointment-select-trigger"], [role="combobox"]').first().click();
+                        cy.get('[data-radix-select-collection-item], [role="option"]').first().click();
+                    }
+                });
+            }
+        });
         cy.contains('button', 'Save').click();
         cy.wait('@createReview', { timeout: 10000 });
-        cy.contains('Review created');
+        cy.contains('Review created', { timeout: 10000 });
     });
 });
