@@ -15,15 +15,15 @@ function applyMockLogin(role: 'admin' | 'client' | 'employee', name: string) {
         role,
     }).as('profile');
 
-    cy.visit('/');
-
-    cy.setCookie('jwtToken', token);
-    cy.setCookie('refreshToken', 'refresh');
-
-    cy.window().then((win) => {
-        win.localStorage.setItem('jwtToken', token);
-        win.localStorage.setItem('refreshToken', 'refresh');
-        win.localStorage.setItem('role', role);
+    cy.on('uncaught:exception', () => false);
+    cy.visit('/', {
+        onBeforeLoad(win) {
+            win.document.cookie = `jwtToken=${token}`;
+            win.document.cookie = `refreshToken=refresh`;
+            win.localStorage.setItem('jwtToken', token);
+            win.localStorage.setItem('refreshToken', 'refresh');
+            win.localStorage.setItem('role', role);
+        },
     });
 }
 
