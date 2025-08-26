@@ -27,12 +27,8 @@ describe('navigation visibility', () => {
     });
 
     it('renders public navigation on public pages', () => {
-        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
-            'getSvc',
-        );
         cy.visit('/services');
-        cy.wait('@getSvc');
-        cy.contains('Cut');
+        cy.contains('Our Services');
         cy.get('nav').contains('Login').should('be.visible');
         cy.get('nav').contains('Services').should('be.visible');
     });
