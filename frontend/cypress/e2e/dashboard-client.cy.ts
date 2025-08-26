@@ -1,4 +1,5 @@
 import { mockClientLogin } from '../support/mockLogin';
+import { interceptCreateReview } from '../support/api';
 
 describe('client dashboard navigation', () => {
     beforeEach(() => {
@@ -39,6 +40,7 @@ describe('client dashboard reviews crud', () => {
     });
 
     it('creates a review', () => {
+        interceptCreateReview();
         cy.intercept(
             'POST',
             /\/(api\/)?appointments\/\d+\/review(?:\/)?(?:\?.*)?$/,

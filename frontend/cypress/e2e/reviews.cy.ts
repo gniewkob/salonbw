@@ -1,4 +1,5 @@
 import { mockClientLogin } from '../support/mockLogin';
+import { interceptCreateReview } from '../support/api';
 
 describe('basic', () => {
     it('loads home', () => {
@@ -18,6 +19,7 @@ describe('reviews crud', () => {
                 'getReviews',
             );
         });
+        interceptCreateReview();
         cy.intercept(
             {
                 method: 'POST',
