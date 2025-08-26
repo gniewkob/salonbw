@@ -16,12 +16,12 @@ describe('products crud', () => {
         cy.intercept('GET', '/api/products*', {
             fixture: 'products.json',
         }).as('getProd');
-        cy.intercept('POST', '/api/products', {
+        cy.intercept('POST', '/api/products/admin', {
             id: 2,
             name: 'New',
             unitPrice: 1,
             stock: 1,
-        }).as('createProd');
+        }).as('createProdAdmin');
         cy.visit('/products');
         cy.wait('@profile');
         cy.wait('@getProd');
@@ -32,7 +32,7 @@ describe('products crud', () => {
         cy.get('input[placeholder="Price"]').type('1');
         cy.get('input[placeholder="Stock"]').type('1');
         cy.contains('button', 'Save').click();
-        cy.wait('@createProd');
+        cy.wait('@createProdAdmin');
         cy.contains('New');
         cy.contains('Product created');
     });
