@@ -8,6 +8,7 @@ export const createAuthValue = (
     accessToken: null,
     refreshToken: null,
     role: null,
+    initialized: true,
     isAuthenticated: false,
     login: jest.fn(),
     register: jest.fn(),
