@@ -18,11 +18,19 @@ describe('reviews crud', () => {
                 'getReviews',
             );
         });
-        cy.intercept('POST', '**/appointments/*/review', {
-            id: 2,
-            appointmentId: 1,
-            rating: 5,
-        }).as('createReview');
+        cy.intercept(
+            'POST',
+            /\/(api\/)?appointments\/\d+\/review$/,
+            {
+                statusCode: 201,
+                body: {
+                    id: 2,
+                    appointmentId: 1,
+                    rating: 5,
+                    comment: 'Great',
+                },
+            },
+        ).as('createReview');
         cy.visit('/reviews');
         cy.wait('@getReviews');
         cy.contains('Add Review', { timeout: 10000 })
