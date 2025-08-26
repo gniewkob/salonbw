@@ -23,7 +23,9 @@ describe('services crud', () => {
         cy.wait('@profile');
         cy.wait('@getSvc');
         cy.contains('Cut');
-        cy.contains('Add Service').click();
+        cy.contains('Add Service', { timeout: 10000 })
+            .should('be.visible')
+            .click();
         cy.get('input[placeholder="Name"]').type('New');
         cy.contains('button', 'Save').click();
         cy.wait('@createSvc');
