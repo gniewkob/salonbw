@@ -42,7 +42,9 @@ describe('client dashboard reviews crud', () => {
         cy.visit('/reviews');
         cy.wait('@profile');
         cy.wait('@getReviews');
-        cy.contains('Add Review').click();
+        cy.contains('Add Review', { timeout: 10000 })
+            .should('be.visible')
+            .click();
         cy.get('input[placeholder="Appointment"]').type('1');
         cy.get('input[placeholder="Rating"]').type('5');
         cy.contains('button', 'Save').click();

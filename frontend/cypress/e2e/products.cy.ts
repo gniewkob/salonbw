@@ -25,7 +25,9 @@ describe('products crud', () => {
         cy.visit('/products');
         cy.wait('@profile');
         cy.wait('@getProd');
-        cy.contains('Add Product').click();
+        cy.contains('Add Product', { timeout: 10000 })
+            .should('be.visible')
+            .click();
         cy.get('input[placeholder="Name"]').type('New');
         cy.get('input[placeholder="Price"]').type('1');
         cy.get('input[placeholder="Stock"]').type('1');
