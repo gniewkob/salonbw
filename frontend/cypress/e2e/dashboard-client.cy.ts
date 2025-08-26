@@ -41,7 +41,7 @@ describe('client dashboard reviews crud', () => {
     it('creates a review', () => {
         cy.intercept(
             'POST',
-            /\/(api\/)?appointments\/\d+\/review$/,
+            /\/(api\/)?appointments\/\d+\/review(?:\/)?(?:\?.*)?$/,
             {
                 statusCode: 201,
                 body: { id: 1000, appointmentId: 1, rating: 5, comment: 'Great' },
