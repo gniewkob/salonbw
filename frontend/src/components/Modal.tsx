@@ -19,7 +19,10 @@ export default function Modal({ open, onClose, children }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white p-4 rounded shadow min-w-[300px]">
+            <div
+                role="dialog"
+                className="bg-white p-4 rounded shadow min-w-[300px]"
+            >
                 {children}
             </div>
         </div>
