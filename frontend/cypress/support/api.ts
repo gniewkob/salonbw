@@ -24,20 +24,25 @@ export function interceptReviewsList() {
   cy.intercept(
     {
       method: 'GET',
-      url: /\/api\/reviews(?:\/)?(?:\?.*)?$/,
+      url: /\/api\/(reviews|employees\/\d+\/reviews|clients\/\d+\/reviews)(?:\/)?(?:\?.*)?$/,
     },
     {
       statusCode: 200,
-      body: [
-        {
-          id: 500,
-          appointmentId: 1,
-          rating: 5,
-          comment: 'Sample review',
-          employee: { id: 1, fullName: 'John Doe' },
-          author: { id: 1, name: 'Test Client' },
-        },
-      ],
+      body: {
+        data: [
+          {
+            id: 500,
+            appointmentId: 1,
+            rating: 5,
+            comment: 'Sample review',
+            employee: { id: 1, fullName: 'John Doe' },
+            author: { id: 1, name: 'Test Client' },
+          },
+        ],
+        total: 1,
+        page: 1,
+        limit: 10,
+      },
     },
   ).as('getReviews');
 }
@@ -46,7 +51,7 @@ export function interceptCreateReview() {
   cy.intercept(
     {
       method: 'POST',
-      url: /\/api\/(appointments\/\d+\/review|reviews)(?:\/)?(?:\?.*)?$/,
+      url: /\/api\/appointments\/\d+\/review$/,
     },
     {
       statusCode: 201,
