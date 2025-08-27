@@ -13,6 +13,7 @@
     "lint": "eslint src",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
     "test": "jest",
+    "cypress:install": "cypress install",
     "e2e": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
     "e2e:ci": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'"
   },
