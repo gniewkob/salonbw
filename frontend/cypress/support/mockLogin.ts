@@ -4,12 +4,13 @@ const buildToken = (role: string) =>
 function applyMockLogin(role: 'admin' | 'client' | 'employee', name: string) {
     const token = buildToken(role);
 
-    cy.intercept('POST', '/api/auth/login', {
+    // Use wildcard pattern to match requests regardless of the baseURL
+    cy.intercept('POST', '**/api/auth/login', {
         accessToken: token,
         refreshToken: 'refresh',
     }).as('login');
 
-    cy.intercept('GET', '/api/profile', {
+    cy.intercept('GET', '**/api/profile', {
         id: 1,
         name,
         role,

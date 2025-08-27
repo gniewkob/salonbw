@@ -3,7 +3,7 @@ import { mockAdminLogin } from '../support/mockLogin';
 describe('admin dashboard navigation', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '/api/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dashboard',
         );
     });
@@ -14,7 +14,7 @@ describe('admin dashboard navigation', () => {
         cy.wait('@dashboard');
         cy.url().should('include', '/dashboard/admin');
         cy.contains('Clients');
-        cy.intercept('GET', '/api/employees*', {
+        cy.intercept('GET', '**/api/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
         cy.get('[data-testid="nav-employees"]', { timeout: 10000 }).as(
@@ -30,7 +30,7 @@ describe('admin dashboard navigation', () => {
         cy.visit('/dashboard/admin');
         cy.wait('@profile');
         cy.wait('@dashboard');
-        cy.intercept('GET', '/api/employees*', {
+        cy.intercept('GET', '**/api/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
         cy.get('[data-testid="nav-employees"]', { timeout: 10000 }).as(
@@ -46,31 +46,47 @@ describe('admin dashboard navigation', () => {
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '/api/services*', { fixture: 'services.json' }).as(
+        cy.intercept('GET', '**/api/services*', { fixture: 'services.json' }).as(
             'getSvc',
         );
     });
 
     it('creates a service', () => {
-        cy.intercept('POST', '/api/services', { id: 3, name: 'Wax' }).as(
-            'createSvc',
-        );
         cy.visit('/dashboard/services');
         cy.wait('@profile');
         cy.wait('@getSvc');
+        
+        // Setup interceptor for creation
+        cy.intercept('POST', '**/api/services', {
+            statusCode: 201,
+            body: { id: 3, name: 'Wax' },
+        }).as('createSvc');
+        
+        // Setup interceptor for the refresh after creation
+        cy.intercept('GET', '**/api/services*', {
+            statusCode: 200,
+            body: [
+                { id: 1, name: 'Cut' },
+                { id: 2, name: 'Color' },
+                { id: 3, name: 'Wax' },
+            ],
+        }).as('refreshServices');
+        
         cy.contains('Add Service', { timeout: 10000 })
             .should('be.visible')
             .click();
         cy.get('input[placeholder="Name"]').type('Wax');
         cy.contains('button', 'Save').click();
         cy.wait('@createSvc');
-        cy.contains('Wax');
+        // The page should refresh the services list
+        cy.wait('@refreshServices', { timeout: 10000 });
+        cy.contains('Wax').should('be.visible');
     });
 });
 
 describe('admin dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '/api/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/api/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/admin');
         cy.url().should('include', '/auth/login');

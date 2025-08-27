@@ -90,6 +90,13 @@ npm install    # only required once
 npm run dev
 ```
 
+**Note:** If you encounter issues with the `--turbopack` flag in the dev script,
+you can run Next.js directly:
+
+```bash
+npx next dev
+```
+
 You can also run it in one line:
 
 ```bash
@@ -105,22 +112,47 @@ Use these commands inside either `frontend/` or `backend/` as needed:
 ```bash
 npm run dev       # start the development server
 npm run lint      # check for linting issues
-npm run format    # format the backend codebase (backend only)
-npm run e2e       # run Cypress tests (requires xvfb)
+npm run format    # format the codebase with Prettier
+npm test          # run unit tests
+npm run e2e       # run Cypress E2E tests (frontend only)
 ```
 
 ## Running tests
 
-Run unit tests inside either project with Jest and collect coverage:
+### Unit Tests
+
+Run unit tests inside either project with Jest:
 
 ```bash
+npm test
+# With coverage report
 npm test -- --coverage
 ```
 
-End-to-end tests for the frontend use Cypress:
+### End-to-End Tests
+
+The frontend includes comprehensive Cypress E2E tests that cover authentication,
+dashboard functionality, and CRUD operations. Tests use mocked API responses
+to run independently of the backend.
 
 ```bash
+cd frontend
+
+# Run tests headlessly
+npx cypress run
+
+# Or use the automated script that builds and tests
 npm run e2e
+
+# For interactive testing
+npx cypress open
+```
+
+**Note:** When running Cypress tests locally, ensure the dev server is running
+with the proper API URL configuration:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3000/api npm run dev
 ```
 
 ## Build and deployment
