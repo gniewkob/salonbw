@@ -13,10 +13,10 @@ describe('products crud', () => {
     });
 
     it('loads and creates product', () => {
-        cy.intercept('GET', '/api/products*', {
+        cy.intercept('GET', '**/api/products*', {
             fixture: 'products.json',
         }).as('getProd');
-        cy.intercept('POST', '/api/products/admin', {
+        cy.intercept('POST', '**/api/products/admin', {
             statusCode: 201,
             body: {
                 id: 999,

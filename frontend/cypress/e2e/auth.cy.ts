@@ -1,16 +1,16 @@
 const clientToken = `header.${Buffer.from(JSON.stringify({ role: 'client' })).toString('base64')}.sig`;
 
 function mockLogin() {
-    cy.intercept('POST', '/api/auth/login', {
+    cy.intercept('POST', '**/api/auth/login', {
         accessToken: clientToken,
         refreshToken: 'refresh',
     }).as('login');
-    cy.intercept('GET', '/api/profile', {
+    cy.intercept('GET', '**/api/profile', {
         id: 1,
         name: 'Test Client',
         role: 'client',
     }).as('profile');
-    cy.intercept('GET', '/api/dashboard', {
+    cy.intercept('GET', '**/api/dashboard', {
         todayCount: 0,
         clientCount: 0,
     }).as('dashboard');
@@ -44,7 +44,7 @@ describe('authentication flow', () => {
     });
 
     it('direct navigation to /dashboard when logged out redirects to /auth/login', () => {
-        cy.intercept('GET', '/api/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/api/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard');
         cy.url().should('include', '/auth/login');

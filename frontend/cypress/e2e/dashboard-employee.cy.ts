@@ -3,7 +3,7 @@ import { mockEmployeeLogin } from '../support/mockLogin';
 describe('employee dashboard navigation', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '/api/dashboard', { fixture: 'dashboard.json' }).as(
+        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
             'dashboard',
         );
     });
@@ -21,7 +21,7 @@ describe('employee dashboard navigation', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@dashboard');
-        cy.intercept('GET', '/api/clients', {
+        cy.intercept('GET', '**/api/clients', {
             fixture: 'clients.json',
         }).as('getClients');
         cy.get('[data-testid="nav-clients"]', { timeout: 10000 }).as(
@@ -37,13 +37,13 @@ describe('employee dashboard navigation', () => {
 describe('employee dashboard clients crud', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '/api/clients', { fixture: 'clients.json' }).as(
+        cy.intercept('GET', '**/api/clients', { fixture: 'clients.json' }).as(
             'getClients',
         );
     });
 
     it('creates a client', () => {
-        cy.intercept('POST', '/api/clients', { id: 3, name: 'New' }).as(
+        cy.intercept('POST', '**/api/clients', { id: 3, name: 'New' }).as(
             'createClient',
         );
         cy.visit('/clients');
@@ -61,7 +61,7 @@ describe('employee dashboard clients crud', () => {
 
 describe('employee dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '/api/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/api/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/employee');
         cy.url().should('include', '/auth/login');
