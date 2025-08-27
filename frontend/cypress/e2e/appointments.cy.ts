@@ -15,7 +15,8 @@ describe('appointments', () => {
         cy.wait('@getServices');
         cy.wait('@getAppointments');
         cy.get('[data-date]').first().click({ force: true });
-        cy.get('form [data-testid="service-select"]', { timeout: 10000 })
+        cy.get('[role="dialog"]', { timeout: 10000 }).should('be.visible');
+        cy.get('[role="dialog"] form [data-testid="service-select"]')
             .should('be.visible')
             .click({ force: true });
         cy.get('[data-radix-collection-item]').contains('Color').click();
