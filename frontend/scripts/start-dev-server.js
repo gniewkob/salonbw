@@ -2,12 +2,52 @@
 
 const { spawn } = require('child_process');
 const { findAvailablePort, killProcessOnPort } = require('./server-utils');
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Load environment variables from .env.local or .env
+ */
+function loadEnvFile() {
+  const envFiles = ['.env.local', '.env'];
+  const env = {};
+  
+  for (const file of envFiles) {
+    const filePath = path.join(process.cwd(), file);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const lines = content.split('\n');
+      
+      lines.forEach(line => {
+        // Skip comments and empty lines
+        if (!line || line.startsWith('#')) return;
+        
+        const [key, ...valueParts] = line.split('=');
+        if (key) {
+          const value = valueParts.join('=').trim();
+          // Remove quotes if present
+          env[key.trim()] = value.replace(/^["']|["']$/g, '');
+        }
+      });
+    }
+  }
+  
+  return env;
+}
 
 async function startDevServer() {
   console.log('🚀 Starting development server...\n');
   
-  // Try to clean up port 3000 first if it's occupied
-  const preferredPort = 3000;
+  // Load environment variables
+  const envVars = loadEnvFile();
+  
+  // Check if PORT is defined in environment
+  const envPort = process.env.PORT || envVars.PORT;
+  const preferredPort = envPort ? parseInt(envPort) : 3000;
+  
+  if (envPort) {
+    console.log(`📌 Using port ${preferredPort} from environment configuration`);
+  }
   
   try {
     // Check if port 3000 is in use
@@ -23,10 +63,10 @@ async function startDevServer() {
     console.log('2. Find next available port (press N)');
     console.log('3. Exit (press any other key)');
     
-    // For automated scripts, just find next available port
-    if (!process.stdin.isTTY) {
+    // For automated scripts or if PORT is fixed in env, just find next available port
+    if (!process.stdin.isTTY || envPort) {
       const availablePort = await findAvailablePort(preferredPort);
-      return startOnPort(availablePort);
+      return startOnPort(availablePort, envVars);
     }
     
     // Interactive mode
@@ -43,11 +83,11 @@ async function startDevServer() {
           console.log('\n🔪 Killing process on port 3000...');
           killProcessOnPort(preferredPort);
           await new Promise(resolve => setTimeout(resolve, 1000));
-          startOnPort(preferredPort);
+          startOnPort(preferredPort, envVars);
           resolve();
         } else if (key.toLowerCase() === 'n') {
           const availablePort = await findAvailablePort(preferredPort + 1);
-          startOnPort(availablePort);
+          startOnPort(availablePort, envVars);
           resolve();
         } else {
           console.log('\n👋 Exiting...');
@@ -57,17 +97,29 @@ async function startDevServer() {
     });
   }
   
-  startOnPort(preferredPort);
+  startOnPort(preferredPort, envVars);
 }
 
-function startOnPort(port) {
+function startOnPort(port, envVars = {}) {
   console.log(`\n📡 Starting Next.js on port ${port}...\n`);
   
-  const env = { ...process.env, PORT: port };
+  // Merge environment variables: process.env < .env file < command line
+  const env = { 
+    ...process.env,
+    ...envVars,
+    PORT: port 
+  };
   
-  // If NEXT_PUBLIC_API_URL is not set, set it to a sensible default
+  // If NEXT_PUBLIC_API_URL is not set, check .env files, then use default
   if (!env.NEXT_PUBLIC_API_URL) {
-    env.NEXT_PUBLIC_API_URL = 'http://localhost:3001'; // Assuming backend runs on 3001
+    env.NEXT_PUBLIC_API_URL = envVars.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  }
+  
+  console.log(`🔗 API URL: ${env.NEXT_PUBLIC_API_URL}`);
+  
+  // Show if we're in production mode
+  if (env.NODE_ENV === 'production') {
+    console.log('⚠️  Running in PRODUCTION mode');
   }
   
   const child = spawn('npx', ['next', 'dev'], {

@@ -5,6 +5,7 @@ This directory contains the Next.js application powering the public website and 
 ## Quick Links
 
 - [Testing Guide](./TESTING.md) - Comprehensive testing documentation
+- [Deployment Guide](./DEPLOYMENT.md) - Production deployment instructions
 - [Changelog](./CHANGELOG.md) - Recent changes and updates
 
 ## Installation
@@ -30,7 +31,9 @@ Run these commands from the `frontend` folder:
 - `npm run dev` – start the development server with smart port management
 - `npm run dev:raw` – start Next.js dev server directly (without port management)
 - `npm run build` – build the application for production
+- `npm run build:production` – build with NODE_ENV=production
 - `npm run start` – start the production server
+- `npm run start:production` – start with production configuration
 - `npm run lint` – check the code with ESLint
 - `npm run format` – format source files with Prettier
 - `npm test` – run unit tests with Jest
