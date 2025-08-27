@@ -27,18 +27,53 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 Run these commands from the `frontend` folder:
 
-- `npm run dev` – start the development server (Note: remove `--turbopack` flag if you encounter issues)
+- `npm run dev` – start the development server with smart port management
+- `npm run dev:raw` – start Next.js dev server directly (without port management)
 - `npm run build` – build the application for production
 - `npm run start` – start the production server
 - `npm run lint` – check the code with ESLint
 - `npm run format` – format source files with Prettier
 - `npm test` – run unit tests with Jest
-- `npm run e2e` – run end-to-end tests with Cypress
+- `npm run e2e` – run end-to-end tests with Cypress (cleans ports first)
 - `npm run cypress:install` – install Cypress binary
+- `npm run ports:cleanup` – clean up common development ports (3000-3003)
+- `npm run ports:check` – check for available port starting from 3000
 
 When `npm run dev` is running, Tailwind CSS classes are compiled on the fly
 using the configuration in `tailwind.config.ts` and the global styles in
 `src/styles/globals.css`.
+
+## Port Management
+
+The application includes smart port management to handle conflicts when multiple Node.js applications are running:
+
+### Automatic Port Selection
+
+When running `npm run dev`, the script will:
+1. Check if port 3000 is available
+2. If occupied, offer to kill the process or find an alternative port
+3. Automatically start on the next available port in CI/automated environments
+
+### Manual Port Management
+
+```bash
+# Clean up all common development ports (3000-3003)
+npm run ports:cleanup
+
+# Check which port is available
+npm run ports:check
+
+# Kill specific port
+node scripts/server-utils.js kill 3000
+```
+
+### Why This Matters
+
+When working with multiple Node.js projects, port conflicts are common. This system:
+- Prevents "EADDRINUSE" errors
+- Automatically finds available ports
+- Provides cleanup utilities
+- Makes testing more reliable
 
 ## Features
 

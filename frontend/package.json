@@ -7,15 +7,18 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/start-dev-server.js",
+    "dev:raw": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
     "test": "jest",
     "cypress:install": "cypress install",
-    "e2e": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
-    "e2e:ci": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'"
+    "e2e": "node scripts/server-utils.js cleanup && NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
+    "e2e:ci": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
+    "ports:cleanup": "node scripts/server-utils.js cleanup",
+    "ports:check": "node scripts/server-utils.js find-port"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.18",
