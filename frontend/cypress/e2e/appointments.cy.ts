@@ -14,7 +14,6 @@ describe('appointments', () => {
         cy.wait('@profile');
         cy.wait('@getServices');
         cy.wait('@getAppointments');
-
         cy.get('[data-date]').first().click({ force: true });
         cy.get('[role="dialog"]', { timeout: 10000 }).should('be.visible');
         cy.get('[role="dialog"] form [data-testid="service-select"]')
