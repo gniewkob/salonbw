@@ -10,9 +10,10 @@ export function useAppointmentsApi() {
         employeeId: number;
         serviceId: number;
         startTime: string;
+        clientId?: number;
     }) => {
         try {
-            const res = await apiFetch<Appointment>('/appointments/admin', {
+            const res = await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -27,14 +28,11 @@ export function useAppointmentsApi() {
 
     const update = async (id: number, data: { startTime: string }) => {
         try {
-            const res = await apiFetch<Appointment>(
-                `/appointments/admin/${id}`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                },
-            );
+            const res = await apiFetch<Appointment>(`/appointments/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
             toast.success('Appointment updated');
             return res;
         } catch (err: unknown) {
