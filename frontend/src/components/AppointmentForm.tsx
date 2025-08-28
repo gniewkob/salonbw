@@ -20,11 +20,13 @@ export default function AppointmentForm({
     );
     const [startTime, setStartTime] = useState(initial?.startTime ?? '');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
         try {
+            setSubmitting(true);
             await onSubmit({ serviceId: Number(serviceId), startTime });
         } catch (err: unknown) {
             if (
@@ -39,6 +41,8 @@ export default function AppointmentForm({
             } else {
                 setError('Error');
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -89,8 +93,12 @@ export default function AppointmentForm({
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1">
-                    Save
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

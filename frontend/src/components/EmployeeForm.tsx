@@ -17,16 +17,20 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
     const [firstName, setFirstName] = useState(initial?.firstName ?? '');
     const [lastName, setLastName] = useState(initial?.lastName ?? '');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         try {
             const data = schema.parse({ firstName, lastName });
+            setSubmitting(true);
             await onSubmit(data);
         } catch (err: unknown) {
             if (err instanceof z.ZodError)
                 setError(err.issues[0]?.message ?? 'Error');
             else setError('Error');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -57,8 +61,12 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1">
-                    Save
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>
