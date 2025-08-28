@@ -3,6 +3,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import StatsWidget from '@/components/StatsWidget';
 import { useDashboard } from '@/hooks/useDashboard';
 import AppointmentListItem from '@/components/AppointmentListItem';
+import ShortcutCard from '@/components/ShortcutCard';
 
 export default function AdminDashboard() {
     const { data, loading, upcoming } = useDashboard();
@@ -25,6 +26,21 @@ export default function AdminDashboard() {
                         value={data?.todayCount ?? null}
                         loading={loading}
                     />
+                </div>
+                <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+                    <ShortcutCard
+                        href="/employees"
+                        icon="👥"
+                        label="Employees"
+                    />
+                    <ShortcutCard href="/services" icon="✂️" label="Services" />
+                    <ShortcutCard
+                        href="/appointments"
+                        icon="📅"
+                        label="Appointments"
+                    />
+                    <ShortcutCard href="/clients" icon="🧑" label="Clients" />
+                    <ShortcutCard href="/products" icon="🛍️" label="Products" />
                 </div>
                 <ul className="mt-4 space-y-2">
                     {upcoming.slice(0, 5).map((a) => (
