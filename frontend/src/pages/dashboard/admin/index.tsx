@@ -41,6 +41,11 @@ export default function AdminDashboard() {
                     />
                     <ShortcutCard href="/clients" icon="🧑" label="Clients" />
                     <ShortcutCard href="/products" icon="🛍️" label="Products" />
+                    <ShortcutCard
+                        href="/dashboard/admin/scheduler"
+                        icon="🗓️"
+                        label="Scheduler"
+                    />
                 </div>
                 <ul className="mt-4 space-y-2">
                     {upcoming.slice(0, 5).map((a) => (
