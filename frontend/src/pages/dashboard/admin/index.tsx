@@ -23,7 +23,7 @@ export default function AdminDashboard() {
                     />
                     <StatsWidget
                         title="Today"
-                        value={data?.todayCount ?? null}
+                        value={data?.todayAppointments ?? null}
                         loading={loading}
                     />
                 </div>

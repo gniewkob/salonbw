@@ -25,5 +25,5 @@ export function useDashboard() {
         };
     }, [apiFetch]);
 
-    return { data, upcoming: data?.upcoming ?? [], loading };
+    return { data, upcoming: data?.upcomingAppointments ?? [], loading };
 }

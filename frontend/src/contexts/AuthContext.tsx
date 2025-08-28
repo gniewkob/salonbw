@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     const fetchProfile = useCallback(async () => {
-        const u = await client.request<User>('/profile');
+        const u = await client.request<User>('/users/profile');
         setUser(u);
         setRole(u.role);
     }, [client]);

@@ -9,6 +9,20 @@ interface AuthTokens {
     refreshToken: string;
 }
 
+type ServerTokens =
+    | { access_token: string; refresh_token: string }
+    | { accessToken: string; refreshToken: string };
+
+function mapTokens(input: ServerTokens): AuthTokens {
+    if ('access_token' in input) {
+        return {
+            accessToken: input.access_token,
+            refreshToken: input.refresh_token,
+        };
+    }
+    return input;
+}
+
 export class ApiClient {
     private axios: AxiosInstance;
 
@@ -51,19 +65,21 @@ export class ApiClient {
                             : null;
                     if (refreshToken) {
                         try {
-                            const { data } = await this.axios.post<AuthTokens>(
-                                '/auth/refresh',
-                                { refreshToken },
-                                {
-                                    headers: {
-                                        'Content-Type': 'application/json',
+                            const { data } =
+                                await this.axios.post<ServerTokens>(
+                                    '/auth/refresh',
+                                    { refreshToken },
+                                    {
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
                                     },
-                                },
-                            );
-                            this.onTokenRefresh?.(data);
+                                );
+                            const tokens = mapTokens(data);
+                            this.onTokenRefresh?.(tokens);
                             config._retry = true;
                             config.headers = config.headers ?? {};
-                            config.headers.Authorization = `Bearer ${data.accessToken}`;
+                            config.headers.Authorization = `Bearer ${tokens.accessToken}`;
                             return this.axios(config);
                         } catch (refreshErr) {
                             this.onLogout();
