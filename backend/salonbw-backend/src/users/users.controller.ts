@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Query } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -13,6 +13,13 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
 import { Role } from './role.enum';
+import { IsEnum, IsOptional } from 'class-validator';
+
+class ListUsersQuery {
+    @IsOptional()
+    @IsEnum(Role)
+    role?: Role;
+}
 
 @ApiTags('Users')
 @Controller('users')
@@ -33,10 +40,10 @@ export class UsersController {
     @Roles(Role.Admin)
     @Get()
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'List users' })
+    @ApiOperation({ summary: 'List users (optionally filter by role)' })
     @ApiResponse({ status: 200, type: UserDto, isArray: true })
-    async findAll(): Promise<UserDto[]> {
-        const users = await this.usersService.findAll();
+    async findAll(@Query() q: ListUsersQuery): Promise<UserDto[]> {
+        const users = await this.usersService.findAllByRole(q.role);
         return users.map(({ password: _password, ...rest }) => {
             void _password;
             return rest;

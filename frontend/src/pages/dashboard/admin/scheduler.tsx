@@ -5,11 +5,12 @@ import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
 import AdminAppointmentForm from '@/components/AdminAppointmentForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEmployees } from '@/hooks/useEmployees';
-import { useClients } from '@/hooks/useClients';
+// We'll fetch users with role filters directly from /users?role=...
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { Appointment, Employee } from '@/types';
+
+type SimpleUser = { id: number; name: string };
 
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -23,8 +24,8 @@ const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
 
 export default function AdminSchedulerPage() {
     const { apiFetch } = useAuth();
-    const { data: employees } = useEmployees();
-    const { data: clients } = useClients();
+    const [employees, setEmployees] = useState<Employee[] | null>(null);
+    const [clients, setClients] = useState<SimpleUser[] | null>(null);
     const { data: services } = useServices();
     const api = useAppointmentsApi();
 
@@ -113,6 +114,29 @@ export default function AdminSchedulerPage() {
         services?.length,
         employees?.length,
     ]);
+
+    useEffect(() => {
+        let mounted = true;
+        const loadUsers = async () => {
+            try {
+                const emps = await apiFetch<Employee[]>(`/users?role=employee`);
+                const cls = await apiFetch<SimpleUser[]>(`/users?role=client`);
+                if (mounted) {
+                    setEmployees(emps);
+                    setClients(cls);
+                }
+            } catch {
+                if (mounted) {
+                    setEmployees([]);
+                    setClients([]);
+                }
+            }
+        };
+        void loadUsers();
+        return () => {
+            mounted = false;
+        };
+    }, [apiFetch]);
 
     const onDatesSet = (arg: { startStr: string; endStr: string }) => {
         setRange({ start: arg.startStr, end: arg.endStr });
