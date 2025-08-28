@@ -14,7 +14,7 @@ export function useProductApi() {
         brand?: string;
     }) => {
         try {
-            const res = await apiFetch<Product>('/products/admin', {
+            const res = await apiFetch<Product>('/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -38,7 +38,7 @@ export function useProductApi() {
         },
     ) => {
         try {
-            const res = await apiFetch<Product>(`/products/admin/${id}`, {
+            const res = await apiFetch<Product>(`/products/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -53,10 +53,10 @@ export function useProductApi() {
 
     const updateStock = async (id: number, amount: number) => {
         try {
-            const res = await apiFetch<Product>(`/products/admin/${id}/stock`, {
+            const res = await apiFetch<Product>(`/products/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount }),
+                body: JSON.stringify({ stock: amount }),
             });
             toast.success('Stock updated');
             return res;
@@ -68,7 +68,7 @@ export function useProductApi() {
 
     const remove = async (id: number) => {
         try {
-            await apiFetch(`/products/admin/${id}`, { method: 'DELETE' });
+            await apiFetch(`/products/${id}`, { method: 'DELETE' });
             toast.success('Product deleted');
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');
