@@ -37,9 +37,13 @@ export class AuthController {
     async login(@CurrentUser() user: Omit<User, 'password'>) {
         const result = this.authService.login(user);
         try {
-            await this.logService.logAction(user as User, LogAction.USER_LOGIN, {
-                userId: user.id,
-            });
+            await this.logService.logAction(
+                user as User,
+                LogAction.USER_LOGIN,
+                {
+                    userId: user.id,
+                },
+            );
         } catch (error) {
             console.error('Failed to log user login action', error);
         }

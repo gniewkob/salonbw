@@ -187,6 +187,7 @@ export class AppointmentsController {
         const updated = await this.appointmentsService.updateStartTime(
             id,
             new Date(body.startTime),
+            body.endTime ? new Date(body.endTime) : undefined,
             { id: user.userId } as User,
         );
         if (!updated) throw new NotFoundException();

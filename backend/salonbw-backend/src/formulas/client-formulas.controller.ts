@@ -1,6 +1,17 @@
-import { Controller, Get, Param, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Param,
+    UseGuards,
+    ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -29,9 +40,7 @@ export class ClientFormulasController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get formulas for client' })
     @ApiResponse({ status: 200, type: Formula, isArray: true })
-    findForClient(
-        @Param('id', ParseIntPipe) id: number,
-    ): Promise<Formula[]> {
+    findForClient(@Param('id', ParseIntPipe) id: number): Promise<Formula[]> {
         return this.formulasService.findForClient(id);
     }
 }

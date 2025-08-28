@@ -13,4 +13,3 @@ export class WhatsappServiceMock {
         // no-op in tests
     }
 }
-

@@ -71,6 +71,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libatk1.0-0 libgtk-3-0 libnss3 libxss1 libasound2t64
+      - name: Install Cypress binary
+        run: |
+          cd frontend
+          npm run cypress:install
       - name: E2E tests
         run: |
           cd frontend

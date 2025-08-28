@@ -39,4 +39,3 @@ export function mockClientLogin() {
 export function mockEmployeeLogin() {
     applyMockLogin('employee', 'Employee User');
 }
-

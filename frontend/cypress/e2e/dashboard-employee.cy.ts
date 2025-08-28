@@ -3,9 +3,9 @@ import { mockEmployeeLogin } from '../support/mockLogin';
 describe('employee dashboard navigation', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dashboard',
-        );
+        cy.intercept('GET', '**/api/dashboard', {
+            fixture: 'dashboard.json',
+        }).as('dashboard');
     });
 
     it('redirects to employee dashboard and shows widgets', () => {

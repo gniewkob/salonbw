@@ -31,6 +31,7 @@ Run these commands from the `frontend` folder:
 - `npm run dev` – start the development server with smart port management
 - `npm run dev:raw` – start Next.js dev server directly (without port management)
 - `npm run build` – build the application for production
+- `npm run analyze` – build with bundle analyzer (requires @next/bundle-analyzer)
 - `npm run build:production` – build with NODE_ENV=production
 - `npm run start` – start the production server
 - `npm run start:production` – start with production configuration
@@ -53,6 +54,7 @@ The application includes smart port management to handle conflicts when multiple
 ### Automatic Port Selection
 
 When running `npm run dev`, the script will:
+
 1. Check if port 3000 is available
 2. If occupied, offer to kill the process or find an alternative port
 3. Automatically start on the next available port in CI/automated environments
@@ -73,6 +75,7 @@ node scripts/server-utils.js kill 3000
 ### Why This Matters
 
 When working with multiple Node.js projects, port conflicts are common. This system:
+
 - Prevents "EADDRINUSE" errors
 - Automatically finds available ports
 - Provides cleanup utilities
@@ -105,25 +108,38 @@ The project uses Cypress for E2E testing. Tests are located in `cypress/e2e/`.
 #### Running Cypress Tests
 
 1. **For development with mocked API:**
-   ```bash
-   # Start dev server with proper API URL
-   NEXT_PUBLIC_API_URL=http://localhost:3000/api npm run dev
-   
-   # In another terminal, run Cypress tests
-   npx cypress run
-   # or open Cypress UI
-   npx cypress open
-   ```
+
+    ```bash
+    # Start dev server with proper API URL
+    NEXT_PUBLIC_API_URL=http://localhost:3000/api npm run dev
+
+    # In another terminal, run Cypress tests
+    npx cypress run
+    # or open Cypress UI
+    npx cypress open
+    ```
 
 2. **Using the automated e2e script:**
-   ```bash
-   npm run e2e
-   ```
-   This will build the app and run tests automatically.
+
+    ```bash
+    npm run e2e
+    ```
+
+    This will build the app and run tests automatically.
+
+3. **First-time Cypress install:**
+    ```bash
+    npm run cypress:install
+    ```
+    On macOS, if Cypress fails to open due to codesign/quarantine, clear the quarantine flag:
+    ```bash
+    xattr -dr com.apple.quarantine ~/Library/Caches/Cypress/14.5.2/Cypress.app
+    ```
 
 #### Test Coverage
 
 The Cypress test suite covers:
+
 - Authentication flows (login, logout, redirects)
 - Dashboard navigation for different user roles (admin, employee, client)
 - CRUD operations for services, employees, products, reviews
@@ -133,9 +149,42 @@ The Cypress test suite covers:
 #### API Mocking
 
 Cypress tests use interceptors to mock API responses. Key files:
+
 - `cypress/support/mockLogin.ts` – handles authentication mocking
 - `cypress/support/api.ts` – provides reusable API interceptors
 - `cypress/fixtures/` – contains mock data
+
+Additional scenarios included:
+
+- Registration: `auth-register.cy.ts`
+- Client booking: `client-booking.cy.ts`
+- Admin management: `admin-manage.cy.ts`
+- Admin Scheduler completion: `admin-complete.cy.ts`
+
+### Bundle Analysis
+
+Generate a bundle analysis to inspect chunk sizes:
+
+```bash
+# Install once locally
+npm i -D @next/bundle-analyzer
+
+# Build with analysis
+npm run analyze
+```
+
+The report opens automatically with details on server and client bundles.
+
+### Optional Sentry Integration
+
+The project is prepared for optional Sentry setup. To enable it, add a minimal init in `_app.tsx` guarded by `NEXT_PUBLIC_SENTRY_DSN`, and set env vars:
+
+```bash
+NEXT_PUBLIC_SENTRY_DSN=your_dsn
+NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0.1
+```
+
+If you’d like, we can wire this up fully with `@sentry/nextjs`.
 
 ### Manual Testing
 

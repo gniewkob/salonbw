@@ -3,9 +3,9 @@ import { mockAdminLogin } from '../support/mockLogin';
 describe('admin dashboard navigation', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '**/api/dashboard', { fixture: 'dashboard.json' }).as(
-            'dashboard',
-        );
+        cy.intercept('GET', '**/api/dashboard', {
+            fixture: 'dashboard.json',
+        }).as('dashboard');
     });
 
     it('redirects to admin dashboard and navigates to employees', () => {
@@ -46,34 +46,34 @@ describe('admin dashboard navigation', () => {
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '**/api/services*', { fixture: 'services.json' }).as(
-            'getSvc',
-        );
+        cy.intercept('GET', '**/api/services*', {
+            fixture: 'services.json',
+        }).as('getSvc');
     });
 
     it('creates a service', () => {
         cy.visit('/dashboard/services');
         cy.wait('@profile');
         cy.wait('@getSvc');
-        
+
         // Setup interceptor for creation
         cy.intercept('POST', '**/api/services', {
             statusCode: 201,
             body: { id: 3, name: 'Wax' },
         }).as('createSvc');
-        
+
         // Check if Add Service button exists and click it
         cy.contains('Add Service', { timeout: 10000 })
             .should('be.visible')
             .click();
-        
+
         // Fill in the form
         cy.get('input[placeholder="Name"]').type('Wax');
         cy.contains('button', 'Save').click();
-        
+
         // Wait for the create request
         cy.wait('@createSvc');
-        
+
         // After creation, the modal should close and we should be back on the list
         // The app might update the list optimistically or through a different mechanism
         // So we just check if the success message or the new item appears

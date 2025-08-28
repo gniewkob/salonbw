@@ -4,11 +4,13 @@ import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
 import AdminAppointmentForm from '@/components/AdminAppointmentForm';
+import AppointmentDetailsModal from '@/components/AppointmentDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
 // We'll fetch users with role filters directly from /users?role=...
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { Appointment, Employee } from '@/types';
+import { mapAppointmentsToEvents } from '@/utils/calendarMap';
 
 type SimpleUser = { id: number; name: string };
 
@@ -16,7 +18,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import type { DateClickArg } from '@fullcalendar/interaction';
-import type { EventDropArg, EventResizeDoneArg } from '@fullcalendar/core';
+import type { EventDropArg } from '@fullcalendar/core';
+import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
@@ -47,6 +50,8 @@ export default function AdminSchedulerPage() {
     );
     const [createOpen, setCreateOpen] = useState(false);
     const [createStart, setCreateStart] = useState('');
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [selected, setSelected] = useState<Appointment | null>(null);
 
     const loadEvents = async (
         startIso: string,
@@ -68,37 +73,12 @@ export default function AdminSchedulerPage() {
                 data = await apiFetch<Appointment[]>('/appointments');
             }
 
-            const svcMap = new Map((services ?? []).map((s) => [s.id, s]));
-            const empMap = new Map((employees ?? []).map((e) => [e.id, e]));
-
-            const mapped = data
-                .filter((a) =>
-                    employeeId && employeeId !== 'all'
-                        ? a.employee?.id === employeeId
-                        : true,
-                )
-                .map((a) => {
-                    const svc = a.service?.id
-                        ? svcMap.get(a.service.id)
-                        : undefined;
-                    const emp: Employee | undefined = a.employee?.id
-                        ? empMap.get(a.employee.id)
-                        : undefined;
-                    const end = a as unknown as { endTime?: string };
-                    const title = `${a.client?.name ?? ''}${a.client?.name ? ' – ' : ''}${a.service?.name ?? ''}${emp?.name ? ` (${emp.name})` : ''}`;
-                    return {
-                        id: String(a.id),
-                        title: title || `#${a.id}`,
-                        start: a.startTime,
-                        end: end.endTime,
-                        backgroundColor: '#c5a880',
-                        extendedProps: {
-                            appointment: a,
-                            service: svc as unknown as Record<string, unknown>,
-                            employee: emp as unknown as Record<string, unknown>,
-                        },
-                    };
-                });
+            const mapped = mapAppointmentsToEvents(
+                data,
+                services ?? [],
+                (employees ?? []) as Employee[],
+                employeeId ?? 'all',
+            );
             setEvents(mapped);
         } catch {
             setEvents([]);
@@ -210,6 +190,12 @@ export default function AdminSchedulerPage() {
                     editable
                     events={events}
                     dateClick={onDateClick}
+                    eventClick={(info) => {
+                        // prettier-ignore
+                        const ap = (info.event.extendedProps as { appointment: Appointment; }).appointment;
+                        setSelected(ap);
+                        setDetailsOpen(true);
+                    }}
                     eventDrop={(arg) => void onEventDrop(arg)}
                     eventResize={(arg) => void onEventResize(arg)}
                     datesSet={(arg) =>
@@ -219,6 +205,26 @@ export default function AdminSchedulerPage() {
                         })
                     }
                 />
+                <div className="mt-2 flex items-center gap-3 text-sm">
+                    <span className="flex items-center gap-1">
+                        <span
+                            className="inline-block w-3 h-3 rounded"
+                            style={{ background: '#16a34a' }}
+                        />
+                        Completed
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <span
+                            className="inline-block w-3 h-3 rounded"
+                            style={{ background: '#9ca3af' }}
+                        />
+                        Cancelled
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <span className="inline-block w-3 h-3 rounded bg-blue-400" />
+                        Scheduled (by employee)
+                    </span>
+                </div>
                 <Modal open={createOpen} onClose={() => setCreateOpen(false)}>
                     {clients && employees && services && (
                         <AdminAppointmentForm
@@ -245,6 +251,33 @@ export default function AdminSchedulerPage() {
                         />
                     )}
                 </Modal>
+                <AppointmentDetailsModal
+                    open={detailsOpen}
+                    onClose={() => setDetailsOpen(false)}
+                    appointment={selected}
+                    canCancel
+                    canComplete
+                    onCancel={async (id) => {
+                        await api.cancel(id);
+                        setDetailsOpen(false);
+                        if (range)
+                            void loadEvents(
+                                range.start,
+                                range.end,
+                                selectedEmployee,
+                            );
+                    }}
+                    onComplete={async (id) => {
+                        await api.complete(id);
+                        setDetailsOpen(false);
+                        if (range)
+                            void loadEvents(
+                                range.start,
+                                range.end,
+                                selectedEmployee,
+                            );
+                    }}
+                />
             </DashboardLayout>
         </RouteGuard>
     );

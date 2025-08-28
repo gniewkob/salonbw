@@ -4,9 +4,12 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Appointment } from '@/types';
+import AppointmentDetailsModal from '@/components/AppointmentDetailsModal';
+import { useAppointmentsApi } from '@/api/appointments';
 
 export default function EmployeeDashboard() {
     const { apiFetch } = useAuth();
+    const api = useAppointmentsApi();
     const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
         ssr: false,
     });
@@ -15,8 +18,15 @@ export default function EmployeeDashboard() {
     const interactionPlugin = require('@fullcalendar/interaction').default;
 
     const [events, setEvents] = useState<
-        { id: string; title: string; start: string }[]
+        {
+            id: string;
+            title: string;
+            start: string;
+            extendedProps?: { appointment: Appointment };
+        }[]
     >([]);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [selected, setSelected] = useState<Appointment | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -30,6 +40,7 @@ export default function EmployeeDashboard() {
                             ? `${a.service.name} – ${a.client?.name ?? ''}`
                             : `#${a.id}`,
                         start: a.startTime,
+                        extendedProps: { appointment: a },
                     })),
                 );
             })
@@ -46,7 +57,28 @@ export default function EmployeeDashboard() {
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
                     editable={false}
-                    events={events}
+                    events={events as unknown as Record<string, unknown>[]}
+                    eventClick={(info) => {
+                        // prettier-ignore
+                        const ap = (info.event.extendedProps as { appointment: Appointment; }).appointment;
+                        setSelected(ap);
+                        setDetailsOpen(true);
+                    }}
+                />
+                <AppointmentDetailsModal
+                    open={detailsOpen}
+                    onClose={() => setDetailsOpen(false)}
+                    appointment={selected}
+                    canCancel
+                    canComplete
+                    onCancel={async (id) => {
+                        await api.cancel(id);
+                        setDetailsOpen(false);
+                    }}
+                    onComplete={async (id) => {
+                        await api.complete(id);
+                        setDetailsOpen(false);
+                    }}
                 />
             </DashboardLayout>
         </RouteGuard>

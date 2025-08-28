@@ -8,6 +8,7 @@ import {
     Post,
     Put,
     UseGuards,
+    BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -21,6 +22,9 @@ import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from './role.enum';
 import { UsersService } from './users.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Appointment } from '../appointments/appointment.entity';
 
 class CreateEmployeeDto {
     @IsString()
@@ -34,7 +38,11 @@ class CreateEmployeeDto {
 @ApiTags('employees')
 @Controller('employees')
 export class EmployeesController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
+    ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
@@ -86,6 +94,14 @@ export class EmployeesController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete employee' })
     async remove(@Param('id', ParseIntPipe) id: number) {
+        const count = await this.appointments.count({
+            where: [{ employee: { id } }],
+        });
+        if (count > 0) {
+            throw new BadRequestException(
+                'Cannot delete an employee with related appointments',
+            );
+        }
         await this.usersService.remove(id);
         return { success: true };
     }

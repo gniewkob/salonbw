@@ -1,6 +1,17 @@
-import { Controller, Get, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Query,
+    UseGuards,
+    ValidationPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
@@ -18,9 +29,7 @@ export class LogsController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get logs' })
     @ApiResponse({ status: 200, description: 'List of logs' })
-    getLogs(
-        @Query(new ValidationPipe({ transform: true })) dto: GetLogsDto,
-    ) {
+    getLogs(@Query(new ValidationPipe({ transform: true })) dto: GetLogsDto) {
         return this.logService.findAll({
             userId: dto.userId,
             action: dto.action,

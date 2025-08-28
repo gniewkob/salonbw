@@ -13,9 +13,9 @@ describe('services crud', () => {
     });
 
     it('loads and creates service', () => {
-        cy.intercept('GET', '**/api/services*', { fixture: 'services.json' }).as(
-            'getSvc',
-        );
+        cy.intercept('GET', '**/api/services*', {
+            fixture: 'services.json',
+        }).as('getSvc');
         cy.intercept('POST', '**/api/services', { id: 3, name: 'New' }).as(
             'createSvc',
         );
