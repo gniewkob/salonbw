@@ -15,6 +15,7 @@ import { CommissionsModule } from './commissions/commissions.module';
 import { LogsModule } from './logs/logs.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
     imports: [
@@ -42,6 +43,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         LogsModule,
         ChatModule,
         NotificationsModule,
+        DashboardModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],

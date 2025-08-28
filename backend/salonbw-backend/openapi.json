@@ -942,6 +942,33 @@
           "commissions"
         ]
       }
+    },
+    "/dashboard": {
+      "get": {
+        "operationId": "DashboardController_getSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get dashboard summary",
+        "tags": [
+          "dashboard"
+        ]
+      }
     }
   },
   "info": {
@@ -1155,6 +1182,38 @@
       "Commission": {
         "type": "object",
         "properties": {}
+      },
+      "DashboardSummaryDto": {
+        "type": "object",
+        "properties": {
+          "clientCount": {
+            "type": "number",
+            "description": "Total number of clients",
+            "example": 42
+          },
+          "employeeCount": {
+            "type": "number",
+            "description": "Total number of employees",
+            "example": 7
+          },
+          "todayAppointments": {
+            "type": "number",
+            "description": "Number of appointments scheduled for today",
+            "example": 5
+          },
+          "upcomingAppointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Appointment"
+            }
+          }
+        },
+        "required": [
+          "clientCount",
+          "employeeCount",
+          "todayAppointments",
+          "upcomingAppointments"
+        ]
       }
     }
   }
