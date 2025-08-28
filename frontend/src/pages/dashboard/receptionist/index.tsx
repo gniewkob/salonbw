@@ -11,7 +11,7 @@ export default function ReceptionistDashboard() {
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <StatsWidget
                         title="All Appointments"
-                        value={data?.todayCount ?? null}
+                        value={data?.todayAppointments ?? null}
                         loading={loading}
                     />
                 </div>

@@ -7,7 +7,12 @@ import {
     Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { CommissionsService } from './commissions.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -46,7 +51,11 @@ export class CommissionsController {
     @Get('employees/:id/commissions/summary')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get commission summary for employee' })
-    @ApiResponse({ status: 200, description: 'Summary amount', schema: { example: { amount: 0 } } })
+    @ApiResponse({
+        status: 200,
+        description: 'Summary amount',
+        schema: { example: { amount: 0 } },
+    })
     getSummaryForEmployee(
         @Param('id', ParseIntPipe) id: number,
         @Query() { from, to }: GetSummaryDto,

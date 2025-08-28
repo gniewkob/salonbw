@@ -8,6 +8,7 @@ import {
     Post,
     Put,
     UseGuards,
+    BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -21,6 +22,9 @@ import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from './role.enum';
 import { UsersService } from './users.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Appointment } from '../appointments/appointment.entity';
 
 class CreateClientDto {
     @IsString()
@@ -31,7 +35,11 @@ class CreateClientDto {
 @ApiTags('clients')
 @Controller('clients')
 export class ClientsController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        @InjectRepository(Appointment)
+        private readonly appointments: Repository<Appointment>,
+    ) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
@@ -75,6 +83,14 @@ export class ClientsController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete client' })
     async remove(@Param('id', ParseIntPipe) id: number) {
+        const count = await this.appointments.count({
+            where: [{ client: { id } }],
+        });
+        if (count > 0) {
+            throw new BadRequestException(
+                'Cannot delete a client with related appointments',
+            );
+        }
         await this.usersService.remove(id);
         return { success: true };
     }

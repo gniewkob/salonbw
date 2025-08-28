@@ -30,8 +30,9 @@ export class AuthFailureFilter implements ExceptionFilter {
                 ? LogAction.LOGIN_FAIL
                 : LogAction.AUTHORIZATION_FAILURE;
 
-        const userId = (req.user as { id?: number; userId?: number } | undefined)
-            ?.id ?? (req.user as { userId?: number } | undefined)?.userId;
+        const userId =
+            (req.user as { id?: number; userId?: number } | undefined)?.id ??
+            (req.user as { userId?: number } | undefined)?.userId;
         const user = userId ? ({ id: userId } as User) : null;
 
         try {

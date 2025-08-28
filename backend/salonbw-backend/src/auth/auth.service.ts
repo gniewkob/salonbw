@@ -53,7 +53,9 @@ export class AuthService {
 
             const user = await this.usersService.findById(payload.sub);
             if (!user) {
-                throw new UnauthorizedException('Invalid or expired refresh token');
+                throw new UnauthorizedException(
+                    'Invalid or expired refresh token',
+                );
             }
 
             const userPayload: Pick<User, 'id' | 'role'> = {

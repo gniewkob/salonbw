@@ -7,7 +7,12 @@ import {
     ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -32,9 +37,13 @@ export class AppointmentFormulasController {
         @Body() body: CreateFormulaDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Formula> {
-        return this.formulasService.addToAppointment(appointmentId, user.userId, {
-            description: body.description,
-            date: new Date(body.date),
-        });
+        return this.formulasService.addToAppointment(
+            appointmentId,
+            user.userId,
+            {
+                description: body.description,
+                date: new Date(body.date),
+            },
+        );
     }
 }

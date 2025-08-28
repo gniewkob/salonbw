@@ -40,9 +40,7 @@ export class ReminderService {
                 continue;
             }
             try {
-                const date = appointment.startTime
-                    .toISOString()
-                    .split('T')[0];
+                const date = appointment.startTime.toISOString().split('T')[0];
                 const time = appointment.startTime
                     .toISOString()
                     .split('T')[1]

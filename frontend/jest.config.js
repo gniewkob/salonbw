@@ -14,4 +14,12 @@ module.exports = {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
     transformIgnorePatterns: ['/node_modules/(?!(msw)/)'],
+    coverageThreshold: {
+        global: {
+            statements: 70,
+            lines: 70,
+            functions: 70,
+            branches: 60,
+        },
+    },
 };

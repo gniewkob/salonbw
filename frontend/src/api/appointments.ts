@@ -41,5 +41,33 @@ export function useAppointmentsApi() {
         }
     };
 
-    return { create, update };
+    const cancel = async (id: number) => {
+        try {
+            const res = await apiFetch<Appointment>(
+                `/appointments/${id}/cancel`,
+                { method: 'PATCH' },
+            );
+            toast.success('Appointment cancelled');
+            return res;
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
+            throw err;
+        }
+    };
+
+    const complete = async (id: number) => {
+        try {
+            const res = await apiFetch<Appointment>(
+                `/appointments/${id}/complete`,
+                { method: 'PATCH' },
+            );
+            toast.success('Appointment completed');
+            return res;
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error');
+            throw err;
+        }
+    };
+
+    return { create, update, cancel, complete };
 }

@@ -10,7 +10,12 @@ import {
     ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
@@ -70,7 +75,9 @@ export class ProductsController {
         @Body() body: UpdateProductDto,
         @CurrentUser() user: { userId: number },
     ): Promise<Product> {
-        return this.productsService.update(id, body, { id: user.userId } as User);
+        return this.productsService.update(id, body, {
+            id: user.userId,
+        } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

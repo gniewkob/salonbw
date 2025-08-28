@@ -294,6 +294,7 @@ export class AppointmentsService {
     async updateStartTime(
         id: number,
         startTime: Date,
+        endTime: Date | undefined,
         user: User,
     ): Promise<Appointment | null> {
         const appointment = await this.findOne(id);
@@ -308,9 +309,12 @@ export class AppointmentsService {
         if (!startTime || isNaN(startTime.getTime())) {
             throw new BadRequestException('startTime must be a valid date');
         }
-        const newEnd = new Date(
-            startTime.getTime() + appointment.service.duration * 60 * 1000,
-        );
+        const newEnd = endTime
+            ? endTime
+            : new Date(
+                  startTime.getTime() +
+                      appointment.service.duration * 60 * 1000,
+              );
         const conflict = await this.appointmentsRepository.findOne({
             where: {
                 id: Not(id),

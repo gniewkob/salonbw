@@ -75,7 +75,9 @@ describe('ServicesController', () => {
         const dto: UpdateServiceDto = { name: 'New' };
         const updateSpy = jest.spyOn(service, 'update');
         const user = { userId: 1 };
-        await expect(controller.update(1, dto, user)).resolves.toBe(serviceEntity);
+        await expect(controller.update(1, dto, user)).resolves.toBe(
+            serviceEntity,
+        );
         expect(updateSpy).toHaveBeenCalledWith(1, dto, { id: 1 });
     });
 

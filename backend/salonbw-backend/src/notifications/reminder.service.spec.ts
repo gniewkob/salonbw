@@ -59,7 +59,10 @@ describe('ReminderService', () => {
         await service.handleCron();
 
         const date = appointment.startTime.toISOString().split('T')[0];
-        const time = appointment.startTime.toISOString().split('T')[1].slice(0, 5);
+        const time = appointment.startTime
+            .toISOString()
+            .split('T')[1]
+            .slice(0, 5);
         expect(sendReminder).toHaveBeenCalledWith('1234567890', date, time);
     });
 

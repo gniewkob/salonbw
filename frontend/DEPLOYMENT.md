@@ -20,6 +20,7 @@ npm run dev
 ```
 
 This will:
+
 - Load environment from `.env.local` or `.env`
 - Automatically find available port if 3000 is occupied
 - Enable hot reload and development features
@@ -157,15 +158,15 @@ heroku config:set NEXT_PUBLIC_API_URL=https://api.example.com
 
 ## Environment Variables Reference
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | Yes | - | Backend API URL |
-| `PORT` | No | 3000 | Server port (production) |
-| `NODE_ENV` | No | development | Environment mode |
-| `NEXT_PUBLIC_SITE_URL` | No | - | Public site URL |
-| `NEXT_PUBLIC_GA_ID` | No | - | Google Analytics ID |
-| `NEXT_PUBLIC_ENABLE_ANALYTICS` | No | false | Enable analytics |
-| `NEXT_PUBLIC_ENABLE_DEBUG` | No | false | Enable debug mode |
+| Variable                       | Required | Default     | Description              |
+| ------------------------------ | -------- | ----------- | ------------------------ |
+| `NEXT_PUBLIC_API_URL`          | Yes      | -           | Backend API URL          |
+| `PORT`                         | No       | 3000        | Server port (production) |
+| `NODE_ENV`                     | No       | development | Environment mode         |
+| `NEXT_PUBLIC_SITE_URL`         | No       | -           | Public site URL          |
+| `NEXT_PUBLIC_GA_ID`            | No       | -           | Google Analytics ID      |
+| `NEXT_PUBLIC_ENABLE_ANALYTICS` | No       | false       | Enable analytics         |
+| `NEXT_PUBLIC_ENABLE_DEBUG`     | No       | false       | Enable debug mode        |
 
 ## Health Checks
 
