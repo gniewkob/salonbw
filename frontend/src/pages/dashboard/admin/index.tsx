@@ -2,9 +2,10 @@ import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsWidget from '@/components/StatsWidget';
 import { useDashboard } from '@/hooks/useDashboard';
+import AppointmentListItem from '@/components/AppointmentListItem';
 
 export default function AdminDashboard() {
-    const { data, loading } = useDashboard();
+    const { data, loading, upcoming } = useDashboard();
     return (
         <RouteGuard roles={['admin']}>
             <DashboardLayout>
@@ -25,6 +26,11 @@ export default function AdminDashboard() {
                         loading={loading}
                     />
                 </div>
+                <ul className="mt-4 space-y-2">
+                    {upcoming.slice(0, 5).map((a) => (
+                        <AppointmentListItem key={a.id} appointment={a} />
+                    ))}
+                </ul>
             </DashboardLayout>
         </RouteGuard>
     );
