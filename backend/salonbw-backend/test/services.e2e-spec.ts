@@ -13,7 +13,10 @@ import { ServicesModule } from '../src/services/services.module';
 import { User } from '../src/users/user.entity';
 import { Service } from '../src/services/service.entity';
 
-describe('ServicesController (e2e)', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('ServicesController (e2e)', () => {
     let app: INestApplication;
     let server: Parameters<typeof request>[0];
     let userRepo: Repository<User>;

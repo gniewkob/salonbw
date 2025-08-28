@@ -20,7 +20,10 @@ interface LogsResponse {
     total: number;
 }
 
-describe('LogsController (e2e)', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('LogsController (e2e)', () => {
     let app: INestApplication;
     let server: Parameters<typeof request>[0];
     let logService: LogService;

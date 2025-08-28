@@ -18,7 +18,10 @@ interface ChatMessage {
     timestamp: Date;
 }
 
-describe('ChatController', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('ChatController', () => {
     let app: INestApplication;
     let chatService: {
         findMessages: jest.Mock<Promise<ChatMessage[]>, [number]>;

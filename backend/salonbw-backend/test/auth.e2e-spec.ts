@@ -25,7 +25,10 @@ interface ProfileResponse {
     userId: number;
 }
 
-describe('Auth & Users (e2e)', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('Auth & Users (e2e)', () => {
     let app: INestApplication;
     let server: Parameters<typeof request>[0];
     let accessToken: string;

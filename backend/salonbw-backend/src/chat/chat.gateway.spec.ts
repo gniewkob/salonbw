@@ -19,7 +19,10 @@ interface Message {
     timestamp: Date;
 }
 
-describe('ChatGateway', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('ChatGateway', () => {
     let app: INestApplication;
     let jwtService: JwtService;
     let baseUrl: string;
