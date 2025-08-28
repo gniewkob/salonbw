@@ -31,10 +31,6 @@ interface AppointmentWithEmployee extends AppointmentResponse {
     employee: { id: number };
 }
 
-// Provide defaults for external integrations in test env
-process.env.WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN ?? 'test-token';
-process.env.WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID ?? '123456';
-
 const SKIP = process.env.SKIP_BIND_TESTS === '1';
 const d = SKIP ? describe.skip : describe;
 
