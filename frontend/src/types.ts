@@ -36,9 +36,11 @@ export interface Category {
 
 export interface Employee {
     id: number;
-    firstName: string;
-    lastName: string;
-    fullName: string;
+    name: string;
+    // Optional fields for compatibility in UI components that may still reference them
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
 }
 
 export interface Product {
@@ -61,9 +63,9 @@ export interface Review {
 
 export interface DashboardResponse {
     clientCount: number;
-    todayCount: number;
     employeeCount: number;
-    upcoming: Appointment[];
+    todayAppointments: number;
+    upcomingAppointments: Appointment[];
 }
 
 export interface Notification {

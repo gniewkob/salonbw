@@ -15,7 +15,7 @@ export default function AppointmentListItem({ appointment }: Props) {
                 {appointment.service?.name}
             </div>
             <div className="text-sm text-gray-500">
-                {appointment.employee?.fullName}
+                {appointment.employee?.name || appointment.employee?.fullName}
             </div>
         </li>
     );

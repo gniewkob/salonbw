@@ -11,7 +11,7 @@ export default function EmployeeDashboard() {
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <StatsWidget
                         title="Today Appointments"
-                        value={data?.todayCount ?? null}
+                        value={data?.todayAppointments ?? null}
                         loading={loading}
                     />
                     <StatsWidget

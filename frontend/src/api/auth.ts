@@ -29,17 +29,32 @@ export interface AuthTokens {
     refreshToken: string;
 }
 
+type ServerTokens =
+    | { access_token: string; refresh_token: string }
+    | { accessToken: string; refreshToken: string };
+
+function mapTokens(input: ServerTokens): AuthTokens {
+    if ('access_token' in input) {
+        return {
+            accessToken: input.access_token,
+            refreshToken: input.refresh_token,
+        };
+    }
+    return input;
+}
+
 export const REFRESH_TOKEN_KEY = 'refreshToken';
 
 export async function login(
     credentials: LoginCredentials,
 ): Promise<AuthTokens> {
     try {
-        return await client.request<AuthTokens>('/auth/login', {
+        const raw = await client.request<ServerTokens>('/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
         });
+        return mapTokens(raw);
     } catch (err: unknown) {
         throw new Error(err instanceof Error ? err.message : 'Login failed');
     }
@@ -65,11 +80,12 @@ export async function refreshToken(): Promise<AuthTokens> {
             typeof localStorage !== 'undefined'
                 ? localStorage.getItem(REFRESH_TOKEN_KEY)
                 : null;
-        return await client.request<AuthTokens>('/auth/refresh', {
+        const raw = await client.request<ServerTokens>('/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
         });
+        return mapTokens(raw);
     } catch (err: unknown) {
         throw new Error(
             err instanceof Error ? err.message : 'Token refresh failed',
