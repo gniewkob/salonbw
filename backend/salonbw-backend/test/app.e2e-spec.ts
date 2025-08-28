@@ -8,7 +8,10 @@ import { HealthController } from '../src/health.controller';
 })
 class TestAppModule {}
 
-describe('Health (e2e)', () => {
+const SKIP = process.env.SKIP_BIND_TESTS === '1';
+const d = SKIP ? describe.skip : describe;
+
+d('Health (e2e)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
