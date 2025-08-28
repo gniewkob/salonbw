@@ -4,7 +4,14 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, MoreThan, Not } from 'typeorm';
+import {
+    Repository,
+    LessThan,
+    MoreThan,
+    Not,
+    Between,
+    FindOptionsWhere,
+} from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
@@ -27,6 +34,29 @@ export class AppointmentsService {
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
     ) {}
+
+    findAllInRange(params: {
+        from?: Date;
+        to?: Date;
+        employeeId?: number;
+    }): Promise<Appointment[]> {
+        const where: FindOptionsWhere<Appointment> & {
+            employee?: { id: number };
+        } = {};
+        if (params.employeeId) where.employee = { id: params.employeeId };
+        if (params.from && params.to) {
+            where.startTime = Between(params.from, params.to);
+        } else if (params.from) {
+            where.startTime = MoreThan(params.from);
+        } else if (params.to) {
+            where.startTime = LessThan(params.to);
+        }
+        return this.appointmentsRepository.find({
+            where,
+            order: { startTime: 'ASC' },
+            relations: ['formulas'],
+        });
+    }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
         if (!data.client?.id) {
@@ -114,7 +144,10 @@ export class AppointmentsService {
         }
         if (client.phone && client.receiveNotifications) {
             const date = result.startTime.toISOString().split('T')[0];
-            const time = result.startTime.toISOString().split('T')[1].slice(0, 5);
+            const time = result.startTime
+                .toISOString()
+                .split('T')[1]
+                .slice(0, 5);
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
@@ -235,9 +268,7 @@ export class AppointmentsService {
                 );
             }
             if (updated.client.phone && updated.client.receiveNotifications) {
-                const date = updated.startTime
-                    .toISOString()
-                    .split('T')[0];
+                const date = updated.startTime.toISOString().split('T')[0];
                 const time = updated.startTime
                     .toISOString()
                     .split('T')[1]
@@ -254,6 +285,67 @@ export class AppointmentsService {
             } else {
                 console.warn(
                     'Client has no phone number or notifications disabled; skipping follow up message',
+                );
+            }
+        }
+        return updated;
+    }
+
+    async updateStartTime(
+        id: number,
+        startTime: Date,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+        if (appointment.status !== AppointmentStatus.Scheduled) {
+            throw new BadRequestException(
+                'Only scheduled appointments can be rescheduled',
+            );
+        }
+        if (!startTime || isNaN(startTime.getTime())) {
+            throw new BadRequestException('startTime must be a valid date');
+        }
+        const newEnd = new Date(
+            startTime.getTime() + appointment.service.duration * 60 * 1000,
+        );
+        const conflict = await this.appointmentsRepository.findOne({
+            where: {
+                id: Not(id),
+                employee: { id: appointment.employee.id },
+                status: Not(AppointmentStatus.Cancelled),
+                startTime: LessThan(newEnd),
+                endTime: MoreThan(startTime),
+            },
+        });
+        if (conflict) {
+            throw new ConflictException(
+                'Employee is already booked for this time',
+            );
+        }
+        await this.appointmentsRepository.update(id, {
+            startTime,
+            endTime: newEnd,
+        });
+        const updated = await this.findOne(id);
+        if (updated) {
+            try {
+                await this.logService.logAction(
+                    user,
+                    LogAction.APPOINTMENT_RESCHEDULED,
+                    {
+                        action: 'reschedule',
+                        appointmentId: updated.id,
+                        startTime: updated.startTime,
+                        endTime: updated.endTime,
+                    },
+                );
+            } catch (error) {
+                console.error(
+                    'Failed to log appointment reschedule action',
+                    error,
                 );
             }
         }

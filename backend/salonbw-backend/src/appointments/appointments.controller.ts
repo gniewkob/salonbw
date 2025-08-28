@@ -10,8 +10,15 @@ import {
     BadRequestException,
     NotFoundException,
     ParseIntPipe,
+    Query,
+    ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
@@ -22,11 +29,30 @@ import { Appointment } from './appointment.entity';
 import { User } from '../users/user.entity';
 import { Service as SalonService } from '../services/service.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { GetAppointmentsDto } from './dto/get-appointments.dto';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
 export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Get()
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List appointments (admin, optional filters)' })
+    @ApiResponse({ status: 200, type: Appointment, isArray: true })
+    findAll(
+        @Query(new ValidationPipe({ transform: true }))
+        query: GetAppointmentsDto,
+    ): Promise<Appointment[]> {
+        return this.appointmentsService.findAllInRange({
+            from: query.from ? new Date(query.from) : undefined,
+            to: query.to ? new Date(query.to) : undefined,
+            employeeId: query.employeeId,
+        });
+    }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
@@ -87,7 +113,11 @@ export class AppointmentsController {
     @Patch(':id/cancel')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Cancel appointment' })
-    @ApiResponse({ status: 200, description: 'Appointment cancelled', type: Appointment })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment cancelled',
+        type: Appointment,
+    })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async cancel(
@@ -113,7 +143,11 @@ export class AppointmentsController {
     @Patch(':id/complete')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Complete appointment' })
-    @ApiResponse({ status: 200, description: 'Appointment completed', type: Appointment })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment completed',
+        type: Appointment,
+    })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async complete(
@@ -130,9 +164,32 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.completeAppointment(
+        return this.appointmentsService.completeAppointment(id, {
+            id: user.userId,
+        } as User);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Patch(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update appointment (reschedule start time)' })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment updated',
+        type: Appointment,
+    })
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: UpdateAppointmentDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const updated = await this.appointmentsService.updateStartTime(
             id,
+            new Date(body.startTime),
             { id: user.userId } as User,
         );
+        if (!updated) throw new NotFoundException();
+        return updated;
     }
 }
