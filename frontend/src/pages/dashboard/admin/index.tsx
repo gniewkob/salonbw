@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import DashboardWidget from '@/components/DashboardWidget';
+import StatsWidget from '@/components/StatsWidget';
 import { useDashboard } from '@/hooks/useDashboard';
 
 export default function AdminDashboard() {
@@ -9,18 +9,18 @@ export default function AdminDashboard() {
         <RouteGuard roles={['admin']}>
             <DashboardLayout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-                    <DashboardWidget
-                        label="Clients"
+                    <StatsWidget
+                        title="Clients"
                         value={data?.clientCount ?? null}
                         loading={loading}
                     />
-                    <DashboardWidget
-                        label="Employees"
+                    <StatsWidget
+                        title="Employees"
                         value={data?.employeeCount ?? null}
                         loading={loading}
                     />
-                    <DashboardWidget
-                        label="Today"
+                    <StatsWidget
+                        title="Today"
                         value={data?.todayCount ?? null}
                         loading={loading}
                     />
