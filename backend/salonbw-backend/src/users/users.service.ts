@@ -32,6 +32,11 @@ export class UsersService {
         return this.usersRepository.find();
     }
 
+    async findAllByRole(role?: Role): Promise<User[]> {
+        if (!role) return this.findAll();
+        return this.usersRepository.find({ where: { role } });
+    }
+
     async createUser(dto: CreateUserDto): Promise<User> {
         const existing = await this.findByEmail(dto.email);
         if (existing) {
