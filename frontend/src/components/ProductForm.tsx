@@ -33,6 +33,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         brand: initial?.brand ?? '',
     });
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -43,11 +44,14 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         e.preventDefault();
         try {
             const data = schema.parse(form);
+            setSubmitting(true);
             await onSubmit(data);
         } catch (err: unknown) {
             if (err instanceof z.ZodError)
                 setError(err.issues[0]?.message ?? 'Error');
             else setError('Error');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -101,8 +105,12 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1">
-                    Save
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

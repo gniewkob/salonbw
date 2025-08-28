@@ -8,6 +8,7 @@ interface Props {
 export default function StockForm({ onSubmit, onCancel }: Props) {
     const [amount, setAmount] = useState(0);
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -17,9 +18,12 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
             return;
         }
         try {
+            setSubmitting(true);
             await onSubmit(num);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Error');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -45,8 +49,12 @@ export default function StockForm({ onSubmit, onCancel }: Props) {
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1">
-                    Save
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
+                    {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
         </form>

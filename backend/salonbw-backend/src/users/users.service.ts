@@ -57,4 +57,31 @@ export class UsersService {
 
         return await this.usersRepository.save(user);
     }
+
+    async createUserWithRole(dto: CreateUserDto, role: Role): Promise<User> {
+        const existing = await this.findByEmail(dto.email);
+        if (existing) {
+            throw new BadRequestException('Email already exists');
+        }
+        const hashedPassword: string = await bcrypt.hash(dto.password, 10);
+        const user = this.usersRepository.create({
+            email: dto.email,
+            name: dto.name,
+            password: hashedPassword,
+            role,
+            phone: dto.phone ?? null,
+            commissionBase: dto.commissionBase ?? 0,
+            receiveNotifications: dto.receiveNotifications ?? true,
+        });
+        return await this.usersRepository.save(user);
+    }
+
+    async updateName(id: number, name: string): Promise<User | null> {
+        await this.usersRepository.update(id, { name });
+        return this.findById(id);
+    }
+
+    async remove(id: number): Promise<void> {
+        await this.usersRepository.delete(id);
+    }
 }
