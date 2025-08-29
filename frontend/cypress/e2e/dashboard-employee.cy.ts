@@ -6,15 +6,20 @@ describe('employee dashboard navigation', () => {
         cy.intercept('GET', '**/api/dashboard', {
             fixture: 'dashboard.json',
         }).as('dashboard');
+        cy.intercept('GET', '**/api/appointments/me', []).as('getMine');
     });
 
     it('redirects to employee dashboard and shows widgets', () => {
         cy.visit('/dashboard');
         cy.wait('@profile');
         cy.wait('@dashboard');
+        cy.wait('@getMine');
         cy.url().should('include', '/dashboard/employee');
-        cy.contains('Today Appointments');
-        cy.contains('Clients');
+        // Calendar toolbar and grid should be visible
+        cy.get('.fc-toolbar', { timeout: 10000 }).should('exist');
+        cy.get('.fc-timegrid, .fc-daygrid', { timeout: 10000 }).should(
+            'be.visible',
+        );
     });
 
     it('navigates to clients via sidebar', () => {
