@@ -75,7 +75,7 @@
             "bearer": []
           }
         ],
-        "summary": "List users",
+        "summary": "List users (optionally filter by role)",
         "tags": [
           "Users"
         ]
@@ -182,6 +182,34 @@
       }
     },
     "/appointments": {
+      "get": {
+        "operationId": "AppointmentsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Appointment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List appointments (admin, optional filters)",
+        "tags": [
+          "appointments"
+        ]
+      },
       "post": {
         "description": "Employees or admins must specify clientId in the request body.",
         "operationId": "AppointmentsController_create",
@@ -324,6 +352,52 @@
           }
         ],
         "summary": "Complete appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}": {
+      "patch": {
+        "operationId": "AppointmentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update appointment (reschedule start time)",
         "tags": [
           "appointments"
         ]
@@ -1109,6 +1183,10 @@
           "refreshToken"
         ]
       },
+      "Appointment": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateAppointmentDto": {
         "type": "object",
         "properties": {
@@ -1132,9 +1210,21 @@
           "startTime"
         ]
       },
-      "Appointment": {
+      "UpdateAppointmentDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "New start time ISO string"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "New end time ISO string"
+          }
+        },
+        "required": [
+          "startTime"
+        ]
       },
       "Service": {
         "type": "object",
