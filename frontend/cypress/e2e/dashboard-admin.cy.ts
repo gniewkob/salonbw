@@ -83,7 +83,7 @@ describe('admin dashboard services crud', () => {
 
 describe('admin dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '**/api/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/api/users/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/admin');
         cy.url().should('include', '/auth/login');

@@ -10,7 +10,7 @@ function applyMockLogin(role: 'admin' | 'client' | 'employee', name: string) {
         refreshToken: 'refresh',
     }).as('login');
 
-    cy.intercept('GET', '**/api/profile', {
+    cy.intercept('GET', '**/api/users/profile', {
         id: 1,
         name,
         role,

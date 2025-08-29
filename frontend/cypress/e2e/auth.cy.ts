@@ -5,7 +5,7 @@ function mockLogin() {
         accessToken: clientToken,
         refreshToken: 'refresh',
     }).as('login');
-    cy.intercept('GET', '**/api/profile', {
+    cy.intercept('GET', '**/api/users/profile', {
         id: 1,
         name: 'Test Client',
         role: 'client',
@@ -44,7 +44,7 @@ describe('authentication flow', () => {
     });
 
     it('direct navigation to /dashboard when logged out redirects to /auth/login', () => {
-        cy.intercept('GET', '**/api/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/api/users/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard');
         cy.url().should('include', '/auth/login');
