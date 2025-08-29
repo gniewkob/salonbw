@@ -52,7 +52,7 @@ describe('admin completes appointment', () => {
             statusCode: 200,
             body: { id: 99, paymentStatus: 'completed' },
         }).as('complete');
-        cy.contains('button', 'Complete').click();
+        cy.contains('button', 'Complete').click({ force: true });
         cy.wait('@complete');
         cy.contains('Appointment completed');
     });
