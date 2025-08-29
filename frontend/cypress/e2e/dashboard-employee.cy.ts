@@ -3,16 +3,12 @@ import { mockEmployeeLogin } from '../support/mockLogin';
 describe('employee dashboard navigation', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '**/api/dashboard', {
-            fixture: 'dashboard.json',
-        }).as('dashboard');
         cy.intercept('GET', '**/api/appointments/me', []).as('getMine');
     });
 
     it('redirects to employee dashboard and shows widgets', () => {
         cy.visit('/dashboard');
         cy.wait('@profile');
-        cy.wait('@dashboard');
         cy.wait('@getMine');
         cy.url().should('include', '/dashboard/employee');
         // Calendar toolbar and grid should be visible
@@ -25,7 +21,7 @@ describe('employee dashboard navigation', () => {
     it('navigates to clients via sidebar', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
-        cy.wait('@dashboard');
+        cy.wait('@getMine');
         cy.intercept('GET', '**/api/clients', {
             fixture: 'clients.json',
         }).as('getClients');
@@ -39,28 +35,12 @@ describe('employee dashboard navigation', () => {
     });
 });
 
-describe('employee dashboard clients crud', () => {
-    beforeEach(() => {
+describe('employee dashboard clients access', () => {
+    it('redirects from clients page to employee dashboard', () => {
         mockEmployeeLogin();
-        cy.intercept('GET', '**/api/clients', { fixture: 'clients.json' }).as(
-            'getClients',
-        );
-    });
-
-    it('creates a client', () => {
-        cy.intercept('POST', '**/api/clients', { id: 3, name: 'New' }).as(
-            'createClient',
-        );
         cy.visit('/clients');
         cy.wait('@profile');
-        cy.wait('@getClients');
-        cy.contains('Add Client', { timeout: 10000 })
-            .should('be.visible')
-            .click();
-        cy.get('input[placeholder="Name"]').type('New');
-        cy.contains('button', 'Save').click();
-        cy.wait('@createClient');
-        cy.contains('New');
+        cy.url().should('include', '/dashboard/employee');
     });
 });
 

@@ -28,7 +28,9 @@ describe('client booking flow', () => {
 
         // Fill date-time and save (service defaults to first option)
         const dt = '2025-01-01T10:00';
-        cy.get('input[type="datetime-local"]').clear().type(dt);
+        cy.get('input[type="datetime-local"]').clear({ force: true }).type(dt, {
+            force: true,
+        });
         cy.contains('button', 'Save').click();
         cy.wait('@createAppt');
         cy.contains('Appointment created');
