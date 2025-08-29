@@ -20,8 +20,10 @@ describe('employee dashboard navigation', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@getMine');
+        // Open the sidebar on small viewports
+        cy.contains('button', 'Open Menu').click({ force: true });
         // Sidebar link exists but Clients page is admin-only
-        cy.contains('Clients', { timeout: 10000 }).click();
+        cy.contains('a', 'Clients', { timeout: 10000 }).click();
         // RouteGuard should bring us back to employee dashboard
         cy.url({ timeout: 10000 }).should('include', '/dashboard/employee');
     });
