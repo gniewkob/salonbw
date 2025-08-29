@@ -17,7 +17,10 @@ describe('admin manage data', () => {
         cy.wait('@getProd');
         cy.contains('Shampoo');
         cy.on('window:confirm', () => true);
-        cy.contains('button', 'Delete').first().click();
+        cy.contains('tr', 'Shampoo')
+            .find('button')
+            .contains('Delete')
+            .click();
         cy.wait('@deleteProd');
         cy.contains('Shampoo').should('not.exist');
     });
