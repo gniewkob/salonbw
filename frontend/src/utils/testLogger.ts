@@ -13,7 +13,11 @@ function computeEnabled(): boolean {
         const isCypress = !!(window as any).Cypress;
         const flag = (window as unknown as { NEXT_PUBLIC_TEST_LOG?: string })
             ?.NEXT_PUBLIC_TEST_LOG;
-        return isCypress || flag === 'true' || process.env.NEXT_PUBLIC_TEST_LOG === 'true';
+        return (
+            isCypress ||
+            flag === 'true' ||
+            process.env.NEXT_PUBLIC_TEST_LOG === 'true'
+        );
     }
     // On server side, rely on env flag only
     return process.env.NEXT_PUBLIC_TEST_LOG === 'true';
@@ -22,7 +26,8 @@ function computeEnabled(): boolean {
 function makeLogger(): TestLogger {
     const enabled = computeEnabled();
     const prefix = '[test]';
-    const mk = (fn: (...a: unknown[]) => void) =>
+    const mk =
+        (fn: (...a: unknown[]) => void) =>
         (...args: unknown[]) => {
             if (enabled) fn(prefix, ...args);
         };
@@ -37,4 +42,3 @@ function makeLogger(): TestLogger {
 }
 
 export const testLog: TestLogger = makeLogger();
-
