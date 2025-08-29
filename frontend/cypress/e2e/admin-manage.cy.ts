@@ -6,24 +6,29 @@ describe('admin manage data', () => {
     });
 
     it('deletes a product', () => {
-        cy.intercept('GET', '**/api/products*', {
-            fixture: 'products.json',
-        }).as('getProd');
+        // Load with a single product from fixture
+        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
+            'getProd',
+        );
         cy.intercept('DELETE', '**/api/products/1', { statusCode: 204 }).as(
             'deleteProd',
         );
+
         cy.visit('/products');
         cy.wait('@profile');
         cy.wait('@getProd');
-        cy.contains('Shampoo');
+        // Ensure the product is visible
+        cy.contains('tr', 'Shampoo', { timeout: 10000 }).should('be.visible');
+
+        // Delete the product
         cy.on('window:confirm', () => true);
         cy.contains('tr', 'Shampoo').within(() => {
             cy.contains('button', 'Delete').click();
         });
         cy.wait('@deleteProd');
         cy.contains('Product deleted');
-        cy.get('tbody tr', { timeout: 10000 }).should('have.length', 0);
         cy.contains('Shampoo').should('not.exist');
+        cy.get('tbody tr', { timeout: 10000 }).should('have.length', 0);
     });
 
     it('edits an employee', () => {

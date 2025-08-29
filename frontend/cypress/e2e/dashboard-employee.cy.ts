@@ -16,19 +16,19 @@ describe('employee dashboard navigation', () => {
         cy.contains('Salon Black & White').should('be.visible');
     });
 
-    it('navigates to clients via sidebar and gets redirected back', () => {
+    it('does not show admin-only Clients link in sidebar', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@getMine');
         // If mobile menu button exists, open it; otherwise sidebar is already visible
-        cy.get('button').then(($btns) => {
-            const btn = [...$btns].find((b) => b.textContent?.includes('Open Menu'));
+        cy.get('body').then(($body) => {
+            const btn = [...$body.find('button')].find((b) =>
+                b.textContent?.includes('Open Menu'),
+            );
             if (btn) cy.wrap(btn).click({ force: true });
         });
-        // Sidebar link exists but Clients page is admin-only
-        cy.contains('Clients', { timeout: 10000 }).click({ force: true });
-        // RouteGuard should bring us back to employee dashboard
-        cy.url({ timeout: 10000 }).should('include', '/dashboard/employee');
+        // Clients is admin-only so it should not be present for employee
+        cy.contains('Clients').should('not.exist');
     });
 });
 

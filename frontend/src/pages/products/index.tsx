@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
@@ -8,6 +8,7 @@ import StockForm from '@/components/StockForm';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductApi } from '@/api/products';
 import { Product } from '@/types';
+import { testLog } from '@/utils/testLogger';
 
 export default function ProductsPage() {
     const { data } = useProducts();
@@ -17,7 +18,15 @@ export default function ProductsPage() {
     const [editing, setEditing] = useState<Product | null>(null);
     const [stockProd, setStockProd] = useState<Product | null>(null);
 
-    if (data && rows.length === 0) setRows(data);
+    // Initialize rows from API data once it arrives (and whenever API data changes)
+    useEffect(() => {
+        if (data) {
+            testLog.debug('ProductsPage: initializing rows from data', {
+                count: data.length,
+            });
+            setRows(data);
+        }
+    }, [data]);
 
     const columns: Column<Product>[] = [
         { header: 'ID', accessor: 'id' },
@@ -35,7 +44,9 @@ export default function ProductsPage() {
         lowStockThreshold: number;
         brand?: string;
     }) => {
+        testLog.info('ProductsPage: creating product', values);
         const created = await api.create(values);
+        testLog.info('ProductsPage: created product', created);
         setRows((c) => [...c, created]);
         setOpenForm(false);
     };
@@ -48,7 +59,9 @@ export default function ProductsPage() {
         brand?: string;
     }) => {
         if (!editing) return;
+        testLog.info('ProductsPage: updating product', { id: editing.id, values });
         const updated = await api.update(editing.id, values);
+        testLog.info('ProductsPage: updated product', updated);
         setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
         setEditing(null);
         setOpenForm(false);
@@ -56,7 +69,9 @@ export default function ProductsPage() {
 
     const handleStockUpdate = async (amount: number) => {
         if (!stockProd) return;
+        testLog.info('ProductsPage: updating stock', { id: stockProd.id, amount });
         const updated = await api.updateStock(stockProd.id, amount);
+        testLog.info('ProductsPage: updated stock', updated);
         setRows((c) => c.map((cl) => (cl.id === stockProd.id ? updated : cl)));
         setStockProd(null);
     };
@@ -64,8 +79,10 @@ export default function ProductsPage() {
     const handleDelete = async (row: Product) => {
         if (!confirm(`Delete ${row.name}?`)) return;
         try {
+            testLog.info('ProductsPage: deleting product', { id: row.id });
             await api.remove(row.id);
             setRows((c) => c.filter((cl) => cl.id !== row.id));
+            testLog.info('ProductsPage: deleted product', { id: row.id });
         } catch {
             // error toast handled in api
         }
