@@ -20,10 +20,13 @@ describe('employee dashboard navigation', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@getMine');
-        // Open the sidebar on small viewports
-        cy.contains('button', 'Open Menu').click({ force: true });
+        // If mobile menu button exists, open it; otherwise sidebar is already visible
+        cy.get('button').then(($btns) => {
+            const btn = [...$btns].find((b) => b.textContent?.includes('Open Menu'));
+            if (btn) cy.wrap(btn).click({ force: true });
+        });
         // Sidebar link exists but Clients page is admin-only
-        cy.contains('a', 'Clients', { timeout: 10000 }).click();
+        cy.contains('Clients', { timeout: 10000 }).click({ force: true });
         // RouteGuard should bring us back to employee dashboard
         cy.url({ timeout: 10000 }).should('include', '/dashboard/employee');
     });

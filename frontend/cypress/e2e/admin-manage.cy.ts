@@ -22,7 +22,8 @@ describe('admin manage data', () => {
         });
         cy.wait('@deleteProd');
         cy.contains('Product deleted');
-        cy.contains('Shampoo', { timeout: 10000 }).should('not.exist');
+        cy.get('tbody tr', { timeout: 10000 }).should('have.length', 0);
+        cy.contains('Shampoo').should('not.exist');
     });
 
     it('edits an employee', () => {
