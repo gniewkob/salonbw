@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -53,48 +53,47 @@ export default function AdminSchedulerPage() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [selected, setSelected] = useState<Appointment | null>(null);
 
-    const loadEvents = async (
-        startIso: string,
-        endIso: string,
-        employeeId?: number | 'all',
-    ) => {
-        try {
-            const params = new URLSearchParams({ from: startIso, to: endIso });
-            if (employeeId && employeeId !== 'all')
-                params.set('employeeId', String(employeeId));
-            // Preferred endpoint (if backend supports): /appointments?from=&to=&employeeId=
-            // Fallback to /appointments
-            let data: Appointment[];
+    const loadEvents = useCallback(
+        async (
+            startIso: string,
+            endIso: string,
+            employeeId?: number | 'all',
+        ) => {
             try {
-                data = await apiFetch<Appointment[]>(
-                    `/appointments?${params.toString()}`,
+                const params = new URLSearchParams({
+                    from: startIso,
+                    to: endIso,
+                });
+                if (employeeId && employeeId !== 'all')
+                    params.set('employeeId', String(employeeId));
+                // Preferred endpoint (if backend supports): /appointments?from=&to=&employeeId=
+                // Fallback to /appointments
+                let data: Appointment[];
+                try {
+                    data = await apiFetch<Appointment[]>(
+                        `/appointments?${params.toString()}`,
+                    );
+                } catch {
+                    data = await apiFetch<Appointment[]>('/appointments');
+                }
+
+                const mapped = mapAppointmentsToEvents(
+                    data,
+                    services ?? [],
+                    (employees ?? []) as Employee[],
+                    employeeId ?? 'all',
                 );
+                setEvents(mapped);
             } catch {
-                data = await apiFetch<Appointment[]>('/appointments');
+                setEvents([]);
             }
-
-            const mapped = mapAppointmentsToEvents(
-                data,
-                services ?? [],
-                (employees ?? []) as Employee[],
-                employeeId ?? 'all',
-            );
-            setEvents(mapped);
-        } catch {
-            setEvents([]);
-        }
-    };
-
-    const rangeKey = useMemo(
-        () => (range ? `${range.start}|${range.end}` : ''),
-        [range?.start, range?.end],
+        },
+        [apiFetch, services, employees],
     );
-    const employeesCount = useMemo(() => employees?.length ?? 0, [employees]);
-    const servicesCount = useMemo(() => services?.length ?? 0, [services]);
 
     useEffect(() => {
         if (range) void loadEvents(range.start, range.end, selectedEmployee);
-    }, [rangeKey, selectedEmployee, servicesCount, employeesCount]);
+    }, [range, selectedEmployee, loadEvents]);
 
     useEffect(() => {
         let mounted = true;
