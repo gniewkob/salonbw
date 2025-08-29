@@ -16,18 +16,14 @@ describe('employee dashboard navigation', () => {
         cy.contains('Salon Black & White').should('be.visible');
     });
 
-    it('navigates to clients via sidebar', () => {
+    it('navigates to clients via sidebar and gets redirected back', () => {
         cy.visit('/dashboard/employee');
         cy.wait('@profile');
         cy.wait('@getMine');
-        cy.intercept('GET', '**/api/clients', {
-            fixture: 'clients.json',
-        }).as('getClients');
-        // Use generic link search to avoid testid flake
-        cy.contains('a', 'Clients', { timeout: 10000 }).click();
-        cy.wait('@getClients');
-        cy.url().should('include', '/clients');
-        cy.get('table', { timeout: 10000 }).should('be.visible');
+        // Sidebar link exists but Clients page is admin-only
+        cy.contains('Clients', { timeout: 10000 }).click();
+        // RouteGuard should bring us back to employee dashboard
+        cy.url({ timeout: 10000 }).should('include', '/dashboard/employee');
     });
 });
 
