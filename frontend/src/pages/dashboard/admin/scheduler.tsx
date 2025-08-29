@@ -85,15 +85,16 @@ export default function AdminSchedulerPage() {
         }
     };
 
+    const rangeKey = useMemo(
+        () => (range ? `${range.start}|${range.end}` : ''),
+        [range?.start, range?.end],
+    );
+    const employeesCount = useMemo(() => employees?.length ?? 0, [employees]);
+    const servicesCount = useMemo(() => services?.length ?? 0, [services]);
+
     useEffect(() => {
         if (range) void loadEvents(range.start, range.end, selectedEmployee);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        JSON.stringify(range),
-        selectedEmployee,
-        services?.length,
-        employees?.length,
-    ]);
+    }, [rangeKey, selectedEmployee, servicesCount, employeesCount]);
 
     useEffect(() => {
         let mounted = true;
