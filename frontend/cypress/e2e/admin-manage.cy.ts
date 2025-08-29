@@ -7,9 +7,9 @@ describe('admin manage data', () => {
 
     it('deletes a product', () => {
         // Load with a single product from fixture
-        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
-            'getProd',
-        );
+        cy.intercept('GET', '**/api/products*', {
+            fixture: 'products.json',
+        }).as('getProd');
         cy.intercept('DELETE', '**/api/products/1', { statusCode: 204 }).as(
             'deleteProd',
         );

@@ -59,7 +59,10 @@ export default function ProductsPage() {
         brand?: string;
     }) => {
         if (!editing) return;
-        testLog.info('ProductsPage: updating product', { id: editing.id, values });
+        testLog.info('ProductsPage: updating product', {
+            id: editing.id,
+            values,
+        });
         const updated = await api.update(editing.id, values);
         testLog.info('ProductsPage: updated product', updated);
         setRows((c) => c.map((cl) => (cl.id === editing.id ? updated : cl)));
@@ -69,7 +72,10 @@ export default function ProductsPage() {
 
     const handleStockUpdate = async (amount: number) => {
         if (!stockProd) return;
-        testLog.info('ProductsPage: updating stock', { id: stockProd.id, amount });
+        testLog.info('ProductsPage: updating stock', {
+            id: stockProd.id,
+            amount,
+        });
         const updated = await api.updateStock(stockProd.id, amount);
         testLog.info('ProductsPage: updated stock', updated);
         setRows((c) => c.map((cl) => (cl.id === stockProd.id ? updated : cl)));
