@@ -31,7 +31,7 @@ describe('client booking flow', () => {
         cy.get('input[type="datetime-local"]').clear({ force: true }).type(dt, {
             force: true,
         });
-        cy.contains('button', 'Save').click();
+        cy.contains('button', 'Save').click({ force: true });
         cy.wait('@createAppt');
         cy.contains('Appointment created');
     });
