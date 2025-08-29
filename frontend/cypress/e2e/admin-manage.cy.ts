@@ -21,7 +21,8 @@ describe('admin manage data', () => {
             cy.contains('button', 'Delete').click();
         });
         cy.wait('@deleteProd');
-        cy.contains('Shampoo').should('not.exist');
+        cy.contains('Product deleted');
+        cy.contains('Shampoo', { timeout: 10000 }).should('not.exist');
     });
 
     it('edits an employee', () => {
