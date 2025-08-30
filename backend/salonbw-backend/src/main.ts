@@ -27,7 +27,7 @@ async function bootstrap() {
         SwaggerModule.setup('api/docs', app, document);
     }
     app.enableCors({
-        origin: config.get<string>('FRONTEND_URL'),
+        origin: config.get<string>('FRONTEND_URL') ?? true,
         credentials: true,
     });
     await app.listen(config.get<number>('PORT') ?? 3000);
