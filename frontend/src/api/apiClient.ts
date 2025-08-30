@@ -133,14 +133,6 @@ export class ApiClient {
             return res.data;
         } catch (error: unknown) {
             const err = error as AxiosError<unknown>;
-            if (process.env.NODE_ENV !== 'production') {
-                // Avoid leaking details in production console
-                // eslint-disable-next-line no-console
-                console.error(
-                    'API request failed',
-                    err.response?.data || err.message,
-                );
-            }
             throw this.createError(err);
         }
     }
