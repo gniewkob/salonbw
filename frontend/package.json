@@ -21,7 +21,8 @@
     "e2e:ci": "NEXT_PUBLIC_API_URL=/api npm run build && NEXT_PUBLIC_API_URL=/api start-server-and-test start http://localhost:3000 'cypress run'",
     "ports:cleanup": "node scripts/server-utils.js cleanup",
     "ports:check": "node scripts/server-utils.js find-port",
-    "build:production": "NODE_ENV=production next build"
+    "build:production": "NODE_ENV=production next build",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.18",
@@ -68,6 +69,7 @@
     "typescript": "^5",
     "typescript-eslint": "^8.37.0",
     "web-streams-polyfill": "^4.1.0",
-    "whatwg-fetch": "^3.6.20"
+    "whatwg-fetch": "^3.6.20",
+    "husky": "^9.0.11"
   }
 }
