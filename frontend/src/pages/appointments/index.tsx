@@ -12,15 +12,22 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import type { DateClickArg } from '@fullcalendar/interaction';
 import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
+import type { paths } from '@salonbw/api';
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
 });
 import { useState } from 'react';
 
-interface AppointmentPayload {
+type CreateAppointmentPayload =
+    paths['/appointments']['post']['requestBody']['content']['application/json'];
+type UpdateAppointmentPayload =
+    paths['/appointments/{id}']['patch']['requestBody']['content']['application/json'];
+
+interface AppointmentFormPayload {
     serviceId: number;
     startTime: string;
+    clientId?: number;
 }
 
 export default function AppointmentsPage() {
@@ -55,20 +62,29 @@ export default function AppointmentsPage() {
 
     const handleDrop = async (arg: EventDropArg): Promise<void> => {
         try {
-            await api.update(Number(arg.event.id), {
+            const payload: UpdateAppointmentPayload = {
                 startTime: arg.event.start!.toISOString(),
-            });
+            };
+            await api.update(Number(arg.event.id), payload);
         } catch {
             alert('Conflict');
             arg.revert();
         }
     };
 
-    const handleSubmit = async (data: AppointmentPayload): Promise<void> => {
+    const handleSubmit = async (
+        data: AppointmentFormPayload,
+    ): Promise<void> => {
         if (editId) {
             await api.update(editId, { startTime: data.startTime });
         } else {
-            await api.create({ ...data, employeeId: 1 });
+            const payload: CreateAppointmentPayload = {
+                serviceId: data.serviceId,
+                startTime: data.startTime,
+                employeeId: 1,
+                ...(data.clientId ? { clientId: data.clientId } : {}),
+            };
+            await api.create(payload);
         }
         setFormOpen(false);
     };

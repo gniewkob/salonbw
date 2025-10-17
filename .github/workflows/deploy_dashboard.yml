@@ -1,0 +1,37 @@
+name: Deploy Dashboard (Template)
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit to deploy
+        required: true
+      environment:
+        description: Target environment (e.g. production, staging)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Upload Dashboard App
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha }}
+
+      - name: Show template instructions
+        run: |
+          echo "This is a deployment template for the dashboard/admin build."
+          echo "Add the real steps before enabling:"
+          echo "- pnpm --filter frontend build"
+          echo "- rsync the standalone output to the dashboard hosting directory"
+          echo "- Restart the Passenger app via 'devil www restart'"
+          echo ""
+          echo "Expected secrets:"
+          echo "- MYDEVIL_SSH_HOST / MYDEVIL_SSH_USER / MYDEVIL_SSH_KEY"
+          echo "- MYDEVIL_DASHBOARD_PATH"

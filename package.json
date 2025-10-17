@@ -1,0 +1,31 @@
+{
+  "name": "salonbw-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "pnpm -r run --if-present lint",
+    "typecheck": "pnpm -r run --if-present typecheck",
+    "format": "pnpm -r run --if-present format",
+    "tunnel:start": "bash scripts/db-tunnel.sh",
+    "tunnel:stop": "bash scripts/db-tunnel-kill.sh",
+    "be:dev": "pnpm --filter salonbw-backend start:dev",
+    "be:test": "pnpm --filter salonbw-backend test"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "pnpm exec eslint --fix"
+    ],
+    "*.{json,md,css,scss}": [
+      "pnpm exec prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
+  }
+}

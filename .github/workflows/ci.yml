@@ -1,0 +1,180 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  PNPM_VERSION: 10.14.0
+  NODE_VERSION: '22'
+
+jobs:
+  frontend:
+    name: Frontend (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [public, dashboard, admin]
+    env:
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: paths
+        uses: dorny/paths-filter@v3
+        with:
+          list-files: none
+          filters: |
+            public:
+              - 'frontend/src/pages/index.tsx'
+              - 'frontend/src/pages/services.tsx'
+              - 'frontend/src/pages/gallery.tsx'
+              - 'frontend/src/pages/contact.tsx'
+              - 'frontend/public/**'
+              - 'frontend/next.config.mjs'
+              - 'frontend/package.json'
+              - 'frontend/tsconfig.json'
+              - 'frontend/**/*.ts'
+              - 'frontend/**/*.tsx'
+              - 'frontend/**/*.js'
+              - 'frontend/**/*.jsx'
+              - 'frontend/**/*.json'
+            dashboard:
+              - 'frontend/src/pages/dashboard/**'
+              - 'frontend/src/components/**'
+              - 'frontend/src/hooks/**'
+              - 'frontend/src/contexts/**'
+              - 'frontend/next.config.mjs'
+              - 'frontend/package.json'
+              - 'frontend/tsconfig.json'
+              - 'frontend/**/*.ts'
+              - 'frontend/**/*.tsx'
+              - 'frontend/**/*.js'
+              - 'frontend/**/*.jsx'
+              - 'frontend/**/*.json'
+            admin:
+              - 'frontend/src/pages/dashboard/admin/**'
+              - 'frontend/src/pages/dashboard/services/**'
+              - 'frontend/src/pages/dashboard/receptionist/**'
+              - 'frontend/src/pages/dashboard/employee/**'
+              - 'frontend/src/pages/dashboard/client/**'
+              - 'frontend/src/components/**'
+              - 'frontend/src/hooks/**'
+              - 'frontend/src/contexts/**'
+              - 'frontend/next.config.mjs'
+              - 'frontend/package.json'
+              - 'frontend/tsconfig.json'
+              - 'frontend/**/*.ts'
+              - 'frontend/**/*.tsx'
+              - 'frontend/**/*.js'
+              - 'frontend/**/*.jsx'
+              - 'frontend/**/*.json'
+
+      - name: Decide if job should run
+        id: should_run
+        run: |
+          if [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$APP_CHANGED" == "true" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No relevant changes detected for ${APP_NAME} – skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          APP_CHANGED: ${{ steps.paths.outputs[matrix.app] }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          APP_NAME: ${{ matrix.app }}
+
+      - name: Setup Node
+        if: steps.should_run.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup pnpm
+        if: steps.should_run.outputs.run == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Configure npm registry
+        if: steps.should_run.outputs.run == 'true' && secrets.NPM_TOKEN != ''
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install dependencies
+        if: steps.should_run.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        if: steps.should_run.outputs.run == 'true'
+        run: pnpm --filter frontend lint
+
+      - name: Typecheck
+        if: steps.should_run.outputs.run == 'true'
+        run: pnpm --filter frontend typecheck
+
+      - name: Test
+        if: steps.should_run.outputs.run == 'true'
+        run: pnpm --filter frontend test -- --watch=false
+
+      - name: Build
+        if: steps.should_run.outputs.run == 'true'
+        run: pnpm --filter frontend build
+
+  backend:
+    name: Backend API
+    runs-on: ubuntu-latest
+    needs: frontend
+    env:
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Configure npm registry
+        if: secrets.NPM_TOKEN != ''
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint backend
+        run: pnpm --filter salonbw-backend lint
+
+      - name: Typecheck backend
+        run: pnpm --filter salonbw-backend typecheck
+
+      - name: Test backend
+        run: pnpm --filter salonbw-backend test
+
+      - name: Build backend
+        run: pnpm --filter salonbw-backend build

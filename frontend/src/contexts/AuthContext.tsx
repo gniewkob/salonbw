@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (accessToken) {
             void fetchProfile()
-                .catch(handleLogout)
+                .catch(() => handleLogout())
                 .finally(() => setInitialized(true));
         } else {
             setInitialized(true);

@@ -33,14 +33,22 @@ type ServerTokens =
     | { access_token: string; refresh_token: string }
     | { accessToken: string; refreshToken: string };
 
-function mapTokens(input: ServerTokens): AuthTokens {
-    if ('access_token' in input) {
-        return {
-            accessToken: input.access_token,
-            refreshToken: input.refresh_token,
-        };
+function mapTokens(input: unknown): AuthTokens {
+    if (
+        typeof input === 'object' &&
+        input !== null &&
+        ('access_token' in input || 'accessToken' in input)
+    ) {
+        const tokens = input as ServerTokens;
+        if ('access_token' in tokens) {
+            return {
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+            };
+        }
+        return tokens;
     }
-    return input;
+    throw new Error('Invalid token response');
 }
 
 export const REFRESH_TOKEN_KEY = 'refreshToken';

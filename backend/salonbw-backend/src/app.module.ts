@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
+import { HealthService } from './health.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ServicesModule } from './services/services.module';
@@ -46,6 +47,6 @@ import { DashboardModule } from './dashboard/dashboard.module';
         DashboardModule,
     ],
     controllers: [AppController, HealthController],
-    providers: [AppService],
+    providers: [AppService, HealthService],
 })
 export class AppModule {}

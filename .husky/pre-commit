@@ -1,2 +1,6 @@
 #!/usr/bin/env sh
-npm run lint --prefix frontend
+. "$(dirname "$0")/_/h"
+
+pnpm lint-staged
+pnpm lint --fix
+pnpm typecheck
