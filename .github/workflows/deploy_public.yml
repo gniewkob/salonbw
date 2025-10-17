@@ -1,0 +1,38 @@
+name: Deploy Public (Template)
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Commit to deploy
+        required: true
+      environment:
+        description: Target environment (e.g. production, staging)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Upload Public App
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit_sha }}
+
+      - name: Show template instructions
+        run: |
+          echo "This workflow is a template. Replace the placeholder commands with real deployment steps."
+          echo ""
+          echo "Suggested outline:"
+          echo "1. Build the frontend: pnpm --filter frontend build"
+          echo "2. Sync build output (./frontend/.next/standalone + public) via rsync to mydevil public_nodejs/"
+          echo "3. Run 'devil www restart <app>' to reload the Passenger process."
+          echo ""
+          echo "Ensure the following secrets are available before enabling this workflow:"
+          echo "- MYDEVIL_SSH_HOST / MYDEVIL_SSH_USER / MYDEVIL_SSH_KEY"
+          echo "- MYDEVIL_DEPLOY_PATH"

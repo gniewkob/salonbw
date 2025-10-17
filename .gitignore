@@ -8,6 +8,8 @@
 .env.backup
 .env.production
 .env
+.env.development.local
+.env.test.local
 backend/.env
 frontend/.env.local
 .phpactor.json

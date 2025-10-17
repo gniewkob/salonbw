@@ -20,7 +20,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@salonbw/api": ["../packages/api/src"],
+      "@salonbw/api/*": ["../packages/api/src/*"]
     }
   },
   "include": ["next-env.d.ts", "src/**/*", ".next/types/**/*.ts"],

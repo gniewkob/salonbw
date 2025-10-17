@@ -1,4 +1,6 @@
 import type { AppProps } from 'next/app';
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
@@ -9,12 +11,25 @@ import { initSentry } from '@/sentry.client';
 initSentry();
 
 export default function MyApp({ Component, pageProps }: AppProps) {
+    const [queryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        staleTime: 60_000,
+                        refetchOnWindowFocus: false,
+                    },
+                },
+            }),
+    );
     return (
-        <AuthProvider>
-            <ToastProvider>
-                <RouteProgress />
-                <Component {...pageProps} />
-            </ToastProvider>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <ToastProvider>
+                    <RouteProgress />
+                    <Component {...pageProps} />
+                </ToastProvider>
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }
