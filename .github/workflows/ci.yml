@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 env:
@@ -119,21 +119,9 @@ jobs:
         if: steps.should_run.outputs.run == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
+      - name: Lint, typecheck, test, and build
         if: steps.should_run.outputs.run == 'true'
-        run: pnpm --filter frontend lint
-
-      - name: Typecheck
-        if: steps.should_run.outputs.run == 'true'
-        run: pnpm --filter frontend typecheck
-
-      - name: Test
-        if: steps.should_run.outputs.run == 'true'
-        run: pnpm --filter frontend test -- --watch=false
-
-      - name: Build
-        if: steps.should_run.outputs.run == 'true'
-        run: pnpm --filter frontend build
+        run: pnpm turbo run lint typecheck test build --filter=frontend --cache-dir=.turbo
 
   backend:
     name: Backend API
@@ -167,14 +155,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint backend
-        run: pnpm --filter salonbw-backend lint
-
-      - name: Typecheck backend
-        run: pnpm --filter salonbw-backend typecheck
-
-      - name: Test backend
-        run: pnpm --filter salonbw-backend test
-
-      - name: Build backend
-        run: pnpm --filter salonbw-backend build
+      - name: Lint, typecheck, test, and build backend
+        run: pnpm turbo run lint typecheck test build --filter=salonbw-backend --cache-dir=.turbo

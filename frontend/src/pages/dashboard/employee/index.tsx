@@ -51,7 +51,7 @@ export default function EmployeeDashboard() {
     }, [apiFetch]);
 
     return (
-        <RouteGuard roles={['employee']}>
+        <RouteGuard roles={['employee']} permission="dashboard:employee">
             <DashboardLayout>
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

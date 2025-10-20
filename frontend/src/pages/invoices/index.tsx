@@ -6,7 +6,7 @@ export default function InvoicesPage() {
     const { data, loading } = useInvoices();
 
     return (
-        <RouteGuard>
+        <RouteGuard permission="nav:invoices">
             <DashboardLayout>
                 {loading ? (
                     <div>Loading...</div>
