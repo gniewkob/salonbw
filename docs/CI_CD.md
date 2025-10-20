@@ -22,7 +22,21 @@ Manual (`workflow_dispatch`) and automatic on pushes to `main`. Steps:
 4. Runs Cypress headless tests via `pnpm --filter frontend e2e:ci`.
 5. Uploads screenshots/videos on failure and tears down the tunnel/back-end.
 
-Expect this workflow to require the secrets listed below; without them the tunnel/startup phase will fail.
+    Expect this workflow to require the secrets listed below; without them the tunnel/startup phase will fail.
+
+### `e2e-frontend-chrome.yml`
+
+Runs the frontend E2E suite against a locally started Next.js server using Chrome in headless mode. This job does not depend on the backend or the SSH tunnel and is suitable for PR validation of UI flows covered by mocks.
+
+- Detects frontend changes via path filters and skips when unaffected.
+- Installs dependencies with pnpm, builds the frontend, starts `next start`, and runs `cypress run --browser chrome`.
+- Uploads videos/screenshots on failure for debugging.
+
+Trigger manually with the GitHub CLI:
+
+```bash
+gh workflow run e2e-frontend-chrome.yml -r <branch-or-sha>
+```
 
 ### Deployment templates
 
@@ -48,6 +62,21 @@ These workflows are **templates only**. They document the expected steps (build 
 | `MYDEVIL_DEPLOY_PATH`, `MYDEVIL_DASHBOARD_PATH`, `MYDEVIL_ADMIN_PATH` | Target directories for the deployment templates (set when you implement the actual rsync commands). |
 
 Populate the secrets in the repository or organisation settings before enabling each workflow. For non-production environments, create separate values and reference them via GitHub environments.
+
+## Local vs CI strategy
+
+- Local: run only unit tests and targeted E2E specs as needed. For macOS machines where Electron verification is flaky, prefer Chrome and the split server approach:
+
+  ```bash
+  # Terminal 1
+  pnpm --filter frontend build
+  NEXT_PUBLIC_API_URL=/api pnpm --filter frontend start:e2e
+
+  # Terminal 2
+  pnpm --filter frontend e2e:chrome:split -- --spec cypress/e2e/access-control.cy.ts,cypress/e2e/auth.cy.ts
+  ```
+
+- CI: rely on `ci.yml` for lint/typecheck/unit/build and `e2e-frontend-chrome.yml` for UI E2E with Chrome.
 
 ## Local Verification
 

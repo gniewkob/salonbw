@@ -1,0 +1,114 @@
+name: Deploy (MyDevil)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref (branch, tag, or SHA)
+        required: true
+        default: main
+      target:
+        description: What to deploy (public|dashboard|api)
+        required: true
+        default: public
+      remote_path:
+        description: Remote path (e.g., /home/<user>/domains/<domain>/public_nodejs)
+        required: true
+      app_name:
+        description: MyDevil app name for restart
+        required: true
+      environment:
+        description: GitHub environment (staging or production)
+        required: true
+        default: production
+
+env:
+  PNPM_VERSION: 10.14.0
+  NODE_VERSION: '22'
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.event.inputs.target }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    concurrency:
+      group: deploy-${{ github.event.inputs.target }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        if: ${{ github.event.inputs.target != 'api' }}
+        run: pnpm --filter frontend build
+
+      - name: Build backend
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: pnpm --filter salonbw-backend build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$MYDEVIL_SSH_KEY" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/mydevil
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            echo "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+
+      - name: Upload frontend bundle
+        if: ${{ github.event.inputs.target != 'api' }}
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            frontend/.next/standalone/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/.next/standalone/
+          rsync -az --delete frontend/.next/static/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/.next/static/
+          rsync -az --delete frontend/public/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/public/
+          rsync -az frontend/app.js \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/
+
+      - name: Upload backend bundle
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            backend/salonbw-backend/dist/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/dist/
+          rsync -az backend/salonbw-backend/package.json \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/
+
+      - name: Restart app (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ github.event.inputs.app_name }}'"
+
+      - name: Restart app (backend)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil nodejs restart '${{ github.event.inputs.app_name }}'"
+

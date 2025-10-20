@@ -90,7 +90,7 @@ export default function ReviewsPage() {
     };
 
     return (
-        <RouteGuard>
+        <RouteGuard permission="nav:reviews">
             <DashboardLayout>
                 <div className="mb-2 flex justify-between">
                     <div className="flex items-center gap-2">

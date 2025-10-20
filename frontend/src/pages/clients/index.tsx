@@ -44,7 +44,7 @@ export default function ClientsPage() {
     };
 
     return (
-        <RouteGuard roles={['admin']}>
+        <RouteGuard roles={['admin']} permission="nav:clients">
             <DashboardLayout>
                 <div className="mb-2 flex justify-end">
                     <button

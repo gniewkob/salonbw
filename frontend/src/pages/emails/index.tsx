@@ -4,7 +4,7 @@ import EmailList from '@/components/EmailList';
 
 export default function EmailsPage() {
     return (
-        <RouteGuard>
+        <RouteGuard permission="nav:emails">
             <DashboardLayout>
                 <EmailList />
             </DashboardLayout>

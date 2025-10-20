@@ -8,7 +8,7 @@ import ShortcutCard from '@/components/ShortcutCard';
 export default function AdminDashboard() {
     const { data, loading, upcoming } = useDashboard();
     return (
-        <RouteGuard roles={['admin']}>
+        <RouteGuard roles={['admin']} permission="dashboard:admin">
             <DashboardLayout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
                     <StatsWidget

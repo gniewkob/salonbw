@@ -1,2 +1,6 @@
-// Cypress support
-export {};
+import './commands';
+
+beforeEach(() => {
+    cy.clearCookies();
+    cy.clearLocalStorage();
+});

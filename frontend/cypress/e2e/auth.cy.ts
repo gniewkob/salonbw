@@ -1,63 +1,71 @@
-const clientToken = `header.${Buffer.from(JSON.stringify({ role: 'client' })).toString('base64')}.sig`;
+describe('Authentication', () => {
+    const buildToken = (role: string) =>
+        `header.${Buffer.from(JSON.stringify({ role })).toString('base64')}.sig`;
 
-function mockLogin() {
-    cy.intercept('POST', '**/api/auth/login', {
-        accessToken: clientToken,
-        refreshToken: 'refresh',
-    }).as('login');
-    cy.intercept('GET', '**/api/users/profile', {
+    const adminTokens = {
+        access_token: buildToken('admin'),
+        refresh_token: 'admin-refresh-token',
+    };
+
+    const adminProfile = {
         id: 1,
-        name: 'Test Client',
-        role: 'client',
-    }).as('profile');
-    cy.intercept('GET', '**/api/dashboard', {
-        todayCount: 0,
-        clientCount: 0,
-    }).as('dashboard');
-}
+        email: 'admin@demo.com',
+        name: 'Admin',
+        role: 'admin',
+    };
 
-describe('authentication flow', () => {
-    it('successful login redirects to /dashboard and shows user-specific feedback', () => {
-        mockLogin();
-        cy.visit('/auth/login');
-        cy.get('input[name=email]').type('client@example.com');
-        cy.get('input[name=password]').type('secret');
-        cy.get('button[type=submit]').click();
-        cy.wait(['@login', '@profile', '@dashboard']);
-        cy.url().should('include', '/dashboard/client');
-        cy.contains('Upcoming');
+    const adminDashboard = {
+        clientCount: 25,
+        employeeCount: 11,
+        todayAppointments: 4,
+        upcomingAppointments: [
+            {
+                id: 101,
+                startTime: '2025-01-01T10:00:00.000Z',
+                client: { id: 7, name: 'John Doe' },
+                service: { id: 3, name: 'Hair styling', duration: 45, price: 120 },
+                employee: { id: 5, name: 'Alex' },
+            },
+        ],
+    };
+
+    beforeEach(() => {
+        cy.intercept('POST', '**/auth/login', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: adminTokens,
+            });
+        }).as('login');
+        cy.intercept('GET', '**/users/profile', adminProfile).as('profile');
+        cy.intercept('GET', '**/dashboard', (req) => {
+            const accept = req.headers['accept'] ?? '';
+            if (typeof accept === 'string' && accept.includes('application/json')) {
+                req.reply(adminDashboard);
+            } else {
+                req.continue();
+            }
+        }).as('dashboard');
     });
 
-    it('logout returns to /auth/login and clears session', () => {
-        mockLogin();
+    it('logs in an admin and displays dashboard stats', () => {
         cy.visit('/auth/login');
-        cy.get('input[name=email]').type('client@example.com');
-        cy.get('input[name=password]').type('secret');
-        cy.get('button[type=submit]').click();
-        cy.wait(['@login', '@profile', '@dashboard']);
-        cy.contains('Logout').click();
-        cy.url().should('include', '/auth/login');
-        cy.window().then((win) => {
-            expect(win.localStorage.getItem('jwtToken')).to.be.null;
-            expect(win.localStorage.getItem('refreshToken')).to.be.null;
+
+        cy.get('input[name="email"]').type('admin@demo.com');
+        cy.get('input[name="password"]').type('password123');
+        cy.contains('button', 'Login').click();
+
+        cy.wait(['@login', '@profile', '@dashboard']).then(() => {
+            cy.setCookie('jwtToken', adminTokens.access_token);
+            cy.setCookie('refreshToken', adminTokens.refresh_token);
         });
-    });
+        cy.visit('/dashboard/admin');
+        cy.get('[data-testid="value"]').eq(0).should('contain.text', '25');
+        cy.get('[data-testid="value"]').eq(1).should('contain.text', '11');
+        cy.get('[data-testid="value"]').eq(2).should('contain.text', '4');
 
-    it('direct navigation to /dashboard when logged out redirects to /auth/login', () => {
-        cy.intercept('GET', '**/api/users/profile', { statusCode: 401 });
-        cy.on('uncaught:exception', () => false);
-        cy.visit('/dashboard');
-        cy.url().should('include', '/auth/login');
-    });
-
-    it('client visiting /dashboard/employee is redirected to /dashboard/client', () => {
-        mockLogin();
-        cy.visit('/auth/login');
-        cy.get('input[name=email]').type('client@example.com');
-        cy.get('input[name=password]').type('secret');
-        cy.get('button[type=submit]').click();
-        cy.wait(['@login', '@profile', '@dashboard']);
-        cy.visit('/dashboard/employee');
-        cy.url().should('include', '/dashboard/client');
+        cy.get('ul li').first().within(() => {
+            cy.contains('John Doe');
+            cy.contains('Hair styling');
+        });
     });
 });

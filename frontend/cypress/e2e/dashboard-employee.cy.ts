@@ -9,11 +9,9 @@ describe('employee dashboard navigation', () => {
     it('redirects to employee dashboard and shows UI', () => {
         cy.visit('/dashboard');
         cy.wait('@profile');
-        cy.wait('@getMine');
         cy.url().should('include', '/dashboard/employee');
-        // Sidebar/Topbar should render
-        cy.contains('Dashboard', { timeout: 10000 }).should('be.visible');
         cy.contains('Salon Black & White').should('be.visible');
+        cy.get('.fc', { timeout: 10000 }).should('exist');
     });
 
     it('does not show admin-only Clients link in sidebar', () => {
@@ -33,11 +31,14 @@ describe('employee dashboard navigation', () => {
 });
 
 describe('employee dashboard clients access', () => {
-    it('redirects from clients page to employee dashboard', () => {
+    it('shows forbidden message on admin-only clients page', () => {
         mockEmployeeLogin();
         cy.visit('/clients');
         cy.wait('@profile');
-        cy.url().should('include', '/dashboard/employee');
+        cy.contains("You don't have permission to access this area.").should(
+            'be.visible',
+        );
+        cy.location('pathname').should('eq', '/clients');
     });
 });
 

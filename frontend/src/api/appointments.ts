@@ -1,73 +1,99 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Appointment } from '@/types';
+import { APPOINTMENTS_QUERY_KEY } from '@/hooks/useAppointments';
+import { useCallback } from 'react';
 
 export function useAppointmentsApi() {
     const { apiFetch } = useAuth();
     const toast = useToast();
+    const queryClient = useQueryClient();
 
-    const create = async (data: {
-        employeeId: number;
-        serviceId: number;
-        startTime: string;
-        clientId?: number;
-    }) => {
-        try {
-            const res = await apiFetch<Appointment>('/appointments', {
+    const invalidateAppointments = useCallback(() => {
+        void queryClient.invalidateQueries({
+            queryKey: APPOINTMENTS_QUERY_KEY,
+        });
+    }, [queryClient]);
+
+    const handleError = useCallback(
+        (err: unknown) => {
+            toast.error(err instanceof Error ? err.message : 'Error');
+        },
+        [toast],
+    );
+
+    const createMutation = useMutation({
+        mutationFn: async (data: {
+            employeeId: number;
+            serviceId: number;
+            startTime: string;
+            clientId?: number;
+        }) =>
+            apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
-            });
+            }),
+        onSuccess: () => {
             toast.success('Appointment created');
-            return res;
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : 'Error');
-            throw err;
-        }
-    };
+            invalidateAppointments();
+        },
+        onError: handleError,
+    });
 
-    const update = async (id: number, data: { startTime: string }) => {
-        try {
-            const res = await apiFetch<Appointment>(`/appointments/${id}`, {
+    const updateMutation = useMutation({
+        mutationFn: async (payload: {
+            id: number;
+            data: { startTime: string };
+        }) =>
+            apiFetch<Appointment>(`/appointments/${payload.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
+                body: JSON.stringify(payload.data),
+            }),
+        onSuccess: () => {
             toast.success('Appointment updated');
-            return res;
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : 'Error');
-            throw err;
-        }
-    };
+            invalidateAppointments();
+        },
+        onError: handleError,
+    });
 
-    const cancel = async (id: number) => {
-        try {
-            const res = await apiFetch<Appointment>(
-                `/appointments/${id}/cancel`,
-                { method: 'PATCH' },
-            );
+    const cancelMutation = useMutation({
+        mutationFn: async (id: number) =>
+            apiFetch<Appointment>(`/appointments/${id}/cancel`, {
+                method: 'PATCH',
+            }),
+        onSuccess: () => {
             toast.success('Appointment cancelled');
-            return res;
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : 'Error');
-            throw err;
-        }
-    };
+            invalidateAppointments();
+        },
+        onError: handleError,
+    });
 
-    const complete = async (id: number) => {
-        try {
-            const res = await apiFetch<Appointment>(
-                `/appointments/${id}/complete`,
-                { method: 'PATCH' },
-            );
+    const completeMutation = useMutation({
+        mutationFn: async (id: number) =>
+            apiFetch<Appointment>(`/appointments/${id}/complete`, {
+                method: 'PATCH',
+            }),
+        onSuccess: () => {
             toast.success('Appointment completed');
-            return res;
-        } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : 'Error');
-            throw err;
-        }
-    };
+            invalidateAppointments();
+        },
+        onError: handleError,
+    });
 
-    return { create, update, cancel, complete };
+    return {
+        create: createMutation.mutateAsync,
+        update: (id: number, data: { startTime: string }) =>
+            updateMutation.mutateAsync({ id, data }),
+        cancel: cancelMutation.mutateAsync,
+        complete: completeMutation.mutateAsync,
+        mutations: {
+            create: createMutation,
+            update: updateMutation,
+            cancel: cancelMutation,
+            complete: completeMutation,
+        },
+    };
 }

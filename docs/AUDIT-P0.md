@@ -1,6 +1,6 @@
 # Audit P0 – Baseline Report
 
-Generated: 2025-03-09
+Generated: 2025-03-09 (last refreshed 2025-03-09)
 
 ## Scope
 
@@ -11,24 +11,23 @@ Generated: 2025-03-09
 
 - `frontend/` – Next.js 14 application (React 18, Tailwind, Jest, Cypress).
 - `backend/salonbw-backend/` – NestJS 11 API server (TypeORM, Jest).
-- No top-level package.json or workspace manager; each application manages dependencies independently.
+- Root `package.json` with a pnpm workspace (`pnpm-workspace.yaml`) orchestrates all packages (`frontend`, `backend/salonbw-backend`, `packages/*`).
 
 ## Tooling & Package Management
 
-- Primary package manager today is **npm** (both apps contain `package-lock.json`).
-- `pnpm -v` → `10.14.0` (warning: `${NPM_TOKEN}` not defined when reading `.npmrc`; expected locally).
-- `pnpm install` was **not executed** because the repository lacks a root `package.json`; migrating to pnpm would require additional setup.
+- Primary package manager: **pnpm 10.14.0** (see root `package.json` and `.npmrc`).
+- Each workspace retains `package-lock.json` for compatibility, but development scripts rely on pnpm (`pnpm install`, `pnpm lint`, etc.).
+- Running `pnpm install` succeeds; when `NPM_TOKEN` is not exported locally, set `NPM_TOKEN=unused` to silence auth warnings from `.npmrc`.
 
 ## Node Versions
 
-- New root `.nvmrc` pins **Node 22** per runbook guidance.
-- Frontend `.nvmrc` still targets Node 20; backend relies on local environment. Team should plan a coordinated upgrade or adjust the runbook if Node 20 must remain.
+- Root `.nvmrc` pins **Node 22**; frontend `.nvmrc` still specifies Node 20. Backend relies on ambient Node version.
+- Coordinate a Node upgrade across apps or update the runbook before toggling CI/tooling to Node 22 only.
 
 ## Configuration Baseline
 
-- Root `.editorconfig` and `.gitattributes` already present; no changes required.
-- Root `.npmrc` now enforces `strict-peer-dependencies=true` while preserving existing registry settings.
-- ESLint/Prettier already configured inside each project; no additional root config introduced to avoid duplication.
+- `.editorconfig`, `.gitattributes`, `.npmrc`, and `.nvmrc` live at the repo root.
+- ESLint/Prettier configurations remain project-local; no root overrides needed at this stage.
 
 ## Documentation Added
 
@@ -38,6 +37,6 @@ Generated: 2025-03-09
 
 ## Outstanding Items & Risks
 
-- Align Node 22 requirement with existing Node 20 runtime (verify compatibility before bumping engines).
-- Consider introducing a root workspace/`pnpm` configuration to satisfy future automation goals.
-- Update CI/automation references once subsequent plan stages (P1–P9) are implemented.
+- Align Node 22 requirement with the existing Node 20 usage in the frontend before enforcing a hard upgrade.
+- Ensure `NPM_TOKEN` guidance is communicated to developers and CI (set to a dummy value locally when private registry auth is not required).
+- Keep this report updated as additional plan steps (P1–P11) land to avoid stale baseline notes.
