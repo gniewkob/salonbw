@@ -90,7 +90,10 @@ export default function AppointmentsPage() {
     };
 
     return (
-        <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
+        <RouteGuard
+            roles={['client', 'employee', 'receptionist', 'admin']}
+            permission="nav:appointments"
+        >
             <DashboardLayout>
                 {role === 'receptionist' && (
                     <div>Viewing appointments for all employees</div>

@@ -6,7 +6,10 @@ import { useDashboard } from '@/hooks/useDashboard';
 export default function ReceptionistDashboard() {
     const { data, loading } = useDashboard();
     return (
-        <RouteGuard roles={['receptionist']}>
+        <RouteGuard
+            roles={['receptionist']}
+            permission="dashboard:receptionist"
+        >
             <DashboardLayout>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <StatsWidget

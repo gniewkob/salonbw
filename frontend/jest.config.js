@@ -13,6 +13,7 @@ module.exports = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
+    modulePathIgnorePatterns: ['<rootDir>/.next/'],
     transformIgnorePatterns: ['/node_modules/(?!(msw)/)'],
     coverageThreshold: {
         global: {

@@ -49,7 +49,7 @@ export default function EmployeesPage() {
     };
 
     return (
-        <RouteGuard roles={['admin']}>
+        <RouteGuard roles={['admin']} permission="nav:employees">
             <DashboardLayout>
                 <div className="mb-2 flex justify-end">
                     <button
