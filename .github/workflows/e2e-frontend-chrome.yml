@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
