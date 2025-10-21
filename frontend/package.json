@@ -12,7 +12,7 @@
     "build": "next build",
     "analyze": "ANALYZE=true next build",
     "start": "next start",
-    "start:standalone": "node app.js",
+    "start:standalone": "node app.cjs",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",

@@ -1,10 +1,5 @@
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-const require = createRequire(import.meta.url);
-const path = require('node:path');
-const fs = require('node:fs');
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const path = require('path');
+const fs = require('fs');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 process.env.PORT =
@@ -16,9 +11,6 @@ process.env.PORT =
 const standaloneDir = path.join(__dirname, '.next', 'standalone');
 const server = path.join(standaloneDir, 'server.js');
 
-// No-op polyfill copy: Next.js 14 standalone does not require copying
-// node-polyfill-crypto into the bundled tree on Node 18+.
-
 if (typeof globalThis.crypto === 'undefined') {
     try {
         globalThis.crypto = require('node:crypto').webcrypto;
@@ -28,3 +20,4 @@ if (typeof globalThis.crypto === 'undefined') {
 }
 
 require(server);
+
