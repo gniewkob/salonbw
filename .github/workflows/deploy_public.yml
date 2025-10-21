@@ -176,6 +176,11 @@ jobs:
           fs.writeFileSync(f, JSON.stringify(pkg,null,2));
           NODE
           npm install --omit=dev --ignore-scripts
+          # Map standalone .next/static to top-level .next/static
+          mkdir -p .next
+          cd .next
+          rm -rf static
+          ln -s ../../.next/static static
           SSH
 
       - name: Restart Passenger app
