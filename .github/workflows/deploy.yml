@@ -11,12 +11,18 @@ on:
         description: What to deploy (public|dashboard|api)
         required: true
         default: public
+      api_url:
+        description: Public API URL used at build time (leave empty to use environment defaults)
+        required: false
+        default: ''
       remote_path:
-        description: Remote path (e.g., /home/<user>/domains/<domain>/public_nodejs)
-        required: true
+        description: Remote path (e.g., /home/<user>/domains/<domain>/public_nodejs). If empty, repo variables will be used.
+        required: false
+        default: ''
       app_name:
-        description: MyDevil app name for restart
-        required: true
+        description: MyDevil app name for restart. If empty, repo variables will be used.
+        required: false
+        default: ''
       environment:
         description: GitHub environment (staging or production)
         required: true
@@ -55,9 +61,88 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Resolve API URL
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: api
+        shell: bash
+        run: |
+          INPUT_API="${{ github.event.inputs.api_url }}"
+          ENV="${{ github.event.inputs.environment }}"
+          if [ -n "$INPUT_API" ]; then
+            API_URL="$INPUT_API"
+          elif [ "$ENV" = "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          elif [ "$ENV" = "production" ]; then
+            API_URL="https://api.salon-bw.pl"
+          elif [ "$ENV" = "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
+          else
+            API_URL="/api"
+          fi
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve deploy destination
+        id: dest
+        shell: bash
+        run: |
+          TARGET="${{ github.event.inputs.target }}"
+          ENV="${{ github.event.inputs.environment }}"
+          INPUT_PATH="${{ github.event.inputs.remote_path }}"
+          INPUT_APP="${{ github.event.inputs.app_name }}"
+          REMOTE_PATH="$INPUT_PATH"
+          APP_NAME="$INPUT_APP"
+
+          if [ -z "$REMOTE_PATH" ]; then
+            if [ "$TARGET" = "api" ]; then
+              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ]; then
+                REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
+              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ]; then
+                REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
+              fi
+            else
+              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}" ]; then
+                REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
+              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}" ]; then
+                REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
+              fi
+            fi
+          fi
+
+          if [ -z "$APP_NAME" ]; then
+            if [ "$TARGET" = "api" ]; then
+              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ]; then
+                APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
+              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ]; then
+                APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
+              fi
+            else
+              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}" ]; then
+                APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
+              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_STAGING }}" ]; then
+                APP_NAME="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
+              fi
+            fi
+          fi
+
+          if [ -z "$REMOTE_PATH" ]; then
+            echo "::error::remote_path not provided and no repository variable fallback found" >&2
+            exit 1
+          fi
+          if [ -z "$APP_NAME" ]; then
+            echo "::error::app_name not provided and no repository variable fallback found" >&2
+            exit 1
+          fi
+          echo "remote_path=$REMOTE_PATH" >> "$GITHUB_OUTPUT"
+          echo "app_name=$APP_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Build frontend
         if: ${{ github.event.inputs.target != 'api' }}
         run: pnpm --filter frontend build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+        env:
+          # Embed API base URL for the client bundle
+          NEXT_PUBLIC_API_URL: ${{ github.event.inputs.api_url }}
 
       - name: Build backend
         if: ${{ github.event.inputs.target == 'api' }}
@@ -86,13 +171,13 @@ jobs:
           rsync -az --delete \
             --exclude='.git' \
             frontend/.next/standalone/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/.next/standalone/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
           rsync -az --delete frontend/.next/static/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/.next/static/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
           rsync -az --delete frontend/public/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/public/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
           rsync -az frontend/app.js \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
       - name: Upload backend bundle
         if: ${{ github.event.inputs.target == 'api' }}
@@ -100,15 +185,14 @@ jobs:
           rsync -az --delete \
             --exclude='.git' \
             backend/salonbw-backend/dist/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/dist/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/dist/
           rsync -az backend/salonbw-backend/package.json \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ github.event.inputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
-        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ github.event.inputs.app_name }}'"
+        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
 
       - name: Restart app (backend)
         if: ${{ github.event.inputs.target == 'api' }}
-        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil nodejs restart '${{ github.event.inputs.app_name }}'"
-
+        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil nodejs restart '${{ steps.dest.outputs.app_name }}'"

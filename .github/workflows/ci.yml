@@ -94,6 +94,16 @@ jobs:
           REF: ${{ github.ref }}
           APP_NAME: ${{ matrix.app }}
 
+      - name: Resolve API URL
+        if: steps.should_run.outputs.run == 'true'
+        id: api
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "api_url=https://api.salon-bw.pl" >> "$GITHUB_OUTPUT"
+          else
+            echo "api_url=/api" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
         if: steps.should_run.outputs.run == 'true'
         uses: actions/setup-node@v4
@@ -122,6 +132,8 @@ jobs:
       - name: Lint, typecheck, test, and build
         if: steps.should_run.outputs.run == 'true'
         run: pnpm turbo run lint typecheck test build --filter=frontend --cache-dir=.turbo
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
   backend:
     name: Backend API

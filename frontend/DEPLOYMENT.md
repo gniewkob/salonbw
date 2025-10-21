@@ -220,3 +220,27 @@ npm run build:production
 2. Verify no syntax errors in env files
 3. Ensure variables start with `NEXT_PUBLIC_` for client-side access
 4. Rebuild after changing env variables
+
+## MyDevil.net (Passenger) Hosting
+
+When deploying on mydevil.net with Phusion Passenger for Node.js:
+
+- Deploy path: `/usr/home/<LOGIN>/domains/<DOMAIN>/public_nodejs`.
+- Upload:
+  - `.next/standalone/` → `public_nodejs/.next/standalone/`
+  - `.next/static/` → `public_nodejs/.next/static/`
+  - `public/` → `public_nodejs/public/`
+  - `frontend/app.js` → `public_nodejs/app.js` (entry that runs `node .next/standalone/server.js`).
+- Environment for Passenger: set in `~/.bash_profile` (not `.bashrc`), e.g.:
+
+```bash
+export NODE_ENV=production
+export NEXT_PUBLIC_API_URL=https://api.example.com   # or /api if proxied on same domain
+```
+
+Then relogin or `source ~/.bash_profile`.
+
+- Restart after deploy: `devil www restart <DOMAIN>`.
+- Static files under `public_nodejs/public` are served directly by Nginx.
+
+The CI workflow `deploy.yml` supports rsync to the remote path and restart; pass `remote_path` to `public_nodejs`, `app_name` (domain/app), and `api_url` to embed the correct API base during build.
