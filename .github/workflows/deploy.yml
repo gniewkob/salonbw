@@ -220,6 +220,11 @@ jobs:
           fs.writeFileSync(f, JSON.stringify(pkg,null,2));
           NODE
           npm install --omit=dev --ignore-scripts
+          # Ensure Next can find static assets relative to standalone distDir
+          mkdir -p .next
+          cd .next
+          rm -rf static
+          ln -s ../../.next/static static
           SSH
 
       - name: Upload backend bundle
@@ -231,6 +236,8 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/dist/
           rsync -az backend/salonbw-backend/package.json \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+          rsync -az backend/salonbw-backend/app.js \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
@@ -238,4 +245,28 @@ jobs:
 
       - name: Restart app (backend)
         if: ${{ github.event.inputs.target == 'api' }}
-        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil nodejs restart '${{ steps.dest.outputs.app_name }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
+
+      - name: Smoke test (backend)
+        if: ${{ github.event.inputs.target == 'api' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for PATH in /healthz /health; do
+            if curl -fsS -I "https://${{ steps.dest.outputs.app_name }}$PATH" >/dev/null 2>&1; then
+              echo "OK: $PATH"; exit 0; fi
+          done
+          echo "API health endpoint failed" >&2
+          curl -I "https://${{ steps.dest.outputs.app_name }}/healthz" || true
+          exit 1
+
+      - name: Smoke test (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD_ID=$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "cat '${{ steps.dest.outputs.remote_path }}/.next/BUILD_ID'" )
+          echo "BUILD_ID=$BUILD_ID"
+          curl -fsS "https://${{ steps.dest.outputs.app_name }}/_next/static/${BUILD_ID}/_buildManifest.js" -I | sed -n '1,3p'
+          curl -fsS "https://${{ steps.dest.outputs.app_name }}/_next/static/chunks/framework-070152267489c78d.js" -I | sed -n '1,3p'
+          curl -fsS "https://${{ steps.dest.outputs.app_name }}/api/runtime" | head -c 200 && echo
