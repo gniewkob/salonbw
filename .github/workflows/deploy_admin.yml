@@ -69,6 +69,19 @@ jobs:
           fi
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve Proxy URL
+        id: proxy
+        shell: bash
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          PROXY_URL="https://api.salon-bw.pl"
+          if [ "$ENV" = "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          elif [ "$ENV" = "staging" ] && [ -n "${{ secrets.MYDEVIL_API_PROXY_URL_STAGING }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_PROXY_URL_STAGING }}"
+          fi
+          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+
       - name: Resolve deploy destination
         id: dest
         shell: bash
@@ -106,6 +119,7 @@ jobs:
         run: pnpm --filter frontend build
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
       - name: Configure SSH
         run: |

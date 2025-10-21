@@ -5,6 +5,8 @@ const ContentSecurityPolicy = [
     "img-src 'self' data: blob: https:;",
     "font-src 'self' data:;",
     "connect-src 'self' https: wss:;",
+    // Allow embedding specific, trusted frames (e.g., Google Maps embeds)
+    "frame-src 'self' https://*.google.com https://*.gstatic.com;",
     "frame-ancestors 'none';",
     "form-action 'self';",
     "base-uri 'self';",
@@ -35,6 +37,15 @@ const nextConfig = {
         typedRoutes: true,
     },
     transpilePackages: ['@salonbw/api'],
+    async rewrites() {
+        const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
+        return [
+            {
+                source: '/api/:path*',
+                destination: `${target.replace(/\/$/, '')}/:path*`,
+            },
+        ];
+    },
     async headers() {
         return [
             {
