@@ -150,18 +150,20 @@ jobs:
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
-          echo "$MYDEVIL_SSH_KEY" > ~/.ssh/mydevil
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           chmod 600 ~/.ssh/mydevil
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/mydevil
           if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
-            echo "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
           else
             ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
           fi
         env:
           MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
           MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
 
       - name: Upload frontend bundle
