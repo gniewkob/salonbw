@@ -111,7 +111,11 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
-          printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          if printf "%s" "$KEY_CONTENT" | grep -q "BEGIN"; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
           chmod 600 ~/.ssh/mydevil
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/mydevil
