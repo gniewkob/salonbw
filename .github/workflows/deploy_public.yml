@@ -111,8 +111,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
-          # normalize line endings
-          if printf "%s" "$KEY_CONTENT" | grep -q "BEGIN"; then
+          # Write key (supports raw PEM or base64-encoded). Trim CR if any.
+          if printf "%s" "$KEY_CONTENT" | grep -q "-----BEGIN "; then
             printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           else
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
@@ -131,16 +131,38 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
 
+      - name: Ensure remote directories exist
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/standalone' '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public'"
+
       - name: Upload standalone bundle
         run: |
-          rsync -az --delete frontend/.next/standalone/ \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/.next/standalone/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
-          rsync -az --delete frontend/.next/static/ \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/.next/static/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
-          rsync -az --delete frontend/public/ \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/public/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
-          rsync -az frontend/app.js \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
+      - name: Prepare standalone runtime (install prod deps)
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "${REMOTE_PATH}/.next/standalone"
+          node - <<'NODE'
+          const fs=require('fs');
+          const f='package.json';
+          const pkg=JSON.parse(fs.readFileSync(f,'utf8'));
+          for (const k of ['dependencies','devDependencies','optionalDependencies','peerDependencies']){
+            const o=pkg[k]; if(!o) continue;
+            for (const d of Object.keys(o)) { if (String(o[d]).startsWith('workspace:')) delete o[d]; }
+          }
+          fs.writeFileSync(f, JSON.stringify(pkg,null,2));
+          NODE
+          npm install --omit=dev --ignore-scripts
+          SSH
+
       - name: Restart Passenger app
-        run: ssh ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
