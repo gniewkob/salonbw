@@ -71,12 +71,12 @@ export class EmailsService {
 
     private renderTemplate(
         template: string,
-        data: Record<string, string>,
+        data?: Record<string, string>,
     ): string {
+        const context = data ?? {};
         return template.replace(
             /\{\{\s*(\w+)\s*\}\}/g,
-            (_match, key: string) => data[key] ?? '',
+            (_match, key: string) => context[key] ?? '',
         );
     }
 }
-
