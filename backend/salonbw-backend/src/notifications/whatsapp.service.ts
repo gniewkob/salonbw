@@ -9,14 +9,22 @@ export class WhatsappService {
     private readonly token: string;
     private readonly phoneId: string;
     private readonly lang: string;
+    private readonly enabled: boolean;
 
     constructor(
         private readonly http: HttpService,
         private readonly config: ConfigService,
     ) {
-        this.token = this.config.getOrThrow<string>('WHATSAPP_TOKEN');
-        this.phoneId = this.config.getOrThrow<string>('WHATSAPP_PHONE_ID');
+        this.token = this.config.get<string>('WHATSAPP_TOKEN', '');
+        this.phoneId = this.config.get<string>('WHATSAPP_PHONE_ID', '');
         this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
+        this.enabled = Boolean(this.token && this.phoneId);
+
+        if (!this.enabled) {
+            console.warn(
+                'WhatsApp notifications disabled: missing WHATSAPP_TOKEN or WHATSAPP_PHONE_ID',
+            );
+        }
     }
 
     async sendTemplate(
@@ -24,6 +32,10 @@ export class WhatsappService {
         templateName: string,
         params: string[],
     ): Promise<void> {
+        if (!this.enabled) {
+            return;
+        }
+
         const url = `https://graph.facebook.com/v17.0/${this.phoneId}/messages`;
         const body = {
             messaging_product: 'whatsapp',
