@@ -17,6 +17,7 @@ import { LogsModule } from './logs/logs.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { EmailsModule } from './emails/emails.module';
 
 @Module({
     imports: [
@@ -45,6 +46,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
         ChatModule,
         NotificationsModule,
         DashboardModule,
+        EmailsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [AppService, HealthService],
