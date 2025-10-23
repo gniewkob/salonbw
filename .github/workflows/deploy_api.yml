@@ -87,7 +87,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
-          if printf "%s" "$KEY_CONTENT" | grep -q "-----BEGIN "; then
+          if printf "%s" "$KEY_CONTENT" | grep -q -- "-----BEGIN "; then
             printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           else
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
@@ -108,14 +108,22 @@ jobs:
 
       - name: Upload backend bundle
         run: |
-          rsync -az --delete \
-            --exclude='.git' \
-            backend/salonbw-backend/dist/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/dist/
-          rsync -az backend/salonbw-backend/package.json \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
-          rsync -az backend/salonbw-backend/app.js \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+          set -euo pipefail
+          ARCHIVE="$(mktemp).tar.gz"
+          tar -czf "$ARCHIVE" -C backend/salonbw-backend dist package.json app.js
+          REMOTE_ARCHIVE="/tmp/salonbw-backend-${{ github.run_id }}-${{ github.run_attempt }}.tar.gz"
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes "$ARCHIVE" \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:"$REMOTE_ARCHIVE"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'DEPLOY_CMDS'
+          set -euo pipefail
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path }}"
+          REMOTE_ARCHIVE="/tmp/salonbw-backend-${{ github.run_id }}-${{ github.run_attempt }}.tar.gz"
+          mkdir -p "$REMOTE_PATH"
+          rm -rf "$REMOTE_PATH/dist"
+          tar -xzf "$REMOTE_ARCHIVE" -C "$REMOTE_PATH"
+          rm -f "$REMOTE_ARCHIVE"
+          DEPLOY_CMDS
+          rm -f "$ARCHIVE"
 
       - name: Restart API app
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
@@ -131,4 +139,3 @@ jobs:
           echo "API health failed" >&2
           curl -I "https://${{ steps.dest.outputs.app_name }}/healthz" || true
           exit 1
-
