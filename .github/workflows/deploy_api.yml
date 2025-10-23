@@ -132,6 +132,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if ! command -v curl >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y curl
+          fi
           for PATH in /healthz /health; do
             if curl -fsS -I "https://${{ steps.dest.outputs.app_name }}$PATH" >/dev/null 2>&1; then
               echo "OK: $PATH"; exit 0; fi
