@@ -125,6 +125,19 @@ jobs:
           DEPLOY_CMDS
           rm -f "$ARCHIVE"
 
+      - name: Install production dependencies
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path }}"
+          cd "$REMOTE_PATH"
+          if command -v npm22 >/dev/null 2>&1; then
+            npm22 ci --omit=dev
+          else
+            npm ci --omit=dev
+          fi
+          REMOTE_CMDS
+
       - name: Restart API app
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
 
