@@ -132,14 +132,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v curl >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y curl
-          fi
-          for PATH in /healthz /health; do
-            if curl -fsS -I "https://${{ steps.dest.outputs.app_name }}$PATH" >/dev/null 2>&1; then
-              echo "OK: $PATH"; exit 0; fi
-          done
-          echo "API health failed" >&2
-          curl -I "https://${{ steps.dest.outputs.app_name }}/healthz" || true
-          exit 1
+          python3 - <<'PY'
+          import sys
+          import urllib.request
+          import urllib.error
+
+          host = "${{ steps.dest.outputs.app_name }}"
+          paths = ["/healthz", "/health"]
+
+          for path in paths:
+              url = f"https://{host}{path}"
+              try:
+                  with urllib.request.urlopen(url, timeout=10) as response:
+                      if 200 <= response.status < 400:
+                          print(f"OK: {path}")
+                          sys.exit(0)
+                      else:
+                          print(f"{path} returned status {response.status}", file=sys.stderr)
+              except urllib.error.URLError as exc:
+                  print(f"{path} failed: {exc}", file=sys.stderr)
+          print("API health failed", file=sys.stderr)
+          sys.exit(1)
+          PY
