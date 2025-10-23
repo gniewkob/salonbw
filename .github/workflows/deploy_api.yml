@@ -110,7 +110,7 @@ jobs:
         run: |
           set -euo pipefail
           ARCHIVE="$(mktemp).tar.gz"
-          tar -czf "$ARCHIVE" -C backend/salonbw-backend dist package.json app.js
+          tar -czf "$ARCHIVE" -C backend/salonbw-backend dist package.json package-lock.json app.js
           REMOTE_ARCHIVE="/tmp/salonbw-backend-${{ github.run_id }}-${{ github.run_attempt }}.tar.gz"
           scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes "$ARCHIVE" \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:"$REMOTE_ARCHIVE"
