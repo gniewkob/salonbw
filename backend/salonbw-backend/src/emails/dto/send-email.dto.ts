@@ -4,13 +4,8 @@ import {
     IsOptional,
     IsString,
     MaxLength,
-    ValidateNested,
+    IsObject,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-
-class EmailDataDto {
-    [key: string]: string;
-}
 
 export class SendEmailDto {
     @IsEmail()
@@ -27,8 +22,6 @@ export class SendEmailDto {
     template!: string;
 
     @IsOptional()
-    @ValidateNested()
-    @Type(() => EmailDataDto)
-    data: Record<string, string> = {};
+    @IsObject()
+    data?: Record<string, string>;
 }
-
