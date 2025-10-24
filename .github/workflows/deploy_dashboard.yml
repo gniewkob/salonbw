@@ -108,8 +108,8 @@ jobs:
             fi
           fi
 
-          if [ -z "$REMOTE_PATH" ] || [ -z "$APP_NAME" ]; then
-            echo "::error::remote_path/app_name not provided and no repository variable fallback found" >&2
+          if [ -z "$REMOTE_PATH" ]; then
+            echo "::error::remote_path not provided and no repository variable fallback found" >&2
             exit 1
           fi
           echo "remote_path=$REMOTE_PATH" >> "$GITHUB_OUTPUT"
