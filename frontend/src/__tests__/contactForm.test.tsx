@@ -9,6 +9,8 @@ describe('ContactForm', () => {
             ok: true,
             json: () => ({}),
         }) as jest.MockedFunction<typeof fetch>;
+        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT =
+            'kontakt@salon-bw.pl';
     });
 
     it('posts form data', async () => {
@@ -34,9 +36,13 @@ describe('ContactForm', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    to: 'contact@example.com',
-                    subject: 'Contact form',
-                    template: '<p>{{message}}</p>',
+                    to: 'kontakt@salon-bw.pl',
+                    subject: 'Zapytanie ze strony - John',
+                    template:
+                        '<p><strong>Imię:</strong> {{name}}</p>' +
+                        '<p><strong>Email:</strong> {{email}}</p>' +
+                        '<p><strong>Wiadomość:</strong></p>' +
+                        '<p>{{message}}</p>',
                     data: {
                         name: 'John',
                         email: 'john@example.com',
