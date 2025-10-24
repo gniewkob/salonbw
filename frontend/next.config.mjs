@@ -34,7 +34,7 @@ const nextConfig = {
     output: 'standalone',
     images: { unoptimized: true },
     experimental: {
-        typedRoutes: true,
+        typedRoutes: false,
     },
     transpilePackages: ['@salonbw/api'],
     async rewrites() {
