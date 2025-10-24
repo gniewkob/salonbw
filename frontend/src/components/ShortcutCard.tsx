@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import { ReactNode } from 'react';
 
 interface Props {
-    href: string;
+    href: Route;
     icon: ReactNode;
     label: string;
 }

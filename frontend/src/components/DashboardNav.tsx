@@ -1,49 +1,73 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import { can } from '@/utils/access';
 import type { Permission } from '@/utils/access';
 import type { Role } from '@/types';
 
-const homeLink: Record<
-    Role,
-    { href: string; label: string; permission: Permission }
-> = {
+type NavLink = { href: Route; label: string; permission: Permission };
+
+const homeLink: Record<Role, NavLink> = {
     client: {
-        href: '/dashboard/client',
+        href: '/dashboard/client' as Route,
         label: 'Home',
         permission: 'dashboard:client',
     },
     employee: {
-        href: '/dashboard/employee',
+        href: '/dashboard/employee' as Route,
         label: 'Home',
         permission: 'dashboard:employee',
     },
     receptionist: {
-        href: '/dashboard/receptionist',
+        href: '/dashboard/receptionist' as Route,
         label: 'Home',
         permission: 'dashboard:receptionist',
     },
     admin: {
-        href: '/dashboard/admin',
+        href: '/dashboard/admin' as Route,
         label: 'Home',
         permission: 'dashboard:admin',
     },
-};
+} as const;
 
-const navItems: { href: string; label: string; permission: Permission }[] = [
+const navItems: NavLink[] = [
     {
-        href: '/appointments',
+        href: '/appointments' as Route,
         label: 'Appointments',
         permission: 'nav:appointments',
     },
-    { href: '/invoices', label: 'Invoices', permission: 'nav:invoices' },
-    { href: '/reviews', label: 'Reviews', permission: 'nav:reviews' },
-    { href: '/clients', label: 'Clients', permission: 'nav:clients' },
-    { href: '/employees', label: 'Employees', permission: 'nav:employees' },
-    { href: '/products', label: 'Products', permission: 'nav:products' },
-    { href: '/emails', label: 'Emails', permission: 'nav:emails' },
+    {
+        href: '/invoices' as Route,
+        label: 'Invoices',
+        permission: 'nav:invoices',
+    },
+    {
+        href: '/reviews' as Route,
+        label: 'Reviews',
+        permission: 'nav:reviews',
+    },
+    {
+        href: '/clients' as Route,
+        label: 'Clients',
+        permission: 'nav:clients',
+    },
+    {
+        href: '/employees' as Route,
+        label: 'Employees',
+        permission: 'nav:employees',
+    },
+    {
+        href: '/products' as Route,
+        label: 'Products',
+        permission: 'nav:products',
+    },
+    {
+        href: '/emails' as Route,
+        label: 'Emails',
+        permission: 'nav:emails',
+    },
 ];
 
 export default function DashboardNav() {

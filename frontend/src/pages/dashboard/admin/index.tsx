@@ -1,3 +1,4 @@
+import type { Route } from 'next';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsWidget from '@/components/StatsWidget';
@@ -29,20 +30,32 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
                     <ShortcutCard
-                        href="/employees"
+                        href={'/employees' as Route}
                         icon="👥"
                         label="Employees"
                     />
-                    <ShortcutCard href="/services" icon="✂️" label="Services" />
                     <ShortcutCard
-                        href="/appointments"
+                        href={'/services' as Route}
+                        icon="✂️"
+                        label="Services"
+                    />
+                    <ShortcutCard
+                        href={'/appointments' as Route}
                         icon="📅"
                         label="Appointments"
                     />
-                    <ShortcutCard href="/clients" icon="🧑" label="Clients" />
-                    <ShortcutCard href="/products" icon="🛍️" label="Products" />
                     <ShortcutCard
-                        href="/dashboard/admin/scheduler"
+                        href={'/clients' as Route}
+                        icon="🧑"
+                        label="Clients"
+                    />
+                    <ShortcutCard
+                        href={'/products' as Route}
+                        icon="🛍️"
+                        label="Products"
+                    />
+                    <ShortcutCard
+                        href={'/dashboard/admin/scheduler' as Route}
                         icon="🗓️"
                         label="Scheduler"
                     />
