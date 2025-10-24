@@ -73,6 +73,8 @@ Detailed instructions and troubleshooting live in [`docs/TUNNELING.md`](./TUNNEL
 | OpenAPI client generation| `pnpm --filter @salonbw/api gen:api`               |
 | CI/CD overview           | [`docs/CI_CD.md`](./CI_CD.md)                      |
 | Security headers         | [`docs/SECURITY_HEADERS.md`](./SECURITY_HEADERS.md)|
+| Operational status       | [`docs/AGENT_STATUS.md`](./AGENT_STATUS.md)        |
+| Deployment runbook       | [`docs/AGENT_OPERATIONS.md`](./AGENT_OPERATIONS.md)|
 
 Before pushing, run at least:
 
