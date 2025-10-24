@@ -1,203 +1,134 @@
 # Salon Black & White
 
-[![CI](https://github.com/gniewkob/salonbw/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/gniewkob/salonbw/actions/workflows/test.yml)
+[![CI](https://github.com/gniewkob/salonbw/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gniewkob/salonbw/actions/workflows/ci.yml)
 
-Salon Black & White now consists of a
-[NestJS](https://nestjs.com) backend in [`backend/`](backend/) and a
-[Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/).
-To get each part running, follow
-[`backend/README.md`](backend/README.md) for backend instructions and
-[`frontend/README.md`](frontend/README.md) for the frontend.
+Salon Black & White is a full-stack monorepo containing:
 
-## Frontend overview
+- a [Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/)
+- a [NestJS](https://nestjs.com) backend API in [`backend/salonbw-backend/`](backend/salonbw-backend/)
+- shared packages (OpenAPI client, utilities) in [`packages/`](packages/)
 
-The Next.js app offers several publicly accessible marketing pages:
+This README summarises the essentials. For deep dives, see the living documentation in [`docs/`](docs/).
 
-- `/` – home page
-- `/services` – list of available services fetched from the API
-- `/gallery` – photo gallery populated from Instagram
-- `/contact` – contact details and a simple form
+## Getting started
 
-Authentication is handled under `/auth` (`/auth/login` and `/auth/register`).
-After signing in, users are redirected to `/dashboard` which renders different
-sub‑pages depending on the user role:
+1. **Prerequisites**
+   - Node.js 22 (see [`.nvmrc`](./.nvmrc)); install via `nvm`.
+   - [pnpm](https://pnpm.io) ≥ 10.
+   - macOS setup instructions: [`docs/DEV_SETUP_MAC.md`](docs/DEV_SETUP_MAC.md).
 
-- `client` – personal appointments and profile management
-- `employee` – manage bookings and availability
-- `admin` – administration tools for managing users and services
+2. **Install dependencies**
 
-The old Laravel-based frontend has been archived in
-[`archive/laravel-frontend`](archive/laravel-frontend) and is no longer
-maintained.
+   ```bash
+   pnpm install
+   ```
 
-## Project structure
+3. **Environment variables**
+   - Copy samples and adjust as needed (see [`docs/ENV.md`](docs/ENV.md)):
+
+     ```bash
+     cp frontend/.env.local.example frontend/.env.local
+     cp backend/salonbw-backend/.env.example backend/salonbw-backend/.env
+     cp .env.development.local.example .env.development.local    # optional tunnel defaults
+     ```
+
+4. **Run the stack**
+
+   ```bash
+   # Terminal 1 – backend
+   pnpm --filter salonbw-backend start:dev
+
+   # Terminal 2 – frontend
+   pnpm --filter frontend dev
+   ```
+
+   Visit <http://localhost:3000>. The frontend proxies the backend using `NEXT_PUBLIC_API_URL`.
+
+5. **Optional: connect to production DB via tunnel**
+   - Configure `.env.development.local` (mydevil host/user/db) and run:
+
+     ```bash
+     pnpm tunnel:start
+     # ...start backend as above...
+     pnpm tunnel:stop   # when finished
+     ```
+
+   Details live in [`docs/TUNNELING.md`](docs/TUNNELING.md).
+
+## Repository layout
 
 ```
 frontend/
-  src/
-    api/          # fetch helpers for the REST API
-    components/   # shared React components
-    contexts/     # React context providers
-    hooks/        # custom hooks wrapping API calls
-    pages/        # Next.js page routes
-    app/          # Next.js app router entrypoint
-    styles/       # Tailwind and global CSS
+  app|pages/        # Public marketing pages and dashboards per role
+  components/       # Shared UI
+  hooks/contexts/   # Client state
+  api/              # OpenAPI-based client utilities
+
+backend/
+  salonbw-backend/
+    src/            # NestJS modules, controllers, entities
+
+packages/
+  api/              # Generated OpenAPI types & helpers
+  utils/            # Shared utilities (RBAC, etc.)
 ```
 
-The NestJS backend lives in `backend/` with typical controllers,
-services and entities under `src/`.
+Legacy Laravel code is archived under `archive/laravel-frontend/`.
 
-## API documentation
+## Key documentation
 
-In development, the API is documented with Swagger and available at `/api/docs`.
-Make sure to secure or disable Swagger in production.
+- Operational status dashboard: [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md)
+- Operations runbook (deployments, restarts, CI): [`docs/AGENT_OPERATIONS.md`](docs/AGENT_OPERATIONS.md)
+- CI/CD overview + secrets: [`docs/CI_CD.md`](docs/CI_CD.md)
+- Deployment runbook for mydevil: [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md)
+- Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
 
-## Prerequisites
-
-Install [Node.js](https://nodejs.org/) and npm. The project uses Node.js 20 (see
-the [`.nvmrc`](./.nvmrc) file) so any recent 20.x release should work.
-
-## Environment setup
-
-- **Frontend** – copy `frontend/.env.local.example` to `frontend/.env.local` and set the base API URL:
-
-    ```bash
-    NEXT_PUBLIC_API_URL=http://localhost:3001
-    ```
-
-    `NEXT_PUBLIC_API_URL` must point to the backend API used by the frontend.
-
-- **Backend** – copy `backend/.env.example` to `backend/.env` and adjust the
-  values for your local database, JWT secrets and other settings.
-
-## Installing dependencies
-
-Run `npm install` once in each project directory to install all required
-packages:
+## Common scripts
 
 ```bash
-cd frontend && npm install
-cd ../backend && npm install
+pnpm lint                     # Workspace lint
+pnpm typecheck                # TypeScript diagnostics
+pnpm --filter frontend test   # Frontend unit tests (Jest)
+pnpm --filter salonbw-backend test   # Backend unit tests
+pnpm --filter frontend build  # Next.js production build (standalone)
+pnpm --filter salonbw-backend build  # NestJS production build
+pnpm tunnel:start|stop        # Manage SSH DB tunnel
 ```
 
-## Developing the frontend
+Husky hooks ensure lint + typecheck run before commits.
 
-The Next.js development server can be started with:
+## API & feature overview
+
+- Public marketing pages: `/`, `/services`, `/gallery`, `/contact`.
+- Auth (`/auth/login`, `/auth/register`) redirects to `/dashboard`.
+- Dashboards vary per role (`client`, `employee`, `receptionist`, `admin`) with RBAC enforced via shared utilities.
+- Contact form submits to the backend `/emails/send` endpoint which relays via the `kontakt@salon-bw.pl` mailbox.
+- Backend health endpoint: `/healthz` (used by CI and deployment smoke tests).
+
+Swagger is exposed in development at `/api/docs`. Disable or protect it in production.
+
+## Deployment
+
+Production deploys use GitHub Actions `deploy_*` workflows with standalone builds and Passenger. Manual instructions and infrastructure quirks (e.g. non-node domains require touching `tmp/restart.txt`) are documented in [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md).
+
+Post-deploy checks:
 
 ```bash
-cd frontend
-npm install    # only required once
-npm run dev
+curl -I https://api.salon-bw.pl/healthz
+curl -s -X POST https://api.salon-bw.pl/emails/send ...
 ```
 
-**Note:** If you encounter issues with the `--turbopack` flag in the dev script,
-you can run Next.js directly:
+Current deployment history and known issues are tracked in [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md).
 
-```bash
-npx next dev
-```
+## Contributing
 
-You can also run it in one line:
+Please read [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). Pull requests should:
 
-```bash
-cd frontend && npm run dev
-```
+- include passing CI (`ci.yml`)
+- update documentation when behaviour changes
+- note deployment implications (runbook updates, environment variables)
 
-Then open <http://localhost:3000> in your browser.
-
-## Common npm scripts
-
-Use these commands inside either `frontend/` or `backend/` as needed:
-
-```bash
-npm run dev       # start the development server
-npm run lint      # check for linting issues
-npm run format    # format the codebase with Prettier
-npm test          # run unit tests
-npm run e2e       # run Cypress E2E tests (frontend only)
-```
-
-## Running tests
-
-### Unit Tests
-
-Run unit tests inside either project with Jest:
-
-```bash
-npm test
-# With coverage report
-npm test -- --coverage
-```
-
-### End-to-End Tests
-
-The frontend includes comprehensive Cypress E2E tests that cover authentication,
-dashboard functionality, and CRUD operations. Tests use mocked API responses
-to run independently of the backend.
-
-```bash
-cd frontend
-
-# Run tests headlessly
-npx cypress run
-
-# Or use the automated script that builds and tests
-npm run e2e
-
-# For interactive testing
-npx cypress open
-```
-
-**Note:** When running Cypress tests locally, ensure the dev server is running
-with the proper API URL configuration:
-
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:3000/api npm run dev
-```
-
-## Build and deployment
-
-To create a production build of the frontend and start it locally:
-
-```bash
-cd frontend
-npm run build
-npm start
-```
-
-Build the backend and run it in production mode:
-
-```bash
-cd backend
-npm run build
-npm run start:prod
-```
-
-## Linting and formatting
-
-Use `npm run lint` to check the code and `npm run format` to apply Prettier. A
-pre‑commit hook powered by Husky runs Prettier on staged files automatically.
-
-## Log management
-
-Application logs can grow quickly. To keep disk usage in check, archive or
-remove log files older than a set number of days (30 by default). An example
-script is available in [`scripts/archive-logs.ts`](scripts/archive-logs.ts) and
-can be scheduled via cron:
-
-```bash
-0 0 * * * MAX_LOG_AGE_DAYS=30 LOG_DIR=/var/log/app \
-  npx ts-node /path/to/repo/scripts/archive-logs.ts
-```
-
-The script moves old logs to `ARCHIVE_DIR` if provided, or deletes them when no
-archive destination is configured.
-
-Database audit entries stored in the `logs` table can also accumulate. Remove
-rows older than your retention period with
-[`scripts/prune-audit-logs.ts`](scripts/prune-audit-logs.ts):
-
-```bash
+For any questions or to raise bugs, open an issue with as much context as possible (command output, `pnpm` version, environment).
 MAX_LOG_AGE_DAYS=90 DATABASE_URL=postgres://user:pass@host/db \
   npx ts-node -p pg scripts/prune-audit-logs.ts
 ```
