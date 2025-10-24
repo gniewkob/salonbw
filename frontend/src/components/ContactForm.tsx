@@ -47,6 +47,9 @@ export default function ContactForm() {
         setEmailError('');
         setSubmitError('');
         const retries = 3;
+        const recipient =
+            process.env.NEXT_PUBLIC_CONTACT_RECIPIENT ||
+            'kontakt@salon-bw.pl';
         for (let attempt = 0; attempt < retries; attempt++) {
             try {
                 const res = await fetch(
@@ -55,9 +58,13 @@ export default function ContactForm() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            to: 'contact@example.com',
-                            subject: 'Contact form',
-                            template: '<p>{{message}}</p>',
+                            to: recipient,
+                            subject: `Zapytanie ze strony - ${form.name}`,
+                            template:
+                                '<p><strong>Imię:</strong> {{name}}</p>' +
+                                '<p><strong>Email:</strong> {{email}}</p>' +
+                                '<p><strong>Wiadomość:</strong></p>' +
+                                '<p>{{message}}</p>',
                             data: form,
                         }),
                     },

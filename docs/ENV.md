@@ -10,6 +10,12 @@ Use this guide to configure local, staging, and production environments for Salo
 | `FRONTEND_URL` | ➖ | `http://localhost:3000` | Allowed origin for WebSocket/CORS. Optional; when omitted, any origin is accepted in dev. |
 | `JWT_SECRET` | ✅ | `example_jwt_secret` | Secret for signing access tokens. Use a long random string in non-dev environments. |
 | `JWT_REFRESH_SECRET` | ✅ | `example_refresh_secret` | Secret for signing refresh tokens. Must differ from `JWT_SECRET`. |
+| `SMTP_HOST` | ➖ | `mail0.mydevil.net` | SMTP server used for transactional email (contact form, notifications). |
+| `SMTP_PORT` | ➖ | `465` | SMTP server port. Use `465` for SSL or `587` for STARTTLS. |
+| `SMTP_USER` | ➖ | `kontakt@salon-bw.pl` | SMTP username for authentication. |
+| `SMTP_PASSWORD` | ➖ | `********` | SMTP password for the account above. |
+| `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
+| `SMTP_FROM` | ➖ | `kontakt@salon-bw.pl` | Sender address that appears in outgoing messages. Defaults to `SMTP_USER` when omitted. |
 | `PORT` | ➖ | `3001` | HTTP port for the NestJS server. |
 | `WHATSAPP_TOKEN` | ➖ | `your_whatsapp_api_token` | Token for WhatsApp Cloud API integration. Required only if reminders are enabled. |
 | `WHATSAPP_PHONE_ID` | ➖ | `1234567890` | WhatsApp Business phone ID. |
@@ -37,6 +43,7 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `NEXT_PUBLIC_GA_ID` | ➖ | *(unset)* | Google Analytics ID. |
 | `NEXT_PUBLIC_ENABLE_ANALYTICS` | ➖ | `false` | Opt-in flag for analytics integrations. |
 | `NEXT_PUBLIC_ENABLE_DEBUG` | ➖ | `false` | Enables debug UI helpers when true. |
+| `NEXT_PUBLIC_CONTACT_RECIPIENT` | ➖ | `kontakt@salon-bw.pl` | Default recipient for the public contact form submissions. |
 | `NEXT_PUBLIC_SENTRY_DSN` | ➖ | *(unset)* | Sentry DSN if error tracking is enabled. |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | ➖ | `0.1` | Sampling rate for Sentry tracing. |
 
