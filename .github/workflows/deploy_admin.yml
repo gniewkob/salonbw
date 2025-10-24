@@ -182,4 +182,12 @@ jobs:
           SSH
 
       - name: Restart Passenger app
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
+        run: |
+          APP_NAME='${{ steps.dest.outputs.app_name }}'
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "set -euo pipefail
+            if [ -n \"$APP_NAME\" ]; then
+              devil www restart \"$APP_NAME\" || true
+            fi
+            mkdir -p \"${REMOTE_PATH}/tmp\"
+            touch \"${REMOTE_PATH}/tmp/restart.txt\""
