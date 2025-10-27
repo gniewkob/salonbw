@@ -264,13 +264,28 @@ jobs:
             DB_NAME='${{ secrets.MYDEVIL_DB_NAME }}' \
             JWT_SECRET='${{ secrets.JWT_SECRET }}' \
             JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
+            DB_URL='${{ secrets.DATABASE_URL }}' \
+            WHATSAPP_LANG='${{ secrets.WHATSAPP_LANG }}' \
+            SMTP_HOST='${{ secrets.SMTP_HOST }}' \
+            SMTP_PORT='${{ secrets.SMTP_PORT }}' \
+            SMTP_SECURE='${{ secrets.SMTP_SECURE }}' \
+            SMTP_USER='${{ secrets.SMTP_USER }}' \
+            SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
+            SMTP_FROM='${{ secrets.SMTP_FROM }}' \
+            NODE_ENV_VAL='${{ secrets.NODE_ENV }}' \
+            PGHOST_VAL='${{ secrets.PGHOST }}' \
+            PGPORT_VAL='${{ secrets.PGPORT }}' \
+            PGUSER_VAL='${{ secrets.PGUSER }}' \
+            PGPASSWORD_VAL='${{ secrets.PGPASSWORD }}' \
+            PGDATABASE_VAL='${{ secrets.PGDATABASE }}' \
             bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
           cd "$REMOTE_PATH"
           [ -f .env ] || : > .env
           add_or_set() { key="$1"; val="${2:-}"; if [ -n "$val" ]; then \
-            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=$val|" .env; \
-            else printf "%s=%s\n" "$key" "$val" >> .env; fi; fi; }
+            esc=$(printf '%s' "$val" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'); \
+            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=\"$esc\"|" .env; \
+            else printf "%s=\"%s\"\n" "$key" "$esc" >> .env; fi; fi; }
           _PG_HOST="${DB_HOST:-}"; if [ -z "$_PG_HOST" ]; then _PG_HOST="pgsql0"; fi
           if command -v node22 >/dev/null 2>&1; then ENCCMD=node22; else ENCCMD=node; fi
           ENC_USER="$($ENCCMD -e 'process.stdout.write(encodeURIComponent(process.env.DB_USER||""))')"
@@ -282,9 +297,24 @@ jobs:
           else
             if ! grep -q '^DATABASE_URL=' .env 2>/dev/null && [ -n "${DB_USER:-}" ]; then add_or_set DATABASE_URL "$URL"; fi
           fi
+          # Override with explicit DATABASE_URL if provided
+          add_or_set DATABASE_URL "${DB_URL:-}"
           add_or_set NODE_ENV production
           add_or_set JWT_SECRET "${JWT_SECRET:-}"
           add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
+          add_or_set WHATSAPP_LANG "${WHATSAPP_LANG:-}"
+          add_or_set SMTP_HOST "${SMTP_HOST:-}"
+          add_or_set SMTP_PORT "${SMTP_PORT:-}"
+          add_or_set SMTP_SECURE "${SMTP_SECURE:-}"
+          add_or_set SMTP_USER "${SMTP_USER:-}"
+          add_or_set SMTP_PASSWORD "${SMTP_PASSWORD:-}"
+          add_or_set SMTP_FROM "${SMTP_FROM:-}"
+          add_or_set NODE_ENV "${NODE_ENV_VAL:-production}"
+          add_or_set PGHOST "${PGHOST_VAL:-}"
+          add_or_set PGPORT "${PGPORT_VAL:-}"
+          add_or_set PGUSER "${PGUSER_VAL:-}"
+          add_or_set PGPASSWORD "${PGPASSWORD_VAL:-}"
+          add_or_set PGDATABASE "${PGDATABASE_VAL:-}"
           add_or_set PGHOST "${_PG_HOST}"
           add_or_set PGPORT "${DB_PORT:-5432}"
           add_or_set PGUSER "${DB_USER:-}"
