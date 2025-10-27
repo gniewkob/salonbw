@@ -9,8 +9,19 @@ import path from "path";
  *    npx ts-node scripts/archive-logs.ts
  */
 
-const LOG_DIR = process.env.LOG_DIR || path.resolve("logs");
-const ARCHIVE_DIR = process.env.ARCHIVE_DIR;
+function resolveUnder(base: string, candidate: string): string {
+  const resolvedBase = path.resolve(base);
+  const resolved = path.resolve(candidate);
+  return resolved.startsWith(resolvedBase + path.sep) || resolved === resolvedBase
+    ? resolved
+    : resolvedBase;
+}
+
+const DEFAULT_LOG_DIR = path.resolve("logs");
+const DEFAULT_ARCHIVE_DIR = path.resolve("logs/archive");
+const LOG_DIR = resolveUnder(DEFAULT_LOG_DIR, process.env.LOG_DIR || DEFAULT_LOG_DIR);
+const ARCHIVE_DIR_ENV = process.env.ARCHIVE_DIR || DEFAULT_ARCHIVE_DIR;
+const ARCHIVE_DIR = resolveUnder(DEFAULT_LOG_DIR, ARCHIVE_DIR_ENV);
 const MAX_LOG_AGE_DAYS = parseInt(process.env.MAX_LOG_AGE_DAYS ?? "30", 10);
 
 async function archiveLogs() {
