@@ -13,11 +13,11 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         bufferLogs: true,
     });
-    const logger = app.get(PinoLogger);
+    const logger = await app.resolve(PinoLogger);
 
     const logService = app.get(LogService);
     app.useGlobalFilters(new AuthFailureFilter(logService, logger));
-    const metricsInterceptor = app.get(HttpMetricsInterceptor);
+    const metricsInterceptor = await app.resolve(HttpMetricsInterceptor);
     app.useGlobalInterceptors(metricsInterceptor, new LoggerErrorInterceptor());
     app.useGlobalPipes(
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
