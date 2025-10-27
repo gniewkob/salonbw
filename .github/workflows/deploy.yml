@@ -335,6 +335,28 @@ jobs:
           "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const ssl=process.env.PGSSL==='1'?{rejectUnauthorized:false}:undefined;let cfg=null;if(process.env.DATABASE_URL){cfg={connectionString:process.env.DATABASE_URL,ssl};}else{cfg={host:process.env.PGHOST||process.env.DB_HOST||'pgsql0',port:Number(process.env.PGPORT||process.env.DB_PORT||5432),user:process.env.PGUSER||process.env.DB_USER,password:process.env.PGPASSWORD||process.env.DB_PASS,database:process.env.PGDATABASE||process.env.DB_NAME,ssl};}console.log('DB probe cfg',{host:cfg.host||'[url]',port:cfg.port||'[url]',user:cfg.user||'[url]',database:cfg.database||'[url]'});try{const c=new Client(cfg);await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e&& (e.stack||e.message)||e);process.exit(3);}})()"
           REMOTE_CMDS
 
+      - name: Remote psql probe (api)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          cd "$REMOTE_PATH"
+          echo "Running psql probe using .env PG* vars..."
+          if [ -f .env ]; then set -a; . ./.env; set +a; fi
+          : "${PGHOST:=${DB_HOST:-pgsql0.mydevil.net}}"
+          : "${PGPORT:=${DB_PORT:-5432}}"
+          : "${PGUSER:=${DB_USER:-}}"
+          : "${PGPASSWORD:=${DB_PASS:-}}"
+          : "${PGDATABASE:=${DB_NAME:-}}"
+          if command -v psql >/dev/null 2>&1; then
+            echo "psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE -c 'select 1'"
+            PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -v ON_ERROR_STOP=1 -Atc 'select 1' | sed -n '1p'
+          else
+            echo "psql not found on remote; skipping CLI probe" >&2
+          fi
+          REMOTE_CMDS
+
       - name: Run DB migrations (api)
         if: ${{ github.event.inputs.target == 'api' }}
         run: |
@@ -364,10 +386,10 @@ jobs:
           TARGET_HOST: ${{ steps.dest.outputs.app_name }}
           TARGET_SCHEME: https
           DEPLOY_TARGET: api
-          SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO || 'kontakt@salon-bw.pl' }}
+          SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO }}
 
-      - name: Diagnostic: fetch health endpoints (on failure)
-        if: ${{ github.event.inputs.target == 'api' && failure() }}
+      - name: "Diagnostic: fetch health endpoints (on failure)"
+        if: ${{ failure() && github.event.inputs.target == 'api' }}
         run: |
           python3 - <<'PY'
           import ssl, sys, urllib.request
@@ -388,8 +410,8 @@ jobs:
                   print(f"ERROR: {exc}")
           PY
 
-      - name: Collect remote logs on failure
-        if: ${{ github.event.inputs.target == 'api' && failure() }}
+      - name: "Collect remote logs on failure"
+        if: ${{ failure() && github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
