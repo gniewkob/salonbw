@@ -55,7 +55,7 @@ describe('RouteGuard', () => {
         expect(screen.getByText('Secret')).toBeInTheDocument();
     });
 
-    it('redirects when role not permitted', () => {
+    it('renders Forbidden when role not permitted', () => {
         mockedUseAuth.mockReturnValue(
             createAuthValue({ isAuthenticated: true, role: 'client' }),
         );
@@ -64,6 +64,9 @@ describe('RouteGuard', () => {
                 <div>Secret</div>
             </RouteGuard>,
         );
-        expect(replace).toHaveBeenCalledWith('/dashboard/client');
+        expect(replace).not.toHaveBeenCalled();
+        expect(
+            screen.getByText("You don't have permission to access this area."),
+        ).toBeInTheDocument();
     });
 });
