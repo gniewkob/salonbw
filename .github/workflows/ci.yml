@@ -107,19 +107,19 @@ jobs:
             echo "api_url=/api" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Setup Node
-        if: steps.should_run.outputs.run == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
       - name: Setup pnpm
         if: steps.should_run.outputs.run == 'true'
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
+
+      - name: Setup Node
+        if: steps.should_run.outputs.run == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Configure npm registry
         if: steps.should_run.outputs.run == 'true'
@@ -149,17 +149,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
       - name: Setup pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Configure npm registry
         run: |
