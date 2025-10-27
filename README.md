@@ -109,13 +109,39 @@ Swagger is exposed in development at `/api/docs`. Disable or protect it in produ
 
 ## Deployment
 
-Production deploys use GitHub Actions `deploy_*` workflows with standalone builds and Passenger. Manual instructions and infrastructure quirks (e.g. non-node domains require touching `tmp/restart.txt`) are documented in [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md).
+Production deploys use a single consolidated workflow: `Deploy (MyDevil)` at `.github/workflows/deploy.yml`.
 
-Post-deploy checks:
+- Targets: `api`, `public`, `dashboard`, `admin`
+- Inputs: `ref` (branch/tag/SHA), optional `api_url`, optional `remote_path`, optional `app_name`
+- The workflow runs against the production environment and performs automated smoke checks.
+
+Quick CLI examples:
+
+```bash
+# API (backend)
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
+
+# Frontends
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
+gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=admin
+```
+
+Defaults can be supplied via repository variables (production):
+
+- `MYDEVIL_API_REMOTE_PATH_PRODUCTION`, `MYDEVIL_API_APP_NAME_PRODUCTION`
+- `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`, `MYDEVIL_PUBLIC_APP_NAME_PRODUCTION`
+- `MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION`, `MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION` (dashboard uses `panel.salon-bw.pl`)
+- `MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION`, `MYDEVIL_ADMIN_APP_NAME_PRODUCTION`
+- Generic fallbacks: `MYDEVIL_REMOTE_PATH_PRODUCTION`, `MYDEVIL_APP_NAME_PRODUCTION`
+
+Manual instructions and infrastructure quirks (e.g. Passenger wrappers touching `tmp/restart.txt`) are in [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md). CI/CD details and required secrets are in [`docs/CI_CD.md`](docs/CI_CD.md).
+
+Post-deploy checks (also executed by the workflow):
 
 ```bash
 curl -I https://api.salon-bw.pl/healthz
-curl -s -X POST https://api.salon-bw.pl/emails/send ...
+curl -s -X POST https://api.salon-bw.pl/emails/send -H 'Content-Type: application/json' -d '{"to":"kontakt@salon-bw.pl","subject":"Smoke","template":"Hello","data":{}}'
 ```
 
 Current deployment history and known issues are tracked in [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md).

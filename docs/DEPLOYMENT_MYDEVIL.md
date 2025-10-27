@@ -2,6 +2,8 @@
 
 This document describes how to deploy the Salon Black & White stack to the mydevil shared hosting platform. Adapt the paths/usernames below to match the live environment.
 
+Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)` at `.github/workflows/deploy.yml` (see [`docs/CI_CD.md`](./CI_CD.md)). The steps below are a manual fallback and a useful reference when debugging.
+
 ## 1. Prerequisites
 
 - SSH access to the production account (e.g. `user@s0.mydevil.net`) with public key authentication.
@@ -31,7 +33,7 @@ pnpm --filter frontend build
 
 The Next.js build outputs `.next`, and (if `output: 'standalone'` is configured) `.next/standalone`. When the standalone output is unavailable, you must ship the entire repo subtree required by Next.js (`.next`, `node_modules`, `public`).
 
-## 3. Upload to mydevil
+## 3. Upload to mydevil (manual reference)
 
 Adjust the commands below to your environment. Use `rsync` for incremental uploads:
 

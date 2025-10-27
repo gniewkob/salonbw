@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main
+      - master
   pull_request:
+  workflow_dispatch:
 
 env:
   PNPM_VERSION: 10.14.0
