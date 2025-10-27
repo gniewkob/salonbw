@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 import { SendEmailDto } from './dto/send-email.dto';
 import { MetricsService } from '../observability/metrics.service';
 
@@ -30,7 +30,8 @@ export class EmailsService {
             this.configService.get<string>('SMTP_SECURE', 'false') === 'true';
 
         if (host && port) {
-            this.transporter = (nodemailer.createTransport({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            this.transporter = createTransport({
                 host,
                 port: Number(port),
                 secure,
@@ -41,7 +42,7 @@ export class EmailsService {
                               pass,
                           }
                         : undefined,
-            }) as unknown as MailTransporter);
+            }) as unknown as MailTransporter;
         } else {
             this.transporter = null;
         }

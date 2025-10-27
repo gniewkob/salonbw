@@ -25,18 +25,26 @@ async function run() {
             if (!entry.endsWith('.js')) continue;
             try {
                 const filePath = path.join(migrationsDir, entry);
-                const mod: Record<string, unknown> = await import(
-                    pathToFileURL(filePath).href
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const imported = await import(pathToFileURL(filePath).href);
+                const entries = Object.entries(
+                    imported as Record<string, unknown>,
                 );
-                for (const key of Object.keys(mod)) {
-                    const v = mod[key];
-                    if (
-                        typeof v === 'function' &&
-                        (v as any)?.prototype &&
-                        typeof (v as any).prototype.up === 'function' &&
-                        typeof (v as any).prototype.down === 'function'
-                    ) {
-                        migrationClasses.push(v as MigrationClass);
+                function isMigrationClass(x: unknown): x is MigrationClass {
+                    if (typeof x !== 'function') return false;
+                    const candidate = (x as { prototype?: unknown }).prototype;
+                    if (!candidate || typeof candidate !== 'object') {
+                        return false;
+                    }
+                    const proto = candidate as Record<string, unknown>;
+                    return (
+                        typeof proto.up === 'function' &&
+                        typeof proto.down === 'function'
+                    );
+                }
+                for (const [, v] of entries) {
+                    if (isMigrationClass(v)) {
+                        migrationClasses.push(v);
                     }
                 }
             } catch (e) {

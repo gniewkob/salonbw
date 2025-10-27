@@ -26,7 +26,11 @@ export class AuthFailureFilter implements ExceptionFilter {
     ): Promise<void> {
         const ctx = host.switchToHttp();
         const req = ctx.getRequest<
-            Request & { user?: { id?: number; userId?: number }; id?: string; log?: PinoLogger }
+            Request & {
+                user?: { id?: number; userId?: number };
+                id?: string;
+                log?: PinoLogger;
+            }
         >();
         const res = ctx.getResponse<Response>();
         const action =
