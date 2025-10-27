@@ -2,7 +2,7 @@
 
 ## Secrets Management
 
-- `.env.example` files illustrate required variables; keep real values in untracked `.env.local` or Vault solutions.
+- `.env.example` files illustrate required variables; keep real values in untracked `.env.local` or a secret manager (e.g., GitHub Actions Secrets, Vault).
 - Never commit API keys, database credentials, or tokens. Rotate credentials immediately if exposure occurs.
 - Frontend environment variables prefixed with `NEXT_PUBLIC_` are publicly accessible and must contain non-sensitive data.
 
@@ -17,6 +17,18 @@
 - Keep npm dependencies updated within each project. Use `npm outdated` and review changelogs before upgrades.
 - Run `npm audit` (or organisation-wide security scans) regularly and remediate high-risk advisories promptly.
 - Avoid introducing abandoned or unmaintained packages without prior discussion.
+
+## Process and File Safety
+
+- Shell execution: do not use `shell: true` with user- or repo-controlled input. Prefer `spawn`/`execFile` with explicit argument arrays.
+- Filesystem access: normalise and validate any input-derived paths. Constrain file operations under an allowlisted base directory and prevent traversal.
+- URL handling: only allow `http`/`https` schemes for outbound requests and configuration values (e.g., API base URLs).
+- TLS settings: never set `NODE_TLS_REJECT_UNAUTHORIZED=0` in code or CI. For local troubleshooting, use targeted tooling rather than globally disabling verification.
+
+## CI/CD Hardening
+
+- Pin GitHub Actions to immutable SHAs and validate inputs before interpolation in shell steps.
+- Prefer scripting (Python/Node) for complex logic and to avoid brittle quoting in shell.
 
 ## Data Handling
 
