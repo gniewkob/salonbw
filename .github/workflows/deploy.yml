@@ -263,6 +263,65 @@ jobs:
           rsync -az backend/salonbw-backend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
+      - name: Ensure remote .env (api)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' \
+            ENV='${{ github.event.inputs.environment }}' \
+            DB_USER='${{ secrets.MYDEVIL_DB_USER }}' \
+            DB_PASS='${{ secrets.MYDEVIL_DB_PASSWORD }}' \
+            DB_HOST='${{ secrets.MYDEVIL_PG_HOST }}' \
+            DB_PORT='${{ secrets.MYDEVIL_PG_PORT }}' \
+            DB_NAME='${{ secrets.MYDEVIL_DB_NAME }}' \
+            JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+            JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
+            bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          [ -f .env ] || : > .env
+          add_or_set() { key="$1"; val="${2:-}"; if [ -n "$val" ]; then \
+            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=$val|" .env; \
+            else printf "%s=%s\n" "$key" "$val" >> .env; fi; fi; }
+          _PG_HOST="${DB_HOST:-}"; if [ -z "$_PG_HOST" ]; then _PG_HOST="pgsql0"; fi
+          if [ "${ENV:-staging}" = "staging" ]; then
+            if [ -n "${DB_USER:-}" ]; then add_or_set DATABASE_URL "postgresql://${DB_USER}:${DB_PASS}@${_PG_HOST}:${DB_PORT:-5432}/${DB_NAME}"; fi
+          else
+            if ! grep -q '^DATABASE_URL=' .env 2>/dev/null && [ -n "${DB_USER:-}" ]; then add_or_set DATABASE_URL "postgresql://${DB_USER}:${DB_PASS}@${_PG_HOST}:${DB_PORT:-5432}/${DB_NAME}"; fi
+          fi
+          add_or_set NODE_ENV production
+          add_or_set JWT_SECRET "${JWT_SECRET:-}"
+          add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
+          rm -f .env.bak || true
+          REMOTE_CMDS
+
+      - name: Validate DB connectivity (api)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          cd "$REMOTE_PATH"
+          echo "Testing DB connectivity using DATABASE_URL..."
+          if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
+          "${NODECMD}" -e "(async()=>{const {Client}=require('pg');const url=process.env.DATABASE_URL;if(!url){console.error('Missing DATABASE_URL');process.exit(2);}const c=new Client({connectionString:url,ssl:process.env.PGSSL==='1'?{rejectUnauthorized:false}:undefined});try{await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e && (e.stack||e.message)||e);process.exit(3);}})()"
+          REMOTE_CMDS
+
+      - name: Run DB migrations (api)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          cd "$REMOTE_PATH"
+          if command -v node22 >/dev/null 2>&1; then
+            node22 dist/src/migrate.js || node22 dist/migrate.js
+          else
+            node dist/src/migrate.js || node dist/migrate.js
+          fi
+          REMOTE_CMDS
+
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
