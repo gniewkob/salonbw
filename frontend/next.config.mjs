@@ -32,7 +32,8 @@ const nextConfig = {
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     output: 'standalone',
-    images: { unoptimized: true },
+    // Enable Next.js image optimization for better Core Web Vitals.
+    images: { unoptimized: false },
     experimental: {
         typedRoutes: false,
     },
@@ -48,10 +49,33 @@ const nextConfig = {
     },
     async headers() {
         return [
+            // Global security headers
             {
                 source: '/(.*)',
                 headers: securityHeaders,
             },
+            // Cache aggressively for fingerprinted Next.js assets
+            {
+                source: '/_next/static/:path*',
+                headers: [
+                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                ],
+            },
+            // Cache images served via Next's image optimizer
+            {
+                source: '/_next/image',
+                headers: [
+                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                ],
+            },
+            // Cache versioned assets under /public/assets
+            {
+                source: '/assets/:path*',
+                headers: [
+                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                ],
+            },
+            // Robots hints on sensitive app areas
             {
                 source: '/dashboard/:path*',
                 headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],

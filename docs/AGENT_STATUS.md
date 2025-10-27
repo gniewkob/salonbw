@@ -1,15 +1,15 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-10-27 22:10 UTC_
+_Last updated: 2025-10-27 23:57 UTC_
 
 ## Current Release
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `a98d923d` | `18857312225` | 2025-10-27 22:09 | production | Redeployed after security fixes; `/healthz` 200 |
-| Public site (`dev.salon-bw.pl`) | `a98d923d` | `18857313011` | 2025-10-27 22:10 | production | Overrides applied; smoke GET `/` and `/api/runtime` OK |
+| Public site (`dev.salon-bw.pl`) | `1b65bbf5` | `18859475724` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
 | Dashboard (`panel.salon-bw.pl`) | `a98d923d` | `18857314859` | 2025-10-27 22:10 | production | Redeployed from master; smoke checks passed |
-| Admin (`dev.salon-bw.pl`) | `a98d923d` | `18857313904` | 2025-10-27 22:10 | production | Redeployed from master; smoke checks passed |
+| Admin (`dev.salon-bw.pl`) | `1b65bbf5` | `18859477828` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
 
 Verification:
 
