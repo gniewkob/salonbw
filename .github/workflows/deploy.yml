@@ -466,12 +466,19 @@ jobs:
           echo "=== .env keys ==="; [ -f "$REMOTE_PATH/.env" ] && (grep -E '^[A-Z0-9_]+=' "$REMOTE_PATH/.env" | sed 's/=.*$/=[hidden]/') || echo "(no .env)"
           REMOTE_CMDS
 
+      - name: Sanitize app host (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: host
+        shell: bash
+        run: |
+          APP="${{ steps.dest.outputs.app_name }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
+
       - name: Smoke test (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
           python3 - <<'PY'
           import os, ssl, urllib.request, sys
-          host = "${{ steps.dest.outputs.app_name }}"
+          host = "${{ steps.host.outputs.app }}"
           # Fetch BUILD_ID from remote via SSH is already done in deploy. Do a best-effort fetch here.
           build_id = None
           try:
