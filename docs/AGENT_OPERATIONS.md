@@ -7,15 +7,12 @@ This runbook captures the minimum context an AI agent (or on-call human) needs t
 | Workflow | Purpose | Required Inputs | Production defaults | Dispatch example |
 | --- | --- | --- | --- | --- |
 | `ci.yml` | Lint, test, build (frontend + backend) | none | n/a | `gh workflow run ci.yml -r master` |
-| `deploy_api.yml` | Deploy NestJS API to mydevil | `commit_sha`, `environment`, `remote_path`, `app_name` | `/usr/home/vetternkraft/apps/nodejs/api_salonbw`, `api.salon-bw.pl` | `gh workflow run deploy_api.yml -f commit_sha=<sha> -f environment=production -f remote_path=/usr/home/vetternkraft/apps/nodejs/api_salonbw -f app_name=api.salon-bw.pl` |
-| `deploy_public.yml` | Deploy public Next.js site | `commit_sha`, `environment`, `remote_path` | `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs` | `gh workflow run deploy_public.yml -f commit_sha=<sha> -f environment=production -f remote_path=/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs` |
-| `deploy_dashboard.yml` | Deploy dashboard frontend | `commit_sha`, `environment`, `remote_path` | `/usr/home/vetternkraft/apps/nodejs/dashboard` | `gh workflow run deploy_dashboard.yml -f commit_sha=<sha> -f environment=production -f remote_path=/usr/home/vetternkraft/apps/nodejs/dashboard` |
-| `deploy_admin.yml` | Deploy admin frontend | `commit_sha`, `environment`, `remote_path` | `/usr/home/vetternkraft/apps/nodejs/admin` | `gh workflow run deploy_admin.yml -f commit_sha=<sha> -f environment=production -f remote_path=/usr/home/vetternkraft/apps/nodejs/admin` |
+| `deploy.yml` (Deploy MyDevil) | Deploy target (api/public/dashboard/admin) | `ref`, `target`, optional `api_url`, optional `remote_path`, optional `app_name` | see repo variables below | `gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api` |
 
 Monitor progress with:
 
 ```bash
-gh run list --workflow "Deploy API"
+gh run list --workflow .github/workflows/deploy.yml --limit 5
 gh run view <run-id> --log | tail
 ```
 
@@ -24,8 +21,19 @@ All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are 
 ## 2. Deployment Flow
 
 1. **Choose target commit**: typically `git rev-parse HEAD` after pushing to `master`.
-2. **Dispatch API deploy** (backend must go first to ensure `/healthz` and `/emails/send` remain live).
-3. **Dispatch frontends** (public → dashboard → admin). These share the same build artefacts and can run in parallel once the API is stable.
+2. **Dispatch API deploy** (backend must go first to ensure `/healthz` and `/emails/send` remain live):
+
+   ```bash
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
+   ```
+
+3. **Dispatch frontends** (public → dashboard → admin):
+
+   ```bash
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
+   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=admin
+   ```
 4. **Monitor logs**:
    - API: look for tar upload + `npm22 ci --omit=dev` finishing, `OK: /healthz`.
    - Public/Dashboard/Admin: Next.js build plus standalone runtime install. Warnings about Node engines on mydevil (Node 18) are expected.
@@ -54,8 +62,8 @@ Key directories:
 | --- | --- |
 | Backend API | `/usr/home/vetternkraft/apps/nodejs/api_salonbw` |
 | Public Next.js | `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs` |
-| Dashboard | `/usr/home/vetternkraft/apps/nodejs/dashboard` |
-| Admin | `/usr/home/vetternkraft/apps/nodejs/admin` |
+| Dashboard | `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs` |
+| Admin | `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs` |
 | Dev environment (preview) | `/usr/home/vetternkraft/domains/dev.salon-bw.pl` |
 
 List configured domains:
@@ -69,7 +77,7 @@ ssh devil "devil www list --verbose"
 | Domain | Type | Preferred restart command |
 | --- | --- | --- |
 | `api.salon-bw.pl`, `dev.salon-bw.pl` | nodejs | `devil www restart <domain>` |
-| `salon-bw.pl`, `dashboard.salon-bw.pl`, `admin.salon-bw.pl` | php wrapper around standalone app | Passenger ignores `devil www restart`. Instead, create `tmp/restart.txt` in the deployment root (handled automatically by workflows). Manual fallback: `ssh devil "touch /path/to/app/tmp/restart.txt"` |
+| `salon-bw.pl`, `panel.salon-bw.pl` (dashboard), any PHP-wrapped domain | php wrapper around standalone app | Passenger ignores `devil www restart`. Instead, create `tmp/restart.txt` in the deployment root (handled automatically by workflows). Manual fallback: `ssh devil "touch /path/to/app/tmp/restart.txt"` |
 
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 

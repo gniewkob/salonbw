@@ -38,14 +38,11 @@ Trigger manually with the GitHub CLI:
 gh workflow run e2e-frontend-chrome.yml -r <branch-or-sha>
 ```
 
-### Deployment workflows
+### Deployment workflow (consolidated)
 
-- `deploy_api.yml`
-- `deploy_public.yml`
-- `deploy_dashboard.yml`
-- `deploy_admin.yml`
+- `.github/workflows/deploy.yml` (shown in the Actions UI as "Deploy (MyDevil)")
 
-These GitHub Actions deploy the production artefacts via rsync/ssh when triggered with `workflow_dispatch`. Each workflow now finishes with automated smoke checks powered by `scripts/post_deploy_checks.py`, which:
+This workflow deploys the requested target via rsync/ssh when triggered with `workflow_dispatch`. It finishes with automated smoke checks powered by `scripts/post_deploy_checks.py` (API) and a small Python check suite (frontend), which:
 
 - retries failing checks up to four times with exponential backoff;
 - writes pass/fail state to the job summary (`GITHUB_STEP_SUMMARY`);
@@ -56,6 +53,21 @@ Set the optional repository variable `SMOKE_EMAIL_TO` to change the API smoke-te
 ```bash
 TARGET_HOST=api.salon-bw.pl DEPLOY_TARGET=api python3 scripts/post_deploy_checks.py
 ```
+
+#### Inputs and variables
+
+- Inputs: `ref` (branch/tag/SHA), `target` (`api|public|dashboard|admin`), optional `api_url`, optional `remote_path`, optional `app_name`.
+- Repo variables (production only):
+  - API: `MYDEVIL_API_REMOTE_PATH_PRODUCTION`, `MYDEVIL_API_APP_NAME_PRODUCTION`
+  - PUBLIC: `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`, `MYDEVIL_PUBLIC_APP_NAME_PRODUCTION`
+  - DASHBOARD: `MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION`, `MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION` (panel.salon-bw.pl)
+  - ADMIN: `MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION`, `MYDEVIL_ADMIN_APP_NAME_PRODUCTION`
+  - Generic fallbacks: `MYDEVIL_REMOTE_PATH_PRODUCTION`, `MYDEVIL_APP_NAME_PRODUCTION`
+
+#### Observability baked into deploy
+
+- API: remote DB connectivity probe via Node `pg` reads `.env`; optional remote `psql` probe.
+- On failure: fetches `/health` and `/healthz` (headers + body) and tails recent log files on the server with `.env` keys masked.
 
 ## Required Secrets
 
@@ -70,7 +82,9 @@ TARGET_HOST=api.salon-bw.pl DEPLOY_TARGET=api python3 scripts/post_deploy_checks
 | `MYDEVIL_DB_USER` / `MYDEVIL_DB_PASSWORD` / `MYDEVIL_DB_NAME` | Credentials to build the `DATABASE_URL` consumed by the backend during e2e runs. |
 | `JWT_SECRET` / `JWT_REFRESH_SECRET` | JWT signing secrets required when the backend boots in CI. |
 | `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_ID` / `REMINDER_HOURS_BEFORE` | Optional – populate if WhatsApp reminders are enabled in CI/E2E. |
-| `MYDEVIL_DEPLOY_PATH`, `MYDEVIL_DASHBOARD_PATH`, `MYDEVIL_ADMIN_PATH` | Target directories for the deployment templates (set when you implement the actual rsync commands). |
+| `MYDEVIL_SSH_USER` / `MYDEVIL_SSH_HOST` / `MYDEVIL_SSH_KEY` / `MYDEVIL_KNOWN_HOSTS` | SSH connectivity for all deploys. |
+| `PGHOST` / `PGPORT` / `PGUSER` / `PGPASSWORD` / `PGDATABASE` | Optional explicit DB fields if not using `DATABASE_URL`. Used to populate remote `.env`. |
+| `DATABASE_URL` | Optional override for remote `.env`. |
 
 Populate the secrets in the repository or organisation settings before enabling each workflow. For non-production environments, create separate values and reference them via GitHub environments.
 
