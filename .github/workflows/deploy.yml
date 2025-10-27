@@ -23,10 +23,7 @@ on:
         description: MyDevil app name for restart. If empty, repo variables will be used.
         required: false
         default: ''
-      environment:
-        description: GitHub environment (staging or production)
-        required: true
-        default: production
+      # Single environment; production is assumed. Input removed for simplicity.
 
 env:
   PNPM_VERSION: 10.14.0
@@ -36,7 +33,7 @@ jobs:
   deploy:
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: production
     concurrency:
       group: deploy-${{ github.event.inputs.target }}-${{ github.ref }}
       cancel-in-progress: false
@@ -68,17 +65,12 @@ jobs:
         shell: bash
         run: |
           INPUT_API="${{ github.event.inputs.api_url }}"
-          ENV="${{ github.event.inputs.environment }}"
           if [ -n "$INPUT_API" ]; then
             API_URL="$INPUT_API"
-          elif [ "$ENV" = "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+          elif [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
             API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          elif [ "$ENV" = "production" ]; then
-            API_URL="https://api.salon-bw.pl"
-          elif [ "$ENV" = "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
-            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
           else
-            API_URL="/api"
+            API_URL="https://api.salon-bw.pl"
           fi
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
@@ -87,12 +79,9 @@ jobs:
         id: proxy
         shell: bash
         run: |
-          ENV="${{ github.event.inputs.environment }}"
           PROXY_URL="https://api.salon-bw.pl"
-          if [ "$ENV" = "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+          if [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
             PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          elif [ "$ENV" = "staging" ] && [ -n "${{ secrets.MYDEVIL_API_PROXY_URL_STAGING }}" ]; then
-            PROXY_URL="${{ secrets.MYDEVIL_API_PROXY_URL_STAGING }}"
           fi
           echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
 
@@ -101,7 +90,6 @@ jobs:
         shell: bash
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          ENV="${{ github.event.inputs.environment }}"
           INPUT_PATH="${{ github.event.inputs.remote_path }}"
           INPUT_APP="${{ github.event.inputs.app_name }}"
           REMOTE_PATH="$INPUT_PATH"
@@ -110,83 +98,59 @@ jobs:
           if [ -z "$REMOTE_PATH" ]; then
             case "$TARGET" in
               api)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ]; then
                   REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ]; then
-                  REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
                 fi
                 ;;
               public)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}" ]; then
                   REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}" ]; then
-                  REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
                 fi
                 ;;
               dashboard)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}" ]; then
                   REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_STAGING }}" ]; then
-                  REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_STAGING }}"
                 fi
                 ;;
               admin)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}" ]; then
                   REMOTE_PATH="${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_STAGING }}" ]; then
-                  REMOTE_PATH="${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_STAGING }}"
                 fi
                 ;;
             esac
           fi
-          # Fallback to generic path variables if still empty
-          if [ -z "$REMOTE_PATH" ]; then
-            if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}" ]; then
-              REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
-            elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}" ]; then
-              REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
-            fi
+          # Fallback to generic production path if still empty
+          if [ -z "$REMOTE_PATH" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}" ]; then
+            REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
           fi
 
           if [ -z "$APP_NAME" ]; then
             case "$TARGET" in
               api)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ]; then
                   APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ]; then
-                  APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
                 fi
                 ;;
               public)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}" ]; then
                   APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}" ]; then
-                  APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
                 fi
                 ;;
               dashboard)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}" ]; then
                   APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}" ]; then
-                  APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}"
                 fi
                 ;;
               admin)
-                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}" ]; then
+                if [ -n "${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}" ]; then
                   APP_NAME="${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}"
-                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_ADMIN_APP_NAME_STAGING }}" ]; then
-                  APP_NAME="${{ vars.MYDEVIL_ADMIN_APP_NAME_STAGING }}"
                 fi
                 ;;
             esac
           fi
-          # Fallback to generic app name variables if still empty
-          if [ -z "$APP_NAME" ]; then
-            if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}" ]; then
-              APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
-            elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_STAGING }}" ]; then
-              APP_NAME="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
-            fi
+          # Fallback to generic production app name if still empty
+          if [ -z "$APP_NAME" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}" ]; then
+            APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
           fi
 
           if [ -z "$REMOTE_PATH" ]; then
@@ -306,7 +270,7 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' \
-            ENV='${{ github.event.inputs.environment }}' \
+            ENV='production' \
             DB_USER='${{ secrets.MYDEVIL_DB_USER }}' \
             DB_PASS='${{ secrets.MYDEVIL_DB_PASSWORD }}' \
             DB_HOST='${{ secrets.MYDEVIL_PG_HOST }}' \
