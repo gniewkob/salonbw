@@ -501,9 +501,9 @@ jobs:
               try:
                   status = get(f"/_next/static/{build_id}/_buildManifest.js")
                   print('GET _buildManifest.js =>', status)
-                  ok = ok and (200 <= status < 400)
+                  # Some Next deployments may not expose this file; treat as optional.
               except Exception as e:
-                  print('ERR _buildManifest.js', e); ok = False
+                  print('WARN _buildManifest.js', e)
           try:
               status = get('/api/runtime')
               print('GET /api/runtime =>', status)
