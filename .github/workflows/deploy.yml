@@ -243,11 +243,11 @@ jobs:
         run: |
           rsync -az --delete \
             --exclude='.git' \
-            backend/salonbw-backend/dist/ \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/dist/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/dist/
-          rsync -az backend/salonbw-backend/package.json \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/package.json \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
-          rsync -az backend/salonbw-backend/app.js \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
       - name: Ensure remote .env (api)
