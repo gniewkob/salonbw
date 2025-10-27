@@ -8,6 +8,7 @@ import { Service as SalonService } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { LogsModule } from '../logs/logs.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ObservabilityModule } from '../observability/observability.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
         CommissionsModule,
         LogsModule,
         NotificationsModule,
+        ObservabilityModule,
     ],
     providers: [AppointmentsService],
     controllers: [AppointmentsController],

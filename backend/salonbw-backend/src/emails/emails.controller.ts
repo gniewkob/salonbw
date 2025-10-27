@@ -12,4 +12,3 @@ export class EmailsController {
         return { status: 'ok' };
     }
 }
-

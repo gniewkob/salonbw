@@ -38,13 +38,24 @@ Trigger manually with the GitHub CLI:
 gh workflow run e2e-frontend-chrome.yml -r <branch-or-sha>
 ```
 
-### Deployment templates
+### Deployment workflows
 
+- `deploy_api.yml`
 - `deploy_public.yml`
 - `deploy_dashboard.yml`
 - `deploy_admin.yml`
 
-These workflows are **templates only**. They document the expected steps (build → rsync → `devil www restart`) and should be customised before enabling. Each runs only on `workflow_dispatch`.
+These GitHub Actions deploy the production artefacts via rsync/ssh when triggered with `workflow_dispatch`. Each workflow now finishes with automated smoke checks powered by `scripts/post_deploy_checks.py`, which:
+
+- retries failing checks up to four times with exponential backoff;
+- writes pass/fail state to the job summary (`GITHUB_STEP_SUMMARY`);
+- checks host-specific endpoints (API: `/healthz`, `/health`, `/emails/send`; Public/dashboard/admin: at least `/` and `robots.txt` where applicable).
+
+Set the optional repository variable `SMOKE_EMAIL_TO` to change the API smoke-test recipient; otherwise it defaults to `kontakt@salon-bw.pl`. The script lives at [`scripts/post_deploy_checks.py`](../scripts/post_deploy_checks.py) and can be re-used locally:
+
+```bash
+TARGET_HOST=api.salon-bw.pl DEPLOY_TARGET=api python3 scripts/post_deploy_checks.py
+```
 
 ## Required Secrets
 

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "prepare": "husky install",
+    "setup": "bash scripts/setup.sh",
     "lint": "pnpm -r run --if-present lint",
     "typecheck": "pnpm -r run --if-present typecheck",
     "format": "pnpm -r run --if-present format",

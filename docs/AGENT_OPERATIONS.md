@@ -73,19 +73,58 @@ ssh devil "devil www list --verbose"
 
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 
-## 5. Verification & Health Checks
+## 5. Observability
+
+### Logs
+
+- API emits structured JSON logs via pino; MyDevil captures stdout under `~/logs/nodejs/<app>/app.log` (e.g. `~/logs/nodejs/api.salon-bw.pl/app.log`).
+- Each entry includes `requestId`, HTTP metadata, and the Nest context (`component`) to make tracing easier. Responses also echo `X-Request-Id`.
+- Tail or filter logs with jq for troubleshooting:
+
+```bash
+ssh devil "tail -f ~/logs/nodejs/api.salon-bw.pl/app.log" | jq
+```
+
+### Metrics
+
+- Prometheus-compatible metrics are exposed at `https://api.salon-bw.pl/metrics` (and `/metrics` on any environment).
+- Output includes default Node.js/system counters and service metrics:
+  - `salonbw_http_server_requests_total`
+  - `salonbw_http_server_request_duration_seconds`
+  - `salonbw_emails_sent_total{status="success|failed"}`
+  - `salonbw_appointments_created_total`
+  - `salonbw_appointments_completed_total`
+- To query quickly:
+
+```bash
+curl -s https://api.salon-bw.pl/metrics | grep salonbw_http_server_requests_total
+```
+
+### Troubleshooting
+
+1. **Missing logs** – ensure the workflow restart step succeeded; `devil www status api.salon-bw.pl` should list the Node app. If the log file is empty, tail `~/logs/nodejs/api.salon-bw.pl/passenger.log` for startup errors.
+2. **Unexpected 5xx spikes** – correlate with request IDs in `salonbw_http_server_requests_total{status_code="500"}` and fetch the matching log lines via `grep <request-id> app.log`.
+3. **Metrics endpoint down** – run `curl -I https://api.salon-bw.pl/metrics`; if it returns 5xx, restart (`devil www restart api.salon-bw.pl`) and re-test `/healthz` before retrying the scrape.
+
+### Suggested Alerts (Prometheus)
+
+- API errors: `rate(salonbw_http_server_requests_total{status_code=~"5.."}[5m]) > 0.1`
+- Email failures: `rate(salonbw_emails_sent_total{status="failed"}[15m]) / (rate(salonbw_emails_sent_total[15m]) + 1e-9) > 0.2`
+- Health endpoint availability: probe from your uptime checker against `/healthz`.
+
+## 6. Verification & Health Checks
 
 - **Backend health**: `curl -I https://api.salon-bw.pl/healthz`
 - **Email smoke test**: `curl -s -X POST https://api.salon-bw.pl/emails/send ...`
 - **Frontend cache busting**: Next.js writes `.next/BUILD_ID`; workflows re-link to shared static assets automatically.
 i
-## 6. Notes on MyDevil Environment
+## 7. Notes on MyDevil Environment
 
 - Node.js 22 is available via `/usr/local/bin/node22`, but the global default is Node 18. That is why `npm` prints `EBADENGINE` warnings—safe to ignore.
 - Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`.
 - SMTP credentials for contact form use the mailbox `kontakt@salon-bw.pl` on `mail0.mydevil.net` (port 465, SSL). Stored in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`.
 
-## 7. Documentation Hygiene
+## 8. Documentation Hygiene
 
 - Keep `docs/AGENT_STATUS.md` synchronized with each live deployment.
 - When you learn a new operational quirk, update this runbook and link to any deeper reference files.

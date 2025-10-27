@@ -21,6 +21,8 @@ Use this guide to configure local, staging, and production environments for Salo
 | `WHATSAPP_PHONE_ID` | ➖ | `1234567890` | WhatsApp Business phone ID. |
 | `REMINDER_HOURS_BEFORE` | ➖ | `24` | Hours before an appointment to send reminder messages. |
 | `NODE_ENV` | ➖ | `development` | Set to `production` when deploying to disable TypeORM sync. |
+| `POS_ENABLED` | ➖ | `false` | Enable POS endpoints (`/sales`, `/inventory/adjust`). When `false`, API returns 501. |
+| `PRODUCT_COMMISSION_PERCENT` | ➖ | `0` | Default commission percent used for product sales when no employee base is present. |
 
 ### Tunnel-Specific Variables
 
