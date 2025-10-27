@@ -302,10 +302,24 @@ jobs:
       - name: Diagnostic: fetch health endpoints (on failure)
         if: failure()
         run: |
-          echo "--- GET /health (headers + body) ---"
-          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/health" || true
-          echo "--- GET /healthz (headers + body) ---"
-          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/healthz" || true
+          python3 - <<'PY'
+          import ssl, sys, urllib.request
+          host = "${{ steps.dest.outputs.app_name }}"
+          ctx = ssl.create_default_context()
+          for path in ("/health", "/healthz"):
+              url = f"https://{host}{path}"
+              print(f"--- GET {url} (headers + body) ---")
+              req = urllib.request.Request(url=url, method="GET")
+              try:
+                  with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
+                      print(f"HTTP/{resp.version/10:.1f} {resp.status}")
+                      for k, v in resp.getheaders():
+                          print(f"{k}: {v}")
+                      print()
+                      print(resp.read(512).decode("utf-8", errors="replace"))
+              except Exception as exc:
+                  print(f"ERROR: {exc}")
+          PY
 
       - name: Collect remote logs on failure
         if: failure()
