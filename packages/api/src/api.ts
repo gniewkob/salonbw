@@ -87,10 +87,14 @@ export class ApiClient {
         private readonly onTokenRefresh?: (tokens: AuthTokens) => void,
         private readonly options: ApiClientOptions = {},
     ) {
-        this.baseUrl =
-            options.baseUrl ??
-            process.env.NEXT_PUBLIC_API_URL ??
-            'http://localhost:3000';
+        const rawBase =
+            options.baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+        try {
+            const u = new URL(rawBase);
+            this.baseUrl = u.protocol === 'http:' || u.protocol === 'https:' ? rawBase : 'http://localhost:3000';
+        } catch {
+            this.baseUrl = 'http://localhost:3000';
+        }
     }
 
     private getRefreshToken(): string | null {

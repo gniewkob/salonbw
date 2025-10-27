@@ -127,10 +127,11 @@ function startOnPort(port, envVars = {}) {
         console.log('⚠️  Running in PRODUCTION mode');
     }
 
-    const child = spawn('npx', ['next', 'dev'], {
+    const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const child = spawn(npx, ['next', 'dev'], {
         env,
         stdio: 'inherit',
-        shell: true,
+        shell: false,
     });
 
     // Handle cleanup on exit
