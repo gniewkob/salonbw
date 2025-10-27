@@ -181,6 +181,17 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
+      - name: Read BUILD_ID (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: buildid
+        shell: bash
+        run: |
+          if [ -f frontend/.next/BUILD_ID ]; then
+            echo "id=$(cat frontend/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
+          else
+            echo "id=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build backend
         if: ${{ github.event.inputs.target == 'api' }}
         run: pnpm --filter salonbw-backend build
@@ -211,7 +222,7 @@ jobs:
       - name: Ensure remote directories exist (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/standalone' '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/standalone' '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public' '${{ steps.dest.outputs.remote_path }}/.next/static/${{ steps.buildid.outputs.id }}'"
 
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
@@ -222,6 +233,11 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/.next/static/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
+          # Upload BUILD_ID for later health checks
+          if [ -f frontend/.next/BUILD_ID ]; then
+            rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/BUILD_ID \
+              ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/
+          fi
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/public/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/app.js \
