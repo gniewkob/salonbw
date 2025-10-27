@@ -227,7 +227,8 @@ jobs:
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          rsync -az --delete-delay \
+          rsync -az --delete-after \
+            --exclude='node_modules' \
             --exclude='.git' \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/standalone/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
@@ -249,6 +250,7 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "${REMOTE_PATH}/.next/standalone"
+          rm -rf node_modules
           # Remove workspace:* deps that npm can't resolve
           node - <<'NODE'
           const fs=require('fs');
