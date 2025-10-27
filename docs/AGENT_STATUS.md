@@ -1,15 +1,15 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-10-27 20:48 UTC_
+_Last updated: 2025-10-27 21:20 UTC_
 
 ## Current Release
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `57b683a7` | `18855321908` | 2025-10-27 20:46 | production | Consolidated workflow deploy; remote .env ensured; migrations applied; `/healthz` 200 |
-| Public site (`dev.salon-bw.pl`) | `57b683a7` | `18855437408` | 2025-10-27 20:47 | production | Next standalone rsync with `--delete-after`, remote deps installed; smoke GET `/` and `/api/runtime` OK |
+| API (`api.salon-bw.pl`) | `a7d040fb` | `18856173910` | 2025-10-27 21:18 | production | CI green (backend tests enabled); deploy successful; `/healthz` 200 |
+| Public site (`dev.salon-bw.pl`) | `a7d040fb` | `18856175587` | 2025-10-27 21:19 | production | Next standalone updated; smoke GET `/` and `/api/runtime` OK |
 | Dashboard (`panel.salon-bw.pl`) | `57b683a7` | `18855439529` | 2025-10-27 20:48 | production | Deployed via consolidated workflow; smoke checks passed |
-| Admin (`dev.salon-bw.pl`) | `57b683a7` | `18855438482` | 2025-10-27 20:48 | production | Deployed via consolidated workflow; smoke checks passed |
+| Admin (`dev.salon-bw.pl`) | `a7d040fb` | `18856177070` | 2025-10-27 21:19 | production | Deployed via consolidated workflow; smoke checks passed |
 
 Verification:
 
