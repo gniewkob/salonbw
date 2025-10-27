@@ -261,9 +261,9 @@ jobs:
           fs.writeFileSync(f, JSON.stringify(pkg,null,2));
           NODE
           if command -v npm22 >/dev/null 2>&1; then
-            npm22 ci --omit=dev --ignore-scripts
+            npm22 install --omit=dev --ignore-scripts
           else
-            npm ci --omit=dev --ignore-scripts
+            npm install --omit=dev --ignore-scripts
           fi
           # Ensure Next can find static assets relative to standalone distDir
           mkdir -p .next
