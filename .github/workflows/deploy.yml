@@ -359,16 +359,42 @@ jobs:
 
       - name: Smoke test (backend)
         if: ${{ github.event.inputs.target == 'api' }}
-        shell: bash
+        run: python3 scripts/post_deploy_checks.py
+        env:
+          TARGET_HOST: ${{ steps.dest.outputs.app_name }}
+          TARGET_SCHEME: https
+          DEPLOY_TARGET: api
+          SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO || 'kontakt@salon-bw.pl' }}
+
+      - name: Diagnostic: fetch health endpoints (on failure)
+        if: ${{ github.event.inputs.target == 'api' && failure() }}
         run: |
+          echo "--- GET /health (headers + body) ---"
+          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/health" || true
+          echo "--- GET /healthz (headers + body) ---"
+          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/healthz" || true
+
+      - name: Collect remote logs on failure
+        if: ${{ github.event.inputs.target == 'api' && failure() }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP='${{ steps.dest.outputs.app_name }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
-          for PATH in /healthz /health; do
-            if curl -fsS -I "https://${{ steps.dest.outputs.app_name }}$PATH" >/dev/null 2>&1; then
-              echo "OK: $PATH"; exit 0; fi
+          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
+          echo "=== Recent .log files ==="
+          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
+            [ -f "$f" ] || continue
+            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
           done
-          echo "API health endpoint failed" >&2
-          curl -I "https://${{ steps.dest.outputs.app_name }}/healthz" || true
-          exit 1
+          echo "=== Searching user logs dir ==="
+          if [ -d "$HOME/logs" ]; then
+            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
+              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+            done
+          fi
+          echo "=== .env keys ==="; [ -f "$REMOTE_PATH/.env" ] && (grep -E '^[A-Z0-9_]+=' "$REMOTE_PATH/.env" | sed 's/=.*$/=[hidden]/') || echo "(no .env)"
+          REMOTE_CMDS
 
       - name: Smoke test (frontend)
         if: ${{ github.event.inputs.target != 'api' }}

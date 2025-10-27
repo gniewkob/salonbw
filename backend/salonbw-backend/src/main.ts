@@ -44,6 +44,9 @@ async function bootstrap() {
     process.on('unhandledRejection', (reason) => {
         logger.fatal({ err: reason }, 'unhandled rejection');
     });
-    await app.listen(config.get<number>('PORT') ?? 3000);
+    logger.info('bootstrap start');
+    const port = config.get<number>('PORT') ?? 3000;
+    await app.listen(port);
+    logger.info({ port }, 'bootstrap listening');
 }
 void bootstrap();
