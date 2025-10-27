@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-10-27 21:20 UTC_
+_Last updated: 2025-10-27 21:40 UTC_
 
 ## Current Release
 
@@ -8,7 +8,7 @@ _Last updated: 2025-10-27 21:20 UTC_
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `a7d040fb` | `18856173910` | 2025-10-27 21:18 | production | CI green (backend tests enabled); deploy successful; `/healthz` 200 |
 | Public site (`dev.salon-bw.pl`) | `a7d040fb` | `18856175587` | 2025-10-27 21:19 | production | Next standalone updated; smoke GET `/` and `/api/runtime` OK |
-| Dashboard (`panel.salon-bw.pl`) | `57b683a7` | `18855439529` | 2025-10-27 20:48 | production | Deployed via consolidated workflow; smoke checks passed |
+| Dashboard (`panel.salon-bw.pl`) | `ea4db276` | `18856655791` | 2025-10-27 21:38 | production | Redeployed from master; smoke checks passed |
 | Admin (`dev.salon-bw.pl`) | `a7d040fb` | `18856177070` | 2025-10-27 21:19 | production | Deployed via consolidated workflow; smoke checks passed |
 
 Verification:
