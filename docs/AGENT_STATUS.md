@@ -1,15 +1,15 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-10-24 23:31 UTC_
+_Last updated: 2025-10-27 20:48 UTC_
 
 ## Current Release
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `35b08ad4` | `18793081523` | 2025-10-24 21:58 | production | Tar/scp deploy, npm22 install, Passenger restart succeeded; `/healthz` responds 200, `/emails/send` returns 201 |
-| Public site (`salon-bw.pl`) | `35b08ad4` | `18793085853` | 2025-10-24 21:58 | production | Next standalone pushed to `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs`; restart handled via `tmp/restart.txt` |
-| Dashboard (`dashboard.salon-bw.pl`) | `35b08ad4` | `18793089883` | 2025-10-24 21:59 | production | Standalone deployed to `/usr/home/vetternkraft/apps/nodejs/dashboard`; restart fallback via `tmp/restart.txt` |
-| Admin (`admin.salon-bw.pl`) | `35b08ad4` | `18793095910` | 2025-10-24 22:00 | production | Standalone deployed to `/usr/home/vetternkraft/apps/nodejs/admin`; restart fallback via `tmp/restart.txt` |
+| API (`api.salon-bw.pl`) | `57b683a7` | `18855321908` | 2025-10-27 20:46 | production | Consolidated workflow deploy; remote .env ensured; migrations applied; `/healthz` 200 |
+| Public site (`dev.salon-bw.pl`) | `57b683a7` | `18855437408` | 2025-10-27 20:47 | production | Next standalone rsync with `--delete-after`, remote deps installed; smoke GET `/` and `/api/runtime` OK |
+| Dashboard (`panel.salon-bw.pl`) | `57b683a7` | `18855439529` | 2025-10-27 20:48 | production | Deployed via consolidated workflow; smoke checks passed |
+| Admin (`dev.salon-bw.pl`) | `57b683a7` | `18855438482` | 2025-10-27 20:48 | production | Deployed via consolidated workflow; smoke checks passed |
 
 Verification:
 
