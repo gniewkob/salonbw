@@ -22,7 +22,7 @@ export class HttpMetricsInterceptor implements NestInterceptor {
         }
 
         const httpContext = context.switchToHttp();
-        const request = httpContext.getRequest<Request>();
+        const request = httpContext.getRequest<Request & { route?: { path?: string } }>();
         const response = httpContext.getResponse<Response>();
 
         const method = request.method?.toUpperCase() ?? 'UNKNOWN';
@@ -32,32 +32,34 @@ export class HttpMetricsInterceptor implements NestInterceptor {
             tap({
                 next: () => {
                     const route =
-                        (request as any).route?.path ??
-                        (request as any).baseUrl ??
-                        (request as any).originalUrl ??
+                        request.route?.path ??
+                        request.baseUrl ??
+                        request.originalUrl ??
                         request.url ??
                         'unmatched';
                     this.metricsService.recordHttpRequest(
                         method,
                         route,
-                        (response as any).statusCode ?? 200,
+                        response.statusCode ?? 200,
                         endTimer(),
                     );
                 },
                 error: (err: unknown) => {
                     const route =
-                        (request as any).route?.path ??
-                        (request as any).baseUrl ??
-                        (request as any).originalUrl ??
+                        request.route?.path ??
+                        request.baseUrl ??
+                        request.originalUrl ??
                         request.url ??
                         'unmatched';
-                    const status =
-                        typeof err === 'object' &&
-                        err !== null &&
-                        'status' in err &&
-                        typeof (err as any).status === 'number'
-                            ? (err as any).status
-                            : 500;
+                    const status = ((): number => {
+                        if (typeof err === 'object' && err !== null) {
+                            const anyErr = err as { status?: number };
+                            if (typeof anyErr.status === 'number') {
+                                return anyErr.status;
+                            }
+                        }
+                        return 500;
+                    })();
                     this.metricsService.recordHttpRequest(
                         method,
                         route,

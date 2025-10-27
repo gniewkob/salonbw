@@ -15,8 +15,18 @@ export class WhatsappService {
         private readonly http: HttpService,
         private readonly config: ConfigService,
     ) {
-        this.token = this.config.get<string>('WHATSAPP_TOKEN', '');
-        this.phoneId = this.config.get<string>('WHATSAPP_PHONE_ID', '');
+        // Prefer required envs when available; fall back gracefully if missing
+        let token = '';
+        let phoneId = '';
+        try {
+            token = this.config.getOrThrow<string>('WHATSAPP_TOKEN');
+            phoneId = this.config.getOrThrow<string>('WHATSAPP_PHONE_ID');
+        } catch {
+            token = this.config.get<string>('WHATSAPP_TOKEN', '') ?? '';
+            phoneId = this.config.get<string>('WHATSAPP_PHONE_ID', '') ?? '';
+        }
+        this.token = token;
+        this.phoneId = phoneId;
         this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
         this.enabled = Boolean(this.token && this.phoneId);
 

@@ -170,5 +170,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build backend
-        run: pnpm --filter salonbw-backend build
+      - name: Typecheck, test, and build backend
+        run: pnpm turbo run typecheck test build --filter=salonbw-backend --cache-dir=.turbo

@@ -25,10 +25,9 @@ export class AuthFailureFilter implements ExceptionFilter {
         host: ArgumentsHost,
     ): Promise<void> {
         const ctx = host.switchToHttp();
-        interface RequestWithUser extends Request {
-            user?: { id?: number };
-        }
-        const req = ctx.getRequest<RequestWithUser>();
+        const req = ctx.getRequest<
+            Request & { user?: { id?: number; userId?: number }; id?: string; log?: PinoLogger }
+        >();
         const res = ctx.getResponse<Response>();
         const action =
             exception instanceof UnauthorizedException &&
@@ -36,12 +35,9 @@ export class AuthFailureFilter implements ExceptionFilter {
                 ? LogAction.LOGIN_FAIL
                 : LogAction.AUTHORIZATION_FAILURE;
 
-        const userId =
-            (req.user as { id?: number; userId?: number } | undefined)?.id ??
-            (req.user as { userId?: number } | undefined)?.userId;
+        const userId = req.user?.id ?? req.user?.userId;
         const user = userId ? ({ id: userId } as User) : null;
-        const requestLogger =
-            ((req as any).log as PinoLogger | undefined) ?? this.logger;
+        const requestLogger = req.log ?? this.logger;
 
         try {
             await this.logService.logAction(user, action, {
@@ -50,15 +46,21 @@ export class AuthFailureFilter implements ExceptionFilter {
             });
             requestLogger.warn(
                 {
-                    requestId: (req as any).id,
+                    requestId: req.id,
                     action,
                     userId: user?.id,
                 },
                 'authorisation failure recorded',
             );
-        } catch (error) {
+        } catch (error: unknown) {
             requestLogger.error(
-                { err: error, requestId: (req as any).id },
+                {
+                    err:
+                        error instanceof Error
+                            ? error
+                            : { message: String(error) },
+                    requestId: req.id,
+                },
                 'failed to persist authentication log entry',
             );
         }
