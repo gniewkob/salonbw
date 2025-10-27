@@ -9,8 +9,7 @@ describe('ContactForm', () => {
             ok: true,
             json: () => ({}),
         }) as jest.MockedFunction<typeof fetch>;
-        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT =
-            'kontakt@salon-bw.pl';
+        process.env.NEXT_PUBLIC_CONTACT_RECIPIENT = 'kontakt@salon-bw.pl';
     });
 
     it('posts form data', async () => {

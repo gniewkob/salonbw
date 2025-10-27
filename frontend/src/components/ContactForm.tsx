@@ -48,8 +48,7 @@ export default function ContactForm() {
         setSubmitError('');
         const retries = 3;
         const recipient =
-            process.env.NEXT_PUBLIC_CONTACT_RECIPIENT ||
-            'kontakt@salon-bw.pl';
+            process.env.NEXT_PUBLIC_CONTACT_RECIPIENT || 'kontakt@salon-bw.pl';
         for (let attempt = 0; attempt < retries; attempt++) {
             try {
                 const res = await fetch(

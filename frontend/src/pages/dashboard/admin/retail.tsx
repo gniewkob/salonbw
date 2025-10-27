@@ -43,7 +43,9 @@ export default function RetailDashboard() {
                             type="number"
                             min={0}
                             value={threshold}
-                            onChange={(e) => setThreshold(Number(e.target.value))}
+                            onChange={(e) =>
+                                setThreshold(Number(e.target.value))
+                            }
                             className="border p-1 ml-2 w-20"
                         />
                     </div>
@@ -51,18 +53,24 @@ export default function RetailDashboard() {
 
                 <div className="mt-6 grid gap-6 grid-cols-1 lg:grid-cols-3">
                     <div className="lg:col-span-2">
-                        <h2 className="text-lg font-semibold mb-2">Inventory</h2>
+                        <h2 className="text-lg font-semibold mb-2">
+                            Inventory
+                        </h2>
                         <div className="bg-white rounded shadow p-2">
                             <DataTable
                                 data={items}
                                 columns={columns}
-                                initialSort={'name' as keyof typeof items[number]}
+                                initialSort={
+                                    'name' as keyof (typeof items)[number]
+                                }
                                 pageSize={10}
                             />
                         </div>
                     </div>
                     <div>
-                        <h2 className="text-lg font-semibold mb-2">Low stock</h2>
+                        <h2 className="text-lg font-semibold mb-2">
+                            Low stock
+                        </h2>
                         <ul className="bg-white rounded shadow divide-y">
                             {invLoading && (
                                 <li className="p-3 text-sm text-gray-500">
@@ -75,12 +83,22 @@ export default function RetailDashboard() {
                                 </li>
                             )}
                             {lowStock.map((p) => (
-                                <li key={p.id} className="p-3 flex justify-between">
+                                <li
+                                    key={p.id}
+                                    className="p-3 flex justify-between"
+                                >
                                     <span>
                                         {p.name}
-                                        {p.brand ? <span className="text-gray-500"> · {p.brand}</span> : null}
+                                        {p.brand ? (
+                                            <span className="text-gray-500">
+                                                {' '}
+                                                · {p.brand}
+                                            </span>
+                                        ) : null}
                                     </span>
-                                    <span className="font-semibold">{p.stock}</span>
+                                    <span className="font-semibold">
+                                        {p.stock}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -99,4 +117,3 @@ export default function RetailDashboard() {
         </RouteGuard>
     );
 }
-

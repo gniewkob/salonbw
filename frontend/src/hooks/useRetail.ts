@@ -31,8 +31,10 @@ export function useInventory(threshold = 5) {
             try {
                 const data = await apiFetch<InventoryItem[]>('/inventory');
                 if (mounted) setItems(data);
-            } catch (e: any) {
-                if (mounted) setError(e?.message ?? 'Failed to load inventory');
+            } catch (e: unknown) {
+                const msg =
+                    e instanceof Error ? e.message : 'Failed to load inventory';
+                if (mounted) setError(msg);
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -69,8 +71,10 @@ export function useSalesSummary(from?: Date, to?: Date) {
             try {
                 const data = await apiFetch<SalesSummary>(url);
                 if (mounted) setSummary(data);
-            } catch (e: any) {
-                if (mounted) setError(e?.message ?? 'Failed to load sales');
+            } catch (e: unknown) {
+                const msg =
+                    e instanceof Error ? e.message : 'Failed to load sales';
+                if (mounted) setError(msg);
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -84,4 +88,3 @@ export function useSalesSummary(from?: Date, to?: Date) {
 
     return { summary, loading, error };
 }
-

@@ -57,10 +57,7 @@ export default function Navbar() {
                     </Link>
                 </li>
                 <li>
-                    <Link
-                        href={'/appointments' as Route}
-                        className={linkClass}
-                    >
+                    <Link href={'/appointments' as Route} className={linkClass}>
                         Book Now
                     </Link>
                 </li>
