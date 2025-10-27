@@ -291,6 +291,8 @@ jobs:
           REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
           cd "$REMOTE_PATH"
           echo "Testing DB connectivity using DATABASE_URL..."
+          # Export .env to environment for the Node snippet
+          if [ -f .env ]; then set -a; . ./.env; set +a; fi
           if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
           "${NODECMD}" -e "(async()=>{const {Client}=require('pg');const url=process.env.DATABASE_URL;if(!url){console.error('Missing DATABASE_URL');process.exit(2);}const c=new Client({connectionString:url,ssl:process.env.PGSSL==='1'?{rejectUnauthorized:false}:undefined});try{await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e && (e.stack||e.message)||e);process.exit(3);}})()"
           REMOTE_CMDS

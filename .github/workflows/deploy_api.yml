@@ -182,6 +182,7 @@ jobs:
           REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
           cd "$REMOTE_PATH"
           echo "Testing DB connectivity using DATABASE_URL..."
+          if [ -f .env ]; then set -a; . ./.env; set +a; fi
           if command -v node22 >/dev/null 2>&1; then
             NODECMD=node22
           else
