@@ -33,7 +33,7 @@ export class HttpMetricsInterceptor implements NestInterceptor {
         return next.handle().pipe(
             tap({
                 next: () => {
-                    const anyReq = request as Record<string, unknown>;
+                    const anyReq = request as unknown as Record<string, unknown>;
                     const routePath =
                         typeof (anyReq.route as { path?: unknown } | undefined)
                             ?.path === 'string'
@@ -54,7 +54,7 @@ export class HttpMetricsInterceptor implements NestInterceptor {
                     );
                 },
                 error: (err: unknown) => {
-                    const anyReq = request as Record<string, unknown>;
+                    const anyReq = request as unknown as Record<string, unknown>;
                     const routePath =
                         typeof (anyReq.route as { path?: unknown } | undefined)
                             ?.path === 'string'
