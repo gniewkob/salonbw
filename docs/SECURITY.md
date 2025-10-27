@@ -25,6 +25,10 @@
 - URL handling: only allow `http`/`https` schemes for outbound requests and configuration values (e.g., API base URLs).
 - TLS settings: never set `NODE_TLS_REJECT_UNAUTHORIZED=0` in code or CI. For local troubleshooting, use targeted tooling rather than globally disabling verification.
 
+### Database TLS
+
+- PostgreSQL connections in production use verified TLS by default. If you need TLS, set `PGSSL=1` and provide a trusted CA when required by your provider. We do not disable certificate verification; avoid `rejectUnauthorized: false`.
+
 ## CI/CD Hardening
 
 - Pin GitHub Actions to immutable SHAs and validate inputs before interpolation in shell steps.

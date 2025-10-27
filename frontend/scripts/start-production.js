@@ -110,10 +110,11 @@ function startProductionServer() {
         process.exit(1);
     }
 
-    const child = spawn('npx', ['next', 'start', '-p', port], {
+    const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const child = spawn(npx, ['next', 'start', '-p', String(port)], {
         env,
         stdio: 'inherit',
-        shell: true,
+        shell: false,
     });
 
     // Handle graceful shutdown

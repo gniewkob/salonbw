@@ -62,10 +62,8 @@ async function run() {
         url,
         migrations: migrationClasses,
         // entities are not required to run migrations
-        ssl:
-            process.env.PGSSL === '1'
-                ? { rejectUnauthorized: false }
-                : undefined,
+        // Prefer verified TLS when PGSSL=1; do not disable verification
+        ssl: process.env.PGSSL === '1' ? true : undefined,
     });
 
     try {
