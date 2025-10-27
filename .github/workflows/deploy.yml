@@ -227,18 +227,18 @@ jobs:
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          rsync -az --delete \
+          rsync -az --delete-delay \
             --exclude='.git' \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/standalone/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
-          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/.next/static/ \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete-delay frontend/.next/static/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
           # Upload BUILD_ID for later health checks
           if [ -f frontend/.next/BUILD_ID ]; then
             rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/BUILD_ID \
               ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/
           fi
-          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete frontend/public/ \
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete-delay frontend/public/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
