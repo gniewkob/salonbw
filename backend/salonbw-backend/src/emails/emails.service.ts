@@ -1,12 +1,21 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer';
 import { SendEmailDto } from './dto/send-email.dto';
 import { MetricsService } from '../observability/metrics.service';
 
+type MailTransporter = {
+    sendMail: (options: {
+        to: string;
+        subject: string;
+        html: string;
+        from?: string;
+    }) => Promise<unknown>;
+};
+
 @Injectable()
 export class EmailsService {
-    private readonly transporter: Transporter | null;
+    private readonly transporter: MailTransporter | null;
     private readonly fromAddress: string | null;
 
     constructor(
@@ -21,7 +30,7 @@ export class EmailsService {
             this.configService.get<string>('SMTP_SECURE', 'false') === 'true';
 
         if (host && port) {
-            this.transporter = nodemailer.createTransport({
+            this.transporter = (nodemailer.createTransport({
                 host,
                 port: Number(port),
                 secure,
@@ -32,7 +41,7 @@ export class EmailsService {
                               pass,
                           }
                         : undefined,
-            });
+            }) as unknown as MailTransporter);
         } else {
             this.transporter = null;
         }

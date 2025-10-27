@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 loadEnv();
 
@@ -14,21 +15,28 @@ async function run() {
     }
     // Resolve compiled migration classes explicitly to avoid glob issues
     const migrationsDir = path.join(__dirname, 'migrations');
-    const migrationClasses: (Function | string)[] = [];
+    type MigrationClass = new (...args: unknown[]) => {
+        up: (...args: unknown[]) => unknown;
+        down: (...args: unknown[]) => unknown;
+    };
+    const migrationClasses: MigrationClass[] = [];
     if (fs.existsSync(migrationsDir)) {
         for (const entry of fs.readdirSync(migrationsDir)) {
             if (!entry.endsWith('.js')) continue;
             try {
-                const mod = require(path.join(migrationsDir, entry));
+                const filePath = path.join(migrationsDir, entry);
+                const mod: Record<string, unknown> = await import(
+                    pathToFileURL(filePath).href
+                );
                 for (const key of Object.keys(mod)) {
-                    const v = (mod as Record<string, unknown>)[key] as any;
+                    const v = mod[key];
                     if (
                         typeof v === 'function' &&
-                        v?.prototype &&
-                        typeof v.prototype.up === 'function' &&
-                        typeof v.prototype.down === 'function'
+                        (v as any)?.prototype &&
+                        typeof (v as any).prototype.up === 'function' &&
+                        typeof (v as any).prototype.down === 'function'
                     ) {
-                        migrationClasses.push(v as unknown as Function);
+                        migrationClasses.push(v as MigrationClass);
                     }
                 }
             } catch (e) {
