@@ -5,6 +5,7 @@ import {
     ForbiddenException,
     UnauthorizedException,
 } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { Request, Response } from 'express';
 import { LogService } from './log.service';
 import { LogAction } from './log-action.enum';
@@ -12,7 +13,12 @@ import { User } from '../users/user.entity';
 
 @Catch(UnauthorizedException, ForbiddenException)
 export class AuthFailureFilter implements ExceptionFilter {
-    constructor(private readonly logService: LogService) {}
+    constructor(
+        private readonly logService: LogService,
+        private readonly logger: PinoLogger,
+    ) {
+        this.logger.setContext(AuthFailureFilter.name);
+    }
 
     async catch(
         exception: UnauthorizedException | ForbiddenException,
@@ -34,14 +40,27 @@ export class AuthFailureFilter implements ExceptionFilter {
             (req.user as { id?: number; userId?: number } | undefined)?.id ??
             (req.user as { userId?: number } | undefined)?.userId;
         const user = userId ? ({ id: userId } as User) : null;
+        const requestLogger =
+            ((req as any).log as PinoLogger | undefined) ?? this.logger;
 
         try {
             await this.logService.logAction(user, action, {
                 endpoint: req.url,
                 userId,
             });
+            requestLogger.warn(
+                {
+                    requestId: (req as any).id,
+                    action,
+                    userId: user?.id,
+                },
+                'authorisation failure recorded',
+            );
         } catch (error) {
-            console.error('Failed to log authentication failure action', error);
+            requestLogger.error(
+                { err: error, requestId: (req as any).id },
+                'failed to persist authentication log entry',
+            );
         }
 
         res.status(exception.getStatus()).json(exception.getResponse());

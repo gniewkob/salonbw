@@ -55,6 +55,11 @@ export default function AdminDashboard() {
                         label="Products"
                     />
                     <ShortcutCard
+                        href={'/dashboard/admin/retail' as Route}
+                        icon="🏪"
+                        label="Retail"
+                    />
+                    <ShortcutCard
                         href={'/dashboard/admin/scheduler' as Route}
                         icon="🗓️"
                         label="Scheduler"

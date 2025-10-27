@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: Verify required secrets
         id: secrets
@@ -50,14 +50,14 @@ jobs:
 
       - name: Setup Node
         if: steps.secrets.outputs.available == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Setup pnpm
         if: steps.secrets.outputs.available == 'true'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
@@ -147,7 +147,7 @@ jobs:
 
       - name: Upload Cypress videos
         if: steps.secrets.outputs.available == 'true' && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cypress-videos
           path: frontend/cypress/videos
@@ -155,7 +155,7 @@ jobs:
 
       - name: Upload Cypress screenshots
         if: steps.secrets.outputs.available == 'true' && failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cypress-screenshots
           path: frontend/cypress/screenshots

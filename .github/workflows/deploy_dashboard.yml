@@ -32,17 +32,17 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           ref: ${{ github.event.inputs.commit_sha }}
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ vars.NODE_VERSION || '22' }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ vars.PNPM_VERSION || '10.14.0' }}
           run_install: false
@@ -114,6 +114,15 @@ jobs:
           fi
           echo "remote_path=$REMOTE_PATH" >> "$GITHUB_OUTPUT"
           echo "app_name=$APP_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Validate resolved destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          APP_NAME='${{ steps.dest.outputs.app_name }}'
+          if ! [[ "$REMOTE_PATH" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path"; exit 1; fi
+          if [ -n "$APP_NAME" ] && ! [[ "$APP_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name"; exit 1; fi
 
       - name: Build frontend (standalone)
         run: pnpm --filter frontend build
@@ -191,3 +200,10 @@ jobs:
             fi
             mkdir -p \"${REMOTE_PATH}/tmp\"
             touch \"${REMOTE_PATH}/tmp/restart.txt\""
+
+      - name: Post-deploy smoke checks
+        run: python3 scripts/post_deploy_checks.py
+        env:
+          TARGET_HOST: ${{ steps.dest.outputs.app_name }}
+          TARGET_SCHEME: https
+          DEPLOY_TARGET: dashboard

@@ -20,6 +20,7 @@ import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
+import { MetricsService } from '../observability/metrics.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -33,6 +34,7 @@ export class AppointmentsService {
         private readonly commissionsService: CommissionsService,
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
+        private readonly metrics: MetricsService,
     ) {}
 
     findAllInRange(params: {
@@ -125,6 +127,7 @@ export class AppointmentsService {
         if (!result) {
             throw new Error('Appointment not found after creation');
         }
+        this.metrics.incAppointmentCreated();
         try {
             await this.logService.logAction(
                 user,
@@ -250,6 +253,7 @@ export class AppointmentsService {
         );
         const updated = await this.findOne(id);
         if (updated) {
+            this.metrics.incAppointmentCompleted();
             try {
                 await this.logService.logAction(
                     user,

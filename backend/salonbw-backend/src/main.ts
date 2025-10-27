@@ -6,11 +6,19 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { LogService } from './logs/log.service';
 import { AuthFailureFilter } from './logs/auth-failure.filter';
+import { PinoLogger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { HttpMetricsInterceptor } from './observability/http-metrics.interceptor';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        bufferLogs: true,
+    });
+    const logger = app.get(PinoLogger);
+
     const logService = app.get(LogService);
-    app.useGlobalFilters(new AuthFailureFilter(logService));
+    app.useGlobalFilters(new AuthFailureFilter(logService, logger));
+    const metricsInterceptor = app.get(HttpMetricsInterceptor);
+    app.useGlobalInterceptors(metricsInterceptor, new LoggerErrorInterceptor());
     app.useGlobalPipes(
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
@@ -29,6 +37,12 @@ async function bootstrap() {
     app.enableCors({
         origin: config.get<string>('FRONTEND_URL') ?? true,
         credentials: true,
+    });
+    process.on('uncaughtException', (error) => {
+        logger.fatal({ err: error }, 'uncaught exception');
+    });
+    process.on('unhandledRejection', (reason) => {
+        logger.fatal({ err: reason }, 'unhandled rejection');
     });
     await app.listen(config.get<number>('PORT') ?? 3000);
 }

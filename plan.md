@@ -19,6 +19,13 @@ This plan reflects the current state of the repository after the recent deployme
 | P3 | Automated Appointment Reminders | Re-enable WhatsApp/SMS reminders with configurable schedules and opt-out. Include delivery monitoring and retries. | TBD | Q1 2026 |
 | P4 | Reporting & Analytics | Generate downloadable daily/weekly reports covering bookings, revenue, product sales, and staff performance. Integrate with dashboard exports. | TBD | Q2 2026 |
 
+### POS migration draft (2025-10-24)
+
+- Create `product_sales` table (id, productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId nullable) to record retail transactions.
+- Create `inventory_movements` table (id, productId, delta, reason enum, referenceId/referenceType, note, createdAt, actorId) to preserve stock history and reconcile adjustments.
+- Add nullable `productSaleId` foreign key to `commissions` (and backfill existing rows) so product sales can generate commission records independent of appointments.
+- Consider denormalised daily aggregates once raw sales flow is stable; defer until access patterns confirmed.
+
 ## 🧭 Working Agreements
 
 - Keep `docs/AGENT_STATUS.md` current after every deployment or infrastructure change (commit SHA, workflow IDs, verification notes, known issues).

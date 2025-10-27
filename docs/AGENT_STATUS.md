@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-10-24 22:05 UTC_
+_Last updated: 2025-10-24 23:31 UTC_
 
 ## Current Release
 
@@ -22,6 +22,9 @@ Verification:
 - Deploy workflows (`deploy_api`, `deploy_public`, `deploy_dashboard`, `deploy_admin`) accept optional `app_name` and tolerate php domains by touching `tmp/restart.txt`.
 - Public Next.js build succeeds with `experimental.typedRoutes=false`.
 - SMTP + JWT secrets managed in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env` (see `docs/ENV.md`).
+- **2025-10-24 23:31 UTC (`fd0b06d0`)** – API emits structured pino logs with `X-Request-Id` correlation and exposes `/metrics` for Prometheus; runbook updated with locations & troubleshooting.
+- **2025-10-24 23:31 UTC (`fd0b06d0`)** – Deploy workflows append resilient smoke-check summaries via `scripts/post_deploy_checks.py` (retries `/healthz` and `/emails/send`).
+ - **2025-10-25 02:10 UTC (`fd0b06d0`)** – Added domain metrics (emails, appointments). Frontend client now logs `x-request-id` in debug mode for correlation.
 
 ## Known Issues
 
@@ -31,7 +34,13 @@ Verification:
 
 ## Improvements in Progress
 
-*None currently tracked.*
+- **POS discovery** (`2025-10-24 23:31 UTC`, `fd0b06d0`): `products` table currently stores `name`, `brand`, `unitPrice` (decimal) and `stock` (int) with no movement history; `commissions` table supports optional `productId` but services still create entries only for appointments. Proposed migrations drafted in `plan.md` (`product_sales`, `inventory_movements`, product-linked commission rows). Open questions: how to split commissions across multiple stylists per sale, expected currency rounding, and whether stock adjustments must track VAT/discount metadata.
+  - `2025-10-24 23:40 UTC` (`fd0b06d0`): Added TypeORM migration drafts only (not applied):
+    - `1710006000000-CreateProductSalesTable.ts`
+    - `1710007000000-CreateInventoryMovementsTable.ts`
+    - `1710008000000-AddProductSaleIdToCommissions.ts`
+    These are safe to keep in main; they do not run unless migrations are executed. No entities were added to avoid accidental sync in dev.
+  - `2025-10-25 02:10 UTC` (`fd0b06d0`): POS API contracts stubbed (`/sales` and `/inventory/adjust` return 501) to lock request/response shapes without DB impact.
 
 ## Operational References
 

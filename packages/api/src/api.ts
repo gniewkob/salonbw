@@ -190,6 +190,17 @@ export class ApiClient {
     }
 
     private async handleResponse<T>(response: Response): Promise<T> {
+        const reqId = response.headers.get('x-request-id');
+        const debug =
+            (typeof process !== 'undefined' &&
+                process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true') ||
+            (typeof window !== 'undefined' &&
+                window.localStorage?.getItem('DEBUG_API') === '1');
+        if (reqId && debug && typeof console !== 'undefined') {
+            // Lightweight correlation hint in dev
+            // eslint-disable-next-line no-console
+            console.debug('[api] x-request-id:', reqId);
+        }
         if (response.status === 204) {
             return undefined as T;
         }

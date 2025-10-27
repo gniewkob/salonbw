@@ -73,7 +73,7 @@ packages/
   utils/            # Shared utilities (RBAC, etc.)
 ```
 
-Legacy Laravel code is archived under `archive/laravel-frontend/`.
+The legacy Laravel frontend has been removed; the repo now contains only the Next.js app for the UI and the NestJS backend API.
 
 ## Key documentation
 

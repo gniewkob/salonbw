@@ -2,13 +2,17 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nodemailer, { Transporter } from 'nodemailer';
 import { SendEmailDto } from './dto/send-email.dto';
+import { MetricsService } from '../observability/metrics.service';
 
 @Injectable()
 export class EmailsService {
     private readonly transporter: Transporter | null;
     private readonly fromAddress: string | null;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly metrics: MetricsService,
+    ) {
         const host = this.configService.get<string>('SMTP_HOST');
         const port = this.configService.get<string>('SMTP_PORT');
         const user = this.configService.get<string>('SMTP_USER');
@@ -46,11 +50,12 @@ export class EmailsService {
             // When SMTP is not configured we simply log the email payload.
             // This keeps the endpoint functional for environments where mail
             // infrastructure is not yet available.
-            // eslint-disable-next-line no-console
+
             console.warn(
                 '[EmailsService] SMTP is not configured. Email payload:',
                 { ...dto, html },
             );
+            this.metrics.incEmail('success');
             return;
         }
 
@@ -61,7 +66,9 @@ export class EmailsService {
                 html,
                 from: this.fromAddress ?? dto.to,
             });
+            this.metrics.incEmail('success');
         } catch (error: unknown) {
+            this.metrics.incEmail('failed');
             throw new InternalServerErrorException(
                 'Failed to send email message',
                 { cause: error },
