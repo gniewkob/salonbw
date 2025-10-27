@@ -8,7 +8,7 @@ on:
         required: true
         default: main
       target:
-        description: What to deploy (public|dashboard|api)
+        description: What to deploy (public|dashboard|admin|api)
         required: true
         default: public
       api_url:
@@ -108,34 +108,84 @@ jobs:
           APP_NAME="$INPUT_APP"
 
           if [ -z "$REMOTE_PATH" ]; then
-            if [ "$TARGET" = "api" ]; then
-              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ]; then
-                REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
-              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ]; then
-                REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
-              fi
-            else
-              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}" ]; then
-                REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
-              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}" ]; then
-                REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
-              fi
+            case "$TARGET" in
+              api)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
+                fi
+                ;;
+              public)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
+                fi
+                ;;
+              dashboard)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_STAGING }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_STAGING }}"
+                fi
+                ;;
+              admin)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_STAGING }}" ]; then
+                  REMOTE_PATH="${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_STAGING }}"
+                fi
+                ;;
+            esac
+          fi
+          # Fallback to generic path variables if still empty
+          if [ -z "$REMOTE_PATH" ]; then
+            if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}" ]; then
+              REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
+            elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}" ]; then
+              REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
             fi
           fi
 
           if [ -z "$APP_NAME" ]; then
-            if [ "$TARGET" = "api" ]; then
-              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ]; then
-                APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
-              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ]; then
-                APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
-              fi
-            else
-              if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}" ]; then
-                APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
-              elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_STAGING }}" ]; then
-                APP_NAME="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
-              fi
+            case "$TARGET" in
+              api)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
+                fi
+                ;;
+              public)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
+                fi
+                ;;
+              dashboard)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}"
+                fi
+                ;;
+              admin)
+                if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}"
+                elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_ADMIN_APP_NAME_STAGING }}" ]; then
+                  APP_NAME="${{ vars.MYDEVIL_ADMIN_APP_NAME_STAGING }}"
+                fi
+                ;;
+            esac
+          fi
+          # Fallback to generic app name variables if still empty
+          if [ -z "$APP_NAME" ]; then
+            if [ "$ENV" = "production" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}" ]; then
+              APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
+            elif [ "$ENV" = "staging" ] && [ -n "${{ vars.MYDEVIL_APP_NAME_STAGING }}" ]; then
+              APP_NAME="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
             fi
           fi
 
