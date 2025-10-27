@@ -30,13 +30,20 @@ export class RetailService {
         private readonly dataSource: DataSource,
     ) {}
 
+    private async q<T>(sql: string, params: unknown[]): Promise<T[]> {
+        // Central raw query helper
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const rows = await this.dataSource.query(sql, params);
+        return rows as T[];
+    }
+
     private isEnabled(): boolean {
         return this.config.get<string>('POS_ENABLED', 'false') === 'true';
     }
 
     private async hasTable(name: string): Promise<boolean> {
         try {
-            const result = await this.dataSource.query(
+            const result = await this.q<{ exists: string | null }>(
                 'SELECT to_regclass($1) AS exists',
                 [name],
             );
@@ -80,15 +87,16 @@ export class RetailService {
                 where: { id: dto.employeeId },
             });
             if (!employee) return;
-            const percentEnv = this.config.get<number>(
-                'PRODUCT_COMMISSION_PERCENT' as any,
-                0 as any,
+            const rawPercent = this.config.get<string | number>(
+                'PRODUCT_COMMISSION_PERCENT',
             );
-            const percent =
-                (typeof percentEnv === 'number'
-                    ? percentEnv
-                    : Number(percentEnv)) ||
-                Number(employee.commissionBase ?? 0);
+            const percentFromEnv =
+                rawPercent !== undefined && rawPercent !== null
+                    ? Number(rawPercent)
+                    : NaN;
+            const percent = !Number.isNaN(percentFromEnv)
+                ? percentFromEnv
+                : Number(employee.commissionBase ?? 0);
             const priceCents = Math.round(unitPrice * 100) * dto.quantity;
             const discountCents = Math.round(discount * 100);
             const amountCents = Math.max(
@@ -155,9 +163,10 @@ export class RetailService {
 
             // Commission (best-effort)
             try {
-                await createCommission(manager as any);
-            } catch (e) {
-                // Non-fatal for the sale; it will be logged in CommissionsService
+                await createCommission(manager);
+            } catch {
+                /* non-fatal commission error */
+                void 0;
             }
 
             try {
@@ -167,7 +176,10 @@ export class RetailService {
                     change: 'sale',
                     quantity: dto.quantity,
                 });
-            } catch {}
+            } catch {
+                /* non-fatal log error */
+                void 0;
+            }
 
             return { status: 'ok' } as const;
         });
@@ -210,7 +222,10 @@ export class RetailService {
                     delta: dto.delta,
                     reason: dto.reason,
                 });
-            } catch {}
+            } catch {
+                /* non-fatal log error */
+                void 0;
+            }
             return { status: 'ok' } as const;
         });
     }
@@ -234,7 +249,10 @@ export class RetailService {
             params?.from ?? new Date(to.getTime() - 24 * 60 * 60 * 1000);
 
         if (await this.hasTable('public.product_sales')) {
-            const res = await this.dataSource.query(
+            const res = await this.q<{
+                units: number | string | null;
+                revenue: number | string | null;
+            }>(
                 `SELECT 
                     COALESCE(SUM(quantity),0) AS units,
                     COALESCE(SUM(quantity*unitPrice - COALESCE(discount,0)),0) AS revenue
@@ -253,13 +271,14 @@ export class RetailService {
         }
 
         if (await this.hasTable('public.inventory_movements')) {
-            const res = await this.dataSource.query(
+            const res = await this.q<{ units: number | string | null }>(
                 `SELECT COALESCE(SUM(CASE WHEN reason='sale' THEN -delta ELSE 0 END),0) AS units
                  FROM inventory_movements
                  WHERE createdAt BETWEEN $1 AND $2`,
                 [from, to],
             );
-            const row = res?.[0] ?? { units: 0 };
+            const row =
+                res?.[0] ?? ({ units: 0 } as { units: number | string | null });
             return {
                 source: 'inventory_movements' as const,
                 from,

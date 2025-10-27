@@ -22,7 +22,9 @@ export class HttpMetricsInterceptor implements NestInterceptor {
         }
 
         const httpContext = context.switchToHttp();
-        const request = httpContext.getRequest<Request & { route?: { path?: string } }>();
+        const request = httpContext.getRequest<
+            Request & { route?: { path?: string } }
+        >();
         const response = httpContext.getResponse<Response>();
 
         const method = request.method?.toUpperCase() ?? 'UNKNOWN';
@@ -31,8 +33,15 @@ export class HttpMetricsInterceptor implements NestInterceptor {
         return next.handle().pipe(
             tap({
                 next: () => {
+                    const anyReq = request as Record<string, unknown>;
+                    const routePath =
+                        typeof (anyReq.route as { path?: unknown } | undefined)
+                            ?.path === 'string'
+                            ? ((anyReq.route as { path?: string })
+                                  ?.path as string)
+                            : undefined;
                     const route =
-                        request.route?.path ??
+                        routePath ??
                         request.baseUrl ??
                         request.originalUrl ??
                         request.url ??
@@ -45,8 +54,15 @@ export class HttpMetricsInterceptor implements NestInterceptor {
                     );
                 },
                 error: (err: unknown) => {
+                    const anyReq = request as Record<string, unknown>;
+                    const routePath =
+                        typeof (anyReq.route as { path?: unknown } | undefined)
+                            ?.path === 'string'
+                            ? ((anyReq.route as { path?: string })
+                                  ?.path as string)
+                            : undefined;
                     const route =
-                        request.route?.path ??
+                        routePath ??
                         request.baseUrl ??
                         request.originalUrl ??
                         request.url ??
