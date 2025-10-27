@@ -20,6 +20,16 @@ Configured in `frontend/next.config.mjs` for every request:
 - `Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()`
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
 
+## Performance Caching
+
+Additional caching headers are applied to reduce bandwidth and improve page load times:
+
+- `/_next/static/*` – `Cache-Control: public, max-age=31536000, immutable`
+- `/_next/image` – `Cache-Control: public, max-age=31536000, immutable`
+- `/assets/*` – `Cache-Control: public, max-age=31536000, immutable`
+
+These targets are fingerprinted or versioned, making them safe to cache for a year. HTML and API responses remain non-cacheable by default.
+
 ## Dashboard / Auth Protections
 
 Requests under `/dashboard/*` and `/auth/*` receive an additional header:
