@@ -135,7 +135,7 @@ jobs:
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
           # Write key (supports raw PEM or base64-encoded). Trim CR if any.
-          if printf "%s" "$KEY_CONTENT" | grep -q "-----BEGIN "; then
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
             printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           else
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
