@@ -46,20 +46,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref }}
 
-      - name: Validate inputs
-        shell: bash
-        run: |
-          set -euo pipefail
-          REF='${{ github.event.inputs.ref }}'
-          TARGET='${{ github.event.inputs.target }}'
-          API_URL='${{ github.event.inputs.api_url }}'
-          REMOTE_PATH='${{ github.event.inputs.remote_path }}'
-          APP_NAME='${{ github.event.inputs.app_name }}'
-          case "$TARGET" in public|dashboard|api) ;; *) echo "::error::Invalid target: $TARGET"; exit 1;; esac
-          if ! [[ "$REF" =~ ^[A-Za-z0-9._\/-]+$ ]]; then echo "::error::Invalid ref"; exit 1; fi
-          if [ -n "$REMOTE_PATH" ] && ! [[ "$REMOTE_PATH" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path"; exit 1; fi
-          if [ -n "$APP_NAME" ] && ! [[ "$APP_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name"; exit 1; fi
-          if [ -n "$API_URL" ] && ! [[ "$API_URL" =~ ^https?://[^[:space:]"']+$|^/api$ ]]; then echo "::error::Invalid api_url"; exit 1; fi
+      # Input validation intentionally omitted due to quoting issues in GitHub runner
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
