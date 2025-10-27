@@ -134,6 +134,35 @@ jobs:
           DEPLOY_CMDS
           rm -f "$ARCHIVE"
 
+      - name: Ensure remote .env (staging/prod)
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' \
+            DB_USER='${{ secrets.MYDEVIL_DB_USER }}' \
+            DB_PASS='${{ secrets.MYDEVIL_DB_PASSWORD }}' \
+            DB_HOST='${{ secrets.MYDEVIL_PG_HOST }}' \
+            DB_PORT='${{ secrets.MYDEVIL_PG_PORT }}' \
+            DB_NAME='${{ secrets.MYDEVIL_DB_NAME }}' \
+            JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+            JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
+            bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          # Create .env if missing; update critical vars if provided
+          [ -f .env ] || : > .env
+          add_or_set() { key="$1"; val="${2:-}"; if [ -n "$val" ]; then \
+            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=$val|" .env; \
+            else printf "%s=%s\n" "$key" "$val" >> .env; fi; fi; }
+          if ! grep -q '^DATABASE_URL=' .env 2>/dev/null && [ -n "${DB_USER:-}" ]; then \
+            add_or_set DATABASE_URL "postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}"; \
+          fi
+          add_or_set NODE_ENV production
+          add_or_set JWT_SECRET "${JWT_SECRET:-}"
+          add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
+          rm -f .env.bak || true
+          REMOTE_CMDS
+
       - name: Install production dependencies
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
@@ -171,3 +200,19 @@ jobs:
           TARGET_SCHEME: https
           DEPLOY_TARGET: api
           SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO || 'kontakt@salon-bw.pl' }}
+
+      - name: Collect remote logs on failure
+        if: failure()
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP='${{ steps.dest.outputs.app_name }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
+          echo "=== Recent .log files ==="
+          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
+            [ -f "$f" ] || continue
+            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+          done
+          echo "=== .env keys ==="; [ -f "$REMOTE_PATH/.env" ] && (grep -E '^[A-Z0-9_]+=' "$REMOTE_PATH/.env" | sed 's/=.*$/=[hidden]/') || echo "(no .env)"
+          REMOTE_CMDS
