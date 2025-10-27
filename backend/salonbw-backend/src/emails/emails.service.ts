@@ -4,14 +4,14 @@ import { createTransport } from 'nodemailer';
 import { SendEmailDto } from './dto/send-email.dto';
 import { MetricsService } from '../observability/metrics.service';
 
-type MailTransporter = {
-    sendMail: (options: {
-        to: string;
-        subject: string;
-        html: string;
-        from?: string;
-    }) => Promise<unknown>;
+type MailOptions = { to: string; subject: string; html: string; from?: string };
+type TransportOpts = {
+    host: string;
+    port: number;
+    secure: boolean;
+    auth?: { user: string; pass: string };
 };
+type MailTransporter = { sendMail: (opts: MailOptions) => Promise<unknown> };
 
 @Injectable()
 export class EmailsService {
@@ -30,19 +30,16 @@ export class EmailsService {
             this.configService.get<string>('SMTP_SECURE', 'false') === 'true';
 
         if (host && port) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            this.transporter = createTransport({
+            const opts: TransportOpts = {
                 host,
                 port: Number(port),
                 secure,
-                auth:
-                    user && pass
-                        ? {
-                              user,
-                              pass,
-                          }
-                        : undefined,
-            }) as unknown as MailTransporter;
+                auth: user && pass ? { user, pass } : undefined,
+            };
+            const factory = createTransport as unknown as (
+                o: TransportOpts,
+            ) => unknown;
+            this.transporter = factory(opts) as MailTransporter;
         } else {
             this.transporter = null;
         }
@@ -75,7 +72,7 @@ export class EmailsService {
                 subject: dto.subject,
                 html,
                 from: this.fromAddress ?? dto.to,
-            });
+            } as MailOptions);
             this.metrics.incEmail('success');
         } catch (error: unknown) {
             this.metrics.incEmail('failed');
