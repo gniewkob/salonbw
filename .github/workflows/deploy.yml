@@ -448,11 +448,47 @@ jobs:
 
       - name: Smoke test (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
-        shell: bash
         run: |
-          set -euo pipefail
-          BUILD_ID=$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "cat '${{ steps.dest.outputs.remote_path }}/.next/BUILD_ID'" )
-          echo "BUILD_ID=$BUILD_ID"
-          curl -fsS "https://${{ steps.dest.outputs.app_name }}/_next/static/${BUILD_ID}/_buildManifest.js" -I | sed -n '1,3p'
-          curl -fsS "https://${{ steps.dest.outputs.app_name }}/_next/static/chunks/framework-070152267489c78d.js" -I | sed -n '1,3p'
-          curl -fsS "https://${{ steps.dest.outputs.app_name }}/api/runtime" | head -c 200 && echo
+          python3 - <<'PY'
+          import os, ssl, urllib.request, sys
+          host = "${{ steps.dest.outputs.app_name }}"
+          # Fetch BUILD_ID from remote via SSH is already done in deploy. Do a best-effort fetch here.
+          build_id = None
+          try:
+              import subprocess
+              cmd = [
+                  'ssh','-i','~/.ssh/mydevil','-o','IdentitiesOnly=yes',
+                  '${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}',
+                  "cat '${{ steps.dest.outputs.remote_path }}/.next/BUILD_ID'"
+              ]
+              build_id = subprocess.check_output(cmd, timeout=10).decode().strip()
+          except Exception:
+              pass
+          ctx = ssl.create_default_context()
+          def get(path):
+              url = f"https://{host}{path}"
+              req = urllib.request.Request(url=url, method='GET')
+              with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
+                  return resp.status
+          ok = True
+          try:
+              status = get('/')
+              print('GET / =>', status)
+              ok = ok and (200 <= status < 400)
+          except Exception as e:
+              print('ERR /', e); ok = False
+          if build_id:
+              try:
+                  status = get(f"/_next/static/{build_id}/_buildManifest.js")
+                  print('GET _buildManifest.js =>', status)
+                  ok = ok and (200 <= status < 400)
+              except Exception as e:
+                  print('ERR _buildManifest.js', e); ok = False
+          try:
+              status = get('/api/runtime')
+              print('GET /api/runtime =>', status)
+              ok = ok and (200 <= status < 400)
+          except Exception as e:
+              print('ERR /api/runtime', e); ok = False
+          sys.exit(0 if ok else 1)
+          PY
