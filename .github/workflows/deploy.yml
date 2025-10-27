@@ -427,7 +427,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import ssl, sys, urllib.request
-          host = "${{ steps.dest.outputs.app_name }}"
+          host = "${{ steps.dest.outputs.app_name }}".strip().strip("'\"")
           ctx = ssl.create_default_context()
           for path in ("/health", "/healthz"):
               url = f"https://{host}{path}"
