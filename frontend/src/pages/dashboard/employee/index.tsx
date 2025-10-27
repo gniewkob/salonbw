@@ -6,6 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Appointment } from '@/types';
 import AppointmentDetailsModal from '@/components/AppointmentDetailsModal';
 import { useAppointmentsApi } from '@/api/appointments';
+import { getCalendarPlugins } from '@/utils/calendarPlugins';
+import { mapAppointmentsToEvents } from '@/utils/calendarMap';
+import { appointmentFromEventClick } from '@/utils/calendarEventClick';
 
 export default function EmployeeDashboard() {
     const { apiFetch } = useAuth();
@@ -13,9 +16,7 @@ export default function EmployeeDashboard() {
     const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
         ssr: false,
     });
-    const dayGridPlugin = require('@fullcalendar/daygrid').default;
-    const timeGridPlugin = require('@fullcalendar/timegrid').default;
-    const interactionPlugin = require('@fullcalendar/interaction').default;
+    const plugins = getCalendarPlugins();
 
     const [events, setEvents] = useState<
         {
@@ -34,13 +35,20 @@ export default function EmployeeDashboard() {
             .then((data) => {
                 if (!mounted) return;
                 setEvents(
-                    data.map((a) => ({
-                        id: String(a.id),
-                        title: a.service?.name
-                            ? `${a.service.name} – ${a.client?.name ?? ''}`
-                            : `#${a.id}`,
-                        start: a.startTime,
-                        extendedProps: { appointment: a },
+                    mapAppointmentsToEvents(data).map((e) => ({
+                        ...e,
+                        extendedProps: {
+                            ...(e.extendedProps || {}),
+                            appointment:
+                                (
+                                    e.extendedProps as
+                                        | { appointment?: Appointment }
+                                        | undefined
+                                )?.appointment ??
+                                (data.find(
+                                    (a) => String(a.id) === e.id,
+                                ) as Appointment),
+                        },
                     })),
                 );
             })
@@ -54,15 +62,16 @@ export default function EmployeeDashboard() {
         <RouteGuard roles={['employee']} permission="dashboard:employee">
             <DashboardLayout>
                 <FullCalendar
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                    plugins={plugins}
                     initialView="timeGridWeek"
                     editable={false}
                     events={events as unknown as Record<string, unknown>[]}
                     eventClick={(info) => {
-                        // prettier-ignore
-                        const ap = (info.event.extendedProps as { appointment: Appointment; }).appointment;
-                        setSelected(ap);
-                        setDetailsOpen(true);
+                        const ap = appointmentFromEventClick(info);
+                        if (ap) {
+                            setSelected(ap);
+                            setDetailsOpen(true);
+                        }
                     }}
                 />
                 <AppointmentDetailsModal
