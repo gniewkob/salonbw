@@ -38,6 +38,79 @@ export class AppointmentsService {
         @Optional() private readonly metrics?: MetricsService,
     ) {}
 
+    private async loadClientOrThrow(id: number): Promise<User> {
+        const client = await this.usersRepository.findOne({ where: { id } });
+        if (!client) throw new BadRequestException('Invalid clientId');
+        if (client.role !== Role.Client)
+            throw new BadRequestException(
+                'Provided clientId does not belong to a client',
+            );
+        return client;
+    }
+
+    private async loadEmployeeOrThrow(id: number): Promise<User> {
+        const employee = await this.usersRepository.findOne({ where: { id } });
+        if (!employee) throw new BadRequestException('Invalid employeeId');
+        if (employee.role !== Role.Employee)
+            throw new BadRequestException(
+                'Provided employeeId does not belong to an employee',
+            );
+        return employee;
+    }
+
+    private async loadServiceOrThrow(id: number | undefined): Promise<SalonService> {
+        const service = await this.servicesRepository.findOne({ where: { id } });
+        if (!service) throw new BadRequestException('Invalid serviceId');
+        return service;
+    }
+
+    private ensureFuture(date: Date | undefined): asserts date is Date {
+        if (!date || isNaN(new Date(date).getTime()) || date < new Date()) {
+            throw new BadRequestException('startTime must be in the future');
+        }
+    }
+
+    private computeEnd(start: Date, durationMinutes: number): Date {
+        return new Date(start.getTime() + durationMinutes * 60 * 1000);
+    }
+
+    private async assertNoConflict(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        excludeId?: number,
+    ): Promise<void> {
+        const where: FindOptionsWhere<Appointment> = {
+            employee: { id: employeeId } as any,
+            status: Not(AppointmentStatus.Cancelled),
+            startTime: LessThan(endTime),
+            endTime: MoreThan(startTime),
+        };
+        if (excludeId) (where as any).id = Not(excludeId);
+        const conflict = await this.appointmentsRepository.findOne({ where });
+        if (conflict) {
+            throw new ConflictException('Employee is already booked for this time');
+        }
+    }
+
+    private async safeLog(
+        user: User | null,
+        action: LogAction,
+        payload: Record<string, unknown>,
+    ): Promise<void> {
+        try {
+            await this.logService.logAction(user, action, payload);
+        } catch (error) {
+            console.error('Failed to persist log action', error);
+        }
+    }
+
+    private formatDate(d: Date): { date: string; time: string } {
+        const date = d.toISOString().split('T')[0];
+        const time = d.toISOString().split('T')[1].slice(0, 5);
+        return { date, time };
+    }
+
     findAllInRange(params: {
         from?: Date;
         to?: Date;
@@ -62,66 +135,17 @@ export class AppointmentsService {
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
-        if (!data.client?.id) {
-            throw new BadRequestException('clientId is required');
-        }
-        if (!data.employee?.id) {
-            throw new BadRequestException('employeeId is required');
-        }
-        const client = await this.usersRepository.findOne({
-            where: { id: data.client.id },
-        });
-        if (!client) {
-            throw new BadRequestException('Invalid clientId');
-        }
-        if (client.role !== Role.Client) {
-            throw new BadRequestException(
-                'Provided clientId does not belong to a client',
-            );
-        }
-        const employee = await this.usersRepository.findOne({
-            where: { id: data.employee.id },
-        });
-        if (!employee) {
-            throw new BadRequestException('Invalid employeeId');
-        }
-        if (employee.role !== Role.Employee) {
-            throw new BadRequestException(
-                'Provided employeeId does not belong to an employee',
-            );
-        }
+        if (!data.client?.id) throw new BadRequestException('clientId is required');
+        if (!data.employee?.id) throw new BadRequestException('employeeId is required');
+        const client = await this.loadClientOrThrow(data.client.id);
+        const employee = await this.loadEmployeeOrThrow(data.employee.id);
         data.client = client;
         data.employee = employee;
-        if (
-            !data.startTime ||
-            isNaN(new Date(data.startTime).getTime()) ||
-            data.startTime < new Date()
-        ) {
-            throw new BadRequestException('startTime must be in the future');
-        }
-        const service = await this.servicesRepository.findOne({
-            where: { id: data.service?.id },
-        });
-        if (!service) {
-            throw new BadRequestException('Invalid serviceId');
-        }
+        this.ensureFuture(data.startTime);
+        const service = await this.loadServiceOrThrow(data.service?.id);
         data.service = service;
-        data.endTime = new Date(
-            data.startTime.getTime() + service.duration * 60 * 1000,
-        );
-        const conflict = await this.appointmentsRepository.findOne({
-            where: {
-                employee: { id: data.employee.id },
-                status: Not(AppointmentStatus.Cancelled),
-                startTime: LessThan(data.endTime),
-                endTime: MoreThan(data.startTime),
-            },
-        });
-        if (conflict) {
-            throw new ConflictException(
-                'Employee is already booked for this time',
-            );
-        }
+        data.endTime = this.computeEnd(data.startTime, service.duration);
+        await this.assertNoConflict(employee.id, data.startTime, data.endTime);
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
         const result = await this.findOne(saved.id);
@@ -129,29 +153,17 @@ export class AppointmentsService {
             throw new Error('Appointment not found after creation');
         }
         this.metrics?.incAppointmentCreated();
-        try {
-            await this.logService.logAction(
-                user,
-                LogAction.APPOINTMENT_CREATED,
-                {
-                    appointmentId: result.id,
-                    serviceId: result.service.id,
-                    serviceName: result.service.name,
-                    clientId: result.client.id,
-                    employeeId: result.employee.id,
-                    entity: 'appointment',
-                    id: result.id,
-                },
-            );
-        } catch (error) {
-            console.error('Failed to log appointment creation action', error);
-        }
+        await this.safeLog(user, LogAction.APPOINTMENT_CREATED, {
+            appointmentId: result.id,
+            serviceId: result.service.id,
+            serviceName: result.service.name,
+            clientId: result.client.id,
+            employeeId: result.employee.id,
+            entity: 'appointment',
+            id: result.id,
+        });
         if (client.phone && client.receiveNotifications) {
-            const date = result.startTime.toISOString().split('T')[0];
-            const time = result.startTime
-                .toISOString()
-                .split('T')[1]
-                .slice(0, 5);
+            const { date, time } = this.formatDate(result.startTime);
             try {
                 await this.whatsappService.sendBookingConfirmation(
                     client.phone,
@@ -255,29 +267,14 @@ export class AppointmentsService {
         const updated = await this.findOne(id);
         if (updated) {
             this.metrics?.incAppointmentCompleted();
-            try {
-                await this.logService.logAction(
-                    user,
-                    LogAction.APPOINTMENT_COMPLETED,
-                    {
-                        action: 'complete',
-                        id: updated.id,
-                        appointmentId: updated.id,
-                        status: AppointmentStatus.Completed,
-                    },
-                );
-            } catch (error) {
-                console.error(
-                    'Failed to log appointment completion action',
-                    error,
-                );
-            }
+            await this.safeLog(user, LogAction.APPOINTMENT_COMPLETED, {
+                action: 'complete',
+                id: updated.id,
+                appointmentId: updated.id,
+                status: AppointmentStatus.Completed,
+            });
             if (updated.client.phone && updated.client.receiveNotifications) {
-                const date = updated.startTime.toISOString().split('T')[0];
-                const time = updated.startTime
-                    .toISOString()
-                    .split('T')[1]
-                    .slice(0, 5);
+                const { date, time } = this.formatDate(updated.startTime);
                 try {
                     await this.whatsappService.sendFollowUp(
                         updated.client.phone,
@@ -320,43 +317,24 @@ export class AppointmentsService {
                   startTime.getTime() +
                       appointment.service.duration * 60 * 1000,
               );
-        const conflict = await this.appointmentsRepository.findOne({
-            where: {
-                id: Not(id),
-                employee: { id: appointment.employee.id },
-                status: Not(AppointmentStatus.Cancelled),
-                startTime: LessThan(newEnd),
-                endTime: MoreThan(startTime),
-            },
-        });
-        if (conflict) {
-            throw new ConflictException(
-                'Employee is already booked for this time',
-            );
-        }
+        await this.assertNoConflict(
+            appointment.employee.id,
+            startTime,
+            newEnd,
+            id,
+        );
         await this.appointmentsRepository.update(id, {
             startTime,
             endTime: newEnd,
         });
         const updated = await this.findOne(id);
         if (updated) {
-            try {
-                await this.logService.logAction(
-                    user,
-                    LogAction.APPOINTMENT_RESCHEDULED,
-                    {
-                        action: 'reschedule',
-                        appointmentId: updated.id,
-                        startTime: updated.startTime,
-                        endTime: updated.endTime,
-                    },
-                );
-            } catch (error) {
-                console.error(
-                    'Failed to log appointment reschedule action',
-                    error,
-                );
-            }
+            await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
+                action: 'reschedule',
+                appointmentId: updated.id,
+                startTime: updated.startTime,
+                endTime: updated.endTime,
+            });
         }
         return updated;
     }
