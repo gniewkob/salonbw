@@ -285,6 +285,11 @@ jobs:
           add_or_set NODE_ENV production
           add_or_set JWT_SECRET "${JWT_SECRET:-}"
           add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
+          add_or_set PGHOST "${_PG_HOST}"
+          add_or_set PGPORT "${DB_PORT:-5432}"
+          add_or_set PGUSER "${DB_USER:-}"
+          add_or_set PGPASSWORD "${DB_PASS:-}"
+          add_or_set PGDATABASE "${DB_NAME:-}"
           rm -f .env.bak || true
           REMOTE_CMDS
 
@@ -297,7 +302,7 @@ jobs:
           cd "$REMOTE_PATH"
           echo "Testing DB connectivity using DATABASE_URL..."
           if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
-          "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const url=process.env.DATABASE_URL;if(!url){console.error('Missing DATABASE_URL');process.exit(2);}const c=new Client({connectionString:url,ssl:process.env.PGSSL==='1'?{rejectUnauthorized:false}:undefined});try{await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e && (e.stack||e.message)||e);process.exit(3);}})()"
+          "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const ssl=process.env.PGSSL==='1'?{rejectUnauthorized:false}:undefined;let cfg=null;if(process.env.DATABASE_URL){cfg={connectionString:process.env.DATABASE_URL,ssl};}else{cfg={host:process.env.PGHOST||process.env.DB_HOST||'pgsql0',port:Number(process.env.PGPORT||process.env.DB_PORT||5432),user:process.env.PGUSER||process.env.DB_USER,password:process.env.PGPASSWORD||process.env.DB_PASS,database:process.env.PGDATABASE||process.env.DB_NAME,ssl};}try{const c=new Client(cfg);await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e&& (e.stack||e.message)||e);process.exit(3);}})()"
           REMOTE_CMDS
 
       - name: Run DB migrations (api)
