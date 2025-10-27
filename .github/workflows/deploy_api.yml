@@ -153,10 +153,11 @@ jobs:
           set -euo pipefail
           REMOTE_PATH="${{ steps.dest.outputs.remote_path }}"
           cd "$REMOTE_PATH"
+          # Nest compiles to dist/src by default; prefer that path
           if command -v node22 >/dev/null 2>&1; then
-            node22 dist/migrate.js
+            node22 dist/src/migrate.js || node22 dist/migrate.js
           else
-            node dist/migrate.js
+            node dist/src/migrate.js || node dist/migrate.js
           fi
           REMOTE_CMDS
 
