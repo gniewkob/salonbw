@@ -35,7 +35,7 @@ def _build_default_checks(target: str, run_id: str) -> List[CheckSpec]:
                 "method": "POST",
                 "path": "/emails/send",
                 "json": {
-                    "to": os.environ.get("SMOKE_EMAIL_TO", "kontakt@salon-bw.pl"),
+                "to": (os.environ.get("SMOKE_EMAIL_TO") or "kontakt@salon-bw.pl"),
                     "subject": subject,
                     "template": "Deploy smoke check for Salon Black & White",
                     "data": {
