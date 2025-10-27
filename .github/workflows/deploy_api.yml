@@ -201,6 +201,14 @@ jobs:
           DEPLOY_TARGET: api
           SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO || 'kontakt@salon-bw.pl' }}
 
+      - name: Diagnostic: fetch health endpoints (on failure)
+        if: failure()
+        run: |
+          echo "--- GET /health (headers + body) ---"
+          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/health" || true
+          echo "--- GET /healthz (headers + body) ---"
+          curl -i -sS "https://${{ steps.dest.outputs.app_name }}/healthz" || true
+
       - name: Collect remote logs on failure
         if: failure()
         run: |
