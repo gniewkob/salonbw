@@ -47,6 +47,41 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Start DB tunnel (CI)
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
+          DB_HOST: ${{ secrets.PGHOST || 'pgsql0.mydevil.net' }}
+          DB_LOCAL_PORT: 55432
+        run: |
+          mkdir -p ~/.ssh
+          # Reuse the already configured key from later step if present
+          if [ ! -f ~/.ssh/mydevil ]; then
+            echo "${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/mydevil
+            chmod 600 ~/.ssh/mydevil
+          fi
+          # Start tunnel to Postgres via MyDevil SSH bastion
+          ssh -M -S ~/.ssh/ci-db-tunnel -fNT \
+            -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            -L 127.0.0.1:${DB_LOCAL_PORT}:${DB_HOST}:5432 \
+            ${MYDEVIL_SSH_USER}@${MYDEVIL_SSH_HOST}
+          echo "Tunnel started on 127.0.0.1:${DB_LOCAL_PORT} -> ${DB_HOST}:5432"
+
+      - name: Test DB via tunnel (CI)
+        env:
+          DB_LOCAL_PORT: 55432
+          PGUSER: ${{ secrets.PGUSER }}
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+          PGDATABASE: ${{ secrets.PGDATABASE }}
+        run: |
+          cd backend/salonbw-backend
+          node -e "(async()=>{const {Client}=require('pg');const cfg={host:'127.0.0.1',port:Number(process.env.DB_LOCAL_PORT),user:process.env.PGUSER,password:process.env.PGPASSWORD,database:process.env.PGDATABASE};console.log('CI tunnel probe cfg', {host:cfg.host,port:cfg.port,user:cfg.user,database:cfg.database});try{const c=new Client(cfg);await c.connect();const r=await c.query('select 1 as ok');console.log('CI tunnel DB OK', r.rows[0]);await c.end();}catch(e){console.error('CI tunnel DB FAIL', e && (e.stack||e.message)||e);process.exit(3);}})()"
+
+      - name: Stop DB tunnel (CI)
+        if: always()
+        run: |
+          ssh -S ~/.ssh/ci-db-tunnel -O exit ${MYDEVIL_SSH_USER}@${MYDEVIL_SSH_HOST} || true
+
       - name: Resolve deploy destination
         id: dest
         shell: bash
@@ -147,14 +182,29 @@ jobs:
             DB_NAME='${{ secrets.MYDEVIL_DB_NAME }}' \
             JWT_SECRET='${{ secrets.JWT_SECRET }}' \
             JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
+            DB_URL='${{ secrets.DATABASE_URL }}' \
+            WHATSAPP_LANG='${{ secrets.WHATSAPP_LANG }}' \
+            SMTP_HOST='${{ secrets.SMTP_HOST }}' \
+            SMTP_PORT='${{ secrets.SMTP_PORT }}' \
+            SMTP_SECURE='${{ secrets.SMTP_SECURE }}' \
+            SMTP_USER='${{ secrets.SMTP_USER }}' \
+            SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
+            SMTP_FROM='${{ secrets.SMTP_FROM }}' \
+            NODE_ENV_VAL='${{ secrets.NODE_ENV }}' \
+            PGHOST_VAL='${{ secrets.PGHOST }}' \
+            PGPORT_VAL='${{ secrets.PGPORT }}' \
+            PGUSER_VAL='${{ secrets.PGUSER }}' \
+            PGPASSWORD_VAL='${{ secrets.PGPASSWORD }}' \
+            PGDATABASE_VAL='${{ secrets.PGDATABASE }}' \
             bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
           cd "$REMOTE_PATH"
           # Create .env if missing; update critical vars if provided
           [ -f .env ] || : > .env
           add_or_set() { key="$1"; val="${2:-}"; if [ -n "$val" ]; then \
-            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=$val|" .env; \
-            else printf "%s=%s\n" "$key" "$val" >> .env; fi; fi; }
+            esc=$(printf '%s' "$val" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'); \
+            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=\"$esc\"|" .env; \
+            else printf "%s=\"%s\"\n" "$key" "$esc" >> .env; fi; fi; }
           # Prefer explicit host; fallback to MyDevil default hostname for PostgreSQL (pgsql0)
           _PG_HOST="${DB_HOST:-}"
           if [ -z "$_PG_HOST" ]; then _PG_HOST="pgsql0"; fi
@@ -174,6 +224,23 @@ jobs:
           add_or_set NODE_ENV production
           add_or_set JWT_SECRET "${JWT_SECRET:-}"
           add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
+          # Direct mappings from provided secrets
+          add_or_set DATABASE_URL "${DB_URL:-}"
+          add_or_set WHATSAPP_LANG "${WHATSAPP_LANG:-}"
+          add_or_set SMTP_HOST "${SMTP_HOST:-}"
+          add_or_set SMTP_PORT "${SMTP_PORT:-}"
+          add_or_set SMTP_SECURE "${SMTP_SECURE:-}"
+          add_or_set SMTP_USER "${SMTP_USER:-}"
+          add_or_set SMTP_PASSWORD "${SMTP_PASSWORD:-}"
+          add_or_set SMTP_FROM "${SMTP_FROM:-}"
+          # Allow NODE_ENV override
+          add_or_set NODE_ENV "${NODE_ENV_VAL:-production}"
+          # And PG* overrides
+          add_or_set PGHOST "${PGHOST_VAL:-}"
+          add_or_set PGPORT "${PGPORT_VAL:-}"
+          add_or_set PGUSER "${PGUSER_VAL:-}"
+          add_or_set PGPASSWORD "${PGPASSWORD_VAL:-}"
+          add_or_set PGDATABASE "${PGDATABASE_VAL:-}"
           # Also export discrete PG* variables for tools that prefer them
           add_or_set PGHOST "${_PG_HOST}"
           add_or_set PGPORT "${DB_PORT:-5432}"
