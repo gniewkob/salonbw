@@ -6,7 +6,7 @@ describe('getCalendarPlugins', () => {
             const plugins = getCalendarPlugins();
             expect(Array.isArray(plugins)).toBe(true);
             expect(plugins.length).toBeGreaterThanOrEqual(3);
-        } catch (e) {
+        } catch {
             // Some CI/Jest environments cannot load FullCalendar ESM; treat as pass
             expect(true).toBe(true);
         }
