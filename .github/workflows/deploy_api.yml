@@ -299,7 +299,7 @@ jobs:
           DEPLOY_TARGET: api
           SMOKE_EMAIL_TO: ${{ vars.SMOKE_EMAIL_TO || 'kontakt@salon-bw.pl' }}
 
-      - name: Diagnostic: fetch health endpoints (on failure)
+      - name: "Diagnostic: fetch health endpoints (on failure)"
         if: failure()
         run: |
           python3 - <<'PY'
@@ -321,7 +321,7 @@ jobs:
                   print(f"ERROR: {exc}")
           PY
 
-      - name: Collect remote logs on failure
+      - name: "Collect remote logs on failure"
         if: failure()
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
