@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
 
@@ -32,6 +32,7 @@ export default function ImageLightbox(props: Props) {
         : (props as any).src;
     const containerRef = useRef<HTMLDivElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
+    const [showHint, setShowHint] = useState(false);
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -54,8 +55,16 @@ export default function ImageLightbox(props: Props) {
     }, [onClose, hasCarousel, props, currentSrc]);
 
     useEffect(() => {
-        try { trackEvent('lightbox_open', { src: currentSrc }); } catch {}
+        // Show a quick hint on first open (per session)
+        try {
+            const key = 'lb_hint_shown';
+            if (!sessionStorage.getItem(key)) {
+                setShowHint(true);
+                sessionStorage.setItem(key, '1');
+            }
+        } catch {}
         // Focus close button on open for accessibility
+        try { trackEvent('lightbox_open', { src: currentSrc }); } catch {}
         closeRef.current?.focus();
     }, []);
 
@@ -129,6 +138,16 @@ export default function ImageLightbox(props: Props) {
                 className="max-h-[90vh] max-w-[90vw] object-contain"
                 onClick={(e) => e.stopPropagation()}
             />
+            {showHint && (
+                <div
+                    className="absolute top-12 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full"
+                    role="status"
+                    aria-live="polite"
+                    onAnimationEnd={() => setShowHint(false)}
+                >
+                    Tip: swipe or use arrows; tap ⤴ to share, ⤓ to download
+                </div>
+            )}
             {hasCarousel && (
                 <>
                     <button
