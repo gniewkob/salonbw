@@ -13,7 +13,7 @@ interface GalleryItem {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN;
   if (!token) {
-    res.status(200).json({ items: [], nextCursor: null });
+    res.status(200).json({ items: [], nextCursor: null, fallback: true });
     return;
   }
   const after = typeof req.query.after === 'string' ? req.query.after : undefined;
@@ -27,10 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const url = `https://graph.instagram.com/me/media?${params.toString()}`;
   try {
     const resp = await fetch(url, { method: 'GET' });
-    if (!resp.ok) {
-      res.status(resp.status).json({ error: 'upstream_error' });
-      return;
-    }
+    if (!resp.ok) throw new Error('upstream_error');
     const json = await resp.json();
     const items: GalleryItem[] = (json.data ?? []).map((m: any) => {
       if (m.media_type === 'VIDEO') {
@@ -39,9 +36,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return { id: m.id, type: 'IMAGE', imageUrl: m.media_url, caption: m.caption };
     });
     const nextCursor = json?.paging?.cursors?.after ?? null;
-    res.status(200).json({ items, nextCursor });
+    res.status(200).json({ items, nextCursor, fallback: false });
   } catch (e) {
-    res.status(500).json({ error: 'network_error' });
+    const sample = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
+    res.status(200).json({ items: sample, nextCursor: null, fallback: true });
   }
 }
-
