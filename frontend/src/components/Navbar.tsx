@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
@@ -57,7 +58,11 @@ export default function Navbar() {
                     </Link>
                 </li>
                 <li>
-                    <Link href={'/appointments' as Route} className={linkClass}>
+                    <Link
+                        href={'/appointments' as Route}
+                        className={linkClass}
+                        onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
+                    >
                         Book Now
                     </Link>
                 </li>
