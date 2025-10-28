@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Appointment } from '@/types';
+import { trackEvent } from '@/utils/analytics';
 import { APPOINTMENTS_QUERY_KEY } from '@/hooks/useAppointments';
 import { useCallback } from 'react';
 
@@ -35,9 +36,27 @@ export function useAppointmentsApi() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             }),
-        onSuccess: () => {
+        onSuccess: (appt: Appointment) => {
             toast.success('Appointment created');
             invalidateAppointments();
+            try {
+                if (appt?.service) {
+                    trackEvent('purchase', {
+                        value: appt.service.price ?? 0,
+                        currency: 'PLN',
+                        items: [
+                            {
+                                item_id: appt.service.id,
+                                item_name: appt.service.name,
+                                item_category: appt.service.category?.name,
+                            },
+                        ],
+                        event_source: 'appointments',
+                    });
+                }
+            } catch {
+                // ignore
+            }
         },
         onError: handleError,
     });
