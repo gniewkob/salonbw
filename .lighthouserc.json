@@ -4,6 +4,9 @@
       "url": [
         "https://salon-bw.pl/",
         "https://salon-bw.pl/services",
+        "https://salon-bw.pl/services/coloring",
+        "https://salon-bw.pl/services/highlights",
+        "https://salon-bw.pl/services/balayage",
         "https://salon-bw.pl/appointments",
         "https://dev.salon-bw.pl/"
       ],
@@ -25,4 +28,3 @@
     }
   }
 }
-
