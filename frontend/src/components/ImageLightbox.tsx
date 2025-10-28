@@ -1,5 +1,6 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { absUrl } from '@/utils/seo';
 
 interface BaseProps {
     alt?: string;
@@ -28,6 +29,8 @@ export default function ImageLightbox(props: Props) {
     const currentSrc = hasCarousel
         ? (props as any).sources[(props as any).index]
         : (props as any).src;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const closeRef = useRef<HTMLButtonElement>(null);
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -40,12 +43,58 @@ export default function ImageLightbox(props: Props) {
         return () => document.removeEventListener('keydown', onKey);
     }, [onClose, hasCarousel, props]);
 
+    useEffect(() => {
+        // Focus close button on open for accessibility
+        closeRef.current?.focus();
+    }, []);
+
+    const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key !== 'Tab') return;
+        const root = containerRef.current;
+        if (!root) return;
+        const focusables = Array.from(
+            root.querySelectorAll<HTMLElement>('button'),
+        ).filter((el) => !el.hasAttribute('disabled'));
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey) {
+            if (active === first || !root.contains(active)) {
+                e.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (active === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    };
+
+    const onShare = async () => {
+        const url = absUrl(currentSrc);
+        try {
+            // @ts-ignore - web share is optional
+            if (navigator.share) {
+                // @ts-ignore
+                await navigator.share({ url, title: alt || 'Image' });
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(url);
+            }
+        } catch {
+            // ignore failures
+        }
+    };
+
     return (
         <div
             role="dialog"
             aria-modal
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
             onClick={onClose}
+            onKeyDown={onKeyDown}
+            ref={containerRef}
         >
             <img
                 src={currentSrc}
@@ -78,8 +127,21 @@ export default function ImageLightbox(props: Props) {
                 aria-label="Close"
                 className="absolute top-3 right-3 text-white text-2xl"
                 onClick={onClose}
+                ref={closeRef}
             >
                 ×
+            </button>
+            <button
+                type="button"
+                aria-label="Share image"
+                title="Share image"
+                className="absolute top-3 right-12 text-white text-xl"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    void onShare();
+                }}
+            >
+                ⤴
             </button>
         </div>
     );
