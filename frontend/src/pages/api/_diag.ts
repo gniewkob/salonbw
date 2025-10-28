@@ -13,12 +13,15 @@ function check(p: string) {
 
 export default function handler(_req: NextApiRequest, res: NextApiResponse) {
     const cwd = process.cwd();
-    const standalone = path.join(cwd, '.next', 'standalone');
-    const standaloneNext = path.join(standalone, '.next');
+    // Next standalone server sets cwd to the standalone dir.
+    // distRoot is the directory that contains Next's .next for the server runtime.
+    // If cwd ends with ".next/standalone", distRoot is path.resolve(cwd, '..').
+    const distRoot = path.basename(cwd) === 'standalone' ? path.resolve(cwd, '..') : cwd;
+    const standalone = cwd; // actual standalone dir
+    const standaloneNext = distRoot; // .next adjacent to server.js
     const standaloneStatic = path.join(standaloneNext, 'static');
-    const rootStatic = path.join(cwd, '.next', 'static');
-    const buildIdFile = path.join(cwd, '.next', 'BUILD_ID');
-    const standaloneBuildIdFile = path.join(standaloneNext, 'BUILD_ID');
+    const rootStatic = path.join(path.resolve(distRoot, '..'), 'static');
+    const buildIdFile = path.join(standaloneNext, 'BUILD_ID');
 
     let buildId: string | null = null;
     let sBuildId: string | null = null;
@@ -47,4 +50,3 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
         standaloneBuildId: sBuildId,
     });
 }
-
