@@ -17,6 +17,20 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RetailService {
+    // transient context used to avoid anonymous transaction callbacks
+    private _txSaleContext?: {
+        dto: CreateSaleDto;
+        product: Product;
+        unitPriceCents: number;
+        discountCents: number;
+        actor: User;
+        createCommission: (m: import('typeorm').EntityManager) => Promise<void>;
+    };
+    private _txAdjustContext?: {
+        dto: AdjustInventoryDto;
+        product: Product;
+        actor: User;
+    };
     constructor(
         @InjectRepository(Product)
         private readonly products: Repository<Product>,
@@ -35,6 +49,69 @@ export class RetailService {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const rows = await this.dataSource.query(sql, params);
         return rows as T[];
+    }
+
+    /**
+     * Calculate commission amount in cents.
+     * priceCents: unit price in cents
+     * quantity: number of units
+     * discountCents: total discount in cents for the sale
+     * percent: commission percent (e.g., 10 for 10%)
+     */
+    calculateCommissionCents(
+        priceCents: number,
+        quantity: number,
+        discountCents: number,
+        percent: number,
+    ): number {
+        const totalPriceCents = priceCents * quantity;
+        const taxableCents = Math.max(0, totalPriceCents - discountCents);
+        // floor to avoid rounding up commission
+        return Math.floor((taxableCents * percent) / 100);
+    }
+
+    async insertProductSale(
+        manager: import('typeorm').EntityManager,
+        productId: number,
+        quantity: number,
+        unitPriceCents: number,
+        discountCents: number,
+        employeeId: number | null,
+        appointmentId: number | null,
+        note: string | null,
+    ) {
+        const unitPriceDecimal = (unitPriceCents / 100).toFixed(2);
+        const discountDecimal = (discountCents / 100).toFixed(2);
+        await manager.query(
+            `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note)
+                     VALUES ($1, now(), $2, $3, $4, $5, $6, $7)`,
+            [
+                productId,
+                quantity,
+                unitPriceDecimal,
+                discountDecimal,
+                employeeId,
+                appointmentId,
+                note,
+            ],
+        );
+    }
+
+    async insertInventoryMovement(
+        manager: import('typeorm').EntityManager,
+        productId: number,
+        delta: number,
+        reason: string,
+        referenceType: string | null,
+        referenceId: number | null,
+        note: string | null,
+        actorId: number | null,
+    ) {
+        await manager.query(
+            `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
+                     VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
+            [productId, delta, reason, referenceType, referenceId, note, actorId],
+        );
     }
 
     private isEnabled(): boolean {
@@ -67,122 +144,136 @@ export class RetailService {
         if (!product) {
             throw new BadRequestException('Invalid productId');
         }
-        const unitPrice =
-            dto.unitPrice != null
-                ? Number(dto.unitPrice)
-                : Number(product.unitPrice);
-        const discount = dto.discount != null ? Number(dto.discount) : 0;
-        if (unitPrice < 0 || discount < 0) {
+        // Support cents-based fields for exact currency math. Backwards compatible with float fields.
+        const unitPriceCentsFromDto =
+            'unitPriceCents' in dto && typeof dto.unitPriceCents === 'number'
+                ? Number(dto.unitPriceCents)
+                : undefined;
+        const discountCentsFromDto =
+            'discountCents' in dto && typeof dto.discountCents === 'number'
+                ? Number(dto.discountCents)
+                : undefined;
+
+        const unitPriceCents =
+            unitPriceCentsFromDto !== undefined
+                ? unitPriceCentsFromDto
+                : Math.round(
+                      (dto.unitPrice != null
+                          ? Number(dto.unitPrice)
+                          : Number(product.unitPrice)) * 100,
+                  );
+        const discountCents =
+            discountCentsFromDto !== undefined
+                ? discountCentsFromDto
+                : Math.round((dto.discount != null ? Number(dto.discount) : 0) * 100);
+        if (unitPriceCents < 0 || discountCents < 0) {
             throw new BadRequestException('unitPrice/discount must be >= 0');
         }
         if (product.stock < dto.quantity) {
             throw new BadRequestException('Insufficient stock');
         }
 
-        const createCommission = async (
-            manager: import('typeorm').EntityManager,
-        ) => {
-            if (!dto.employeeId) return;
-            const employee = await this.users.findOne({
-                where: { id: dto.employeeId },
-            });
-            if (!employee) return;
-            const rawPercent = this.config.get<string | number>(
-                'PRODUCT_COMMISSION_PERCENT',
-            );
-            const percentFromEnv =
-                rawPercent !== undefined && rawPercent !== null
-                    ? Number(rawPercent)
-                    : NaN;
-            const percent = !Number.isNaN(percentFromEnv)
-                ? percentFromEnv
-                : Number(employee.commissionBase ?? 0);
-            const priceCents = Math.round(unitPrice * 100) * dto.quantity;
-            const discountCents = Math.round(discount * 100);
-            const amountCents = Math.max(
-                0,
-                Math.round(((priceCents - discountCents) * percent) / 100),
-            );
-            const amount = amountCents / 100;
-            await this.commissions.create(
-                {
-                    employee,
-                    appointment: dto.appointmentId
-                        ? await this.appointments.findOne({
-                              where: { id: dto.appointmentId },
-                          })
-                        : null,
-                    product,
-                    amount,
-                    percent,
-                },
-                actor,
-                manager,
-            );
+        // commission creation extracted to helper to reduce transaction complexity
+        const createCommission = (manager: import('typeorm').EntityManager) =>
+            this.createCommissionForSale(manager, dto, product, unitPriceCents, discountCents, actor);
+
+        // store context and call named method to avoid anonymous function complexity
+        this._txSaleContext = {
+            dto,
+            product,
+            unitPriceCents,
+            discountCents,
+            actor,
+            createCommission,
         };
 
-        return this.dataSource.transaction(async (manager) => {
-            // Adjust stock
-            await manager.update(Product, product.id, {
-                stock: product.stock - dto.quantity,
-            });
+        return this.dataSource.transaction(this.runSaleTransaction.bind(this));
+    }
 
-            // Optional write to product_sales if table exists
-            if (await this.hasTable('public.product_sales')) {
-                await manager.query(
-                    `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note)
-                     VALUES ($1, now(), $2, $3, $4, $5, $6, $7)`,
-                    [
-                        product.id,
-                        dto.quantity,
-                        unitPrice,
-                        discount,
-                        dto.employeeId ?? null,
-                        dto.appointmentId ?? null,
-                        dto.note ?? null,
-                    ],
-                );
-            }
+    private async runSaleTransaction(manager: import('typeorm').EntityManager) {
+        const ctx = this._txSaleContext;
+        if (!ctx) {
+            throw new Error('missing transaction context');
+        }
+        try {
+            return await this.updateStockAndSalesAndMovements(
+                manager,
+                ctx.dto,
+                ctx.product,
+                ctx.unitPriceCents,
+                ctx.discountCents,
+                ctx.actor,
+                ctx.createCommission,
+            );
+        } finally {
+            // clear transient context
+            this._txSaleContext = undefined;
+        }
+    }
 
-            // Optional inventory movement
-            if (await this.hasTable('public.inventory_movements')) {
-                await manager.query(
-                    `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
-                     VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
-                    [
-                        product.id,
-                        -dto.quantity,
-                        'sale',
-                        dto.appointmentId ? 'appointment' : null,
-                        dto.appointmentId ?? null,
-                        dto.note ?? null,
-                        actor.id ?? null,
-                    ],
-                );
-            }
-
-            // Commission (best-effort)
-            try {
-                await createCommission(manager);
-            } catch {
-                /* non-fatal commission error */
-                void 0;
-            }
-
-            try {
-                await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
-                    entity: 'product',
-                    productId: product.id,
-                    change: 'sale',
-                    quantity: dto.quantity,
-                });
-            } catch {
-                /* non-fatal log error */
-                void 0;
-            }
-
-            return { status: 'ok' } as const;
+    private async updateStockAndSalesAndMovements(
+        manager: import('typeorm').EntityManager,
+        dto: CreateSaleDto,
+        product: Product,
+        unitPriceCents: number,
+        discountCents: number,
+        actor: User,
+        createCommissionFn: (m: import('typeorm').EntityManager) => Promise<void>,
+    ) {
+        // Adjust stock
+        await manager.update(Product, product.id, {
+            stock: product.stock - dto.quantity,
         });
+
+        // Optional write to product_sales if table exists
+        if (await this.hasTable('public.product_sales')) {
+            await this.insertProductSale(
+                manager,
+                product.id,
+                dto.quantity,
+                unitPriceCents,
+                discountCents,
+                dto.employeeId ?? null,
+                dto.appointmentId ?? null,
+                dto.note ?? null,
+            );
+        }
+
+        // Optional inventory movement
+        if (await this.hasTable('public.inventory_movements')) {
+            await this.insertInventoryMovement(
+                manager,
+                product.id,
+                -dto.quantity,
+                'sale',
+                dto.appointmentId ? 'appointment' : null,
+                dto.appointmentId ?? null,
+                dto.note ?? null,
+                actor.id ?? null,
+            );
+        }
+
+        // Commission (best-effort)
+        try {
+            await createCommissionFn(manager);
+        } catch {
+            /* non-fatal commission error */
+            void 0;
+        }
+
+        try {
+            await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
+                entity: 'product',
+                productId: product.id,
+                change: 'sale',
+                quantity: dto.quantity,
+            });
+        } catch {
+            /* non-fatal log error */
+            void 0;
+        }
+
+        return { status: 'ok' } as const;
     }
 
     async adjustInventory(dto: AdjustInventoryDto, actor: User) {
@@ -195,39 +286,50 @@ export class RetailService {
         if (!product) {
             throw new BadRequestException('Invalid productId');
         }
-        return this.dataSource.transaction(async (manager) => {
-            await manager.update(Product, product.id, {
-                stock: product.stock + dto.delta,
+        this._txAdjustContext = { dto, product, actor };
+        return this.dataSource.transaction(this.runAdjustTransaction.bind(this));
+    }
+
+    private async runAdjustTransaction(manager: import('typeorm').EntityManager) {
+        const ctx = this._txAdjustContext;
+        if (!ctx) throw new Error('missing adjust transaction context');
+        try {
+            await manager.update(Product, ctx.product.id, {
+                stock: ctx.product.stock + ctx.dto.delta,
             });
+
             if (await this.hasTable('public.inventory_movements')) {
                 await manager.query(
                     `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
                      VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
                     [
-                        product.id,
-                        dto.delta,
-                        dto.reason,
+                        ctx.product.id,
+                        ctx.dto.delta,
+                        ctx.dto.reason,
                         null,
                         null,
-                        dto.note ?? null,
-                        actor.id ?? null,
+                        ctx.dto.note ?? null,
+                        ctx.actor.id ?? null,
                     ],
                 );
             }
+
             try {
-                await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
+                await this.logs.logAction(ctx.actor, LogAction.PRODUCT_UPDATED, {
                     entity: 'product',
-                    productId: product.id,
+                    productId: ctx.product.id,
                     change: 'adjust',
-                    delta: dto.delta,
-                    reason: dto.reason,
+                    delta: ctx.dto.delta,
+                    reason: ctx.dto.reason,
                 });
             } catch {
-                /* non-fatal log error */
                 void 0;
             }
+
             return { status: 'ok' } as const;
-        });
+        } finally {
+            this._txAdjustContext = undefined;
+        }
     }
 
     async getInventoryLevels() {
@@ -296,5 +398,43 @@ export class RetailService {
             units: 0,
             revenue: null as number | null,
         };
+    }
+
+    private async createCommissionForSale(
+        manager: import('typeorm').EntityManager,
+        dto: CreateSaleDto,
+        product: Product,
+        unitPriceCents: number,
+        discountCents: number,
+        actor: User,
+    ) {
+        if (!dto.employeeId) return;
+        const employee = await this.users.findOne({ where: { id: dto.employeeId } });
+        if (!employee) return;
+        const rawPercent = this.config.get<string | number>('PRODUCT_COMMISSION_PERCENT');
+        const percentFromEnv = rawPercent !== undefined && rawPercent !== null ? Number(rawPercent) : NaN;
+        const percent = !Number.isNaN(percentFromEnv) ? percentFromEnv : Number(employee.commissionBase ?? 0);
+
+        const amountCents = this.calculateCommissionCents(
+            unitPriceCents,
+            dto.quantity,
+            discountCents,
+            percent,
+        );
+        const amount = amountCents / 100;
+
+        await this.commissions.create(
+            {
+                employee,
+                appointment: dto.appointmentId
+                    ? await this.appointments.findOne({ where: { id: dto.appointmentId } })
+                    : null,
+                product,
+                amount,
+                percent,
+            },
+            actor,
+            manager,
+        );
     }
 }
