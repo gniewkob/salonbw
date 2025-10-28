@@ -6,9 +6,14 @@ import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
 import { trackEvent } from '@/utils/analytics';
 
+type MediaType = 'IMAGE' | 'VIDEO';
+
 interface GalleryItem {
     id: string;
-    imageUrl: string;
+    type: MediaType;
+    imageUrl?: string;
+    videoUrl?: string;
+    posterUrl?: string;
     caption?: string;
 }
 
@@ -21,6 +26,7 @@ interface InstagramMedia {
     media_type: string;
     media_url: string;
     caption?: string;
+    thumbnail_url?: string;
 }
 
 interface InstagramResponse {
@@ -42,53 +48,101 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                 <h1 className="text-2xl font-bold">Gallery</h1>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {items.map((item, i) => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            className="relative"
-                            onClick={() => {
-                                setLightboxIndex(i);
-                                try {
-                                    trackEvent('select_item', {
-                                        item_list_name: 'gallery',
-                                        items: [
-                                            {
-                                                item_id: item.id,
-                                                item_name: item.caption || `Gallery ${i + 1}`,
-                                                item_category: 'Gallery',
-                                            },
-                                        ],
-                                        cta: 'gallery_grid',
-                                    });
-                                } catch {}
-                            }}
-                            aria-label={`Open image ${i + 1}`}
-                        >
-                            <Image
-                                src={item.imageUrl}
-                                alt={item.caption ?? 'Gallery image'}
-                                width={500}
-                                height={500}
-                                className="w-full h-auto object-cover"
-                            />
-                        </button>
+                        item.type === 'VIDEO' && item.videoUrl ? (
+                            <div key={item.id} className="relative">
+                                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                                <video
+                                    controls
+                                    preload="metadata"
+                                    poster={item.posterUrl}
+                                    className="w-full h-auto object-cover"
+                                    onPlay={() => {
+                                        try {
+                                            trackEvent('select_item', {
+                                                item_list_name: 'gallery',
+                                                items: [
+                                                    {
+                                                        item_id: item.id,
+                                                        item_name:
+                                                            item.caption ||
+                                                            `Gallery ${i + 1}`,
+                                                        item_category: 'Gallery',
+                                                    },
+                                                ],
+                                                cta: 'gallery_video_play',
+                                            });
+                                        } catch {}
+                                    }}
+                                >
+                                    <source src={item.videoUrl} />
+                                </video>
+                            </div>
+                        ) : (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className="relative"
+                                onClick={() => {
+                                    setLightboxIndex(i);
+                                    try {
+                                        trackEvent('select_item', {
+                                            item_list_name: 'gallery',
+                                            items: [
+                                                {
+                                                    item_id: item.id,
+                                                    item_name:
+                                                        item.caption ||
+                                                        `Gallery ${i + 1}`,
+                                                    item_category: 'Gallery',
+                                                },
+                                            ],
+                                            cta: 'gallery_grid',
+                                        });
+                                    } catch {}
+                                }}
+                                aria-label={`Open image ${i + 1}`}
+                            >
+                                <Image
+                                    src={item.imageUrl!}
+                                    alt={item.caption ?? 'Gallery image'}
+                                    width={500}
+                                    height={500}
+                                    className="w-full h-auto object-cover"
+                                />
+                            </button>
+                        )
                     ))}
                 </div>
                 {lightboxIndex !== null && (
                     <ImageLightbox
-                        sources={items.map((it) => it.imageUrl)}
+                        sources={items
+                            .filter((it) => it.type === 'IMAGE')
+                            .map((it) => it.imageUrl!)}
                         index={lightboxIndex}
-                        alt={items[lightboxIndex]?.caption || 'Gallery preview'}
+                        alt={items.filter((it) => it.type === 'IMAGE')[
+                            lightboxIndex
+                        ]?.caption || 'Gallery preview'}
                         onPrev={() =>
                             setLightboxIndex((idx) =>
                                 idx === null
                                     ? null
-                                    : (idx + items.length - 1) % items.length,
+                                    : (idx +
+                                          items.filter(
+                                              (it) => it.type === 'IMAGE',
+                                          ).length -
+                                          1) %
+                                      items.filter((it) => it.type === 'IMAGE')
+                                          .length,
                             )
                         }
                         onNext={() =>
                             setLightboxIndex((idx) =>
-                                idx === null ? null : (idx + 1) % items.length,
+                                idx === null
+                                    ? null
+                                    : (idx + 1) %
+                                      items.filter(
+                                          (it) => it.type === 'IMAGE',
+                                      ).length,
                             )
                         }
                         onClose={() => setLightboxIndex(null)}
@@ -108,16 +162,28 @@ export const getServerSideProps: GetServerSideProps<
     }
     try {
         const res = await fetch(
-            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type&access_token=${token}`,
+            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,thumbnail_url&access_token=${token}`,
         );
         const json: InstagramResponse = await res.json();
-        const items: GalleryItem[] = (json.data ?? [])
-            .filter((item) => item.media_type === 'IMAGE')
-            .map(({ id, media_url, caption }) => ({
-                id,
-                imageUrl: media_url,
-                caption,
-            }));
+        const items: GalleryItem[] = (json.data ?? []).map(
+            ({ id, media_url, media_type, caption, thumbnail_url }) => {
+                if (media_type === 'VIDEO') {
+                    return {
+                        id,
+                        type: 'VIDEO',
+                        videoUrl: media_url,
+                        posterUrl: thumbnail_url,
+                        caption,
+                    } satisfies GalleryItem;
+                }
+                return {
+                    id,
+                    type: 'IMAGE',
+                    imageUrl: media_url,
+                    caption,
+                } satisfies GalleryItem;
+            },
+        );
         return { props: { items } };
     } catch {
         return { props: { items: [] } };

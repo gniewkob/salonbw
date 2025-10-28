@@ -3,6 +3,7 @@ const ContentSecurityPolicy = [
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;",
     "style-src 'self' 'unsafe-inline' https:;",
     "img-src 'self' data: blob: https:;",
+    "media-src 'self' https:;",
     "font-src 'self' data:;",
     "connect-src 'self' https: wss:;",
     // Allow embedding specific, trusted frames (e.g., Google Maps embeds)
