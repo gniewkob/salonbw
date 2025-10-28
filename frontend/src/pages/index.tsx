@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
+import Script from 'next/script';
+import { jsonLd, absUrl } from '@/utils/seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
@@ -76,6 +78,23 @@ export default function HomePage() {
                     content="Home of Salon Black &amp; White offering professional hair and beauty services."
                 />
             </Head>
+            <Script id="ld-localbusiness" type="application/ld+json" strategy="afterInteractive">
+                {jsonLd({
+                    '@context': 'https://schema.org',
+                    '@type': 'LocalBusiness',
+                    name: 'Salon Black & White',
+                    url: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+                    image: absUrl('/assets/img/slider/slider1.jpg'),
+                    description:
+                        'Professional hair and beauty services at Salon Black & White.',
+                    address: {
+                        '@type': 'PostalAddress',
+                        streetAddress: '123 Salon Street',
+                        addressLocality: 'Beauty City',
+                        addressCountry: 'PL',
+                    },
+                })}
+            </Script>
             <div className="space-y-12">
                 {/* Hero Banner */}
                 <section className="relative w-full h-64 sm:h-96 overflow-hidden">

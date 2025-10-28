@@ -1,5 +1,7 @@
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
 import Head from 'next/head';
+import Script from 'next/script';
+import { jsonLd } from '@/utils/seo';
 import PublicLayout from '@/components/PublicLayout';
 
 const faqs: FAQItem[] = [
@@ -29,6 +31,17 @@ export default function FAQPage() {
                     content="Answers to common questions about Salon Black &amp; White."
                 />
             </Head>
+            <Script id="ld-faq" type="application/ld+json" strategy="afterInteractive">
+                {jsonLd({
+                    '@context': 'https://schema.org',
+                    '@type': 'FAQPage',
+                    mainEntity: faqs.map((f) => ({
+                        '@type': 'Question',
+                        name: f.question,
+                        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+                    })),
+                })}
+            </Script>
             <div className="p-4 space-y-4 max-w-md">
                 <h1 className="text-2xl font-bold">
                     Frequently Asked Questions
