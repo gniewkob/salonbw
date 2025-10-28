@@ -1,12 +1,27 @@
 import Head from 'next/head';
 import Script from 'next/script';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
 import PublicLayout from '@/components/PublicLayout';
 import { jsonLd } from '@/utils/seo';
+import { trackEvent } from '@/utils/analytics';
 
 export default function HairColoringPage() {
     const name = process.env.NEXT_PUBLIC_BUSINESS_NAME || 'Salon Black & White';
+    useEffect(() => {
+        try {
+            trackEvent('view_item', {
+                items: [
+                    {
+                        item_id: 'coloring',
+                        item_name: 'Hair Coloring',
+                        item_category: 'Hair Coloring',
+                    },
+                ],
+            });
+        } catch {}
+    }, []);
     return (
         <PublicLayout>
             <Head>
@@ -57,4 +72,3 @@ export default function HairColoringPage() {
         </PublicLayout>
     );
 }
-
