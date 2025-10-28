@@ -8,7 +8,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import { initSentry } from '@/sentry.client';
-import { isAnalyticsEnabled, pageview, getGAId, sendWebVital } from '@/utils/analytics';
+import { isAnalyticsEnabled, pageview, getGAId, sendWebVital, trackEvent } from '@/utils/analytics';
 import BookNowFab from '@/components/BookNowFab';
 
 // Initialize Sentry once (no-op if DSN is not set)
@@ -42,6 +42,33 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     useEffect(() => {
         router.prefetch('/appointments');
     }, [router]);
+
+    // Scroll-depth analytics (25/50/75/100) per route
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (!isAnalyticsEnabled()) return;
+        const thresholds = [25, 50, 75, 100];
+        const fired = new Set<number>();
+        const onScroll = () => {
+            const doc = document.documentElement;
+            const scrollTop = window.scrollY || doc.scrollTop;
+            const height = doc.scrollHeight - doc.clientHeight;
+            if (height <= 0) return;
+            const pct = Math.min(100, Math.round((scrollTop / height) * 100));
+            for (const t of thresholds) {
+                if (pct >= t && !fired.has(t)) {
+                    fired.add(t);
+                    try {
+                        trackEvent('scroll_depth', { percent: t, path: router.asPath });
+                    } catch {}
+                }
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        return () => window.removeEventListener('scroll', onScroll);
+        // re-arm on route change
+    }, [router.asPath]);
 
     return (
         <QueryClientProvider client={queryClient}>
