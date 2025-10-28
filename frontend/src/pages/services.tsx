@@ -1,7 +1,11 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
+import type { Route } from 'next';
+import { useEffect, useMemo } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
+import { trackEvent } from '@/utils/analytics';
 
 interface ServiceCategory {
     id: number | null;
@@ -14,6 +18,40 @@ interface ServicesPageProps {
 }
 
 export default function ServicesPage({ categories }: ServicesPageProps) {
+    const items = useMemo(
+        () =>
+            categories.flatMap((cat) =>
+                cat.services.map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                    category: cat.name,
+                })),
+            ),
+        [categories],
+    );
+
+    useEffect(() => {
+        try {
+            trackEvent('view_item_list', {
+                item_list_name: 'services',
+                items: items.slice(0, 25).map((it) => ({
+                    item_id: it.id,
+                    item_name: it.name,
+                    item_category: it.category,
+                })),
+            });
+        } catch {}
+    }, [items]);
+
+    function resolveServiceRoute(name: string): Route | undefined {
+        const n = name.toLowerCase();
+        if (n.includes('balayage')) return '/services/balayage' as Route;
+        if (n.includes('highlight') || n.includes('lowlights'))
+            return '/services/highlights' as Route;
+        if (n.includes('color')) return '/services/coloring' as Route;
+        return undefined;
+    }
+
     return (
         <PublicLayout>
             <Head>
@@ -34,7 +72,39 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     key={s.id}
                                     className="flex justify-between border-b pb-1"
                                 >
-                                    <span>{s.name}</span>
+                                    <span>
+                                        {(() => {
+                                            const href = resolveServiceRoute(s.name);
+                                            if (!href) return s.name;
+                                            return (
+                                                <Link
+                                                    href={href}
+                                                    onClick={() =>
+                                                        trackEvent(
+                                                            'select_item',
+                                                            {
+                                                                item_list_name:
+                                                                    'services',
+                                                                items: [
+                                                                    {
+                                                                        item_id:
+                                                                            s.id,
+                                                                        item_name:
+                                                                            s.name,
+                                                                        item_category:
+                                                                            cat.name,
+                                                                    },
+                                                                ],
+                                                            },
+                                                        )
+                                                    }
+                                                    className="underline"
+                                                >
+                                                    {s.name}
+                                                </Link>
+                                            );
+                                        })()}
+                                    </span>
                                     <span className="text-sm text-gray-600">
                                         {s.duration} min - {s.price} zł
                                     </span>
