@@ -13,6 +13,8 @@ describe('Gallery lightbox', () => {
         // analytics guard
         // @ts-ignore
         window.gtag = jest.fn();
+        process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
+        process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
     });
     afterEach(() => {
         // @ts-ignore
@@ -50,5 +52,27 @@ describe('Gallery lightbox', () => {
         // cleanup
         // @ts-ignore
         delete navigator.share;
+    });
+
+    it('emits next/prev and download analytics', () => {
+        // @ts-ignore
+        window.gtag = jest.fn();
+        render(
+            <GalleryPage
+                items={[
+                    { id: '1', imageUrl: '/img1.jpg', caption: 'One' },
+                    { id: '2', imageUrl: '/img2.jpg', caption: 'Two' },
+                ]}
+            />,
+        );
+        fireEvent.click(screen.getByLabelText('Open image 1'));
+        // use keyboard to navigate next/prev
+        fireEvent.keyDown(document, { key: 'ArrowRight' });
+        fireEvent.keyDown(document, { key: 'ArrowLeft' });
+        fireEvent.click(screen.getByLabelText('Download image'));
+        const calls = (window.gtag as jest.Mock).mock.calls.map((c) => c[1]);
+        expect(calls).toContain('lightbox_next');
+        expect(calls).toContain('lightbox_prev');
+        expect(calls).toContain('lightbox_download');
     });
 });

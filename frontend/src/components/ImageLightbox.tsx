@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { absUrl } from '@/utils/seo';
+import { trackEvent } from '@/utils/analytics';
 
 interface BaseProps {
     alt?: string;
@@ -33,17 +34,27 @@ export default function ImageLightbox(props: Props) {
     const closeRef = useRef<HTMLButtonElement>(null);
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === 'Escape') {
+                try { trackEvent('lightbox_close', { src: currentSrc }); } catch {}
+                onClose();
+            }
             if (hasCarousel) {
-                if (e.key === 'ArrowLeft') (props as any).onPrev?.();
-                if (e.key === 'ArrowRight') (props as any).onNext?.();
+                if (e.key === 'ArrowLeft') {
+                    try { trackEvent('lightbox_prev', { src: currentSrc, index: (props as any).index }); } catch {}
+                    (props as any).onPrev?.();
+                }
+                if (e.key === 'ArrowRight') {
+                    try { trackEvent('lightbox_next', { src: currentSrc, index: (props as any).index }); } catch {}
+                    (props as any).onNext?.();
+                }
             }
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [onClose, hasCarousel, props]);
+    }, [onClose, hasCarousel, props, currentSrc]);
 
     useEffect(() => {
+        try { trackEvent('lightbox_open', { src: currentSrc }); } catch {}
         // Focus close button on open for accessibility
         closeRef.current?.focus();
     }, []);
@@ -82,9 +93,25 @@ export default function ImageLightbox(props: Props) {
             } else if (navigator.clipboard?.writeText) {
                 await navigator.clipboard.writeText(url);
             }
+            try { trackEvent('lightbox_share', { src: currentSrc }); } catch {}
         } catch {
             // ignore failures
         }
+    };
+
+    const onDownload = () => {
+        try { trackEvent('lightbox_download', { src: currentSrc }); } catch {}
+        const a = document.createElement('a');
+        a.href = absUrl(currentSrc);
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+    const handleClose = () => {
+        try { trackEvent('lightbox_close', { src: currentSrc }); } catch {}
+        onClose();
     };
 
     return (
@@ -92,7 +119,7 @@ export default function ImageLightbox(props: Props) {
             role="dialog"
             aria-modal
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-            onClick={onClose}
+            onClick={handleClose}
             onKeyDown={onKeyDown}
             ref={containerRef}
         >
@@ -126,7 +153,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Close"
                 className="absolute top-3 right-3 text-white text-2xl"
-                onClick={onClose}
+                onClick={handleClose}
                 ref={closeRef}
             >
                 ×
@@ -142,6 +169,18 @@ export default function ImageLightbox(props: Props) {
                 }}
             >
                 ⤴
+            </button>
+            <button
+                type="button"
+                aria-label="Download image"
+                title="Download image"
+                className="absolute top-3 right-24 text-white text-xl"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDownload();
+                }}
+            >
+                ⤓
             </button>
         </div>
     );
