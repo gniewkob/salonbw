@@ -42,6 +42,12 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | ✅ | `http://localhost:3001` | Base URL for the backend API. Prefix with `https://` in production. |
 | `NEXT_PUBLIC_SITE_URL` | ➖ | `https://example.com` | Public site URL used for metadata, share links, etc. |
+| `NEXT_PUBLIC_BUSINESS_NAME` | ➖ | `Salon Black & White` | Business display name used in JSON-LD |
+| `NEXT_PUBLIC_BUSINESS_PHONE` | ➖ | `+48 000 000 000` | Business phone number |
+| `NEXT_PUBLIC_BUSINESS_STREET` | ➖ | `123 Salon Street` | Street address |
+| `NEXT_PUBLIC_BUSINESS_CITY` | ➖ | `Beauty City` | City |
+| `NEXT_PUBLIC_BUSINESS_POSTAL` | ➖ | `00-000` | Postal code |
+| `NEXT_PUBLIC_BUSINESS_COUNTRY` | ➖ | `PL` | ISO country code |
 | `NEXT_PUBLIC_GA_ID` | ➖ | *(unset)* | Google Analytics ID. |
 | `NEXT_PUBLIC_ENABLE_ANALYTICS` | ➖ | `false` | Opt-in flag for analytics integrations. |
 | `NEXT_PUBLIC_ENABLE_DEBUG` | ➖ | `false` | Enables debug UI helpers when true. |
