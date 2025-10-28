@@ -1,0 +1,51 @@
+name: Uptime Checks
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '17 3 * * *'  # daily at 03:17 UTC
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Uptime matrix
+        id: conf
+        run: |
+          echo "hosts=salon-bw.pl panel.salon-bw.pl dev.salon-bw.pl" >> "$GITHUB_OUTPUT"
+          echo "paths=/ /api/runtime" >> "$GITHUB_OUTPUT"
+
+      - name: Run checks
+        env:
+          HOSTS: ${{ steps.conf.outputs.hosts }}
+          PATHS: ${{ steps.conf.outputs.paths }}
+        run: |
+          set -euo pipefail
+          pass=1
+          summary='\n### Uptime summary\n\n'
+          for host in $HOSTS; do
+            echo "== $host ==";
+            summary+="- $host\\n"
+            for p in $PATHS; do
+              url="https://$host$p"
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$url" || echo 000)
+              echo "GET $url => $code"
+              summary+="  - GET $p => $code\\n"
+              if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then pass=0; fi
+            done
+            # Fetch a real chunk from HTML and HEAD it (best effort)
+            html=$(curl -s --max-time 15 "https://$host/") || html=''
+            chunk=$(printf "%s" "$html" | grep -o "_next/static/chunks/[^'\"]\+" | head -n1 || true)
+            if [ -n "$chunk" ]; then
+              code=$(curl -s -I -o /dev/null -w '%{http_code}' --max-time 15 "https://$host/$chunk" || echo 000)
+              echo "HEAD /$chunk => $code"
+              summary+="  - HEAD /$chunk => $code\\n"
+              if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then pass=0; fi
+            else
+              summary+="  - (no chunk discovered)\\n"
+            fi
+          done
+          printf "%b" "$summary" >> "$GITHUB_STEP_SUMMARY"
+          [ "$pass" = 1 ]
+
