@@ -1,7 +1,10 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import { useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
+import ImageLightbox from '@/components/ImageLightbox';
+import { trackEvent } from '@/utils/analytics';
 
 interface GalleryItem {
     id: string;
@@ -25,6 +28,7 @@ interface InstagramResponse {
 }
 
 export default function GalleryPage({ items }: GalleryPageProps) {
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
     return (
         <PublicLayout>
             <Head>
@@ -37,17 +41,46 @@ export default function GalleryPage({ items }: GalleryPageProps) {
             <div className="p-4 space-y-4">
                 <h1 className="text-2xl font-bold">Gallery</h1>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {items.map((item) => (
-                        <Image
+                    {items.map((item, i) => (
+                        <button
                             key={item.id}
-                            src={item.imageUrl}
-                            alt={item.caption ?? 'Gallery image'}
-                            width={500}
-                            height={500}
-                            className="w-full h-auto object-cover"
-                        />
+                            type="button"
+                            className="relative"
+                            onClick={() => {
+                                setLightboxSrc(item.imageUrl);
+                                try {
+                                    trackEvent('select_item', {
+                                        item_list_name: 'gallery',
+                                        items: [
+                                            {
+                                                item_id: item.id,
+                                                item_name: item.caption || `Gallery ${i + 1}`,
+                                                item_category: 'Gallery',
+                                            },
+                                        ],
+                                        cta: 'gallery_grid',
+                                    });
+                                } catch {}
+                            }}
+                            aria-label={`Open image ${i + 1}`}
+                        >
+                            <Image
+                                src={item.imageUrl}
+                                alt={item.caption ?? 'Gallery image'}
+                                width={500}
+                                height={500}
+                                className="w-full h-auto object-cover"
+                            />
+                        </button>
                     ))}
                 </div>
+                {lightboxSrc && (
+                    <ImageLightbox
+                        src={lightboxSrc}
+                        alt="Gallery preview"
+                        onClose={() => setLightboxSrc(null)}
+                    />
+                )}
             </div>
         </PublicLayout>
     );
