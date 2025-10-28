@@ -28,7 +28,7 @@ interface InstagramResponse {
 }
 
 export default function GalleryPage({ items }: GalleryPageProps) {
-    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     return (
         <PublicLayout>
             <Head>
@@ -47,7 +47,7 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                             type="button"
                             className="relative"
                             onClick={() => {
-                                setLightboxSrc(item.imageUrl);
+                                setLightboxIndex(i);
                                 try {
                                     trackEvent('select_item', {
                                         item_list_name: 'gallery',
@@ -74,11 +74,24 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                         </button>
                     ))}
                 </div>
-                {lightboxSrc && (
+                {lightboxIndex !== null && (
                     <ImageLightbox
-                        src={lightboxSrc}
-                        alt="Gallery preview"
-                        onClose={() => setLightboxSrc(null)}
+                        sources={items.map((it) => it.imageUrl)}
+                        index={lightboxIndex}
+                        alt={items[lightboxIndex]?.caption || 'Gallery preview'}
+                        onPrev={() =>
+                            setLightboxIndex((idx) =>
+                                idx === null
+                                    ? null
+                                    : (idx + items.length - 1) % items.length,
+                            )
+                        }
+                        onNext={() =>
+                            setLightboxIndex((idx) =>
+                                idx === null ? null : (idx + 1) % items.length,
+                            )
+                        }
+                        onClose={() => setLightboxIndex(null)}
                     />
                 )}
             </div>

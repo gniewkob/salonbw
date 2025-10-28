@@ -68,7 +68,7 @@ export default function HomePage() {
 
     const [currentSlide, setCurrentSlide] = useState(0);
     const [testimonialIndex, setTestimonialIndex] = useState(0);
-    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -202,7 +202,7 @@ export default function HomePage() {
                                 type="button"
                                 className="relative w-full h-24 sm:h-32"
                                 onClick={() =>
-                                    (setLightboxSrc(src),
+                                    (setLightboxIndex(i),
                                     trackEvent('select_item', {
                                         item_list_name: 'home_gallery',
                                         items: [
@@ -227,11 +227,27 @@ export default function HomePage() {
                         ))}
                     </div>
                 </section>
-                {lightboxSrc && (
+                {lightboxIndex !== null && (
                     <ImageLightbox
-                        src={lightboxSrc}
+                        sources={galleryImages}
+                        index={lightboxIndex}
                         alt="Gallery preview"
-                        onClose={() => setLightboxSrc(null)}
+                        onPrev={() =>
+                            setLightboxIndex((idx) =>
+                                idx === null
+                                    ? null
+                                    : (idx + galleryImages.length - 1) %
+                                      galleryImages.length,
+                            )
+                        }
+                        onNext={() =>
+                            setLightboxIndex((idx) =>
+                                idx === null
+                                    ? null
+                                    : (idx + 1) % galleryImages.length,
+                            )
+                        }
+                        onClose={() => setLightboxIndex(null)}
                     />
                 )}
 
