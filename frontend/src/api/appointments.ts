@@ -95,9 +95,27 @@ export function useAppointmentsApi() {
             apiFetch<Appointment>(`/appointments/${id}/complete`, {
                 method: 'PATCH',
             }),
-        onSuccess: () => {
+        onSuccess: (appt: Appointment) => {
             toast.success('Appointment completed');
             invalidateAppointments();
+            try {
+                if (appt?.service) {
+                    trackEvent('purchase', {
+                        value: appt.service.price ?? 0,
+                        currency: 'PLN',
+                        items: [
+                            {
+                                item_id: appt.service.id,
+                                item_name: appt.service.name,
+                                item_category: appt.service.category?.name,
+                            },
+                        ],
+                        event_source: 'appointments',
+                    });
+                }
+            } catch {
+                // ignore
+            }
         },
         onError: handleError,
     });
