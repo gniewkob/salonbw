@@ -1,0 +1,22 @@
+name: Lighthouse CI
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 4 * * 1'  # Mondays at 04:00 UTC
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: .lighthouserc.json
+          temporaryPublicStorage: true
+
