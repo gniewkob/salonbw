@@ -94,3 +94,27 @@ if (typeof globalThis.crypto === 'undefined') {
 }
 
 require(server);
+// Load environment from .env files if present (server-side only)
+function loadDotEnvFiles() {
+    const files = ['.env.production', '.env.local', '.env'];
+    for (const file of files) {
+        const filePath = path.join(__dirname, file);
+        try {
+            if (!fs.existsSync(filePath)) continue;
+            const content = fs.readFileSync(filePath, 'utf8');
+            for (const line of content.split('\n')) {
+                if (!line || line.trim().startsWith('#')) continue;
+                const idx = line.indexOf('=');
+                if (idx === -1) continue;
+                const key = line.slice(0, idx).trim();
+                const valueRaw = line.slice(idx + 1).trim();
+                const value = valueRaw.replace(/^["']|["']$/g, '');
+                if (!(key in process.env)) {
+                    process.env[key] = value;
+                }
+            }
+        } catch {}
+    }
+}
+
+loadDotEnvFiles();
