@@ -5,17 +5,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
 import { trackEvent } from '@/utils/analytics';
+import {
+    cacheKey,
+    readCache,
+    writeCache,
+    CachedGalleryItem,
+} from '@/utils/instagramCache';
 
 type MediaType = 'IMAGE' | 'VIDEO';
 
-interface GalleryItem {
-    id: string;
-    type: MediaType;
-    imageUrl?: string;
-    videoUrl?: string;
-    posterUrl?: string;
-    caption?: string;
-}
+type GalleryItem = CachedGalleryItem;
 
 interface GalleryPageProps {
     items: GalleryItem[];
@@ -52,6 +51,24 @@ export default function GalleryPage({ items: initialItems, nextCursor: initialCu
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const [retrying, setRetrying] = useState(false);
+
+    const handleRetry = async () => {
+        setRetrying(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/gallery?force=1&limit=12');
+            if (!res.ok) throw new Error('Failed to refresh');
+            const json = await res.json();
+            setItems(json.items ?? []);
+            setNextCursor(json.nextCursor ?? null);
+            setIsFallback(json.fallback ?? false);
+        } catch (e) {
+            setError((e as Error).message);
+        } finally {
+            setRetrying(false);
+        }
+    };
 
     useEffect(() => {
         if (!sentinelRef.current) return;
@@ -91,7 +108,20 @@ export default function GalleryPage({ items: initialItems, nextCursor: initialCu
             <div className="p-4 space-y-4">
                 <h1 className="text-2xl font-bold">Gallery</h1>
                 {isFallback && (
-                    <p className="text-sm text-gray-600">Showing sample images. Connect Instagram to display latest media.</p>
+                    <div className="space-y-2">
+                        <p className="text-sm text-gray-600">
+                            Showing sample images. Connect Instagram to display the latest media.
+                        </p>
+                        <button
+                            type="button"
+                            className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
+                            onClick={handleRetry}
+                            disabled={retrying}
+                        >
+                            {retrying ? 'Retrying…' : 'Try again'}
+                        </button>
+                        {error && <p className="text-xs text-red-500">{error}</p>}
+                    </div>
                 )}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {items.map((item, i) => (
@@ -167,6 +197,9 @@ export default function GalleryPage({ items: initialItems, nextCursor: initialCu
                         {loading ? <span className="text-sm text-gray-500">Loading…</span> : nextCursor ? <span className="text-sm text-gray-400">Scroll for more</span> : <span className="text-sm text-gray-400">No more items</span>}
                     </div>
                 )}
+                {!isFallback && error && (
+                    <p className="text-xs text-red-500">{error}</p>
+                )}
                 {lightboxIndex !== null && (
                     <ImageLightbox
                         sources={imageItems.map((it) => it.imageUrl!)}
@@ -199,6 +232,17 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
         const sample: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
         return { props: { items: sample, nextCursor: null, fallback: true } };
     }
+    const key = cacheKey(null, '12|ssr');
+    const cached = readCache(key);
+    if (cached) {
+        return {
+            props: {
+                items: cached.data.items,
+                nextCursor: cached.data.nextCursor,
+                fallback: cached.data.fallback,
+            },
+        };
+    }
     try {
         const res = await fetch(
             `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,thumbnail_url&limit=12&access_token=${token}`,
@@ -224,6 +268,7 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
             },
         );
         const nextCursor = (json as any)?.paging?.cursors?.after ?? null;
+        writeCache(key, { items, nextCursor, fallback: false });
         return { props: { items, nextCursor, fallback: false } };
     } catch {
         // Fallback to local sample images on failure
