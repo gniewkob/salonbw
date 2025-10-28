@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Script from 'next/script';
 import { jsonLd, absUrl } from '@/utils/seo';
@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
 import PublicLayout from '@/components/PublicLayout';
+import { trackEvent } from '@/utils/analytics';
 
 export default function HomePage() {
     const heroImages = [
@@ -28,6 +29,20 @@ export default function HomePage() {
     ];
 
     const galleryImages = heroImages;
+
+    const featuredItems = useMemo(
+        () =>
+            services.map((s) => ({
+                id: s.title.toLowerCase().replace(/\s+/g, '-'),
+                name: s.title,
+                category: 'Featured Services',
+                href:
+                    s.title.toLowerCase().includes('color')
+                        ? '/services/coloring'
+                        : '/services',
+            })),
+        [services],
+    );
 
     const testimonials = [
         { name: 'Jane', text: 'Amazing service!' },
@@ -66,6 +81,29 @@ export default function HomePage() {
         }, 5000);
         return () => clearInterval(interval);
     }, [testimonials.length]);
+
+    // Analytics: list impressions for featured services and gallery
+    useEffect(() => {
+        try {
+            trackEvent('view_item_list', {
+                item_list_name: 'home_featured_services',
+                items: featuredItems.map((it) => ({
+                    item_id: it.id,
+                    item_name: it.name,
+                    item_category: it.category,
+                })),
+            });
+            trackEvent('view_item_list', {
+                item_list_name: 'home_gallery',
+                items: galleryImages.map((src, i) => ({
+                    item_id: src,
+                    item_name: `Gallery ${i + 1}`,
+                    item_category: 'Gallery',
+                })),
+            });
+        } catch {}
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <PublicLayout>
@@ -120,18 +158,34 @@ export default function HomePage() {
                         Featured Services
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {services.map((service) => (
-                            <div
-                                key={service.title}
-                                className="p-4 border rounded text-center"
+                        {featuredItems.map((item) => (
+                            <Link
+                                key={item.id}
+                                href={item.href}
+                                className="p-4 border rounded text-center hover:shadow"
+                                onClick={() =>
+                                    trackEvent('select_item', {
+                                        item_list_name: 'home_featured_services',
+                                        items: [
+                                            {
+                                                item_id: item.id,
+                                                item_name: item.name,
+                                                item_category: item.category,
+                                            },
+                                        ],
+                                        cta: 'home_card',
+                                    })
+                                }
                             >
-                                <h3 className="font-semibold">
-                                    {service.title}
-                                </h3>
+                                <h3 className="font-semibold">{item.name}</h3>
                                 <p className="text-sm text-gray-600">
-                                    {service.description}
+                                    {
+                                        services.find(
+                                            (s) => s.title === item.name,
+                                        )!.description
+                                    }
                                 </p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </section>
@@ -140,10 +194,25 @@ export default function HomePage() {
                 <section className="p-4 space-y-4">
                     <h2 className="text-xl font-bold text-center">Gallery</h2>
                     <div className="grid grid-cols-3 gap-2">
-                        {galleryImages.map((src) => (
-                            <div
+                        {galleryImages.map((src, i) => (
+                            <button
                                 key={src}
+                                type="button"
                                 className="relative w-full h-24 sm:h-32"
+                                onClick={() =>
+                                    trackEvent('select_item', {
+                                        item_list_name: 'home_gallery',
+                                        items: [
+                                            {
+                                                item_id: src,
+                                                item_name: `Gallery ${i + 1}`,
+                                                item_category: 'Gallery',
+                                            },
+                                        ],
+                                        cta: 'home_gallery',
+                                    })
+                                }
+                                aria-label={`View gallery image ${i + 1}`}
                             >
                                 <Image
                                     src={src}
@@ -151,7 +220,7 @@ export default function HomePage() {
                                     fill
                                     className="object-cover"
                                 />
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </section>
