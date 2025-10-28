@@ -33,5 +33,22 @@ describe('Gallery lightbox', () => {
         fireEvent.click(screen.getByLabelText('Close'));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
-});
 
+    it('has share button and calls navigator.share when available', () => {
+        // @ts-ignore
+        navigator.share = jest.fn();
+        render(
+            <GalleryPage
+                items={[{ id: '1', imageUrl: '/img1.jpg', caption: 'One' }]}
+            />,
+        );
+        fireEvent.click(screen.getByLabelText('Open image 1'));
+        const share = screen.getByLabelText('Share image');
+        fireEvent.click(share);
+        // @ts-ignore
+        expect(navigator.share).toHaveBeenCalled();
+        // cleanup
+        // @ts-ignore
+        delete navigator.share;
+    });
+});
