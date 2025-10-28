@@ -57,6 +57,7 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `NEXT_IMAGE_UNOPTIMIZED` | ➖ | `true` | When `true`, disables Next image optimizer (avoid 400s on shared hosts). Set to `false` to enable optimization. |
 | `NEXT_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `dev.salon-bw.pl` to prevent stale pages. Build-time flag. |
 | `NEXT_PANEL_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `panel.salon-bw.pl`. Build-time flag. |
+| `INSTAGRAM_ACCESS_TOKEN` | ➖ | *(unset)* | Server‑side Instagram Basic Display API long‑lived token used by the Gallery page to fetch media. |
 
 ### Analytics Events (GA4)
 
