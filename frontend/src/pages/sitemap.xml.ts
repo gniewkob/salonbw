@@ -3,6 +3,7 @@ import type { GetServerSideProps } from 'next';
 const staticPaths = [
     '/',
     '/services',
+    '/services/coloring',
     '/gallery',
     '/faq',
     '/contact',
@@ -29,4 +30,3 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 export default function SiteMap() {
     return null;
 }
-
