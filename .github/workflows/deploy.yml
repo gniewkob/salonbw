@@ -522,3 +522,27 @@ jobs:
               print('ERR /api/runtime', e); ok = False
           sys.exit(0 if ok else 1)
           PY
+
+      - name: Discover static chunk (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: chunk
+        shell: bash
+        run: |
+          set -euo pipefail
+          NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            "${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}" \
+            "ls -1 '${{ steps.dest.outputs.remote_path }}/.next/static/chunks' | head -n 1" || true)"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch static chunk (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="${{ steps.host.outputs.app }}"; FILE="${{ steps.chunk.outputs.name }}"
+          if [ -n "$FILE" ]; then
+            echo "HEAD /_next/static/chunks/$FILE"
+            curl -sSIf "https://$APP/_next/static/chunks/$FILE" | sed -n '1,20p'
+          else
+            echo "No chunk discovered; skipping"
+          fi

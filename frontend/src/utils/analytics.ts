@@ -63,3 +63,12 @@ export function sendWebVital(metric: NextWebVitalsMetric) {
     }
 }
 
+export function trackEvent(name: string, params: Record<string, any> = {}) {
+    if (!isAnalyticsEnabled()) return;
+    try {
+        window.gtag('event', name, { ...params, non_interaction: false });
+    } catch {
+        // ignore
+    }
+}
+

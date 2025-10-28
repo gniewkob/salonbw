@@ -9,6 +9,7 @@ import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import { initSentry } from '@/sentry.client';
 import { isAnalyticsEnabled, pageview, getGAId, sendWebVital } from '@/utils/analytics';
+import BookNowFab from '@/components/BookNowFab';
 
 // Initialize Sentry once (no-op if DSN is not set)
 initSentry();
@@ -37,6 +38,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         };
     }, [router.events]);
 
+    // Prefetch booking flow assets
+    useEffect(() => {
+        router.prefetch('/appointments');
+    }, [router]);
+
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
@@ -59,6 +65,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                         </>
                     )}
                     <RouteProgress />
+                    <BookNowFab />
                     <Component {...pageProps} />
                 </ToastProvider>
             </AuthProvider>
