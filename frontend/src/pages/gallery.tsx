@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
 import { trackEvent } from '@/utils/analytics';
@@ -19,6 +19,8 @@ interface GalleryItem {
 
 interface GalleryPageProps {
     items: GalleryItem[];
+    nextCursor: string | null;
+    fallback: boolean;
 }
 
 interface InstagramMedia {
@@ -33,8 +35,39 @@ interface InstagramResponse {
     data?: InstagramMedia[];
 }
 
-export default function GalleryPage({ items }: GalleryPageProps) {
+export default function GalleryPage({ items: initialItems, nextCursor: initialCursor, fallback }: GalleryPageProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [items, setItems] = useState<GalleryItem[]>(initialItems);
+    const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!sentinelRef.current) return;
+        if (!nextCursor || fallback) return; // no infinite load in fallback mode
+        const el = sentinelRef.current;
+        const io = new IntersectionObserver(async (entries) => {
+            const entry = entries[0];
+            if (!entry.isIntersecting) return;
+            if (loading) return;
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/gallery?after=${encodeURIComponent(nextCursor)}`);
+                if (!res.ok) throw new Error('Failed to load more');
+                const json = await res.json();
+                const more: GalleryItem[] = json.items ?? [];
+                setItems((prev) => [...prev, ...more]);
+                setNextCursor(json.nextCursor ?? null);
+            } catch (e) {
+                setError((e as Error).message);
+            } finally {
+                setLoading(false);
+            }
+        }, { rootMargin: '200px' });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [nextCursor, loading, fallback]);
     return (
         <PublicLayout>
             <Head>
@@ -46,6 +79,9 @@ export default function GalleryPage({ items }: GalleryPageProps) {
             </Head>
             <div className="p-4 space-y-4">
                 <h1 className="text-2xl font-bold">Gallery</h1>
+                {fallback && (
+                    <p className="text-sm text-gray-600">Showing sample images. Connect Instagram to display latest media.</p>
+                )}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {items.map((item, i) => (
                         item.type === 'VIDEO' && item.videoUrl ? (
@@ -113,6 +149,11 @@ export default function GalleryPage({ items }: GalleryPageProps) {
                         )
                     ))}
                 </div>
+                {!fallback && (
+                    <div ref={sentinelRef} className="h-10 flex items-center justify-center">
+                        {loading ? <span className="text-sm text-gray-500">Loading…</span> : nextCursor ? <span className="text-sm text-gray-400">Scroll for more</span> : <span className="text-sm text-gray-400">No more items</span>}
+                    </div>
+                )}
                 {lightboxIndex !== null && (
                     <ImageLightbox
                         sources={items
@@ -153,16 +194,16 @@ export default function GalleryPage({ items }: GalleryPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<
-    GalleryPageProps
-> = async () => {
+export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async () => {
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
-        return { props: { items: [] } };
+        // Fallback to local sample images
+        const sample: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
+        return { props: { items: sample, nextCursor: null, fallback: true } };
     }
     try {
         const res = await fetch(
-            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,thumbnail_url&access_token=${token}`,
+            `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,thumbnail_url&limit=12&access_token=${token}`,
         );
         const json: InstagramResponse = await res.json();
         const items: GalleryItem[] = (json.data ?? []).map(
@@ -184,8 +225,11 @@ export const getServerSideProps: GetServerSideProps<
                 } satisfies GalleryItem;
             },
         );
-        return { props: { items } };
+        const nextCursor = (json as any)?.paging?.cursors?.after ?? null;
+        return { props: { items, nextCursor, fallback: false } };
     } catch {
-        return { props: { items: [] } };
+        // Fallback to local sample images on failure
+        const sample: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
+        return { props: { items: sample, nextCursor: null, fallback: true } };
     }
 };
