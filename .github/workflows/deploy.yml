@@ -271,7 +271,8 @@ jobs:
           mkdir -p .next
           cd .next
           rm -rf static
-          ln -s ../../.next/static static
+          # Link distDir static (../.. from standalone/.next -> top-level .next)
+          ln -s ../../static static
           SSH
 
       - name: Upload backend bundle
