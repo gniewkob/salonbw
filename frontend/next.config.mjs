@@ -32,8 +32,9 @@ const nextConfig = {
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     output: 'standalone',
-    // Enable Next.js image optimization for better Core Web Vitals.
-    images: { unoptimized: false },
+    // Configure image optimization; default to unoptimized on mydevil to avoid 400s
+    // from the on-host optimizer. Can be overridden by NEXT_IMAGE_UNOPTIMIZED=false.
+    images: { unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED !== 'false' },
     experimental: {
         typedRoutes: false,
     },
