@@ -7,6 +7,7 @@ import Link from 'next/link';
 import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
+import ImageLightbox from '@/components/ImageLightbox';
 
 export default function HomePage() {
     const heroImages = [
@@ -67,6 +68,7 @@ export default function HomePage() {
 
     const [currentSlide, setCurrentSlide] = useState(0);
     const [testimonialIndex, setTestimonialIndex] = useState(0);
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -200,6 +202,7 @@ export default function HomePage() {
                                 type="button"
                                 className="relative w-full h-24 sm:h-32"
                                 onClick={() =>
+                                    (setLightboxSrc(src),
                                     trackEvent('select_item', {
                                         item_list_name: 'home_gallery',
                                         items: [
@@ -210,7 +213,7 @@ export default function HomePage() {
                                             },
                                         ],
                                         cta: 'home_gallery',
-                                    })
+                                    }))
                                 }
                                 aria-label={`View gallery image ${i + 1}`}
                             >
@@ -224,6 +227,13 @@ export default function HomePage() {
                         ))}
                     </div>
                 </section>
+                {lightboxSrc && (
+                    <ImageLightbox
+                        src={lightboxSrc}
+                        alt="Gallery preview"
+                        onClose={() => setLightboxSrc(null)}
+                    />
+                )}
 
                 {/* Testimonials Slider */}
                 <section className="p-4 space-y-4 text-center">
