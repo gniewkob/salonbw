@@ -49,7 +49,7 @@ const nextConfig = {
         ];
     },
     async headers() {
-        return [
+        const rules = [
             // Global security headers
             {
                 source: '/(.*)',
@@ -86,6 +86,24 @@ const nextConfig = {
                 headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
             },
         ];
+
+        // Dev-only: avoid stale HTML on dev host by disabling HTML caching.
+        if (process.env.NEXT_HTML_NOSTORE === 'true') {
+            rules.push({
+                source: '/:path*',
+                has: [
+                    { type: 'header', key: 'host', value: 'dev\\.salon-bw\\.pl' },
+                    { type: 'header', key: 'accept', value: 'text/html.*' },
+                ],
+                headers: [
+                    { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+                    { key: 'Pragma', value: 'no-cache' },
+                    { key: 'Expires', value: '0' },
+                ],
+            });
+        }
+
+        return rules;
     },
 };
 
