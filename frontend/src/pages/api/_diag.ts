@@ -29,6 +29,11 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
     } catch {}
     // no-op: standaloneBuildIdFile removed (same as buildIdFile in standalone mode)
 
+    let chunks: string[] = [];
+    let css: string[] = [];
+    try { chunks = fs.readdirSync(path.join(standaloneStatic, 'chunks')); } catch {}
+    try { css = fs.readdirSync(path.join(standaloneStatic, 'css')); } catch {}
+
     res.status(200).json({
         node: process.version,
         cwd,
@@ -41,5 +46,9 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
         },
         buildId,
         standaloneBuildId: buildId,
+        staticSample: {
+            chunks: chunks.slice(0, 10),
+            css: css.slice(0, 10),
+        },
     });
 }
