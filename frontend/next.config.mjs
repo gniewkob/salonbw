@@ -103,6 +103,22 @@ const nextConfig = {
             });
         }
 
+        // Optionally disable HTML caching on panel host as well.
+        if (process.env.NEXT_PANEL_HTML_NOSTORE === 'true') {
+            rules.push({
+                source: '/:path*',
+                has: [
+                    { type: 'header', key: 'host', value: 'panel\\.salon-bw\\.pl' },
+                    { type: 'header', key: 'accept', value: 'text/html.*' },
+                ],
+                headers: [
+                    { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+                    { key: 'Pragma', value: 'no-cache' },
+                    { key: 'Expires', value: '0' },
+                ],
+            });
+        }
+
         return rules;
     },
 };

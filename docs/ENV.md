@@ -48,6 +48,18 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `NEXT_PUBLIC_CONTACT_RECIPIENT` | ➖ | `kontakt@salon-bw.pl` | Default recipient for the public contact form submissions. |
 | `NEXT_PUBLIC_SENTRY_DSN` | ➖ | *(unset)* | Sentry DSN if error tracking is enabled. |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | ➖ | `0.1` | Sampling rate for Sentry tracing. |
+| `NEXT_IMAGE_UNOPTIMIZED` | ➖ | `true` | When `true`, disables Next image optimizer (avoid 400s on shared hosts). Set to `false` to enable optimization. |
+| `NEXT_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `dev.salon-bw.pl` to prevent stale pages. Build-time flag. |
+| `NEXT_PANEL_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `panel.salon-bw.pl`. Build-time flag. |
+
+### Analytics Events (GA4)
+
+- `page_view` – automatic when navigation occurs (we disable auto page view and emit manually).
+- `begin_checkout` – fired when user clicks Book Now (navbar or FAB).
+- `purchase` – fired when an appointment is created or completed; includes:
+  - `value` (PLN), `currency`, `items[]` with `item_id`, `item_name`, `item_category`.
+
+Enable analytics by setting `NEXT_PUBLIC_ENABLE_ANALYTICS=true` and `NEXT_PUBLIC_GA_ID`.
 
 ## Secrets Handling
 

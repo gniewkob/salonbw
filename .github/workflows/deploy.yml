@@ -180,6 +180,10 @@ jobs:
           # Embed API base URL resolved above (input > env-specific > fallback)
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          # Dev-only HTML no-store on dev host for admin target
+          NEXT_HTML_NOSTORE: ${{ github.event.inputs.target == 'admin' && 'true' || '' }}
+          # Dev-only HTML no-store on panel host for dashboard target
+          NEXT_PANEL_HTML_NOSTORE: ${{ github.event.inputs.target == 'dashboard' && 'true' || '' }}
 
       - name: Read BUILD_ID (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
