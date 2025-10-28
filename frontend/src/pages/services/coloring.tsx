@@ -64,9 +64,48 @@ export default function HairColoringPage() {
                     <Link
                         href={'/appointments' as Route}
                         className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+                        onClick={() => {
+                            try {
+                                trackEvent('select_item', {
+                                    items: [
+                                        {
+                                            item_id: 'coloring',
+                                            item_name: 'Hair Coloring',
+                                            item_category: 'Hair Coloring',
+                                        },
+                                    ],
+                                });
+                                trackEvent('begin_checkout', {
+                                    items: [
+                                        {
+                                            item_id: 'coloring',
+                                            item_name: 'Hair Coloring',
+                                            item_category: 'Hair Coloring',
+                                        },
+                                    ],
+                                    cta: 'service_page',
+                                });
+                            } catch {}
+                        }}
                     >
                         Book an appointment
                     </Link>
+                </div>
+
+                <div className="mt-8">
+                    <h2 className="text-xl font-semibold">Related services</h2>
+                    <ul className="list-disc pl-6 mt-2 space-y-1">
+                        <li>
+                            <Link href={'/services/highlights' as Route} className="underline">
+                                Highlights
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={'/services/balayage' as Route} className="underline">
+                                Balayage
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </PublicLayout>

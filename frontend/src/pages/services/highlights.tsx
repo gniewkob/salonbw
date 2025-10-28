@@ -62,9 +62,48 @@ export default function HighlightsPage() {
                     <Link
                         href={'/appointments' as Route}
                         className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
+                        onClick={() => {
+                            try {
+                                trackEvent('select_item', {
+                                    items: [
+                                        {
+                                            item_id: 'highlights',
+                                            item_name: 'Highlights',
+                                            item_category: 'Highlights',
+                                        },
+                                    ],
+                                });
+                                trackEvent('begin_checkout', {
+                                    items: [
+                                        {
+                                            item_id: 'highlights',
+                                            item_name: 'Highlights',
+                                            item_category: 'Highlights',
+                                        },
+                                    ],
+                                    cta: 'service_page',
+                                });
+                            } catch {}
+                        }}
                     >
                         Book an appointment
                     </Link>
+                </div>
+
+                <div className="mt-8">
+                    <h2 className="text-xl font-semibold">Related services</h2>
+                    <ul className="list-disc pl-6 mt-2 space-y-1">
+                        <li>
+                            <Link href={'/services/balayage' as Route} className="underline">
+                                Balayage
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={'/services/coloring' as Route} className="underline">
+                                Hair Coloring
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </PublicLayout>
