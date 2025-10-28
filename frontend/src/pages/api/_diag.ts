@@ -24,13 +24,10 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
     const buildIdFile = path.join(standaloneNext, 'BUILD_ID');
 
     let buildId: string | null = null;
-    let sBuildId: string | null = null;
     try {
         buildId = fs.readFileSync(buildIdFile, 'utf8').trim();
     } catch {}
-    try {
-        sBuildId = fs.readFileSync(standaloneBuildIdFile, 'utf8').trim();
-    } catch {}
+    // no-op: standaloneBuildIdFile removed (same as buildIdFile in standalone mode)
 
     res.status(200).json({
         node: process.version,
@@ -41,12 +38,8 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
             standaloneStatic: { ...check(standaloneStatic), target: standaloneStatic },
             rootStatic: { ...check(rootStatic), target: rootStatic },
             buildIdFile: { ...check(buildIdFile), target: buildIdFile },
-            standaloneBuildIdFile: {
-                ...check(standaloneBuildIdFile),
-                target: standaloneBuildIdFile,
-            },
         },
         buildId,
-        standaloneBuildId: sBuildId,
+        standaloneBuildId: buildId,
     });
 }
