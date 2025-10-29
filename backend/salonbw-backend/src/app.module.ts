@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
@@ -25,6 +26,12 @@ import { RetailModule } from './retail/retail.module';
 
 @Module({
     imports: [
+        ThrottlerModule.forRoot([
+            {
+                ttl: 60000, // 1 minute
+                limit: 10, // 10 requests per minute
+            },
+        ]),
         LoggerModule.forRoot({
             renameContext: 'component',
             pinoHttp: {
@@ -72,15 +79,34 @@ import { RetailModule } from './retail/retail.module';
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                type: 'postgres',
-                url: config.get<string>('DATABASE_URL'),
-                autoLoadEntities: true,
-                // NOTE: synchronize is convenient for development but
-                // should be disabled in production where migrations are used.
-                synchronize: config.get<string>('NODE_ENV') !== 'production',
-                migrations: [__dirname + '/migrations/*{.ts,.js}'],
-            }),
+            useFactory: (config: ConfigService) => {
+                const dbUrl = config.get<string>('DATABASE_URL');
+                const shouldSync =
+                    config
+                        .get<string>('DB_SYNCHRONIZE', 'false')
+                        .toLowerCase() === 'true';
+                const nodeEnv = config.get<string>('NODE_ENV', 'development');
+
+                if (nodeEnv === 'production' && shouldSync) {
+                    throw new Error(
+                        'DB_SYNCHRONIZE must be false in production for safety',
+                    );
+                }
+
+                if (!dbUrl) {
+                    throw new Error(
+                        'DATABASE_URL environment variable is required',
+                    );
+                }
+
+                return {
+                    type: 'postgres',
+                    url: dbUrl,
+                    autoLoadEntities: true,
+                    synchronize: shouldSync,
+                    migrations: [__dirname + '/migrations/*{.ts,.js}'],
+                };
+            },
         }),
         UsersModule,
         AuthModule,
