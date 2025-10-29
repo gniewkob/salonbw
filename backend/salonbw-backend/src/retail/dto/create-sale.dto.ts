@@ -16,10 +16,28 @@ export class CreateSaleDto {
     @IsNumber()
     unitPrice?: number;
 
+    @ApiPropertyOptional({
+        description:
+            'Override default unit price in cents (preferred). If provided, takes precedence over unitPrice.',
+        example: 1999,
+    })
+    @IsOptional()
+    @IsInt()
+    unitPriceCents?: number;
+
     @ApiPropertyOptional({ description: 'Absolute discount amount' })
     @IsOptional()
     @IsNumber()
     discount?: number;
+
+    @ApiPropertyOptional({
+        description:
+            'Absolute discount in cents (preferred). If provided, takes precedence over discount.',
+        example: 200,
+    })
+    @IsOptional()
+    @IsInt()
+    discountCents?: number;
 
     @ApiPropertyOptional()
     @IsOptional()

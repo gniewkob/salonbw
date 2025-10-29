@@ -104,6 +104,18 @@ d('ChatGateway', () => {
         await new Promise((resolve) => socket.on('disconnect', resolve));
         expect(socket.connected).toBe(false);
         socket.close();
+        // ensure underlying engine/io resources are closed (msw MockHttpSocket)
+        try {
+            (socket as any).disconnect?.();
+            const transport = (socket as any).io?.engine?.transport;
+            transport?.ws?.close?.();
+            transport?.socket?.close?.();
+            (socket as any).io?.engine?.ws?.close?.();
+        } catch (err) {
+            // ignore if internal shape differs
+        }
+        // give socket a moment to fully close and release handles
+        await new Promise((r) => setTimeout(r, 50));
     });
 
     it('should allow authorized clients to exchange messages', async () => {
@@ -153,6 +165,20 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
+        try {
+            (socket1 as any).disconnect?.();
+            const t1 = (socket1 as any).io?.engine?.transport;
+            t1?.ws?.close?.();
+            t1?.socket?.close?.();
+        } catch (err) {}
+        try {
+            (socket2 as any).disconnect?.();
+            const t2 = (socket2 as any).io?.engine?.transport;
+            t2?.ws?.close?.();
+            t2?.socket?.close?.();
+        } catch (err) {}
+        // allow sockets to fully close to avoid jest open handle warnings
+        await new Promise((r) => setTimeout(r, 50));
     });
 
     it('should reject messages exceeding maximum length', async () => {
@@ -193,5 +219,19 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
+        try {
+            (socket1 as any).disconnect?.();
+            const t1 = (socket1 as any).io?.engine?.transport;
+            t1?.ws?.close?.();
+            t1?.socket?.close?.();
+        } catch (err) {}
+        try {
+            (socket2 as any).disconnect?.();
+            const t2 = (socket2 as any).io?.engine?.transport;
+            t2?.ws?.close?.();
+            t2?.socket?.close?.();
+        } catch (err) {}
+        // allow sockets to fully close to avoid jest open handle warnings
+        await new Promise((r) => setTimeout(r, 50));
     });
 });

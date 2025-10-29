@@ -3,6 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '../users/user.entity';
+import { Request as ExpressRequest } from 'express';
+
+interface AuthRequest extends ExpressRequest {
+    body: {
+        captchaToken?: string;
+        [key: string]: any;
+    };
+}
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
@@ -13,11 +21,31 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     async validate(
         email: string,
         password: string,
+        request?: AuthRequest,
     ): Promise<Omit<User, 'password'>> {
-        const user = await this.authService.validateUser(email, password);
+        // Get client IP address from request
+        let ip = '0.0.0.0';
+        let captchaToken: string | undefined;
+
+        if (request) {
+            ip =
+                request.ip ||
+                (request as any).connection?.remoteAddress ||
+                '0.0.0.0';
+            captchaToken = request.body?.captchaToken;
+        }
+
+        const user = await this.authService.validateUser(
+            email,
+            password,
+            String(ip),
+            captchaToken,
+        );
+
         if (!user) {
             throw new UnauthorizedException();
         }
+
         return user;
     }
 }

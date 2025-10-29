@@ -16,24 +16,6 @@ const AUTH_ROUTES = ['/auth/login', '/auth/register'];
 
 const DASHBOARD_PREF = '/dashboard';
 
-const ROLE_HOME: Record<string, string> = {
-    client: '/dashboard/client',
-    employee: '/dashboard/employee',
-    receptionist: '/dashboard/receptionist',
-    admin: '/dashboard/admin',
-};
-
-function decodeRole(token: string | undefined | null): string | null {
-    if (!token) return null;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1] ?? ''));
-        const role = payload.role as string | undefined;
-        return ROLE_HOME[role ?? ''] ? role ?? null : null;
-    } catch {
-        return null;
-    }
-}
-
 function preferLocalePath(pathname: string) {
     if (pathname.length > 1 && pathname.endsWith('/')) {
         return pathname.slice(0, -1);
@@ -45,55 +27,37 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const path = preferLocalePath(pathname);
 
-    const accessToken = request.cookies.get('jwtToken')?.value;
-    const role = decodeRole(accessToken);
-    const isAuthenticated = Boolean(role);
+    // Check signed cookie for authentication state
+    const isAuthenticated =
+        request.cookies.get('isAuthenticated')?.value === 'true';
 
     const isPublic = PUBLIC_ROUTES.includes(path);
     const isAuthRoute = AUTH_ROUTES.includes(path);
     const isDashboard = path.startsWith(DASHBOARD_PREF);
 
+    // Allow access to public routes
     if (isPublic) {
         return NextResponse.next();
     }
 
+    // Handle auth routes
     if (isAuthRoute) {
         if (isAuthenticated) {
-            const target = ROLE_HOME[role ?? ''] ?? '/dashboard';
-            return NextResponse.redirect(new URL(target, request.url));
+            // Redirect authenticated users from auth pages to dashboard
+            return NextResponse.redirect(new URL('/dashboard', request.url));
         }
         return NextResponse.next();
     }
 
+    // Handle dashboard access
     if (isDashboard && !isAuthenticated) {
+        // Store the intended path for post-login redirect
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('redirectTo', path);
         return NextResponse.redirect(loginUrl);
     }
 
-    if (isDashboard && isAuthenticated) {
-        const [, , section] = path.split('/');
-        if (!section) {
-            const target = ROLE_HOME[role ?? ''] ?? '/dashboard';
-            if (path !== target) {
-                return NextResponse.redirect(new URL(target, request.url));
-            }
-            return NextResponse.next();
-        }
-        const allowedSegments = new Set(
-            Object.entries(ROLE_HOME)
-                .filter(([, home]) => home.startsWith(`/dashboard/${section}`))
-                .map(([r]) => r),
-        );
-        if (allowedSegments.size === 0) {
-            return NextResponse.next();
-        }
-        if (!allowedSegments.has(role ?? '')) {
-            const target = ROLE_HOME[role ?? ''] ?? '/dashboard';
-            return NextResponse.redirect(new URL(target, request.url));
-        }
-    }
-
+    // All other routes
     return NextResponse.next();
 }
 
