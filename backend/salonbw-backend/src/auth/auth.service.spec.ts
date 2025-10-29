@@ -30,6 +30,7 @@ const jwtService = {
                 options?.secret ?? accessSecret,
             ) as jwt.JwtPayload,
     ),
+    decode: jest.fn((token: string) => jwt.decode(token) as jwt.JwtPayload),
 } as Partial<JwtService> as jest.Mocked<JwtService>;
 
 describe('AuthService.validateUser', () => {
@@ -38,6 +39,8 @@ describe('AuthService.validateUser', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
+    let loginAttemptsService: any;
+    let refreshRepo: any;
 
     beforeEach(() => {
         usersService = {
@@ -47,10 +50,22 @@ describe('AuthService.validateUser', () => {
         configService = { get: jest.fn() } as jest.Mocked<
             Pick<ConfigService, 'get'>
         >;
+        loginAttemptsService = {
+            isAccountLocked: jest.fn().mockResolvedValue(false),
+            isCaptchaRequired: jest.fn().mockResolvedValue(false),
+            recordAttempt: jest.fn().mockResolvedValue(null),
+        };
+        refreshRepo = {
+            create: jest.fn().mockImplementation((v) => v),
+            save: jest.fn().mockResolvedValue(null),
+            findOne: jest.fn().mockResolvedValue(null),
+        };
         service = new AuthService(
             usersService as UsersService,
             jwtService,
             configService as ConfigService,
+            loginAttemptsService,
+            refreshRepo,
         );
     });
 
@@ -117,6 +132,8 @@ describe('AuthService.login', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
+    let loginAttemptsService: any;
+    let refreshRepo: any;
 
     beforeEach(() => {
         usersService = {
@@ -126,10 +143,22 @@ describe('AuthService.login', () => {
         configService = {
             get: jest.fn().mockReturnValue(refreshSecret),
         } as jest.Mocked<Pick<ConfigService, 'get'>>;
+        loginAttemptsService = {
+            isAccountLocked: jest.fn().mockResolvedValue(false),
+            isCaptchaRequired: jest.fn().mockResolvedValue(false),
+            recordAttempt: jest.fn().mockResolvedValue(null),
+        };
+        refreshRepo = {
+            create: jest.fn().mockImplementation((v) => v),
+            save: jest.fn().mockResolvedValue(null),
+            findOne: jest.fn().mockResolvedValue(null),
+        };
         service = new AuthService(
             usersService as UsersService,
             jwtService,
             configService as ConfigService,
+            loginAttemptsService,
+            refreshRepo,
         );
     });
 
@@ -146,21 +175,23 @@ describe('AuthService.login', () => {
             role: Role.Client,
         };
 
-        const { access_token, refresh_token } = service.login(user);
+        const res = { cookie: jest.fn() } as any;
+        return service.login(user, res).then(({ access_token, refresh_token }) => {
 
-        const accessPayload = jwt.verify(
-            access_token,
-            accessSecret,
-        ) as jwt.JwtPayload;
-        expect(accessPayload.sub).toBe(1);
-        expect(accessPayload.role).toBe(Role.Client);
+            const accessPayload = jwt.verify(
+                access_token,
+                accessSecret,
+            ) as jwt.JwtPayload;
+            expect(accessPayload.sub).toBe(1);
+            expect(accessPayload.role).toBe(Role.Client);
 
-        const refreshPayload = jwt.verify(
-            refresh_token,
-            refreshSecret,
-        ) as jwt.JwtPayload;
-        expect(refreshPayload.sub).toBe(1);
-        expect(refreshPayload.role).toBe(Role.Client);
+            const refreshPayload = jwt.verify(
+                refresh_token,
+                refreshSecret,
+            ) as jwt.JwtPayload;
+            expect(refreshPayload.sub).toBe(1);
+            expect(refreshPayload.role).toBe(Role.Client);
+        });
     });
 });
 
@@ -170,6 +201,8 @@ describe('AuthService.refresh', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
+    let loginAttemptsService: any;
+    let refreshRepo: any;
 
     beforeEach(() => {
         usersService = {
@@ -179,10 +212,22 @@ describe('AuthService.refresh', () => {
         configService = {
             get: jest.fn().mockReturnValue(refreshSecret),
         } as jest.Mocked<Pick<ConfigService, 'get'>>;
+        loginAttemptsService = {
+            isAccountLocked: jest.fn().mockResolvedValue(false),
+            isCaptchaRequired: jest.fn().mockResolvedValue(false),
+            recordAttempt: jest.fn().mockResolvedValue(null),
+        };
+        refreshRepo = {
+            create: jest.fn().mockImplementation((v) => v),
+            save: jest.fn().mockResolvedValue(null),
+            findOne: jest.fn().mockResolvedValue(null),
+        };
         service = new AuthService(
             usersService as UsersService,
             jwtService,
             configService as ConfigService,
+            loginAttemptsService,
+            refreshRepo,
         );
     });
 
@@ -200,9 +245,24 @@ describe('AuthService.refresh', () => {
         };
         usersService.findById.mockResolvedValue(user);
 
-        const refreshToken = service.getRefreshToken(user);
-        const { access_token, refresh_token } =
-            await service.refresh(refreshToken);
+        // craft a valid refresh token signed with the refresh secret and a jti
+        const jti = 'test-jti-1';
+        const refreshToken = jwt.sign(
+            { sub: user.id, role: user.role, jti, exp: Math.floor(Date.now() / 1000) + 60 * 60 },
+            refreshSecret,
+        );
+
+        // mock stored refresh token record
+        refreshRepo.findOne.mockResolvedValue({
+            jti,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+            revokedAt: null,
+            meta: {},
+        });
+
+        const res = { cookie: jest.fn() } as any;
+        const { access_token, refresh_token } = await service.refresh(refreshToken, res);
 
         expect(usersService.findById).toHaveBeenCalledWith(1);
 

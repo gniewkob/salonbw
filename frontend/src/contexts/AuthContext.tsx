@@ -22,22 +22,21 @@ import type { Role, User } from '@/types';
 
 interface AuthContextValue {
     user: User | null;
-    accessToken: string | null;
-    refreshToken: string | null;
     role: Role | null;
     initialized: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
     refresh: () => Promise<void>;
     apiFetch: <T>(endpoint: string, init?: RequestInit) => Promise<T>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = 'jwtToken';
-const ROLE_KEY = 'role';
+// No longer need these keys as we're using cookies
+const XSRF_HEADER = 'X-XSRF-TOKEN';
+const XSRF_COOKIE = 'XSRF-TOKEN';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -58,85 +57,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return null;
         }
     }, []);
-    const [accessToken, setAccessToken] = useState<string | null>(() =>
-        typeof window !== 'undefined'
-            ? localStorage.getItem(ACCESS_TOKEN_KEY)
-            : null,
-    );
-    const [refreshToken, setRefreshToken] = useState<string | null>(() =>
-        typeof window !== 'undefined'
-            ? localStorage.getItem(REFRESH_TOKEN_KEY)
-            : null,
-    );
-    const [role, setRole] = useState<Role | null>(() => {
-        if (typeof window === 'undefined') return null;
-        const storedRole = localStorage.getItem(ROLE_KEY) as Role | null;
-        if (
-            storedRole === 'client' ||
-            storedRole === 'employee' ||
-            storedRole === 'receptionist' ||
-            storedRole === 'admin'
-        ) {
-            return storedRole;
-        }
-        const storedAccess = localStorage.getItem(ACCESS_TOKEN_KEY);
-        return storedAccess ? decodeRole(storedAccess) : null;
-    });
+
+    // Removed token states since we're using httpOnly cookies
+    // Role is now set only based on the current logged in user
+    const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [initialized, setInitialized] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const handleLogout = useCallback(() => {
-        setAccessToken(null);
-        setRefreshToken(null);
-        setUser(null);
-        setRole(null);
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(ROLE_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        void router.push('/auth/login');
+    const handleLogout = useCallback(async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            setUser(null);
+            setRole(null);
+            setIsAuthenticated(false);
+            void router.push('/auth/login');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
     }, [router]);
 
     useEffect(() => {
         setLogoutCallback(handleLogout);
     }, [handleLogout]);
 
-    const applyTokens = useCallback(
-        (data: AuthTokens) => {
-            setAccessToken(data.accessToken);
-            setRefreshToken(data.refreshToken);
-            localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-            localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-            const r = decodeRole(data.accessToken);
-            setRole(r);
-            if (r) localStorage.setItem(ROLE_KEY, r);
-        },
-        [decodeRole],
-    );
+    // Initialize the client with CSRF handling
+    const client = useMemo(() => {
+        const csrfToken = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1];
 
-    const client = useMemo(
-        () => new ApiClient(() => accessToken, handleLogout, applyTokens),
-        [accessToken, handleLogout, applyTokens],
-    );
+        return new ApiClient(
+            // No longer passing access token as it's handled by cookies
+            () => null,
+            handleLogout,
+            undefined, // No token refresh handler needed
+            {
+                // Add CSRF token to requests
+                requestInit: csrfToken
+                    ? {
+                          headers: {
+                              'X-XSRF-TOKEN': csrfToken,
+                          },
+                      }
+                    : undefined,
+            },
+        );
+    }, [handleLogout]);
 
     const fetchProfile = useCallback(async () => {
-        const u = await client.request<User>('/users/profile');
-        setUser(u);
-        setRole(u.role);
-    }, [client]);
+        try {
+            const u = await client.request<User>('/api/users/profile');
+            setUser(u);
+            setRole(u.role);
+            setIsAuthenticated(true);
+        } catch (err) {
+            setIsAuthenticated(false);
+            void handleLogout();
+        }
+    }, [client, handleLogout]);
 
     useEffect(() => {
-        if (accessToken) {
-            void fetchProfile()
-                .catch(() => handleLogout())
-                .finally(() => setInitialized(true));
-        } else {
-            setInitialized(true);
-        }
-    }, [accessToken, fetchProfile, handleLogout]);
+        void fetchProfile().finally(() => setInitialized(true));
+    }, [fetchProfile]);
 
     const login = async (email: string, password: string) => {
-        const data = await apiLogin({ email, password });
-        applyTokens(data);
+        await apiLogin({ email, password });
+        await fetchProfile();
     };
 
     const register = async (data: RegisterData) => {
@@ -146,21 +134,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = async () => {
         try {
-            const data = await apiRefreshToken();
-            applyTokens(data);
+            await apiRefreshToken();
+            await fetchProfile();
         } catch (err) {
-            handleLogout();
+            void handleLogout();
             throw err;
         }
     };
 
     const value: AuthContextValue = {
         user,
-        accessToken,
-        refreshToken,
         role,
         initialized,
-        isAuthenticated: Boolean(accessToken),
+        isAuthenticated,
         login,
         register,
         logout: handleLogout,

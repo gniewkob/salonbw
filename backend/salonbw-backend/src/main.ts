@@ -34,10 +34,41 @@ async function bootstrap() {
         const document = SwaggerModule.createDocument(app, swaggerConfig);
         SwaggerModule.setup('api/docs', app, document);
     }
+    const frontendUrls = config
+        .get<string>('FRONTEND_URL')
+        ?.split(',')
+        .map((url) => url.trim());
+    const nodeEnv = config.get<string>('NODE_ENV', 'development');
+
+    if (nodeEnv === 'production' && !frontendUrls?.length) {
+        throw new Error(
+            'FRONTEND_URL environment variable is required in production',
+        );
+    }
+
     app.enableCors({
-        origin: config.get<string>('FRONTEND_URL') ?? true,
+        origin: frontendUrls?.length
+            ? (
+                  origin: string | undefined,
+                  callback: (err: Error | null, allow?: boolean) => void,
+              ) => {
+                  if (!origin || frontendUrls.includes(origin)) {
+                      callback(null, true);
+                  } else {
+                      logger.warn(
+                          { origin },
+                          'rejected CORS request from unauthorized origin',
+                      );
+                      callback(new Error('Not allowed by CORS'));
+                  }
+              }
+            : true,
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+        exposedHeaders: ['X-CSRF-Token'],
     });
+
     process.on('uncaughtException', (error) => {
         logger.fatal({ err: error }, 'uncaught exception');
     });
