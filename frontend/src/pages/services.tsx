@@ -121,10 +121,32 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 export const getServerSideProps: GetServerSideProps<
     ServicesPageProps
 > = async () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const rawBase =
+        process.env.API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        process.env.API_PROXY_URL ||
+        'https://api.salon-bw.pl';
+    const apiUrl = rawBase.replace(/\/$/, '');
+    const fallbackCategories: ServiceCategory[] = [
+        {
+            id: null,
+            name: 'Popular Services',
+            services: [
+                { id: 1, name: 'Haircut', duration: 45, price: 120 } as Service,
+                { id: 2, name: 'Coloring', duration: 90, price: 240 } as Service,
+                { id: 3, name: 'Balayage', duration: 120, price: 320 } as Service,
+            ],
+        },
+    ];
     try {
-        const res = await fetch(`${apiUrl}/services`);
+        const res = await fetch(`${apiUrl}/services`, {
+            headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('services_fetch_failed');
         const data: Service[] = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            return { props: { categories: fallbackCategories } };
+        }
         const map = new Map<number | null, ServiceCategory>();
         for (const svc of data) {
             const key = svc.category?.id ?? null;
@@ -134,8 +156,12 @@ export const getServerSideProps: GetServerSideProps<
             }
             map.get(key)!.services.push(svc);
         }
-        return { props: { categories: Array.from(map.values()) } };
+        const categories = Array.from(map.values());
+        if (!categories.length) {
+            return { props: { categories: fallbackCategories } };
+        }
+        return { props: { categories } };
     } catch {
-        return { props: { categories: [] } };
+        return { props: { categories: fallbackCategories } };
     }
 };

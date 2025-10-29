@@ -16,6 +16,8 @@ type MediaType = 'IMAGE' | 'VIDEO';
 
 type GalleryItem = CachedGalleryItem;
 
+const SAMPLE_ITEMS: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
+
 interface GalleryPageProps {
     items: GalleryItem[];
     nextCursor: string | null;
@@ -39,7 +41,7 @@ export default function GalleryPage({ items: initialItems, nextCursor: initialCu
     const [items, setItems] = useState<GalleryItem[]>(initialItems);
     const [isFallback, setIsFallback] = useState(fallback);
     const imageItems = useMemo(
-        () => items.filter((it) => it.type === 'IMAGE'),
+        () => items.filter((it) => (it.type ?? 'IMAGE') !== 'VIDEO'),
         [items],
     );
     const imageIndexMap = useMemo(() => {
@@ -184,6 +186,7 @@ export default function GalleryPage({ items: initialItems, nextCursor: initialCu
                                 <Image
                                     src={item.imageUrl!}
                                     alt={item.caption ?? 'Gallery image'}
+                                    unoptimized
                                     width={500}
                                     height={500}
                                     className="w-full h-auto object-cover"
@@ -229,8 +232,7 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
     const token = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!token) {
         // Fallback to local sample images
-        const sample: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
-        return { props: { items: sample, nextCursor: null, fallback: true } };
+        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
     }
     const key = cacheKey(null, '12|ssr');
     const cached = readCache(key);
@@ -247,7 +249,9 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
         const res = await fetch(
             `https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,thumbnail_url&limit=12&access_token=${token}`,
         );
+        if (!res.ok) throw new Error('upstream_error');
         const json: InstagramResponse = await res.json();
+        if ((json as any)?.error) throw new Error('upstream_error');
         const items: GalleryItem[] = (json.data ?? []).map(
             ({ id, media_url, media_type, caption, thumbnail_url }) => {
                 if (media_type === 'VIDEO') {
@@ -268,11 +272,11 @@ export const getServerSideProps: GetServerSideProps<GalleryPageProps> = async ()
             },
         );
         const nextCursor = (json as any)?.paging?.cursors?.after ?? null;
+        if (!items.length) throw new Error('no_media');
         writeCache(key, { items, nextCursor, fallback: false });
         return { props: { items, nextCursor, fallback: false } };
     } catch {
         // Fallback to local sample images on failure
-        const sample: GalleryItem[] = ['/assets/img/slider/slider1.jpg','/assets/img/slider/slider2.jpg','/assets/img/slider/slider3.jpg'].map((src, idx) => ({ id: `local-${idx}`, type: 'IMAGE', imageUrl: src, caption: 'Sample' }));
-        return { props: { items: sample, nextCursor: null, fallback: true } };
+        return { props: { items: SAMPLE_ITEMS, nextCursor: null, fallback: true } };
     }
 };

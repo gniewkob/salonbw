@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
+import { PinoLogger } from 'nestjs-pino';
 import { SendEmailDto } from './dto/send-email.dto';
 import { MetricsService } from '../observability/metrics.service';
 
@@ -18,10 +19,18 @@ export class EmailsService {
     private readonly transporter: MailTransporter | null;
     private readonly fromAddress: string | null;
 
+    private readonly isProduction: boolean;
+    private readonly smtpStatus: { configured: boolean; error?: string };
+
     constructor(
         private readonly configService: ConfigService,
         private readonly metrics: MetricsService,
+        private readonly logger: PinoLogger,
     ) {
+        this.logger.setContext('EmailsService');
+        this.isProduction =
+            this.configService.get<string>('NODE_ENV') === 'production';
+
         const host = this.configService.get<string>('SMTP_HOST');
         const port = this.configService.get<string>('SMTP_PORT');
         const user = this.configService.get<string>('SMTP_USER');
@@ -40,8 +49,25 @@ export class EmailsService {
                 o: TransportOpts,
             ) => unknown;
             this.transporter = factory(opts) as MailTransporter;
+            this.smtpStatus = { configured: true };
+            this.logger.info({ host, port, secure }, 'SMTP configured');
         } else {
             this.transporter = null;
+            this.smtpStatus = {
+                configured: false,
+                error: 'SMTP_HOST and SMTP_PORT are required',
+            };
+
+            if (this.isProduction) {
+                const msg = 'SMTP configuration is required in production';
+                this.logger.error(this.smtpStatus, msg);
+                throw new Error(msg);
+            } else {
+                this.logger.warn(
+                    this.smtpStatus,
+                    'SMTP not configured, emails will be logged',
+                );
+            }
         }
 
         this.fromAddress =
@@ -54,27 +80,47 @@ export class EmailsService {
         const html = this.renderTemplate(dto.template, dto.data);
 
         if (!this.transporter) {
-            // When SMTP is not configured we simply log the email payload.
-            // This keeps the endpoint functional for environments where mail
-            // infrastructure is not yet available.
+            if (this.isProduction) {
+                this.metrics.incEmail('failed');
+                throw new InternalServerErrorException(
+                    'Email service is not configured',
+                    { cause: this.smtpStatus.error },
+                );
+            }
 
-            console.warn(
-                '[EmailsService] SMTP is not configured. Email payload:',
-                { ...dto, html },
+            // In development, just log the email
+            this.logger.warn(
+                {
+                    to: dto.to,
+                    subject: dto.subject,
+                    template: dto.template,
+                    data: dto.data,
+                },
+                'Email logged (SMTP not configured)',
             );
             this.metrics.incEmail('success');
             return;
         }
 
         try {
-            await this.transporter.sendMail({
+            const mailOptions: MailOptions = {
                 to: dto.to,
                 subject: dto.subject,
                 html,
                 from: this.fromAddress ?? dto.to,
-            } as MailOptions);
+            };
+
+            await this.transporter.sendMail(mailOptions);
+            this.logger.info(
+                { to: dto.to, subject: dto.subject },
+                'Email sent successfully',
+            );
             this.metrics.incEmail('success');
         } catch (error: unknown) {
+            this.logger.error(
+                { error, to: dto.to, subject: dto.subject },
+                'Failed to send email',
+            );
             this.metrics.incEmail('failed');
             throw new InternalServerErrorException(
                 'Failed to send email message',
