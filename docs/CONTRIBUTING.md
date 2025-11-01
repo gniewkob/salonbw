@@ -36,8 +36,25 @@
 - Tailwind and shared component patterns should be followed for UI work.
 - For backend changes, prefer dependency injection and modules consistent with existing NestJS patterns.
 
+### TypeScript Standards
+
+- **Backend**: Strict TypeScript mode is enabled (`noImplicitAny`, `strictNullChecks`, `strictBindCallApply`)
+- **Never use `any`** - use proper types, `unknown`, or create interfaces
+- Use TypeScript path aliases (`@/...`) consistently
+- All new code must pass `pnpm typecheck` without warnings
+- Pre-commit hooks will prevent commits with type errors
+
 ## Security & Secrets
 
 - Do not commit `.env*` files with secrets or production credentials.
 - Rotate tokens if a leak is suspected and document procedures in the security guide.
 - Use the SSH tunnel workflow (introduced in later plans) for accessing remote databases during development.
+
+### Dependency Management
+
+- **Security audits run automatically** on every PR via GitHub Actions
+- High/critical vulnerabilities in production dependencies will fail CI
+- Review Dependabot PRs within 7 days of creation
+- For security patches, merge and deploy within 7 days of disclosure
+- Run `pnpm audit` locally before committing new dependencies
+- Use `pnpm outdated` quarterly to review available updates
