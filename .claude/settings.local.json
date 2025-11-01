@@ -14,7 +14,9 @@
       "Bash(pnpm --filter salonbw-backend add:*)",
       "Bash(pnpm --filter salonbw-backend run test --passWithNoTests)",
       "Bash(git commit:*)",
-      "Bash(pnpm audit:*)"
+      "Bash(pnpm audit:*)",
+      "Bash(git push:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": [],
     "ask": []
