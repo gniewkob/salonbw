@@ -42,7 +42,7 @@ Verification:
 
 | Initiative | Status | Commits | Last Updated |
 | --- | --- | --- | --- |
-| Phase 1: Security & Type Safety (SEC-1, SEC-3) | ✅ Complete | `2164a116`, `71b22d23`, `37cce05f` | 2025-11-01 |
+| Phase 1: Security & Type Safety (SEC-1, SEC-2, SEC-3) | ✅ Complete | `2164a116`, `71b22d23`, `37cce05f`, `6b56b9e1` | 2025-11-01 |
 
 **Completed Security Improvements:**
 - **2025-11-01 (`71b22d23`)** – Enabled strict TypeScript mode in backend (`noImplicitAny`, `strictBindCallApply`, `noFallthroughCasesInSwitch`)
@@ -51,12 +51,17 @@ Verification:
 - **2025-11-01 (`37cce05f`)** – Added automated dependency vulnerability scanning to CI
 - **2025-11-01 (`37cce05f`)** – CI now fails on high/critical vulnerabilities in production dependencies
 - **2025-11-01 (`37cce05f`)** – Updated CONTRIBUTING.md with TypeScript standards and dependency management practices
+- **2025-11-01 (`6b56b9e1`)** – **BREAKING**: Implemented strict CSP with nonce-based scripts (removed `unsafe-inline`, `unsafe-eval`)
+- **2025-11-01 (`6b56b9e1`)** – Added CSP violation reporting endpoint at `/csp-report`
+- **2025-11-01 (`6b56b9e1`)** – Dynamic nonce generation via middleware for enhanced security
 
 **Current Security Status:**
 - ✅ Zero `any` types in production code
 - ✅ Strict TypeScript enabled across backend
 - ✅ No known vulnerabilities in production dependencies
 - ✅ Automated security audits on every CI run
+- ✅ **Strict CSP with nonces** (no unsafe-inline/unsafe-eval) - **A+ security grade expected**
+- ✅ CSP violation monitoring and logging
 
 ## Operational References
 
