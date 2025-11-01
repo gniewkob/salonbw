@@ -8,6 +8,7 @@ import { LogService } from './logs/log.service';
 import { AuthFailureFilter } from './logs/auth-failure.filter';
 import { PinoLogger, LoggerErrorInterceptor } from 'nestjs-pino';
 import { HttpMetricsInterceptor } from './observability/http-metrics.interceptor';
+import type { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
@@ -23,8 +24,8 @@ async function bootstrap() {
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
     app.use(cookieParser());
-    app.use((req, res, next) => {
-        const requestWithId = req as typeof req & { id?: string };
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        const requestWithId = req as Request & { id?: string };
         if (requestWithId.id && !res.getHeader('x-request-id')) {
             res.setHeader('x-request-id', requestWithId.id);
         }

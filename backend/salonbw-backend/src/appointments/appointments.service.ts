@@ -85,12 +85,12 @@ export class AppointmentsService {
         excludeId?: number,
     ): Promise<void> {
         const where: FindOptionsWhere<Appointment> = {
-            employee: { id: employeeId } as any,
+            employee: { id: employeeId },
             status: Not(AppointmentStatus.Cancelled),
             startTime: LessThan(endTime),
             endTime: MoreThan(startTime),
+            ...(excludeId ? { id: Not(excludeId) } : {}),
         };
-        if (excludeId) (where as any).id = Not(excludeId);
         const conflict = await this.appointmentsRepository.findOne({ where });
         if (conflict) {
             throw new ConflictException(

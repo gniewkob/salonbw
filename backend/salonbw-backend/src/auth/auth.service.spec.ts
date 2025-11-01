@@ -151,8 +151,8 @@ describe('AuthService.login', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
-    let loginAttemptsService: any;
-    let refreshRepo: any;
+    let loginAttemptsService: jest.Mocked<{ getAttempts: jest.Mock; recordSuccess: jest.Mock }>;
+    let refreshRepo: jest.Mocked<{ findOne: jest.Mock; save: jest.Mock; delete: jest.Mock }>;
 
     beforeEach(() => {
         usersService = {
@@ -230,8 +230,8 @@ describe('AuthService.refresh', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
-    let loginAttemptsService: any;
-    let refreshRepo: any;
+    let loginAttemptsService: jest.Mocked<{ getAttempts: jest.Mock; recordSuccess: jest.Mock }>;
+    let refreshRepo: jest.Mocked<{ findOne: jest.Mock; save: jest.Mock; delete: jest.Mock }>;
 
     beforeEach(() => {
         usersService = {
@@ -300,7 +300,7 @@ describe('AuthService.refresh', () => {
             meta: {},
         });
 
-        const res = { cookie: jest.fn() } as any;
+        const res = { cookie: jest.fn() } as unknown as Response;
         const { access_token, refresh_token } = await service.refresh(
             refreshToken,
             res,
