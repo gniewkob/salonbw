@@ -13,7 +13,8 @@
       "Bash(pnpm --filter salonbw-backend run typecheck:*)",
       "Bash(pnpm --filter salonbw-backend add:*)",
       "Bash(pnpm --filter salonbw-backend run test --passWithNoTests)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pnpm audit:*)"
     ],
     "deny": [],
     "ask": []
