@@ -19,6 +19,15 @@ export class CommissionsService {
         private readonly logService: LogService,
     ) {}
 
+    private toCents(value: number | string | null | undefined): number {
+        const num = Number(value ?? 0);
+        return Math.round(num * 100);
+    }
+
+    private fromCents(cents: number): number {
+        return cents / 100;
+    }
+
     async create(
         data: Partial<Commission>,
         user: User,
@@ -27,7 +36,12 @@ export class CommissionsService {
         const repo = manager
             ? manager.getRepository(Commission)
             : this.commissionsRepository;
-        const commission = repo.create(data);
+        const normalisedAmount =
+            data.amount !== undefined ? this.fromCents(this.toCents(data.amount)) : undefined;
+        const commission = repo.create({
+            ...data,
+            amount: normalisedAmount ?? data.amount,
+        });
         const saved = await repo.save(commission);
         try {
             await this.logService.logAction(
@@ -97,9 +111,9 @@ export class CommissionsService {
         }
         const price = Number(service.price);
         const percent = await this.resolveCommissionPercent(employee, service);
-        const priceCents = Math.round(price * 100);
-        const amountCents = Math.round((priceCents * percent) / 100);
-        const amount = amountCents / 100;
+        const priceCents = this.toCents(price);
+        const amountCents = Math.floor((priceCents * percent) / 100);
+        const amount = this.fromCents(amountCents);
         return this.create(
             {
                 employee,

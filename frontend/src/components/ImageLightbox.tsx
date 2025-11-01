@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
 
@@ -24,49 +25,90 @@ type Props =
           onNext: () => void;
       });
 
+interface CarouselProps extends BaseProps {
+    src?: undefined;
+    sources: string[];
+    index: number;
+    onPrev: () => void;
+    onNext: () => void;
+}
+
+interface SingleProps extends BaseProps {
+    src: string;
+    sources?: undefined;
+    index?: undefined;
+    onPrev?: undefined;
+    onNext?: undefined;
+}
+
 export default function ImageLightbox(props: Props) {
-    const { alt, onClose } = props as BaseProps;
-    const hasCarousel = 'sources' in props && Array.isArray(props.sources);
-    const currentSrc = hasCarousel
-        ? (props as any).sources[(props as any).index]
-        : (props as any).src;
+    const { alt, onClose } = props;
+    const hasCarousel =
+        'sources' in props &&
+        Array.isArray(props.sources) &&
+        props.sources.length > 0;
+    const isCarouselProps = (p: Props): p is CarouselProps =>
+        'sources' in p && Array.isArray(p.sources) && p.sources.length > 0;
+    const currentSrc = isCarouselProps(props)
+        ? props.sources[props.index]
+        : (props as SingleProps).src;
     const containerRef = useRef<HTMLDivElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
     const [showHint, setShowHint] = useState(false);
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                try { trackEvent('lightbox_close', { src: currentSrc }); } catch {}
+                try {
+                    trackEvent('lightbox_close', { src: currentSrc });
+                } catch {}
                 onClose();
             }
             if (hasCarousel) {
+                const carouselProps = props as CarouselProps;
                 if (e.key === 'ArrowLeft') {
-                    try { trackEvent('lightbox_prev', { src: currentSrc, index: (props as any).index }); } catch {}
-                    (props as any).onPrev?.();
+                    try {
+                        trackEvent('lightbox_prev', {
+                            src: currentSrc,
+                            index: carouselProps.index,
+                        });
+                    } catch {}
+                    carouselProps.onPrev();
                 }
                 if (e.key === 'ArrowRight') {
-                    try { trackEvent('lightbox_next', { src: currentSrc, index: (props as any).index }); } catch {}
-                    (props as any).onNext?.();
+                    try {
+                        trackEvent('lightbox_next', {
+                            src: currentSrc,
+                            index: carouselProps.index,
+                        });
+                    } catch {}
+                    carouselProps.onNext();
                 }
             }
         };
+
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [onClose, hasCarousel, props, currentSrc]);
 
     useEffect(() => {
         // Show a quick hint on first open (per session)
-        try {
-            const key = 'lb_hint_shown';
-            if (!sessionStorage.getItem(key)) {
-                setShowHint(true);
-                sessionStorage.setItem(key, '1');
-            }
-        } catch {}
+        if (typeof window !== 'undefined') {
+            try {
+                const key = 'lb_hint_shown';
+                if (!sessionStorage.getItem(key)) {
+                    setShowHint(true);
+                    sessionStorage.setItem(key, '1');
+                }
+            } catch {}
+        }
         // Focus close button on open for accessibility
-        try { trackEvent('lightbox_open', { src: currentSrc }); } catch {}
+        try {
+            trackEvent('lightbox_open', { src: currentSrc });
+        } catch {}
         closeRef.current?.focus();
-    }, []);
+    }, [currentSrc]);
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Tab') return;
@@ -78,48 +120,62 @@ export default function ImageLightbox(props: Props) {
         if (focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
-        const active = document.activeElement as HTMLElement | null;
-        if (e.shiftKey) {
-            if (active === first || !root.contains(active)) {
-                e.preventDefault();
-                last.focus();
-            }
-        } else {
-            if (active === last) {
-                e.preventDefault();
-                first.focus();
+        if (typeof document !== 'undefined') {
+            const active = document.activeElement as HTMLElement | null;
+            if (e.shiftKey) {
+                if (active === first || !root.contains(active)) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (active === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         }
     };
 
     const onShare = async () => {
-        const url = absUrl(currentSrc);
+        const url = absUrl(currentSrc as string);
         try {
-            // @ts-ignore - web share is optional
-            if (navigator.share) {
-                // @ts-ignore
-                await navigator.share({ url, title: alt || 'Image' });
-            } else if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(url);
+            if (typeof window === 'undefined' || !window.navigator) return;
+
+            const nav: Navigator = window.navigator;
+
+            if ('share' in nav && typeof nav.share === 'function') {
+                await nav.share({ url, title: alt || 'Image' });
+            } else if ('clipboard' in nav && nav.clipboard?.writeText) {
+                await nav.clipboard.writeText(url);
             }
-            try { trackEvent('lightbox_share', { src: currentSrc }); } catch {}
+
+            try {
+                trackEvent('lightbox_share', { src: currentSrc });
+            } catch {}
         } catch {
             // ignore failures
         }
     };
 
     const onDownload = () => {
-        try { trackEvent('lightbox_download', { src: currentSrc }); } catch {}
+        try {
+            trackEvent('lightbox_download', { src: currentSrc });
+        } catch {}
+        if (typeof window === 'undefined') return;
+
         const a = document.createElement('a');
-        a.href = absUrl(currentSrc);
+        a.href = absUrl(currentSrc as string);
         a.download = '';
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
     };
 
     const handleClose = () => {
-        try { trackEvent('lightbox_close', { src: currentSrc }); } catch {}
+        try {
+            trackEvent('lightbox_close', { src: currentSrc });
+        } catch {}
         onClose();
     };
 
@@ -132,12 +188,18 @@ export default function ImageLightbox(props: Props) {
             onKeyDown={onKeyDown}
             ref={containerRef}
         >
-            <img
-                src={currentSrc}
-                alt={alt || 'Image preview'}
-                className="max-h-[90vh] max-w-[90vw] object-contain"
+            <div
+                className="relative w-[90vw] h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
-            />
+            >
+                <Image
+                    src={currentSrc}
+                    alt={alt || 'Image preview'}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    sizes="90vw"
+                />
+            </div>
             {showHint && (
                 <div
                     className="absolute top-12 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full"
@@ -154,7 +216,7 @@ export default function ImageLightbox(props: Props) {
                         type="button"
                         aria-label="Previous image"
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-2xl"
-                        onClick={(props as any).onPrev}
+                        onClick={(props as CarouselProps).onPrev}
                     >
                         ‹
                     </button>
@@ -162,7 +224,7 @@ export default function ImageLightbox(props: Props) {
                         type="button"
                         aria-label="Next image"
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-2xl"
-                        onClick={(props as any).onNext}
+                        onClick={(props as CarouselProps).onNext}
                     >
                         ›
                     </button>

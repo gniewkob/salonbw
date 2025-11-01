@@ -24,7 +24,7 @@ This README summarises the essentials. For deep dives, see the living documentat
    ```
 
 3. **Environment variables**
-   - Copy samples and adjust as needed (see [`docs/ENV.md`](docs/ENV.md)):
+   - Copy samples and adjust as needed (see [`docs/ENV.md`](docs/ENV.md)). Production deployments must define `FRONTEND_URL`, `COOKIE_DOMAIN`, and `ENABLE_SWAGGER=false` unless explicitly exposing docs:
 
      ```bash
      cp frontend/.env.local.example frontend/.env.local
@@ -105,7 +105,7 @@ Husky hooks ensure lint + typecheck run before commits.
 - Contact form submits to the backend `/emails/send` endpoint which relays via the `kontakt@salon-bw.pl` mailbox.
 - Backend health endpoint: `/healthz` (used by CI and deployment smoke tests).
 
-Swagger is exposed in development at `/api/docs`. Disable or protect it in production.
+Swagger is disabled by default; set `ENABLE_SWAGGER=true` in the backend environment to expose `/api/docs` (only recommended outside production).
 
 ## Deployment
 

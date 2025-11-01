@@ -1,19 +1,29 @@
+import { jest } from '@jest/globals';
 import type { useAuth } from '@/contexts/AuthContext';
 import type { User } from '@/types';
 
+type AuthValue = ReturnType<typeof useAuth>;
+
+const asyncMock = <Fn extends (...args: any[]) => Promise<any>>() =>
+    jest.fn(
+        async (..._args: Parameters<Fn>) =>
+            undefined as Awaited<ReturnType<Fn>>,
+    ) as unknown as Fn;
+
 export const createAuthValue = (
-    overrides: Partial<ReturnType<typeof useAuth>> = {},
-): ReturnType<typeof useAuth> => ({
+    overrides: Partial<AuthValue> = {},
+): AuthValue => ({
     user: null as User | null,
-    accessToken: null,
-    refreshToken: null,
     role: null,
     initialized: true,
     isAuthenticated: false,
-    login: jest.fn(),
-    register: jest.fn(),
-    logout: jest.fn(),
-    refresh: jest.fn(),
-    apiFetch: jest.fn(),
+    login: asyncMock<AuthValue['login']>(),
+    register: asyncMock<AuthValue['register']>(),
+    logout: asyncMock<AuthValue['logout']>(),
+    refresh: asyncMock<AuthValue['refresh']>(),
+    apiFetch: jest.fn(
+        async (..._args: Parameters<AuthValue['apiFetch']>) =>
+            undefined as Awaited<ReturnType<AuthValue['apiFetch']>>,
+    ) as unknown as AuthValue['apiFetch'],
     ...overrides,
 });

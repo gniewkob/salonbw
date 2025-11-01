@@ -2,6 +2,7 @@ import {
     BadRequestException,
     Injectable,
     NotImplementedException,
+    Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -17,6 +18,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RetailService {
+    private readonly logger = new Logger(RetailService.name);
     // transient context used to avoid anonymous transaction callbacks
     private _txSaleContext?: {
         dto: CreateSaleDto;
@@ -31,6 +33,7 @@ export class RetailService {
         product: Product;
         actor: User;
     };
+    private readonly requireCommission: boolean;
     constructor(
         @InjectRepository(Product)
         private readonly products: Repository<Product>,
@@ -42,7 +45,11 @@ export class RetailService {
         private readonly logs: LogService,
         private readonly config: ConfigService,
         private readonly dataSource: DataSource,
-    ) {}
+    ) {
+        this.requireCommission =
+            this.config.get<string>('POS_REQUIRE_COMMISSION', 'false') ===
+            'true';
+    }
 
     private async q<T>(sql: string, params: unknown[]): Promise<T[]> {
         // Central raw query helper
@@ -110,7 +117,15 @@ export class RetailService {
         await manager.query(
             `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
                      VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
-            [productId, delta, reason, referenceType, referenceId, note, actorId],
+            [
+                productId,
+                delta,
+                reason,
+                referenceType,
+                referenceId,
+                note,
+                actorId,
+            ],
         );
     }
 
@@ -165,7 +180,9 @@ export class RetailService {
         const discountCents =
             discountCentsFromDto !== undefined
                 ? discountCentsFromDto
-                : Math.round((dto.discount != null ? Number(dto.discount) : 0) * 100);
+                : Math.round(
+                      (dto.discount != null ? Number(dto.discount) : 0) * 100,
+                  );
         if (unitPriceCents < 0 || discountCents < 0) {
             throw new BadRequestException('unitPrice/discount must be >= 0');
         }
@@ -175,7 +192,14 @@ export class RetailService {
 
         // commission creation extracted to helper to reduce transaction complexity
         const createCommission = (manager: import('typeorm').EntityManager) =>
-            this.createCommissionForSale(manager, dto, product, unitPriceCents, discountCents, actor);
+            this.createCommissionForSale(
+                manager,
+                dto,
+                product,
+                unitPriceCents,
+                discountCents,
+                actor,
+            );
 
         // store context and call named method to avoid anonymous function complexity
         this._txSaleContext = {
@@ -218,7 +242,9 @@ export class RetailService {
         unitPriceCents: number,
         discountCents: number,
         actor: User,
-        createCommissionFn: (m: import('typeorm').EntityManager) => Promise<void>,
+        createCommissionFn: (
+            m: import('typeorm').EntityManager,
+        ) => Promise<void>,
     ) {
         // Adjust stock
         await manager.update(Product, product.id, {
@@ -256,9 +282,19 @@ export class RetailService {
         // Commission (best-effort)
         try {
             await createCommissionFn(manager);
-        } catch {
-            /* non-fatal commission error */
-            void 0;
+        } catch (error) {
+            const contextDetails = `product=${product.id} employee=${
+                dto.employeeId ?? 'n/a'
+            } appointment=${dto.appointmentId ?? 'n/a'}`;
+            this.logger.error(
+                `Failed to create POS commission (${contextDetails})`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            if (this.requireCommission) {
+                throw error instanceof Error
+                    ? error
+                    : new Error('Failed to create POS commission');
+            }
         }
 
         try {
@@ -287,10 +323,14 @@ export class RetailService {
             throw new BadRequestException('Invalid productId');
         }
         this._txAdjustContext = { dto, product, actor };
-        return this.dataSource.transaction(this.runAdjustTransaction.bind(this));
+        return this.dataSource.transaction(
+            this.runAdjustTransaction.bind(this),
+        );
     }
 
-    private async runAdjustTransaction(manager: import('typeorm').EntityManager) {
+    private async runAdjustTransaction(
+        manager: import('typeorm').EntityManager,
+    ) {
         const ctx = this._txAdjustContext;
         if (!ctx) throw new Error('missing adjust transaction context');
         try {
@@ -315,13 +355,17 @@ export class RetailService {
             }
 
             try {
-                await this.logs.logAction(ctx.actor, LogAction.PRODUCT_UPDATED, {
-                    entity: 'product',
-                    productId: ctx.product.id,
-                    change: 'adjust',
-                    delta: ctx.dto.delta,
-                    reason: ctx.dto.reason,
-                });
+                await this.logs.logAction(
+                    ctx.actor,
+                    LogAction.PRODUCT_UPDATED,
+                    {
+                        entity: 'product',
+                        productId: ctx.product.id,
+                        change: 'adjust',
+                        delta: ctx.dto.delta,
+                        reason: ctx.dto.reason,
+                    },
+                );
             } catch {
                 void 0;
             }
@@ -355,7 +399,7 @@ export class RetailService {
                 units: number | string | null;
                 revenue: number | string | null;
             }>(
-                `SELECT 
+                `SELECT
                     COALESCE(SUM(quantity),0) AS units,
                     COALESCE(SUM(quantity*unitPrice - COALESCE(discount,0)),0) AS revenue
                  FROM product_sales
@@ -409,11 +453,20 @@ export class RetailService {
         actor: User,
     ) {
         if (!dto.employeeId) return;
-        const employee = await this.users.findOne({ where: { id: dto.employeeId } });
+        const employee = await this.users.findOne({
+            where: { id: dto.employeeId },
+        });
         if (!employee) return;
-        const rawPercent = this.config.get<string | number>('PRODUCT_COMMISSION_PERCENT');
-        const percentFromEnv = rawPercent !== undefined && rawPercent !== null ? Number(rawPercent) : NaN;
-        const percent = !Number.isNaN(percentFromEnv) ? percentFromEnv : Number(employee.commissionBase ?? 0);
+        const rawPercent = this.config.get<string | number>(
+            'PRODUCT_COMMISSION_PERCENT',
+        );
+        const percentFromEnv =
+            rawPercent !== undefined && rawPercent !== null
+                ? Number(rawPercent)
+                : NaN;
+        const percent = !Number.isNaN(percentFromEnv)
+            ? percentFromEnv
+            : Number(employee.commissionBase ?? 0);
 
         const amountCents = this.calculateCommissionCents(
             unitPriceCents,
@@ -427,7 +480,9 @@ export class RetailService {
             {
                 employee,
                 appointment: dto.appointmentId
-                    ? await this.appointments.findOne({ where: { id: dto.appointmentId } })
+                    ? await this.appointments.findOne({
+                          where: { id: dto.appointmentId },
+                      })
                     : null,
                 product,
                 amount,

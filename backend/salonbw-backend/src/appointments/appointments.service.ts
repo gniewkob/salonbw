@@ -58,8 +58,12 @@ export class AppointmentsService {
         return employee;
     }
 
-    private async loadServiceOrThrow(id: number | undefined): Promise<SalonService> {
-        const service = await this.servicesRepository.findOne({ where: { id } });
+    private async loadServiceOrThrow(
+        id: number | undefined,
+    ): Promise<SalonService> {
+        const service = await this.servicesRepository.findOne({
+            where: { id },
+        });
         if (!service) throw new BadRequestException('Invalid serviceId');
         return service;
     }
@@ -89,7 +93,9 @@ export class AppointmentsService {
         if (excludeId) (where as any).id = Not(excludeId);
         const conflict = await this.appointmentsRepository.findOne({ where });
         if (conflict) {
-            throw new ConflictException('Employee is already booked for this time');
+            throw new ConflictException(
+                'Employee is already booked for this time',
+            );
         }
     }
 
@@ -135,8 +141,10 @@ export class AppointmentsService {
     }
 
     async create(data: Partial<Appointment>, user: User): Promise<Appointment> {
-        if (!data.client?.id) throw new BadRequestException('clientId is required');
-        if (!data.employee?.id) throw new BadRequestException('employeeId is required');
+        if (!data.client?.id)
+            throw new BadRequestException('clientId is required');
+        if (!data.employee?.id)
+            throw new BadRequestException('employeeId is required');
         const client = await this.loadClientOrThrow(data.client.id);
         const employee = await this.loadEmployeeOrThrow(data.employee.id);
         data.client = client;

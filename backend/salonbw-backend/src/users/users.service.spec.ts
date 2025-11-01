@@ -44,10 +44,12 @@ describe('UsersService', () => {
                     useValue: {
                         createQueryBuilder: jest
                             .fn<SelectQueryBuilder<User>, [string]>()
-                            .mockReturnValue(qb),
+                            .mockReturnValue(
+                                qb as unknown as SelectQueryBuilder<User>,
+                            ),
                         create: jest.fn<User, [Partial<User>]>(),
                         save: jest.fn<Promise<User>, [User]>(),
-                    } as jest.Mocked<Repository<User>>,
+                    } as unknown as jest.Mocked<Repository<User>>,
                 },
             ],
         }).compile();
@@ -73,7 +75,9 @@ describe('UsersService', () => {
                 receiveNotifications: true,
             };
             qb.getOne.mockResolvedValue(null);
-            bcryptMock.hash.mockResolvedValue('hashedPass');
+            (bcryptMock.hash as unknown as jest.Mock).mockResolvedValue(
+                'hashedPass',
+            );
             const created = {
                 email: dto.email,
                 name: dto.name,
@@ -85,10 +89,10 @@ describe('UsersService', () => {
             };
             const createSpy = jest
                 .spyOn(repo, 'create')
-                .mockReturnValue(created);
+                .mockReturnValue(created as unknown as User);
             const saveSpy = jest
                 .spyOn(repo, 'save')
-                .mockResolvedValue({ ...created, id: 1 });
+                .mockResolvedValue({ ...created, id: 1 } as unknown as User);
 
             const result = await service.createUser(dto);
 
@@ -117,7 +121,9 @@ describe('UsersService', () => {
                 password: 'plainPass',
             };
             qb.getOne.mockResolvedValue(null);
-            bcryptMock.hash.mockResolvedValue('hashedPass');
+            (bcryptMock.hash as unknown as jest.Mock).mockResolvedValue(
+                'hashedPass',
+            );
             const created = {
                 email: dto.email,
                 name: dto.name,
@@ -129,10 +135,10 @@ describe('UsersService', () => {
             };
             const createSpy = jest
                 .spyOn(repo, 'create')
-                .mockReturnValue(created);
+                .mockReturnValue(created as unknown as User);
             const saveSpy = jest
                 .spyOn(repo, 'save')
-                .mockResolvedValue({ ...created, id: 2 });
+                .mockResolvedValue({ ...created, id: 2 } as unknown as User);
 
             const result = await service.createUser(dto);
 
