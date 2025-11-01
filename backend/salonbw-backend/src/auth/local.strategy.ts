@@ -8,7 +8,7 @@ import { Request as ExpressRequest } from 'express';
 interface AuthRequest extends ExpressRequest {
     body: {
         captchaToken?: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 
@@ -28,9 +28,10 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
         let captchaToken: string | undefined;
 
         if (request) {
+            const connection = (request as ExpressRequest & { connection?: { remoteAddress?: string } }).connection;
             ip =
                 request.ip ||
-                (request as any).connection?.remoteAddress ||
+                connection?.remoteAddress ||
                 '0.0.0.0';
             captchaToken = request.body?.captchaToken;
         }

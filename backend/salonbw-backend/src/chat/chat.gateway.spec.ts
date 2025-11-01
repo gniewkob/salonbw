@@ -10,6 +10,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Server } from 'http';
 import type { AddressInfo } from 'net';
+import type { Socket } from 'socket.io-client';
 
 interface Message {
     id: number;
@@ -17,6 +18,29 @@ interface Message {
     appointment: { id: number };
     text: string;
     timestamp: Date;
+}
+
+type SocketInternal = {
+    disconnect?: () => void;
+    io?: {
+        engine?: {
+            transport?: { ws?: { close?: () => void }; socket?: { close?: () => void } };
+            ws?: { close?: () => void };
+        };
+    };
+};
+
+function cleanupSocket(socket: Socket): void {
+    try {
+        const socketInternal = socket as unknown as SocketInternal;
+        socketInternal.disconnect?.();
+        const transport = socketInternal.io?.engine?.transport;
+        transport?.ws?.close?.();
+        transport?.socket?.close?.();
+        socketInternal.io?.engine?.ws?.close?.();
+    } catch (err) {
+        // ignore if internal shape differs
+    }
 }
 
 type AckPayload = { status: 'ok' };
@@ -127,15 +151,7 @@ d('ChatGateway', () => {
         expect(socket.connected).toBe(false);
         socket.close();
         // ensure underlying engine/io resources are closed (msw MockHttpSocket)
-        try {
-            (socket as any).disconnect?.();
-            const transport = (socket as any).io?.engine?.transport;
-            transport?.ws?.close?.();
-            transport?.socket?.close?.();
-            (socket as any).io?.engine?.ws?.close?.();
-        } catch (err) {
-            // ignore if internal shape differs
-        }
+        cleanupSocket(socket);
         // give socket a moment to fully close and release handles
         await new Promise((r) => setTimeout(r, 50));
     });
@@ -198,18 +214,8 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
-        try {
-            (socket1 as any).disconnect?.();
-            const t1 = (socket1 as any).io?.engine?.transport;
-            t1?.ws?.close?.();
-            t1?.socket?.close?.();
-        } catch (err) {}
-        try {
-            (socket2 as any).disconnect?.();
-            const t2 = (socket2 as any).io?.engine?.transport;
-            t2?.ws?.close?.();
-            t2?.socket?.close?.();
-        } catch (err) {}
+        cleanupSocket(socket1);
+        cleanupSocket(socket2);
         // allow sockets to fully close to avoid jest open handle warnings
         await new Promise<void>((r) => setTimeout(r, 50));
     });
@@ -264,18 +270,8 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
-        try {
-            (socket1 as any).disconnect?.();
-            const t1 = (socket1 as any).io?.engine?.transport;
-            t1?.ws?.close?.();
-            t1?.socket?.close?.();
-        } catch (err) {}
-        try {
-            (socket2 as any).disconnect?.();
-            const t2 = (socket2 as any).io?.engine?.transport;
-            t2?.ws?.close?.();
-            t2?.socket?.close?.();
-        } catch (err) {}
+        cleanupSocket(socket1);
+        cleanupSocket(socket2);
         // allow sockets to fully close to avoid jest open handle warnings
         await new Promise<void>((r) => setTimeout(r, 50));
     });
