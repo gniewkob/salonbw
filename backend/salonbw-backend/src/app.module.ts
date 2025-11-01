@@ -24,6 +24,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { EmailsModule } from './emails/emails.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { RetailModule } from './retail/retail.module';
+import { CSPModule } from './csp/csp.module';
 
 @Module({
     imports: [
@@ -138,6 +139,7 @@ import { RetailModule } from './retail/retail.module';
         EmailsModule,
         ObservabilityModule,
         RetailModule,
+        CSPModule,
     ],
     controllers: [AppController, HealthController],
     providers: [
