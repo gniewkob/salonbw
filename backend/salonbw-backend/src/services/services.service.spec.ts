@@ -13,7 +13,7 @@ describe('ServicesService', () => {
     let service: ServicesService;
     let repo: jest.Mocked<Repository<Service>>;
     let serviceEntity: Service;
-    let logService: LogService;
+    let logService: jest.Mocked<LogService>;
 
     const mockRepository = (): jest.Mocked<Repository<Service>> =>
         ({
@@ -34,7 +34,7 @@ describe('ServicesService', () => {
                 Promise.resolve(),
             ),
             delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
-        }) as jest.Mocked<Repository<Service>>;
+        }) as unknown as jest.Mocked<Repository<Service>>;
 
     beforeEach(async () => {
         serviceEntity = {
@@ -54,7 +54,9 @@ describe('ServicesService', () => {
                 },
                 {
                     provide: LogService,
-                    useValue: { logAction: jest.fn() },
+                    useValue: {
+                        logAction: jest.fn(),
+                    } as unknown as jest.Mocked<LogService>,
                 },
             ],
         }).compile();
@@ -63,7 +65,7 @@ describe('ServicesService', () => {
         repo = module.get<jest.Mocked<Repository<Service>>>(
             getRepositoryToken(Service),
         );
-        logService = module.get<LogService>(LogService);
+        logService = module.get<jest.Mocked<LogService>>(LogService);
     });
 
     it('creates a service', async () => {

@@ -27,9 +27,12 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const path = preferLocalePath(pathname);
 
-    // Check signed cookie for authentication state
-    const isAuthenticated =
-        request.cookies.get('isAuthenticated')?.value === 'true';
+    // Check for backend-issued session cookies
+    const hasAccessToken = request.cookies.has('accessToken');
+    const hasMarker =
+        request.cookies.get('sbw_auth')?.value === '1' ||
+        request.cookies.has('refreshToken');
+    const isAuthenticated = hasAccessToken || hasMarker;
 
     const isPublic = PUBLIC_ROUTES.includes(path);
     const isAuthRoute = AUTH_ROUTES.includes(path);

@@ -8,7 +8,7 @@ Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)
 
 - SSH access to the production account (e.g. `user@s0.mydevil.net`) with public key authentication.
 - Passenger-enabled Node.js applications configured for the public site and dashboard panel(s).
-- Environment variables stored outside the repo (`.env`, `.env.production`, secrets injected via deployment scripts).
+- Environment variables stored outside the repo (`.env`, `.env.production`, secrets injected via deployment scripts). Review [`docs/ENV.md`](./ENV.md) for the required backend values (`FRONTEND_URL`, `COOKIE_DOMAIN`, throttler limits, Swagger flag, POS settings).
 - Local machine has run through the release checklist in [`docs/RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md).
 
 Folder structure recommended on the server:

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { v4 as uuid } from 'uuid';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
@@ -26,12 +27,27 @@ import { RetailModule } from './retail/retail.module';
 
 @Module({
     imports: [
-        ThrottlerModule.forRoot([
-            {
-                ttl: 60000, // 1 minute
-                limit: 10, // 10 requests per minute
+        ThrottlerModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => {
+                const ttlRaw = config.get<string>('THROTTLE_TTL', '60000');
+                const limitRaw = config.get<string>('THROTTLE_LIMIT', '10');
+                const ttl = Number(ttlRaw);
+                const limit = Number(limitRaw);
+                if (!Number.isFinite(ttl) || ttl <= 0) {
+                    throw new Error('THROTTLE_TTL must be a positive number');
+                }
+                if (!Number.isFinite(limit) || limit <= 0) {
+                    throw new Error('THROTTLE_LIMIT must be a positive number');
+                }
+                return [
+                    {
+                        ttl,
+                        limit,
+                    },
+                ];
             },
-        ]),
+        }),
         LoggerModule.forRoot({
             renameContext: 'component',
             pinoHttp: {
@@ -124,6 +140,13 @@ import { RetailModule } from './retail/retail.module';
         RetailModule,
     ],
     controllers: [AppController, HealthController],
-    providers: [AppService, HealthService],
+    providers: [
+        AppService,
+        HealthService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}

@@ -11,7 +11,7 @@ import { User } from '../users/user.entity';
 describe('ProductsService', () => {
     let service: ProductsService;
     let repo: jest.Mocked<Repository<Product>>;
-    let logService: LogService;
+    let logService: jest.Mocked<LogService>;
 
     const mockRepository = (): jest.Mocked<Repository<Product>> =>
         ({
@@ -19,7 +19,7 @@ describe('ProductsService', () => {
                 (dto) => dto as Product,
             ),
             save: jest.fn<Promise<Product>, [Product]>((entity) =>
-                Promise.resolve({ id: 1, ...entity } as Product),
+                Promise.resolve(Object.assign({ id: 1 }, entity) as Product),
             ),
             find: jest.fn<Promise<Product[]>, []>(() =>
                 Promise.resolve([{ id: 1 } as Product]),
@@ -32,7 +32,7 @@ describe('ProductsService', () => {
                 Promise.resolve(),
             ),
             delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
-        }) as jest.Mocked<Repository<Product>>;
+        }) as unknown as jest.Mocked<Repository<Product>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -40,11 +40,15 @@ describe('ProductsService', () => {
                 ProductsService,
                 {
                     provide: getRepositoryToken(Product),
-                    useValue: mockRepository(),
+                    useValue: mockRepository() as unknown as jest.Mocked<
+                        Repository<Product>
+                    >,
                 },
                 {
                     provide: LogService,
-                    useValue: { logAction: jest.fn() },
+                    useValue: {
+                        logAction: jest.fn(),
+                    } as unknown as jest.Mocked<LogService>,
                 },
             ],
         }).compile();
@@ -53,7 +57,7 @@ describe('ProductsService', () => {
         repo = module.get<jest.Mocked<Repository<Product>>>(
             getRepositoryToken(Product),
         );
-        logService = module.get<LogService>(LogService);
+        logService = module.get<jest.Mocked<LogService>>(LogService);
     });
 
     it('creates a product', async () => {

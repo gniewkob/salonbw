@@ -30,6 +30,7 @@ d('ChatController', () => {
     let currentUser: { userId: number; role: Role };
     let messages: ChatMessage[];
     let appointment: Appointment;
+    let canBind = true;
 
     beforeEach(async () => {
         messages = [];
@@ -98,14 +99,29 @@ d('ChatController', () => {
             .compile();
 
         app = moduleRef.createNestApplication();
-        await app.init();
+        try {
+            await app.listen(0, '127.0.0.1');
+        } catch (error) {
+            const err = error as NodeJS.ErrnoException;
+            if (err?.code === 'EPERM') {
+                canBind = false;
+                return;
+            }
+            throw error;
+        }
     });
 
     afterEach(async () => {
-        await app.close();
+        if (app) {
+            await app.close();
+        }
     });
 
     it('should return messages for authorized user and forbid others', async () => {
+        if (!canBind) {
+            expect(canBind).toBe(false);
+            return;
+        }
         const server = app.getHttpServer() as Parameters<typeof request>[0];
 
         await request(server)

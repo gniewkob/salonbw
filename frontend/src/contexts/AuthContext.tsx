@@ -13,9 +13,7 @@ import {
     login as apiLogin,
     register as apiRegister,
     refreshToken as apiRefreshToken,
-    REFRESH_TOKEN_KEY,
     setLogoutCallback,
-    type AuthTokens,
     type RegisterData,
 } from '@/api/auth';
 import type { Role, User } from '@/types';
@@ -34,29 +32,18 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// No longer need these keys as we're using cookies
-const XSRF_HEADER = 'X-XSRF-TOKEN';
-const XSRF_COOKIE = 'XSRF-TOKEN';
+const readCsrfCookie = () => {
+    if (typeof document === 'undefined') {
+        return undefined;
+    }
+    return document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1];
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const decodeRole = useCallback((jwt: string): Role | null => {
-        try {
-            const payload = JSON.parse(atob(jwt.split('.')[1]));
-            const r = payload.role as Role | undefined;
-            if (
-                r === 'client' ||
-                r === 'employee' ||
-                r === 'receptionist' ||
-                r === 'admin'
-            ) {
-                return r;
-            }
-            return null;
-        } catch {
-            return null;
-        }
-    }, []);
 
     // Removed token states since we're using httpOnly cookies
     // Role is now set only based on the current logged in user
@@ -71,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             setRole(null);
             setIsAuthenticated(false);
+            setCsrfToken(undefined);
             void router.push('/auth/login');
         } catch (error) {
             console.error('Logout error:', error);
@@ -78,20 +66,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [router]);
 
     useEffect(() => {
-        setLogoutCallback(handleLogout);
+        setLogoutCallback(() => {
+            void handleLogout();
+        });
     }, [handleLogout]);
 
     // Initialize the client with CSRF handling
-    const client = useMemo(() => {
-        const csrfToken = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('XSRF-TOKEN='))
-            ?.split('=')[1];
+    const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
 
+    useEffect(() => {
+        setCsrfToken(readCsrfCookie());
+    }, []);
+
+    const client = useMemo(() => {
         return new ApiClient(
             // No longer passing access token as it's handled by cookies
             () => null,
-            handleLogout,
+            () => {
+                void handleLogout();
+            },
             undefined, // No token refresh handler needed
             {
                 // Add CSRF token to requests
@@ -104,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     : undefined,
             },
         );
-    }, [handleLogout]);
+    }, [handleLogout, csrfToken]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -112,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(u);
             setRole(u.role);
             setIsAuthenticated(true);
-        } catch (err) {
+        } catch {
             setIsAuthenticated(false);
             void handleLogout();
         }
@@ -124,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, password: string) => {
         await apiLogin({ email, password });
+        setCsrfToken(readCsrfCookie());
         await fetchProfile();
     };
 
@@ -135,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const refresh = async () => {
         try {
             await apiRefreshToken();
+            setCsrfToken(readCsrfCookie());
             await fetchProfile();
         } catch (err) {
             void handleLogout();

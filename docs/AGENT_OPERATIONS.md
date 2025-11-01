@@ -93,6 +93,8 @@ Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 ssh devil "tail -f ~/logs/nodejs/api.salon-bw.pl/app.log" | jq
 ```
 
+Tip: when debugging client flows, set `NEXT_PUBLIC_ENABLE_DEBUG=true` (or `localStorage.DEBUG_API=1` in the browser console) so the frontend attaches an `X-Request-Id` header to every API call. The value is echoed back in responses and can be grepped directly in the backend logs.
+
 ### Metrics
 
 - Prometheus-compatible metrics are exposed at `https://api.salon-bw.pl/metrics` (and `/metrics` on any environment).

@@ -2,7 +2,15 @@ import { RetailService } from './retail.service';
 
 describe('RetailService.calculateCommissionCents', () => {
     // create a minimal instance (dependencies not used by the tested method)
-    const svc = new RetailService(null as any, null as any, null as any, null as any, null as any, null as any, null as any);
+    const svc = new RetailService(
+        null as any,
+        null as any,
+        null as any,
+        null as any,
+        null as any,
+        { get: () => 'false' } as any,
+        null as any,
+    );
 
     test('calculates basic 10% commission and floors cents', () => {
         const cents = svc.calculateCommissionCents(1999, 1, 0, 10);

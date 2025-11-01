@@ -28,6 +28,12 @@
 - Shared contracts currently rely on manual alignment; OpenAPI schema exists but no generated client yet.
 - Logging and background jobs are not centrally documented; cron/timed tasks likely via `@nestjs/schedule`.
 
+## Monetary Calculations
+
+- Monetary values are normalised to integer cents in service logic to avoid floating-point drift.
+- Database columns such as `services.price`, `products.unitPrice`, and `commissions.amount` still use decimals for compatibility, but service layers convert to cents before any arithmetic and only convert back when persisting or serialising responses.
+- New calculations (e.g. POS sales, commission payouts) must follow the `toCents`/`fromCents` convention already used in `RetailService` and `CommissionsService`, with deterministic rounding (`Math.floor`) to keep cents consistent.
+
 ## Deployment & Operations
 
 - No root CI/CD manifests; GitHub Actions exist only for prior workflows (see `.github/`).
