@@ -7,27 +7,25 @@ import { CreateSaleData } from '@/hooks/useRetail';
 const schema = z.object({
     productId: z
         .number({
-            required_error: 'Product is required',
-            invalid_type_error: 'Product is required',
+            message: 'Product is required',
         })
         .min(1, { message: 'Product is required' }),
     quantity: z
         .number({
-            required_error: 'Quantity is required',
-            invalid_type_error: 'Quantity is required',
+            message: 'Quantity is required',
         })
         .min(1, { message: 'Quantity must be at least 1' }),
     employeeId: z.number().optional(),
     appointmentId: z.number().optional(),
     unitPrice: z
         .number({
-            invalid_type_error: 'Unit price must be a number',
+            message: 'Unit price must be a number',
         })
         .min(0, { message: 'Unit price must be >= 0' })
         .optional(),
     discount: z
         .number({
-            invalid_type_error: 'Discount must be a number',
+            message: 'Discount must be a number',
         })
         .min(0, { message: 'Discount must be >= 0' })
         .optional(),

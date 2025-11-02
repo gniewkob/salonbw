@@ -9,14 +9,14 @@ const reasons = ['delivery', 'sale', 'correction', 'damage', 'return', 'transfer
 const schema = z.object({
     productId: z
         .number({
-            required_error: 'Product is required',
-            invalid_type_error: 'Product is required',
+            message: 'Product is required',
         })
         .min(1, { message: 'Product is required' }),
-    delta: z.number({ required_error: 'Delta is required' }),
+    delta: z.number({
+        message: 'Delta is required',
+    }),
     reason: z.enum(reasons, {
-        required_error: 'Reason is required',
-        invalid_type_error: 'Reason is required',
+        message: 'Reason is required',
     }),
     note: z.string().max(500, { message: 'Note must be <= 500 characters' }).optional(),
 });

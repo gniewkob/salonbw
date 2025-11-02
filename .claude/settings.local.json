@@ -16,7 +16,12 @@
       "Bash(git commit:*)",
       "Bash(pnpm audit:*)",
       "Bash(git push:*)",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(NEXT_IMAGE_UNOPTIMIZED=false pnpm run build:*)",
+      "Bash(export NEXT_IMAGE_UNOPTIMIZED=false)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm --filter frontend run typecheck:*)",
+      "Bash(pnpm --filter frontend run build:*)"
     ],
     "deny": [],
     "ask": []
