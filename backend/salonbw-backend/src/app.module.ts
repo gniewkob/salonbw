@@ -116,12 +116,41 @@ import { CSPModule } from './csp/csp.module';
                     );
                 }
 
+                // Connection pooling configuration
+                const poolSize = config.get<number>('DB_POOL_SIZE', 10);
+                const poolMin = config.get<number>('DB_POOL_MIN', 2);
+                const idleTimeoutMillis = config.get<number>(
+                    'DB_IDLE_TIMEOUT_MS',
+                    30000,
+                );
+                const connectionTimeoutMillis = config.get<number>(
+                    'DB_CONNECTION_TIMEOUT_MS',
+                    5000,
+                );
+
                 return {
                     type: 'postgres',
                     url: dbUrl,
                     autoLoadEntities: true,
                     synchronize: shouldSync,
                     migrations: [__dirname + '/migrations/*{.ts,.js}'],
+                    // Connection pooling
+                    extra: {
+                        max: poolSize, // Maximum pool size
+                        min: poolMin, // Minimum pool size
+                        idleTimeoutMillis, // Close idle connections after this time
+                        connectionTimeoutMillis, // Fail connection after this time
+                        statement_timeout: 30000, // Cancel queries after 30s
+                        query_timeout: 30000, // Query timeout
+                    },
+                    // Query performance
+                    logging: nodeEnv === 'development' ? ['error', 'warn'] : false,
+                    maxQueryExecutionTime:
+                        nodeEnv === 'development' ? 1000 : undefined, // Log slow queries > 1s in dev
+                    cache: {
+                        duration: 30000, // Cache results for 30s
+                        type: 'database', // Use database for query result caching
+                    },
                 };
             },
         }),
