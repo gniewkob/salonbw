@@ -19,9 +19,16 @@ const nextConfig = {
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     output: 'standalone',
-    // Configure image optimization; default to unoptimized on mydevil to avoid 400s
-    // from the on-host optimizer. Can be overridden by NEXT_IMAGE_UNOPTIMIZED=false.
-    images: { unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED !== 'false' },
+    // Image optimization configuration
+    // Enable optimization by default, can be disabled with NEXT_IMAGE_UNOPTIMIZED=true for shared hosting
+    images: {
+        unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
+        formats: ['image/webp', 'image/avif'],
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+        minimumCacheTTL: 60, // Cache optimized images for 60 seconds
+        domains: ['scontent.cdninstagram.com', 'cdninstagram.com'], // Instagram image domains
+    },
     experimental: {
         typedRoutes: false,
     },
