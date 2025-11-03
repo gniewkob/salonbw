@@ -1,23 +1,43 @@
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
-import AppointmentForm from '@/components/AppointmentForm';
 import { useAppointments } from '@/hooks/useAppointments';
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import type { ComponentProps } from 'react';
+import type { PluginDef } from '@fullcalendar/core';
 import type { DateClickArg } from '@fullcalendar/interaction';
 import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import type { paths } from '@salonbw/api';
+import { useEffect, useMemo, useState } from 'react';
+import { getCalendarPlugins } from '@/utils/calendarPlugins';
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
+    loading: () => (
+        <div className="rounded border border-dashed p-6 text-sm text-gray-600">
+            Loading calendar…
+        </div>
+    ),
 });
-import { useState } from 'react';
+
+import type AppointmentFormComponent from '@/components/AppointmentForm';
+
+type AppointmentFormProps = ComponentProps<typeof AppointmentFormComponent>;
+
+const AppointmentForm = dynamic<AppointmentFormProps>(
+    () => import('@/components/AppointmentForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading form…
+            </div>
+        ),
+    },
+);
 
 type CreateAppointmentPayload =
     paths['/appointments']['post']['requestBody']['content']['application/json'];
@@ -38,15 +58,46 @@ export default function AppointmentsPage() {
     const [formOpen, setFormOpen] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
+    const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
+        null,
+    );
+    const [pluginLoadError, setPluginLoadError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        void getCalendarPlugins()
+            .then((plugins) => {
+                if (mounted) {
+                    setCalendarPlugins(plugins);
+                    setPluginLoadError(null);
+                }
+            })
+            .catch((err) => {
+                if (!mounted) return;
+                setPluginLoadError(
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to load calendar',
+                );
+                setCalendarPlugins([]);
+            });
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     if (loading || !services) return <div>Loading...</div>;
     if (error) return <div>Error</div>;
 
-    const events = appointments?.map((a) => ({
-        id: String(a.id),
-        title: a.client?.name ?? String(a.id),
-        start: a.startTime,
-    }));
+    const events = useMemo(
+        () =>
+            appointments?.map((a) => ({
+                id: String(a.id),
+                title: a.client?.name ?? String(a.id),
+                start: a.startTime,
+            })) ?? [],
+        [appointments],
+    );
 
     const handleDateClick = (arg: DateClickArg) => {
         setEditId(null);
@@ -98,25 +149,37 @@ export default function AppointmentsPage() {
                 {role === 'receptionist' && (
                     <div>Viewing appointments for all employees</div>
                 )}
-                <FullCalendar
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    initialView="timeGridWeek"
-                    events={events}
-                    dateClick={handleDateClick}
-                    eventClick={handleEventClick}
-                    eventDrop={(arg) => {
-                        void handleDrop(arg);
-                    }}
-                    editable
-                />
-                <Modal open={formOpen} onClose={() => setFormOpen(false)}>
-                    <AppointmentForm
-                        services={services}
-                        initial={{ startTime }}
-                        onSubmit={handleSubmit}
-                        onCancel={() => setFormOpen(false)}
+                {pluginLoadError ? (
+                    <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                        {pluginLoadError}
+                    </div>
+                ) : calendarPlugins ? (
+                    <FullCalendar
+                        plugins={calendarPlugins}
+                        initialView="timeGridWeek"
+                        events={events}
+                        dateClick={handleDateClick}
+                        eventClick={handleEventClick}
+                        eventDrop={(arg) => {
+                            void handleDrop(arg);
+                        }}
+                        editable
                     />
-                </Modal>
+                ) : (
+                    <div className="rounded border border-dashed p-6 text-sm text-gray-600">
+                        Preparing calendar…
+                    </div>
+                )}
+                {formOpen ? (
+                    <Modal open onClose={() => setFormOpen(false)}>
+                        <AppointmentForm
+                            services={services}
+                            initial={{ startTime }}
+                            onSubmit={handleSubmit}
+                            onCancel={() => setFormOpen(false)}
+                        />
+                    </Modal>
+                ) : null}
             </DashboardLayout>
         </RouteGuard>
     );
