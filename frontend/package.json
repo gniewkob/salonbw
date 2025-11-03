@@ -41,6 +41,7 @@
     "@next/bundle-analyzer": "^14.2.32",
     "@radix-ui/react-select": "^2.2.6",
     "@sentry/nextjs": "^8.55.0",
+    "styled-jsx": "^5.1.1",
     "autoprefixer": "^10.4.21",
     "formik": "^2.4.6",
     "next": "14.2.32",
