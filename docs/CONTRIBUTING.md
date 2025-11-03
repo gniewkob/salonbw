@@ -15,12 +15,13 @@
 ## Quality Gates
 
 1. Run linting and formatting in the directory you touched:
-   - Frontend: `npm run lint`, `npm run format`.
-   - Backend: `npm run lint`, `npm run format`.
+   - Frontend: `pnpm --filter frontend run lint`, `pnpm --filter frontend run format`.
+   - Backend: `pnpm --filter salonbw-backend run lint`, `pnpm --filter salonbw-backend run format`.
 2. Execute the relevant test suites:
-   - Frontend unit tests: `npm test`.
-   - Backend tests: `npm run test`.
-   - Cypress E2E (optional pre-merge): `npm run e2e`.
+   - Frontend unit tests: `pnpm --filter frontend test`.
+   - Backend tests: `pnpm --filter salonbw-backend test`.
+   - Cypress E2E (optional pre-merge): `pnpm --filter frontend run e2e`.
+   - Bundle budget: `pnpm --filter frontend run bundle:check` (mirrors the CI guard); keep `/dashboard/*` first-load JS < 300 kB.
 3. Ensure CI passes before requesting review.
 
 ## Pull Request Checklist
@@ -58,3 +59,4 @@
 - For security patches, merge and deploy within 7 days of disclosure
 - Run `pnpm audit` locally before committing new dependencies
 - Use `pnpm outdated` quarterly to review available updates
+- Periodically run `pnpm --filter frontend dlx depcheck` to prune unused packages; CI expects `axios`, `msw`, or other mocks only when actively used.

@@ -1,13 +1,13 @@
 import type { Route } from 'next';
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import type { ComponentProps } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsWidget from '@/components/StatsWidget';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import SaleForm from '@/components/SaleForm';
-import InventoryAdjustmentForm from '@/components/InventoryAdjustmentForm';
 import {
     useInventory,
     useRetailApi,
@@ -18,6 +18,36 @@ import {
 import { useProducts } from '@/hooks/useProducts';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAppointments } from '@/hooks/useAppointments';
+
+import type SaleFormComponent from '@/components/SaleForm';
+import type InventoryAdjustmentFormComponent from '@/components/InventoryAdjustmentForm';
+
+type SaleFormProps = ComponentProps<typeof SaleFormComponent>;
+type InventoryAdjustmentFormProps = ComponentProps<
+    typeof InventoryAdjustmentFormComponent
+>;
+
+const LazySaleForm = dynamic<SaleFormProps>(
+    () => import('@/components/SaleForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">Loading sale form…</div>
+        ),
+    },
+);
+
+const LazyInventoryAdjustmentForm = dynamic<InventoryAdjustmentFormProps>(
+    () => import('@/components/InventoryAdjustmentForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading inventory form…
+            </div>
+        ),
+    },
+);
 
 export default function RetailDashboard() {
     const [threshold, setThreshold] = useState(5);
@@ -162,32 +192,33 @@ export default function RetailDashboard() {
                     </a>
                 </div>
 
-                <Modal open={showSaleForm} onClose={() => setShowSaleForm(false)}>
-                    <h2 className="text-lg font-semibold mb-4">
-                        Record Product Sale
-                    </h2>
-                    <SaleForm
-                        products={products ?? []}
-                        employees={employees ?? []}
-                        appointments={appointments ?? []}
-                        onSubmit={handleCreateSale}
-                        onCancel={() => setShowSaleForm(false)}
-                    />
-                </Modal>
+                {showSaleForm ? (
+                    <Modal open onClose={() => setShowSaleForm(false)}>
+                        <h2 className="text-lg font-semibold mb-4">
+                            Record Product Sale
+                        </h2>
+                        <LazySaleForm
+                            products={products ?? []}
+                            employees={employees ?? []}
+                            appointments={appointments ?? []}
+                            onSubmit={handleCreateSale}
+                            onCancel={() => setShowSaleForm(false)}
+                        />
+                    </Modal>
+                ) : null}
 
-                <Modal
-                    open={showAdjustForm}
-                    onClose={() => setShowAdjustForm(false)}
-                >
-                    <h2 className="text-lg font-semibold mb-4">
-                        Adjust Inventory
-                    </h2>
-                    <InventoryAdjustmentForm
-                        products={products ?? []}
-                        onSubmit={handleAdjustInventory}
-                        onCancel={() => setShowAdjustForm(false)}
-                    />
-                </Modal>
+                {showAdjustForm ? (
+                    <Modal open onClose={() => setShowAdjustForm(false)}>
+                        <h2 className="text-lg font-semibold mb-4">
+                            Adjust Inventory
+                        </h2>
+                        <LazyInventoryAdjustmentForm
+                            products={products ?? []}
+                            onSubmit={handleAdjustInventory}
+                            onCancel={() => setShowAdjustForm(false)}
+                        />
+                    </Modal>
+                ) : null}
             </DashboardLayout>
         </RouteGuard>
     );

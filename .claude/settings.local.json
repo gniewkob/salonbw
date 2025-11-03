@@ -21,7 +21,9 @@
       "Bash(export NEXT_IMAGE_UNOPTIMIZED=false)",
       "Bash(pnpm run build:*)",
       "Bash(pnpm --filter frontend run typecheck:*)",
-      "Bash(pnpm --filter frontend run build:*)"
+      "Bash(pnpm --filter frontend run build:*)",
+      "Bash(ANALYZE=true pnpm run build:*)",
+      "Bash(export ANALYZE=true)"
     ],
     "deny": [],
     "ask": []

@@ -141,6 +141,13 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
+      - name: Enforce bundle size budget
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
+        run: pnpm --filter frontend run bundle:check
+        env:
+          BUNDLE_FIRST_LOAD_LIMIT_KB: 300
+          BUNDLE_ROUTES: "/dashboard/admin,/dashboard/admin/retail,/dashboard/admin/scheduler,/dashboard/employee,/appointments"
+
   backend:
     name: Backend API
     runs-on: ubuntu-latest

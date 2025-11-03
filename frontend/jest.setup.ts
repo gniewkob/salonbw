@@ -43,8 +43,6 @@ declare global {
     }
 }
 
-// polyfill for msw/node
-
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as typeof global.TextDecoder;
 global.ReadableStream = ReadableStream;
