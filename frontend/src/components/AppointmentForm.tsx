@@ -1,5 +1,4 @@
 import { FormEvent, useState } from 'react';
-import * as Select from '@radix-ui/react-select';
 import { Service } from '@/types';
 
 interface Props {
@@ -48,32 +47,18 @@ export default function AppointmentForm({
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
-            <Select.Root
-                value={String(serviceId)}
-                onValueChange={(v) => setServiceId(Number(v))}
+            <select
+                className="border p-1 w-full"
+                data-testid="service-select"
+                value={serviceId}
+                onChange={(e) => setServiceId(Number(e.target.value))}
             >
-                <Select.Trigger
-                    data-testid="service-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            {services.map((s) => (
-                                <Select.Item
-                                    key={s.id}
-                                    value={String(s.id)}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>{s.name}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
+                {services.map((s) => (
+                    <option key={s.id} value={s.id}>
+                        {s.name}
+                    </option>
+                ))}
+            </select>
             <input
                 type="datetime-local"
                 value={startTime}

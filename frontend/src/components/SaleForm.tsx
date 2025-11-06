@@ -1,36 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import * as Select from '@radix-ui/react-select';
-import { z } from 'zod';
 import { Appointment, Employee, Product } from '@/types';
 import { CreateSaleData } from '@/hooks/useRetail';
-
-const schema = z.object({
-    productId: z
-        .number({
-            message: 'Product is required',
-        })
-        .min(1, { message: 'Product is required' }),
-    quantity: z
-        .number({
-            message: 'Quantity is required',
-        })
-        .min(1, { message: 'Quantity must be at least 1' }),
-    employeeId: z.number().optional(),
-    appointmentId: z.number().optional(),
-    unitPrice: z
-        .number({
-            message: 'Unit price must be a number',
-        })
-        .min(0, { message: 'Unit price must be >= 0' })
-        .optional(),
-    discount: z
-        .number({
-            message: 'Discount must be a number',
-        })
-        .min(0, { message: 'Discount must be >= 0' })
-        .optional(),
-    note: z.string().max(500, { message: 'Note must be <= 500 characters' }).optional(),
-});
 
 interface Props {
     products: Product[];
@@ -81,8 +51,8 @@ export default function SaleForm({
         setError('');
 
         const parsedData = {
-            productId: productId ? Number(productId) : undefined,
-            quantity: quantity !== '' ? Number(quantity) : undefined,
+            productId: productId ? Number(productId) : NaN,
+            quantity: quantity !== '' ? Number(quantity) : NaN,
             employeeId: employeeId ? Number(employeeId) : undefined,
             appointmentId: appointmentId ? Number(appointmentId) : undefined,
             unitPrice: unitPrice !== '' ? Number(unitPrice) : undefined,
@@ -90,28 +60,51 @@ export default function SaleForm({
             note: note.trim() !== '' ? note.trim() : undefined,
         };
 
-        try {
-            const data = schema.parse(parsedData);
-
-            setSubmitting(true);
-            await onSubmit({
-                productId: data.productId,
-                quantity: data.quantity,
-                employeeId: data.employeeId,
-                appointmentId: data.appointmentId,
-                unitPrice: data.unitPrice,
-                discount: data.discount,
-                note: data.note,
-            });
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError) {
-                setError(err.issues[0]?.message ?? 'Error');
-            } else if (err instanceof Error) {
-                setError(err.message || 'Error');
-            } else {
-                setError('Error');
-            }
+        if (!Number.isFinite(parsedData.productId) || parsedData.productId < 1) {
+            setError('Product is required');
             return;
+        }
+
+        if (!Number.isFinite(parsedData.quantity) || parsedData.quantity < 1) {
+            setError('Quantity must be at least 1');
+            return;
+        }
+
+        if (
+            parsedData.unitPrice !== undefined &&
+            (!Number.isFinite(parsedData.unitPrice) || parsedData.unitPrice < 0)
+        ) {
+            setError('Unit price must be >= 0');
+            return;
+        }
+
+        if (
+            parsedData.discount !== undefined &&
+            (!Number.isFinite(parsedData.discount) || parsedData.discount < 0)
+        ) {
+            setError('Discount must be >= 0');
+            return;
+        }
+
+        if (parsedData.note && parsedData.note.length > 500) {
+            setError('Note must be <= 500 characters');
+            return;
+        }
+
+        setError('');
+        setSubmitting(true);
+        try {
+            await onSubmit({
+                productId: parsedData.productId,
+                quantity: parsedData.quantity,
+                employeeId: parsedData.employeeId,
+                appointmentId: parsedData.appointmentId,
+                unitPrice: parsedData.unitPrice,
+                discount: parsedData.discount,
+                note: parsedData.note,
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }
@@ -119,30 +112,22 @@ export default function SaleForm({
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
-            <Select.Root value={productId} onValueChange={(value) => setProductId(value)}>
-                <Select.Trigger
-                    data-testid="product-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value placeholder="Select product" />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            {products.map((product) => (
-                                <Select.Item
-                                    key={product.id}
-                                    value={String(product.id)}
-                                    data-testid={`product-option-${product.id}`}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>{product.name}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
+            <select
+                data-testid="product-select"
+                className="border p-1 w-full"
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+            >
+                {products.map((product) => (
+                    <option
+                        key={product.id}
+                        value={product.id}
+                        data-testid={`product-option-${product.id}`}
+                    >
+                        {product.name}
+                    </option>
+                ))}
+            </select>
             <input
                 type="number"
                 min={1}
@@ -151,64 +136,42 @@ export default function SaleForm({
                 className="border p-1 w-full"
                 placeholder="Quantity"
             />
-            <Select.Root value={employeeId} onValueChange={(value) => setEmployeeId(value)}>
-                <Select.Trigger
-                    data-testid="employee-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value placeholder="Assign employee (optional)" />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            <Select.Item value="" className="p-1">
-                                <Select.ItemText>None</Select.ItemText>
-                            </Select.Item>
-                            {employees.map((employee) => (
-                                <Select.Item
-                                    key={employee.id}
-                                    value={String(employee.id)}
-                                    data-testid={`employee-option-${employee.id}`}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>{employee.name}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
-            <Select.Root value={appointmentId} onValueChange={(value) => setAppointmentId(value)}>
-                <Select.Trigger
-                    data-testid="appointment-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value placeholder="Link appointment (optional)" />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            <Select.Item value="" className="p-1">
-                                <Select.ItemText>None</Select.ItemText>
-                            </Select.Item>
-                            {appointments.map((appointment) => (
-                                <Select.Item
-                                    key={appointment.id}
-                                    value={String(appointment.id)}
-                                    data-testid={`appointment-option-${appointment.id}`}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>
-                                        {appointment.client?.name ?? 'Unknown client'} ·{' '}
-                                        {appointment.service?.name ?? 'Service'} ·{' '}
-                                        {new Date(appointment.startTime).toLocaleString()}
-                                    </Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
+            <select
+                data-testid="employee-select"
+                className="border p-1 w-full"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+            >
+                <option value="">None</option>
+                {employees.map((employee) => (
+                    <option
+                        key={employee.id}
+                        value={employee.id}
+                        data-testid={`employee-option-${employee.id}`}
+                    >
+                        {employee.name}
+                    </option>
+                ))}
+            </select>
+            <select
+                data-testid="appointment-select"
+                className="border p-1 w-full"
+                value={appointmentId}
+                onChange={(e) => setAppointmentId(e.target.value)}
+            >
+                <option value="">None</option>
+                {appointments.map((appointment) => (
+                    <option
+                        key={appointment.id}
+                        value={appointment.id}
+                        data-testid={`appointment-option-${appointment.id}`}
+                    >
+                        {appointment.client?.name ?? 'Unknown client'} ·{' '}
+                        {appointment.service?.name ?? 'Service'} ·{' '}
+                        {new Date(appointment.startTime).toLocaleString()}
+                    </option>
+                ))}
+            </select>
             <input
                 type="number"
                 step="0.01"

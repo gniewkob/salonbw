@@ -190,6 +190,7 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - 2025-11-01 – Bundle analyzer confirms all calendar-driven dashboards now ship <4 kB route code with ~158 kB first-load JS (down from 195–261 kB).
 - 2025-11-03 – CI now fails builds if monitored routes exceed 300 kB gzipped first-load JS (`frontend/scripts/check-bundle-size.mjs`, enforced in `ci.yml`).
 - 2025-11-03 – `depcheck` (frontend) flagged `autoprefixer`, `axios`, `sharp`, and several dev dependencies; confirmed PostCSS relies on `autoprefixer`/`@tailwindcss/postcss`, kept `sharp` for Next image optimisation, removed unused `axios`/`axios-mock-adapter`/`msw`, and added `@jest/globals` dev dep for explicit import.
+- 2025-11-06 – Removed `@radix-ui/react-select` usage across dashboard/public forms; native `<select>` elements now replace Radix widgets, eliminating the 255 kB Floating UI chunk from `_app` and keeping shared JS ~149 kB.
 
 ---
 

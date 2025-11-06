@@ -21,8 +21,27 @@
    - Frontend unit tests: `pnpm --filter frontend test`.
    - Backend tests: `pnpm --filter salonbw-backend test`.
    - Cypress E2E (optional pre-merge): `pnpm --filter frontend run e2e`.
+   - Cypress component tests: clear `ELECTRON_RUN_AS_NODE` (`ELECTRON_RUN_AS_NODE= pnpm --filter frontend exec cypress run --component`) and wrap rendered pages with the providers they expect (e.g. `<AuthProvider>` for dashboard screens) to avoid runtime hook errors.
    - Bundle budget: `pnpm --filter frontend run bundle:check` (mirrors the CI guard); keep `/dashboard/*` first-load JS < 300 kB.
+   - Dockerised Cypress against the hosted backend (ensures headless Chrome parity):
+     ```
+     API_PROXY_URL=https://backend.salon-bw.pl \
+     pnpm dlx start-server-and-test \
+       "pnpm --filter frontend run start:standalone" \
+       http://localhost:3000 \
+       "docker run --rm \
+          -e CYPRESS_baseUrl=http://host.docker.internal:3000 \
+          -v $PWD/frontend:/e2e -w /e2e \
+          cypress/included:15.5.0 --browser chrome --headless"
+     ```
 3. Ensure CI passes before requesting review.
+
+## Frontend Performance Playbook
+
+- Run `pnpm --filter frontend run analyze` after touching dashboard or appointments routes and review the generated reports in `.next/analyze`.
+- Use `next/dynamic` with loading states for dashboard-only forms, modals, or components that pull in heavy dependencies (schema libraries, `@radix-ui/*`, `FullCalendar`, etc.).
+- Keep the monitored dashboard routes under ~160 kB first-load JS locally; if a route regresses, add lazy loading or split code by role before opening a PR.
+- Ensure `pnpm --filter frontend run bundle:check` passes before pushing; this guard blocks CI when monitored routes exceed the 300 kB ceiling.
 
 ## Pull Request Checklist
 
@@ -53,10 +72,10 @@
 
 ### Dependency Management
 
-- **Security audits run automatically** on every PR via GitHub Actions
-- High/critical vulnerabilities in production dependencies will fail CI
-- Review Dependabot PRs within 7 days of creation
-- For security patches, merge and deploy within 7 days of disclosure
-- Run `pnpm audit` locally before committing new dependencies
-- Use `pnpm outdated` quarterly to review available updates
-- Periodically run `pnpm --filter frontend dlx depcheck` to prune unused packages; CI expects `axios`, `msw`, or other mocks only when actively used.
+- Dependabot opens weekly update PRs for GitHub Actions, the workspace root, `frontend/`, and `backend/salonbw-backend/`. Assign an owner immediately and merge non-breaking upgrades within 7 days.
+- The CI “Security Audit” job runs `pnpm audit --prod --audit-level=high` and blocks merges on high/critical vulnerabilities. Investigate failing runs before merging any branch.
+- Schedule quarterly sweeps (first Monday of January, April, July, October):
+  - `pnpm outdated`
+  - `pnpm --filter frontend dlx depcheck`
+  - `pnpm --filter salonbw-backend dlx depcheck`
+- For disclosed security issues fix and deploy within 7 days; document the outcome in `docs/AGENT_STATUS.md`.
