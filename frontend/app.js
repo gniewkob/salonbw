@@ -19,10 +19,13 @@ const server = path.join(standaloneDir, 'server.js');
 const staticSource = path.join(__dirname, '.next', 'static');
 const standaloneNextDir = path.join(standaloneDir, '.next');
 const staticTarget = path.join(standaloneNextDir, 'static');
+const isStandaloneRuntime = fs.existsSync(server);
+const standaloneNodeModules = path.join(standaloneDir, 'node_modules');
 
 // Ensure the standalone server can resolve hashed assets even if the deployment
 // environment does not pre-create the expected symlink.
 function ensureStaticAssets() {
+    if (!isStandaloneRuntime) return;
     if (!fs.existsSync(staticSource)) {
         console.warn(
             `Next.js static assets directory not found at ${staticSource}.`,
@@ -80,10 +83,79 @@ function ensureStaticAssets() {
     }
 }
 
-ensureStaticAssets();
+function configureModuleResolution() {
+    if (!isStandaloneRuntime) return;
+    const Module = require('module');
+    const extraNodePaths = [
+        path.join(standaloneDir, 'node_modules'),
+        path.join(__dirname, 'node_modules'),
+    ];
+    const existingNodePath = process.env.NODE_PATH
+        ? process.env.NODE_PATH.split(path.delimiter)
+        : [];
+    const nodePathSet = new Set(
+        [...extraNodePaths, ...existingNodePath].filter(Boolean),
+    );
+    process.env.NODE_PATH = Array.from(nodePathSet).join(path.delimiter);
+    Module._initPaths();
+    for (const p of extraNodePaths) {
+        if (!Module.globalPaths.includes(p)) {
+            Module.globalPaths.push(p);
+        }
+        if (require.main && !require.main.paths.includes(p)) {
+            require.main.paths.push(p);
+        }
+    }
+}
 
-// No-op polyfill copy: Next.js 14 standalone does not require copying
-// node-polyfill-crypto into the bundled tree on Node 18+.
+function ensureStandaloneDependency(packageName) {
+    if (!isStandaloneRuntime) return;
+    const source = path.join(__dirname, 'node_modules', packageName);
+    const target = path.join(standaloneNodeModules, packageName);
+    if (!fs.existsSync(source)) return;
+    try {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        if (fs.existsSync(target)) return;
+        try {
+            fs.symlinkSync(source, target, 'junction');
+        } catch {
+            fs.cpSync(source, target, { recursive: true });
+        }
+    } catch (error) {
+        console.warn(
+            `Unable to link ${packageName} into standalone bundle (${error.message}).`,
+        );
+    }
+}
+
+function syncNextRuntimeArtifacts() {
+    if (!isStandaloneRuntime) return;
+    const source = path.join(__dirname, 'node_modules', 'next', 'dist');
+    const target = path.join(standaloneNodeModules, 'next', 'dist');
+    try {
+        if (!fs.existsSync(source)) return;
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.cpSync(source, target, { recursive: true });
+    } catch (error) {
+        console.warn(
+            `Unable to synchronise Next.js runtime assets (${error.message}).`,
+        );
+    }
+}
+
+configureModuleResolution();
+ensureStaticAssets();
+ensureStandaloneDependency('@next/env');
+ensureStandaloneDependency('@swc/helpers');
+ensureStandaloneDependency('styled-jsx');
+ensureStandaloneDependency('picocolors');
+syncNextRuntimeArtifacts();
+
+if (!isStandaloneRuntime) {
+    throw new Error(
+        'Missing Next.js standalone server. Run `next build` before starting.',
+    );
+}
 
 if (typeof globalThis.crypto === 'undefined') {
     try {

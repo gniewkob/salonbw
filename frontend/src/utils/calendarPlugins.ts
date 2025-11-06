@@ -1,14 +1,40 @@
-// Centralized FullCalendar plugin loader to keep pages simple and avoid
-// repeating require calls. Using require with literal module names prevents
-// user-controlled dynamic imports.
+// Centralized FullCalendar plugin loader that caches the heavy plugins and
+// loads them on-demand so dashboard bundles stay lean.
 import type { PluginDef } from '@fullcalendar/core';
 
-export function getCalendarPlugins(): PluginDef[] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
-    const dayGrid = require('@fullcalendar/daygrid').default;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
-    const timeGrid = require('@fullcalendar/timegrid').default;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
-    const interaction = require('@fullcalendar/interaction').default;
-    return [dayGrid, timeGrid, interaction] as unknown as PluginDef[];
+let cachedPlugins: PluginDef[] | null = null;
+let pendingLoad: Promise<PluginDef[]> | null = null;
+
+export async function getCalendarPlugins(): Promise<PluginDef[]> {
+    if (cachedPlugins) {
+        return cachedPlugins;
+    }
+    if (pendingLoad) {
+        return pendingLoad;
+    }
+
+    pendingLoad = Promise.all([
+        import('@fullcalendar/daygrid'),
+        import('@fullcalendar/timegrid'),
+        import('@fullcalendar/interaction'),
+    ])
+        .then(([dayGrid, timeGrid, interaction]) => {
+            const plugins = [
+                dayGrid.default ?? dayGrid,
+                timeGrid.default ?? timeGrid,
+                interaction.default ?? interaction,
+            ] as unknown as PluginDef[];
+            cachedPlugins = plugins;
+            return plugins;
+        })
+        .finally(() => {
+            pendingLoad = null;
+        });
+
+    return pendingLoad;
+}
+
+export function resetCalendarPluginsCache() {
+    cachedPlugins = null;
+    pendingLoad = null;
 }
