@@ -1,11 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { z } from 'zod';
 import { Employee } from '@/types';
-
-const schema = z.object({
-    firstName: z.string().min(1, { message: 'First name is required' }),
-    lastName: z.string().min(1, { message: 'Last name is required' }),
-});
 
 interface Props {
     initial?: Partial<Employee>;
@@ -21,14 +15,23 @@ export default function EmployeeForm({ initial, onSubmit, onCancel }: Props) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        const trimmedFirst = firstName.trim();
+        const trimmedLast = lastName.trim();
+        if (!trimmedFirst) {
+            setError('First name is required');
+            return;
+        }
+        if (!trimmedLast) {
+            setError('Last name is required');
+            return;
+        }
+
+        setError('');
+        setSubmitting(true);
         try {
-            const data = schema.parse({ firstName, lastName });
-            setSubmitting(true);
-            await onSubmit(data);
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError)
-                setError(err.issues[0]?.message ?? 'Error');
-            else setError('Error');
+            await onSubmit({ firstName: trimmedFirst, lastName: trimmedLast });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }

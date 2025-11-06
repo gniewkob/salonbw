@@ -1,25 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import * as Select from '@radix-ui/react-select';
-import { z } from 'zod';
 import { Product } from '@/types';
 import { AdjustInventoryData } from '@/hooks/useRetail';
 
 const reasons = ['delivery', 'sale', 'correction', 'damage', 'return', 'transfer'] as const;
-
-const schema = z.object({
-    productId: z
-        .number({
-            message: 'Product is required',
-        })
-        .min(1, { message: 'Product is required' }),
-    delta: z.number({
-        message: 'Delta is required',
-    }),
-    reason: z.enum(reasons, {
-        message: 'Reason is required',
-    }),
-    note: z.string().max(500, { message: 'Note must be <= 500 characters' }).optional(),
-});
 
 interface Props {
     products: Product[];
@@ -50,31 +33,43 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
         setError('');
 
         const parsedData = {
-            productId: productId ? Number(productId) : undefined,
-            delta: delta !== '' ? Number(delta) : undefined,
+            productId: productId ? Number(productId) : NaN,
+            delta: delta !== '' ? Number(delta) : NaN,
             reason: reason || undefined,
             note: note.trim() !== '' ? note.trim() : undefined,
         };
 
-        try {
-            const data = schema.parse(parsedData);
-
-            setSubmitting(true);
-            await onSubmit({
-                productId: data.productId,
-                delta: data.delta,
-                reason: data.reason,
-                note: data.note,
-            });
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError) {
-                setError(err.issues[0]?.message ?? 'Error');
-            } else if (err instanceof Error) {
-                setError(err.message || 'Error');
-            } else {
-                setError('Error');
-            }
+        if (!Number.isFinite(parsedData.productId) || parsedData.productId < 1) {
+            setError('Product is required');
             return;
+        }
+
+        if (!Number.isFinite(parsedData.delta)) {
+            setError('Delta is required');
+            return;
+        }
+
+        if (!parsedData.reason || !reasons.includes(parsedData.reason as typeof reasons[number])) {
+            setError('Reason is required');
+            return;
+        }
+
+        if (parsedData.note && parsedData.note.length > 500) {
+            setError('Note must be <= 500 characters');
+            return;
+        }
+
+        setError('');
+        setSubmitting(true);
+        try {
+            await onSubmit({
+                productId: parsedData.productId,
+                delta: parsedData.delta,
+                reason: parsedData.reason as AdjustInventoryData['reason'],
+                note: parsedData.note,
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }
@@ -82,30 +77,22 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
 
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
-            <Select.Root value={productId} onValueChange={(value) => setProductId(value)}>
-                <Select.Trigger
-                    data-testid="product-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value placeholder="Select product" />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            {products.map((product) => (
-                                <Select.Item
-                                    key={product.id}
-                                    value={String(product.id)}
-                                    data-testid={`product-option-${product.id}`}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>{product.name}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
+            <select
+                data-testid="product-select"
+                className="border p-1 w-full"
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+            >
+                {products.map((product) => (
+                    <option
+                        key={product.id}
+                        value={product.id}
+                        data-testid={`product-option-${product.id}`}
+                    >
+                        {product.name}
+                    </option>
+                ))}
+            </select>
             <input
                 type="number"
                 value={delta}
@@ -116,30 +103,23 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
             <p className="text-sm text-gray-500">
                 Positive for stock in, negative for stock out
             </p>
-            <Select.Root value={reason} onValueChange={(value) => setReason(value)}>
-                <Select.Trigger
-                    data-testid="reason-select"
-                    className="border p-1 w-full text-left"
-                >
-                    <Select.Value placeholder="Select reason" />
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Content className="border bg-white">
-                        <Select.Viewport>
-                            {reasons.map((option) => (
-                                <Select.Item
-                                    key={option}
-                                    value={option}
-                                    data-testid={`reason-option-${option}`}
-                                    className="p-1"
-                                >
-                                    <Select.ItemText>{option}</Select.ItemText>
-                                </Select.Item>
-                            ))}
-                        </Select.Viewport>
-                    </Select.Content>
-                </Select.Portal>
-            </Select.Root>
+            <select
+                data-testid="reason-select"
+                className="border p-1 w-full"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+            >
+                <option value="">Select reason</option>
+                {reasons.map((option) => (
+                    <option
+                        key={option}
+                        value={option}
+                        data-testid={`reason-option-${option}`}
+                    >
+                        {option}
+                    </option>
+                ))}
+            </select>
             <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
