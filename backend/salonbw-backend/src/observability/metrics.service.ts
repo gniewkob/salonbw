@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
     collectDefaultMetrics,
     Counter,
+    Gauge,
     Histogram,
     Registry,
 } from 'prom-client';
@@ -16,6 +17,13 @@ export class MetricsService {
     private readonly emailsSentTotal: Counter<string>;
     private readonly appointmentsCreatedTotal: Counter<string>;
     private readonly appointmentsCompletedTotal: Counter<string>;
+
+    // Database metrics
+    private readonly dbConnectionsActive: Gauge<string>;
+    private readonly dbConnectionsIdle: Gauge<string>;
+    private readonly dbConnectionsTotal: Gauge<string>;
+    private readonly dbQueryDurationSeconds: Histogram<string>;
+    private readonly dbQueriesTotal: Counter<string>;
 
     constructor() {
         this.registry = new Registry();
@@ -57,6 +65,41 @@ export class MetricsService {
             help: 'Number of appointments completed',
             registers: [this.registry],
         });
+
+        // Database connection pool metrics
+        this.dbConnectionsActive = new Gauge({
+            name: 'salonbw_db_connections_active',
+            help: 'Number of active database connections',
+            registers: [this.registry],
+        });
+
+        this.dbConnectionsIdle = new Gauge({
+            name: 'salonbw_db_connections_idle',
+            help: 'Number of idle database connections in the pool',
+            registers: [this.registry],
+        });
+
+        this.dbConnectionsTotal = new Gauge({
+            name: 'salonbw_db_connections_total',
+            help: 'Total number of database connections in the pool',
+            registers: [this.registry],
+        });
+
+        // Database query metrics
+        this.dbQueryDurationSeconds = new Histogram({
+            name: 'salonbw_db_query_duration_seconds',
+            help: 'Time spent executing database queries',
+            labelNames: ['query_type'], // select, insert, update, delete
+            buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2],
+            registers: [this.registry],
+        });
+
+        this.dbQueriesTotal = new Counter({
+            name: 'salonbw_db_queries_total',
+            help: 'Total number of database queries executed',
+            labelNames: ['query_type', 'status'], // status: success | error
+            registers: [this.registry],
+        });
     }
 
     recordHttpRequest(
@@ -92,5 +135,27 @@ export class MetricsService {
 
     incAppointmentCompleted(): void {
         this.appointmentsCompletedTotal.inc();
+    }
+
+    // Database metrics methods
+    setDbConnectionsActive(count: number): void {
+        this.dbConnectionsActive.set(count);
+    }
+
+    setDbConnectionsIdle(count: number): void {
+        this.dbConnectionsIdle.set(count);
+    }
+
+    setDbConnectionsTotal(count: number): void {
+        this.dbConnectionsTotal.set(count);
+    }
+
+    recordDbQuery(
+        queryType: 'select' | 'insert' | 'update' | 'delete' | 'other',
+        durationSeconds: number,
+        status: 'success' | 'error',
+    ): void {
+        this.dbQueryDurationSeconds.observe({ query_type: queryType }, durationSeconds);
+        this.dbQueriesTotal.inc({ query_type: queryType, status });
     }
 }

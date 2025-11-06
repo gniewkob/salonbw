@@ -167,12 +167,12 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - Improve Time to Interactive (TTI)
 
 **Tasks:**
-- [ ] Analyze bundle with `@next/bundle-analyzer`
-- [ ] Implement dynamic imports for dashboard-only components
-- [ ] Lazy load FullCalendar (defer until calendar page loads)
+- [x] Analyze bundle with `@next/bundle-analyzer` (2025-11-01)
+- [ ] Implement dynamic imports for dashboard-only components (employee/admin/appointments completed; remaining dashboards static)
+- [ ] Lazy load FullCalendar (employee, admin scheduler, appointments done; receptionist dashboard static)
+- [x] Remove unused dependencies (audit with `depcheck`) — axios/mocks/msw dropped 2025-11-03; remaining flags justified
+- [x] Add bundle size check to CI (fail if > 300KB First Load JS) — enforced via `scripts/check-bundle-size.mjs` (2025-11-03)
 - [ ] Split dashboard code by role (admin/employee/client bundles)
-- [ ] Remove unused dependencies (audit with `depcheck`)
-- [ ] Add bundle size check to CI (fail if > 300KB First Load JS)
 - [ ] Document bundle optimization in `docs/CONTRIBUTING.md`
 
 **Success Metrics:**
@@ -182,6 +182,14 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - Lighthouse Performance score 95+ on desktop
 
 **Dependencies:** None
+
+**Progress Notes:**
+- 2025-11-01 – Employee dashboard chunk reduced from 76 kB/242 kB first-load to 1.1 kB/158 kB by lazy loading FullCalendar + modal components.
+- 2025-11-01 – Admin scheduler first-load shrank from 239 kB → 159 kB after async plugin loading and modal code splitting; admin retail route now 157 kB (was 195 kB).
+- 2025-11-01 – Shared appointments hub defers FullCalendar + forms, cutting route chunk from 109 kB to ~3 kB with 158 kB first-load.
+- 2025-11-01 – Bundle analyzer confirms all calendar-driven dashboards now ship <4 kB route code with ~158 kB first-load JS (down from 195–261 kB).
+- 2025-11-03 – CI now fails builds if monitored routes exceed 300 kB gzipped first-load JS (`frontend/scripts/check-bundle-size.mjs`, enforced in `ci.yml`).
+- 2025-11-03 – `depcheck` (frontend) flagged `autoprefixer`, `axios`, `sharp`, and several dev dependencies; confirmed PostCSS relies on `autoprefixer`/`@tailwindcss/postcss`, kept `sharp` for Next image optimisation, removed unused `axios`/`axios-mock-adapter`/`msw`, and added `@jest/globals` dev dep for explicit import.
 
 ---
 

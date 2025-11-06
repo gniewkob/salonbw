@@ -27,21 +27,21 @@
     "ports:cleanup": "node scripts/server-utils.js cleanup",
     "ports:check": "node scripts/server-utils.js find-port",
     "build:production": "NODE_ENV=production next build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "bundle:check": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.18",
     "@fullcalendar/daygrid": "^6.1.18",
-    "@salonbw/api": "workspace:*",
     "@fullcalendar/interaction": "^6.1.18",
     "@fullcalendar/react": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
-    "@tanstack/react-query": "^5.50.1",
     "@next/bundle-analyzer": "^14.2.32",
     "@radix-ui/react-select": "^2.2.6",
+    "@salonbw/api": "workspace:*",
     "@sentry/nextjs": "^8.55.0",
+    "@tanstack/react-query": "^5.50.1",
     "autoprefixer": "^10.4.21",
-    "axios": "^1.12.0",
     "formik": "^2.4.6",
     "next": "14.2.32",
     "react": "18.3.1",
@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@jest/globals": "^30.0.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6",
     "@testing-library/react": "^16.1.0",
@@ -60,15 +61,14 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "axios-mock-adapter": "^1.22.0",
     "cypress": "^15.5.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.32",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
+    "husky": "^9.0.11",
     "jest": "^30.0.1",
     "jest-environment-jsdom": "^30.0.4",
-    "msw": "^2",
     "prettier": "^3.4.2",
     "start-server-and-test": "^2.0.1",
     "tailwindcss": "^4",
@@ -76,7 +76,6 @@
     "typescript": "^5",
     "typescript-eslint": "^8.37.0",
     "web-streams-polyfill": "^4.1.0",
-    "whatwg-fetch": "^3.6.20",
-    "husky": "^9.0.11"
+    "whatwg-fetch": "^3.6.20"
   }
 }
