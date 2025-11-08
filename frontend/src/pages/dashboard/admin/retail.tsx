@@ -73,14 +73,20 @@ export default function RetailDashboard() {
 
     const handleCreateSale = async (data: CreateSaleData) => {
         await api.createSale(data);
-        await queryClient.invalidateQueries({ queryKey: ['api', '/inventory'] });
-        await queryClient.invalidateQueries({ queryKey: ['api', '/sales/summary'] });
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/inventory'],
+        });
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/sales/summary'],
+        });
         setShowSaleForm(false);
     };
 
     const handleAdjustInventory = async (data: AdjustInventoryData) => {
         await api.adjustInventory(data);
-        await queryClient.invalidateQueries({ queryKey: ['api', '/inventory'] });
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/inventory'],
+        });
         setShowAdjustForm(false);
     };
 

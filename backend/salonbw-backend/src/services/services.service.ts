@@ -7,6 +7,10 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { AppCacheService } from '../cache/cache.service';
+
+const ALL_SERVICES_CACHE_KEY = 'services:all';
+const serviceCacheKey = (id: number) => `services:${id}`;
 
 @Injectable()
 export class ServicesService {
@@ -14,6 +18,7 @@ export class ServicesService {
         @InjectRepository(Service)
         private readonly servicesRepository: Repository<Service>,
         private readonly logService: LogService,
+        private readonly cache: AppCacheService,
     ) {}
 
     async create(dto: CreateServiceDto, user: User): Promise<Service> {
@@ -27,20 +32,28 @@ export class ServicesService {
         } catch (error) {
             console.error('Failed to log service creation action', error);
         }
+        await this.invalidateCache(saved.id);
         return saved;
     }
 
-    findAll(): Promise<Service[]> {
-        return this.servicesRepository.find();
+    async findAll(): Promise<Service[]> {
+        return this.cache.wrap<Service[]>(ALL_SERVICES_CACHE_KEY, () =>
+            this.servicesRepository.find(),
+        );
     }
 
     async findOne(id: number): Promise<Service> {
+        const cached = await this.cache.get<Service>(serviceCacheKey(id));
+        if (cached) {
+            return cached;
+        }
         const service = await this.servicesRepository.findOne({
             where: { id },
         });
         if (!service) {
             throw new NotFoundException('Service not found');
         }
+        await this.cache.set(serviceCacheKey(id), service);
         return service;
     }
 
@@ -59,6 +72,7 @@ export class ServicesService {
         } catch (error) {
             console.error('Failed to log service update action', error);
         }
+        await this.invalidateCache(id);
         return updated;
     }
 
@@ -73,5 +87,13 @@ export class ServicesService {
         } catch (error) {
             console.error('Failed to log service deletion action', error);
         }
+        await this.invalidateCache(id);
+    }
+
+    private async invalidateCache(id: number): Promise<void> {
+        await Promise.all([
+            this.cache.del(ALL_SERVICES_CACHE_KEY),
+            this.cache.del(serviceCacheKey(id)),
+        ]);
     }
 }

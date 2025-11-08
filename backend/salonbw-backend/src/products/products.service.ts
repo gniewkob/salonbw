@@ -7,6 +7,10 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { AppCacheService } from '../cache/cache.service';
+
+const ALL_PRODUCTS_CACHE_KEY = 'products:all';
+const productCacheKey = (id: number) => `products:${id}`;
 
 @Injectable()
 export class ProductsService {
@@ -14,6 +18,7 @@ export class ProductsService {
         @InjectRepository(Product)
         private readonly productsRepository: Repository<Product>,
         private readonly logService: LogService,
+        private readonly cache: AppCacheService,
     ) {}
 
     async create(dto: CreateProductDto, user: User): Promise<Product> {
@@ -27,20 +32,28 @@ export class ProductsService {
         } catch (error) {
             console.error('Failed to log product creation action', error);
         }
+        await this.invalidateCache(saved.id);
         return saved;
     }
 
-    findAll(): Promise<Product[]> {
-        return this.productsRepository.find();
+    async findAll(): Promise<Product[]> {
+        return this.cache.wrap<Product[]>(ALL_PRODUCTS_CACHE_KEY, () =>
+            this.productsRepository.find(),
+        );
     }
 
     async findOne(id: number): Promise<Product> {
+        const cached = await this.cache.get<Product>(productCacheKey(id));
+        if (cached) {
+            return cached;
+        }
         const product = await this.productsRepository.findOne({
             where: { id },
         });
         if (!product) {
             throw new NotFoundException('Product not found');
         }
+        await this.cache.set(productCacheKey(id), product);
         return product;
     }
 
@@ -59,6 +72,7 @@ export class ProductsService {
         } catch (error) {
             console.error('Failed to log product update action', error);
         }
+        await this.invalidateCache(id);
         return updated;
     }
 
@@ -73,5 +87,13 @@ export class ProductsService {
         } catch (error) {
             console.error('Failed to log product deletion action', error);
         }
+        await this.invalidateCache(id);
+    }
+
+    private async invalidateCache(id: number): Promise<void> {
+        await Promise.all([
+            this.cache.del(ALL_PRODUCTS_CACHE_KEY),
+            this.cache.del(productCacheKey(id)),
+        ]);
     }
 }

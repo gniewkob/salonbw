@@ -74,7 +74,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 >
                                     <span>
                                         {(() => {
-                                            const href = resolveServiceRoute(s.name);
+                                            const href = resolveServiceRoute(
+                                                s.name,
+                                            );
                                             if (!href) return s.name;
                                             return (
                                                 <Link
@@ -133,8 +135,18 @@ export const getServerSideProps: GetServerSideProps<
             name: 'Popular Services',
             services: [
                 { id: 1, name: 'Haircut', duration: 45, price: 120 } as Service,
-                { id: 2, name: 'Coloring', duration: 90, price: 240 } as Service,
-                { id: 3, name: 'Balayage', duration: 120, price: 320 } as Service,
+                {
+                    id: 2,
+                    name: 'Coloring',
+                    duration: 90,
+                    price: 240,
+                } as Service,
+                {
+                    id: 3,
+                    name: 'Balayage',
+                    duration: 120,
+                    price: 320,
+                } as Service,
             ],
         },
     ];

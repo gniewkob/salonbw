@@ -60,7 +60,10 @@ export default function SaleForm({
             note: note.trim() !== '' ? note.trim() : undefined,
         };
 
-        if (!Number.isFinite(parsedData.productId) || parsedData.productId < 1) {
+        if (
+            !Number.isFinite(parsedData.productId) ||
+            parsedData.productId < 1
+        ) {
             setError('Product is required');
             return;
         }
@@ -110,6 +113,15 @@ export default function SaleForm({
         }
     };
 
+    const handleSelectOption =
+        (setter: (value: string) => void) =>
+        (event: React.MouseEvent<HTMLSelectElement>) => {
+            const option = event.target as HTMLOptionElement | null;
+            if (option && typeof option.value === 'string') {
+                setter(option.value);
+            }
+        };
+
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
             <select
@@ -117,6 +129,7 @@ export default function SaleForm({
                 className="border p-1 w-full"
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
+                onClick={handleSelectOption(setProductId)}
             >
                 {products.map((product) => (
                     <option
@@ -141,6 +154,7 @@ export default function SaleForm({
                 className="border p-1 w-full"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
+                onClick={handleSelectOption(setEmployeeId)}
             >
                 <option value="">None</option>
                 {employees.map((employee) => (
@@ -158,6 +172,7 @@ export default function SaleForm({
                 className="border p-1 w-full"
                 value={appointmentId}
                 onChange={(e) => setAppointmentId(e.target.value)}
+                onClick={handleSelectOption(setAppointmentId)}
             >
                 <option value="">None</option>
                 {appointments.map((appointment) => (
@@ -212,7 +227,11 @@ export default function SaleForm({
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1" disabled={submitting}>
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
                     {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>

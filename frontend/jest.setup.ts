@@ -91,3 +91,35 @@ jest.mock('@sentry/nextjs', () => ({
     init: jest.fn(),
     metrics: { distribution: jest.fn() },
 }));
+
+const noopFetchResponse: Response = {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: new Headers(),
+    redirected: false,
+    type: 'basic',
+    url: '',
+    body: null,
+    bodyUsed: false,
+    clone() {
+        return this;
+    },
+    async arrayBuffer() {
+        return new ArrayBuffer(0);
+    },
+    async blob() {
+        return new Blob();
+    },
+    async formData() {
+        return new FormData();
+    },
+    async json() {
+        return {};
+    },
+    async text() {
+        return '';
+    },
+};
+
+global.fetch = jest.fn().mockResolvedValue(noopFetchResponse);

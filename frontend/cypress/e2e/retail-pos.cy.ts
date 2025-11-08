@@ -7,26 +7,26 @@ describe('POS operations', () => {
 
     it('records a product sale', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
+        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/api/employees*', {
+        cy.intercept('GET', '**/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/api/appointments*', {
+        cy.intercept('GET', '**/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/api/inventory*', {
+        cy.intercept('GET', '**/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/api/sales/summary*', {
+        cy.intercept('GET', '**/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/api/sales', { status: 'ok' }).as('createSale');
+        cy.intercept('POST', '**/sales', { status: 'ok' }).as('createSale');
 
         cy.visit('/dashboard/admin/retail');
         cy.wait([
@@ -53,26 +53,26 @@ describe('POS operations', () => {
 
     it('adjusts inventory with positive delta', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
+        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/api/employees*', {
+        cy.intercept('GET', '**/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/api/appointments*', {
+        cy.intercept('GET', '**/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/api/inventory*', {
+        cy.intercept('GET', '**/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/api/sales/summary*', {
+        cy.intercept('GET', '**/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/api/inventory/adjust', {
+        cy.intercept('POST', '**/inventory/adjust', {
             status: 'ok',
         }).as('adjustInventory');
 
@@ -102,26 +102,26 @@ describe('POS operations', () => {
 
     it('adjusts inventory with negative delta', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
+        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/api/employees*', {
+        cy.intercept('GET', '**/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/api/appointments*', {
+        cy.intercept('GET', '**/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/api/inventory*', {
+        cy.intercept('GET', '**/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/api/sales/summary*', {
+        cy.intercept('GET', '**/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/api/inventory/adjust', {
+        cy.intercept('POST', '**/inventory/adjust', {
             status: 'ok',
         }).as('adjustInventory');
 
@@ -150,19 +150,19 @@ describe('POS operations', () => {
 
     it('shows validation error for empty sale form', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/api/products*', { fixture: 'products.json' }).as(
+        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/api/employees*', {
+        cy.intercept('GET', '**/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/api/appointments*', {
+        cy.intercept('GET', '**/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/api/inventory*', {
+        cy.intercept('GET', '**/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/api/sales/summary*', {
+        cy.intercept('GET', '**/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
@@ -170,7 +170,7 @@ describe('POS operations', () => {
             to: now,
         }).as('getSummary');
         let createSaleCalled = false;
-        cy.intercept('POST', '**/api/sales', (req) => {
+        cy.intercept('POST', '**/sales', (req) => {
             createSaleCalled = true;
             req.reply({ status: 'ok' });
         }).as('createSale');

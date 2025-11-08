@@ -33,7 +33,11 @@ export default function BalayagePage() {
                     content="Sun‑kissed, natural‑looking balayage color crafted by our stylists at Salon Black & White."
                 />
             </Head>
-            <Script id="ld-service-balayage" type="application/ld+json" strategy="afterInteractive">
+            <Script
+                id="ld-service-balayage"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
@@ -96,12 +100,18 @@ export default function BalayagePage() {
                     <h2 className="text-xl font-semibold">Related services</h2>
                     <ul className="list-disc pl-6 mt-2 space-y-1">
                         <li>
-                            <Link href={'/services/highlights' as Route} className="underline">
+                            <Link
+                                href={'/services/highlights' as Route}
+                                className="underline"
+                            >
                                 Highlights
                             </Link>
                         </li>
                         <li>
-                            <Link href={'/services/coloring' as Route} className="underline">
+                            <Link
+                                href={'/services/coloring' as Route}
+                                className="underline"
+                            >
                                 Hair Coloring
                             </Link>
                         </li>

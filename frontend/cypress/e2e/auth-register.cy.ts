@@ -1,6 +1,6 @@
 describe('registration', () => {
     it('registers and redirects to login', () => {
-        cy.intercept('POST', '**/api/auth/register', {
+        cy.intercept('POST', '**/auth/register', {
             statusCode: 201,
             body: { id: 2, name: 'New User' },
         }).as('register');

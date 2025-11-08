@@ -21,12 +21,16 @@ const DEFAULT_TTL_MS = 60_000;
 
 type CacheKey = string;
 
+declare global {
+    // eslint-disable-next-line no-var
+    var __INSTAGRAM_CACHE__: Map<CacheKey, CacheEntry> | undefined;
+}
+
 function getStore(): Map<CacheKey, CacheEntry> {
-    const globalAny = globalThis as any;
-    if (!globalAny.__INSTAGRAM_CACHE__) {
-        globalAny.__INSTAGRAM_CACHE__ = new Map<CacheKey, CacheEntry>();
+    if (!globalThis.__INSTAGRAM_CACHE__) {
+        globalThis.__INSTAGRAM_CACHE__ = new Map<CacheKey, CacheEntry>();
     }
-    return globalAny.__INSTAGRAM_CACHE__;
+    return globalThis.__INSTAGRAM_CACHE__;
 }
 
 export function readCache(key: CacheKey): CacheEntry | null {
@@ -55,4 +59,3 @@ export function writeCache(
 export function cacheKey(cursor?: string | null, limit?: string | number) {
     return `after:${cursor ?? ''}|limit:${limit ?? ''}`;
 }
-

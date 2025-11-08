@@ -47,7 +47,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     // Prefetch booking flow assets
     useEffect(() => {
-        router.prefetch('/appointments');
+        void router.prefetch('/appointments');
     }, [router]);
 
     // Scroll-depth analytics (25/50/75/100) per route — run only in browser
@@ -114,7 +114,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 export function reportWebVitals(metric: NextWebVitalsMetric) {
     try {
         sendWebVital(metric);
-    } catch (e) {
+    } catch {
         // non-fatal
     }
 }

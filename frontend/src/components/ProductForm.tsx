@@ -18,8 +18,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         name: initial?.name ?? '',
         unitPrice:
             initial?.unitPrice !== undefined ? String(initial.unitPrice) : '',
-        stock:
-            initial?.stock !== undefined ? String(initial.stock) : '',
+        stock: initial?.stock !== undefined ? String(initial.stock) : '',
         lowStockThreshold:
             initial?.lowStockThreshold !== undefined
                 ? String(initial.lowStockThreshold)
@@ -54,7 +53,10 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
             return parsed;
         };
 
-        const unitPrice = parseNumberField(form.unitPrice, 'Price must be >= 0');
+        const unitPrice = parseNumberField(
+            form.unitPrice,
+            'Price must be >= 0',
+        );
         if (unitPrice === null) return;
 
         const stock = parseNumberField(form.stock, 'Stock must be >= 0');
@@ -66,7 +68,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
         );
         if (lowStockThreshold === null) return;
 
-        const brand = form.brand.trim() || undefined;
+        const brand = form.brand.trim();
 
         setError('');
         setSubmitting(true);

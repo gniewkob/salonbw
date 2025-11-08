@@ -36,7 +36,8 @@
       "next": "14.2.32",
       "validator": "^13.15.20",
       "tar-fs": "^3.0.5",
-      "tar": "^6.2.1"
+      "tar": "^6.2.1",
+      "rand-token": "workspace:rand-token@1.0.1"
     }
   }
 }

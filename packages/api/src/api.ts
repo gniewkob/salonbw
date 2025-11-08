@@ -78,6 +78,17 @@ export interface ApiClientOptions {
     headers?: HeadersInit;
     // Optional per-request init overrides (e.g., for adding request-specific headers)
     requestInit?: RequestInit;
+    /**
+     * Allows callers to override how the refresh token is retrieved (e.g. pull
+     * from cookies or some external store). When omitted we fall back to
+     * reading from localStorage.
+     */
+    getRefreshToken?: () => string | null;
+    /**
+     * Storage key used when reading the refresh token from localStorage.
+     * Defaults to `refreshToken` to match the legacy AuthContext behaviour.
+     */
+    refreshTokenStorageKey?: string;
 }
 
 export class ApiClient {
@@ -136,9 +147,26 @@ export class ApiClient {
     }
 
     private getRefreshToken(): string | null {
-        // No longer using local storage for tokens
-        // Refresh token is handled via httpOnly cookies
-        return null;
+        if (typeof this.options.getRefreshToken === "function") {
+            try {
+                return this.options.getRefreshToken();
+            } catch {
+                return null;
+            }
+        }
+
+        if (typeof window === "undefined") {
+            return null;
+        }
+
+        try {
+            const storage = window.localStorage;
+            if (!storage) return null;
+            const key = this.options.refreshTokenStorageKey ?? "refreshToken";
+            return storage.getItem(key);
+        } catch {
+            return null;
+        }
     }
 
     private buildUrl(

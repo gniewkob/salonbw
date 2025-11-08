@@ -1,9 +1,29 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import SaleForm from '@/components/SaleForm';
 
 const mockProducts = [
-    { id: 1, name: 'Product A', unitPrice: 10, stock: 5, brand: 'B', lowStockThreshold: 2 },
-    { id: 2, name: 'Product B', unitPrice: 20, stock: 3, brand: 'B', lowStockThreshold: 2 },
+    {
+        id: 1,
+        name: 'Product A',
+        unitPrice: 10,
+        stock: 5,
+        brand: 'B',
+        lowStockThreshold: 2,
+    },
+    {
+        id: 2,
+        name: 'Product B',
+        unitPrice: 20,
+        stock: 3,
+        brand: 'B',
+        lowStockThreshold: 2,
+    },
 ];
 
 const mockEmployees = [{ id: 1, name: 'Employee A' }];

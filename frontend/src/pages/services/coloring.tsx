@@ -31,7 +31,11 @@ export default function HairColoringPage() {
                     content="Professional hair coloring services including highlights, balayage, and full color at Salon Black & White."
                 />
             </Head>
-            <Script id="ld-service-coloring" type="application/ld+json" strategy="afterInteractive">
+            <Script
+                id="ld-service-coloring"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'Service',
@@ -51,7 +55,8 @@ export default function HairColoringPage() {
                 <p>
                     Refresh your style with professional coloring: highlights,
                     balayage, full color, and corrective color treatments. Our
-                    stylists help you choose a tone that matches your look and lifestyle.
+                    stylists help you choose a tone that matches your look and
+                    lifestyle.
                 </p>
                 <h2 className="text-xl font-semibold">What we offer</h2>
                 <ul className="list-disc pl-6 space-y-2">
@@ -96,12 +101,18 @@ export default function HairColoringPage() {
                     <h2 className="text-xl font-semibold">Related services</h2>
                     <ul className="list-disc pl-6 mt-2 space-y-1">
                         <li>
-                            <Link href={'/services/highlights' as Route} className="underline">
+                            <Link
+                                href={'/services/highlights' as Route}
+                                className="underline"
+                            >
                                 Highlights
                             </Link>
                         </li>
                         <li>
-                            <Link href={'/services/balayage' as Route} className="underline">
+                            <Link
+                                href={'/services/balayage' as Route}
+                                className="underline"
+                            >
                                 Balayage
                             </Link>
                         </li>
