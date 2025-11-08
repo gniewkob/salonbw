@@ -25,6 +25,8 @@ import { EmailsModule } from './emails/emails.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { RetailModule } from './retail/retail.module';
 import { CSPModule } from './csp/csp.module';
+import { CacheModule } from './cache/cache.module';
+import { DatabaseSlowQueryService } from './database/database-slow-query.service';
 
 @Module({
     imports: [
@@ -93,6 +95,7 @@ import { CSPModule } from './csp/csp.module';
             },
         }),
         ConfigModule.forRoot({ isGlobal: true }),
+        CacheModule,
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
@@ -144,7 +147,10 @@ import { CSPModule } from './csp/csp.module';
                         query_timeout: 30000, // Query timeout
                     },
                     // Query performance
-                    logging: nodeEnv === 'development' ? ['error', 'warn'] : false,
+                    logging:
+                        nodeEnv === 'development'
+                            ? ['error', 'warn', 'query', 'slow-queries']
+                            : ['error', 'warn'],
                     maxQueryExecutionTime:
                         nodeEnv === 'development' ? 1000 : undefined, // Log slow queries > 1s in dev
                     cache: {
@@ -174,6 +180,7 @@ import { CSPModule } from './csp/csp.module';
     providers: [
         AppService,
         HealthService,
+        DatabaseSlowQueryService,
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,

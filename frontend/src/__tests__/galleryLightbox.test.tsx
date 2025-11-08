@@ -11,13 +11,13 @@ describe('Gallery lightbox', () => {
     beforeEach(() => {
         mockedUseAuth.mockReturnValue(createAuthValue());
         // analytics guard
-        // @ts-ignore
+        // @ts-expect-error jsdom window doesn't define gtag
         window.gtag = jest.fn();
         process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
         process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
     });
     afterEach(() => {
-        // @ts-ignore
+        // @ts-expect-error jsdom window doesn't define gtag
         delete window.gtag;
     });
 
@@ -37,8 +37,9 @@ describe('Gallery lightbox', () => {
     });
 
     it('has share button and calls navigator.share when available', () => {
-        // @ts-ignore
-        navigator.share = jest.fn();
+        const shareMock = jest.fn();
+        // @ts-expect-error jsdom navigator doesn't expose share
+        navigator.share = shareMock;
         render(
             <GalleryPage
                 items={[{ id: '1', imageUrl: '/img1.jpg', caption: 'One' }]}
@@ -47,15 +48,14 @@ describe('Gallery lightbox', () => {
         fireEvent.click(screen.getByLabelText('Open image 1'));
         const share = screen.getByLabelText('Share image');
         fireEvent.click(share);
-        // @ts-ignore
-        expect(navigator.share).toHaveBeenCalled();
+        expect(shareMock).toHaveBeenCalled();
         // cleanup
-        // @ts-ignore
+        // @ts-expect-error jsdom navigator doesn't expose share
         delete navigator.share;
     });
 
     it('emits next/prev and download analytics', () => {
-        // @ts-ignore
+        // @ts-expect-error jsdom window doesn't define gtag
         window.gtag = jest.fn();
         render(
             <GalleryPage

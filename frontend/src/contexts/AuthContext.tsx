@@ -8,7 +8,7 @@ import {
     useState,
 } from 'react';
 import { useRouter } from 'next/router';
-import { ApiClient } from '@/api/apiClient';
+import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
     register as apiRegister,
@@ -32,6 +32,35 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const ACCESS_TOKEN_KEY = 'jwtToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+
+const readLocalStorageValue = (key: string): string | null => {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+    try {
+        return window.localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+};
+
+const writeLocalStorageValue = (key: string, value: string | null) => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    try {
+        if (value === null) {
+            window.localStorage.removeItem(key);
+        } else {
+            window.localStorage.setItem(key, value);
+        }
+    } catch {
+        // ignore storage failures (private mode, etc.)
+    }
+};
+
 const readCsrfCookie = () => {
     if (typeof document === 'undefined') {
         return undefined;
@@ -45,47 +74,59 @@ const readCsrfCookie = () => {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
-    // Removed token states since we're using httpOnly cookies
-    // Role is now set only based on the current logged in user
     const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [initialized, setInitialized] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
+    const persistTokens = useCallback((nextTokens: AuthTokens | null) => {
+        writeLocalStorageValue(
+            ACCESS_TOKEN_KEY,
+            nextTokens?.accessToken ?? null,
+        );
+        writeLocalStorageValue(
+            REFRESH_TOKEN_KEY,
+            nextTokens?.refreshToken ?? null,
+        );
+    }, []);
+
+    const clearSessionState = useCallback(() => {
+        setUser(null);
+        setRole(null);
+        setIsAuthenticated(false);
+        setCsrfToken(undefined);
+        persistTokens(null);
+    }, [persistTokens]);
 
     const handleLogout = useCallback(async () => {
+        clearSessionState();
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
-            setUser(null);
-            setRole(null);
-            setIsAuthenticated(false);
-            setCsrfToken(undefined);
-            void router.push('/auth/login');
         } catch (error) {
             console.error('Logout error:', error);
+        } finally {
+            void router.push('/auth/login');
         }
-    }, [router]);
+    }, [clearSessionState, router]);
 
     useEffect(() => {
         setLogoutCallback(() => {
             void handleLogout();
         });
     }, [handleLogout]);
-
-    // Initialize the client with CSRF handling
-    const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
-
     useEffect(() => {
         setCsrfToken(readCsrfCookie());
     }, []);
 
     const client = useMemo(() => {
         return new ApiClient(
-            // No longer passing access token as it's handled by cookies
-            () => null,
+            () => readLocalStorageValue(ACCESS_TOKEN_KEY),
             () => {
                 void handleLogout();
             },
-            undefined, // No token refresh handler needed
+            (nextTokens) => {
+                persistTokens(nextTokens);
+            },
             {
                 // Add CSRF token to requests
                 requestInit: csrfToken
@@ -97,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     : undefined,
             },
         );
-    }, [handleLogout, csrfToken]);
+    }, [csrfToken, handleLogout, persistTokens]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -113,10 +154,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         void fetchProfile().finally(() => setInitialized(true));
-    }, [fetchProfile]);
+        // We only need to run the initial profile fetch once on mount.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const login = async (email: string, password: string) => {
-        await apiLogin({ email, password });
+        const authTokens = await apiLogin({ email, password });
+        persistTokens(authTokens);
         setCsrfToken(readCsrfCookie());
         await fetchProfile();
     };
@@ -128,7 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refresh = async () => {
         try {
-            await apiRefreshToken();
+            const authTokens = await apiRefreshToken();
+            persistTokens(authTokens);
             setCsrfToken(readCsrfCookie());
             await fetchProfile();
         } catch (err) {

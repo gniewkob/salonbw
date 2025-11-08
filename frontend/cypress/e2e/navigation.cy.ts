@@ -4,7 +4,7 @@ describe('navigation visibility', () => {
     describe('authenticated admin', () => {
         beforeEach(() => {
             mockAdminLogin();
-            cy.intercept('GET', '**/api/products*', {
+            cy.intercept('GET', '**/products*', {
                 fixture: 'products.json',
             }).as('getProd');
         });
@@ -20,7 +20,7 @@ describe('navigation visibility', () => {
     });
 
     it('redirects unauthenticated users away from /products', () => {
-        cy.intercept('GET', '**/api/users/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/users/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/products');
         cy.url().should('include', '/auth/login');

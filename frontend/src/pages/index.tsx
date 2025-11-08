@@ -16,18 +16,27 @@ export default function HomePage() {
         '/assets/img/slider/slider3.jpg',
     ];
 
-    const services = [
-        {
-            title: 'Haircut',
-            description: 'Professional cuts tailored to you.',
-        },
-        {
-            title: 'Coloring',
-            description: 'Vibrant colors and highlights.',
-        },
-        { title: 'Styling', description: 'Perfect style for any occasion.' },
-        { title: 'Makeup', description: 'Look your best with our artists.' },
-    ];
+    const services = useMemo(
+        () => [
+            {
+                title: 'Haircut',
+                description: 'Professional cuts tailored to you.',
+            },
+            {
+                title: 'Coloring',
+                description: 'Vibrant colors and highlights.',
+            },
+            {
+                title: 'Styling',
+                description: 'Perfect style for any occasion.',
+            },
+            {
+                title: 'Makeup',
+                description: 'Look your best with our artists.',
+            },
+        ],
+        [],
+    );
 
     const galleryImages = heroImages;
 
@@ -37,10 +46,9 @@ export default function HomePage() {
                 id: s.title.toLowerCase().replace(/\s+/g, '-'),
                 name: s.title,
                 category: 'Featured Services',
-                href:
-                    s.title.toLowerCase().includes('color')
-                        ? '/services/coloring'
-                        : '/services',
+                href: s.title.toLowerCase().includes('color')
+                    ? '/services/coloring'
+                    : '/services',
             })),
         [services],
     );
@@ -118,7 +126,11 @@ export default function HomePage() {
                     content="Home of Salon Black &amp; White offering professional hair and beauty services."
                 />
             </Head>
-            <Script id="ld-localbusiness" type="application/ld+json" strategy="afterInteractive">
+            <Script
+                id="ld-localbusiness"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'LocalBusiness',
@@ -150,6 +162,7 @@ export default function HomePage() {
                                     : 'opacity-0'
                             }`}
                             priority={index === 0}
+                            sizes="100vw"
                         />
                     ))}
                 </section>
@@ -167,7 +180,8 @@ export default function HomePage() {
                                 className="p-4 border rounded text-center hover:shadow"
                                 onClick={() =>
                                     trackEvent('select_item', {
-                                        item_list_name: 'home_featured_services',
+                                        item_list_name:
+                                            'home_featured_services',
                                         items: [
                                             {
                                                 item_id: item.id,
@@ -201,8 +215,8 @@ export default function HomePage() {
                                 key={src}
                                 type="button"
                                 className="relative w-full h-24 sm:h-32"
-                                onClick={() =>
-                                    (setLightboxIndex(i),
+                                onClick={() => (
+                                    setLightboxIndex(i),
                                     trackEvent('select_item', {
                                         item_list_name: 'home_gallery',
                                         items: [
@@ -213,8 +227,8 @@ export default function HomePage() {
                                             },
                                         ],
                                         cta: 'home_gallery',
-                                    }))
-                                }
+                                    })
+                                )}
                                 aria-label={`View gallery image ${i + 1}`}
                             >
                                 <Image

@@ -21,6 +21,8 @@
 - TypeORM manages entities and database migrations; configuration sourced from `.env`.
 - Swagger (`swagger.ts`) generates `openapi.json` for API schema documentation.
 - Jest powers unit/integration testing (`test/` directory).
+- Redis-backed caching (optional) wraps slow-changing catalog queries (services, products). When `REDIS_URL` isn’t defined the cache falls back to an in-memory store with a configurable TTL (`CACHE_TTL_SECONDS`).
+- PostgreSQL slow-query logging is enabled at startup (`DB_SLOW_QUERY_MS`), and connection pool metrics surface through the Prometheus `/metrics` endpoint.
 
 ## Cross-Cutting Concerns
 

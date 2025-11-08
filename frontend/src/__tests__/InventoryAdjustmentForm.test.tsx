@@ -2,7 +2,14 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import InventoryAdjustmentForm from '@/components/InventoryAdjustmentForm';
 
 const mockProducts = [
-    { id: 1, name: 'Product A', unitPrice: 10, stock: 5, brand: 'B', lowStockThreshold: 2 },
+    {
+        id: 1,
+        name: 'Product A',
+        unitPrice: 10,
+        stock: 5,
+        brand: 'B',
+        lowStockThreshold: 2,
+    },
 ];
 
 describe('InventoryAdjustmentForm', () => {
@@ -38,8 +45,9 @@ describe('InventoryAdjustmentForm', () => {
         fireEvent.change(screen.getByPlaceholderText('Delta'), {
             target: { value: '5' },
         });
-        fireEvent.mouseDown(screen.getByTestId('reason-select'));
-        fireEvent.click(await screen.findByTestId('reason-option-delivery'));
+        fireEvent.change(screen.getByTestId('reason-select'), {
+            target: { value: 'delivery' },
+        });
         fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
         await waitFor(() =>
@@ -65,8 +73,9 @@ describe('InventoryAdjustmentForm', () => {
         fireEvent.change(screen.getByPlaceholderText('Delta'), {
             target: { value: '-3' },
         });
-        fireEvent.mouseDown(screen.getByTestId('reason-select'));
-        fireEvent.click(await screen.findByTestId('reason-option-sale'));
+        fireEvent.change(screen.getByTestId('reason-select'), {
+            target: { value: 'sale' },
+        });
         fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
         await waitFor(() =>
@@ -92,8 +101,9 @@ describe('InventoryAdjustmentForm', () => {
         fireEvent.change(screen.getByPlaceholderText('Delta'), {
             target: { value: '7' },
         });
-        fireEvent.mouseDown(screen.getByTestId('reason-select'));
-        fireEvent.click(await screen.findByTestId('reason-option-correction'));
+        fireEvent.change(screen.getByTestId('reason-select'), {
+            target: { value: 'correction' },
+        });
         fireEvent.change(screen.getByPlaceholderText('Note (optional)'), {
             target: { value: 'Batch received' },
         });
@@ -124,8 +134,9 @@ describe('InventoryAdjustmentForm', () => {
         fireEvent.change(screen.getByPlaceholderText('Delta'), {
             target: { value: '2' },
         });
-        fireEvent.mouseDown(screen.getByTestId('reason-select'));
-        fireEvent.click(await screen.findByTestId('reason-option-damage'));
+        fireEvent.change(screen.getByTestId('reason-select'), {
+            target: { value: 'damage' },
+        });
         fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent(

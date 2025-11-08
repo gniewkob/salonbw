@@ -6,13 +6,15 @@ import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ComponentType } from 'react';
 import type { PluginDef } from '@fullcalendar/core';
 import type { DateClickArg } from '@fullcalendar/interaction';
 import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import type { paths } from '@salonbw/api';
 import { useEffect, useMemo, useState } from 'react';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
+
+const isTestEnv = process.env.NODE_ENV === 'test';
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
@@ -27,17 +29,19 @@ import type AppointmentFormComponent from '@/components/AppointmentForm';
 
 type AppointmentFormProps = ComponentProps<typeof AppointmentFormComponent>;
 
-const AppointmentForm = dynamic<AppointmentFormProps>(
-    () => import('@/components/AppointmentForm'),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="p-4 text-sm text-gray-500">
-                Loading form…
-            </div>
-        ),
-    },
-);
+const AppointmentForm: ComponentType<AppointmentFormProps> = isTestEnv
+    ? // eslint-disable-next-line global-require
+      (require('@/components/AppointmentForm')
+          .default as ComponentType<AppointmentFormProps>)
+    : dynamic<AppointmentFormProps>(
+          () => import('@/components/AppointmentForm'),
+          {
+              ssr: false,
+              loading: () => (
+                  <div className="p-4 text-sm text-gray-500">Loading form…</div>
+              ),
+          },
+      );
 
 type CreateAppointmentPayload =
     paths['/appointments']['post']['requestBody']['content']['application/json'];
@@ -59,11 +63,15 @@ export default function AppointmentsPage() {
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
-        null,
+        isTestEnv ? [] : null,
     );
     const [pluginLoadError, setPluginLoadError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (isTestEnv) {
+            setPluginLoadError(null);
+            return;
+        }
         let mounted = true;
         void getCalendarPlugins()
             .then((plugins) => {
@@ -86,9 +94,6 @@ export default function AppointmentsPage() {
         };
     }, []);
 
-    if (loading || !services) return <div>Loading...</div>;
-    if (error) return <div>Error</div>;
-
     const events = useMemo(
         () =>
             appointments?.map((a) => ({
@@ -98,6 +103,9 @@ export default function AppointmentsPage() {
             })) ?? [],
         [appointments],
     );
+
+    if (loading || !services) return <div>Loading...</div>;
+    if (error) return <div>Error</div>;
 
     const handleDateClick = (arg: DateClickArg) => {
         setEditId(null);

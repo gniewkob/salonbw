@@ -6,30 +6,69 @@ import PublicLayout from '@/components/PublicLayout';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type LoginFormValues = {
+    email: string;
+    password: string;
+};
+
+type LoginErrors = Partial<Record<keyof LoginFormValues, string>>;
+
+const validateLoginForm = (values: LoginFormValues): LoginErrors => {
+    const errors: LoginErrors = {};
+    const trimmedEmail = values.email.trim();
+    if (!trimmedEmail) {
+        errors.email = 'Email is required';
+    } else if (!emailPattern.test(trimmedEmail)) {
+        errors.email = 'Invalid email';
+    }
+    if (!values.password.trim()) {
+        errors.password = 'Password is required';
+    }
+    return errors;
+};
+
+export const loginValidationSchema = {
+    async validateAt(field: keyof LoginFormValues, values: LoginFormValues) {
+        const errors = validateLoginForm(values);
+        const message = errors[field];
+        if (message) {
+            throw new Error(message);
+        }
+    },
+    async validate(values: LoginFormValues) {
+        const errors = validateLoginForm(values);
+        if (Object.keys(errors).length > 0) {
+            throw new Error(errors.email ?? errors.password ?? 'Invalid email');
+        }
+        return values;
+    },
+    async isValid(values: LoginFormValues) {
+        return Object.keys(validateLoginForm(values)).length === 0;
+    },
+};
+
 export default function LoginPage() {
     const { login } = useAuth();
     const router = useRouter();
-    const [form, setForm] = useState({ email: '', password: '' });
-    const [touched, setTouched] = useState({ email: false, password: false });
-    const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-        {},
-    );
+    const [form, setForm] = useState<LoginFormValues>({
+        email: '',
+        password: '',
+    });
+    const [touched, setTouched] = useState({
+        email: false,
+        password: false,
+    });
+    const [errors, setErrors] = useState<LoginErrors>({});
     const [status, setStatus] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const trimmedEmail = useMemo(
-        () => form.email.trim(),
-        [form.email],
-    );
+    const trimmedEmail = useMemo(() => form.email.trim(), [form.email]);
 
-    const validate = () => {
-        const nextErrors: { email?: string; password?: string } = {};
-        if (!trimmedEmail || !emailPattern.test(trimmedEmail)) {
-            nextErrors.email = 'Invalid email';
-        }
-        if (!form.password.trim()) {
-            nextErrors.password = 'Password is required';
-        }
+    const runValidation = () => {
+        const nextErrors = validateLoginForm({
+            email: trimmedEmail,
+            password: form.password,
+        });
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
@@ -37,7 +76,7 @@ export default function LoginPage() {
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setStatus('');
-        const valid = validate();
+        const valid = runValidation();
         if (!valid) {
             setTouched({ email: true, password: true });
             return;
@@ -57,12 +96,16 @@ export default function LoginPage() {
 
     const handleBlur = (field: 'email' | 'password') => {
         setTouched((prev) => ({ ...prev, [field]: true }));
-        validate();
+        runValidation();
     };
 
     return (
         <PublicLayout>
-            <form onSubmit={handleSubmit}>
+            <form
+                onSubmit={(event) => {
+                    void handleSubmit(event);
+                }}
+            >
                 <div>
                     <label htmlFor="email">Email</label>
                     <input
@@ -74,14 +117,13 @@ export default function LoginPage() {
                             const value = event.target.value;
                             setForm((prev) => ({ ...prev, email: value }));
                             if (touched.email) {
-                                const nextError =
-                                    !value.trim() ||
-                                    !emailPattern.test(value.trim())
-                                        ? 'Invalid email'
-                                        : undefined;
+                                const fieldErrors = validateLoginForm({
+                                    email: value,
+                                    password: form.password,
+                                });
                                 setErrors((prev) => ({
                                     ...prev,
-                                    email: nextError,
+                                    email: fieldErrors.email,
                                 }));
                             }
                         }}
@@ -104,12 +146,13 @@ export default function LoginPage() {
                             const value = event.target.value;
                             setForm((prev) => ({ ...prev, password: value }));
                             if (touched.password) {
-                                const nextError = value.trim()
-                                    ? undefined
-                                    : 'Password is required';
+                                const fieldErrors = validateLoginForm({
+                                    email: form.email,
+                                    password: value,
+                                });
                                 setErrors((prev) => ({
                                     ...prev,
-                                    password: nextError,
+                                    password: fieldErrors.password,
                                 }));
                             }
                         }}

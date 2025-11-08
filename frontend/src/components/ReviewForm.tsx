@@ -17,10 +17,7 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
             initial?.appointmentId !== undefined
                 ? String(initial.appointmentId)
                 : '',
-        rating:
-            initial?.rating !== undefined
-                ? String(initial.rating)
-                : '1',
+        rating: initial?.rating !== undefined ? String(initial.rating) : '1',
         comment: initial?.comment ?? '',
     }));
     const [error, setError] = useState('');
@@ -53,7 +50,7 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
             await onSubmit({
                 appointmentId,
                 rating,
-                comment: comment ? comment : undefined,
+                comment,
             });
         } catch (err) {
             setError(err instanceof Error ? err.message || 'Error' : 'Error');

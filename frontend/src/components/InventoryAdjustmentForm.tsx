@@ -2,7 +2,14 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Product } from '@/types';
 import { AdjustInventoryData } from '@/hooks/useRetail';
 
-const reasons = ['delivery', 'sale', 'correction', 'damage', 'return', 'transfer'] as const;
+const reasons = [
+    'delivery',
+    'sale',
+    'correction',
+    'damage',
+    'return',
+    'transfer',
+] as const;
 
 interface Props {
     products: Product[];
@@ -10,7 +17,11 @@ interface Props {
     onCancel: () => void;
 }
 
-export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }: Props) {
+export default function InventoryAdjustmentForm({
+    products,
+    onSubmit,
+    onCancel,
+}: Props) {
     const firstProductId = useMemo(
         () => (products.length > 0 ? String(products[0].id) : ''),
         [products],
@@ -39,7 +50,10 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
             note: note.trim() !== '' ? note.trim() : undefined,
         };
 
-        if (!Number.isFinite(parsedData.productId) || parsedData.productId < 1) {
+        if (
+            !Number.isFinite(parsedData.productId) ||
+            parsedData.productId < 1
+        ) {
             setError('Product is required');
             return;
         }
@@ -49,7 +63,10 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
             return;
         }
 
-        if (!parsedData.reason || !reasons.includes(parsedData.reason as typeof reasons[number])) {
+        if (
+            !parsedData.reason ||
+            !reasons.includes(parsedData.reason as (typeof reasons)[number])
+        ) {
             setError('Reason is required');
             return;
         }
@@ -75,6 +92,15 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
         }
     };
 
+    const handleReasonSelectClick = (
+        event: React.MouseEvent<HTMLSelectElement>,
+    ) => {
+        const option = event.target as HTMLOptionElement | null;
+        if (option && typeof option.value === 'string') {
+            setReason(option.value);
+        }
+    };
+
     return (
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
             <select
@@ -82,6 +108,12 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
                 className="border p-1 w-full"
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
+                onClick={(e) => {
+                    const option = e.target as HTMLOptionElement | null;
+                    if (option && typeof option.value === 'string') {
+                        setProductId(option.value);
+                    }
+                }}
             >
                 {products.map((product) => (
                     <option
@@ -108,6 +140,7 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
                 className="border p-1 w-full"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
+                onClick={handleReasonSelectClick}
             >
                 <option value="">Select reason</option>
                 {reasons.map((option) => (
@@ -142,7 +175,11 @@ export default function InventoryAdjustmentForm({ products, onSubmit, onCancel }
                 >
                     Cancel
                 </button>
-                <button type="submit" className="border px-2 py-1" disabled={submitting}>
+                <button
+                    type="submit"
+                    className="border px-2 py-1"
+                    disabled={submitting}
+                >
                     {submitting ? 'Saving…' : 'Save'}
                 </button>
             </div>
