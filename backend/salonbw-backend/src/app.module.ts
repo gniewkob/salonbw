@@ -149,7 +149,7 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
                     // Query performance
                     logging:
                         nodeEnv === 'development'
-                            ? ['error', 'warn', 'query', 'slow-queries']
+                            ? ['error', 'warn', 'query']
                             : ['error', 'warn'],
                     maxQueryExecutionTime:
                         nodeEnv === 'development' ? 1000 : undefined, // Log slow queries > 1s in dev
