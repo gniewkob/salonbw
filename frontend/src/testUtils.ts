@@ -3,12 +3,11 @@ import type { useAuth } from '@/contexts/AuthContext';
 import type { User } from '@/types';
 
 type AuthValue = ReturnType<typeof useAuth>;
-
-const asyncMock = <Fn extends (...args: unknown[]) => Promise<unknown>>() =>
-    jest.fn(async (...args: Parameters<Fn>) => {
+const asyncMock = <Args extends unknown[], Result>() =>
+    jest.fn(async (...args: Args) => {
         void args;
-        return undefined as Awaited<ReturnType<Fn>>;
-    }) as unknown as Fn;
+        return undefined as Result;
+    }) as (...args: Args) => Promise<Result>;
 
 export const createAuthValue = (
     overrides: Partial<AuthValue> = {},
@@ -17,10 +16,22 @@ export const createAuthValue = (
     role: null,
     initialized: true,
     isAuthenticated: false,
-    login: asyncMock<AuthValue['login']>(),
-    register: asyncMock<AuthValue['register']>(),
-    logout: asyncMock<AuthValue['logout']>(),
-    refresh: asyncMock<AuthValue['refresh']>(),
+    login: asyncMock<
+        Parameters<AuthValue['login']>,
+        Awaited<ReturnType<AuthValue['login']>>
+    >(),
+    register: asyncMock<
+        Parameters<AuthValue['register']>,
+        Awaited<ReturnType<AuthValue['register']>>
+    >(),
+    logout: asyncMock<
+        Parameters<AuthValue['logout']>,
+        Awaited<ReturnType<AuthValue['logout']>>
+    >(),
+    refresh: asyncMock<
+        Parameters<AuthValue['refresh']>,
+        Awaited<ReturnType<AuthValue['refresh']>>
+    >(),
     apiFetch: jest.fn(async (...args: Parameters<AuthValue['apiFetch']>) => {
         void args;
         return undefined as Awaited<ReturnType<AuthValue['apiFetch']>>;

@@ -34,17 +34,21 @@ export function pageview(url: string) {
 export function sendWebVital(metric: NextWebVitalsMetric) {
     // Sentry metrics (best-effort)
     try {
-        // @ts-expect-error optional API in Sentry SDK v8+
-        if (
-            Sentry.metrics &&
-            typeof Sentry.metrics.distribution === 'function'
-        ) {
+        type MetricsApi = {
+            distribution?: (
+                name: string,
+                value: number,
+                options?: { tags?: Record<string, string> },
+            ) => void;
+        };
+        const metricsApi = (Sentry as typeof Sentry & { metrics?: MetricsApi })
+            .metrics;
+        if (typeof metricsApi?.distribution === 'function') {
             // Use a stable metric name, e.g. web_vital.LCP
             // CLS is scaled to ms like GA convention below
             const value =
                 metric.name === 'CLS' ? metric.value * 1000 : metric.value;
-            // @ts-expect-error optional API
-            Sentry.metrics.distribution(`web_vital.${metric.name}`, value, {
+            metricsApi.distribution(`web_vital.${metric.name}`, value, {
                 tags: { id: metric.id },
             });
         }
