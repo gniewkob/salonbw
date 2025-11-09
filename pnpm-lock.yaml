@@ -255,7 +255,7 @@ importers:
         specifier: ^14.2.32
         version: 14.2.32
       '@salonbw/api':
-        specifier: workspace:*
+        specifier: link:../packages/api
         version: link:../packages/api
       '@sentry/nextjs':
         specifier: ^10.23.0
