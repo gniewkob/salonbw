@@ -1,15 +1,65 @@
 import type { Route } from 'next';
+import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import type { ComponentProps } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsWidget from '@/components/StatsWidget';
 import DataTable from '@/components/DataTable';
-import { useInventory, useSalesSummary } from '@/hooks/useRetail';
-import { useMemo, useState } from 'react';
+import Modal from '@/components/Modal';
+import {
+    useInventory,
+    useRetailApi,
+    useSalesSummary,
+    type AdjustInventoryData,
+    type CreateSaleData,
+} from '@/hooks/useRetail';
+import { useProducts } from '@/hooks/useProducts';
+import { useEmployees } from '@/hooks/useEmployees';
+import { useAppointments } from '@/hooks/useAppointments';
+
+import type SaleFormComponent from '@/components/SaleForm';
+import type InventoryAdjustmentFormComponent from '@/components/InventoryAdjustmentForm';
+
+type SaleFormProps = ComponentProps<typeof SaleFormComponent>;
+type InventoryAdjustmentFormProps = ComponentProps<
+    typeof InventoryAdjustmentFormComponent
+>;
+
+const LazySaleForm = dynamic<SaleFormProps>(
+    () => import('@/components/SaleForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">Loading sale form…</div>
+        ),
+    },
+);
+
+const LazyInventoryAdjustmentForm = dynamic<InventoryAdjustmentFormProps>(
+    () => import('@/components/InventoryAdjustmentForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading inventory form…
+            </div>
+        ),
+    },
+);
 
 export default function RetailDashboard() {
     const [threshold, setThreshold] = useState(5);
+    const [showSaleForm, setShowSaleForm] = useState(false);
+    const [showAdjustForm, setShowAdjustForm] = useState(false);
     const { items, lowStock, loading: invLoading } = useInventory(threshold);
     const { summary, loading: sumLoading } = useSalesSummary();
+    const api = useRetailApi();
+    const { data: products } = useProducts();
+    const { data: employees } = useEmployees();
+    const { data: appointments } = useAppointments();
+    const queryClient = useQueryClient();
 
     const columns = useMemo(
         () => [
@@ -20,6 +70,25 @@ export default function RetailDashboard() {
         ],
         [],
     );
+
+    const handleCreateSale = async (data: CreateSaleData) => {
+        await api.createSale(data);
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/inventory'],
+        });
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/sales/summary'],
+        });
+        setShowSaleForm(false);
+    };
+
+    const handleAdjustInventory = async (data: AdjustInventoryData) => {
+        await api.adjustInventory(data);
+        await queryClient.invalidateQueries({
+            queryKey: ['api', '/inventory'],
+        });
+        setShowAdjustForm(false);
+    };
 
     return (
         <RouteGuard roles={['admin']} permission="dashboard:admin">
@@ -49,6 +118,21 @@ export default function RetailDashboard() {
                             className="border p-1 ml-2 w-20"
                         />
                     </div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                    <button
+                        className="border px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        onClick={() => setShowSaleForm(true)}
+                    >
+                        Record Sale
+                    </button>
+                    <button
+                        className="border px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        onClick={() => setShowAdjustForm(true)}
+                    >
+                        Adjust Inventory
+                    </button>
                 </div>
 
                 <div className="mt-6 grid gap-6 grid-cols-1 lg:grid-cols-3">
@@ -113,6 +197,34 @@ export default function RetailDashboard() {
                         ← Back to dashboard
                     </a>
                 </div>
+
+                {showSaleForm ? (
+                    <Modal open onClose={() => setShowSaleForm(false)}>
+                        <h2 className="text-lg font-semibold mb-4">
+                            Record Product Sale
+                        </h2>
+                        <LazySaleForm
+                            products={products ?? []}
+                            employees={employees ?? []}
+                            appointments={appointments ?? []}
+                            onSubmit={handleCreateSale}
+                            onCancel={() => setShowSaleForm(false)}
+                        />
+                    </Modal>
+                ) : null}
+
+                {showAdjustForm ? (
+                    <Modal open onClose={() => setShowAdjustForm(false)}>
+                        <h2 className="text-lg font-semibold mb-4">
+                            Adjust Inventory
+                        </h2>
+                        <LazyInventoryAdjustmentForm
+                            products={products ?? []}
+                            onSubmit={handleAdjustInventory}
+                            onCancel={() => setShowAdjustForm(false)}
+                        />
+                    </Modal>
+                ) : null}
             </DashboardLayout>
         </RouteGuard>
     );

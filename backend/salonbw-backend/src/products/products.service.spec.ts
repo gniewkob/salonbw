@@ -7,11 +7,13 @@ import { NotFoundException } from '@nestjs/common';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { AppCacheService } from '../cache/cache.service';
 
 describe('ProductsService', () => {
     let service: ProductsService;
     let repo: jest.Mocked<Repository<Product>>;
-    let logService: LogService;
+    let logService: jest.Mocked<LogService>;
+    let cache: jest.Mocked<AppCacheService>;
 
     const mockRepository = (): jest.Mocked<Repository<Product>> =>
         ({
@@ -19,7 +21,7 @@ describe('ProductsService', () => {
                 (dto) => dto as Product,
             ),
             save: jest.fn<Promise<Product>, [Product]>((entity) =>
-                Promise.resolve({ id: 1, ...entity } as Product),
+                Promise.resolve(Object.assign({ id: 1 }, entity) as Product),
             ),
             find: jest.fn<Promise<Product[]>, []>(() =>
                 Promise.resolve([{ id: 1 } as Product]),
@@ -32,7 +34,7 @@ describe('ProductsService', () => {
                 Promise.resolve(),
             ),
             delete: jest.fn<Promise<void>, [number]>(() => Promise.resolve()),
-        }) as jest.Mocked<Repository<Product>>;
+        }) as unknown as jest.Mocked<Repository<Product>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -40,11 +42,24 @@ describe('ProductsService', () => {
                 ProductsService,
                 {
                     provide: getRepositoryToken(Product),
-                    useValue: mockRepository(),
+                    useValue: mockRepository() as unknown as jest.Mocked<
+                        Repository<Product>
+                    >,
                 },
                 {
                     provide: LogService,
-                    useValue: { logAction: jest.fn() },
+                    useValue: {
+                        logAction: jest.fn(),
+                    } as unknown as jest.Mocked<LogService>,
+                },
+                {
+                    provide: AppCacheService,
+                    useValue: {
+                        get: jest.fn().mockResolvedValue(null),
+                        set: jest.fn().mockResolvedValue(undefined),
+                        del: jest.fn().mockResolvedValue(undefined),
+                        wrap: jest.fn((key: string, fn: () => Promise<unknown>) => fn()),
+                    } as unknown as jest.Mocked<AppCacheService>,
                 },
             ],
         }).compile();
@@ -53,7 +68,13 @@ describe('ProductsService', () => {
         repo = module.get<jest.Mocked<Repository<Product>>>(
             getRepositoryToken(Product),
         );
-        logService = module.get<LogService>(LogService);
+        logService = module.get<jest.Mocked<LogService>>(LogService);
+        cache = module.get<jest.Mocked<AppCacheService>>(AppCacheService);
+        jest.clearAllMocks();
+        cache.get.mockResolvedValue(null);
+        cache.set.mockResolvedValue(undefined);
+        cache.del.mockResolvedValue(undefined);
+        cache.wrap.mockImplementation(async (_key, fn) => fn());
     });
 
     it('creates a product', async () => {
@@ -67,6 +88,7 @@ describe('ProductsService', () => {
         const saveSpy = jest.spyOn(repo, 'save');
         const logSpy = jest.spyOn(logService, 'logAction');
         const user = { id: 1 } as User;
+        cache.del.mockClear();
         await expect(service.create(dto as Product, user)).resolves.toEqual({
             id: 1,
             ...dto,
@@ -78,18 +100,57 @@ describe('ProductsService', () => {
             LogAction.PRODUCT_CREATED,
             expect.objectContaining({ productId: 1, name: 'Shampoo' }),
         );
+        expect(cache.del).toHaveBeenCalledWith('products:all');
+        expect(cache.del).toHaveBeenCalledWith('products:1');
     });
 
     it('returns all products', async () => {
         const findSpy = jest.spyOn(repo, 'find');
         await expect(service.findAll()).resolves.toEqual([{ id: 1 }]);
         expect(findSpy).toHaveBeenCalled();
+        expect(cache.wrap).toHaveBeenCalledWith(
+            'products:all',
+            expect.any(Function),
+        );
     });
 
-    it('returns a product by id', async () => {
+    it('reuses cached list on subsequent findAll calls', async () => {
+        const findSpy = jest.spyOn(repo, 'find');
+        cache.wrap.mockImplementationOnce(async (key, fn) => {
+            const result = await fn();
+            cache.wrap.mockImplementation(
+                async (nextKey: string, nextFn: () => Promise<unknown>) =>
+                    nextKey === key ? result : nextFn(),
+            );
+            return result;
+        });
+
+        await service.findAll();
+        await service.findAll();
+
+        expect(cache.wrap).toHaveBeenCalledTimes(2);
+        expect(findSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns a product by id and caches it', async () => {
         const findOneSpy = jest.spyOn(repo, 'findOne');
         await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
         expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 1 } });
+        expect(cache.get).toHaveBeenCalledWith('products:1');
+        expect(cache.set).toHaveBeenCalledWith(
+            'products:1',
+            expect.objectContaining({ id: 1 }),
+        );
+    });
+
+    it('returns cached product without hitting repository', async () => {
+        const product = { id: 1 } as Product;
+        cache.get.mockResolvedValueOnce(product);
+        const findOneSpy = jest.spyOn(repo, 'findOne');
+        await expect(service.findOne(1)).resolves.toEqual(product);
+        expect(cache.get).toHaveBeenCalledWith('products:1');
+        expect(findOneSpy).not.toHaveBeenCalled();
+        expect(cache.set).not.toHaveBeenCalled();
     });
 
     it('throws when product not found', async () => {
@@ -98,6 +159,7 @@ describe('ProductsService', () => {
             NotFoundException,
         );
         expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 2 } });
+        expect(cache.set).not.toHaveBeenCalled();
     });
 
     it('updates a product', async () => {
@@ -105,6 +167,7 @@ describe('ProductsService', () => {
         const updateSpy = jest.spyOn(repo, 'update');
         const logSpy = jest.spyOn(logService, 'logAction');
         const user = { id: 1 } as User;
+        cache.del.mockClear();
         await expect(service.update(1, dto as Product, user)).resolves.toEqual({
             id: 1,
         });
@@ -114,12 +177,15 @@ describe('ProductsService', () => {
             LogAction.PRODUCT_UPDATED,
             expect.objectContaining({ productId: 1 }),
         );
+        expect(cache.del).toHaveBeenCalledWith('products:all');
+        expect(cache.del).toHaveBeenCalledWith('products:1');
     });
 
     it('removes a product', async () => {
         const deleteSpy = jest.spyOn(repo, 'delete');
         const logSpy = jest.spyOn(logService, 'logAction');
         const user = { id: 1 } as User;
+        cache.del.mockClear();
         await service.remove(1, user);
         expect(deleteSpy).toHaveBeenCalledWith(1);
         expect(logSpy).toHaveBeenCalledWith(
@@ -127,6 +193,8 @@ describe('ProductsService', () => {
             LogAction.PRODUCT_DELETED,
             expect.objectContaining({ productId: 1 }),
         );
+        expect(cache.del).toHaveBeenCalledWith('products:all');
+        expect(cache.del).toHaveBeenCalledWith('products:1');
     });
 
     describe('when logging fails', () => {
@@ -144,6 +212,7 @@ describe('ProductsService', () => {
                 stock: 10,
             };
             const user = { id: 1 } as User;
+            cache.del.mockClear();
             await expect(service.create(dto as Product, user)).resolves.toEqual(
                 {
                     id: 1,
@@ -151,6 +220,8 @@ describe('ProductsService', () => {
                 },
             );
             expect(consoleSpy).toHaveBeenCalled();
+            expect(cache.del).toHaveBeenCalledWith('products:all');
+            expect(cache.del).toHaveBeenCalledWith('products:1');
             consoleSpy.mockRestore();
             logActionSpy.mockRestore();
         });
@@ -163,10 +234,13 @@ describe('ProductsService', () => {
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
             const user = { id: 1 } as User;
+            cache.del.mockClear();
             await expect(service.update(1, {}, user)).resolves.toEqual({
                 id: 1,
             });
             expect(consoleSpy).toHaveBeenCalled();
+            expect(cache.del).toHaveBeenCalledWith('products:all');
+            expect(cache.del).toHaveBeenCalledWith('products:1');
             consoleSpy.mockRestore();
             logActionSpy.mockRestore();
         });
@@ -179,8 +253,11 @@ describe('ProductsService', () => {
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
             const user = { id: 1 } as User;
+            cache.del.mockClear();
             await expect(service.remove(1, user)).resolves.toBeUndefined();
             expect(consoleSpy).toHaveBeenCalled();
+            expect(cache.del).toHaveBeenCalledWith('products:all');
+            expect(cache.del).toHaveBeenCalledWith('products:1');
             consoleSpy.mockRestore();
             logActionSpy.mockRestore();
         });

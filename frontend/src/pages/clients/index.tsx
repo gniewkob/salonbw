@@ -1,12 +1,26 @@
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import ClientForm from '@/components/ClientForm';
 import { useClients } from '@/hooks/useClients';
 import { useClientApi } from '@/api/clients';
 import { Client } from '@/types';
+
+import type ClientFormComponent from '@/components/ClientForm';
+
+const ClientForm = dynamic<ComponentProps<typeof ClientFormComponent>>(
+    () => import('@/components/ClientForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading client form…
+            </div>
+        ),
+    },
+);
 
 export default function ClientsPage() {
     const { data } = useClients();

@@ -14,7 +14,7 @@ describe('CommissionsService', () => {
     let service: CommissionsService;
     let repo: jest.Mocked<Repository<Commission>>;
     let rulesRepo: jest.Mocked<Repository<CommissionRule>>;
-    let logService: LogService;
+    let logService: jest.Mocked<LogService>;
 
     const mockRepository = (): jest.Mocked<Repository<Commission>> =>
         ({
@@ -24,12 +24,12 @@ describe('CommissionsService', () => {
             save: jest
                 .fn<Promise<Commission>, [Commission]>()
                 .mockImplementation((entity) =>
-                    Promise.resolve({ id: 1, ...entity }),
+                    Promise.resolve({ ...entity, id: 1 } as Commission),
                 ),
             find: jest.fn<Promise<Commission[]>, []>().mockResolvedValue([]),
             findOne: jest.fn(),
             createQueryBuilder: jest.fn(),
-        }) as jest.Mocked<Repository<Commission>>;
+        }) as unknown as jest.Mocked<Repository<Commission>>;
 
     const mockRulesRepository = (): jest.Mocked<Repository<CommissionRule>> =>
         ({ findOne: jest.fn() }) as unknown as jest.Mocked<
@@ -50,7 +50,9 @@ describe('CommissionsService', () => {
                 },
                 {
                     provide: LogService,
-                    useValue: { logAction: jest.fn() },
+                    useValue: {
+                        logAction: jest.fn(),
+                    } as unknown as jest.Mocked<LogService>,
                 },
             ],
         }).compile();
@@ -62,7 +64,7 @@ describe('CommissionsService', () => {
         rulesRepo = module.get<jest.Mocked<Repository<CommissionRule>>>(
             getRepositoryToken(CommissionRule),
         );
-        logService = module.get<LogService>(LogService);
+        logService = module.get(LogService);
     });
 
     it('creates a commission', async () => {
@@ -168,7 +170,7 @@ describe('CommissionsService', () => {
             user,
         );
         expect(result).toEqual(
-            expect.objectContaining({ amount: 10, percent: 10 }),
+            expect.objectContaining({ amount: 9.99, percent: 10 }),
         );
     });
 
@@ -190,7 +192,38 @@ describe('CommissionsService', () => {
             user,
         );
         expect(result).toEqual(
-            expect.objectContaining({ amount: 15, percent: 15 }),
+            expect.objectContaining({ amount: 14.99, percent: 15 }),
+        );
+    });
+
+    it('rounds commission calculations using integer cents', async () => {
+        const employee = { id: 1 } as User;
+        const salonService = { id: 99, price: 19.99 } as SalonService;
+        const user = { id: 42 } as User;
+        const createSpy = jest
+            .spyOn(service, 'create')
+            .mockImplementation(async (data) =>
+                ({
+                    ...data,
+                    id: 321,
+                } as Commission),
+            );
+        jest.spyOn(service, 'resolveCommissionPercent').mockResolvedValue(15);
+
+        const result = await service.calculateAndSaveCommission(
+            employee,
+            salonService,
+            null,
+            user,
+        );
+
+        expect(createSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ amount: 2.99, percent: 15 }),
+            user,
+            undefined,
+        );
+        expect(result).toEqual(
+            expect.objectContaining({ amount: 2.99, percent: 15 }),
         );
     });
 
@@ -210,7 +243,7 @@ describe('CommissionsService', () => {
             user,
         );
         expect(result).toEqual(
-            expect.objectContaining({ amount: 30, percent: 30 }),
+            expect.objectContaining({ amount: 29.99, percent: 30 }),
         );
     });
 
@@ -234,7 +267,7 @@ describe('CommissionsService', () => {
             user,
         );
         expect(result).toEqual(
-            expect.objectContaining({ amount: 20, percent: 20 }),
+            expect.objectContaining({ amount: 19.99, percent: 20 }),
         );
     });
 

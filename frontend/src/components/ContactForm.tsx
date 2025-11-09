@@ -1,12 +1,7 @@
-import { FormEvent, useState } from 'react';
-import { z } from 'zod';
+import { FormEvent, useMemo, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 
-const schema = z.object({
-    name: z.string().min(1, { message: 'Imię jest wymagane' }),
-    email: z.string().email({ message: 'Nieprawidłowy format adresu email' }),
-    message: z.string().min(1, { message: 'Wiadomość jest wymagana' }),
-});
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ContactForm() {
     const toast = useToast();
@@ -24,25 +19,46 @@ export default function ContactForm() {
         setSubmitted(false);
         setSubmitError('');
         if (name === 'email') {
-            const result = schema.shape.email.safeParse(value);
-            setEmailError(result.success ? '' : result.error.issues[0].message);
+            const trimmed = value.trim();
+            setEmailError(
+                !trimmed || emailPattern.test(trimmed)
+                    ? ''
+                    : 'Nieprawidłowy format adresu email',
+            );
         }
     };
 
-    const isValid = schema.safeParse(form).success;
+    const trimmedForm = useMemo(
+        () => ({
+            name: form.name.trim(),
+            email: form.email.trim(),
+            message: form.message.trim(),
+        }),
+        [form],
+    );
+
+    const isValid =
+        trimmedForm.name.length > 0 &&
+        trimmedForm.message.length > 0 &&
+        emailPattern.test(trimmedForm.email);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const result = schema.safeParse(form);
-        if (!result.success) {
-            const issue = result.error.issues[0];
-            if (issue.path[0] === 'email') {
-                setEmailError(issue.message);
-            } else {
-                setError(issue.message);
-            }
+        const { name, email, message } = trimmedForm;
+
+        if (!name) {
+            setError('Imię jest wymagane');
             return;
         }
+        if (!emailPattern.test(email)) {
+            setEmailError('Nieprawidłowy format adresu email');
+            return;
+        }
+        if (!message) {
+            setError('Wiadomość jest wymagana');
+            return;
+        }
+
         setError('');
         setEmailError('');
         setSubmitError('');
@@ -64,7 +80,7 @@ export default function ContactForm() {
                                 '<p><strong>Email:</strong> {{email}}</p>' +
                                 '<p><strong>Wiadomość:</strong></p>' +
                                 '<p>{{message}}</p>',
-                            data: form,
+                            data: { name, email, message },
                         }),
                     },
                 );

@@ -1,9 +1,16 @@
-import { getCalendarPlugins } from '@/utils/calendarPlugins';
+import {
+    getCalendarPlugins,
+    resetCalendarPluginsCache,
+} from '@/utils/calendarPlugins';
 
 describe('getCalendarPlugins', () => {
-    it('returns expected plugins (or is skipped in Jest ESM env)', () => {
+    afterEach(() => {
+        resetCalendarPluginsCache();
+    });
+
+    it('returns expected plugins (or is skipped in Jest ESM env)', async () => {
         try {
-            const plugins = getCalendarPlugins();
+            const plugins = await getCalendarPlugins();
             expect(Array.isArray(plugins)).toBe(true);
             expect(plugins.length).toBeGreaterThanOrEqual(3);
         } catch {

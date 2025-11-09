@@ -1,0 +1,9 @@
+{
+    "name": "rand-token",
+    "version": "1.0.1",
+    "main": "index.js",
+    "license": "MIT",
+    "description": "Lightweight random token generator compatible with cypress snapshot plugin",
+    "keywords": ["rand-token", "cypress", "token"],
+    "author": "SalonBW Engineering"
+}

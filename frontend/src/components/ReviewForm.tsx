@@ -1,14 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { z } from 'zod';
 import { Review } from '@/types';
-
-const schema = z.object({
-    appointmentId: z.coerce
-        .number()
-        .min(1, { message: 'Appointment is required' }),
-    rating: z.coerce.number().min(1).max(5),
-    comment: z.string().optional(),
-});
 
 interface Props {
     initial?: Partial<Review>;
@@ -21,11 +12,14 @@ interface Props {
 }
 
 export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
-    const [form, setForm] = useState({
-        appointmentId: initial?.appointmentId ?? 0,
-        rating: initial?.rating ?? 1,
+    const [form, setForm] = useState(() => ({
+        appointmentId:
+            initial?.appointmentId !== undefined
+                ? String(initial.appointmentId)
+                : '',
+        rating: initial?.rating !== undefined ? String(initial.rating) : '1',
         comment: initial?.comment ?? '',
-    });
+    }));
     const [error, setError] = useState('');
 
     const handleChange = (
@@ -37,13 +31,29 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        const appointmentId = Number(form.appointmentId);
+        if (!Number.isFinite(appointmentId) || appointmentId < 1) {
+            setError('Appointment is required');
+            return;
+        }
+
+        const rating = Number(form.rating);
+        if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+            setError('Rating must be between 1 and 5');
+            return;
+        }
+
+        const comment = form.comment.trim();
+
+        setError('');
         try {
-            const data = schema.parse(form);
-            await onSubmit(data);
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError)
-                setError(err.issues[0]?.message ?? 'Error');
-            else setError('Error');
+            await onSubmit({
+                appointmentId,
+                rating,
+                comment,
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         }
     };
 

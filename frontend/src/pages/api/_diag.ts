@@ -16,7 +16,8 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
     // Next standalone server sets cwd to the standalone dir.
     // distRoot is the directory that contains Next's .next for the server runtime.
     // If cwd ends with ".next/standalone", distRoot is path.resolve(cwd, '..').
-    const distRoot = path.basename(cwd) === 'standalone' ? path.resolve(cwd, '..') : cwd;
+    const distRoot =
+        path.basename(cwd) === 'standalone' ? path.resolve(cwd, '..') : cwd;
     const standalone = cwd; // actual standalone dir
     const standaloneNext = distRoot; // .next adjacent to server.js
     const standaloneStatic = path.join(standaloneNext, 'static');
@@ -31,16 +32,26 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse) {
 
     let chunks: string[] = [];
     let css: string[] = [];
-    try { chunks = fs.readdirSync(path.join(standaloneStatic, 'chunks')); } catch {}
-    try { css = fs.readdirSync(path.join(standaloneStatic, 'css')); } catch {}
+    try {
+        chunks = fs.readdirSync(path.join(standaloneStatic, 'chunks'));
+    } catch {}
+    try {
+        css = fs.readdirSync(path.join(standaloneStatic, 'css'));
+    } catch {}
 
     res.status(200).json({
         node: process.version,
         cwd,
         paths: {
             standalone: check(standalone),
-            standaloneNext: { ...check(standaloneNext), target: standaloneNext },
-            standaloneStatic: { ...check(standaloneStatic), target: standaloneStatic },
+            standaloneNext: {
+                ...check(standaloneNext),
+                target: standaloneNext,
+            },
+            standaloneStatic: {
+                ...check(standaloneStatic),
+                target: standaloneStatic,
+            },
             rootStatic: { ...check(rootStatic), target: rootStatic },
             buildIdFile: { ...check(buildIdFile), target: buildIdFile },
         },

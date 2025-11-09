@@ -1,16 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { z } from 'zod';
 import { Product } from '@/types';
-
-const schema = z.object({
-    name: z.string().min(1, { message: 'Name is required' }),
-    unitPrice: z.coerce.number().min(0, { message: 'Price must be >= 0' }),
-    stock: z.coerce.number().min(0, { message: 'Stock must be >= 0' }),
-    lowStockThreshold: z.coerce
-        .number()
-        .min(0, { message: 'Low stock threshold must be >= 0' }),
-    brand: z.string().optional(),
-});
 
 interface Props {
     initial?: Partial<Product>;
@@ -25,13 +14,17 @@ interface Props {
 }
 
 export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
-    const [form, setForm] = useState({
+    const [form, setForm] = useState(() => ({
         name: initial?.name ?? '',
-        unitPrice: initial?.unitPrice ?? 0,
-        stock: initial?.stock ?? 0,
-        lowStockThreshold: initial?.lowStockThreshold ?? 5,
+        unitPrice:
+            initial?.unitPrice !== undefined ? String(initial.unitPrice) : '',
+        stock: initial?.stock !== undefined ? String(initial.stock) : '',
+        lowStockThreshold:
+            initial?.lowStockThreshold !== undefined
+                ? String(initial.lowStockThreshold)
+                : '5',
         brand: initial?.brand ?? '',
-    });
+    }));
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -42,14 +35,53 @@ export default function ProductForm({ initial, onSubmit, onCancel }: Props) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        const name = form.name.trim();
+        if (!name) {
+            setError('Name is required');
+            return;
+        }
+
+        const parseNumberField = (
+            value: string,
+            message: string,
+        ): number | null => {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed) || parsed < 0) {
+                setError(message);
+                return null;
+            }
+            return parsed;
+        };
+
+        const unitPrice = parseNumberField(
+            form.unitPrice,
+            'Price must be >= 0',
+        );
+        if (unitPrice === null) return;
+
+        const stock = parseNumberField(form.stock, 'Stock must be >= 0');
+        if (stock === null) return;
+
+        const lowStockThreshold = parseNumberField(
+            form.lowStockThreshold,
+            'Low stock threshold must be >= 0',
+        );
+        if (lowStockThreshold === null) return;
+
+        const brand = form.brand.trim();
+
+        setError('');
+        setSubmitting(true);
         try {
-            const data = schema.parse(form);
-            setSubmitting(true);
-            await onSubmit(data);
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError)
-                setError(err.issues[0]?.message ?? 'Error');
-            else setError('Error');
+            await onSubmit({
+                name,
+                unitPrice,
+                stock,
+                lowStockThreshold,
+                brand,
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }

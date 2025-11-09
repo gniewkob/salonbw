@@ -21,12 +21,20 @@
 - TypeORM manages entities and database migrations; configuration sourced from `.env`.
 - Swagger (`swagger.ts`) generates `openapi.json` for API schema documentation.
 - Jest powers unit/integration testing (`test/` directory).
+- Redis-backed caching (optional) wraps slow-changing catalog queries (services, products). When `REDIS_URL` isn’t defined the cache falls back to an in-memory store with a configurable TTL (`CACHE_TTL_SECONDS`).
+- PostgreSQL slow-query logging is enabled at startup (`DB_SLOW_QUERY_MS`), and connection pool metrics surface through the Prometheus `/metrics` endpoint.
 
 ## Cross-Cutting Concerns
 
 - Authentication flows between frontend dashboards and backend JWT-based endpoints.
 - Shared contracts currently rely on manual alignment; OpenAPI schema exists but no generated client yet.
 - Logging and background jobs are not centrally documented; cron/timed tasks likely via `@nestjs/schedule`.
+
+## Monetary Calculations
+
+- Monetary values are normalised to integer cents in service logic to avoid floating-point drift.
+- Database columns such as `services.price`, `products.unitPrice`, and `commissions.amount` still use decimals for compatibility, but service layers convert to cents before any arithmetic and only convert back when persisting or serialising responses.
+- New calculations (e.g. POS sales, commission payouts) must follow the `toCents`/`fromCents` convention already used in `RetailService` and `CommissionsService`, with deterministic rounding (`Math.floor`) to keep cents consistent.
 
 ## Deployment & Operations
 

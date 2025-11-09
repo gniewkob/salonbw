@@ -11,6 +11,7 @@
 .env.development.local
 .env.test.local
 backend/.env
+backend/salonbw-backend/.env
 frontend/.env.local
 .phpactor.json
 .phpunit.result.cache
@@ -87,3 +88,7 @@ output_tree*.txt
 
 backend/test.sqlite
 archive/
+
+
+#Ignore cursor AI rules
+.cursor/rules/codacy.mdc

@@ -76,6 +76,19 @@ export interface TypedRequest<
 export interface ApiClientOptions {
     baseUrl?: string;
     headers?: HeadersInit;
+    // Optional per-request init overrides (e.g., for adding request-specific headers)
+    requestInit?: RequestInit;
+    /**
+     * Allows callers to override how the refresh token is retrieved (e.g. pull
+     * from cookies or some external store). When omitted we fall back to
+     * reading from localStorage.
+     */
+    getRefreshToken?: () => string | null;
+    /**
+     * Storage key used when reading the refresh token from localStorage.
+     * Defaults to `refreshToken` to match the legacy AuthContext behaviour.
+     */
+    refreshTokenStorageKey?: string;
 }
 
 export class ApiClient {
@@ -107,10 +120,53 @@ export class ApiClient {
         };
     }
 
+    private debugEnabled(): boolean {
+        const envFlag =
+            typeof process !== "undefined" &&
+            process.env.NEXT_PUBLIC_ENABLE_DEBUG === "true";
+        const localFlag =
+            typeof window !== "undefined" &&
+            window.localStorage?.getItem("DEBUG_API") === "1";
+        return envFlag || localFlag;
+    }
+
+    private generateRequestId(): string {
+        const globalCrypto =
+            typeof globalThis !== "undefined"
+                ? (globalThis.crypto as (Crypto & { randomUUID?: () => string }) | undefined)
+                : undefined;
+        if (globalCrypto?.randomUUID) {
+            return globalCrypto.randomUUID();
+        }
+        const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+        return template.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16;
+            const v = c === "x" ? Math.floor(r) : Math.floor(r) % 4 + 8;
+            return v.toString(16);
+        });
+    }
+
     private getRefreshToken(): string | null {
-        // No longer using local storage for tokens
-        // Refresh token is handled via httpOnly cookies
-        return null;
+        if (typeof this.options.getRefreshToken === "function") {
+            try {
+                return this.options.getRefreshToken();
+            } catch {
+                return null;
+            }
+        }
+
+        if (typeof window === "undefined") {
+            return null;
+        }
+
+        try {
+            const storage = window.localStorage;
+            if (!storage) return null;
+            const key = this.options.refreshTokenStorageKey ?? "refreshToken";
+            return storage.getItem(key);
+        } catch {
+            return null;
+        }
     }
 
     private buildUrl(
@@ -168,7 +224,16 @@ export class ApiClient {
         init: RequestInit = {},
         retry = true
     ): Promise<T> {
-        const headers = new Headers(init.headers ?? {});
+        const baseInit = this.options.requestInit ?? {};
+        const mergedInit: RequestInit = {
+            ...baseInit,
+            ...init,
+        };
+        const headers = new Headers(this.defaultHeaders);
+        const baseHeaders = new Headers(baseInit.headers ?? {});
+        baseHeaders.forEach((value, key) => headers.set(key, value));
+        const incomingHeaders = new Headers(init.headers ?? {});
+        incomingHeaders.forEach((value, key) => headers.set(key, value));
         if (!headers.has("Content-Type") && init.body) {
             headers.set("Content-Type", "application/json");
         }
@@ -177,8 +242,14 @@ export class ApiClient {
             headers.set("Authorization", `Bearer ${token}`);
         }
 
+        if (this.debugEnabled() && !headers.has("X-Request-Id")) {
+            headers.set("X-Request-Id", this.generateRequestId());
+        }
+
         // Get CSRF token from cookie and add to headers for non-GET requests
-        if (init.method !== "GET" && typeof document !== "undefined") {
+        const method = String(mergedInit.method ?? init.method ?? "GET").toUpperCase();
+
+        if (method !== "GET" && typeof document !== "undefined") {
             const csrfToken = document.cookie
                 .split("; ")
                 .find((row) => row.startsWith("XSRF-TOKEN="))
@@ -190,7 +261,8 @@ export class ApiClient {
         }
 
         const response = await fetch(this.buildUrl(endpoint), {
-            ...init,
+            ...mergedInit,
+            method,
             headers,
             credentials: "include", // Required for sending cookies with requests
         });
@@ -216,12 +288,7 @@ export class ApiClient {
 
     private async handleResponse<T>(response: Response): Promise<T> {
         const reqId = response.headers.get("x-request-id");
-        const debug =
-            (typeof process !== "undefined" &&
-                process.env.NEXT_PUBLIC_ENABLE_DEBUG === "true") ||
-            (typeof window !== "undefined" &&
-                window.localStorage?.getItem("DEBUG_API") === "1");
-        if (reqId && debug && typeof console !== "undefined") {
+        if (reqId && this.debugEnabled() && typeof console !== "undefined") {
             // Lightweight correlation hint in dev
             // eslint-disable-next-line no-console
             console.debug("[api] x-request-id:", reqId);

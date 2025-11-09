@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, Min, IsOptional, IsNumber, IsString } from 'class-validator';
+import {
+    IsInt,
+    Min,
+    IsOptional,
+    IsNumber,
+    IsString,
+    MaxLength,
+} from 'class-validator';
 
 export class CreateSaleDto {
     @ApiProperty()
@@ -13,7 +20,8 @@ export class CreateSaleDto {
 
     @ApiPropertyOptional({ description: 'Override default unit price' })
     @IsOptional()
-    @IsNumber()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(0)
     unitPrice?: number;
 
     @ApiPropertyOptional({
@@ -23,11 +31,13 @@ export class CreateSaleDto {
     })
     @IsOptional()
     @IsInt()
+    @Min(0)
     unitPriceCents?: number;
 
     @ApiPropertyOptional({ description: 'Absolute discount amount' })
     @IsOptional()
-    @IsNumber()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(0)
     discount?: number;
 
     @ApiPropertyOptional({
@@ -37,6 +47,7 @@ export class CreateSaleDto {
     })
     @IsOptional()
     @IsInt()
+    @Min(0)
     discountCents?: number;
 
     @ApiPropertyOptional()
@@ -52,5 +63,6 @@ export class CreateSaleDto {
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
+    @MaxLength(500)
     note?: string;
 }

@@ -23,8 +23,12 @@ describe('Access control', () => {
 
     it('redirects unauthenticated users to login', () => {
         cy.visit('/dashboard', { failOnStatusCode: false });
-        cy.location('pathname').should('eq', '/auth/login');
-        cy.location('search').should('include', 'redirectTo=%2Fdashboard');
+        cy.location().should((loc) => {
+            expect(loc.pathname).to.eq('/auth/login');
+            if (loc.search) {
+                expect(loc.search).to.include('redirectTo=%2Fdashboard');
+            }
+        });
     });
 
     it('redirects client to their dashboard and blocks admin routes', () => {

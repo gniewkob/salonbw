@@ -8,6 +8,7 @@ import { LogService } from './logs/log.service';
 import { AuthFailureFilter } from './logs/auth-failure.filter';
 import { PinoLogger, LoggerErrorInterceptor } from 'nestjs-pino';
 import { HttpMetricsInterceptor } from './observability/http-metrics.interceptor';
+import type { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
@@ -23,8 +24,19 @@ async function bootstrap() {
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
     app.use(cookieParser());
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        const requestWithId = req as Request & { id?: string };
+        if (requestWithId.id && !res.getHeader('x-request-id')) {
+            res.setHeader('x-request-id', requestWithId.id);
+        }
+        next();
+    });
     const config = app.get(ConfigService);
-    if (process.env.NODE_ENV !== 'production') {
+    const enableSwagger =
+        config.get<string>('ENABLE_SWAGGER', 'false')?.toLowerCase() === 'true';
+    const nodeEnv = config.get<string>('NODE_ENV', 'development');
+
+    if (enableSwagger) {
         const swaggerConfig = new DocumentBuilder()
             .setTitle('SalonBW API')
             .setDescription('The SalonBW API description')
@@ -33,26 +45,53 @@ async function bootstrap() {
             .build();
         const document = SwaggerModule.createDocument(app, swaggerConfig);
         SwaggerModule.setup('api/docs', app, document);
+        if (nodeEnv === 'production') {
+            logger.warn('Swagger enabled while NODE_ENV=production');
+        }
     }
-    const frontendUrls = config
-        .get<string>('FRONTEND_URL')
-        ?.split(',')
-        .map((url) => url.trim());
-    const nodeEnv = config.get<string>('NODE_ENV', 'development');
+    const frontendRaw = config.get<string>('FRONTEND_URL');
+    const parsedOrigins = new Set<string>();
+    const invalidOrigins: string[] = [];
+    if (frontendRaw) {
+        for (const entry of frontendRaw.split(',')) {
+            const trimmed = entry.trim();
+            if (!trimmed) continue;
+            try {
+                const url = new URL(trimmed);
+                parsedOrigins.add(url.origin);
+            } catch {
+                invalidOrigins.push(trimmed);
+            }
+        }
+    }
 
-    if (nodeEnv === 'production' && !frontendUrls?.length) {
+    if (invalidOrigins.length > 0) {
+        throw new Error(
+            `Invalid FRONTEND_URL entries: ${invalidOrigins.join(', ')}`,
+        );
+    }
+
+    if (nodeEnv === 'production' && parsedOrigins.size === 0) {
         throw new Error(
             'FRONTEND_URL environment variable is required in production',
         );
     }
 
+    const cookieDomain = config.get<string>('COOKIE_DOMAIN');
+    if (nodeEnv === 'production' && !cookieDomain) {
+        throw new Error('COOKIE_DOMAIN environment variable must be set');
+    }
+    if (cookieDomain && cookieDomain.startsWith('.')) {
+        logger.debug({ cookieDomain }, 'using shared cookie domain');
+    }
+
     app.enableCors({
-        origin: frontendUrls?.length
+        origin: parsedOrigins.size
             ? (
                   origin: string | undefined,
                   callback: (err: Error | null, allow?: boolean) => void,
               ) => {
-                  if (!origin || frontendUrls.includes(origin)) {
+                  if (!origin || parsedOrigins.has(origin)) {
                       callback(null, true);
                   } else {
                       logger.warn(
@@ -60,14 +99,26 @@ async function bootstrap() {
                           'rejected CORS request from unauthorized origin',
                       );
                       callback(new Error('Not allowed by CORS'));
-                  }
               }
+          }
             : true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-        exposedHeaders: ['X-CSRF-Token'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'X-XSRF-TOKEN',
+            'X-Request-Id',
+        ],
+        exposedHeaders: ['X-Request-Id'],
     });
+
+    if (parsedOrigins.size > 0) {
+        logger.info(
+            { origins: Array.from(parsedOrigins.values()) },
+            'configured CORS origins',
+        );
+    }
 
     process.on('uncaughtException', (error) => {
         logger.fatal({ err: error }, 'uncaught exception');

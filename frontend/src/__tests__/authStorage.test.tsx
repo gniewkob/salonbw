@@ -16,6 +16,18 @@ jest.mock('@/api/apiClient', () => ({
     ApiClient: jest.fn().mockImplementation(() => ({ request: requestMock })),
 }));
 
+const originalFetch = global.fetch;
+
+beforeEach(() => {
+    global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+    } as Response);
+});
+
+afterEach(() => {
+    global.fetch = originalFetch;
+});
+
 describe('AuthContext localStorage', () => {
     it('login stores tokens and user, logout clears them', async () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -30,11 +42,11 @@ describe('AuthContext localStorage', () => {
         expect(localStorage.getItem('jwtToken')).toBe('a');
         expect(localStorage.getItem('refreshToken')).toBe('r');
 
-        act(() => {
-            result.current.logout();
+        await act(async () => {
+            await result.current.logout();
         });
         expect(localStorage.getItem('jwtToken')).toBeNull();
         expect(localStorage.getItem('refreshToken')).toBeNull();
-        expect(result.current.user).toBeNull();
+        await waitFor(() => expect(result.current.isAuthenticated).toBe(false));
     });
 });

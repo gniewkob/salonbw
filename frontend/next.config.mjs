@@ -1,20 +1,6 @@
-const ContentSecurityPolicy = [
-    "default-src 'self';",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;",
-    "style-src 'self' 'unsafe-inline' https:;",
-    "img-src 'self' data: blob: https:;",
-    "media-src 'self' https:;",
-    "font-src 'self' data:;",
-    "connect-src 'self' https: wss:;",
-    // Allow embedding specific, trusted frames (e.g., Google Maps embeds)
-    "frame-src 'self' https://*.google.com https://*.gstatic.com;",
-    "frame-ancestors 'none';",
-    "form-action 'self';",
-    "base-uri 'self';",
-].join(' ');
-
+// CSP is now handled by middleware.ts with nonce generation
+// Only include static security headers here
 const securityHeaders = [
-    { key: 'Content-Security-Policy', value: ContentSecurityPolicy },
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'X-Frame-Options', value: 'DENY' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -33,9 +19,27 @@ const nextConfig = {
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     output: 'standalone',
-    // Configure image optimization; default to unoptimized on mydevil to avoid 400s
-    // from the on-host optimizer. Can be overridden by NEXT_IMAGE_UNOPTIMIZED=false.
-    images: { unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED !== 'false' },
+    // Image optimization configuration
+    // Enable optimization by default, can be disabled with NEXT_IMAGE_UNOPTIMIZED=true for shared hosting
+    images: {
+        unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
+        formats: ['image/webp', 'image/avif'],
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+        minimumCacheTTL: 60, // Cache optimized images for 60 seconds
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'scontent.cdninstagram.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdninstagram.com',
+                pathname: '/**',
+            },
+        ],
+    },
     experimental: {
         typedRoutes: false,
     },

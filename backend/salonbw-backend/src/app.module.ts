@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { v4 as uuid } from 'uuid';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
@@ -23,15 +24,33 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { EmailsModule } from './emails/emails.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { RetailModule } from './retail/retail.module';
+import { CSPModule } from './csp/csp.module';
+import { CacheModule } from './cache/cache.module';
+import { DatabaseSlowQueryService } from './database/database-slow-query.service';
 
 @Module({
     imports: [
-        ThrottlerModule.forRoot([
-            {
-                ttl: 60000, // 1 minute
-                limit: 10, // 10 requests per minute
+        ThrottlerModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => {
+                const ttlRaw = config.get<string>('THROTTLE_TTL', '60000');
+                const limitRaw = config.get<string>('THROTTLE_LIMIT', '10');
+                const ttl = Number(ttlRaw);
+                const limit = Number(limitRaw);
+                if (!Number.isFinite(ttl) || ttl <= 0) {
+                    throw new Error('THROTTLE_TTL must be a positive number');
+                }
+                if (!Number.isFinite(limit) || limit <= 0) {
+                    throw new Error('THROTTLE_LIMIT must be a positive number');
+                }
+                return [
+                    {
+                        ttl,
+                        limit,
+                    },
+                ];
             },
-        ]),
+        }),
         LoggerModule.forRoot({
             renameContext: 'component',
             pinoHttp: {
@@ -76,6 +95,7 @@ import { RetailModule } from './retail/retail.module';
             },
         }),
         ConfigModule.forRoot({ isGlobal: true }),
+        CacheModule,
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
@@ -99,12 +119,44 @@ import { RetailModule } from './retail/retail.module';
                     );
                 }
 
+                // Connection pooling configuration
+                const poolSize = config.get<number>('DB_POOL_SIZE', 10);
+                const poolMin = config.get<number>('DB_POOL_MIN', 2);
+                const idleTimeoutMillis = config.get<number>(
+                    'DB_IDLE_TIMEOUT_MS',
+                    30000,
+                );
+                const connectionTimeoutMillis = config.get<number>(
+                    'DB_CONNECTION_TIMEOUT_MS',
+                    5000,
+                );
+
                 return {
                     type: 'postgres',
                     url: dbUrl,
                     autoLoadEntities: true,
                     synchronize: shouldSync,
                     migrations: [__dirname + '/migrations/*{.ts,.js}'],
+                    // Connection pooling
+                    extra: {
+                        max: poolSize, // Maximum pool size
+                        min: poolMin, // Minimum pool size
+                        idleTimeoutMillis, // Close idle connections after this time
+                        connectionTimeoutMillis, // Fail connection after this time
+                        statement_timeout: 30000, // Cancel queries after 30s
+                        query_timeout: 30000, // Query timeout
+                    },
+                    // Query performance
+                    logging:
+                        nodeEnv === 'development'
+                            ? ['error', 'warn', 'query']
+                            : ['error', 'warn'],
+                    maxQueryExecutionTime:
+                        nodeEnv === 'development' ? 1000 : undefined, // Log slow queries > 1s in dev
+                    cache: {
+                        duration: 30000, // Cache results for 30s
+                        type: 'database', // Use database for query result caching
+                    },
                 };
             },
         }),
@@ -122,8 +174,17 @@ import { RetailModule } from './retail/retail.module';
         EmailsModule,
         ObservabilityModule,
         RetailModule,
+        CSPModule,
     ],
     controllers: [AppController, HealthController],
-    providers: [AppService, HealthService],
+    providers: [
+        AppService,
+        HealthService,
+        DatabaseSlowQueryService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}

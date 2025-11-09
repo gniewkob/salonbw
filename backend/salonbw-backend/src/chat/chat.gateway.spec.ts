@@ -10,6 +10,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Server } from 'http';
 import type { AddressInfo } from 'net';
+import type { Socket } from 'socket.io-client';
 
 interface Message {
     id: number;
@@ -19,6 +20,33 @@ interface Message {
     timestamp: Date;
 }
 
+type SocketInternal = {
+    disconnect?: () => void;
+    io?: {
+        engine?: {
+            transport?: { ws?: { close?: () => void }; socket?: { close?: () => void } };
+            ws?: { close?: () => void };
+        };
+    };
+};
+
+function cleanupSocket(socket: Socket): void {
+    try {
+        const socketInternal = socket as unknown as SocketInternal;
+        socketInternal.disconnect?.();
+        const transport = socketInternal.io?.engine?.transport;
+        transport?.ws?.close?.();
+        transport?.socket?.close?.();
+        socketInternal.io?.engine?.ws?.close?.();
+    } catch (err) {
+        // ignore if internal shape differs
+    }
+}
+
+type AckPayload = { status: 'ok' };
+type MessagePayload = { text: string; userId: number };
+type MessageAck = { status: 'ok' };
+
 const SKIP = process.env.SKIP_BIND_TESTS === '1';
 const d = SKIP ? describe.skip : describe;
 
@@ -26,6 +54,7 @@ d('ChatGateway', () => {
     let app: INestApplication;
     let jwtService: JwtService;
     let baseUrl: string;
+    let canBind = true;
     let mockAppointmentsService: jest.Mocked<AppointmentsService>;
     let mockChatService: {
         saveMessage: jest.Mock<Promise<Message>, [number, number, string]>;
@@ -84,41 +113,54 @@ d('ChatGateway', () => {
         }).compile();
 
         app = moduleRef.createNestApplication();
-        await app.listen(0);
+        try {
+            await app.listen(0, '127.0.0.1');
+        } catch (error) {
+            const err = error as NodeJS.ErrnoException;
+            if (err?.code === 'EPERM') {
+                canBind = false;
+                return;
+            }
+            throw error;
+        }
         const server = app.getHttpServer() as Server;
         const address = server.address() as AddressInfo;
-        baseUrl = `http://localhost:${address.port}`;
+        baseUrl = `http://127.0.0.1:${address.port}`;
         jwtService = moduleRef.get(JwtService);
     });
 
     afterAll(async () => {
-        await app.close();
+        if (app) {
+            await app.close();
+        }
     });
 
     it('should disconnect clients without token', async () => {
+        if (!canBind) {
+            expect(canBind).toBe(false);
+            return;
+        }
         const socket = io(baseUrl, {
             transports: ['websocket'],
             forceNew: true,
             reconnection: false,
         });
-        await new Promise((resolve) => socket.on('disconnect', resolve));
+        await new Promise<void>((resolve) => {
+            socket.on('disconnect', () => resolve());
+        });
         expect(socket.connected).toBe(false);
         socket.close();
         // ensure underlying engine/io resources are closed (msw MockHttpSocket)
-        try {
-            (socket as any).disconnect?.();
-            const transport = (socket as any).io?.engine?.transport;
-            transport?.ws?.close?.();
-            transport?.socket?.close?.();
-            (socket as any).io?.engine?.ws?.close?.();
-        } catch (err) {
-            // ignore if internal shape differs
-        }
+        cleanupSocket(socket);
         // give socket a moment to fully close and release handles
         await new Promise((r) => setTimeout(r, 50));
     });
 
     it('should allow authorized clients to exchange messages', async () => {
+        if (!canBind) {
+            expect(canBind).toBe(false);
+            return;
+        }
         const token1 = await jwtService.signAsync({ sub: 1, role: 'Client' });
         const token2 = await jwtService.signAsync({ sub: 2, role: 'Employee' });
 
@@ -134,30 +176,37 @@ d('ChatGateway', () => {
         });
 
         await Promise.all([
-            new Promise((resolve) => socket1.on('connect', resolve)),
-            new Promise((resolve) => socket2.on('connect', resolve)),
+            new Promise<void>((resolve) => {
+                socket1.on('connect', () => resolve());
+            }),
+            new Promise<void>((resolve) => {
+                socket2.on('connect', () => resolve());
+            }),
         ]);
 
-        const join1 = await new Promise((resolve) =>
-            socket1.emit('joinRoom', { appointmentId: 1 }, resolve),
-        );
-        const join2 = await new Promise((resolve) =>
-            socket2.emit('joinRoom', { appointmentId: 1 }, resolve),
-        );
+        const join1 = await new Promise<AckPayload>((resolve) => {
+            socket1.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
+                resolve(payload),
+            );
+        });
+        const join2 = await new Promise<AckPayload>((resolve) => {
+            socket2.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
+                resolve(payload),
+            );
+        });
         expect(join1).toEqual({ status: 'ok' });
         expect(join2).toEqual({ status: 'ok' });
 
-        const received = new Promise<{
-            text: string;
-            userId: number;
-        }>((resolve) => socket2.on('message', resolve));
-        const sendRes = await new Promise((resolve) =>
+        const received = new Promise<MessagePayload>((resolve) => {
+            socket2.on('message', (payload: MessagePayload) => resolve(payload));
+        });
+        const sendRes = await new Promise<MessageAck>((resolve) => {
             socket1.emit(
                 'message',
                 { appointmentId: 1, message: 'hello' },
-                resolve,
-            ),
-        );
+                (payload: MessageAck) => resolve(payload),
+            );
+        });
         expect(sendRes).toEqual({ status: 'ok' });
         const msg = await received;
         expect(msg.text).toBe('hello');
@@ -165,23 +214,17 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
-        try {
-            (socket1 as any).disconnect?.();
-            const t1 = (socket1 as any).io?.engine?.transport;
-            t1?.ws?.close?.();
-            t1?.socket?.close?.();
-        } catch (err) {}
-        try {
-            (socket2 as any).disconnect?.();
-            const t2 = (socket2 as any).io?.engine?.transport;
-            t2?.ws?.close?.();
-            t2?.socket?.close?.();
-        } catch (err) {}
+        cleanupSocket(socket1);
+        cleanupSocket(socket2);
         // allow sockets to fully close to avoid jest open handle warnings
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise<void>((r) => setTimeout(r, 50));
     });
 
     it('should reject messages exceeding maximum length', async () => {
+        if (!canBind) {
+            expect(canBind).toBe(false);
+            return;
+        }
         const token1 = await jwtService.signAsync({ sub: 1, role: 'Client' });
         const token2 = await jwtService.signAsync({ sub: 2, role: 'Employee' });
 
@@ -197,20 +240,28 @@ d('ChatGateway', () => {
         });
 
         await Promise.all([
-            new Promise((resolve) => socket1.on('connect', resolve)),
-            new Promise((resolve) => socket2.on('connect', resolve)),
+            new Promise<void>((resolve) => {
+                socket1.on('connect', () => resolve());
+            }),
+            new Promise<void>((resolve) => {
+                socket2.on('connect', () => resolve());
+            }),
         ]);
 
-        await new Promise((resolve) =>
-            socket1.emit('joinRoom', { appointmentId: 1 }, resolve),
-        );
-        await new Promise((resolve) =>
-            socket2.emit('joinRoom', { appointmentId: 1 }, resolve),
-        );
+        await new Promise<AckPayload>((resolve) => {
+            socket1.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
+                resolve(payload),
+            );
+        });
+        await new Promise<AckPayload>((resolve) => {
+            socket2.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
+                resolve(payload),
+            );
+        });
 
         const longText = 'a'.repeat(501);
         const errorPromise = new Promise<unknown>((resolve) =>
-            socket1.on('exception', resolve),
+            socket1.on('exception', (payload) => resolve(payload)),
         );
         socket1.emit('message', { appointmentId: 1, message: longText });
         const error = await errorPromise;
@@ -219,19 +270,9 @@ d('ChatGateway', () => {
 
         socket1.close();
         socket2.close();
-        try {
-            (socket1 as any).disconnect?.();
-            const t1 = (socket1 as any).io?.engine?.transport;
-            t1?.ws?.close?.();
-            t1?.socket?.close?.();
-        } catch (err) {}
-        try {
-            (socket2 as any).disconnect?.();
-            const t2 = (socket2 as any).io?.engine?.transport;
-            t2?.ws?.close?.();
-            t2?.socket?.close?.();
-        } catch (err) {}
+        cleanupSocket(socket1);
+        cleanupSocket(socket2);
         // allow sockets to fully close to avoid jest open handle warnings
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise<void>((r) => setTimeout(r, 50));
     });
 });

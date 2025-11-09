@@ -31,7 +31,11 @@ export default function FAQPage() {
                     content="Answers to common questions about Salon Black &amp; White."
                 />
             </Head>
-            <Script id="ld-faq" type="application/ld+json" strategy="afterInteractive">
+            <Script
+                id="ld-faq"
+                type="application/ld+json"
+                strategy="afterInteractive"
+            >
                 {jsonLd({
                     '@context': 'https://schema.org',
                     '@type': 'FAQPage',
