@@ -39,7 +39,7 @@
     "@fullcalendar/timegrid": "^6.1.18",
     "@next/bundle-analyzer": "^14.2.32",
     "@next/env": "^14.2.32",
-    "@salonbw/api": "workspace:*",
+    "@salonbw/api": "link:../packages/api",
     "@sentry/nextjs": "^10.23.0",
     "@swc/helpers": "^0.5.17",
     "@tanstack/react-query": "^5.90.7",
