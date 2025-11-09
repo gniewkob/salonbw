@@ -13,7 +13,7 @@ import { User } from '../users/user.entity';
 import { Repository, IsNull } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes, createHash } from 'crypto';
 import { Response, CookieOptions, Request } from 'express';
 import { JwtSignOptions } from '@nestjs/jwt';
 import { LoginAttemptsService } from './login-attempts.service';
@@ -21,7 +21,8 @@ import { LoginAttemptsService } from './login-attempts.service';
 @Injectable()
 export class AuthService {
     private readonly isDev: boolean;
-    private readonly domain: string;
+    private readonly domain: string | undefined;
+    private readonly sameSite: CookieOptions['sameSite'];
 
     constructor(
         private readonly usersService: UsersService,
@@ -32,24 +33,37 @@ export class AuthService {
         private readonly refreshRepo: Repository<RefreshToken>,
     ) {
         this.isDev = configService.get('NODE_ENV') !== 'production';
-        this.domain = configService.get('COOKIE_DOMAIN') || 'localhost';
+        this.domain = configService.get('COOKIE_DOMAIN') || undefined;
+        if (!this.isDev && !this.domain) {
+            throw new Error(
+                'COOKIE_DOMAIN environment variable is required in production',
+            );
+        }
+        this.sameSite = 'lax';
     }
 
     private getCookieOptions(maxAge: number): CookieOptions {
         return {
             httpOnly: true,
             secure: !this.isDev,
-            sameSite: 'strict',
+            sameSite: this.sameSite,
             domain: this.domain,
             maxAge,
             path: '/',
         };
     }
 
+    private generateCsrfToken() {
+        const secret = randomBytes(32).toString('base64url');
+        const hash = createHash('sha256').update(secret).digest('hex');
+        return { secret, hash };
+    }
+
     private setAuthCookies(
         response: Response,
         accessToken: string,
         refreshToken: string,
+        csrfToken: string,
     ): void {
         const accessMaxAge = 60 * 60 * 1000; // 1 hour
         const refreshMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -65,11 +79,14 @@ export class AuthService {
             this.getCookieOptions(refreshMaxAge),
         );
 
-        // Set CSRF token - use first part of JWT as a token
-        const csrfToken = accessToken.split('.')[0];
         response.cookie('XSRF-TOKEN', csrfToken, {
             ...this.getCookieOptions(accessMaxAge),
             httpOnly: false, // Client needs to read this
+        });
+
+        response.cookie('sbw_auth', '1', {
+            ...this.getCookieOptions(refreshMaxAge),
+            httpOnly: false,
         });
     }
 
@@ -86,6 +103,12 @@ export class AuthService {
         response.cookie('XSRF-TOKEN', '', {
             ...this.getCookieOptions(0),
             expires,
+            httpOnly: false,
+        });
+        response.cookie('sbw_auth', '', {
+            ...this.getCookieOptions(0),
+            expires,
+            httpOnly: false,
         });
     }
 
@@ -135,12 +158,14 @@ export class AuthService {
     async login(user: Omit<User, 'password'>, response: Response) {
         const payload = { sub: user.id, role: user.role };
         const accessToken = this.jwtService.sign(payload);
-        const refreshToken = await this.createPersistedRefreshToken({
+        const csrf = this.generateCsrfToken();
+        const refreshTokenRecord = await this.createPersistedRefreshToken({
             id: user.id,
             role: user.role,
-        });
+        }, csrf.hash);
+        const refreshToken = refreshTokenRecord.token;
 
-        this.setAuthCookies(response, accessToken, refreshToken);
+        this.setAuthCookies(response, accessToken, refreshToken, csrf.secret);
 
         // For backward compatibility during migration
         return {
@@ -149,7 +174,10 @@ export class AuthService {
         };
     }
 
-    private async createPersistedRefreshToken(user: Pick<User, 'id' | 'role'>) {
+    private async createPersistedRefreshToken(
+        user: Pick<User, 'id' | 'role'>,
+        csrfHash: string,
+    ) {
         const jti = randomUUID();
         const expiresIn =
             this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
@@ -166,9 +194,7 @@ export class AuthService {
             secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         } satisfies JwtSignOptions);
 
-        const decoded = this.jwtService.decode(token) as {
-            exp?: number;
-        } | null;
+        const decoded = this.jwtService.decode(token);
         const expiresAt = decoded?.exp
             ? new Date(decoded.exp * 1000)
             : new Date(Date.now() + 7 * 24 * 3600 * 1000);
@@ -177,11 +203,11 @@ export class AuthService {
             userId: user.id,
             jti,
             expiresAt,
-            meta: { role: user.role },
+            meta: { role: user.role, csrfSecretHash: csrfHash },
         });
         await this.refreshRepo.save(rt);
 
-        return token;
+        return { token, jti };
     }
 
     async refresh(refreshToken: string, response: Response) {
@@ -229,21 +255,27 @@ export class AuthService {
             stored.revokedAt = new Date();
             await this.refreshRepo.save(stored);
 
+            const csrf = this.generateCsrfToken();
             const newRefresh = await this.createPersistedRefreshToken({
                 id: user.id,
                 role: user.role,
-            });
+            }, csrf.hash);
             const accessToken = this.jwtService.sign({
                 sub: user.id,
                 role: user.role,
             });
 
-            this.setAuthCookies(response, accessToken, newRefresh);
+            this.setAuthCookies(
+                response,
+                accessToken,
+                newRefresh.token,
+                csrf.secret,
+            );
 
             // For backward compatibility during migration
             return {
                 access_token: accessToken,
-                refresh_token: newRefresh,
+                refresh_token: newRefresh.token,
             };
         } catch (_err) {
             // normalize errors

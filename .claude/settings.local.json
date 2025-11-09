@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(cat:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(retail): add POS components and API integration; chore: add development plan\n\n- Add retail POS UI components (SaleForm, InventoryAdjustmentForm)\n- Implement retail API hooks (useRetail, useRetailApi)\n- Add comprehensive unit tests for retail components\n- Enhance retail service with inventory management\n- Improve auth service with better error handling and tests\n- Update CSRF middleware with enhanced security\n- Add Cypress E2E test for retail POS workflow\n- Improve image lightbox with analytics tracking\n- Update API client with better error handling\n- Add development plan 2025-2026 with phased approach\n- Update documentation (AGENT_*, ARCHITECTURE, ENV)\n- Add cspell configuration for spell checking\n- Update CI workflow with backend tests\n\nBackend changes:\n- Retail service: inventory movements, sales tracking, commission integration\n- Auth service: improved token validation, refresh logic\n- Commission service: cents-based calculations\n- Enhanced test coverage across services\n\nFrontend changes:\n- New retail dashboard with POS functionality\n- Improved authentication context with refresh token handling\n- Enhanced API hooks with retry logic\n- Image lightbox with analytics events\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh workflow:*)",
+      "Bash(gh run list:*)",
+      "Bash(ssh:*)",
+      "Bash(find:*)",
+      "Bash(pnpm --filter salonbw-backend run typecheck:*)",
+      "Bash(pnpm --filter salonbw-backend add:*)",
+      "Bash(pnpm --filter salonbw-backend run test --passWithNoTests)",
+      "Bash(git commit:*)",
+      "Bash(pnpm audit:*)",
+      "Bash(git push:*)",
+      "Bash(pnpm list:*)",
+      "Bash(NEXT_IMAGE_UNOPTIMIZED=false pnpm run build:*)",
+      "Bash(export NEXT_IMAGE_UNOPTIMIZED=false)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm --filter frontend run typecheck:*)",
+      "Bash(pnpm --filter frontend run build:*)",
+      "Bash(ANALYZE=true pnpm run build:*)",
+      "Bash(export ANALYZE=true)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

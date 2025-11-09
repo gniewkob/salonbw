@@ -1,15 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import ProductForm from '@/components/ProductForm';
-import StockForm from '@/components/StockForm';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductApi } from '@/api/products';
 import { Product } from '@/types';
 import { testLog } from '@/utils/testLogger';
 
+import type ProductFormComponent from '@/components/ProductForm';
+import type StockFormComponent from '@/components/StockForm';
+
+const ProductForm = dynamic<ComponentProps<typeof ProductFormComponent>>(
+    () => import('@/components/ProductForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading product form…
+            </div>
+        ),
+    },
+);
+
+const StockForm = dynamic<ComponentProps<typeof StockFormComponent>>(
+    () => import('@/components/StockForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">Loading stock form…</div>
+        ),
+    },
+);
 export default function ProductsPage() {
     const { data } = useProducts();
     const api = useProductApi();

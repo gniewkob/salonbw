@@ -4,16 +4,34 @@ This document outlines the HTTP response headers and crawler directives applied 
 
 ## Global HTTP Headers
 
-Configured in `frontend/next.config.mjs` for every request:
+### Content Security Policy (CSP)
 
-- `Content-Security-Policy` – restricts resource loading to trusted origins:
-  - `default-src 'self'`
-  - `script-src 'self' 'unsafe-inline' 'unsafe-eval' https:`
-  - `style-src 'self' 'unsafe-inline' https:`
-  - `img-src 'self' data: blob: https:`
-  - `font-src 'self' data:`
-  - `connect-src 'self' https: wss:` (permits API and WebSocket calls)
-  - `frame-ancestors 'none'`, `form-action 'self'`, `base-uri 'self'`
+**NEW (2025-11-01):** CSP is now dynamically generated with nonces via `frontend/middleware.ts` for enhanced security.
+
+**Strict CSP Configuration:**
+- `default-src 'self'` - Only allow resources from same origin
+- `script-src 'self' 'nonce-{random}' 'strict-dynamic' https:` - **No unsafe-inline or unsafe-eval**
+- `style-src 'self' 'nonce-{random}' https:` - Nonce-based styles
+- `img-src 'self' data: blob: https:` - Allow images from trusted sources
+- `media-src 'self' https:` - Media from HTTPS only
+- `font-src 'self' data:` - Fonts from same origin or data URIs
+- `connect-src 'self' https: wss:` - API and WebSocket connections
+- `frame-src 'self' https://*.google.com https://*.gstatic.com` - Trusted embeds only
+- `frame-ancestors 'none'` - Prevent clickjacking
+- `form-action 'self'` - Forms submit to same origin only
+- `base-uri 'self'` - Restrict base tag URLs
+- `upgrade-insecure-requests` - Auto-upgrade HTTP to HTTPS
+- `report-uri {API_URL}/csp-report` - Violation reporting endpoint
+
+**How it works:**
+1. Middleware generates a unique nonce for each request
+2. Nonce is passed to `<Head>` and `<NextScript>` via `_document.tsx`
+3. Next.js automatically applies nonces to `<Script>` components
+4. CSP violations are logged to backend at `/csp-report`
+
+### Static Security Headers
+
+Configured in `frontend/next.config.mjs`:
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`

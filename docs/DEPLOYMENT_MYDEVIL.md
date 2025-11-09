@@ -8,7 +8,7 @@ Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)
 
 - SSH access to the production account (e.g. `user@s0.mydevil.net`) with public key authentication.
 - Passenger-enabled Node.js applications configured for the public site and dashboard panel(s).
-- Environment variables stored outside the repo (`.env`, `.env.production`, secrets injected via deployment scripts).
+- Environment variables stored outside the repo (`.env`, `.env.production`, secrets injected via deployment scripts). Review [`docs/ENV.md`](./ENV.md) for the required backend values (`FRONTEND_URL`, `COOKIE_DOMAIN`, throttler limits, Swagger flag, POS settings).
 - Local machine has run through the release checklist in [`docs/RELEASE_CHECKLIST.md`](./RELEASE_CHECKLIST.md).
 
 Folder structure recommended on the server:
@@ -32,6 +32,7 @@ pnpm --filter frontend build
 ```
 
 The Next.js build outputs `.next`, and (if `output: 'standalone'` is configured) `.next/standalone`. When the standalone output is unavailable, you must ship the entire repo subtree required by Next.js (`.next`, `node_modules`, `public`).
+> **Heads-up:** The runtime bootstrap (`frontend/app.cjs` / `app.js`) now auto-links both `.next/static` and `public/` into the standalone directory at startup. You still need to upload those folders with the build artifacts so the bootstrap has something to link to.
 
 ## 3. Upload to mydevil (manual reference)
 
@@ -81,7 +82,7 @@ cd /home/<user>/apps/api
 npm install --production
 ```
 
-If you generated a standalone build (`.next/standalone`), dependencies are already bundled and you may skip `npm install` for the frontend. Keep the `public` and `.next/static` directories alongside the standalone server.
+If you generated a standalone build (`.next/standalone`), dependencies are already bundled and you may skip `npm install` for the frontend. Keep the `public` and `.next/static` directories alongside the standalone server; the bootstrap script will create symlinks (or copies as a fallback) pointing to them when Passenger starts the app.
 
 ## 5. Restart Passenger / processes
 
@@ -93,6 +94,12 @@ devil nodejs restart <backend-app-name>
 ```
 
 Confirm the application process started cleanly by inspecting the Passenger logs (e.g. `~/logs/nodejs/<app>/passenger.log`).
+
+## 5a. Image Optimization (Next.js)
+
+- The frontend ships with Next.js Image Optimization enabled. The default build proxies remote images through the standalone server and respects `next.config.mjs` domain allowlists (`scontent.cdninstagram.com`, `cdninstagram.com`).
+- MyDevil deployments **must** keep the `.next/image` directory and `public/` assets alongside the standalone bundle. The startup script attempts to link/copy both into `.next/standalone`, but it can only work if the source folders were uploaded.
+- If the host ever blocks the image proxy, set `NEXT_IMAGE_UNOPTIMIZED=true` in the `.env.production` file during deployment to fall back to direct image URLs.
 
 ## 6. Database migrations
 

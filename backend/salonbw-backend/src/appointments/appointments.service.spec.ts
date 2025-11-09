@@ -39,6 +39,7 @@ describe('AppointmentsService', () => {
                 name: '',
                 phone: '123',
                 receiveNotifications: true,
+                commissionBase: 0,
             },
             {
                 id: 2,
@@ -48,6 +49,7 @@ describe('AppointmentsService', () => {
                 name: '',
                 phone: '456',
                 receiveNotifications: true,
+                commissionBase: 0,
             },
         ];
         services = [
@@ -68,7 +70,7 @@ describe('AppointmentsService', () => {
                         users.find((u) => u.id === where.id) ?? null,
                     ),
             ),
-        } as Partial<Repository<User>> as jest.Mocked<Repository<User>>;
+        } as unknown as jest.Mocked<Repository<User>>;
 
         mockServicesRepo = {
             findOne: jest.fn<
@@ -79,9 +81,7 @@ describe('AppointmentsService', () => {
                     services.find((s) => s.id === where.id) ?? null,
                 ),
             ),
-        } as Partial<Repository<SalonService>> as jest.Mocked<
-            Repository<SalonService>
-        >;
+        } as unknown as jest.Mocked<Repository<SalonService>>;
 
         const repoUpdate = jest.fn<
             Promise<UpdateResult>,
@@ -121,17 +121,21 @@ describe('AppointmentsService', () => {
                         appointments.find((a) => a.id === criteria) ?? null,
                     );
                 }
-                const { where } = criteria;
-                if (where?.id !== undefined) {
+                const where = criteria?.where;
+                if (!where) {
+                    return Promise.resolve(null);
+                }
+                if (where.id !== undefined) {
                     return Promise.resolve(
                         appointments.find((a) => a.id === where.id) ?? null,
                     );
                 }
-                if (where?.employee) {
+                const employeeId = where.employee?.id;
+                if (employeeId !== undefined) {
                     return Promise.resolve(
                         appointments.find(
                             (a) =>
-                                a.employee.id === where.employee.id &&
+                                a.employee?.id === employeeId &&
                                 a.status !== AppointmentStatus.Cancelled &&
                                 a.startTime < (where.startTime?._value ?? 0) &&
                                 a.endTime > (where.endTime?._value ?? 0),
@@ -144,7 +148,7 @@ describe('AppointmentsService', () => {
                 id: nextId++,
                 status: AppointmentStatus.Scheduled,
                 ...data,
-            })),
+            } as Appointment)),
             save: jest.fn<Promise<Appointment>, [Appointment]>((appt) => {
                 appointments.push(appt);
                 return Promise.resolve(appt);
@@ -164,20 +168,18 @@ describe('AppointmentsService', () => {
                     }
                 }),
             },
-        } as Partial<Repository<Appointment>> as jest.Mocked<
-            Repository<Appointment>
-        >;
+        } as unknown as jest.Mocked<Repository<Appointment>>;
 
         mockCommissionsService = {
             createFromAppointment: jest.fn<
                 Promise<unknown>,
                 [Appointment, User, unknown]
             >(() => Promise.resolve({})),
-        } as Partial<CommissionsService> as jest.Mocked<CommissionsService>;
+        } as unknown as jest.Mocked<CommissionsService>;
 
         mockLogService = {
             logAction: jest.fn(),
-        } as Partial<LogService> as jest.Mocked<LogService>;
+        } as unknown as jest.Mocked<LogService>;
 
         mockWhatsappService = {
             sendBookingConfirmation: jest.fn<
@@ -188,7 +190,7 @@ describe('AppointmentsService', () => {
             sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
                 Promise.resolve(),
             ),
-        } as Partial<WhatsappService> as jest.Mocked<WhatsappService>;
+        } as unknown as jest.Mocked<WhatsappService>;
 
         sendFollowUpMock = mockWhatsappService.sendFollowUp.bind(
             mockWhatsappService,

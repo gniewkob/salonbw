@@ -93,6 +93,8 @@ Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 ssh devil "tail -f ~/logs/nodejs/api.salon-bw.pl/app.log" | jq
 ```
 
+Tip: when debugging client flows, set `NEXT_PUBLIC_ENABLE_DEBUG=true` (or `localStorage.DEBUG_API=1` in the browser console) so the frontend attaches an `X-Request-Id` header to every API call. The value is echoed back in responses and can be grepped directly in the backend logs.
+
 ### Metrics
 
 - Prometheus-compatible metrics are exposed at `https://api.salon-bw.pl/metrics` (and `/metrics` on any environment).
@@ -113,6 +115,7 @@ curl -s https://api.salon-bw.pl/metrics | grep salonbw_http_server_requests_tota
 1. **Missing logs** – ensure the workflow restart step succeeded; `devil www status api.salon-bw.pl` should list the Node app. If the log file is empty, tail `~/logs/nodejs/api.salon-bw.pl/passenger.log` for startup errors.
 2. **Unexpected 5xx spikes** – correlate with request IDs in `salonbw_http_server_requests_total{status_code="500"}` and fetch the matching log lines via `grep <request-id> app.log`.
 3. **Metrics endpoint down** – run `curl -I https://api.salon-bw.pl/metrics`; if it returns 5xx, restart (`devil www restart api.salon-bw.pl`) and re-test `/healthz` before retrying the scrape.
+4. **Next build fails with `Cannot find module '@next/env'`** – run `pnpm --filter frontend run build` locally; if it errors before copying standalone deps, execute `node frontend/scripts/ensure-local-deps.js` once to rehydrate the vendored packages (stored under `frontend/vendor`). Commit those vendor folders so CI/postinstall environments have the same copies; without them the standalone runtime strips `@next/env`, `styled-jsx`, `picocolors`, and `@swc/helpers` from the pnpm store and `next build` halts midway.
 
 ### Suggested Alerts (Prometheus)
 
@@ -129,7 +132,7 @@ i
 ## 7. Notes on MyDevil Environment
 
 - Node.js 22 is available via `/usr/local/bin/node22`, but the global default is Node 18. That is why `npm` prints `EBADENGINE` warnings—safe to ignore.
-- Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`.
+- Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`; the startup script (`frontend/app.cjs`) now links/copies those asset folders into the standalone dir automatically, but the sources must still exist beside the deployment.
 - SMTP credentials for contact form use the mailbox `kontakt@salon-bw.pl` on `mail0.mydevil.net` (port 465, SSL). Stored in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`.
 
 ## 8. Documentation Hygiene
@@ -143,3 +146,25 @@ i
   - Manual deployment notes: [`docs/DEPLOYMENT_MYDEVIL.md`](./DEPLOYMENT_MYDEVIL.md)
 
 If in doubt, document the outcome and leave breadcrumbs for the next operator. A tidy status file is more valuable than perfect automation.
+
+## 9. Security & Dependency Response
+
+### 9.1 Security Incident Playbook
+
+1. **Triage**
+   - Record source (Dependabot, CVE feed, audit failure) and affected package/version in `docs/AGENT_STATUS.md`.
+   - Verify impact with `pnpm audit --prod --audit-level=high` at the repository root.
+2. **Mitigate**
+   - If Dependabot opened a PR, review the diff, run `pnpm install --frozen-lockfile`, and execute `pnpm turbo run lint typecheck test --filter=...` for the touched apps.
+   - For manual patches: bump the version in the relevant `package.json`, regenerate the lockfile with `pnpm install`, and repeat the test suite.
+3. **Deploy**
+   - Merge to `master`, trigger `deploy.yml` for the affected targets, and monitor `/healthz` plus critical user journeys.
+4. **Document**
+   - Append the incident summary (date, package, fixed version, verification steps) to `docs/AGENT_STATUS.md`.
+
+### 9.2 Quarterly Dependency Review
+
+- On the first Monday of January, April, July, and October:
+  - Run `pnpm outdated` at the repo root and file follow-up issues for major upgrades.
+  - Execute `pnpm --filter frontend dlx depcheck` and `pnpm --filter salonbw-backend dlx depcheck`; remove unused packages immediately or justify them in the PR description.
+  - Capture findings and assigned follow-ups in `docs/AGENT_STATUS.md`.

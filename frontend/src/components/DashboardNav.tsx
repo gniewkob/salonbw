@@ -107,7 +107,9 @@ export default function DashboardNav() {
                 })}
                 <button
                     className="block text-left px-2 py-1 hover:underline"
-                    onClick={logout}
+                    onClick={() => {
+                        void logout();
+                    }}
                 >
                     Logout
                 </button>

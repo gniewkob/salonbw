@@ -1,12 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import ReviewForm from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 import { useReviewApi } from '@/api/reviews';
 import { Review } from '@/types';
+
+import type ReviewFormComponent from '@/components/ReviewForm';
+
+const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
+    () => import('@/components/ReviewForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading review form…
+            </div>
+        ),
+    },
+);
 
 export default function ReviewsPage() {
     const [employeeId, setEmployeeId] = useState(1);

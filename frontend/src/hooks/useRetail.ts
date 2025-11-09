@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 
 export interface InventoryItem {
     id: number;
@@ -15,6 +16,65 @@ export interface SalesSummary {
     to: string;
     units: number;
     revenue: number | null;
+}
+
+export interface CreateSaleData {
+    productId: number;
+    quantity: number;
+    employeeId?: number;
+    appointmentId?: number;
+    unitPrice?: number;
+    discount?: number;
+    note?: string;
+}
+
+export interface AdjustInventoryData {
+    productId: number;
+    delta: number;
+    reason: string;
+    note?: string;
+}
+
+export function useRetailApi() {
+    const { apiFetch } = useAuth();
+    const toast = useToast();
+
+    const createSale = async (data: CreateSaleData) => {
+        try {
+            const response = await apiFetch<{ status: string }>('/sales', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            toast.success('Sale recorded');
+            return response;
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Error';
+            toast.error(message);
+            throw err;
+        }
+    };
+
+    const adjustInventory = async (data: AdjustInventoryData) => {
+        try {
+            const response = await apiFetch<{ status: string }>(
+                '/inventory/adjust',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                },
+            );
+            toast.success('Inventory adjusted');
+            return response;
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Error';
+            toast.error(message);
+            throw err;
+        }
+    };
+
+    return { createSale, adjustInventory };
 }
 
 export function useInventory(threshold = 5) {

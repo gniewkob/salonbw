@@ -1,10 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { z } from 'zod';
 import { Client } from '@/types';
-
-const schema = z.object({
-    name: z.string().min(1, { message: 'Name is required' }),
-});
 
 interface Props {
     initial?: Partial<Client>;
@@ -19,14 +14,18 @@ export default function ClientForm({ initial, onSubmit, onCancel }: Props) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        const trimmed = name.trim();
+        if (!trimmed) {
+            setError('Name is required');
+            return;
+        }
+
+        setError('');
+        setSubmitting(true);
         try {
-            const data = schema.parse({ name });
-            setSubmitting(true);
-            await onSubmit(data);
-        } catch (err: unknown) {
-            if (err instanceof z.ZodError)
-                setError(err.issues[0]?.message ?? 'Error');
-            else setError('Error');
+            await onSubmit({ name: trimmed });
+        } catch (err) {
+            setError(err instanceof Error ? err.message || 'Error' : 'Error');
         } finally {
             setSubmitting(false);
         }

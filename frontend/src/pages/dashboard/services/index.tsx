@@ -1,12 +1,26 @@
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import ServiceForm from '@/components/ServiceForm';
 import { useServices } from '@/hooks/useServices';
 import { useServiceApi } from '@/api/services';
 import { Service } from '@/types';
+
+import type ServiceFormComponent from '@/components/ServiceForm';
+
+const ServiceForm = dynamic<ComponentProps<typeof ServiceFormComponent>>(
+    () => import('@/components/ServiceForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading service form…
+            </div>
+        ),
+    },
+);
 
 export default function ServicesPage() {
     const { data } = useServices();

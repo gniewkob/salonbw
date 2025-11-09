@@ -1,3 +1,4 @@
+'use client';
 import type { AppProps, NextWebVitalsMetric } from 'next/app';
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
@@ -8,7 +9,13 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import { initSentry } from '@/sentry.client';
-import { isAnalyticsEnabled, pageview, getGAId, sendWebVital, trackEvent } from '@/utils/analytics';
+import {
+    isAnalyticsEnabled,
+    pageview,
+    getGAId,
+    sendWebVital,
+    trackEvent,
+} from '@/utils/analytics';
 import BookNowFab from '@/components/BookNowFab';
 
 // Initialize Sentry once (no-op if DSN is not set)
@@ -40,10 +47,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     // Prefetch booking flow assets
     useEffect(() => {
-        router.prefetch('/appointments');
+        void router.prefetch('/appointments');
     }, [router]);
 
-    // Scroll-depth analytics (25/50/75/100) per route
+    // Scroll-depth analytics (25/50/75/100) per route — run only in browser
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (!isAnalyticsEnabled()) return;
@@ -51,15 +58,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         const fired = new Set<number>();
         const onScroll = () => {
             const doc = document.documentElement;
-            const scrollTop = window.scrollY || doc.scrollTop;
-            const height = doc.scrollHeight - doc.clientHeight;
+            const scrollTop = window.scrollY || (doc && doc.scrollTop) || 0;
+            const height = (doc && doc.scrollHeight - doc.clientHeight) || 0;
             if (height <= 0) return;
             const pct = Math.min(100, Math.round((scrollTop / height) * 100));
             for (const t of thresholds) {
                 if (pct >= t && !fired.has(t)) {
                     fired.add(t);
                     try {
-                        trackEvent('scroll_depth', { percent: t, path: router.asPath });
+                        trackEvent('scroll_depth', {
+                            percent: t,
+                            path: router.asPath,
+                        });
                     } catch {}
                 }
             }
@@ -104,7 +114,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 export function reportWebVitals(metric: NextWebVitalsMetric) {
     try {
         sendWebVital(metric);
-    } catch (e) {
+    } catch {
         // non-fatal
     }
 }

@@ -11,4 +11,3 @@ export function absUrl(path: string, base?: string): string {
         return path;
     }
 }
-

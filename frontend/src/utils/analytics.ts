@@ -15,8 +15,8 @@ export function getGAId(): string {
 
 declare global {
     interface Window {
-        gtag: (...args: any[]) => void;
-        dataLayer: any[];
+        gtag: (...args: unknown[]) => void;
+        dataLayer: unknown[];
     }
 }
 
@@ -34,13 +34,21 @@ export function pageview(url: string) {
 export function sendWebVital(metric: NextWebVitalsMetric) {
     // Sentry metrics (best-effort)
     try {
-        // @ts-ignore optional API in Sentry SDK v8+
-        if (Sentry.metrics && typeof Sentry.metrics.distribution === 'function') {
+        type MetricsApi = {
+            distribution?: (
+                name: string,
+                value: number,
+                options?: { tags?: Record<string, string> },
+            ) => void;
+        };
+        const metricsApi = (Sentry as typeof Sentry & { metrics?: MetricsApi })
+            .metrics;
+        if (typeof metricsApi?.distribution === 'function') {
             // Use a stable metric name, e.g. web_vital.LCP
             // CLS is scaled to ms like GA convention below
-            const value = metric.name === 'CLS' ? metric.value * 1000 : metric.value;
-            // @ts-ignore
-            Sentry.metrics.distribution(`web_vital.${metric.name}`, value, {
+            const value =
+                metric.name === 'CLS' ? metric.value * 1000 : metric.value;
+            metricsApi.distribution(`web_vital.${metric.name}`, value, {
                 tags: { id: metric.id },
             });
         }
@@ -51,7 +59,10 @@ export function sendWebVital(metric: NextWebVitalsMetric) {
     // Google Analytics 4 (best-effort)
     if (!isAnalyticsEnabled()) return;
     try {
-        const value = metric.name === 'CLS' ? Math.round(metric.value * 1000) : Math.round(metric.value);
+        const value =
+            metric.name === 'CLS'
+                ? Math.round(metric.value * 1000)
+                : Math.round(metric.value);
         window.gtag('event', metric.name, {
             // Recommended mapping for GA4 custom events
             value,
@@ -63,7 +74,7 @@ export function sendWebVital(metric: NextWebVitalsMetric) {
     }
 }
 
-export function trackEvent(name: string, params: Record<string, any> = {}) {
+export function trackEvent(name: string, params: Record<string, unknown> = {}) {
     if (!isAnalyticsEnabled()) return;
     try {
         window.gtag('event', name, { ...params, non_interaction: false });
@@ -71,4 +82,3 @@ export function trackEvent(name: string, params: Record<string, any> = {}) {
         // ignore
     }
 }
-

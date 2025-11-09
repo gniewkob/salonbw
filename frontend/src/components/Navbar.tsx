@@ -61,7 +61,9 @@ export default function Navbar() {
                     <Link
                         href={'/appointments' as Route}
                         className={linkClass}
-                        onClick={() => trackEvent('begin_checkout', { cta: 'navbar' })}
+                        onClick={() =>
+                            trackEvent('begin_checkout', { cta: 'navbar' })
+                        }
                     >
                         Book Now
                     </Link>

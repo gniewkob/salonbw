@@ -1,3 +1,4 @@
+'use client';
 import { ReactNode, useEffect } from 'react';
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 
 export default function Modal({ open, onClose, children }: Props) {
     useEffect(() => {
+        if (typeof document === 'undefined') return;
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
         };

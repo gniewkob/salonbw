@@ -13,13 +13,13 @@ describe('Analytics events on services', () => {
         // Enable analytics for client code
         process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
         process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
-        // @ts-ignore
+        // @ts-expect-error jsdom window doesn't define gtag
         window.gtag = jest.fn();
         mockedUseAuth.mockReturnValue(createAuthValue());
     });
 
     afterEach(() => {
-        // @ts-ignore
+        // @ts-expect-error jsdom window doesn't define gtag
         delete window.gtag;
     });
 
@@ -31,31 +31,37 @@ describe('Analytics events on services', () => {
                         id: 1,
                         name: 'Color',
                         services: [
-                            { id: 10, name: 'Hair Coloring', duration: 60, price: 100 },
-                            { id: 11, name: 'Highlights', duration: 45, price: 120 },
+                            {
+                                id: 10,
+                                name: 'Hair Coloring',
+                                duration: 60,
+                                price: 100,
+                            },
+                            {
+                                id: 11,
+                                name: 'Highlights',
+                                duration: 45,
+                                price: 120,
+                            },
                         ],
                     },
                 ]}
             />,
         );
-        // @ts-ignore
         const calls = (window.gtag as jest.Mock).mock.calls;
         expect(calls.find((c) => c[1] === 'view_item_list')).toBeTruthy();
     });
 
     it('emits view_item on service page and sends begin_checkout/select_item on CTA', () => {
         render(<ColoringPage />);
-        // @ts-ignore
         let calls = (window.gtag as jest.Mock).mock.calls;
         expect(calls.find((c) => c[1] === 'view_item')).toBeTruthy();
 
         const cta = screen.getByText(/Book an appointment/i);
         fireEvent.click(cta);
 
-        // @ts-ignore
         calls = (window.gtag as jest.Mock).mock.calls;
         expect(calls.find((c) => c[1] === 'select_item')).toBeTruthy();
         expect(calls.find((c) => c[1] === 'begin_checkout')).toBeTruthy();
     });
 });
-

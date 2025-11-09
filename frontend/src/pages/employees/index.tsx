@@ -1,12 +1,26 @@
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
-import EmployeeForm from '@/components/EmployeeForm';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeApi } from '@/api/employees';
 import { Employee } from '@/types';
+
+import type EmployeeFormComponent from '@/components/EmployeeForm';
+
+const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
+    () => import('@/components/EmployeeForm'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading employee form…
+            </div>
+        ),
+    },
+);
 
 export default function EmployeesPage() {
     const { data } = useEmployees();

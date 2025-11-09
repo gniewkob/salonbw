@@ -41,8 +41,8 @@ describe('auth flow', () => {
             expect(clients[0].name).toBe('John');
         });
 
-        act(() => {
-            result.current.logout();
+        await act(async () => {
+            await result.current.logout();
         });
         expect(result.current.isAuthenticated).toBe(false);
     });

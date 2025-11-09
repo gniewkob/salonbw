@@ -8,19 +8,19 @@ describe('admin completes appointment', () => {
         const now = new Date('2025-01-01T09:00:00.000Z');
         cy.clock(now.getTime(), ['Date']);
 
-        cy.intercept('GET', '**/api/services*', {
+        cy.intercept('GET', '**/services*', {
             statusCode: 200,
             body: [{ id: 1, name: 'Cut', duration: 30, price: 10 }],
         }).as('getServices');
-        cy.intercept('GET', '**/api/users?role=employee*', {
+        cy.intercept('GET', '**/users?role=employee*', {
             statusCode: 200,
             body: [{ id: 2, name: 'Bob' }],
         }).as('getEmployees');
-        cy.intercept('GET', '**/api/users?role=client*', {
+        cy.intercept('GET', '**/users?role=client*', {
             statusCode: 200,
             body: [{ id: 1, name: 'Alice' }],
         }).as('getClients');
-        cy.intercept('GET', '**/api/appointments*', {
+        cy.intercept('GET', '**/appointments*', {
             statusCode: 200,
             body: [
                 {
@@ -48,7 +48,7 @@ describe('admin completes appointment', () => {
         cy.contains('Alice').click({ force: true });
 
         // Complete the appointment
-        cy.intercept('PATCH', '**/api/appointments/99/complete', {
+        cy.intercept('PATCH', '**/appointments/99/complete', {
             statusCode: 200,
             body: { id: 99, paymentStatus: 'completed' },
         }).as('complete');

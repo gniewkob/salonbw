@@ -8,7 +8,7 @@ import {
 describe('client dashboard navigation', () => {
     beforeEach(() => {
         mockClientLogin();
-        cy.intercept('GET', '**/api/dashboard', {
+        cy.intercept('GET', '**/dashboard', {
             fixture: 'dashboard.json',
         }).as('dashboard');
     });
@@ -36,7 +36,7 @@ describe('client dashboard navigation', () => {
 describe('client dashboard reviews crud', () => {
     beforeEach(() => {
         mockClientLogin();
-        cy.intercept('GET', '**/api/dashboard', {
+        cy.intercept('GET', '**/dashboard', {
             fixture: 'dashboard.json',
         }).as('dashboard');
     });
@@ -72,7 +72,7 @@ describe('client dashboard reviews crud', () => {
 
 describe('client dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '**/api/users/profile', { statusCode: 401 });
+        cy.intercept('GET', '**/users/profile', { statusCode: 401 });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/client');
         cy.url().should('include', '/auth/login');
