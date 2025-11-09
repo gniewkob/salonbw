@@ -147,7 +147,7 @@ jobs:
 
       - name: Upload Cypress videos
         if: steps.secrets.outputs.available == 'true' && always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: cypress-videos
           path: frontend/cypress/videos
@@ -155,7 +155,7 @@ jobs:
 
       - name: Upload Cypress screenshots
         if: steps.secrets.outputs.available == 'true' && failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: cypress-screenshots
           path: frontend/cypress/screenshots
