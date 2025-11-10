@@ -5,9 +5,8 @@ import type { ComponentProps } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import StatsWidget from '@/components/StatsWidget';
-import DataTable from '@/components/DataTable';
-import Modal from '@/components/Modal';
+import type DataTableComponent from '@/components/DataTable';
+import type ModalComponent from '@/components/Modal';
 import {
     useInventory,
     useRetailApi,
@@ -26,6 +25,31 @@ type SaleFormProps = ComponentProps<typeof SaleFormComponent>;
 type InventoryAdjustmentFormProps = ComponentProps<
     typeof InventoryAdjustmentFormComponent
 >;
+
+const StatsWidget = dynamic(() => import('@/components/StatsWidget'), {
+    loading: () => (
+        <div className="w-full rounded bg-white p-4 shadow">
+            <div className="h-4 w-16 rounded bg-gray-100 animate-pulse" />
+            <div className="mt-2 h-6 rounded bg-gray-100 animate-pulse" />
+        </div>
+    ),
+});
+
+const DataTable = dynamic<typeof DataTableComponent>(
+    () => import('@/components/DataTable'),
+    {
+        loading: () => (
+            <div className="rounded border border-dashed p-4 text-sm text-gray-500">
+                Loading table…
+            </div>
+        ),
+    },
+);
+
+const Modal = dynamic<ComponentProps<typeof ModalComponent>>(
+    () => import('@/components/Modal'),
+    { loading: () => null },
+);
 
 const LazySaleForm = dynamic<SaleFormProps>(
     () => import('@/components/SaleForm'),
