@@ -2,8 +2,8 @@ import { useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import DataTable, { Column } from '@/components/DataTable';
-import Modal from '@/components/Modal';
+import type DataTableComponent, { Column } from '@/components/DataTable';
+import type ModalComponent from '@/components/Modal';
 import { useServices } from '@/hooks/useServices';
 import { useServiceApi } from '@/api/services';
 import { Service } from '@/types';
@@ -19,6 +19,24 @@ const ServiceForm = dynamic<ComponentProps<typeof ServiceFormComponent>>(
                 Loading service form…
             </div>
         ),
+    },
+);
+
+const DataTable = dynamic<typeof DataTableComponent>(
+    () => import('@/components/DataTable'),
+    {
+        loading: () => (
+            <div className="rounded border border-dashed p-4 text-sm text-gray-500">
+                Loading table…
+            </div>
+        ),
+    },
+);
+
+const Modal = dynamic<ComponentProps<typeof ModalComponent>>(
+    () => import('@/components/Modal'),
+    {
+        loading: () => null,
     },
 );
 
@@ -75,7 +93,7 @@ export default function ServicesPage() {
                         data={rows}
                         columns={columns}
                         initialSort="id"
-                        renderActions={(r) => (
+                        renderActions={(r: Service) => (
                             <span className="space-x-2">
                                 <button
                                     className="border px-2 py-1"
