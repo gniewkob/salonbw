@@ -37,7 +37,7 @@
     "@fullcalendar/interaction": "^6.1.18",
     "@fullcalendar/react": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
-    "@next/bundle-analyzer": "^14.2.32",
+    "@next/bundle-analyzer": "^16.0.1",
     "@next/env": "^14.2.32",
     "@salonbw/api": "link:../packages/api",
     "@sentry/nextjs": "^10.23.0",
