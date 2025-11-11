@@ -35,7 +35,7 @@ const StatsWidget = dynamic(() => import('@/components/StatsWidget'), {
     ),
 });
 
-const DataTable = dynamic<typeof DataTableComponent>(
+const DataTable = dynamic(
     () => import('@/components/DataTable'),
     {
         loading: () => (
@@ -44,12 +44,12 @@ const DataTable = dynamic<typeof DataTableComponent>(
             </div>
         ),
     },
-);
+) as unknown as typeof DataTableComponent;
 
-const Modal = dynamic<ComponentProps<typeof ModalComponent>>(
+const Modal = dynamic(
     () => import('@/components/Modal'),
     { loading: () => null },
-);
+) as unknown as typeof ModalComponent;
 
 const LazySaleForm = dynamic<SaleFormProps>(
     () => import('@/components/SaleForm'),

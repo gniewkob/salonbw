@@ -2,7 +2,8 @@ import { useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import type DataTableComponent, { Column } from '@/components/DataTable';
+import type DataTableComponent from '@/components/DataTable';
+import type { Column } from '@/components/DataTable';
 import type ModalComponent from '@/components/Modal';
 import { useServices } from '@/hooks/useServices';
 import { useServiceApi } from '@/api/services';
@@ -22,7 +23,7 @@ const ServiceForm = dynamic<ComponentProps<typeof ServiceFormComponent>>(
     },
 );
 
-const DataTable = dynamic<typeof DataTableComponent>(
+const DataTable = dynamic(
     () => import('@/components/DataTable'),
     {
         loading: () => (
@@ -31,14 +32,14 @@ const DataTable = dynamic<typeof DataTableComponent>(
             </div>
         ),
     },
-);
+) as unknown as typeof DataTableComponent;
 
-const Modal = dynamic<ComponentProps<typeof ModalComponent>>(
+const Modal = dynamic(
     () => import('@/components/Modal'),
     {
         loading: () => null,
     },
-);
+) as unknown as typeof ModalComponent;
 
 export default function ServicesPage() {
     const { data } = useServices();

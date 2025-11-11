@@ -176,10 +176,10 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - [x] Document bundle optimization in `docs/CONTRIBUTING.md`
 
 **Success Metrics:**
-- First Load JS < 250KB (currently ~300KB per review)
-- Dashboard route chunks < 100KB each
-- Time to Interactive < 3.5s on 3G
-- Lighthouse Performance score 95+ on desktop
+- First Load JS < 250KB (Next build reports ~153 kB shared first-load JS as of 2025-11-09)
+- Dashboard route chunks < 100KB each (individual `/dashboard/*` pages now render with ~1–3 kB route code after lazy loading)
+- Time to Interactive < 3.5s on 3G (Lighthouse desktop run on `/dashboard/admin` reports TTI ≈ 1.4 s)
+- Lighthouse Performance score 95+ on desktop (latest run scored 0.91/1.00 ≈ 91; follow-up tuning needed to clear the final gap)
 
 **Dependencies:** None
 
