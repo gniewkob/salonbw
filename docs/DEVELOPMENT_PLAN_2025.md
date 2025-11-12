@@ -207,7 +207,7 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - Document on-call procedures
 
 **Tasks:**
-- [ ] Evaluate logging solutions (Grafana Loki, ELK, Datadog, or similar)
+- [x] Evaluate logging solutions (Grafana Loki vs. ELK vs. Datadog vs. Sentry) — Loki + Promtail chosen (2025-11-09) for cost efficiency and native Prometheus/Grafana integration.
 - [ ] Configure Pino to ship logs to centralized service
 - [ ] Add structured logging to frontend (client-side errors)
 - [ ] Create log-based alerts (error rate, 5xx responses, auth failures)
