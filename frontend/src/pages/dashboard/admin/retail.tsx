@@ -35,21 +35,17 @@ const StatsWidget = dynamic(() => import('@/components/StatsWidget'), {
     ),
 });
 
-const DataTable = dynamic(
-    () => import('@/components/DataTable'),
-    {
-        loading: () => (
-            <div className="rounded border border-dashed p-4 text-sm text-gray-500">
-                Loading table…
-            </div>
-        ),
-    },
-) as unknown as typeof DataTableComponent;
+const DataTable = dynamic(() => import('@/components/DataTable'), {
+    loading: () => (
+        <div className="rounded border border-dashed p-4 text-sm text-gray-500">
+            Loading table…
+        </div>
+    ),
+}) as typeof DataTableComponent;
 
-const Modal = dynamic(
-    () => import('@/components/Modal'),
-    { loading: () => null },
-) as unknown as typeof ModalComponent;
+const Modal = dynamic(() => import('@/components/Modal'), {
+    loading: () => null,
+}) as typeof ModalComponent;
 
 const LazySaleForm = dynamic<SaleFormProps>(
     () => import('@/components/SaleForm'),

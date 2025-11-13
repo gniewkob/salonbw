@@ -51,48 +51,43 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
                 ];
             },
         }),
-        LoggerModule.forRoot({
-            renameContext: 'component',
-            pinoHttp: {
-                level: process.env.LOG_LEVEL ?? 'info',
-                autoLogging: {
-                    ignore: (req) => req.url === '/metrics',
+        LoggerModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                renameContext: 'component',
+                pinoHttp: {
+                    level: config.get('PINO_LOG_LEVEL', 'info'),
+                    autoLogging: {
+                        ignore: (req) => req.url === '/metrics',
+                    },
+                    customProps: (req) => ({
+                        requestId: req.id,
+                    }),
+                    genReqId: (req, res) => {
+                        const header = req.headers['x-request-id'];
+                        const value = Array.isArray(header)
+                            ? header[0]
+                            : header;
+                        const requestId =
+                            value && typeof value === 'string' ? value : uuid();
+                        res.setHeader('x-request-id', requestId);
+                        return requestId;
+                    },
+                    customLogLevel: (req, res, err) => {
+                        if (err) {
+                            return 'fatal';
+                        }
+                        if (res.statusCode >= 500) {
+                            return 'error';
+                        }
+                        if (res.statusCode >= 400) {
+                            return 'warn';
+                        }
+                        return 'info';
+                    },
+                    transport: resolvePinoTransport(config),
                 },
-                customProps: (req) => ({
-                    requestId: req.id,
-                }),
-                genReqId: (req, res) => {
-                    const header = req.headers['x-request-id'];
-                    const value = Array.isArray(header) ? header[0] : header;
-                    const requestId =
-                        value && typeof value === 'string' ? value : uuid();
-                    res.setHeader('x-request-id', requestId);
-                    return requestId;
-                },
-                customLogLevel: (req, res, err) => {
-                    if (err) {
-                        return 'fatal';
-                    }
-                    if (res.statusCode >= 500) {
-                        return 'error';
-                    }
-                    if (res.statusCode >= 400) {
-                        return 'warn';
-                    }
-                    return 'info';
-                },
-                transport:
-                    process.env.NODE_ENV !== 'production'
-                        ? {
-                              target: 'pino-pretty',
-                              options: {
-                                  singleLine: true,
-                                  translateTime: 'SYS:standard',
-                                  colorize: true,
-                              },
-                          }
-                        : undefined,
-            },
+            }),
         }),
         ConfigModule.forRoot({ isGlobal: true }),
         CacheModule,
@@ -188,3 +183,32 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
     ],
 })
 export class AppModule {}
+
+function resolvePinoTransport(config: ConfigService) {
+    const nodeEnv = config.get<string>('NODE_ENV', 'development');
+    if (nodeEnv !== 'production') {
+        return {
+            target: 'pino-pretty',
+            options: {
+                singleLine: true,
+                translateTime: 'SYS:standard',
+                colorize: true,
+            },
+        };
+    }
+
+    const lokiUrl = config.get<string>('LOKI_URL');
+    if (!lokiUrl) {
+        return undefined;
+    }
+
+    return {
+        target: './logs/loki.transport',
+        options: {
+            lokiUrl,
+            basicAuth: config.get<string>('LOKI_BASIC_AUTH'),
+            service: config.get<string>('SERVICE_NAME', 'salonbw-backend'),
+            environment: nodeEnv,
+        },
+    };
+}
