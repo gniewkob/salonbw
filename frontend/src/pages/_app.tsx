@@ -17,6 +17,7 @@ import {
     trackEvent,
 } from '@/utils/analytics';
 import BookNowFab from '@/components/BookNowFab';
+import { logClientError } from '@/utils/logClient';
 
 // Initialize Sentry once (no-op if DSN is not set)
 initSentry();
@@ -78,6 +79,41 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         onScroll();
         return () => window.removeEventListener('scroll', onScroll);
         // re-arm on route change
+    }, [router.asPath]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const handleError = (event: ErrorEvent) => {
+            void logClientError({
+                message: event.message,
+                stack: event.error?.stack ?? event.filename,
+                path: router.asPath,
+                level: 'error',
+                extra: { colno: event.colno, lineno: event.lineno },
+            });
+        };
+        const handleRejection = (event: PromiseRejectionEvent) => {
+            const reason = event.reason as {
+                message?: string;
+                stack?: string;
+            };
+            void logClientError({
+                message:
+                    reason?.message ??
+                    (typeof event.reason === 'string'
+                        ? event.reason
+                        : 'Unhandled rejection'),
+                stack: reason?.stack,
+                path: router.asPath,
+                level: 'error',
+            });
+        };
+        window.addEventListener('error', handleError);
+        window.addEventListener('unhandledrejection', handleRejection);
+        return () => {
+            window.removeEventListener('error', handleError);
+            window.removeEventListener('unhandledrejection', handleRejection);
+        };
     }, [router.asPath]);
 
     return (

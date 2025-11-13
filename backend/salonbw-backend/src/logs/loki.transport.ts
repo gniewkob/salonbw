@@ -1,0 +1,81 @@
+import { request } from 'undici';
+import type { TransportTargetOptions } from 'pino';
+
+interface LokiTransportOptions extends TransportTargetOptions {
+    lokiUrl: string;
+    basicAuth?: string;
+    service?: string;
+    environment?: string;
+}
+
+type LokiEntry = {
+    level?: string | number;
+    time?: number;
+    context?: string;
+    [key: string]: unknown;
+};
+
+export default async function lokiTransport(options: LokiTransportOptions) {
+    const {
+        lokiUrl,
+        basicAuth,
+        service = 'salonbw-backend',
+        environment = process.env.NODE_ENV ?? 'development',
+    } = options;
+
+    return async function transport(source: AsyncIterable<string>) {
+        for await (const line of source) {
+            try {
+                const payload = buildPayload(line, service, environment);
+                await request(lokiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(basicAuth
+                            ? {
+                                  Authorization: `Basic ${Buffer.from(
+                                      basicAuth,
+                                  ).toString('base64')}`,
+                              }
+                            : {}),
+                    },
+                    body: JSON.stringify(payload),
+                });
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('failed to ship log to Loki', error);
+            }
+        }
+    };
+}
+
+function buildPayload(line: string, service: string, environment: string) {
+    const entry: LokiEntry = JSON.parse(line);
+    const timestampNs = `${entry.time ?? Date.now()}000000`;
+
+    return {
+        streams: [
+            {
+                stream: {
+                    service,
+                    level: normalizeLevel(entry.level),
+                    environment,
+                    context: entry.context ?? 'app',
+                },
+                values: [[timestampNs, JSON.stringify(entry)]],
+            },
+        ],
+    };
+}
+
+function normalizeLevel(level: string | number | undefined) {
+    if (typeof level === 'number') {
+        if (level >= 60) return 'fatal';
+        if (level >= 50) return 'error';
+        if (level >= 40) return 'warn';
+        if (level >= 30) return 'info';
+        if (level >= 20) return 'debug';
+        return 'trace';
+    }
+    return level ?? 'info';
+}
