@@ -1,10 +1,4 @@
-import {
-    Injectable,
-    UnauthorizedException,
-    Inject,
-    HttpException,
-    HttpStatus,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -14,7 +8,7 @@ import { Repository, IsNull } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID, randomBytes, createHash } from 'crypto';
-import { Response, CookieOptions, Request } from 'express';
+import { Response, CookieOptions } from 'express';
 import { JwtSignOptions } from '@nestjs/jwt';
 import { LoginAttemptsService } from './login-attempts.service';
 
@@ -159,10 +153,13 @@ export class AuthService {
         const payload = { sub: user.id, role: user.role };
         const accessToken = this.jwtService.sign(payload);
         const csrf = this.generateCsrfToken();
-        const refreshTokenRecord = await this.createPersistedRefreshToken({
-            id: user.id,
-            role: user.role,
-        }, csrf.hash);
+        const refreshTokenRecord = await this.createPersistedRefreshToken(
+            {
+                id: user.id,
+                role: user.role,
+            },
+            csrf.hash,
+        );
         const refreshToken = refreshTokenRecord.token;
 
         this.setAuthCookies(response, accessToken, refreshToken, csrf.secret);
@@ -194,8 +191,8 @@ export class AuthService {
             secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         } satisfies JwtSignOptions);
 
-        const decoded = this.jwtService.decode(token);
-        const expiresAt = decoded?.exp
+        const decoded: unknown = this.jwtService.decode(token);
+        const expiresAt = hasExpiration(decoded)
             ? new Date(decoded.exp * 1000)
             : new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
@@ -211,14 +208,21 @@ export class AuthService {
     }
 
     async refresh(refreshToken: string, response: Response) {
+        type RefreshPayload = {
+            sub: number;
+            role: User['role'];
+            jti?: string;
+        };
+
         try {
-            const payload = this.jwtService.verify<{
-                sub: number;
-                role: User['role'];
-                jti?: string;
-            }>(refreshToken, {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-            });
+            const payload = this.jwtService.verify<RefreshPayload>(
+                refreshToken,
+                {
+                    secret: this.configService.get<string>(
+                        'JWT_REFRESH_SECRET',
+                    ),
+                },
+            );
 
             if (!payload.jti) {
                 throw new UnauthorizedException(
@@ -256,10 +260,13 @@ export class AuthService {
             await this.refreshRepo.save(stored);
 
             const csrf = this.generateCsrfToken();
-            const newRefresh = await this.createPersistedRefreshToken({
-                id: user.id,
-                role: user.role,
-            }, csrf.hash);
+            const newRefresh = await this.createPersistedRefreshToken(
+                {
+                    id: user.id,
+                    role: user.role,
+                },
+                csrf.hash,
+            );
             const accessToken = this.jwtService.sign({
                 sub: user.id,
                 role: user.role,
@@ -277,7 +284,7 @@ export class AuthService {
                 access_token: accessToken,
                 refresh_token: newRefresh.token,
             };
-        } catch (_err) {
+        } catch {
             // normalize errors
             throw new UnauthorizedException('Invalid or expired refresh token');
         }
@@ -305,4 +312,15 @@ export class AuthService {
             this.clearAuthCookies(response);
         }
     }
+}
+
+type JwtWithExp = { exp?: number };
+
+function hasExpiration(value: unknown): value is JwtWithExp {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'exp' in value &&
+        typeof (value as JwtWithExp).exp === 'number'
+    );
 }
