@@ -1,4 +1,3 @@
-import { request } from 'undici';
 import type { TransportTargetOptions } from 'pino';
 
 interface LokiTransportOptions extends TransportTargetOptions {
@@ -22,13 +21,13 @@ export default function lokiTransport(options: LokiTransportOptions) {
         service = 'salonbw-backend',
         environment = process.env.NODE_ENV ?? 'development',
     } = options;
+    const fetchImpl = resolveFetch();
 
     return async function transport(source: AsyncIterable<string>) {
         for await (const line of source) {
             try {
                 const payload = buildPayload(line, service, environment);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                await request(lokiUrl, {
+                const response = await fetchImpl(lokiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -42,11 +41,22 @@ export default function lokiTransport(options: LokiTransportOptions) {
                     },
                     body: JSON.stringify(payload),
                 });
+                if (!response.ok) {
+                    throw new Error(
+                        `Loki responded with ${response.status} ${response.statusText}`,
+                    );
+                }
             } catch (error: unknown) {
                 console.error('failed to ship log to Loki', error);
             }
         }
     };
+}
+function resolveFetch() {
+    if (typeof fetch !== 'function') {
+        throw new Error('fetch API is not available in this environment');
+    }
+    return fetch;
 }
 
 function buildPayload(line: string, service: string, environment: string) {

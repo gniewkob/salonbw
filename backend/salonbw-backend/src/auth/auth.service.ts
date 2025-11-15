@@ -314,13 +314,13 @@ export class AuthService {
     }
 }
 
-type JwtWithExp = { exp?: number };
+type JwtWithExp = { exp: number };
 
 function hasExpiration(value: unknown): value is JwtWithExp {
     return (
         typeof value === 'object' &&
         value !== null &&
         'exp' in value &&
-        typeof (value as JwtWithExp).exp === 'number'
+        typeof (value as { exp: unknown }).exp === 'number'
     );
 }
