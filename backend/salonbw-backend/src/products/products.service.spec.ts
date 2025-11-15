@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -58,7 +59,9 @@ describe('ProductsService', () => {
                         get: jest.fn().mockResolvedValue(null),
                         set: jest.fn().mockResolvedValue(undefined),
                         del: jest.fn().mockResolvedValue(undefined),
-                        wrap: jest.fn((key: string, fn: () => Promise<unknown>) => fn()),
+                        wrap: jest.fn(
+                            (key: string, fn: () => Promise<unknown>) => fn(),
+                        ),
                     } as unknown as jest.Mocked<AppCacheService>,
                 },
             ],
@@ -74,7 +77,7 @@ describe('ProductsService', () => {
         cache.get.mockResolvedValue(null);
         cache.set.mockResolvedValue(undefined);
         cache.del.mockResolvedValue(undefined);
-        cache.wrap.mockImplementation(async (_key, fn) => fn());
+        cache.wrap.mockImplementation((_key, fn) => fn());
     });
 
     it('creates a product', async () => {
@@ -119,8 +122,8 @@ describe('ProductsService', () => {
         cache.wrap.mockImplementationOnce(async (key, fn) => {
             const result = await fn();
             cache.wrap.mockImplementation(
-                async (nextKey: string, nextFn: () => Promise<unknown>) =>
-                    nextKey === key ? result : nextFn(),
+                (nextKey: string, nextFn: () => Promise<unknown>) =>
+                    nextKey === key ? Promise.resolve(result) : nextFn(),
             );
             return result;
         });

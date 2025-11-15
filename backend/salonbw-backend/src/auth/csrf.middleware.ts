@@ -38,40 +38,50 @@ export class CsrfMiddleware implements NestMiddleware {
             throw new UnauthorizedException('CSRF token missing');
         }
 
-        const cookieToken = req.cookies?.['XSRF-TOKEN'];
+        const cookieToken = req.cookies?.['XSRF-TOKEN'] as string | undefined;
         if (!cookieToken || cookieToken !== token) {
             throw new UnauthorizedException('CSRF token validation failed');
         }
 
-        const refreshCookie = req.cookies?.['refreshToken'];
+        const refreshCookie = req.cookies?.['refreshToken'] as
+            | string
+            | undefined;
         if (!refreshCookie) {
             throw new UnauthorizedException('Missing session context for CSRF');
         }
 
-        const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+        const refreshSecret =
+            this.configService.get<string>('JWT_REFRESH_SECRET');
         if (!refreshSecret) {
             throw new UnauthorizedException('CSRF validation unavailable');
         }
 
-        let payload: { jti?: string } | null = null;
+        type RefreshPayload = { jti?: string };
+        let payload: RefreshPayload | null = null;
         try {
-            payload = this.jwtService.verify<{ jti?: string }>(refreshCookie, {
+            payload = this.jwtService.verify<RefreshPayload>(refreshCookie, {
                 secret: refreshSecret,
             });
         } catch {
-            throw new UnauthorizedException('Invalid session for CSRF validation');
+            throw new UnauthorizedException(
+                'Invalid session for CSRF validation',
+            );
         }
 
         if (!payload?.jti) {
             throw new UnauthorizedException('CSRF token validation failed');
         }
 
-        const refresh = await this.refreshRepo.findOne({ where: { jti: payload.jti } });
+        const refresh = await this.refreshRepo.findOne({
+            where: { jti: payload.jti },
+        });
         if (!refresh || refresh.revokedAt) {
             throw new UnauthorizedException('CSRF token validation failed');
         }
 
-        const storedHash = (refresh.meta?.csrfSecretHash ?? null) as string | null;
+        const storedHash = (refresh.meta?.csrfSecretHash ?? null) as
+            | string
+            | null;
         if (!storedHash) {
             throw new UnauthorizedException('CSRF token validation failed');
         }
