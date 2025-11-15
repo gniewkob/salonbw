@@ -37,7 +37,9 @@ export class CommissionsService {
             ? manager.getRepository(Commission)
             : this.commissionsRepository;
         const normalisedAmount =
-            data.amount !== undefined ? this.fromCents(this.toCents(data.amount)) : undefined;
+            data.amount !== undefined
+                ? this.fromCents(this.toCents(data.amount))
+                : undefined;
         const commission = repo.create({
             ...data,
             amount: normalisedAmount ?? data.amount,
