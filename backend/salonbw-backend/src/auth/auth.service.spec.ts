@@ -151,8 +151,15 @@ describe('AuthService.login', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
-    let loginAttemptsService: jest.Mocked<{ getAttempts: jest.Mock; recordSuccess: jest.Mock }>;
-    let refreshRepo: jest.Mocked<{ findOne: jest.Mock; save: jest.Mock; delete: jest.Mock }>;
+    let loginAttemptsService: jest.Mocked<{
+        getAttempts: jest.Mock;
+        recordSuccess: jest.Mock;
+    }>;
+    let refreshRepo: jest.Mocked<{
+        findOne: jest.Mock;
+        save: jest.Mock;
+        delete: jest.Mock;
+    }>;
 
     beforeEach(() => {
         usersService = {
@@ -230,8 +237,15 @@ describe('AuthService.refresh', () => {
         Pick<UsersService, 'findByEmail' | 'findById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
-    let loginAttemptsService: jest.Mocked<{ getAttempts: jest.Mock; recordSuccess: jest.Mock }>;
-    let refreshRepo: jest.Mocked<{ findOne: jest.Mock; save: jest.Mock; delete: jest.Mock }>;
+    let loginAttemptsService: jest.Mocked<{
+        getAttempts: jest.Mock;
+        recordSuccess: jest.Mock;
+    }>;
+    let refreshRepo: jest.Mocked<{
+        findOne: jest.Mock;
+        save: jest.Mock;
+        delete: jest.Mock;
+    }>;
 
     beforeEach(() => {
         usersService = {
@@ -249,10 +263,14 @@ describe('AuthService.refresh', () => {
             recordAttempt: jest.fn().mockResolvedValue(null),
         };
         refreshRepo = {
-            create: jest.fn().mockImplementation((v) => v),
+            create: jest
+                .fn()
+                .mockImplementation(
+                    (v: Partial<RefreshToken>) => ({ ...v }) as RefreshToken,
+                ),
             save: jest.fn().mockResolvedValue(null),
             findOne: jest.fn().mockResolvedValue(null),
-        };
+        } as unknown as jest.Mocked<Repository<RefreshToken>>;
         service = new AuthService(
             usersService as unknown as UsersService,
             jwtService,

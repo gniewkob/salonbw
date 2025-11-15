@@ -202,8 +202,8 @@ describe('CommissionsService', () => {
         const user = { id: 42 } as User;
         const createSpy = jest
             .spyOn(service, 'create')
-            .mockImplementation(async (data) =>
-                ({
+            .mockImplementation((data) =>
+                Promise.resolve({
                     ...data,
                     id: 321,
                 } as Commission),

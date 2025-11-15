@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsInt,
-    IsString,
-    MaxLength,
-    IsOptional,
-    Min,
-} from 'class-validator';
+import { IsInt, IsString, MaxLength, IsOptional, Min } from 'class-validator';
 
 export class AdjustInventoryDto {
     @ApiProperty()

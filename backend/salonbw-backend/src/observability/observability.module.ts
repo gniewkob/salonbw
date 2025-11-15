@@ -6,11 +6,7 @@ import { MetricsService } from './metrics.service';
 
 @Module({
     controllers: [MetricsController],
-    providers: [
-        MetricsService,
-        HttpMetricsInterceptor,
-        DatabaseMetricsService,
-    ],
+    providers: [MetricsService, HttpMetricsInterceptor, DatabaseMetricsService],
     exports: [MetricsService, HttpMetricsInterceptor],
 })
 export class ObservabilityModule {}

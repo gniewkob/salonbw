@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -66,7 +67,9 @@ describe('ServicesService', () => {
                         get: jest.fn().mockResolvedValue(null),
                         set: jest.fn().mockResolvedValue(undefined),
                         del: jest.fn().mockResolvedValue(undefined),
-                        wrap: jest.fn((key: string, fn: () => Promise<unknown>) => fn()),
+                        wrap: jest.fn(
+                            (key: string, fn: () => Promise<unknown>) => fn(),
+                        ),
                     } as unknown as jest.Mocked<AppCacheService>,
                 },
             ],
@@ -82,7 +85,7 @@ describe('ServicesService', () => {
         cache.get.mockResolvedValue(null);
         cache.set.mockResolvedValue(undefined);
         cache.del.mockResolvedValue(undefined);
-        cache.wrap.mockImplementation(async (_key, fn) => fn());
+        cache.wrap.mockImplementation((_key, fn) => fn());
     });
 
     it('creates a service', async () => {
@@ -141,13 +144,14 @@ describe('ServicesService', () => {
 
     it('reuses cached list on subsequent findAll calls', async () => {
         const findSpy = jest.spyOn(repo, 'find');
-        cache.wrap.mockImplementationOnce(async (key, fn) => {
-            const result = await fn();
-            cache.wrap.mockImplementation(
-                async (nextKey: string, nextFn: () => Promise<unknown>) =>
-                    nextKey === key ? result : nextFn(),
-            );
-            return result;
+        cache.wrap.mockImplementationOnce((key, fn) => {
+            return fn().then((result) => {
+                cache.wrap.mockImplementation(
+                    (nextKey: string, nextFn: () => Promise<unknown>) =>
+                        nextKey === key ? Promise.resolve(result) : nextFn(),
+                );
+                return result;
+            });
         });
 
         await service.findAll();

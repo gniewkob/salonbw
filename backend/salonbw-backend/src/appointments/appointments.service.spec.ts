@@ -144,11 +144,14 @@ describe('AppointmentsService', () => {
                 }
                 return Promise.resolve(null);
             }),
-            create: jest.fn<Appointment, [Partial<Appointment>]>((data) => ({
-                id: nextId++,
-                status: AppointmentStatus.Scheduled,
-                ...data,
-            } as Appointment)),
+            create: jest.fn<Appointment, [Partial<Appointment>]>(
+                (data) =>
+                    ({
+                        id: nextId++,
+                        status: AppointmentStatus.Scheduled,
+                        ...data,
+                    }) as Appointment,
+            ),
             save: jest.fn<Promise<Appointment>, [Appointment]>((appt) => {
                 appointments.push(appt);
                 return Promise.resolve(appt);

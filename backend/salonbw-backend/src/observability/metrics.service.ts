@@ -155,7 +155,10 @@ export class MetricsService {
         durationSeconds: number,
         status: 'success' | 'error',
     ): void {
-        this.dbQueryDurationSeconds.observe({ query_type: queryType }, durationSeconds);
+        this.dbQueryDurationSeconds.observe(
+            { query_type: queryType },
+            durationSeconds,
+        );
         this.dbQueriesTotal.inc({ query_type: queryType, status });
     }
 }

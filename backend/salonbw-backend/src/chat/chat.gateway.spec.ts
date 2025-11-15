@@ -24,7 +24,10 @@ type SocketInternal = {
     disconnect?: () => void;
     io?: {
         engine?: {
-            transport?: { ws?: { close?: () => void }; socket?: { close?: () => void } };
+            transport?: {
+                ws?: { close?: () => void };
+                socket?: { close?: () => void };
+            };
             ws?: { close?: () => void };
         };
     };
@@ -38,7 +41,7 @@ function cleanupSocket(socket: Socket): void {
         transport?.ws?.close?.();
         transport?.socket?.close?.();
         socketInternal.io?.engine?.ws?.close?.();
-    } catch (err) {
+    } catch {
         // ignore if internal shape differs
     }
 }
@@ -185,20 +188,26 @@ d('ChatGateway', () => {
         ]);
 
         const join1 = await new Promise<AckPayload>((resolve) => {
-            socket1.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
-                resolve(payload),
+            socket1.emit(
+                'joinRoom',
+                { appointmentId: 1 },
+                (payload: AckPayload) => resolve(payload),
             );
         });
         const join2 = await new Promise<AckPayload>((resolve) => {
-            socket2.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
-                resolve(payload),
+            socket2.emit(
+                'joinRoom',
+                { appointmentId: 1 },
+                (payload: AckPayload) => resolve(payload),
             );
         });
         expect(join1).toEqual({ status: 'ok' });
         expect(join2).toEqual({ status: 'ok' });
 
         const received = new Promise<MessagePayload>((resolve) => {
-            socket2.on('message', (payload: MessagePayload) => resolve(payload));
+            socket2.on('message', (payload: MessagePayload) =>
+                resolve(payload),
+            );
         });
         const sendRes = await new Promise<MessageAck>((resolve) => {
             socket1.emit(
@@ -249,13 +258,17 @@ d('ChatGateway', () => {
         ]);
 
         await new Promise<AckPayload>((resolve) => {
-            socket1.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
-                resolve(payload),
+            socket1.emit(
+                'joinRoom',
+                { appointmentId: 1 },
+                (payload: AckPayload) => resolve(payload),
             );
         });
         await new Promise<AckPayload>((resolve) => {
-            socket2.emit('joinRoom', { appointmentId: 1 }, (payload: AckPayload) =>
-                resolve(payload),
+            socket2.emit(
+                'joinRoom',
+                { appointmentId: 1 },
+                (payload: AckPayload) => resolve(payload),
             );
         });
 

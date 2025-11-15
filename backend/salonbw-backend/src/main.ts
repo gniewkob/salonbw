@@ -99,8 +99,8 @@ async function bootstrap() {
                           'rejected CORS request from unauthorized origin',
                       );
                       callback(new Error('Not allowed by CORS'));
+                  }
               }
-          }
             : true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

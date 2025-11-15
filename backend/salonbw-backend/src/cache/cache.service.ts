@@ -17,7 +17,8 @@ export class AppCacheService implements OnModuleDestroy {
     constructor(private readonly config: ConfigService) {
         const ttlRaw = this.config.get<string>('CACHE_TTL_SECONDS', '60');
         const parsedTtl = Number(ttlRaw);
-        this.ttlSeconds = Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 60;
+        this.ttlSeconds =
+            Number.isFinite(parsedTtl) && parsedTtl > 0 ? parsedTtl : 60;
 
         const redisUrl = this.config.get<string>('REDIS_URL');
         if (redisUrl) {
@@ -93,7 +94,11 @@ export class AppCacheService implements OnModuleDestroy {
         this.memoryStore.delete(key);
     }
 
-    async wrap<T>(key: string, fn: () => Promise<T>, ttlSeconds?: number): Promise<T> {
+    async wrap<T>(
+        key: string,
+        fn: () => Promise<T>,
+        ttlSeconds?: number,
+    ): Promise<T> {
         const cached = await this.get<T>(key);
         if (cached !== null) {
             return cached;
