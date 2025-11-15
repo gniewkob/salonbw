@@ -15,7 +15,7 @@ type LokiEntry = {
     [key: string]: unknown;
 };
 
-export default async function lokiTransport(options: LokiTransportOptions) {
+export default function lokiTransport(options: LokiTransportOptions) {
     const {
         lokiUrl,
         basicAuth,
@@ -27,6 +27,7 @@ export default async function lokiTransport(options: LokiTransportOptions) {
         for await (const line of source) {
             try {
                 const payload = buildPayload(line, service, environment);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 await request(lokiUrl, {
                     method: 'POST',
                     headers: {
@@ -41,8 +42,7 @@ export default async function lokiTransport(options: LokiTransportOptions) {
                     },
                     body: JSON.stringify(payload),
                 });
-            } catch (error) {
-                // eslint-disable-next-line no-console
+            } catch (error: unknown) {
                 console.error('failed to ship log to Loki', error);
             }
         }
@@ -50,7 +50,7 @@ export default async function lokiTransport(options: LokiTransportOptions) {
 }
 
 function buildPayload(line: string, service: string, environment: string) {
-    const entry: LokiEntry = JSON.parse(line);
+    const entry = parseEntry(line);
     const timestampNs = `${entry.time ?? Date.now()}000000`;
 
     return {
@@ -66,6 +66,25 @@ function buildPayload(line: string, service: string, environment: string) {
             },
         ],
     };
+}
+
+function parseEntry(line: string): LokiEntry {
+    const parsed = JSON.parse(line) as unknown;
+    if (!isRecord(parsed)) {
+        return {};
+    }
+    const entry: LokiEntry = {
+        level: parsed.level as LokiEntry['level'],
+        time: typeof parsed.time === 'number' ? parsed.time : undefined,
+        context:
+            typeof parsed.context === 'string' ? parsed.context : undefined,
+        ...parsed,
+    };
+    return entry;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
 }
 
 function normalizeLevel(level: string | number | undefined) {

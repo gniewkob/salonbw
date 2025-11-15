@@ -28,11 +28,12 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
         let captchaToken: string | undefined;
 
         if (request) {
-            const connection = (request as ExpressRequest & { connection?: { remoteAddress?: string } }).connection;
-            ip =
-                request.ip ||
-                connection?.remoteAddress ||
-                '0.0.0.0';
+            const connection = (
+                request as ExpressRequest & {
+                    connection?: { remoteAddress?: string };
+                }
+            ).connection;
+            ip = request.ip || connection?.remoteAddress || '0.0.0.0';
             captchaToken = request.body?.captchaToken;
         }
 

@@ -1,23 +1,22 @@
 import { RetailService } from './retail.service';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { ProductSale } from './entities/product-sale.entity';
 import { Product } from '../products/product.entity';
-import { InventoryMovement } from './entities/inventory-movement.entity';
-import { Commission } from '../commissions/commission.entity';
+import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
+import { LogService } from '../logs/log.service';
 
 describe('RetailService.calculateCommissionCents', () => {
     // create a minimal instance (dependencies not used by the tested method)
     const svc = new RetailService(
-        null as unknown as Repository<ProductSale>,
         null as unknown as Repository<Product>,
-        null as unknown as Repository<InventoryMovement>,
-        null as unknown as Repository<Commission>,
         null as unknown as Repository<User>,
-        { get: () => 'false' } as unknown as ConfigService,
+        null as unknown as Repository<Appointment>,
         null as unknown as CommissionsService,
+        null as unknown as LogService,
+        { get: () => 'false' } as unknown as ConfigService,
+        null as unknown as DataSource,
     );
 
     test('calculates basic 10% commission and floors cents', () => {
