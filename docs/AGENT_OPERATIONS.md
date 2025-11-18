@@ -85,15 +85,65 @@ Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 
 ### Logs
 
-- API emits structured JSON logs via pino; MyDevil captures stdout under `~/logs/nodejs/<app>/app.log` (e.g. `~/logs/nodejs/api.salon-bw.pl/app.log`).
-- Each entry includes `requestId`, HTTP metadata, and the Nest context (`component`) to make tracing easier. Responses also echo `X-Request-Id`.
-- Tail or filter logs with jq for troubleshooting:
+#### 5.1 Centralised logging stack
+
+- **Ingestion pipeline:** Promtail runs alongside each Node app on mydevil and tails `~/logs/nodejs/<app>/app.log`. It attaches `{service, environment}` labels and pushes to Grafana Loki (`https://observability.salon-bw.pl/loki/api/v1/push`). API logs and frontend client error events both flow through this channel.
+- **Credentials:** Grafana and Loki share the same basic-auth secret as `LOKI_BASIC_AUTH` in production (`docs/ENV.md`). For client-side logs, set `CLIENT_LOG_TOKEN` on the API and `NEXT_PUBLIC_LOG_TOKEN` in each frontend build so the browser can POST to `/logs/client`.
+- **Manual verification:**
 
 ```bash
-ssh devil "tail -f ~/logs/nodejs/api.salon-bw.pl/app.log" | jq
+# Promtail health on mydevil
+ssh devil "docker logs promtail --tail 50"
+
+# Ship a test entry (replace TOKEN)
+curl -X POST https://api.salon-bw.pl/logs/client \
+  -H 'Content-Type: application/json' \
+  -H 'x-log-token: TOKEN' \
+  -d '{"message":"smoke test","level":"info"}'
+
+# Explore in Grafana → Explore → Loki
+{service="salonbw-backend"} |= "smoke test"
 ```
 
-Tip: when debugging client flows, set `NEXT_PUBLIC_ENABLE_DEBUG=true` (or `localStorage.DEBUG_API=1` in the browser console) so the frontend attaches an `X-Request-Id` header to every API call. The value is echoed back in responses and can be grepped directly in the backend logs.
+- **Raw file fallback:** stdout is still stored at `~/logs/nodejs/<app>/app.log`. Use this only if promtail is unhealthy or you need to inspect pre-ingestion lines.
+
+#### 5.2 Standard LogQL queries
+
+| Scenario | Query | Notes |
+| --- | --- | --- |
+| 5xx spike | `{service="salonbw-backend",level=~"error|fatal"} |= "HTTP" | logfmt` | Pair with Prometheus alert: `sum by(service)(rate(salonbw_http_server_requests_total{status_code=~"5.."}[5m])) > 0.1` |
+| Auth failures | `{service="salonbw-backend"} |= "AuthFailureFilter"` | Alerts when `rate(...) > 5` over 15 m |
+| Client JS errors | `{service="salonbw-backend",context="frontend"} |= "TypeError"` | Feed directly into on-call Slack |
+| Slow queries | `{service="salonbw-backend"} |= "slow query"` | Comes from `DatabaseSlowQueryService` |
+
+Promtail labels every log with `requestId`; copy it to find corresponding traces or HTTP metrics.
+
+#### 5.3 Alert rules
+
+- **API 5xx:** `sum(rate(salonbw_http_server_requests_total{status_code=~"5.."}[5m])) > 0.1` for 10 minutes ⇒ page SRE channel.
+- **Email failure rate:** `sum(rate(salonbw_emails_sent_total{status="failed"}[15m])) / max(sum(rate(salonbw_emails_sent_total[15m])), 1)` > 0.2 ⇒ Slack warn.
+- **Client JS errors:** `count_over_time({context="frontend",level="error"}[10m]) > 25` ⇒ create dashboard panel and Slack alert.
+
+Grafana alert contact points are stored in the `On-call` notification channel. When adjusting thresholds, update this runbook and `docs/AGENT_STATUS.md`.
+
+#### 5.4 On-call procedure
+
+1. **Alert fires** – note the query and time-range in Grafana.
+2. **Scope via Loki** – copy the alert query into Explore, add `|= \`requestId\`` or `|= "<user id>"` filters to narrow.
+3. **Correlate with metrics** – check Prometheus panel `salonbw_http_server_request_duration_seconds` for latency spikes.
+4. **Remediate** – restart offending service (`devil www restart api.salon-bw.pl`) or roll back.
+5. **Document** – append the incident to `docs/AGENT_STATUS.md` (alert, root-cause, mitigation) and link the Grafana panel used. Include follow-up tickets if thresholds need tuning.
+
+Tip: when debugging client flows locally, set `NEXT_PUBLIC_ENABLE_DEBUG=true` or toggle `localStorage.DEBUG_API=1` to force the frontend to attach `X-Request-Id`; the value is echoed back in backend logs and appears as a `requestId` label in Loki.
+
+#### 5.5 Application Performance Monitoring (Sentry)
+
+- **Where to look:** All traces and browser replays land in the Sentry Cloud workspace (`organization: salonbw`, project `salonbw-production`). Open https://sentry.io/organizations/salonbw/performance/ → “Transactions” to slice by route or response code; use Discover for custom aggregations.
+- **Backend capture:** Setting `SENTRY_DSN` boots the Nest Sentry SDK with the sample rates from `SENTRY_TRACES_SAMPLE_RATE` (default `0.2`) and `SENTRY_PROFILES_SAMPLE_RATE` (default `0`). Requests slower than `APM_SLOW_REQUEST_MS` raise a warning issue named `slow_http_request` with `http.method`, `http.route`, `http.status_code`, and `request_id` tags so you can jump straight to the matching Loki logs.
+- **Request correlation:** Each inbound request still gets the `X-Request-Id` header; when Sentry is active the same ID is attached as a trace tag. Copy it into Sentry search (`request_id:abcd-1234`) to jump between metrics, logs, and traces.
+- **Frontend RUM:** The Next.js app initialises `@sentry/nextjs` when `NEXT_PUBLIC_SENTRY_DSN` is set. Adjust `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`, `NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE`, and `NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE` to tune BrowserTracing and Replay volume. Web Vitals are forwarded automatically through `sendWebVital`.
+- **Alerts & dashboards:** Sentry alerts `API P95 latency > 500ms` (10‑minute window) and `Frontend INP P95 > 400ms` page the on-call Slack channel. When editing thresholds, capture a screenshot of the updated alert, paste it into `docs/AGENT_STATUS.md`, and note the workflow run that justified the change.
+- **Replay guidance:** When Replay sampling is non-zero, errors collect a 60‑second replay snippet. Use it for UX regressions instead of reaching out to customers; clear any PII before exporting clips.
 
 ### Metrics
 
