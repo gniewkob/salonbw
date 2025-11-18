@@ -14,6 +14,14 @@ Use this guide to configure local, staging, and production environments for Salo
 | `ENABLE_SWAGGER` | ➖ | `false` | Set to `true` to expose Swagger at `/api/docs`. Defaults to disabled; enabling in production logs a warning. |
 | `THROTTLE_TTL` | ➖ | `60000` | Global rate-limit window in milliseconds. Used by the `ThrottlerModule`. |
 | `THROTTLE_LIMIT` | ➖ | `10` | Requests allowed per `THROTTLE_TTL` window. Global default; per-route overrides still apply. |
+| `LOKI_URL` | ➖ | `https://loki.example.com/api/prom/push` | When set, production logs are streamed to Grafana Loki via `pino` transport. |
+| `LOKI_BASIC_AUTH` | ➖ | `username:password` | Optional basic-auth credentials for Loki ingestion. |
+| `CLIENT_LOG_TOKEN` | ➖ | *(unset)* | Shared secret that browser clients must send via `x-log-token` when POSTing to `/logs/client`. Prevents log spam. |
+| `SENTRY_DSN` | ➖ | *(unset)* | Enables backend Sentry instrumentation when present. Configure per environment. |
+| `SENTRY_TRACES_SAMPLE_RATE` | ➖ | `0.2` | Fraction (0-1) of HTTP/API requests to sample for traces. Set higher for staging. |
+| `SENTRY_PROFILES_SAMPLE_RATE` | ➖ | `0` | Fraction of traces to collect CPU profiles for. Keep ≤0.1 to manage volume. |
+| `SENTRY_RELEASE` | ➖ | `frontend@1.0.0` | Optional release identifier forwarded to Sentry for trace grouping. |
+| `APM_SLOW_REQUEST_MS` | ➖ | `1000` | Requests above this duration trigger a `slow_http_request` capture in Sentry. |
 | `POS_ENABLED` | ➖ | `false` | Enable POS endpoints (`/sales`, `/inventory/adjust`) for Employee/Admin roles. Production is `true` since 2025-11-01 18:32 UTC after applying migrations `1710006000000`, `1710007000000`, `1710008000000`; when disabled, both endpoints return 501. |
 | `POS_REQUIRE_COMMISSION` | ➖ | `false` | When `true`, POS sales fail if commissions cannot be recorded (useful when product commissions are mandatory). |
 | `PRODUCT_COMMISSION_PERCENT` | ➖ | `0` | Default commission percent used for product sales when no employee rule/base is present. |
@@ -65,6 +73,10 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `NEXT_PUBLIC_CONTACT_RECIPIENT` | ➖ | `kontakt@salon-bw.pl` | Default recipient for the public contact form submissions. |
 | `NEXT_PUBLIC_SENTRY_DSN` | ➖ | *(unset)* | Sentry DSN if error tracking is enabled. |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | ➖ | `0.1` | Sampling rate for Sentry tracing. |
+| `NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE` | ➖ | `0` | Fraction of sessions recorded with Sentry Replay for passive RUM. |
+| `NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE` | ➖ | `1` | Fraction of sessions recorded when an error occurs. Keep ≤1. |
+| `NEXT_PUBLIC_ENABLE_CLIENT_LOGS` | ➖ | `true` | Toggles `logClientError` forwarding to `/logs/client`. Useful to disable in preview builds. |
+| `NEXT_PUBLIC_LOG_TOKEN` | ➖ | *(unset)* | Token that must match backend `CLIENT_LOG_TOKEN` to accept client log posts. |
 | `NEXT_IMAGE_UNOPTIMIZED` | ➖ | `true` | When `true`, disables Next image optimizer (avoid 400s on shared hosts). Set to `false` to enable optimization. |
 | `NEXT_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `dev.salon-bw.pl` to prevent stale pages. Build-time flag. |
 | `NEXT_PANEL_HTML_NOSTORE` | ➖ | `false` | When `true`, adds `no-store` headers for HTML on `panel.salon-bw.pl`. Build-time flag. |

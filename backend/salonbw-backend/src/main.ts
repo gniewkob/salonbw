@@ -9,15 +9,25 @@ import { AuthFailureFilter } from './logs/auth-failure.filter';
 import { PinoLogger, LoggerErrorInterceptor } from 'nestjs-pino';
 import { HttpMetricsInterceptor } from './observability/http-metrics.interceptor';
 import type { Request, Response, NextFunction } from 'express';
+import { setupSentry } from './observability/sentry.setup';
+import { SentryGlobalFilter } from './observability/sentry.filter';
+import { HttpAdapterHost } from '@nestjs/core';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         bufferLogs: true,
     });
     const logger = await app.resolve(PinoLogger);
+    const httpAdapterHost = app.get(HttpAdapterHost);
+    const sentryEnabled = setupSentry(app);
 
     const logService = app.get(LogService);
-    app.useGlobalFilters(new AuthFailureFilter(logService, logger));
+    const globalFilters = [];
+    if (sentryEnabled) {
+        globalFilters.push(new SentryGlobalFilter(httpAdapterHost));
+    }
+    globalFilters.push(new AuthFailureFilter(logService, logger));
+    app.useGlobalFilters(...globalFilters);
     const metricsInterceptor = await app.resolve(HttpMetricsInterceptor);
     app.useGlobalInterceptors(metricsInterceptor, new LoggerErrorInterceptor());
     app.useGlobalPipes(

@@ -208,12 +208,12 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 
 **Tasks:**
 - [x] Evaluate logging solutions (Grafana Loki vs. ELK vs. Datadog vs. Sentry) — Loki + Promtail chosen (2025-11-09) for cost efficiency and native Prometheus/Grafana integration.
-- [ ] Configure Pino to ship logs to centralized service
-- [ ] Add structured logging to frontend (client-side errors)
-- [ ] Create log-based alerts (error rate, 5xx responses, auth failures)
-- [ ] Build operational dashboard (request rate, latency, errors)
-- [ ] Document log queries and alert thresholds in `docs/AGENT_OPERATIONS.md`
-- [ ] Create on-call runbook with common incident patterns
+- [x] Configure Pino to ship logs to centralized service (Loki transport enabled via `LOKI_URL`/`LOKI_BASIC_AUTH` – 2025-11-09)
+- [x] Add structured logging to frontend (client errors flow through `/logs/client` with token auth – 2025-11-09)
+- [x] Create log-based alerts (error rate, 5xx responses, auth failures) — thresholds documented in `docs/AGENT_OPERATIONS.md`
+- [x] Build operational dashboard (request rate, latency, errors) — Grafana dashboard+queries recorded in runbook
+- [x] Document log queries and alert thresholds in `docs/AGENT_OPERATIONS.md`
+- [x] Create on-call runbook with common incident patterns (Observability section expanded – 2025-11-09)
 
 **Success Metrics:**
 - All logs searchable within 1 minute of generation
@@ -235,13 +235,13 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - Create performance regression alerts
 
 **Tasks:**
-- [ ] Integrate APM tool (Sentry Performance, New Relic, or Datadog APM)
-- [ ] Add trace context to all API requests (request ID propagation)
-- [ ] Instrument slow transaction detection (> 1s)
-- [ ] Add Real User Monitoring (RUM) to frontend
-- [ ] Create performance dashboards (P50/P95/P99 latencies)
-- [ ] Set up performance regression alerts (P95 increase > 50%)
-- [ ] Document APM queries in `docs/AGENT_OPERATIONS.md`
+- [x] Integrate APM tool (Sentry Performance adopted for backend + frontend – 2025-11-15)
+- [x] Add trace context to all API requests (Sentry scope tags carry `request_id` – 2025-11-15)
+- [x] Instrument slow transaction detection (> 1s) — `APM_SLOW_REQUEST_MS` triggers `slow_http_request` issues in Sentry.
+- [x] Add Real User Monitoring (RUM) to frontend via `@sentry/nextjs` BrowserTracing + Replay toggles.
+- [x] Create performance dashboards (P50/P95/P99 latencies tracked inside Sentry Performance views, linked from runbook).
+- [x] Set up performance regression alerts (Sentry alerts for API P95>500 ms / Frontend INP>400 ms – 2025-11-15).
+- [x] Document APM queries in `docs/AGENT_OPERATIONS.md` (section 5.5).
 
 **Success Metrics:**
 - 100% of API requests traced end-to-end
