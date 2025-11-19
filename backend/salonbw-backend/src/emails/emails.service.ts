@@ -12,7 +12,10 @@ type TransportOpts = {
     secure: boolean;
     auth?: { user: string; pass: string };
 };
-type MailTransporter = { sendMail: (opts: MailOptions) => Promise<unknown> };
+type MailTransporter = {
+    sendMail: (opts: MailOptions) => Promise<unknown>;
+    verify?: () => Promise<unknown>;
+};
 
 @Injectable()
 export class EmailsService {
@@ -74,6 +77,15 @@ export class EmailsService {
             this.configService.get<string>('SMTP_FROM') ??
             this.configService.get<string>('SMTP_USER') ??
             null;
+    }
+
+    async verifyConnection(): Promise<void> {
+        if (!this.transporter) {
+            throw new Error(this.smtpStatus.error ?? 'SMTP not configured');
+        }
+        if (typeof this.transporter.verify === 'function') {
+            await this.transporter.verify();
+        }
     }
 
     async send(dto: SendEmailDto): Promise<void> {

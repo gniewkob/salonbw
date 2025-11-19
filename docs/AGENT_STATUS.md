@@ -38,6 +38,12 @@ Verification:
 | --- | --- | --- | --- |
 | `npm warn EBADENGINE` on mydevil (Node v18) | Noise during `npm install` in standalone bundles | Safe to ignore; Node 18 is the highest available on shared hosting | 2025-10-24 |
 
+## Uptime Tracking
+
+| Month (UTC) | API (`/healthz`) | Public (`/`) | Dashboard (`/dashboard`) | Admin (`/dashboard`) | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 2025-11 | Monitoring (initializing) | Monitoring (initializing) | Monitoring (initializing) | Monitoring (initializing) | UptimeRobot + Pingdom probes activated 2025-11-19; first full month of data available in December. |
+
 ## Improvements in Progress
 
 | Initiative | Status | Commits | Last Updated |

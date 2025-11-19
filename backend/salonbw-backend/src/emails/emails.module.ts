@@ -7,5 +7,6 @@ import { ObservabilityModule } from '../observability/observability.module';
     imports: [ObservabilityModule],
     controllers: [EmailsController],
     providers: [EmailsService],
+    exports: [EmailsService],
 })
 export class EmailsModule {}
