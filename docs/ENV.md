@@ -31,6 +31,9 @@ Use this guide to configure local, staging, and production environments for Salo
 | `SMTP_PASSWORD` | ➖ | `********` | SMTP password for the account above. |
 | `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
 | `SMTP_FROM` | ➖ | `kontakt@salon-bw.pl` | Sender address that appears in outgoing messages. Defaults to `SMTP_USER` when omitted. |
+| `INSTAGRAM_ACCESS_TOKEN` | ➖ | *(unset)* | Optional: used by the backend health check to confirm the public gallery token is still valid. |
+| `INSTAGRAM_HEALTH_USER_ID` | ➖ | `me` | Overrides the Instagram Graph user ID to probe during health checks. Defaults to `me`. |
+| `INSTAGRAM_HEALTH_TIMEOUT_MS` | ➖ | `5000` | Timeout for the Instagram health probe in milliseconds. |
 | `PORT` | ➖ | `3001` | HTTP port for the NestJS server. |
 | `WHATSAPP_TOKEN` | ➖ | `your_whatsapp_api_token` | Token for WhatsApp Cloud API integration. Required only if reminders are enabled. |
 | `WHATSAPP_PHONE_ID` | ➖ | `1234567890` | WhatsApp Business phone ID. |

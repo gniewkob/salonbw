@@ -145,6 +145,32 @@ Tip: when debugging client flows locally, set `NEXT_PUBLIC_ENABLE_DEBUG=true` or
 - **Alerts & dashboards:** Sentry alerts `API P95 latency > 500ms` (10‑minute window) and `Frontend INP P95 > 400ms` page the on-call Slack channel. When editing thresholds, capture a screenshot of the updated alert, paste it into `docs/AGENT_STATUS.md`, and note the workflow run that justified the change.
 - **Replay guidance:** When Replay sampling is non-zero, errors collect a 60‑second replay snippet. Use it for UX regressions instead of reaching out to customers; clear any PII before exporting clips.
 
+#### 5.6 Uptime Monitoring & Alerts
+
+- **Provider:** UptimeRobot monitors the four production surfaces (`https://api.salon-bw.pl/healthz`, `https://salon-bw.pl/`, `https://panel.salon-bw.pl/dashboard`, `https://admin.salon-bw.pl/dashboard`). Each monitor runs every 60 seconds from **US-East (Ashburn)** and **EU-West (Frankfurt)** to catch regional network issues.
+- **Authentication:** Dashboard and API key secrets live in 1Password (“UptimeRobot – SalonBW”). Only on-call engineers and team leads have access; rotate credentials whenever someone leaves the rotation.
+- **Alerting:** Primary channel is `#ops-alerts` in Slack plus the “On-call – SalonBW” SMS list configured in UptimeRobot → Integrations. Alerts trigger after one failed check (<1 minute). Acknowledge in UptimeRobot to mute the paging loop, then start the incident template below.
+- **Adding monitors:** In UptimeRobot create an HTTPS monitor, paste the URL, set the timeout to `30 seconds`, enable both regions, and tag it (`api`, `public`, `dashboard`, `admin`). Update the uptime table in `docs/AGENT_STATUS.md` after the monitor reports its first success.
+- **Secondary probes:** Pingdom checks `/api/appointments` and `/api/healthz` from APAC every 5 minutes for redundancy. Credentials sit next to the UptimeRobot entry in 1Password. Keep Pingdom alerts muted unless requested; it mainly supplies latency timelines.
+
+##### Incident response template
+
+When an uptime alert fires, log the incident in `docs/AGENT_STATUS.md` and link the Slack thread:
+
+```
+## Incident YYYY-MM-DD HH:MM UTC
+- Alert Source: (UptimeRobot / Pingdom / Manual)
+- Impacted Surface: (API / Public / Dashboard / Admin)
+- Start Time: <UTC timestamp>
+- End Time: <UTC timestamp or "ongoing">
+- Customer Impact: <errors/timeouts observed>
+- Mitigation: <what you did>
+- Root Cause: <fill once known>
+- Follow-up Tasks: <GitHub issues or TODOs>
+```
+
+After the incident, update the uptime metrics table for the affected month and file follow-up tickets if new automation/runbooks are required.
+
 ### Metrics
 
 - Prometheus-compatible metrics are exposed at `https://api.salon-bw.pl/metrics` (and `/metrics` on any environment).

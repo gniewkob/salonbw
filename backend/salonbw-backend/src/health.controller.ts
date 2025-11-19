@@ -21,7 +21,6 @@ export class HealthController {
         description: 'Service and dependencies are up',
     })
     async getDeepHealth() {
-        await this.healthService.assertDatabaseHealthy();
-        return { status: 'ok' };
+        return this.healthService.getHealthSummary();
     }
 }
