@@ -8,10 +8,27 @@ import { Observable, tap } from 'rxjs';
 import { Request, Response } from 'express';
 import { MetricsService } from './metrics.service';
 import { processRequestDuration } from './metrics.utils';
+import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
-    constructor(private readonly metricsService: MetricsService) {}
+    private readonly slowThresholdSeconds: number;
+    private readonly apmEnabled: boolean;
+
+    constructor(
+        private readonly metricsService: MetricsService,
+        configService: ConfigService,
+    ) {
+        const slowThresholdMs = Number(
+            configService.get<string>('APM_SLOW_REQUEST_MS', '1000'),
+        );
+        this.slowThresholdSeconds =
+            Number.isFinite(slowThresholdMs) && slowThresholdMs > 0
+                ? slowThresholdMs / 1000
+                : Number.POSITIVE_INFINITY;
+        this.apmEnabled = Boolean(configService.get<string>('SENTRY_DSN'));
+    }
 
     intercept(
         context: ExecutionContext,
@@ -49,11 +66,19 @@ export class HttpMetricsInterceptor implements NestInterceptor {
                         request.originalUrl ??
                         request.url ??
                         'unmatched';
+                    const duration = endTimer();
+                    const status = response.statusCode ?? 200;
                     this.metricsService.recordHttpRequest(
                         method,
                         route,
-                        response.statusCode ?? 200,
-                        endTimer(),
+                        status,
+                        duration,
+                    );
+                    this.captureSlowTransaction(
+                        route,
+                        method,
+                        status,
+                        duration,
                     );
                 },
                 error: (err: unknown) => {
@@ -82,14 +107,46 @@ export class HttpMetricsInterceptor implements NestInterceptor {
                         }
                         return 500;
                     })();
+                    const duration = endTimer();
                     this.metricsService.recordHttpRequest(
                         method,
                         route,
                         status,
-                        endTimer(),
+                        duration,
+                    );
+                    this.captureSlowTransaction(
+                        route,
+                        method,
+                        status,
+                        duration,
                     );
                 },
             }),
         );
+    }
+
+    private captureSlowTransaction(
+        route: string,
+        method: string,
+        status: number,
+        durationSeconds: number,
+    ) {
+        if (!this.apmEnabled) {
+            return;
+        }
+        if (
+            !Number.isFinite(durationSeconds) ||
+            durationSeconds < this.slowThresholdSeconds
+        ) {
+            return;
+        }
+        Sentry.withScope((scope) => {
+            scope.setTag('http.method', method);
+            scope.setTag('http.route', route);
+            scope.setTag('http.status_code', String(status));
+            scope.setExtra('duration_seconds', durationSeconds);
+            scope.setLevel('warning');
+            Sentry.captureMessage('slow_http_request');
+        });
     }
 }
