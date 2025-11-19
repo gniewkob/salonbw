@@ -10,8 +10,7 @@ const ENABLED =
     process.env.NEXT_PUBLIC_ENABLE_CLIENT_LOGS !== 'false' &&
     typeof window !== 'undefined';
 
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '/api';
 const CLIENT_LOG_URL = `${API_BASE}/logs/client`;
 const LOG_TOKEN = process.env.NEXT_PUBLIC_LOG_TOKEN;
 
