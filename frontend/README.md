@@ -177,14 +177,16 @@ The report opens automatically with details on server and client bundles.
 
 ### Optional Sentry Integration
 
-The project is prepared for optional Sentry setup. To enable it, add a minimal init in `_app.tsx` guarded by `NEXT_PUBLIC_SENTRY_DSN`, and set env vars:
+The project already initialises `@sentry/nextjs` when the DSN is provided. To enable tracing/RUM, configure the following:
 
 ```bash
 NEXT_PUBLIC_SENTRY_DSN=your_dsn
 NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0.1
+NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE=0      # optional passive replay sampling
+NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=1     # capture a replay whenever an error fires
 ```
 
-If you’d like, we can wire this up fully with `@sentry/nextjs`.
+Web Vitals and slow navigation events are forwarded to Sentry metrics automatically; Replay sampling is optional but recommended on staging and disabled (0) on production if you have strict PII requirements.
 
 ### Manual Testing
 
