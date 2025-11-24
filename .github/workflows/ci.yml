@@ -25,7 +25,8 @@ jobs:
         app: [public, dashboard, admin]
     env:
       CI: true
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Allow empty token so local schema validators stop flagging missing context
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -154,7 +155,7 @@ jobs:
     needs: frontend
     env:
       CI: true
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -188,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4

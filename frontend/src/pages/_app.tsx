@@ -55,29 +55,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (!isAnalyticsEnabled()) return;
-        const thresholds = [25, 50, 75, 100];
-        const fired = new Set<number>();
-        const onScroll = () => {
-            const doc = document.documentElement;
-            const scrollTop = window.scrollY || (doc && doc.scrollTop) || 0;
-            const height = (doc && doc.scrollHeight - doc.clientHeight) || 0;
-            if (height <= 0) return;
-            const pct = Math.min(100, Math.round((scrollTop / height) * 100));
-            for (const t of thresholds) {
-                if (pct >= t && !fired.has(t)) {
-                    fired.add(t);
-                    try {
-                        trackEvent('scroll_depth', {
-                            percent: t,
-                            path: router.asPath,
-                        });
-                    } catch {}
-                }
-            }
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
-        return () => window.removeEventListener('scroll', onScroll);
+        const { handler, cleanup } = setupScrollDepthTracker(router.asPath);
+        window.addEventListener('scroll', handler, { passive: true });
+        handler();
+        return cleanup;
         // re-arm on route change
     }, [router.asPath]);
 
@@ -153,4 +134,31 @@ export function reportWebVitals(metric: NextWebVitalsMetric) {
     } catch {
         // non-fatal
     }
+}
+
+const SCROLL_THRESHOLDS = [25, 50, 75, 100];
+
+function setupScrollDepthTracker(path: string) {
+    const fired = new Set<number>();
+    const handler = () => {
+        const doc = document.documentElement;
+        const scrollTop = window.scrollY || doc.scrollTop || 0;
+        const height = doc.scrollHeight - doc.clientHeight;
+        if (height <= 0) return;
+        const pct = Math.min(100, Math.round((scrollTop / height) * 100));
+        for (const threshold of SCROLL_THRESHOLDS) {
+            if (pct < threshold || fired.has(threshold)) continue;
+            fired.add(threshold);
+            try {
+                trackEvent('scroll_depth', { percent: threshold, path });
+            } catch {
+                // ignore analytics failure
+            }
+        }
+    };
+
+    return {
+        handler,
+        cleanup: () => window.removeEventListener('scroll', handler),
+    };
 }

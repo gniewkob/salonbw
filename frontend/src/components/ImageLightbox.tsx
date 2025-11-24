@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
@@ -43,54 +43,33 @@ interface SingleProps extends BaseProps {
 
 export default function ImageLightbox(props: Props) {
     const { alt, onClose } = props;
-    const hasCarousel =
-        'sources' in props &&
-        Array.isArray(props.sources) &&
-        props.sources.length > 0;
     const isCarouselProps = (p: Props): p is CarouselProps =>
         'sources' in p && Array.isArray(p.sources) && p.sources.length > 0;
-    const currentSrc = isCarouselProps(props)
-        ? props.sources[props.index]
+    const carouselProps = isCarouselProps(props) ? props : null;
+    const hasCarousel = !!carouselProps;
+    const currentSrc = carouselProps
+        ? carouselProps.sources[carouselProps.index]
         : (props as SingleProps).src;
     const containerRef = useRef<HTMLDivElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
     const [showHint, setShowHint] = useState(false);
+
+    const handleClose = useCallback(() => {
+        safeTrack('lightbox_close', { src: currentSrc });
+        onClose();
+    }, [currentSrc, onClose]);
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
-
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                try {
-                    trackEvent('lightbox_close', { src: currentSrc });
-                } catch {}
-                onClose();
-            }
-            if (hasCarousel) {
-                const carouselProps = props as CarouselProps;
-                if (e.key === 'ArrowLeft') {
-                    try {
-                        trackEvent('lightbox_prev', {
-                            src: currentSrc,
-                            index: carouselProps.index,
-                        });
-                    } catch {}
-                    carouselProps.onPrev();
-                }
-                if (e.key === 'ArrowRight') {
-                    try {
-                        trackEvent('lightbox_next', {
-                            src: currentSrc,
-                            index: carouselProps.index,
-                        });
-                    } catch {}
-                    carouselProps.onNext();
-                }
-            }
-        };
+        const onKey = createKeyHandler(
+            handleClose,
+            hasCarousel ? carouselProps : null,
+            currentSrc,
+        );
 
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [onClose, hasCarousel, props, currentSrc]);
+    }, [handleClose, hasCarousel, carouselProps, currentSrc]);
 
     useEffect(() => {
         // Show a quick hint on first open (per session)
@@ -104,9 +83,7 @@ export default function ImageLightbox(props: Props) {
             } catch {}
         }
         // Focus close button on open for accessibility
-        try {
-            trackEvent('lightbox_open', { src: currentSrc });
-        } catch {}
+        safeTrack('lightbox_open', { src: currentSrc });
         closeRef.current?.focus();
     }, [currentSrc]);
 
@@ -138,45 +115,13 @@ export default function ImageLightbox(props: Props) {
 
     const onShare = async () => {
         const url = absUrl(currentSrc as string);
-        try {
-            if (typeof window === 'undefined' || !window.navigator) return;
-
-            const nav: Navigator = window.navigator;
-
-            if ('share' in nav && typeof nav.share === 'function') {
-                await nav.share({ url, title: alt || 'Image' });
-            } else if ('clipboard' in nav && nav.clipboard?.writeText) {
-                await nav.clipboard.writeText(url);
-            }
-
-            try {
-                trackEvent('lightbox_share', { src: currentSrc });
-            } catch {}
-        } catch {
-            // ignore failures
-        }
+        await shareImage(url, alt);
+        safeTrack('lightbox_share', { src: currentSrc });
     };
 
     const onDownload = () => {
-        try {
-            trackEvent('lightbox_download', { src: currentSrc });
-        } catch {}
-        if (typeof window === 'undefined') return;
-
-        const a = document.createElement('a');
-        a.href = absUrl(currentSrc as string);
-        a.download = '';
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    };
-
-    const handleClose = () => {
-        try {
-            trackEvent('lightbox_close', { src: currentSrc });
-        } catch {}
-        onClose();
+        safeTrack('lightbox_download', { src: currentSrc });
+        downloadImage(currentSrc as string);
     };
 
     return (
@@ -265,4 +210,64 @@ export default function ImageLightbox(props: Props) {
             </button>
         </div>
     );
+}
+
+function safeTrack(event: string, payload: Record<string, unknown>) {
+    try {
+        trackEvent(event, payload);
+    } catch {
+        // swallow analytics errors
+    }
+}
+
+function createKeyHandler(
+    onClose: () => void,
+    carouselProps: CarouselProps | null,
+    currentSrc: string,
+) {
+    return (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onClose();
+            return;
+        }
+        if (!carouselProps) return;
+
+        if (e.key === 'ArrowLeft') {
+            safeTrack('lightbox_prev', {
+                src: currentSrc,
+                index: carouselProps.index,
+            });
+            carouselProps.onPrev();
+        } else if (e.key === 'ArrowRight') {
+            safeTrack('lightbox_next', {
+                src: currentSrc,
+                index: carouselProps.index,
+            });
+            carouselProps.onNext();
+        }
+    };
+}
+
+async function shareImage(url: string, alt?: string) {
+    if (typeof window === 'undefined' || !window.navigator) return;
+
+    const nav: Navigator = window.navigator;
+    if (typeof nav.share === 'function') {
+        await nav.share({ url, title: alt || 'Image' });
+        return;
+    }
+    if (nav.clipboard?.writeText) {
+        await nav.clipboard.writeText(url);
+    }
+}
+
+function downloadImage(src: string) {
+    if (typeof window === 'undefined') return;
+    const a = document.createElement('a');
+    a.href = absUrl(src);
+    a.download = '';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }

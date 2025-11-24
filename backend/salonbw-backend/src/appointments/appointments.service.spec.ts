@@ -1,242 +1,39 @@
-import { ConflictException, BadRequestException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import type { UpdateResult } from 'typeorm';
-import { AppointmentsService } from './appointments.service';
-import { Appointment, AppointmentStatus } from './appointment.entity';
-import { Role } from '../users/role.enum';
-import { Service as SalonService } from '../services/service.entity';
-import { User } from '../users/user.entity';
-import { CommissionsService } from '../commissions/commissions.service';
-import { LogService } from '../logs/log.service';
-import { LogAction } from '../logs/log-action.enum';
-import { WhatsappService } from '../notifications/whatsapp.service';
+import {
+    AppointmentStatus,
+    BadRequestException,
+    ConflictException,
+    LogAction,
+    createAppointmentsTestContext,
+} from './test-context';
+import type { AppointmentsTestContext } from './test-context';
 
 describe('AppointmentsService', () => {
-    let service: AppointmentsService;
-    let appointments: Appointment[];
-    let users: User[];
-    let services: SalonService[];
-    let mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
-    let mockUsersRepo: jest.Mocked<Repository<User>>;
-    let mockServicesRepo: jest.Mocked<Repository<SalonService>>;
-    let mockCommissionsService: jest.Mocked<CommissionsService>;
-    let mockLogService: jest.Mocked<LogService>;
-    let mockWhatsappService: jest.Mocked<WhatsappService>;
-    let logActionSpy: jest.SpyInstance;
-    let nextId: number;
-    let sendFollowUpMock: jest.Mock;
-    let transactionMock: jest.Mock;
-    let createFromAppointmentMock: jest.Mock;
+    let ctx: AppointmentsTestContext;
+    let service: AppointmentsTestContext['service'];
+    let appointments: AppointmentsTestContext['appointments'];
+    let users: AppointmentsTestContext['users'];
+    let services: AppointmentsTestContext['services'];
+    let mockAppointmentsRepo: AppointmentsTestContext['mockAppointmentsRepo'];
+    let mockWhatsappService: AppointmentsTestContext['mockWhatsappService'];
+    let logActionSpy: AppointmentsTestContext['logActionSpy'];
+    let sendFollowUpMock: AppointmentsTestContext['sendFollowUpMock'];
+    let transactionMock: AppointmentsTestContext['transactionMock'];
+    let createFromAppointmentMock: AppointmentsTestContext['createFromAppointmentMock'];
 
     beforeEach(() => {
-        appointments = [];
-        users = [
-            {
-                id: 1,
-                role: Role.Client,
-                email: '',
-                password: '',
-                name: '',
-                phone: '123',
-                receiveNotifications: true,
-                commissionBase: 0,
-            },
-            {
-                id: 2,
-                role: Role.Employee,
-                email: '',
-                password: '',
-                name: '',
-                phone: '456',
-                receiveNotifications: true,
-                commissionBase: 0,
-            },
-        ];
-        services = [
-            {
-                id: 1,
-                duration: 30,
-                name: '',
-                description: '',
-                price: 0,
-            },
-        ];
-        nextId = 1;
-
-        mockUsersRepo = {
-            findOne: jest.fn<Promise<User | null>, [{ where: { id: number } }]>(
-                ({ where }) =>
-                    Promise.resolve(
-                        users.find((u) => u.id === where.id) ?? null,
-                    ),
-            ),
-        } as unknown as jest.Mocked<Repository<User>>;
-
-        mockServicesRepo = {
-            findOne: jest.fn<
-                Promise<SalonService | null>,
-                [{ where: { id: number } }]
-            >(({ where }) =>
-                Promise.resolve(
-                    services.find((s) => s.id === where.id) ?? null,
-                ),
-            ),
-        } as unknown as jest.Mocked<Repository<SalonService>>;
-
-        const repoUpdate = jest.fn<
-            Promise<UpdateResult>,
-            [number, Partial<Appointment>]
-        >((id, partial) => {
-            const idx = appointments.findIndex((a) => a.id === id);
-            if (idx >= 0) {
-                appointments[idx] = { ...appointments[idx], ...partial };
-            }
-            return Promise.resolve({
-                affected: idx >= 0 ? 1 : 0,
-            } as UpdateResult);
-        });
-
-        const managerUpdate = jest.fn<
-            Promise<UpdateResult>,
-            [unknown, number, Partial<Appointment>]
-        >((_entity, id, partial) => repoUpdate(id, partial));
-
-        mockAppointmentsRepo = {
-            findOne: jest.fn<
-                Promise<Appointment | null>,
-                [
-                    | number
-                    | {
-                          where?: {
-                              id?: number;
-                              employee?: { id: number };
-                              startTime?: { _value: Date };
-                              endTime?: { _value: Date };
-                          };
-                      },
-                ]
-            >((criteria) => {
-                if (typeof criteria === 'number') {
-                    return Promise.resolve(
-                        appointments.find((a) => a.id === criteria) ?? null,
-                    );
-                }
-                const where = criteria?.where;
-                if (!where) {
-                    return Promise.resolve(null);
-                }
-                if (where.id !== undefined) {
-                    return Promise.resolve(
-                        appointments.find((a) => a.id === where.id) ?? null,
-                    );
-                }
-                const employeeId = where.employee?.id;
-                if (employeeId !== undefined) {
-                    return Promise.resolve(
-                        appointments.find(
-                            (a) =>
-                                a.employee?.id === employeeId &&
-                                a.status !== AppointmentStatus.Cancelled &&
-                                a.startTime < (where.startTime?._value ?? 0) &&
-                                a.endTime > (where.endTime?._value ?? 0),
-                        ) ?? null,
-                    );
-                }
-                return Promise.resolve(null);
-            }),
-            create: jest.fn<Appointment, [Partial<Appointment>]>(
-                (data) =>
-                    ({
-                        id: nextId++,
-                        status: AppointmentStatus.Scheduled,
-                        ...data,
-                    }) as Appointment,
-            ),
-            save: jest.fn<Promise<Appointment>, [Appointment]>((appt) => {
-                appointments.push(appt);
-                return Promise.resolve(appt);
-            }),
-            update: repoUpdate,
-            manager: {
-                transaction: jest.fn<
-                    Promise<unknown>,
-                    [(em: { update: typeof managerUpdate }) => Promise<unknown>]
-                >(async (cb) => {
-                    const snapshot = appointments.map((a) => ({ ...a }));
-                    try {
-                        return await cb({ update: managerUpdate });
-                    } catch (e) {
-                        appointments = snapshot;
-                        throw e;
-                    }
-                }),
-            },
-        } as unknown as jest.Mocked<Repository<Appointment>>;
-
-        mockCommissionsService = {
-            createFromAppointment: jest.fn<
-                Promise<unknown>,
-                [Appointment, User, unknown]
-            >(() => Promise.resolve({})),
-        } as unknown as jest.Mocked<CommissionsService>;
-
-        mockLogService = {
-            logAction: jest.fn(),
-        } as unknown as jest.Mocked<LogService>;
-
-        mockWhatsappService = {
-            sendBookingConfirmation: jest.fn<
-                Promise<void>,
-                [string, string, string]
-            >(() => Promise.resolve()),
-            sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
-            sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
-                Promise.resolve(),
-            ),
-        } as unknown as jest.Mocked<WhatsappService>;
-
-        sendFollowUpMock = mockWhatsappService.sendFollowUp.bind(
-            mockWhatsappService,
-        ) as jest.Mock;
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        Object.assign(sendFollowUpMock, mockWhatsappService.sendFollowUp);
-
-        transactionMock = mockAppointmentsRepo.manager.transaction.bind(
-            mockAppointmentsRepo.manager,
-        ) as jest.Mock;
-
-        Object.assign(
-            transactionMock,
-
-            mockAppointmentsRepo.manager.transaction.bind(
-                mockAppointmentsRepo.manager,
-            ) as jest.Mock,
-        );
-        Object.assign(
-            transactionMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockAppointmentsRepo.manager.transaction,
-        );
-
-        createFromAppointmentMock =
-            mockCommissionsService.createFromAppointment.bind(
-                mockCommissionsService,
-            ) as jest.Mock;
-        Object.assign(
-            createFromAppointmentMock,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            mockCommissionsService.createFromAppointment,
-        );
-
-        service = new AppointmentsService(
+        ctx = createAppointmentsTestContext();
+        ({
+            service,
+            appointments,
+            users,
+            services,
             mockAppointmentsRepo,
-            mockServicesRepo,
-            mockUsersRepo,
-            mockCommissionsService,
-            mockLogService,
             mockWhatsappService,
-        );
-        logActionSpy = jest.spyOn(mockLogService, 'logAction');
+            logActionSpy,
+            sendFollowUpMock,
+            transactionMock,
+            createFromAppointmentMock,
+        } = ctx);
     });
 
     it('should create an appointment', async () => {

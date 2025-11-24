@@ -23,7 +23,8 @@
             "@/*": ["src/*"],
             "@salonbw/api": ["../packages/api/src"],
             "@salonbw/api/*": ["../packages/api/src/*"]
-        }
+        },
+        "forceConsistentCasingInFileNames": true
     },
     "include": [
         "next-env.d.ts",

@@ -45,39 +45,25 @@ export function middleware(request: NextRequest) {
     // Create CSP header with nonce
     const cspHeader = generateCSP(nonce);
 
-    // Allow access to public routes
     if (isPublic) {
-        const response = NextResponse.next();
-        response.headers.set('Content-Security-Policy', cspHeader);
-        response.headers.set('x-nonce', nonce);
-        return response;
+        return withCsp(NextResponse.next(), cspHeader, nonce);
     }
 
-    // Handle auth routes
+    if (isAuthRoute && isAuthenticated) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
     if (isAuthRoute) {
-        if (isAuthenticated) {
-            // Redirect authenticated users from auth pages to dashboard
-            return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-        const response = NextResponse.next();
-        response.headers.set('Content-Security-Policy', cspHeader);
-        response.headers.set('x-nonce', nonce);
-        return response;
+        return withCsp(NextResponse.next(), cspHeader, nonce);
     }
 
-    // Handle dashboard access
     if (isDashboard && !isAuthenticated) {
-        // Store the intended path for post-login redirect
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('redirectTo', path);
         return NextResponse.redirect(loginUrl);
     }
 
-    // All other routes
-    const response = NextResponse.next();
-    response.headers.set('Content-Security-Policy', cspHeader);
-    response.headers.set('x-nonce', nonce);
-    return response;
+    return withCsp(NextResponse.next(), cspHeader, nonce);
 }
 
 function generateCSP(nonce: string): string {
@@ -100,6 +86,16 @@ function generateCSP(nonce: string): string {
         `report-uri ${apiUrl}/csp-report`,
     ];
     return csp.join('; ');
+}
+
+function withCsp(
+    response: NextResponse,
+    cspHeader: string,
+    nonce: string,
+): NextResponse {
+    response.headers.set('Content-Security-Policy', cspHeader);
+    response.headers.set('x-nonce', nonce);
+    return response;
 }
 
 export const config = {
