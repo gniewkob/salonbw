@@ -4,8 +4,9 @@ import { LoggerModule } from 'nestjs-pino';
 import { v4 as uuid } from 'uuid';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, type TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import type { LoggerOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
@@ -32,24 +33,7 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
     imports: [
         ThrottlerModule.forRootAsync({
             inject: [ConfigService],
-            useFactory: (config: ConfigService) => {
-                const ttlRaw = config.get<string>('THROTTLE_TTL', '60000');
-                const limitRaw = config.get<string>('THROTTLE_LIMIT', '10');
-                const ttl = Number(ttlRaw);
-                const limit = Number(limitRaw);
-                if (!Number.isFinite(ttl) || ttl <= 0) {
-                    throw new Error('THROTTLE_TTL must be a positive number');
-                }
-                if (!Number.isFinite(limit) || limit <= 0) {
-                    throw new Error('THROTTLE_LIMIT must be a positive number');
-                }
-                return [
-                    {
-                        ttl,
-                        limit,
-                    },
-                ];
-            },
+            useFactory: createThrottlerConfig,
         }),
         LoggerModule.forRootAsync({
             inject: [ConfigService],
@@ -94,66 +78,7 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
-            useFactory: (config: ConfigService) => {
-                const dbUrl = config.get<string>('DATABASE_URL');
-                const shouldSync =
-                    config
-                        .get<string>('DB_SYNCHRONIZE', 'false')
-                        .toLowerCase() === 'true';
-                const nodeEnv = config.get<string>('NODE_ENV', 'development');
-
-                if (nodeEnv === 'production' && shouldSync) {
-                    throw new Error(
-                        'DB_SYNCHRONIZE must be false in production for safety',
-                    );
-                }
-
-                if (!dbUrl) {
-                    throw new Error(
-                        'DATABASE_URL environment variable is required',
-                    );
-                }
-
-                // Connection pooling configuration
-                const poolSize = config.get<number>('DB_POOL_SIZE', 10);
-                const poolMin = config.get<number>('DB_POOL_MIN', 2);
-                const idleTimeoutMillis = config.get<number>(
-                    'DB_IDLE_TIMEOUT_MS',
-                    30000,
-                );
-                const connectionTimeoutMillis = config.get<number>(
-                    'DB_CONNECTION_TIMEOUT_MS',
-                    5000,
-                );
-
-                return {
-                    type: 'postgres',
-                    url: dbUrl,
-                    autoLoadEntities: true,
-                    synchronize: shouldSync,
-                    migrations: [__dirname + '/migrations/*{.ts,.js}'],
-                    // Connection pooling
-                    extra: {
-                        max: poolSize, // Maximum pool size
-                        min: poolMin, // Minimum pool size
-                        idleTimeoutMillis, // Close idle connections after this time
-                        connectionTimeoutMillis, // Fail connection after this time
-                        statement_timeout: 30000, // Cancel queries after 30s
-                        query_timeout: 30000, // Query timeout
-                    },
-                    // Query performance
-                    logging:
-                        nodeEnv === 'development'
-                            ? ['error', 'warn', 'query']
-                            : ['error', 'warn'],
-                    maxQueryExecutionTime:
-                        nodeEnv === 'development' ? 1000 : undefined, // Log slow queries > 1s in dev
-                    cache: {
-                        duration: 30000, // Cache results for 30s
-                        type: 'database', // Use database for query result caching
-                    },
-                };
-            },
+            useFactory: createTypeOrmConfig,
         }),
         UsersModule,
         AuthModule,
@@ -211,4 +136,76 @@ function resolvePinoTransport(config: ConfigService) {
             environment: nodeEnv,
         },
     };
+}
+
+function createThrottlerConfig(config: ConfigService) {
+    const ttl = asPositiveNumber(
+        config.get<string>('THROTTLE_TTL', '60000'),
+        'THROTTLE_TTL',
+    );
+    const limit = asPositiveNumber(
+        config.get<string>('THROTTLE_LIMIT', '10'),
+        'THROTTLE_LIMIT',
+    );
+    return [{ ttl, limit }];
+}
+
+function createTypeOrmConfig(config: ConfigService): TypeOrmModuleOptions {
+    const dbUrl = config.get<string>('DATABASE_URL');
+    const shouldSync =
+        config.get<string>('DB_SYNCHRONIZE', 'false').toLowerCase() === 'true';
+    const nodeEnv = config.get<string>('NODE_ENV', 'development');
+
+    if (nodeEnv === 'production' && shouldSync) {
+        throw new Error(
+            'DB_SYNCHRONIZE must be false in production for safety',
+        );
+    }
+
+    if (!dbUrl) {
+        throw new Error('DATABASE_URL environment variable is required');
+    }
+
+    const poolSize = config.get<number>('DB_POOL_SIZE', 10);
+    const poolMin = config.get<number>('DB_POOL_MIN', 2);
+    const idleTimeoutMillis = config.get<number>('DB_IDLE_TIMEOUT_MS', 30000);
+    const connectionTimeoutMillis = config.get<number>(
+        'DB_CONNECTION_TIMEOUT_MS',
+        5000,
+    );
+
+    const logging: LoggerOptions =
+        nodeEnv === 'development'
+            ? ['error', 'warn', 'query']
+            : ['error', 'warn'];
+
+    return {
+        type: 'postgres' as const,
+        url: dbUrl,
+        autoLoadEntities: true,
+        synchronize: shouldSync,
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
+        extra: {
+            max: poolSize,
+            min: poolMin,
+            idleTimeoutMillis,
+            connectionTimeoutMillis,
+            statement_timeout: 30000,
+            query_timeout: 30000,
+        },
+        logging,
+        maxQueryExecutionTime: nodeEnv === 'development' ? 1000 : undefined,
+        cache: {
+            duration: 30000,
+            type: 'database',
+        } as const,
+    };
+}
+
+function asPositiveNumber(raw: string, key: string) {
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(`${key} must be a positive number`);
+    }
+    return value;
 }
