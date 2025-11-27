@@ -124,11 +124,12 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ steps.should_run.outputs.run == 'true' && secrets.NPM_TOKEN != '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          fi
 
       - name: Install dependencies
         if: steps.should_run.outputs.run == 'true'
@@ -170,11 +171,12 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -204,11 +206,12 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          if [ -n "${NPM_TOKEN:-}" ]; then
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
