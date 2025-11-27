@@ -25,6 +25,7 @@ jobs:
         app: [public, dashboard, admin]
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -124,9 +125,7 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ steps.should_run.outputs.run == 'true' && secrets.NPM_TOKEN != '' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+        if: ${{ steps.should_run.outputs.run == 'true' && env.NPM_TOKEN != '' }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -155,6 +154,7 @@ jobs:
     needs: frontend
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -172,9 +172,7 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+        if: ${{ env.NPM_TOKEN != '' }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -191,6 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -208,9 +207,7 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+        if: ${{ env.NPM_TOKEN != '' }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -244,5 +241,4 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           pnpm outdated || true >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-name: CI
 # cspell:ignore GITHUB npmjs github elif
