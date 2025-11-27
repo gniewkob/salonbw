@@ -25,6 +25,7 @@ jobs:
         app: [public, dashboard, admin]
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -124,9 +125,9 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ steps.should_run.outputs.run == 'true' && secrets.NPM_TOKEN != '' }}
+        if: ${{ steps.should_run.outputs.run == 'true' && env.NPM_TOKEN != '' }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
       - name: Install dependencies
         if: steps.should_run.outputs.run == 'true'
@@ -151,6 +152,7 @@ jobs:
     needs: frontend
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -168,9 +170,9 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
+        if: ${{ env.NPM_TOKEN != '' }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -183,6 +185,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
@@ -200,9 +203,9 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
+        if: ${{ env.NPM_TOKEN != '' }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
