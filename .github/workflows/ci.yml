@@ -124,9 +124,9 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ steps.should_run.outputs.run == 'true' && secrets.NPM_TOKEN != '' }}
+        if: steps.should_run.outputs.run == 'true'
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -172,9 +172,8 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -208,9 +207,8 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
