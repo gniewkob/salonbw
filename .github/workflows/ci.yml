@@ -14,6 +14,7 @@ on:
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: "22"
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
 
 jobs:
   frontend:
@@ -125,7 +126,7 @@ jobs:
 
       - name: Configure npm registry
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN:-}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -172,7 +173,7 @@ jobs:
 
       - name: Configure npm registry
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN:-}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
@@ -207,7 +208,7 @@ jobs:
 
       - name: Configure npm registry
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
           if [ -n "${NPM_TOKEN:-}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
