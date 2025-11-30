@@ -24,6 +24,12 @@ updates:
       time: "06:30"
       timezone: "Europe/Warsaw"
     open-pull-requests-limit: 10
+    ignore:
+      # Dependabot npm/yarn updater cannot resolve pnpm workspace link: deps
+      - dependency-name: "axios"
+      - dependency-name: "glob"
+      - dependency-name: "js-yaml"
+      - dependency-name: "next"
   - package-ecosystem: "npm"
     directory: "/backend/salonbw-backend"
     schedule:
