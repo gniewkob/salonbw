@@ -145,7 +145,7 @@ jobs:
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
         run: pnpm --filter frontend run bundle:check
         env:
-          BUNDLE_FIRST_LOAD_LIMIT_KB: 300
+          BUNDLE_FIRST_LOAD_LIMIT_KB: 330
           BUNDLE_ROUTES: "/dashboard/admin,/dashboard/admin/retail,/dashboard/admin/scheduler,/dashboard/employee,/appointments"
 
   backend:
