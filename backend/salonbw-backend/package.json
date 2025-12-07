@@ -92,7 +92,7 @@
     "ts-jest": "^29.4.5",
     "ts-loader": "^9.5.4",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3"
   },
   "jest": {
