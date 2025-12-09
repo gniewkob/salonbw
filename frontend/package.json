@@ -40,7 +40,7 @@
     "@next/bundle-analyzer": "^16.0.1",
     "@next/env": "^14.2.32",
     "@salonbw/api": "link:../packages/api",
-    "@sentry/nextjs": "^10.27.0",
+    "@sentry/nextjs": "^10.29.0",
     "@swc/helpers": "^0.5.17",
     "@tanstack/react-query": "^5.90.7",
     "autoprefixer": "^10.4.22",
@@ -49,7 +49,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hot-toast": "^2.4.0",
-    "sharp": "^0.34.3",
+    "sharp": "^0.34.5",
     "styled-jsx": "^5.1.7"
   },
   "devDependencies": {
@@ -63,7 +63,7 @@
     "@types/node": "^24",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "cypress": "^15.6.0",
+    "cypress": "^15.7.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.32",
     "eslint-config-prettier": "^10.1.5",
