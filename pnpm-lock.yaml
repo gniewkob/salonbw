@@ -306,7 +306,7 @@ importers:
         version: 30.2.0
       '@suchipi/cypress-plugin-snapshots':
         specifier: ^1.4.5
-        version: 1.4.5(cypress@15.6.0)
+        version: 1.4.5(cypress@15.7.1)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
@@ -329,8 +329,8 @@ importers:
         specifier: ^18
         version: 18.3.7(@types/react@18.3.26)
       cypress:
-        specifier: ^15.6.0
-        version: 15.6.0
+        specifier: ^15.7.1
+        version: 15.7.1
       eslint:
         specifier: ^8
         version: 8.57.1
@@ -4129,8 +4129,8 @@ packages:
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
-  cypress@15.6.0:
-    resolution: {integrity: sha512-Vqo66GG1vpxZ7H1oDX9umfmzA3nF7Wy80QAc3VjwPREO5zTY4d1xfQFNPpOWleQl9vpdmR2z1liliOcYlRX6rQ==}
+  cypress@15.7.1:
+    resolution: {integrity: sha512-U3sYnJ+Cnpgr6IPycxsznTg//mGVXfPGeGV+om7VQCyp5XyVkhG4oPr3X3hTq1+OB0Om0O5DxusYmt7cbvwqMQ==}
     engines: {node: ^20.1.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
 
@@ -4162,6 +4162,9 @@ packages:
 
   dayjs@1.11.18:
     resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
+
+  dayjs@1.11.19:
+    resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
 
   debounce@1.2.1:
     resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
@@ -4832,6 +4835,10 @@ packages:
     peerDependencies:
       typescript: '>3.6.0'
       webpack: ^5.11.0
+
+  form-data@4.0.5:
+    resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
+    engines: {node: '>= 6'}
 
   form-data@4.0.5:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
@@ -11303,9 +11310,9 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@suchipi/cypress-plugin-snapshots@1.4.5(cypress@15.6.0)':
+  '@suchipi/cypress-plugin-snapshots@1.4.5(cypress@15.7.1)':
     dependencies:
-      cypress: 15.6.0
+      cypress: 15.7.1
       diff2html: 2.12.2
       fs-extra: 7.0.1
       image-size: 0.7.5
@@ -12913,7 +12920,7 @@ snapshots:
 
   csstype@3.1.3: {}
 
-  cypress@15.6.0:
+  cypress@15.7.1:
     dependencies:
       '@cypress/request': 3.0.9
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
@@ -12931,7 +12938,7 @@ snapshots:
       cli-table3: 0.6.1
       commander: 6.2.1
       common-tags: 1.8.2
-      dayjs: 1.11.18
+      dayjs: 1.11.19
       debug: 4.4.3(supports-color@8.1.1)
       enquirer: 2.4.1
       eventemitter2: 6.4.7
@@ -12951,7 +12958,6 @@ snapshots:
       process: 0.11.10
       proxy-from-env: 1.0.0
       request-progress: 3.0.0
-      semver: 7.7.3
       supports-color: 8.1.1
       systeminformation: 5.27.7
       tmp: 0.2.5
@@ -12991,6 +12997,8 @@ snapshots:
   dateformat@4.6.3: {}
 
   dayjs@1.11.18: {}
+
+  dayjs@1.11.19: {}
 
   debounce@1.2.1: {}
 
@@ -13907,6 +13915,14 @@ snapshots:
       tapable: 2.3.0
       typescript: 5.8.3
       webpack: 5.100.2
+
+  form-data@4.0.5:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
+      mime-types: 2.1.35
 
   form-data@4.0.5:
     dependencies:
