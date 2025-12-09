@@ -259,8 +259,8 @@ importers:
         specifier: ^16.0.1
         version: 16.0.1
       '@next/env':
-        specifier: ^14.2.32
-        version: 14.2.32
+        specifier: ^16.0.7
+        version: 16.0.7
       '@salonbw/api':
         specifier: link:../packages/api
         version: link:../packages/api
