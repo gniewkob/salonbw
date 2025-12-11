@@ -282,6 +282,19 @@ jobs:
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
+      - name: Install dependencies (backend)
+        if: ${{ github.event.inputs.target == 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          if command -v npm22 >/dev/null 2>&1; then
+            npm22 install --omit=dev --ignore-scripts
+          else
+            npm install --omit=dev --ignore-scripts
+          fi
+          SSH
+
       - name: Ensure remote .env (api)
         if: ${{ github.event.inputs.target == 'api' }}
         run: |
