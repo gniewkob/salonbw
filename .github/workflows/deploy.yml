@@ -1,9 +1,6 @@
 name: Deploy (MyDevil)
 
 on:
-  push:
-    branches:
-      - fix/deployment-workflow
   workflow_dispatch:
     inputs:
       ref:
@@ -14,10 +11,6 @@ on:
         description: What to deploy (public|dashboard|admin|api)
         required: true
         default: public
-      environment:
-        description: Environment (staging|production)
-        required: true
-        default: staging
       api_url:
         description: Public API URL used at build time (leave empty to use environment defaults)
         required: false
@@ -40,9 +33,11 @@ jobs:
   deploy:
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    name: Deploy ${{ github.event.inputs.target }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
     concurrency:
-      group: deploy-${{ github.event.inputs.target }}-${{ github.event.inputs.environment }}
+      group: deploy-${{ github.event.inputs.target }}-${{ github.event.inputs.environment || 'staging' }}
       cancel-in-progress: false
     steps:
       - name: Checkout
