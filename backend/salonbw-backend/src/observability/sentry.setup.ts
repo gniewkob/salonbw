@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
+// import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import type {
     Express,
     NextFunction,
@@ -28,7 +28,7 @@ function parseSampleRate(
     return Math.min(1, Math.max(0, parsed));
 }
 
-export function setupSentry(app: INestApplication): boolean {
+export async function setupSentry(app: INestApplication): Promise<boolean> {
     const config = app.get(ConfigService);
     const dsn = config.get<string>('SENTRY_DSN');
     if (!dsn) {
@@ -36,6 +36,16 @@ export function setupSentry(app: INestApplication): boolean {
     }
 
     if (!initialized) {
+        let nodeProfilingIntegration: any;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const profiling = await import('@sentry/profiling-node');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            nodeProfilingIntegration = profiling.nodeProfilingIntegration;
+        } catch {
+            // profiling module not found, skip
+        }
+
         initialized = true;
         Sentry.init({
             dsn,
@@ -49,10 +59,14 @@ export function setupSentry(app: INestApplication): boolean {
                 config.get<string>('SENTRY_PROFILES_SAMPLE_RATE', '0'),
                 0,
             ),
-            integrations: (existing) => [
-                ...existing,
-                nodeProfilingIntegration(),
-            ],
+            integrations: (existing) => {
+                const integrations = [...existing];
+                if (nodeProfilingIntegration) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                    integrations.push(nodeProfilingIntegration());
+                }
+                return integrations;
+            },
         });
     }
 

@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 import { CsrfMiddleware } from './csrf.middleware';
 import { LoginAttempt } from './login-attempt.entity';
 import { LoginAttemptsService } from './login-attempts.service';
@@ -32,7 +33,13 @@ import { RefreshToken } from './refresh-token.entity';
         UsersModule,
         LogsModule,
     ],
-    providers: [AuthService, LocalStrategy, JwtStrategy, LoginAttemptsService],
+    providers: [
+        AuthService,
+        LocalStrategy,
+        JwtStrategy,
+        RefreshJwtStrategy,
+        LoginAttemptsService,
+    ],
     controllers: [AuthController],
     exports: [AuthService, UsersModule],
 })
