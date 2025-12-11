@@ -1,6 +1,9 @@
 name: Deploy (MyDevil)
 
 on:
+  push:
+    branches:
+      - fix/deployment-workflow
   workflow_dispatch:
     inputs:
       ref:
