@@ -67,9 +67,9 @@ jobs:
           INPUT_API="${{ github.event.inputs.api_url }}"
           if [ -n "$INPUT_API" ]; then
             API_URL="$INPUT_API"
-          elif [ "${{ github.event.inputs.environment }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+          elif [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
             API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ github.event.inputs.environment }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
             API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
           else
             # Default fallback if secret is missing or env is unknown
@@ -83,9 +83,9 @@ jobs:
         shell: bash
         run: |
           PROXY_URL="https://api.salon-bw.pl"
-          if [ "${{ github.event.inputs.environment }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+          if [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
             PROXY_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ github.event.inputs.environment }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
             PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
           fi
           echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
@@ -101,8 +101,7 @@ jobs:
           APP_NAME="$INPUT_APP"
 
           if [ -z "$REMOTE_PATH" ]; then
-          if [ -z "$REMOTE_PATH" ]; then
-            if [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+            if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
                # Staging logic
                case "$TARGET" in
                  api)       REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ;;
@@ -124,7 +123,7 @@ jobs:
           fi
 
           if [ -z "$APP_NAME" ]; then
-            if [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+            if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
                # Staging logic
                case "$TARGET" in
                  api)       APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ;;
@@ -289,7 +288,7 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
             "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' \
-            ENV='${{ github.event.inputs.environment }}' \
+            ENV='${{ env.DEPLOY_ENV }}' \
             DB_USER='${{ secrets.MYDEVIL_DB_USER }}' \
             DB_PASS='${{ secrets.MYDEVIL_DB_PASSWORD }}' \
             DB_HOST='${{ secrets.MYDEVIL_PG_HOST }}' \
