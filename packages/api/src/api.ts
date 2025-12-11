@@ -112,7 +112,12 @@ export class ApiClient {
                     ? rawBase
                     : "http://localhost:3000";
         } catch {
-            this.baseUrl = "http://localhost:3000";
+            // Allow relative paths for proxy usage
+            if (rawBase.startsWith("/")) {
+                this.baseUrl = rawBase;
+            } else {
+                this.baseUrl = "http://localhost:3000";
+            }
         }
         this.defaultHeaders = {
             "Content-Type": "application/json",
@@ -133,7 +138,9 @@ export class ApiClient {
     private generateRequestId(): string {
         const globalCrypto =
             typeof globalThis !== "undefined"
-                ? (globalThis.crypto as (Crypto & { randomUUID?: () => string }) | undefined)
+                ? (globalThis.crypto as
+                      | (Crypto & { randomUUID?: () => string })
+                      | undefined)
                 : undefined;
         if (globalCrypto?.randomUUID) {
             return globalCrypto.randomUUID();
@@ -141,7 +148,7 @@ export class ApiClient {
         const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
         return template.replace(/[xy]/g, (c) => {
             const r = Math.random() * 16;
-            const v = c === "x" ? Math.floor(r) : Math.floor(r) % 4 + 8;
+            const v = c === "x" ? Math.floor(r) : (Math.floor(r) % 4) + 8;
             return v.toString(16);
         });
     }
@@ -242,12 +249,19 @@ export class ApiClient {
             headers.set("Authorization", `Bearer ${token}`);
         }
 
+        const skipLogout = headers.has("x-skip-logout");
+        if (skipLogout) {
+            headers.delete("x-skip-logout");
+        }
+
         if (this.debugEnabled() && !headers.has("X-Request-Id")) {
             headers.set("X-Request-Id", this.generateRequestId());
         }
 
         // Get CSRF token from cookie and add to headers for non-GET requests
-        const method = String(mergedInit.method ?? init.method ?? "GET").toUpperCase();
+        const method = String(
+            mergedInit.method ?? init.method ?? "GET"
+        ).toUpperCase();
 
         if (method !== "GET" && typeof document !== "undefined") {
             const csrfToken = document.cookie
@@ -277,11 +291,15 @@ export class ApiClient {
                 });
                 return this.handleResponse<T>(retryResponse);
             }
-            this.onLogout();
+            if (!skipLogout) {
+                this.onLogout();
+            }
             throw this.createError(response, "Unauthorized");
         }
         if (response.status === 401) {
-            this.onLogout();
+            if (!skipLogout) {
+                this.onLogout();
+            }
         }
         return this.handleResponse<T>(response);
     }

@@ -19,7 +19,7 @@ async function bootstrap() {
     });
     const logger = await app.resolve(PinoLogger);
     const httpAdapterHost = app.get(HttpAdapterHost);
-    const sentryEnabled = setupSentry(app);
+    const sentryEnabled = await setupSentry(app);
 
     const logService = app.get(LogService);
     const globalFilters = [];
@@ -34,6 +34,8 @@ async function bootstrap() {
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
     app.use(cookieParser());
+    app.setGlobalPrefix('api');
+
     app.use((req: Request, res: Response, next: NextFunction) => {
         const requestWithId = req as Request & { id?: string };
         if (requestWithId.id && !res.getHeader('x-request-id')) {

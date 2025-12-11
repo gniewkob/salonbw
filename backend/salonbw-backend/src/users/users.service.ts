@@ -43,7 +43,11 @@ export class UsersService {
             throw new BadRequestException('Email already exists');
         }
 
-        const hashedPassword: string = await bcrypt.hash(dto.password, 10);
+        if (!dto.password) {
+            throw new BadRequestException('Password is required');
+        }
+
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
 
         const user = this.usersRepository.create({
             email: dto.email,
@@ -63,7 +67,10 @@ export class UsersService {
         if (existing) {
             throw new BadRequestException('Email already exists');
         }
-        const hashedPassword: string = await bcrypt.hash(dto.password, 10);
+        if (!dto.password) {
+            throw new BadRequestException('Password is required');
+        }
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
         const user = this.usersRepository.create({
             email: dto.email,
             name: dto.name,

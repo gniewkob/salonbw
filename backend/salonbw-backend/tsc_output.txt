@@ -1,0 +1,39 @@
+src/appointments/appointments.controller.ts(31,38): error TS2307: Cannot find module './dto/create-appointment.dto' or its corresponding type declarations.
+src/appointments/appointments.controller.ts(32,36): error TS2307: Cannot find module './dto/get-appointments.dto' or its corresponding type declarations.
+src/appointments/appointments.controller.ts(33,38): error TS2307: Cannot find module './dto/update-appointment.dto' or its corresponding type declarations.
+src/auth/auth.controller.ts(19,29): error TS2307: Cannot find module './dto/register.dto' or its corresponding type declarations.
+src/auth/auth.controller.ts(20,33): error TS2307: Cannot find module './dto/refresh-token.dto' or its corresponding type declarations.
+src/auth/auth.controller.ts(21,33): error TS2307: Cannot find module './guards/refresh-jwt.guard' or its corresponding type declarations.
+src/chat/chat.gateway.ts(14,29): error TS2307: Cannot find module './dto/join-room.dto' or its corresponding type declarations.
+src/chat/chat.gateway.ts(15,28): error TS2307: Cannot find module './dto/message.dto' or its corresponding type declarations.
+src/commissions/commissions.controller.ts(22,31): error TS2307: Cannot find module './dto/get-summary.dto' or its corresponding type declarations.
+src/dashboard/dashboard.controller.ts(13,37): error TS2307: Cannot find module './dto/dashboard-summary.dto' or its corresponding type declarations.
+src/dashboard/dashboard.service.ts(10,37): error TS2307: Cannot find module './dto/dashboard-summary.dto' or its corresponding type declarations.
+src/emails/emails.controller.ts(3,30): error TS2307: Cannot find module './dto/send-email.dto' or its corresponding type declarations.
+src/emails/emails.service.ts(5,30): error TS2307: Cannot find module './dto/send-email.dto' or its corresponding type declarations.
+src/formulas/appointment-formulas.controller.ts(22,34): error TS2307: Cannot find module './dto/create-formula.dto' or its corresponding type declarations.
+src/logs/logs.controller.ts(27,28): error TS2307: Cannot find module './dto/get-logs.dto' or its corresponding type declarations.
+src/logs/logs.controller.ts(28,30): error TS2307: Cannot find module './dto/client-log.dto' or its corresponding type declarations.
+src/products/products.controller.ts(24,34): error TS2307: Cannot find module './dto/create-product.dto' or its corresponding type declarations.
+src/products/products.controller.ts(25,34): error TS2307: Cannot find module './dto/update-product.dto' or its corresponding type declarations.
+src/products/products.service.ts(5,34): error TS2307: Cannot find module './dto/create-product.dto' or its corresponding type declarations.
+src/products/products.service.ts(6,34): error TS2307: Cannot find module './dto/update-product.dto' or its corresponding type declarations.
+src/products/products.service.ts(29,34): error TS2339: Property 'id' does not exist on type 'Product[]'.
+src/products/products.service.ts(30,29): error TS2339: Property 'name' does not exist on type 'Product[]'.
+src/products/products.service.ts(35,42): error TS2339: Property 'id' does not exist on type 'Product[]'.
+src/products/products.service.ts(36,9): error TS2739: Type 'Product[]' is missing the following properties from type 'Product': id, name, brand, unitPrice, stock
+src/retail/inventory.controller.ts(11,36): error TS2307: Cannot find module './dto/adjust-inventory.dto' or its corresponding type declarations.
+src/retail/retail.service.ts(12,31): error TS2307: Cannot find module './dto/create-sale.dto' or its corresponding type declarations.
+src/retail/retail.service.ts(13,36): error TS2307: Cannot find module './dto/adjust-inventory.dto' or its corresponding type declarations.
+src/retail/sales.controller.ts(12,31): error TS2307: Cannot find module './dto/create-sale.dto' or its corresponding type declarations.
+src/services/services.controller.ts(24,34): error TS2307: Cannot find module './dto/create-service.dto' or its corresponding type declarations.
+src/services/services.controller.ts(25,34): error TS2307: Cannot find module './dto/update-service.dto' or its corresponding type declarations.
+src/services/services.service.ts(5,34): error TS2307: Cannot find module './dto/create-service.dto' or its corresponding type declarations.
+src/services/services.service.ts(6,34): error TS2307: Cannot find module './dto/update-service.dto' or its corresponding type declarations.
+src/services/services.service.ts(29,34): error TS2339: Property 'id' does not exist on type 'Service[]'.
+src/services/services.service.ts(30,29): error TS2339: Property 'name' does not exist on type 'Service[]'.
+src/services/services.service.ts(35,42): error TS2339: Property 'id' does not exist on type 'Service[]'.
+src/services/services.service.ts(36,9): error TS2739: Type 'Service[]' is missing the following properties from type 'Service': id, name, description, duration, price
+src/users/users.controller.ts(13,31): error TS2307: Cannot find module './dto/create-user.dto' or its corresponding type declarations.
+src/users/users.controller.ts(14,25): error TS2307: Cannot find module './dto/user.dto' or its corresponding type declarations.
+src/users/users.service.ts(7,31): error TS2307: Cannot find module './dto/create-user.dto' or its corresponding type declarations.
