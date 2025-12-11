@@ -34,9 +34,9 @@ jobs:
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'staging' }}
-    concurrency:
-      group: deploy-${{ github.event.inputs.target }}-${{ github.event.inputs.environment || 'staging' }}
-      cancel-in-progress: false
+    env:
+      DEPLOY_ENV: ${{ github.event.inputs.environment || 'staging' }}
+      # Pass through for steps to use comfortably
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
