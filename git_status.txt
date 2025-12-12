@@ -1,0 +1,67 @@
+interactive rebase in progress; onto 6ce161ca
+Last commands done (8 commands done):
+   pick 2f599a49 # fix(ci): remove duplicate keys in deploy.yml
+   pick 1a931370 # chore: add verification script and update tasks
+  (see more in file .git/rebase-merge/done)
+Next commands to do (7 remaining commands):
+   pick b3376856 # fix(ci): ensure DEPLOY_ENV defaults to staging on push
+   pick 9d08ccd9 # fix(ci): use DEPLOY_ENV env var instead of input to support push triggers
+  (use "git rebase --edit-todo" to view and edit)
+You are currently rebasing branch 'master' on '6ce161ca'.
+  (fix conflicts and then run "git rebase --continue")
+  (use "git rebase --skip" to skip this patch)
+  (use "git rebase --abort" to check out the original branch)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   backend/salonbw-backend/eslint.config.mjs
+	new file:   backend/salonbw-backend/restore_dtos.py
+	new file:   backend/salonbw-backend/src/appointments/dto/create-appointment.dto.ts
+	new file:   backend/salonbw-backend/src/appointments/dto/get-appointments.dto.ts
+	new file:   backend/salonbw-backend/src/appointments/dto/update-appointment.dto.ts
+	modified:   backend/salonbw-backend/src/auth/auth.module.ts
+	new file:   backend/salonbw-backend/src/auth/dto/refresh-token.dto.ts
+	new file:   backend/salonbw-backend/src/auth/dto/register.dto.ts
+	new file:   backend/salonbw-backend/src/auth/guards/refresh-jwt.guard.ts
+	new file:   backend/salonbw-backend/src/auth/strategies/refresh-jwt.strategy.ts
+	new file:   backend/salonbw-backend/src/chat/dto/join-room.dto.ts
+	new file:   backend/salonbw-backend/src/chat/dto/message.dto.ts
+	new file:   backend/salonbw-backend/src/commissions/dto/get-summary.dto.ts
+	new file:   backend/salonbw-backend/src/dashboard/dto/dashboard-summary.dto.ts
+	new file:   backend/salonbw-backend/src/emails/dto/send-email.dto.ts
+	new file:   backend/salonbw-backend/src/formulas/dto/create-formula.dto.ts
+	new file:   backend/salonbw-backend/src/logs/dto/client-log.dto.ts
+	new file:   backend/salonbw-backend/src/logs/dto/get-logs.dto.ts
+	modified:   backend/salonbw-backend/src/main.ts
+	modified:   backend/salonbw-backend/src/observability/sentry.setup.ts
+	new file:   backend/salonbw-backend/src/products/dto/create-product.dto.ts
+	new file:   backend/salonbw-backend/src/products/dto/update-product.dto.ts
+	new file:   backend/salonbw-backend/src/retail/dto/adjust-inventory.dto.ts
+	new file:   backend/salonbw-backend/src/retail/dto/create-sale.dto.ts
+	new file:   backend/salonbw-backend/src/services/dto/create-service.dto.ts
+	new file:   backend/salonbw-backend/src/services/dto/update-service.dto.ts
+	new file:   backend/salonbw-backend/src/users/dto/create-user.dto.ts
+	new file:   backend/salonbw-backend/src/users/dto/user.dto.ts
+	modified:   backend/salonbw-backend/src/users/users.service.ts
+	new file:   backend/salonbw-backend/test-db.js
+	modified:   backend/salonbw-backend/test/appointments.e2e-spec.ts
+	modified:   backend/salonbw-backend/test/services.e2e-spec.ts
+	new file:   backend/salonbw-backend/tsc_output.txt
+	new file:   docker-compose.yml
+	new file:   frontend/cypress/screenshots/register.cy.ts/Registration Flow -- should register a new user and redirect to dashboard (Auto-Login) (failed) (attempt 2).png
+	new file:   frontend/cypress/screenshots/register.cy.ts/Registration Flow -- should register a new user and redirect to dashboard (Auto-Login) (failed).png
+	modified:   frontend/src/contexts/AuthContext.tsx
+	modified:   packages/api/src/api.ts
+	new file:   runs.txt
+	new file:   scripts/verify-staging.sh
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+	both modified:   backend/salonbw-backend/package.json
+	both modified:   pnpm-lock.yaml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+
