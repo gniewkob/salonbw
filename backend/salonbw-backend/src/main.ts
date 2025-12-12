@@ -35,7 +35,7 @@ async function bootstrap() {
         new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     );
     app.use(cookieParser());
-    app.setGlobalPrefix('api');
+    // app.setGlobalPrefix('api'); // Removed to align with api.salon-bw.pl (no /api suffix)
 
     app.use((req: Request, res: Response, next: NextFunction) => {
         const requestWithId = req as Request & { id?: string };
