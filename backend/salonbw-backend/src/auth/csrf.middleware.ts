@@ -11,7 +11,12 @@ import { createHash, timingSafeEqual } from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { RefreshToken } from './refresh-token.entity';
 
-const EXCLUDED_PATHS = new Set(['/auth/login', '/auth/register']);
+const EXCLUDED_PATHS = new Set([
+    '/auth/login',
+    '/auth/register',
+    '/api/auth/login',
+    '/api/auth/register',
+]);
 
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {
