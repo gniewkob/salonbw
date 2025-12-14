@@ -6,7 +6,7 @@ on:
       ref:
         description: Git ref (branch, tag, or SHA)
         required: true
-        default: main
+        default: master
       target:
         description: What to deploy (public|dashboard|admin|api)
         required: true
