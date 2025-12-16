@@ -324,78 +324,84 @@ jobs:
           fi
           SSH
 
-      - name: Ensure remote .env (api)
+      - name: Generate and Upload .env (api)
         if: ${{ github.event.inputs.target == 'api' }}
+        shell: bash
+        env:
+          # Pass all secrets to the local environment first
+          DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          DB_USER: ${{ secrets.MYDEVIL_DB_USER }}
+          DB_PASS: ${{ secrets.MYDEVIL_DB_PASSWORD }}
+          DB_HOST: ${{ secrets.MYDEVIL_PG_HOST }}
+          DB_PORT: ${{ secrets.MYDEVIL_PG_PORT }}
+          DB_NAME: ${{ secrets.MYDEVIL_DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          DB_URL_SECRET: ${{ secrets.DATABASE_URL }}
+          WHATSAPP_LANG: ${{ secrets.WHATSAPP_LANG }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          # Legacy/Duplicate vars support
+          NODE_ENV_VAL: ${{ secrets.NODE_ENV }}
+          PGHOST_VAL: ${{ secrets.PGHOST }}
+          PGPORT_VAL: ${{ secrets.PGPORT }}
+          PGUSER_VAL: ${{ secrets.PGUSER }}
+          PGPASSWORD_VAL: ${{ secrets.PGPASSWORD }}
+          PGDATABASE_VAL: ${{ secrets.PGDATABASE }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
-            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' \
-            ENV='${{ env.DEPLOY_ENV }}' \
-            DB_USER='${{ secrets.MYDEVIL_DB_USER }}' \
-            DB_PASS='${{ secrets.MYDEVIL_DB_PASSWORD }}' \
-            DB_HOST='${{ secrets.MYDEVIL_PG_HOST }}' \
-            DB_PORT='${{ secrets.MYDEVIL_PG_PORT }}' \
-            DB_NAME='${{ secrets.MYDEVIL_DB_NAME }}' \
-            JWT_SECRET='${{ secrets.JWT_SECRET }}' \
-            JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
-            DB_URL='${{ secrets.DATABASE_URL }}' \
-            WHATSAPP_LANG='${{ secrets.WHATSAPP_LANG }}' \
-            SMTP_HOST='${{ secrets.SMTP_HOST }}' \
-            SMTP_PORT='${{ secrets.SMTP_PORT }}' \
-            SMTP_SECURE='${{ secrets.SMTP_SECURE }}' \
-            SMTP_USER='${{ secrets.SMTP_USER }}' \
-            SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
-            SMTP_FROM='${{ secrets.SMTP_FROM }}' \
-            NODE_ENV_VAL='${{ secrets.NODE_ENV }}' \
-            PGHOST_VAL='${{ secrets.PGHOST }}' \
-            PGPORT_VAL='${{ secrets.PGPORT }}' \
-            PGUSER_VAL='${{ secrets.PGUSER }}' \
-            PGPASSWORD_VAL='${{ secrets.PGPASSWORD }}' \
-            PGDATABASE_VAL='${{ secrets.PGDATABASE }}' \
-            bash -s" <<'REMOTE_CMDS'
-          set -euo pipefail
-          cd "$REMOTE_PATH"
-          [ -f .env ] || : > .env
-          add_or_set() { key="$1"; val="${2:-}"; if [ -n "$val" ]; then \
-            esc=$(printf '%s' "$val" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'); \
-            if grep -q "^$key=" .env 2>/dev/null; then sed -i.bak "s|^$key=.*|$key=\"$esc\"|" .env; \
-            else printf "%s=\"%s\"\n" "$key" "$esc" >> .env; fi; fi; }
-          _PG_HOST="${DB_HOST:-}"; if [ -z "$_PG_HOST" ]; then _PG_HOST="pgsql0"; fi
-          if command -v node22 >/dev/null 2>&1; then ENCCMD=node22; else ENCCMD=node; fi
-          ENC_USER="$($ENCCMD -e 'process.stdout.write(encodeURIComponent(process.env.DB_USER||""))')"
-          ENC_PASS="$($ENCCMD -e 'process.stdout.write(encodeURIComponent(process.env.DB_PASS||""))')"
-          ENC_NAME="$($ENCCMD -e 'process.stdout.write(encodeURIComponent(process.env.DB_NAME||""))')"
-          URL="postgresql://${ENC_USER}:${ENC_PASS}@${_PG_HOST}:${DB_PORT:-5432}/${ENC_NAME}"
-          if [ "${ENV:-staging}" = "staging" ]; then
-            if [ -n "${DB_USER:-}" ]; then add_or_set DATABASE_URL "$URL"; fi
-          else
-            if ! grep -q '^DATABASE_URL=' .env 2>/dev/null && [ -n "${DB_USER:-}" ]; then add_or_set DATABASE_URL "$URL"; fi
-          fi
-          # Override with explicit DATABASE_URL if provided
-          add_or_set DATABASE_URL "${DB_URL:-}"
-          add_or_set NODE_ENV production
-          add_or_set JWT_SECRET "${JWT_SECRET:-}"
-          add_or_set JWT_REFRESH_SECRET "${JWT_REFRESH_SECRET:-}"
-          add_or_set WHATSAPP_LANG "${WHATSAPP_LANG:-}"
-          add_or_set SMTP_HOST "${SMTP_HOST:-}"
-          add_or_set SMTP_PORT "${SMTP_PORT:-}"
-          add_or_set SMTP_SECURE "${SMTP_SECURE:-}"
-          add_or_set SMTP_USER "${SMTP_USER:-}"
-          add_or_set SMTP_PASSWORD "${SMTP_PASSWORD:-}"
-          add_or_set SMTP_FROM "${SMTP_FROM:-}"
-          add_or_set NODE_ENV "${NODE_ENV_VAL:-production}"
-          add_or_set PGHOST "${PGHOST_VAL:-}"
-          add_or_set PGPORT "${PGPORT_VAL:-}"
-          add_or_set PGUSER "${PGUSER_VAL:-}"
-          add_or_set PGPASSWORD "${PGPASSWORD_VAL:-}"
-          add_or_set PGDATABASE "${PGDATABASE_VAL:-}"
-          add_or_set PGHOST "${_PG_HOST}"
-          add_or_set PGPORT "${DB_PORT:-5432}"
-          add_or_set PGUSER "${DB_USER:-}"
-          add_or_set PGPASSWORD "${DB_PASS:-}"
-          add_or_set PGDATABASE "${DB_NAME:-}"
-          rm -f .env.bak || true
-          REMOTE_CMDS
+          # Generate .env file LOCALLY to avoid shell escaping issues over SSH
+          node -e '
+            const fs = require("fs");
+            const env = process.env;
+            
+            // Helper to escape values for .env (simple quoting)
+            const esc = (val) => {
+               if (val === undefined || val === null) return "";
+               return String(val).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
+            };
+
+            // Calculate DATABASE_URL if missing
+            let dbUrl = env.DB_URL_SECRET;
+            if (!dbUrl && env.DB_USER) {
+              const user = encodeURIComponent(env.DB_USER);
+              const pass = encodeURIComponent(env.DB_PASS || "");
+              const host = env.DB_HOST || "pgsql0";
+              const port = env.DB_PORT || "5432";
+              const name = encodeURIComponent(env.DB_NAME || "");
+              dbUrl = `postgresql://${user}:${pass}@${host}:${port}/${name}`;
+            }
+
+            const content = [
+              `NODE_ENV=${env.NODE_ENV_VAL || "production"}`,
+              `DATABASE_URL="${esc(dbUrl)}"`,
+              `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
+              `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,
+              `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
+              `SMTP_HOST="${esc(env.SMTP_HOST)}"`,
+              `SMTP_PORT="${esc(env.SMTP_PORT)}"`,
+              `SMTP_SECURE="${esc(env.SMTP_SECURE)}"`,
+              `SMTP_USER="${esc(env.SMTP_USER)}"`,
+              `SMTP_PASSWORD="${esc(env.SMTP_PASSWORD)}"`,
+              `SMTP_FROM="${esc(env.SMTP_FROM)}"`,
+              
+              // Explicit PG* vars for psql/scripts
+              `PGHOST="${esc(env.PGHOST_VAL || env.DB_HOST || "pgsql0")}"`,
+              `PGPORT="${esc(env.PGPORT_VAL || env.DB_PORT || "5432")}"`,
+              `PGUSER="${esc(env.PGUSER_VAL || env.DB_USER)}"`,
+              `PGPASSWORD="${esc(env.PGPASSWORD_VAL || env.DB_PASS)}"`,
+              `PGDATABASE="${esc(env.PGDATABASE_VAL || env.DB_NAME)}"`
+            ].join("\n");
+
+            fs.writeFileSync(".env.production", content);
+          '
+
+          # Upload the generated .env file safely via rsync
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" .env.production \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.env
 
       - name: Validate DB connectivity (api)
         if: ${{ github.event.inputs.target == 'api' }}
