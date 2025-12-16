@@ -272,14 +272,17 @@ jobs:
           set -euo pipefail
           cd "${REMOTE_PATH}/.next/standalone"
           rm -rf node_modules
-          # Remove workspace:* deps that npm can't resolve
+          # Remove workspace:* deps that npm can't resolve, and also link:/file: protocols
           node - <<'NODE'
           const fs=require('fs');
           const f='package.json';
           const pkg=JSON.parse(fs.readFileSync(f,'utf8'));
           for (const k of ['dependencies','devDependencies','optionalDependencies','peerDependencies']){
             const o=pkg[k]; if(!o) continue;
-            for (const d of Object.keys(o)) { if (String(o[d]).startsWith('workspace:')) delete o[d]; }
+            for (const d of Object.keys(o)) {
+              const v = String(o[d]);
+              if (v.startsWith('workspace:') || v.startsWith('link:') || v.startsWith('file:')) delete o[d];
+            }
           }
           fs.writeFileSync(f, JSON.stringify(pkg,null,2));
           NODE
