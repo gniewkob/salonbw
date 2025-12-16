@@ -34,6 +34,13 @@ export class CsrfMiddleware implements NestMiddleware {
         }
 
         const path = `${req.baseUrl ?? ''}${req.path ?? ''}` || req.originalUrl;
+
+        // DEBUG: Trace path
+        if (res && res.setHeader) {
+            res.setHeader('X-Debug-Path', path || 'empty');
+            res.setHeader('X-Debug-Original', req.originalUrl || 'empty');
+        }
+
         if (path && EXCLUDED_PATHS.has(path)) {
             return next();
         }
