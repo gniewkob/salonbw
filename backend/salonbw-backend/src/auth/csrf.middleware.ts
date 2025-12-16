@@ -34,6 +34,9 @@ export class CsrfMiddleware implements NestMiddleware {
         }
 
         const path = `${req.baseUrl ?? ''}${req.path ?? ''}` || req.originalUrl;
+        console.log(
+            `[CSRF] Checking path: '${path}', Method: ${req.method}, Original: '${req.originalUrl}'`,
+        );
 
         // DEBUG: Trace path
         if (res && res.setHeader) {
@@ -41,7 +44,12 @@ export class CsrfMiddleware implements NestMiddleware {
             res.setHeader('X-Debug-Original', req.originalUrl || 'empty');
         }
 
-        if (path && EXCLUDED_PATHS.has(path)) {
+        const isExcluded = Array.from(EXCLUDED_PATHS).some((excluded) =>
+            path.includes(excluded),
+        );
+
+        if (path && isExcluded) {
+            console.log(`[CSRF] Excluding path: ${path}`);
             return next();
         }
 
