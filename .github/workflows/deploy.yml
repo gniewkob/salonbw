@@ -320,6 +320,11 @@ jobs:
           if command -v npm22 >/dev/null 2>&1; then
             npm22 install --omit=dev --ignore-scripts
           else
+            # Try to set node version via devil command (best effort)
+            if command -v devil >/dev/null 2>&1; then
+               echo "Attempting to set Node.js version to 22..."
+               devil www options api.salon-bw.pl nodejs_version 22 || echo "Failed to set node version, continuing..."
+            fi
             npm install --omit=dev --ignore-scripts
           fi
           SSH
