@@ -1,0 +1,5 @@
+ WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+ WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+ WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+ WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
+10.14.0

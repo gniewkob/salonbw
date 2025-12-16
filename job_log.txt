@@ -1,0 +1,51 @@
+
+X master Deploy (MyDevil) · 20213691352
+Triggered via workflow_dispatch about 1 minute ago
+
+X Deploy api in 11s (ID 58023341207)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Setup Node
+  ✓ Setup pnpm
+  X Install dependencies
+  - Resolve API URL
+  - Resolve Proxy URL
+  - Resolve de***oy destination
+  - Validate resolved destination
+  - Build frontend
+  - Read BUILD_ID (frontend)
+  - Build backend
+  - Configure SSH
+  - Ensure remote directories exist (frontend)
+  - U***oad frontend bundle
+  - Prepare standalone runtime (install prod deps)
+  - U***oad backend bundle
+  - Install dependencies (backend)
+  - Ensure remote .env (api)
+  - Validate DB connectivity (api)
+  - Remote psql probe (api)
+  - Run DB migrations (api)
+  - Restart app (frontend)
+  - Restart app (backend)
+  - Smoke test (backend)
+  ✓ Diagnostic: fetch health endpoints (on failure)
+  X Collect remote logs on failure
+  - Sanitize app host (frontend)
+  - Smoke test (frontend)
+  - Discover static chunk (frontend)
+  - Fetch static chunk (frontend)
+  ✓ Post Setup pnpm
+  - Post Setup Node
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+X Process com***eted with exit code 255.
+Deploy api: .github#29
+
+X Process com***eted with exit code 1.
+Deploy api: .github#13
+
+
+To see the logs for the failed steps, try: gh run view --log-failed --job=58023341207
+View this run on GitHub: https://github.com/gniewkob/salonbw/actions/runs/20213691352
