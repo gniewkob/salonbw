@@ -1,0 +1,32 @@
+name: Remote Exec (Utility)
+
+on:
+  workflow_dispatch:
+    inputs:
+      cmd:
+        description: 'Command to run on remote'
+        required: true
+        default: 'ls -la'
+
+jobs:
+  exec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run Command
+        run: |
+          ssh -i ~/.ssh/mydevil ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "${{ github.event.inputs.cmd }}"
