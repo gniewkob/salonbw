@@ -393,7 +393,7 @@ jobs:
 
             const content = [
               `NODE_ENV=${env.NODE_ENV_VAL || "production"}`,
-              `DATABASE_URL="${esc(dbUrl)}"` /*, -- Commented out to force explicit vars usage (debugging auth) */,
+              // `DATABASE_URL="${esc(dbUrl)}"` /*, -- Commented out to force explicit vars usage (debugging auth) */,
               `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
               `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,
               `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
