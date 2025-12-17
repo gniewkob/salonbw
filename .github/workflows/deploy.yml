@@ -1,6 +1,9 @@
 name: Deploy (MyDevil)
 
 on:
+  push:
+    branches:
+      - fix-deployment
   workflow_dispatch:
     inputs:
       ref:
@@ -8,6 +11,7 @@ on:
         required: true
         default: master
       target:
+
         description: What to deploy (public|dashboard|admin|api)
         required: true
         default: public
@@ -506,8 +510,8 @@ jobs:
                   print(f"ERROR: {exc}")
           PY
 
-      - name: "Collect remote logs on failure"
-        if: ${{ failure() && github.event.inputs.target == 'api' }}
+      - name: Collect remote logs (always)
+        if: always()
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
@@ -525,7 +529,6 @@ jobs:
               echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
             done
           fi
-          echo "=== .env keys ==="; [ -f "$REMOTE_PATH/.env" ] && (grep -E '^[A-Z0-9_]+=' "$REMOTE_PATH/.env" | sed 's/=.*$/=[hidden]/') || echo "(no .env)"
           REMOTE_CMDS
 
       - name: Sanitize app host (frontend)
