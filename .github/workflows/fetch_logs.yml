@@ -1,0 +1,24 @@
+name: Fetch Staging Logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      lines:
+        description: 'Number of lines to fetch'
+        required: false
+        default: '500'
+
+jobs:
+  fetch-logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MYDEVIL_SSH_KEY }}" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          ssh-keyscan -H ${{ secrets.MYDEVIL_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Fetch Logs
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "tail -n ${{ github.event.inputs.lines }} /home/${{ secrets.MYDEVIL_SSH_USER }}/apps/nodejs/p11522_salonbw/app.log"
