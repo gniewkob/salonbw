@@ -1,10 +1,30 @@
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-const require = createRequire(import.meta.url);
-const path = require('node:path');
-const fs = require('node:fs');
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const path = require('path');
+const fs = require('fs');
+
+// Load environment from .env files if present (server-side only)
+function loadDotEnvFiles() {
+    const files = ['.env.production', '.env.local', '.env'];
+    for (const file of files) {
+        const filePath = path.join(__dirname, file);
+        try {
+            if (!fs.existsSync(filePath)) continue;
+            const content = fs.readFileSync(filePath, 'utf8');
+            for (const line of content.split('\n')) {
+                if (!line || line.trim().startsWith('#')) continue;
+                const idx = line.indexOf('=');
+                if (idx === -1) continue;
+                const key = line.slice(0, idx).trim();
+                const valueRaw = line.slice(idx + 1).trim();
+                const value = valueRaw.replace(/^["']|["']$/g, '');
+                if (!(key in process.env)) {
+                    process.env[key] = value;
+                }
+            }
+        } catch {}
+    }
+}
+
+loadDotEnvFiles();
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 process.env.PORT =
@@ -23,108 +43,6 @@ const publicSource = path.join(__dirname, 'public');
 const publicTarget = path.join(standaloneDir, 'public');
 const isStandaloneRuntime = fs.existsSync(server);
 const standaloneNodeModules = path.join(standaloneDir, 'node_modules');
-
-// Ensure the standalone server can resolve hashed assets even if the deployment
-// environment does not pre-create the expected symlink.
-function ensureStaticAssets() {
-    if (!isStandaloneRuntime) return;
-    if (!fs.existsSync(staticSource)) {
-        console.warn(
-            `Next.js static assets directory not found at ${staticSource}.`,
-        );
-        return;
-    }
-
-    fs.mkdirSync(standaloneNextDir, { recursive: true });
-
-    let needsLink = true;
-    if (fs.existsSync(staticTarget)) {
-        try {
-            const targetStat = fs.lstatSync(staticTarget);
-            if (targetStat.isSymbolicLink()) {
-                try {
-                    const resolved = fs.realpathSync(staticTarget);
-                    if (resolved === staticSource) {
-                        needsLink = false;
-                    } else {
-                        fs.rmSync(staticTarget, {
-                            recursive: true,
-                            force: true,
-                        });
-                    }
-                } catch {
-                    fs.rmSync(staticTarget, { recursive: true, force: true });
-                }
-            } else if (targetStat.isDirectory()) {
-                needsLink = false;
-            } else {
-                fs.rmSync(staticTarget, { recursive: true, force: true });
-            }
-        } catch {
-            fs.rmSync(staticTarget, { recursive: true, force: true });
-        }
-    }
-
-    if (needsLink) {
-        const relative = path.relative(standaloneNextDir, staticSource) || '.';
-        try {
-            fs.symlinkSync(relative, staticTarget, 'junction');
-            needsLink = false;
-        } catch (error) {
-            console.warn(
-                `Unable to create symlink for Next.js static assets: ${error.message}`,
-            );
-        }
-    }
-
-    if (needsLink) {
-        try {
-            fs.cpSync(staticSource, staticTarget, { recursive: true });
-        } catch (error) {
-            console.error(
-                `Failed to copy Next.js static assets into standalone bundle: ${error.message}`,
-            );
-        }
-    }
-}
-
-function ensurePublicAssets() {
-    if (!isStandaloneRuntime) return;
-    if (!fs.existsSync(publicSource)) return;
-
-    try {
-        if (fs.existsSync(publicTarget)) {
-            const targetStat = fs.lstatSync(publicTarget);
-            if (targetStat.isSymbolicLink()) {
-                try {
-                    const resolved = fs.realpathSync(publicTarget);
-                    if (resolved === publicSource) {
-                        return;
-                    }
-                } catch {
-                    // fall through to recreate link/copy
-                }
-            } else if (targetStat.isDirectory()) {
-                return;
-            }
-            fs.rmSync(publicTarget, { recursive: true, force: true });
-        }
-
-        const relative = path.relative(standaloneDir, publicSource) || '.';
-        try {
-            fs.symlinkSync(relative, publicTarget, 'junction');
-            return;
-        } catch {
-            // fall through to copy
-        }
-
-        fs.cpSync(publicSource, publicTarget, { recursive: true });
-    } catch (error) {
-        console.warn(
-            `Unable to prepare public assets for standalone runtime (${error.message}).`,
-        );
-    }
-}
 
 function configureModuleResolution() {
     if (!isStandaloneRuntime) return;
@@ -225,20 +143,111 @@ function syncNextRuntimeArtifacts() {
     }
 }
 
+function ensureStaticAssets() {
+    if (!isStandaloneRuntime) return;
+    if (!fs.existsSync(staticSource)) {
+        console.warn(
+            `Next.js static assets directory not found at ${staticSource}.`,
+        );
+        return;
+    }
+
+    fs.mkdirSync(standaloneNextDir, { recursive: true });
+
+    let needsLink = true;
+    if (fs.existsSync(staticTarget)) {
+        try {
+            const targetStat = fs.lstatSync(staticTarget);
+            if (targetStat.isSymbolicLink()) {
+                try {
+                    const resolved = fs.realpathSync(staticTarget);
+                    if (resolved === staticSource) {
+                        needsLink = false;
+                    } else {
+                        fs.rmSync(staticTarget, {
+                            recursive: true,
+                            force: true,
+                        });
+                    }
+                } catch {
+                    fs.rmSync(staticTarget, { recursive: true, force: true });
+                }
+            } else if (targetStat.isDirectory()) {
+                needsLink = false;
+            } else {
+                fs.rmSync(staticTarget, { recursive: true, force: true });
+            }
+        } catch {
+            fs.rmSync(staticTarget, { recursive: true, force: true });
+        }
+    }
+
+    if (needsLink) {
+        const relative = path.relative(standaloneNextDir, staticSource) || '.';
+        try {
+            fs.symlinkSync(relative, staticTarget, 'junction');
+            needsLink = false;
+        } catch (error) {
+            console.warn(
+                `Unable to create symlink for Next.js static assets: ${error.message}`,
+            );
+        }
+    }
+
+    if (needsLink) {
+        try {
+            fs.cpSync(staticSource, staticTarget, { recursive: true });
+        } catch (error) {
+            console.error(
+                `Failed to copy Next.js static assets into standalone bundle: ${error.message}`,
+            );
+        }
+    }
+}
+
+function ensurePublicAssets() {
+    if (!isStandaloneRuntime) return;
+    if (!fs.existsSync(publicSource)) return;
+
+    try {
+        if (fs.existsSync(publicTarget)) {
+            const targetStat = fs.lstatSync(publicTarget);
+            if (targetStat.isSymbolicLink()) {
+                try {
+                    const resolved = fs.realpathSync(publicTarget);
+                    if (resolved === publicSource) {
+                        return;
+                    }
+                } catch {}
+            } else if (targetStat.isDirectory()) {
+                return;
+            }
+            fs.rmSync(publicTarget, { recursive: true, force: true });
+        }
+
+        const relative = path.relative(standaloneDir, publicSource) || '.';
+        try {
+            fs.symlinkSync(relative, publicTarget, 'junction');
+            return;
+        } catch {}
+
+        fs.cpSync(publicSource, publicTarget, { recursive: true });
+    } catch (error) {
+        console.warn(
+            `Unable to prepare public assets for standalone runtime (${error.message}).`,
+        );
+    }
+}
+
 configureModuleResolution();
 ensureStaticAssets();
 ensurePublicAssets();
+ensureStandaloneDependency('next');
 ensureStandaloneDependency('@next/env');
 ensureStandaloneDependency('@swc/helpers');
 ensureStandaloneDependency('styled-jsx');
 ensureStandaloneDependency('picocolors');
 syncNextRuntimeArtifacts();
-
-if (!isStandaloneRuntime) {
-    throw new Error(
-        'Missing Next.js standalone server. Run `next build` before starting.',
-    );
-}
 
 if (typeof globalThis.crypto === 'undefined') {
     try {
@@ -246,6 +255,12 @@ if (typeof globalThis.crypto === 'undefined') {
     } catch (error) {
         console.warn('Unable to initialise webcrypto', error);
     }
+}
+
+if (!isStandaloneRuntime) {
+    throw new Error(
+        'Missing Next.js standalone server. Run `next build` before starting.',
+    );
 }
 
 try {
@@ -262,27 +277,3 @@ try {
         console.log(`Fallback error server listening on port ${port}`);
     });
 }
-// Load environment from .env files if present (server-side only)
-function loadDotEnvFiles() {
-    const files = ['.env.production', '.env.local', '.env'];
-    for (const file of files) {
-        const filePath = path.join(__dirname, file);
-        try {
-            if (!fs.existsSync(filePath)) continue;
-            const content = fs.readFileSync(filePath, 'utf8');
-            for (const line of content.split('\n')) {
-                if (!line || line.trim().startsWith('#')) continue;
-                const idx = line.indexOf('=');
-                if (idx === -1) continue;
-                const key = line.slice(0, idx).trim();
-                const valueRaw = line.slice(idx + 1).trim();
-                const value = valueRaw.replace(/^["']|["']$/g, '');
-                if (!(key in process.env)) {
-                    process.env[key] = value;
-                }
-            }
-        } catch {}
-    }
-}
-
-loadDotEnvFiles();
