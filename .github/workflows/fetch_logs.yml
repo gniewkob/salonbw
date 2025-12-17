@@ -21,4 +21,4 @@ jobs:
 
       - name: Fetch Logs
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "tail -n ${{ github.event.inputs.lines }} /home/${{ secrets.MYDEVIL_SSH_USER }}/apps/nodejs/p11522_salonbw/app.log"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "find ~/apps/nodejs -name app.log -print -exec echo '--- {} ---' \; -exec tail -n ${{ github.event.inputs.lines }} {} \;"
