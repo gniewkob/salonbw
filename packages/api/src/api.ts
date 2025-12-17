@@ -109,12 +109,12 @@ export class ApiClient {
             const u = new URL(rawBase);
             this.baseUrl =
                 u.protocol === "http:" || u.protocol === "https:"
-                    ? rawBase
+                    ? rawBase.replace(/\/api\/?$/, "")
                     : "http://localhost:3000";
         } catch {
             // Allow relative paths for proxy usage
             if (rawBase.startsWith("/")) {
-                this.baseUrl = rawBase;
+                this.baseUrl = rawBase.replace(/\/api\/?$/, "");
             } else {
                 this.baseUrl = "http://localhost:3000";
             }
