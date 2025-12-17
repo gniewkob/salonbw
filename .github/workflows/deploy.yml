@@ -218,7 +218,7 @@ jobs:
           fi
 
       - name: Build backend
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           pnpm --filter salonbw-backend build
           # Explicitly compile migrate.ts as it might be missed by nest build
@@ -323,7 +323,7 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
       - name: Install dependencies (backend)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
           set -euo pipefail
@@ -454,7 +454,7 @@ jobs:
           REMOTE_CMDS
 
       - name: Run DB migrations (api)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
@@ -476,7 +476,7 @@ jobs:
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
 
       - name: Restart app (backend)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
 
       - name: Smoke test (backend)
