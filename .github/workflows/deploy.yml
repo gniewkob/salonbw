@@ -385,7 +385,7 @@ jobs:
             if (!dbUrl && env.DB_USER) {
               const user = encodeURIComponent(env.DB_USER);
               const pass = encodeURIComponent(env.DB_PASS || "");
-              const host = env.DB_HOST || "pgsql0";
+              const host = env.DB_HOST || "pgsql0.mydevil.net";
               const port = env.DB_PORT || "5432";
               const name = encodeURIComponent(env.DB_NAME || "");
               dbUrl = `postgresql://${user}:${pass}@${host}:${port}/${name}`;
