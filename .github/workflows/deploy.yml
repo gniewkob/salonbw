@@ -11,7 +11,6 @@ on:
         required: true
         default: master
       target:
-
         description: What to deploy (public|dashboard|admin|api)
         required: true
         default: public
@@ -227,7 +226,6 @@ jobs:
           npx tsc src/migrate.ts --outDir dist --skipLibCheck --esModuleInterop --target ES2022 --moduleResolution node16 || echo "tsc failed but continuing..."
           ls -l dist/migrate.js || echo "migrate.js missing!"
 
-
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
@@ -279,7 +277,7 @@ jobs:
       - name: Prepare standalone runtime (install prod deps)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "${REMOTE_PATH}/.next/standalone"
           rm -rf node_modules
@@ -297,9 +295,19 @@ jobs:
           }
           fs.writeFileSync(f, JSON.stringify(pkg,null,2));
           NODE
+
           if command -v npm22 >/dev/null 2>&1; then
+            # Verify/Set Node version if devil is present
+            if command -v devil >/dev/null 2>&1; then
+               echo "Attempting to set Node.js version to 22 for $APP_NAME..."
+               devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+            fi
             npm22 install --omit=dev --ignore-scripts
           else
+            if command -v devil >/dev/null 2>&1; then
+               echo "Attempting to set Node.js version to 22 for $APP_NAME..."
+               devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+            fi
             npm install --omit=dev --ignore-scripts
           fi
           # Ensure Next can find static assets relative to standalone distDir
