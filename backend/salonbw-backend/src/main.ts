@@ -1,4 +1,13 @@
 import './polyfills';
+import * as crypto from 'crypto';
+
+// Polyfill global crypto for Node < 19
+if (!(global as any).crypto) {
+    (global as any).crypto = crypto;
+} else if (!(global as any).crypto.randomUUID) {
+    (global as any).crypto.randomUUID = crypto.randomUUID;
+}
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,10 +24,15 @@ import { SentryGlobalFilter } from './observability/sentry.filter';
 import { HttpAdapterHost } from '@nestjs/core';
 
 async function bootstrap() {
+    console.log('Starting application initialization...');
     const app = await NestFactory.create(AppModule, {
         bufferLogs: true,
     });
     const logger = await app.resolve(PinoLogger);
+    logger.info(
+        'Application bootstrap started - Global crypto polyfill applied',
+    );
+
     const httpAdapterHost = app.get(HttpAdapterHost);
     const sentryEnabled = await setupSentry(app);
 
