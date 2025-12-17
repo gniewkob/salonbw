@@ -9,8 +9,24 @@ loadEnv();
 
 async function run() {
     const url = process.env.DATABASE_URL;
-    if (!url) {
-        console.error('DATABASE_URL is not set');
+
+    const dbConfig = url
+        ? { url }
+        : {
+              host: process.env.DB_HOST || process.env.PGHOST,
+              port: parseInt(
+                  process.env.DB_PORT || process.env.PGPORT || '5432',
+                  10,
+              ),
+              username: process.env.DB_USER || process.env.PGUSER,
+              password: process.env.DB_PASS || process.env.PGPASSWORD,
+              database: process.env.DB_NAME || process.env.PGDATABASE,
+          };
+
+    if (!url && (!dbConfig.host || !dbConfig.username || !dbConfig.database)) {
+        console.error(
+            'Missing database configuration. Set DATABASE_URL or DB_HOST/DB_USER/DB_NAME/DB_PASS.',
+        );
         process.exit(1);
     }
     // Resolve compiled migration classes explicitly to avoid glob issues
@@ -59,7 +75,7 @@ async function run() {
 
     const dataSource = new DataSource({
         type: 'postgres',
-        url,
+        ...dbConfig,
         migrations: migrationClasses,
         // entities are not required to run migrations
         // Prefer verified TLS when PGSSL=1; do not disable verification
