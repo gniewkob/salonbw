@@ -9,6 +9,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Debug Endpoint
+        run: |
+          echo "Testing /debug-logs endpoint..."
+          curl -v https://api.salon-bw.pl/debug-logs || echo "Curl failed"
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
