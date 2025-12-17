@@ -1,0 +1,58 @@
+name: Verify Remote Code
+on:
+  push:
+    branches:
+      - fix-deployment
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "Host mydevil" >> ~/.ssh/config
+          echo "  HostName ${{ secrets.MYDEVIL_SSH_HOST }}" >> ~/.ssh/config
+          echo "  User ${{ secrets.MYDEVIL_SSH_USER }}" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/mydevil" >> ~/.ssh/config
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Check Remote Files
+        run: |
+          ssh mydevil <<'EOF'
+            set -x
+            # Detect remote path (using staging path from previous logs/knowledge or env)
+            REMOTE_PATH="/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs" 
+
+            echo "=== Checking Directory: $REMOTE_PATH ==="
+            ls -la "$REMOTE_PATH"
+
+            echo "=== Checking Dist Directory ==="
+            ls -la "$REMOTE_PATH/dist"
+
+            echo "=== Checking App Controller (Debug Endpoint) ==="
+            # Search for "debug-logs" string in the compiled file
+            grep -r "debug-logs" "$REMOTE_PATH/dist" || echo "debug-logs NOT FOUND in dist"
+
+            echo "=== Checking CSRF Middleware (Exclusion List) ==="
+            # Search for "api/auth/register" in auth middleware
+            grep -r "api/auth/register" "$REMOTE_PATH/dist" || echo "api/auth/register NOT FOUND in dist"
+            
+            echo "=== Process List (Node) ==="
+            ps auxiliary | grep node | grep api.salon-bw.pl || true
+
+            echo "=== Last 100 lines of app.log ==="
+            tail -n 100 "$REMOTE_PATH/app.log" || true
+          EOF
