@@ -311,7 +311,7 @@ jobs:
           SSH
 
       - name: Upload backend bundle
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           rsync -az --delete \
             --exclude='.git' \
@@ -420,7 +420,7 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.env
 
       - name: Validate DB connectivity (api)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
@@ -432,7 +432,7 @@ jobs:
           REMOTE_CMDS
 
       - name: Remote psql probe (api)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
@@ -480,7 +480,7 @@ jobs:
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
 
       - name: Smoke test (backend)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: python3 scripts/post_deploy_checks.py
         env:
           TARGET_HOST: ${{ steps.dest.outputs.app_name }}
