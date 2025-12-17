@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import * as fs from 'fs';
+import * as path from 'path';
 import { AppService } from './app.service';
 
 @ApiTags('app')
@@ -17,10 +19,6 @@ export class AppController {
     @Get('debug-logs')
     getLogs(): string {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const fs = require('fs');
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const path = require('path');
             const logPath = path.join(process.cwd(), 'app.log');
             if (fs.existsSync(logPath)) {
                 return fs.readFileSync(logPath, 'utf8');
