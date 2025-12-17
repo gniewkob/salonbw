@@ -47,7 +47,10 @@ function ensureStaticAssets() {
                     if (resolved === staticSource) {
                         needsLink = false;
                     } else {
-                        fs.rmSync(staticTarget, { recursive: true, force: true });
+                        fs.rmSync(staticTarget, {
+                            recursive: true,
+                            force: true,
+                        });
                     }
                 } catch {
                     fs.rmSync(staticTarget, { recursive: true, force: true });
@@ -176,7 +179,12 @@ function ensureStandaloneDependency(packageName) {
         fs.mkdirSync(path.dirname(target), { recursive: true });
         if (fs.existsSync(target)) return;
         if (process.env.NODE_DEBUG?.includes('standalone')) {
-            console.log('[standalone] linking dependency', packageName, '->', target);
+            console.log(
+                '[standalone] linking dependency',
+                packageName,
+                '->',
+                target,
+            );
         }
         try {
             fs.symlinkSync(source, target, 'junction');
@@ -240,7 +248,20 @@ if (typeof globalThis.crypto === 'undefined') {
     }
 }
 
-require(server);
+try {
+    require(server);
+} catch (err) {
+    console.error('Failed to start Next.js server:', err);
+    // Fallback server to expose the error
+    const http = require('http');
+    const port = process.env.PORT || 3000;
+    http.createServer((req, res) => {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end(`Application Startup Error:\n\n${err.stack || err.message}`);
+    }).listen(port, () => {
+        console.log(`Fallback error server listening on port ${port}`);
+    });
+}
 // Load environment from .env files if present (server-side only)
 function loadDotEnvFiles() {
     const files = ['.env.production', '.env.local', '.env'];
