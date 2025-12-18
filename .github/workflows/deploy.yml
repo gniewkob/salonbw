@@ -289,16 +289,53 @@ jobs:
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'SSH'
-          set -euo pipefail
           if command -v devil >/dev/null 2>&1; then
-             echo "Setting Node.js version to 22 for $APP_NAME..."
-             devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+             echo "--- Devil Version/Help ---"
+             devil --version || true
+             devil www help || true
              
-             # Probe to verify
-             echo "devil www info $APP_NAME (probe):"
-             devil www options "$APP_NAME" || echo "devil options (list) failed - expected if arguments required"
+             echo "--- Attempting to set Node 22 ---"
+             # Try various syntax combinations observed in docs or common usage
+             echo "Try 1: devil www options $APP_NAME nodejs_version 22"
+             devil www options "$APP_NAME" nodejs_version 22 || echo "Try 1 failed"
+             
+             # Fallback mechanism: Local node symlink
+             echo "--- Setting up ~/bin/node fallback ---"
+             mkdir -p $HOME/bin
+             if command -v node22 >/dev/null; then
+                ln -sf $(command -v node22) $HOME/bin/node
+                ln -sf $(command -v node22) $HOME/bin/node22
+                echo "Linked node22 to ~/bin/node"
+                export PATH=$HOME/bin:$PATH
+             fi
           fi
+          SSH
+
+      - name: "Diagnostic: Expose and Print logs (frontend)"
+        if: ${{ always() && github.event.inputs.target != 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          
+          # Capture current state
+          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
+          echo "Node Version: $(node -v)" >> public/diagnostic_logs.txt
+          ls -la . >> public/diagnostic_logs.txt
+          
+          # Print to STDOUT for CI visibility
+          echo "=== CONTENT OF startup_probe.txt ==="
+          if [ -f public/startup_probe.txt ]; then cat public/startup_probe.txt; else echo "startup_probe.txt missing"; fi
+          
+          echo "=== CONTENT OF diagnostic_logs.txt ==="
+          cat public/diagnostic_logs.txt
+          
+          echo "=== stderr.log (first 50 lines) ==="
+          if [ -f stderr.log ]; then head -n 50 stderr.log; else echo "stderr.log not found"; fi
+          
+          echo "=== stderr.log (last 50 lines) ==="
+          if [ -f stderr.log ]; then tail -n 50 stderr.log; fi
           SSH
 
       - name: "Diagnostic: Expose logs (frontend)"
