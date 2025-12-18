@@ -390,7 +390,7 @@ jobs:
           SSH
 
       - name: Diagnostic: Startup Probe (frontend)
-        if: ${{ inputs.target == 'public' || inputs.target == '' }}
+        if: ${{ github.event.inputs.target != 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'END_PROBE'
           set -euo pipefail
