@@ -289,13 +289,20 @@ jobs:
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name_public }}' REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          set -euo pipefail
+          
+          # Create probe file for diagnostics
+          mkdir -p "$REMOTE_PATH/public"
+          echo "--- Startup Probe $(date) ---" > "$REMOTE_PATH/public/startup_probe.txt"
+          echo "Node Version: $(node -v)" >> "$REMOTE_PATH/public/startup_probe.txt"
+          
           if command -v devil >/dev/null 2>&1; then
              echo "--- Devil Version/Help ---"
              devil --version || true
              devil www help || true
              
              echo "--- Attempting to set Node 22 ---"
-             # Try various syntax combinations observed in docs or common usage
              echo "Try 1: devil www options $APP_NAME nodejs_version 22"
              devil www options "$APP_NAME" nodejs_version 22 || echo "Try 1 failed"
              
