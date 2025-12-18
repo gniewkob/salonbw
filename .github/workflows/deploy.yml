@@ -392,7 +392,7 @@ jobs:
       - name: Diagnostic: Startup Probe (frontend)
         if: ${{ inputs.target == 'public' || inputs.target == '' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -439,7 +439,7 @@ jobs:
           echo "=== Manual App Log ===" >> "$LOG"
           head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
 
-          SSH
+          END_PROBE
 
       - name: Generate and Upload .env (api)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
