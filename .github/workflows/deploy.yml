@@ -167,7 +167,7 @@ jobs:
           # Logic for what we are actually deploying in this run
           # If target is specific (api or public), we might only care about that one,
           # but validating both doesn't hurt, or we can just output them.
-          
+
           # Output everything
           echo "remote_path_public=$REMOTE_PATH_PUBLIC" >> "$GITHUB_OUTPUT"
           echo "app_name_public=$APP_NAME_PUBLIC" >> "$GITHUB_OUTPUT"
@@ -186,7 +186,7 @@ jobs:
           A_PUB='${{ steps.dest.outputs.app_name_public }}'
           P_API='${{ steps.dest.outputs.remote_path_api }}'
           A_API='${{ steps.dest.outputs.app_name_api }}'
-          
+
           # Basic validation
           validate() {
             local path=$1
@@ -301,7 +301,6 @@ jobs:
           fi
           SSH
 
-
       - name: "Diagnostic: Expose logs (frontend)"
         if: ${{ always() && github.event.inputs.target != 'api' }}
         run: |
@@ -344,7 +343,7 @@ jobs:
           fi
           SSH
 
-      - name: Diagnostic: Startup Probe (frontend)
+      - name: "Diagnostic: Startup Probe (frontend)"
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
