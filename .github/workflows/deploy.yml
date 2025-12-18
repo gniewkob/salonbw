@@ -291,6 +291,22 @@ jobs:
           fi
           SSH
 
+      - name: "Diagnostic: Expose logs (frontend)"
+        if: ${{ always() && github.event.inputs.target != 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
+          echo "Directory structure:" >> public/diagnostic_logs.txt
+          ls -la . >> public/diagnostic_logs.txt
+          echo "--- stderr.log (last 100 lines) ---" >> public/diagnostic_logs.txt
+          if [ -f stderr.log ]; then tail -n 100 stderr.log >> public/diagnostic_logs.txt; else echo "stderr.log not found" >> public/diagnostic_logs.txt; fi
+          echo "--- System error logs ---" >> public/diagnostic_logs.txt
+          find $HOME/logs -name "*error.log" -mmin -10 -exec tail -n 20 {} + >> public/diagnostic_logs.txt 2>/dev/null || true
+          SSH
+
       - name: Upload backend bundle
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
