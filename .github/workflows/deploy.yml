@@ -293,11 +293,11 @@ jobs:
           set -euo pipefail
           if command -v devil >/dev/null 2>&1; then
              echo "Setting Node.js version to 22 for $APP_NAME..."
-             # devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
-             # Temporarily commenting out the above to avoid workflow failure.
-             # Instead, let's probe devil's capabilities.
-             echo "devil www options $APP_NAME (probe):"
-             devil www options "$APP_NAME" || echo "devil options command failed or returned non-zero"
+             devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+             
+             # Probe to verify
+             echo "devil www info $APP_NAME (probe):"
+             devil www options "$APP_NAME" || echo "devil options (list) failed - expected if arguments required"
           fi
           SSH
 
