@@ -13,7 +13,7 @@ function reportStartupError(err) {
                 'Access-Control-Allow-Origin': '*',
             });
             res.end(
-                `Application Failed to Start (Global Catch)\n\nError: ${err.message}\nStack: ${err.stack}\n\nEnvironment:\n${JSON.stringify(process.env, null, 2)}`,
+                `Application Failed to Start\n\nError: ${err.message}\nStack: ${err.stack}\n\nEnvironment:\n${JSON.stringify(process.env, null, 2)}`,
             );
         });
         server.listen(port, () => {
@@ -25,13 +25,14 @@ function reportStartupError(err) {
 }
 
 try {
-    // Load environment from .env files if present (server-side only)
+    // Load environment from .env files
     function loadDotEnvFiles() {
         const files = ['.env.production', '.env.local', '.env'];
         for (const file of files) {
             const filePath = path.join(__dirname, file);
             try {
                 if (!fs.existsSync(filePath)) continue;
+                console.log(`Loading env from ${file}`);
                 const content = fs.readFileSync(filePath, 'utf8');
                 for (const line of content.split('\n')) {
                     if (!line || line.trim().startsWith('#')) continue;
@@ -50,104 +51,34 @@ try {
 
     loadDotEnvFiles();
 
+    // Ensure basic env vars
     process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-    process.env.PORT =
-        process.env.PORT ||
-        process.env.PASSENGER_PORT ||
-        process.env.APP_PORT ||
-        '3000';
+    process.env.PORT = process.env.PORT || process.env.PASSENGER_PORT || '3000';
 
-    const standaloneDir = path.join(__dirname, '.next', 'standalone');
-    const serverFile = path.join(standaloneDir, 'server.js');
-
-    const standaloneNodeModules = path.join(standaloneDir, 'node_modules');
-
-    function configureModuleResolution() {
-        const Module = require('module');
-        const extraNodePaths = [
-            path.join(standaloneDir, 'node_modules'),
-            path.join(__dirname, 'node_modules'),
-        ];
-        const existingNodePath = process.env.NODE_PATH
-            ? process.env.NODE_PATH.split(path.delimiter)
-            : [];
-        const nodePathSet = new Set(
-            [...extraNodePaths, ...existingNodePath].filter(Boolean),
-        );
-        process.env.NODE_PATH = Array.from(nodePathSet).join(path.delimiter);
-        Module._initPaths();
-        for (const p of extraNodePaths) {
-            if (!Module.globalPaths.includes(p)) {
-                Module.globalPaths.push(p);
-            }
-            if (require.main && !require.main.paths.includes(p)) {
-                require.main.paths.push(p);
-            }
-        }
-    }
-
-    function ensureStandaloneDependency(packageName) {
-        let resolvedDir;
-        try {
-            const resolved = require.resolve(`${packageName}/package.json`, {
-                paths: [__dirname],
-            });
-            resolvedDir = path.dirname(resolved);
-        } catch {
-            try {
-                const nextPkg = require.resolve('next/package.json', {
-                    paths: [__dirname],
-                });
-                const nextRequire = require('module').createRequire(nextPkg);
-                resolvedDir = path.dirname(
-                    nextRequire.resolve(`${packageName}/package.json`),
-                );
-            } catch {
-                return;
-            }
-        }
-        const source = resolvedDir;
-        const target = path.join(standaloneNodeModules, packageName);
-        if (!fs.existsSync(source)) return;
-        try {
-            fs.mkdirSync(path.dirname(target), { recursive: true });
-            if (fs.existsSync(target)) return;
-            try {
-                fs.symlinkSync(source, target, 'junction');
-            } catch {
-                fs.cpSync(source, target, { recursive: true });
-            }
-        } catch (error) {
-            console.warn(`Unable to link ${packageName}: ${error.message}`);
-        }
-    }
-
-    if (fs.existsSync(standaloneDir)) {
-        configureModuleResolution();
-        ensureStandaloneDependency('next');
-        ensureStandaloneDependency('@next/env');
-        ensureStandaloneDependency('@swc/helpers');
-        ensureStandaloneDependency('styled-jsx');
-        ensureStandaloneDependency('picocolors');
-    }
-
-    if (typeof globalThis.crypto === 'undefined') {
-        try {
-            globalThis.crypto = require('node:crypto').webcrypto;
-        } catch (error) {
-            console.warn('Unable to initialise webcrypto', error);
-        }
-    }
+    // Standalone Next.js expects these to be present in its search path
+    // With our new layout, node_modules should be in __dirname
+    const serverFile = path.join(__dirname, 'server.js');
 
     if (!fs.existsSync(serverFile)) {
-        throw new Error(
-            `Missing Next.js standalone server at ${serverFile}. Run next build first.`,
+        // Fallback for nested standalone structure if cleanup missed it
+        const fallbackServer = path.join(
+            __dirname,
+            '.next',
+            'standalone',
+            'server.js',
         );
+        if (fs.existsSync(fallbackServer)) {
+            console.log('Falling back to nested standalone server');
+            require(fallbackServer);
+        } else {
+            throw new Error(
+                `Missing server.js at ${serverFile}. Ensure standalone build is correct.`,
+            );
+        }
+    } else {
+        console.log('Starting standalone server from', serverFile);
+        require(serverFile);
     }
-
-    // Try starting the real server
-    console.log('Loading standalone server from', serverFile);
-    require(serverFile);
 } catch (err) {
     reportStartupError(err);
 }

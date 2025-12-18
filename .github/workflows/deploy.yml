@@ -252,45 +252,43 @@ jobs:
       - name: Ensure remote directories exist (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/standalone' '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public' '${{ steps.dest.outputs.remote_path }}/.next/static/${{ steps.buildid.outputs.id }}'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public'"
 
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
+          # 1. Upload standalone contents to remote_path root
           rsync -az --delete-after \
-            --exclude='.git' \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/standalone/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/standalone/
-          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete-delay frontend/.next/static/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
-          # Upload BUILD_ID for later health checks
-          if [ -f frontend/.next/BUILD_ID ]; then
-            rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/.next/BUILD_ID \
-              ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/
-          fi
-          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" --delete-delay frontend/public/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
-          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" frontend/app.js \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
+            frontend/.next/standalone/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
 
-      - name: Prepare standalone runtime (install prod deps)
+          # 2. Upload static files to remote_path/.next/static
+          rsync -az --delete-after \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
+            frontend/.next/static/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
+
+          # 3. Upload public files to remote_path/public
+          rsync -az --delete-after \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
+            frontend/public/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
+
+          # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
+            frontend/app.js \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+
+      - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
           set -euo pipefail
-          if [ -d "${REMOTE_PATH}/.next/standalone" ]; then
-             cd "${REMOTE_PATH}/.next/standalone"
-             if command -v devil >/dev/null 2>&1; then
-                echo "Setting Node.js version to 22 for $APP_NAME..."
-                devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
-             fi
+          if command -v devil >/dev/null 2>&1; then
+             echo "Setting Node.js version to 22 for $APP_NAME..."
+             devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
           fi
-          # Ensure Next can find static assets relative to standalone distDir
-          mkdir -p .next
-          cd .next
-          rm -rf static
-          # Link distDir static (../.. from standalone/.next -> top-level .next)
-          ln -s ../../static static
           SSH
 
       - name: Upload backend bundle
