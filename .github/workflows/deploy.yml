@@ -287,8 +287,64 @@ jobs:
           set -euo pipefail
           if command -v devil >/dev/null 2>&1; then
              echo "Setting Node.js version to 22 for $APP_NAME..."
-             devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+             # devil www options "$APP_NAME" nodejs_version 22 || echo "Failed to set node version, continuing..."
+             # Temporarily commenting out the above to avoid workflow failure.
+             # Instead, let's probe devil's capabilities.
+             echo "devil www options $APP_NAME (probe):"
+             devil www options "$APP_NAME" || echo "devil options command failed or returned non-zero"
           fi
+          SSH
+
+      - name: Diagnostic: Startup Probe (frontend)
+        if: ${{ inputs.target == 'public' || inputs.target == '' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          LOG="public/startup_probe.txt"
+          echo "--- Startup Probe $(date) ---" > "$LOG"
+          
+          echo "=== Environment Info ===" >> "$LOG"
+          echo "User: $(whoami)" >> "$LOG"
+          echo "Path: $PATH" >> "$LOG"
+          echo "Node (default): $(node -v 2>&1 || echo 'missing')" >> "$LOG"
+          echo "Node22: $(command -v node22 2>&1 || echo 'missing')" >> "$LOG"
+          if command -v node22 >/dev/null; then
+             echo "Node22 Version: $(node22 -v)" >> "$LOG"
+          fi
+          
+          echo "=== Devil Info ===" >> "$LOG"
+          # Try to get valid options for devil
+          devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
+          
+          echo "=== File Checks ===" >> "$LOG"
+          ls -la app.js server.js package.json >> "$LOG"
+          
+          echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
+          echo "console.log('Hello from Simple Node');" > test_simple.js
+          node test_simple.js >> "$LOG" 2>&1 || echo "Simple Node execution failed" >> "$LOG"
+          
+          echo "=== Manual Execution Test (App.js) ===" >> "$LOG"
+          # Try running app.js with the best available node
+          RUN_NODE=node
+          if command -v node22 >/dev/null; then RUN_NODE=node22; fi
+          
+          echo "Running with $RUN_NODE..." >> "$LOG"
+          $RUN_NODE app.js > public/manual_app_start.log 2>&1 &
+          PID=$!
+          echo "Started app.js with PID $PID. Waiting 5s..." >> "$LOG"
+          sleep 5
+          if ps -p $PID > /dev/null; then
+             echo "Process $PID still running." >> "$LOG"
+             kill $PID
+          else
+             echo "Process $PID died." >> "$LOG"
+          fi
+          
+          echo "=== Manual App Log ===" >> "$LOG"
+          head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
+
           SSH
 
       - name: "Diagnostic: Expose logs (frontend)"
@@ -323,18 +379,66 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
-          set -euo pipefail
           cd "$REMOTE_PATH"
           if command -v npm22 >/dev/null 2>&1; then
+            echo "Using npm22..."
             npm22 install --omit=dev --ignore-scripts
           else
-            # Try to set node version via devil command (best effort)
-            if command -v devil >/dev/null 2>&1; then
-               echo "Attempting to set Node.js version to 22..."
-               devil www options api.salon-bw.pl nodejs_version 22 || echo "Failed to set node version, continuing..."
-            fi
-            npm install --omit=dev --ignore-scripts
+             echo "npm22 not found, using default npm..."
+             npm install --omit=dev --ignore-scripts
           fi
+          SSH
+
+      - name: Diagnostic: Startup Probe (frontend)
+        if: ${{ inputs.target == 'public' || inputs.target == '' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          LOG="public/startup_probe.txt"
+          echo "--- Startup Probe $(date) ---" > "$LOG"
+          
+          echo "=== Environment Info ===" >> "$LOG"
+          echo "User: $(whoami)" >> "$LOG"
+          echo "Path: $PATH" >> "$LOG"
+          echo "Node (default): $(node -v 2>&1 || echo 'missing')" >> "$LOG"
+          echo "Node22: $(command -v node22 2>&1 || echo 'missing')" >> "$LOG"
+          if command -v node22 >/dev/null; then
+             echo "Node22 Version: $(node22 -v)" >> "$LOG"
+          fi
+          
+          echo "=== Devil Info ===" >> "$LOG"
+          # Try to get valid options for devil
+          devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
+          
+          echo "=== File Checks ===" >> "$LOG"
+          ls -la app.js server.js package.json >> "$LOG"
+          
+          echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
+          echo "console.log('Hello from Simple Node');" > test_simple.js
+          node test_simple.js >> "$LOG" 2>&1 || echo "Simple Node execution failed" >> "$LOG"
+          
+          echo "=== Manual Execution Test (App.js) ===" >> "$LOG"
+          # Try running app.js with the best available node
+          RUN_NODE=node
+          if command -v node22 >/dev/null; then RUN_NODE=node22; fi
+          
+          echo "Running with $RUN_NODE..." >> "$LOG"
+          $RUN_NODE app.js > public/manual_app_start.log 2>&1 &
+          PID=$!
+          echo "Started app.js with PID $PID. Waiting 5s..." >> "$LOG"
+          sleep 5
+          if ps -p $PID > /dev/null; then
+             echo "Process $PID still running." >> "$LOG"
+             kill $PID
+          else
+             echo "Process $PID died." >> "$LOG"
+          fi
+          
+          echo "=== Manual App Log ===" >> "$LOG"
+          head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
+
           SSH
 
       - name: Generate and Upload .env (api)
