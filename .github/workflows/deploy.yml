@@ -126,72 +126,78 @@ jobs:
           TARGET="${{ github.event.inputs.target }}"
           INPUT_PATH="${{ github.event.inputs.remote_path }}"
           INPUT_APP="${{ github.event.inputs.app_name }}"
-          REMOTE_PATH="$INPUT_PATH"
-          APP_NAME="$INPUT_APP"
 
-          if [ -z "$REMOTE_PATH" ]; then
-            if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
-               # Staging logic
-               case "$TARGET" in
-                 api)       REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}" ;;
-                 public)    REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}" ;;
-                 dashboard) REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_STAGING }}" ;;
-                 admin)     REMOTE_PATH="$MYDEVIL_ADMIN_REMOTE_PATH_STAGING" ;;
-               esac
-               if [ -z "$REMOTE_PATH" ]; then REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"; fi
-            else
-               # Production logic
-               case "$TARGET" in
-                 api)       REMOTE_PATH="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}" ;;
-                 public)    REMOTE_PATH="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}" ;;
-                 dashboard) REMOTE_PATH="${{ vars.MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION }}" ;;
-                 admin)     REMOTE_PATH="${{ vars.MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION }}" ;;
-               esac
-               if [ -z "$REMOTE_PATH" ]; then REMOTE_PATH="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"; fi
-            fi
-          fi
+          # Initialize variables
+          REMOTE_PATH_PUBLIC=""
+          APP_NAME_PUBLIC=""
+          REMOTE_PATH_API=""
+          APP_NAME_API=""
 
-          if [ -z "$APP_NAME" ]; then
-            if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
-               # Staging logic
-               case "$TARGET" in
-                 api)       APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}" ;;
-                 public)    APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}" ;;
-                 dashboard) APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}" ;;
-                 admin)     APP_NAME="$MYDEVIL_ADMIN_APP_NAME_STAGING" ;;
-               esac
-               if [ -z "$APP_NAME" ]; then APP_NAME="${{ vars.MYDEVIL_APP_NAME_STAGING }}"; fi
-            else
-               # Production logic
-               case "$TARGET" in
-                 api)       APP_NAME="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}" ;;
-                 public)    APP_NAME="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}" ;;
-                 dashboard) APP_NAME="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}" ;;
-                 admin)     APP_NAME="${{ vars.MYDEVIL_ADMIN_APP_NAME_PRODUCTION }}" ;;
-               esac
-               if [ -z "$APP_NAME" ]; then APP_NAME="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"; fi
-            fi
+          # Define path lookups based on environment
+          if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
+             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
+             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
+             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
+             N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
+             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
+             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
+          else
+             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
+             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
+             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
+             N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
+             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
+             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
           fi
 
-          if [ -z "$REMOTE_PATH" ]; then
-            echo "::error::remote_path not provided and no repository variable fallback found" >&2
-            exit 1
+          # If manual input provided, override specifics based on target
+          if [ -n "$INPUT_PATH" ]; then
+            if [ "$TARGET" == "api" ]; then P_API="$INPUT_PATH"; else P_PUBLIC="$INPUT_PATH"; fi
           fi
-          if [ -z "$APP_NAME" ]; then
-            echo "::error::app_name not provided and no repository variable fallback found" >&2
-            exit 1
+          if [ -n "$INPUT_APP" ]; then
+             if [ "$TARGET" == "api" ]; then N_API="$INPUT_APP"; else N_PUBLIC="$INPUT_APP"; fi
           fi
-          echo "remote_path=$REMOTE_PATH" >> "$GITHUB_OUTPUT"
-          echo "app_name=$APP_NAME" >> "$GITHUB_OUTPUT"
+
+          # Fallback to defaults if specific variables are missing
+          REMOTE_PATH_PUBLIC="${P_PUBLIC:-$P_DEFAULT}"
+          APP_NAME_PUBLIC="${N_PUBLIC:-$N_DEFAULT}"
+          REMOTE_PATH_API="${P_API:-$P_DEFAULT}"
+          APP_NAME_API="${N_API:-$N_DEFAULT}"
+
+          # Logic for what we are actually deploying in this run
+          # If target is specific (api or public), we might only care about that one,
+          # but validating both doesn't hurt, or we can just output them.
+          
+          # Output everything
+          echo "remote_path_public=$REMOTE_PATH_PUBLIC" >> "$GITHUB_OUTPUT"
+          echo "app_name_public=$APP_NAME_PUBLIC" >> "$GITHUB_OUTPUT"
+          echo "remote_path_api=$REMOTE_PATH_API" >> "$GITHUB_OUTPUT"
+          echo "app_name_api=$APP_NAME_API" >> "$GITHUB_OUTPUT"
+
+          echo "Resolved Config:"
+          echo "Public: $REMOTE_PATH_PUBLIC ($APP_NAME_PUBLIC)"
+          echo "API:    $REMOTE_PATH_API ($APP_NAME_API)"
 
       - name: Validate resolved destination
         shell: bash
         run: |
           set -euo pipefail
-          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
-          APP_NAME='${{ steps.dest.outputs.app_name }}'
-          if ! [[ "$REMOTE_PATH" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path"; exit 1; fi
-          if [ -n "$APP_NAME" ] && ! [[ "$APP_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name"; exit 1; fi
+          P_PUB='${{ steps.dest.outputs.remote_path_public }}'
+          A_PUB='${{ steps.dest.outputs.app_name_public }}'
+          P_API='${{ steps.dest.outputs.remote_path_api }}'
+          A_API='${{ steps.dest.outputs.app_name_api }}'
+          
+          # Basic validation
+          validate() {
+            local path=$1
+            local name=$2
+            local label=$3
+            if [ -n "$path" ] && ! [[ "$path" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path_$label"; exit 1; fi
+            if [ -n "$name" ] && ! [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name_$label"; exit 1; fi
+          }
+
+          validate "$P_PUB" "$A_PUB" "public"
+          validate "$P_API" "$A_API" "api"
 
       - name: Build frontend
         if: ${{ github.event.inputs.target != 'api' }}
@@ -252,7 +258,7 @@ jobs:
       - name: Ensure remote directories exist (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path }}/.next/static' '${{ steps.dest.outputs.remote_path }}/public'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
 
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
@@ -261,29 +267,29 @@ jobs:
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             frontend/.next/standalone/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/
 
           # 2. Upload static files to remote_path/.next/static
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             frontend/.next/static/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.next/static/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/.next/static/
 
           # 3. Upload public files to remote_path/public
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             frontend/public/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/public/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/public/
 
           # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             frontend/app.js \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/
 
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'SSH'
           set -euo pipefail
           if command -v devil >/dev/null 2>&1; then
              echo "Setting Node.js version to 22 for $APP_NAME..."
@@ -350,7 +356,7 @@ jobs:
       - name: "Diagnostic: Expose logs (frontend)"
         if: ${{ always() && github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -369,16 +375,16 @@ jobs:
           rsync -az --delete \
             --exclude='.git' \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/dist/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/dist/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/dist/
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/package.json \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" backend/salonbw-backend/app.js \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
 
       - name: Install dependencies (backend)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
           cd "$REMOTE_PATH"
           if command -v npm22 >/dev/null 2>&1; then
             echo "Using npm22..."
@@ -392,7 +398,7 @@ jobs:
       - name: Diagnostic: Startup Probe (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP_NAME='${{ steps.dest.outputs.app_name }}' bash -s" <<'END_PROBE'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -518,14 +524,14 @@ jobs:
 
           # Upload the generated .env file safely via rsync
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" .env.production \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path }}/.env
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env
 
       - name: Validate DB connectivity (api)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
-          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
           echo "Testing DB connectivity using DATABASE_URL..."
           if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
@@ -537,7 +543,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
-          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
           echo "Running psql probe using .env PG* vars..."
           if [ -f .env ]; then set -a; . ./.env; set +a; fi
@@ -559,7 +565,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
-          REMOTE_PATH='${{ steps.dest.outputs.remote_path }}'
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
           cd "$REMOTE_PATH"
           if command -v node22 >/dev/null 2>&1; then
             node22 dist/src/migrate.js || node22 dist/migrate.js
@@ -570,7 +576,7 @@ jobs:
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_public }}'"
 
       - name: Debug - List Apps
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
@@ -578,13 +584,13 @@ jobs:
 
       - name: Restart app (backend)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
 
       - name: Smoke test (backend)
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: python3 scripts/post_deploy_checks.py
         env:
-          TARGET_HOST: ${{ steps.dest.outputs.app_name }}
+          TARGET_HOST: ${{ steps.dest.outputs.app_name_api }}
           TARGET_SCHEME: https
           DEPLOY_TARGET: api
           SMOKE_EMAIL_TO: ${{ env.SMOKE_EMAIL_TO }}
@@ -594,7 +600,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import ssl, sys, urllib.request
-          host = "${{ steps.dest.outputs.app_name }}".strip().strip("'\"")
+          host = "${{ steps.dest.outputs.app_name_api }}".strip().strip("'\"")
           ctx = ssl.create_default_context()
           for path in ("/health", "/healthz"):
               url = f"https://{host}{path}"
@@ -611,12 +617,33 @@ jobs:
                   print(f"ERROR: {exc}")
           PY
 
-      - name: Collect remote logs (always)
-        if: always()
+      - name: Collect remote logs (frontend)
+        if: ${{ always() && github.event.inputs.target != 'api' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
-            "REMOTE_PATH='${{ steps.dest.outputs.remote_path }}' APP='${{ steps.dest.outputs.app_name }}' bash -s" <<'REMOTE_CMDS'
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
+          echo "=== Recent .log files ==="
+          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
+            [ -f "$f" ] || continue
+            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+          done
+          echo "=== Searching user logs dir ==="
+          if [ -d "$HOME/logs" ]; then
+            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
+              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+            done
+          fi
+          REMOTE_CMDS
+
+      - name: Collect remote logs (backend)
+        if: ${{ always() && (github.event_name == 'push' || github.event.inputs.target == 'api') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' APP='${{ steps.dest.outputs.app_name_api }}' bash -s" <<'REMOTE_CMDS'
           set -euo pipefail
           echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
           echo "=== Recent .log files ==="
@@ -637,7 +664,7 @@ jobs:
         id: host
         shell: bash
         run: |
-          APP="${{ steps.dest.outputs.app_name }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
+          APP="${{ steps.dest.outputs.app_name_public }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
 
       - name: Smoke test (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
@@ -652,7 +679,7 @@ jobs:
               cmd = [
                   'ssh','-i','~/.ssh/mydevil','-o','IdentitiesOnly=yes',
                   '${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}',
-                  "cat '${{ steps.dest.outputs.remote_path }}/.next/BUILD_ID'"
+                  "cat '${{ steps.dest.outputs.remote_path_public }}/.next/BUILD_ID'"
               ]
               build_id = subprocess.check_output(cmd, timeout=10).decode().strip()
           except Exception:
@@ -694,7 +721,7 @@ jobs:
           set -euo pipefail
           NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
             "${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}" \
-            "ls -1 '${{ steps.dest.outputs.remote_path }}/.next/static/chunks' | head -n 1" || true)"
+            "ls -1 '${{ steps.dest.outputs.remote_path_public }}/.next/static/chunks' | head -n 1" || true)"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
       - name: Fetch static chunk (frontend)
