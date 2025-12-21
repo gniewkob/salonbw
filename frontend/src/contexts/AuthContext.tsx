@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = useCallback(async () => {
         try {
-            const u = await client.request<User>('/api/users/profile', {
+            const u = await client.request<User>('/users/profile', {
                 headers: { 'x-skip-logout': 'true' },
             });
             setUser(u);
