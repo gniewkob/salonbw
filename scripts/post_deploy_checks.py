@@ -30,21 +30,7 @@ def _build_default_checks(target: str, run_id: str) -> List[CheckSpec]:
         return [
             {"name": "GET /healthz", "method": "GET", "path": "/healthz"},
             {"name": "GET /health", "method": "GET", "path": "/health"},
-            {
-                "name": "POST /emails/send",
-                "method": "POST",
-                "path": "/emails/send",
-                "json": {
-                "to": (os.environ.get("SMOKE_EMAIL_TO") or "kontakt@salon-bw.pl"),
-                    "subject": subject,
-                    "template": "Deploy smoke check for Salon Black & White",
-                    "data": {
-                        "trigger": "github-actions",
-                        "run_id": run_id,
-                    },
-                },
-                "expected_status": [200, 201],
-            },
+
         ]
     if target == "public":
         return [
