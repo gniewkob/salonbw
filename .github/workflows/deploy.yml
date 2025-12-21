@@ -283,7 +283,7 @@ jobs:
 
           # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            frontend/app.js \
+            frontend/app.js frontend/next.config.mjs \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/
 
       - name: Prepare standalone runtime (set node version)
