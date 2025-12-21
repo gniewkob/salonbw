@@ -22,7 +22,7 @@ const nextConfig = {
     // Image optimization configuration
     // Enable optimization by default, can be disabled with NEXT_IMAGE_UNOPTIMIZED=true for shared hosting
     images: {
-        unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
+        unoptimized: true, // process.env.NEXT_IMAGE_UNOPTIMIZED === 'true', // Forced to true for MyDevil (no sharp)
         formats: ['image/webp', 'image/avif'],
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -64,21 +64,30 @@ const nextConfig = {
             {
                 source: '/_next/static/:path*',
                 headers: [
-                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
                 ],
             },
             // Cache images served via Next's image optimizer
             {
                 source: '/_next/image',
                 headers: [
-                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
                 ],
             },
             // Cache versioned assets under /public/assets
             {
                 source: '/assets/:path*',
                 headers: [
-                    { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
                 ],
             },
             // Robots hints on sensitive app areas
@@ -97,11 +106,18 @@ const nextConfig = {
             rules.push({
                 source: '/:path*',
                 has: [
-                    { type: 'header', key: 'host', value: 'dev\\.salon-bw\\.pl' },
+                    {
+                        type: 'header',
+                        key: 'host',
+                        value: 'dev\\.salon-bw\\.pl',
+                    },
                     { type: 'header', key: 'accept', value: 'text/html.*' },
                 ],
                 headers: [
-                    { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+                    {
+                        key: 'Cache-Control',
+                        value: 'no-store, no-cache, must-revalidate',
+                    },
                     { key: 'Pragma', value: 'no-cache' },
                     { key: 'Expires', value: '0' },
                 ],
@@ -113,11 +129,18 @@ const nextConfig = {
             rules.push({
                 source: '/:path*',
                 has: [
-                    { type: 'header', key: 'host', value: 'panel\\.salon-bw\\.pl' },
+                    {
+                        type: 'header',
+                        key: 'host',
+                        value: 'panel\\.salon-bw\\.pl',
+                    },
                     { type: 'header', key: 'accept', value: 'text/html.*' },
                 ],
                 headers: [
-                    { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+                    {
+                        key: 'Cache-Control',
+                        value: 'no-store, no-cache, must-revalidate',
+                    },
                     { key: 'Pragma', value: 'no-cache' },
                     { key: 'Expires', value: '0' },
                 ],
