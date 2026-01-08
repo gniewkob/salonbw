@@ -130,6 +130,8 @@ jobs:
           # Initialize variables
           REMOTE_PATH_PUBLIC=""
           APP_NAME_PUBLIC=""
+          REMOTE_PATH_PANEL=""
+          APP_NAME_PANEL=""
           REMOTE_PATH_API=""
           APP_NAME_API=""
 
@@ -137,6 +139,8 @@ jobs:
           if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
+             P_PANEL="${{ vars.MYDEVIL_PANEL_REMOTE_PATH_STAGING }}"
+             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_STAGING }}"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
@@ -144,6 +148,8 @@ jobs:
           else
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
+             P_PANEL="${{ vars.MYDEVIL_PANEL_REMOTE_PATH_PRODUCTION }}"
+             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_PRODUCTION }}"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
@@ -152,30 +158,35 @@ jobs:
 
           # If manual input provided, override specifics based on target
           if [ -n "$INPUT_PATH" ]; then
-            if [ "$TARGET" == "api" ]; then P_API="$INPUT_PATH"; else P_PUBLIC="$INPUT_PATH"; fi
+            if [ "$TARGET" == "api" ]; then P_API="$INPUT_PATH";
+            elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then P_PANEL="$INPUT_PATH";
+            else P_PUBLIC="$INPUT_PATH"; fi
           fi
           if [ -n "$INPUT_APP" ]; then
-             if [ "$TARGET" == "api" ]; then N_API="$INPUT_APP"; else N_PUBLIC="$INPUT_APP"; fi
+             if [ "$TARGET" == "api" ]; then N_API="$INPUT_APP";
+             elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then N_PANEL="$INPUT_APP";
+             else N_PUBLIC="$INPUT_APP"; fi
           fi
 
           # Fallback to defaults if specific variables are missing
           REMOTE_PATH_PUBLIC="${P_PUBLIC:-$P_DEFAULT}"
           APP_NAME_PUBLIC="${N_PUBLIC:-$N_DEFAULT}"
+          REMOTE_PATH_PANEL="${P_PANEL:-$P_DEFAULT}"
+          APP_NAME_PANEL="${N_PANEL:-$N_DEFAULT}"
           REMOTE_PATH_API="${P_API:-$P_DEFAULT}"
           APP_NAME_API="${N_API:-$N_DEFAULT}"
-
-          # Logic for what we are actually deploying in this run
-          # If target is specific (api or public), we might only care about that one,
-          # but validating both doesn't hurt, or we can just output them.
 
           # Output everything
           echo "remote_path_public=$REMOTE_PATH_PUBLIC" >> "$GITHUB_OUTPUT"
           echo "app_name_public=$APP_NAME_PUBLIC" >> "$GITHUB_OUTPUT"
+          echo "remote_path_panel=$REMOTE_PATH_PANEL" >> "$GITHUB_OUTPUT"
+          echo "app_name_panel=$APP_NAME_PANEL" >> "$GITHUB_OUTPUT"
           echo "remote_path_api=$REMOTE_PATH_API" >> "$GITHUB_OUTPUT"
           echo "app_name_api=$APP_NAME_API" >> "$GITHUB_OUTPUT"
 
           echo "Resolved Config:"
           echo "Public: $REMOTE_PATH_PUBLIC ($APP_NAME_PUBLIC)"
+          echo "Panel:  $REMOTE_PATH_PANEL ($APP_NAME_PANEL)"
           echo "API:    $REMOTE_PATH_API ($APP_NAME_API)"
 
       - name: Validate resolved destination
@@ -184,6 +195,8 @@ jobs:
           set -euo pipefail
           P_PUB='${{ steps.dest.outputs.remote_path_public }}'
           A_PUB='${{ steps.dest.outputs.app_name_public }}'
+          P_PAN='${{ steps.dest.outputs.remote_path_panel }}'
+          A_PAN='${{ steps.dest.outputs.app_name_panel }}'
           P_API='${{ steps.dest.outputs.remote_path_api }}'
           A_API='${{ steps.dest.outputs.app_name_api }}'
 
@@ -197,19 +210,23 @@ jobs:
           }
 
           validate "$P_PUB" "$A_PUB" "public"
+          validate "$P_PAN" "$A_PAN" "panel"
           validate "$P_API" "$A_API" "api"
 
-      - name: Build frontend
-        if: ${{ github.event.inputs.target != 'api' }}
-        run: pnpm --filter frontend build
+      - name: Build frontend (Landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' }}
+        run: pnpm --filter @salonbw/landing build
         env:
-          # Embed API base URL resolved above (input > env-specific > fallback)
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
-          # Dev-only HTML no-store on dev host for admin target
-          NEXT_HTML_NOSTORE: ${{ github.event.inputs.target == 'admin' && 'true' || '' }}
-          # Dev-only HTML no-store on panel host for dashboard target
-          NEXT_PANEL_HTML_NOSTORE: ${{ github.event.inputs.target == 'dashboard' && 'true' || '' }}
+
+      - name: Build frontend (Panel)
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' }}
+        run: pnpm --filter @salonbw/panel build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PANEL_HTML_NOSTORE: 'true'
 
       - name: Read BUILD_ID (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
