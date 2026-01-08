@@ -1,4 +1,4 @@
-- frontend
-- apps/*
-- backend/salonbw-backend
-- packages/*
+packages:
+  - "apps/*"
+  - "backend/salonbw-backend"
+  - "packages/*"
