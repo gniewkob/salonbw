@@ -322,8 +322,10 @@ jobs:
           tar -czf deploy.tar.gz -C deploy_bundle .
           
           # 2. Upload Tarball
+          # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
-          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes deploy.tar.gz ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/deploy.tar.gz
+          ls -la deploy.tar.gz
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/deploy.tar.gz
           
           # 3. Extract and Clean
           echo "Extracting Bundle..."
