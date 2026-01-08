@@ -139,7 +139,8 @@ jobs:
           if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
-             P_PANEL="${{ vars.MYDEVIL_PANEL_REMOTE_PATH_STAGING }}"
+             # FORCE Standard Path for Panel (User Requirement)
+             P_PANEL="apps/nodejs/panelbw"
              N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_STAGING }}"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
@@ -227,7 +228,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
-          NEXT_PANEL_HTML_NOSTORE: 'true'
+          NEXT_PANEL_HTML_NOSTORE: "true"
 
       - name: Read BUILD_ID (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
@@ -278,7 +279,7 @@ jobs:
         run: |
           # Create destinations
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
-          
+
           # Special handling for Panel: Create app dir and Symlink
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ]; then
              echo "Ensuring Symlink for Panel..."
@@ -324,9 +325,9 @@ jobs:
           # For now, we copy from the specific app dir if it exists, otherwise fallback? 
           # Assuming repo root has ONE common app.js for MyDevil shim, or it's inside apps/?
           # The repo seems to have `frontend/app.js` originally. Now it should be in `apps/landing/app.js` and `apps/panel/app.js`.
-          
+
           SRC_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
-          
+
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             $SRC_APP/app.js $SRC_APP/next.config.mjs \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
@@ -336,12 +337,12 @@ jobs:
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name_public }}' REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
-          
+
           # Create probe file for diagnostics
           mkdir -p "$REMOTE_PATH/public"
           echo "--- Startup Probe $(date) ---" > "$REMOTE_PATH/public/startup_probe.txt"
           echo "Node Version: $(node -v)" >> "$REMOTE_PATH/public/startup_probe.txt"
-          
+
           if command -v devil >/dev/null 2>&1; then
              echo "--- Devil Version/Help ---"
              devil --version || true
@@ -370,22 +371,22 @@ jobs:
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
-          
+
           # Capture current state
           echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
           echo "Node Version: $(node -v)" >> public/diagnostic_logs.txt
           ls -la . >> public/diagnostic_logs.txt
-          
+
           # Print to STDOUT for CI visibility
           echo "=== CONTENT OF startup_probe.txt ==="
           if [ -f public/startup_probe.txt ]; then cat public/startup_probe.txt; else echo "startup_probe.txt missing"; fi
-          
+
           echo "=== CONTENT OF diagnostic_logs.txt ==="
           cat public/diagnostic_logs.txt
-          
+
           echo "=== stderr.log (first 50 lines) ==="
           if [ -f stderr.log ]; then head -n 50 stderr.log; else echo "stderr.log not found"; fi
-          
+
           echo "=== stderr.log (last 50 lines) ==="
           if [ -f stderr.log ]; then tail -n 50 stderr.log; fi
           SSH
