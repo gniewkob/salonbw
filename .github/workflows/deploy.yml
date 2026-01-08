@@ -332,6 +332,12 @@ jobs:
           # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
           echo "Installing dependencies in bundle..."
           cd deploy_bundle
+          
+          # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
+          # These are already bundled by Next.js Standalone, and npm install won't resolve them.
+          sed -i '/link:/d' package.json
+          sed -i '/workspace:/d' package.json
+          
           # Use npm for flat install (pnpm is not needed for runtime)
           npm install --omit=dev --no-package-lock --no-audit --loglevel=error
           cd ..
