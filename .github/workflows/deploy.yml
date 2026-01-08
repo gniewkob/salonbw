@@ -302,21 +302,39 @@ jobs:
              BUILD_FILTER="@salonbw/landing"
           fi
 
-          # 1. Prepare Bundle (Dereference Symlinks)
+          # 1. Prepare Bundle (Clean Install Strategy)
           TARGET_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
-          mkdir -p deploy_bundle/.next/static
+          mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
           
-          echo "Bundling Application from $TARGET_APP..."
+          echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
           
-          # Copy Standalone (Dereference)
-          cp -rL "$TARGET_APP/.next/standalone/"* deploy_bundle/
+          # Copy Standalone App Code (Preserve structure, skip node_modules)
+          # Note: Next.js standalone puts app code in 'apps/<name>' inside standalone
+          if [ -d "$TARGET_APP/.next/standalone/apps" ]; then
+             cp -r "$TARGET_APP/.next/standalone/apps" deploy_bundle/
+          else
+             # Fallback for single-repo structure or if paths differ
+             echo "Warning: 'apps' dir not found in standalone. Copying root contents excluding node_modules..."
+             rsync -a --exclude 'node_modules' "$TARGET_APP/.next/standalone/" deploy_bundle/
+          fi
+
+          # Copy Root Handlers
+          cp "$TARGET_APP/.next/standalone/server.js" deploy_bundle/
+          cp "$TARGET_APP/.next/standalone/package.json" deploy_bundle/
           
-          # Copy Static (Dereference) - Note: standalone usually doesn't include static/public
-          cp -rL "$TARGET_APP/.next/static/"* deploy_bundle/.next/static/
+          # Copy Static Assets (Standard Next.js location)
+          # Note: Standalone server expects .next/static and public to be siblings of server.js (sometimes via symlink or copy)
+          # We place them in .next/static and public in root of bundle
+          cp -r "$TARGET_APP/.next/static" deploy_bundle/.next/
+          cp -r "$TARGET_APP/public" deploy_bundle/
           
-          # Copy Public (Dereference)
-          cp -rL "$TARGET_APP/public/"* deploy_bundle/public/
+          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
+          echo "Installing dependencies in bundle..."
+          cd deploy_bundle
+          # Use npm for flat install (pnpm is not needed for runtime)
+          npm install --omit=dev --no-package-lock --no-audit --loglevel=error
+          cd ..
           
           # Create Tarball
           tar -czf deploy.tar.gz -C deploy_bundle .
