@@ -1,7 +1,4 @@
-  - frontend
-  - apps/*
-  - backend/salonbw-backend
-  - packages/*
-
-onlyBuiltDependencies:
-  - cypress
+- frontend
+- apps/*
+- backend/salonbw-backend
+- packages/*
