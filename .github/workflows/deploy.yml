@@ -302,23 +302,33 @@ jobs:
              BUILD_FILTER="@salonbw/landing"
           fi
 
-          # 1. Upload standalone contents to remote_path root
-          rsync -azL --delete-after \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/standalone/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
+          # 1. Prepare Bundle (Dereference Symlinks)
+          TARGET_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
+          mkdir -p deploy_bundle/.next/static
+          mkdir -p deploy_bundle/public
+          
+          echo "Bundling Application from $TARGET_APP..."
+          
+          # Copy Standalone (Dereference)
+          cp -rL "$TARGET_APP/.next/standalone/"* deploy_bundle/
+          
+          # Copy Static (Dereference) - Note: standalone usually doesn't include static/public
+          cp -rL "$TARGET_APP/.next/static/"* deploy_bundle/.next/static/
+          
+          # Copy Public (Dereference)
+          cp -rL "$TARGET_APP/public/"* deploy_bundle/public/
+          
+          # Create Tarball
+          tar -czf deploy.tar.gz -C deploy_bundle .
+          
+          # 2. Upload Tarball
+          echo "Uploading Bundle to $DEST..."
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes deploy.tar.gz ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/deploy.tar.gz
+          
+          # 3. Extract and Clean
+          echo "Extracting Bundle..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
 
-          # 2. Upload static files to remote_path/.next/static
-          rsync -azL --delete-after \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/static/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/.next/static/
-
-          # 3. Upload public files to remote_path/public
-          rsync -azL --delete-after \
-            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/public/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/public/
 
           # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
           # Note: app.js logic might need adjustment if it's app specific. Assuming generic app.js or specific one exists.
