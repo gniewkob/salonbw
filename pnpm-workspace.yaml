@@ -1,5 +1,5 @@
-packages:
   - frontend
+  - apps/*
   - backend/salonbw-backend
   - packages/*
 
