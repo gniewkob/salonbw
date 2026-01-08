@@ -1,44 +1,47 @@
 {
-  "name": "salonbw-monorepo",
-  "private": true,
-  "version": "0.0.0",
-  "packageManager": "pnpm@10.14.0",
-  "engines": {
-    "node": ">=22"
-  },
-  "scripts": {
-    "prepare": "husky install",
-    "setup": "bash scripts/setup.sh",
-    "lint": "pnpm -r run --if-present lint",
-    "typecheck": "pnpm -r run --if-present typecheck",
-    "format": "pnpm -r run --if-present format",
-    "tunnel:start": "bash scripts/db-tunnel.sh",
-    "tunnel:stop": "bash scripts/db-tunnel-kill.sh",
-    "be:dev": "pnpm --filter salonbw-backend start:dev",
-    "be:test": "pnpm --filter salonbw-backend test"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "pnpm exec eslint --fix"
-    ],
-    "*.{json,md,css,scss}": [
-      "pnpm exec prettier --write"
-    ]
-  },
-  "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "turbo": "^2.6.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "axios": "^1.12.0",
-      "next": "14.2.32",
-      "validator": "^13.15.20",
-      "tar-fs": "^3.0.5",
-      "tar": "^6.2.1",
-      "glob": "^10.5.0",
-      "rand-token": "workspace:rand-token@1.0.1"
+    "name": "salonbw-monorepo",
+    "private": true,
+    "version": "0.0.0",
+    "packageManager": "pnpm@10.14.0",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "prepare": "husky install",
+        "setup": "bash scripts/setup.sh",
+        "lint": "pnpm -r run --if-present lint",
+        "typecheck": "pnpm -r run --if-present typecheck",
+        "format": "pnpm -r run --if-present format",
+        "tunnel:start": "bash scripts/db-tunnel.sh",
+        "tunnel:stop": "bash scripts/db-tunnel-kill.sh",
+        "be:dev": "pnpm --filter salonbw-backend start:dev",
+        "be:test": "pnpm --filter salonbw-backend test"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "pnpm exec eslint --fix"
+        ],
+        "*.{json,md,css,scss}": [
+            "pnpm exec prettier --write"
+        ]
+    },
+    "devDependencies": {
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
+        "turbo": "^2.6.0"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "cypress"
+        ],
+        "overrides": {
+            "axios": "^1.12.0",
+            "next": "14.2.32",
+            "validator": "^13.15.20",
+            "tar-fs": "^3.0.5",
+            "tar": "^6.2.1",
+            "glob": "^10.5.0",
+            "rand-token": "workspace:rand-token@1.0.1"
+        }
     }
-  }
 }
