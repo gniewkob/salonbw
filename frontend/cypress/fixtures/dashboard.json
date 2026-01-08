@@ -1,8 +1,0 @@
-{
-  "clientCount": 2,
-  "todayCount": 1,
-  "employeeCount": 3,
-  "upcoming": [
-    {"id":1,"startTime":"2025-07-20T10:00:00Z","client":{"name":"Anna"}}
-  ]
-}

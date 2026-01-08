@@ -148,7 +148,8 @@ jobs:
           else
              P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
              N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
-             P_PANEL="${{ vars.MYDEVIL_PANEL_REMOTE_PATH_PRODUCTION }}"
+             # FORCE Standard Path for Panel (User Requirement)
+             P_PANEL="apps/nodejs/panelbw"
              N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_PRODUCTION }}"
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
@@ -275,33 +276,60 @@ jobs:
       - name: Ensure remote directories exist (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
+          # Create destinations
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
+          
+          # Special handling for Panel: Create app dir and Symlink
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ]; then
+             echo "Ensuring Symlink for Panel..."
+             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && ln -sfn /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/${{ steps.dest.outputs.remote_path_panel }} /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/domains/panel.salon-bw.pl/public_nodejs"
+          fi
 
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
+          # Determine correct remote path based on target
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ]; then
+             DEST="${{ steps.dest.outputs.remote_path_panel }}"
+             APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+             echo "Targeting PANEL: $DEST"
+             BUILD_FILTER="@salonbw/panel"
+          else
+             DEST="${{ steps.dest.outputs.remote_path_public }}"
+             APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+             echo "Targeting LANDING: $DEST"
+             BUILD_FILTER="@salonbw/landing"
+          fi
+
           # 1. Upload standalone contents to remote_path root
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            frontend/.next/standalone/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/
+            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/standalone/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
 
           # 2. Upload static files to remote_path/.next/static
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            frontend/.next/static/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/.next/static/
+            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/static/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/.next/static/
 
           # 3. Upload public files to remote_path/public
           rsync -az --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            frontend/public/ \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/public/
+            apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/public/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/public/
 
           # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
+          # Note: app.js logic might need adjustment if it's app specific. Assuming generic app.js or specific one exists.
+          # For now, we copy from the specific app dir if it exists, otherwise fallback? 
+          # Assuming repo root has ONE common app.js for MyDevil shim, or it's inside apps/?
+          # The repo seems to have `frontend/app.js` originally. Now it should be in `apps/landing/app.js` and `apps/panel/app.js`.
+          
+          SRC_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
+          
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
-            frontend/app.js frontend/next.config.mjs \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_public }}/
+            $SRC_APP/app.js $SRC_APP/next.config.mjs \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
 
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
