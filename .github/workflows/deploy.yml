@@ -303,19 +303,19 @@ jobs:
           fi
 
           # 1. Upload standalone contents to remote_path root
-          rsync -az --delete-after \
+          rsync -azL --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/standalone/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
 
           # 2. Upload static files to remote_path/.next/static
-          rsync -az --delete-after \
+          rsync -azL --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/.next/static/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/.next/static/
 
           # 3. Upload public files to remote_path/public
-          rsync -az --delete-after \
+          rsync -azL --delete-after \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes" \
             apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}/public/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/public/
