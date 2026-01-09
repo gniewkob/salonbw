@@ -119,7 +119,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                         </>
                     )}
                     <RouteProgress />
-                    <BookNowFab />
                     <Component {...pageProps} />
                 </ToastProvider>
             </AuthProvider>
