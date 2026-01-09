@@ -228,7 +228,9 @@ jobs:
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' }}
         run: |
           rm -rf apps/panel/.next
-          pnpm --filter @salonbw/panel build
+          pnpm --filter @salonbw/panel --fail-if-no-match build
+          echo "Listing .next directory:"
+          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
