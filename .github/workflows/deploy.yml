@@ -364,7 +364,7 @@ jobs:
           
           echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
           
-          # Copy Standalone App Code (Preserve structure, skip node_modules)
+          # 1. Copy Standalone App Code (Base Layer)
           # Note: Next.js standalone puts app code in 'apps/<name>' inside standalone
           if [ -d "$TARGET_APP/.next/standalone/apps" ]; then
              cp -r "$TARGET_APP/.next/standalone/apps" deploy_bundle/
@@ -374,16 +374,13 @@ jobs:
              rsync -a --exclude 'node_modules' "$TARGET_APP/.next/standalone/" deploy_bundle/
           fi
 
-          # Copy files to temp bundle dir
+          # 2. Copy Static Assets (Overlay - Must be AFTER standalone to prevent overwrite with empty dirs)
+          cp -r "$TARGET_APP/.next/static" deploy_bundle/.next/
+          cp -r "$TARGET_APP/public" deploy_bundle/
           
           cp apps/panel_fixed/next.config.mjs deploy_bundle/
 
           
-          # Copy Static Assets (Standard Next.js location)
-          # Note: Standalone server expects .next/static and public to be siblings of server.js (sometimes via symlink or copy)
-          # We place them in .next/static and public in root of bundle
-          cp -r "$TARGET_APP/.next/static" deploy_bundle/.next/
-          cp -r "$TARGET_APP/public" deploy_bundle/
           # Copy scripts
           if [ -d "$TARGET_APP/scripts" ]; then
              cp -r "$TARGET_APP/scripts" deploy_bundle/
