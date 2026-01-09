@@ -16,7 +16,9 @@ if [ -f app.pid ]; then
   kill $(cat app.pid) 2>/dev/null
 fi
 
-nohup node app.js > public/server.log 2>&1 &
+# Using standard next start (requires node_modules)
+echo "Starting Next.js..."
+./node_modules/.bin/next start -p $PORT > public/server.log 2>&1 &
 PID=$!
 echo $PID > app.pid
-echo "Started Panel App with PID $PID on Port $PORT"
+echo "Started Panel App (Standard) with PID $PID on Port $PORT"

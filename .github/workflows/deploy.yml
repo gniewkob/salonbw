@@ -364,22 +364,19 @@ jobs:
           
           echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
           
-          # 1. Copy Standalone App Code (Base Layer)
-          # Note: Next.js standalone puts app code in 'apps/<name>' inside standalone
-          if [ -d "$TARGET_APP/.next/standalone/apps" ]; then
-             cp -r "$TARGET_APP/.next/standalone/apps" deploy_bundle/
-          else
-             # Fallback for single-repo structure or if paths differ
-             echo "Warning: 'apps' dir not found in standalone. Copying root contents excluding node_modules..."
-             rsync -a --exclude 'node_modules' "$TARGET_APP/.next/standalone/" deploy_bundle/
-          fi
-
-          # 2. Copy Static Assets (Overlay - Must be AFTER standalone to prevent overwrite with empty dirs)
-          cp -r "$TARGET_APP/.next/static" deploy_bundle/.next/
-          cp -r "$TARGET_APP/public" deploy_bundle/
           
-          cp apps/panel_fixed/next.config.mjs deploy_bundle/
-
+          # STANDARD BUILD STRATEGY (Non-Standalone)
+          # Copy everything necessary for runtime
+          cp -r "$TARGET_APP/.next" deploy_bundle/
+          cp -r "$TARGET_APP/public" deploy_bundle/
+          cp "$TARGET_APP/package.json" deploy_bundle/
+          cp "$TARGET_APP/next.config.mjs" deploy_bundle/
+          
+          # Copy source files (middleware needs src structure?)
+          mkdir -p deploy_bundle/src
+          if [ -f "$TARGET_APP/src/middleware.ts" ]; then
+             cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
+          fi
           
           # Copy scripts
           if [ -d "$TARGET_APP/scripts" ]; then
