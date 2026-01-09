@@ -16,6 +16,7 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    transpilePackages: ['@salonbw/api'], // Validation: Force compilation of local TS package
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
     // output: 'standalone', // Validation: Switching to standard build to fix asset 404s
