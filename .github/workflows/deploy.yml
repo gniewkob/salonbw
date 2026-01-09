@@ -339,7 +339,7 @@ jobs:
           # Copy files to temp bundle dir
           
           cp apps/panel_fixed/next.config.mjs deploy_bundle/
-          cp apps/panel_fixed/.next/standalone/apps/panel_fixed/package.json deploy_bundle/
+
           
           # Copy Static Assets (Standard Next.js location)
           # Note: Standalone server expects .next/static and public to be siblings of server.js (sometimes via symlink or copy)
@@ -381,7 +381,7 @@ jobs:
           # Assuming repo root has ONE common app.js for MyDevil shim, or it's inside apps/?
           # The repo seems to have `frontend/app.js` originally. Now it should be in `apps/landing/app.js` and `apps/panel/app.js`.
 
-          SRC_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
+          SRC_APP="$TARGET_APP"
 
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" \
             $SRC_APP/app.js $SRC_APP/next.config.mjs \
