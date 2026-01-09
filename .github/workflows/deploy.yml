@@ -378,9 +378,14 @@ jobs:
              cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
           fi
           
-          # Copy scripts
           if [ -d "$TARGET_APP/scripts" ]; then
              cp -r "$TARGET_APP/scripts" deploy_bundle/
+          fi
+          
+          # Copy local packages (dependencies)
+          mkdir -p deploy_bundle/packages
+          if [ -d "packages/api" ]; then
+             cp -r packages/api deploy_bundle/packages/
           fi
           
           # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
@@ -389,7 +394,8 @@ jobs:
           
           # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
           # These are already bundled by Next.js Standalone, and npm install won't resolve them.
-          sed -i '/link:/d' package.json
+          # Fix: Rewrite workspace links to local file paths
+          sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
           sed -i '/workspace:/d' package.json
           
           # Use npm for flat install (pnpm is not needed for runtime)
