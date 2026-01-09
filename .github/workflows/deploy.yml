@@ -326,7 +326,9 @@ jobs:
           # Special handling for Panel: Create app dir and Symlink (Default to Panel on push)
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
              echo "Ensuring Symlink for Panel..."
-             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
+             # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
+             # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
+             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
           fi
 
       - name: Upload frontend bundle
