@@ -337,7 +337,7 @@ jobs:
           fi
 
           # Copy files to temp bundle dir
-          cp apps/panel_fixed/server.js deploy_bundle/
+          
           cp apps/panel_fixed/next.config.mjs deploy_bundle/
           cp apps/panel_fixed/.next/standalone/apps/panel_fixed/package.json deploy_bundle/
           
