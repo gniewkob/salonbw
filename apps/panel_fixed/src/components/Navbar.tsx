@@ -31,45 +31,9 @@ export default function Navbar() {
                 href={'/' as Route}
                 className={`font-bold text-xl mr-4 ${linkClass}`}
             >
-                Salon Black & White
+                SalonBW Panel
             </Link>
             <ul className="flex space-x-4">
-                <li>
-                    <Link href={'/' as Route} className={linkClass}>
-                        Home
-                    </Link>
-                </li>
-                <li>
-                    <Link href={'/services' as Route} className={linkClass}>
-                        Services
-                    </Link>
-                </li>
-                <li>
-                    <Link href={'/gallery' as Route} className={linkClass}>
-                        Gallery
-                    </Link>
-                </li>
-                <li>
-                    <Link href={'/faq' as Route} className={linkClass}>
-                        FAQ
-                    </Link>
-                </li>
-                <li>
-                    <Link href={'/contact' as Route} className={linkClass}>
-                        Contact
-                    </Link>
-                </li>
-                <li>
-                    <Link
-                        href={'/appointments' as Route}
-                        className={linkClass}
-                        onClick={() =>
-                            trackEvent('begin_checkout', { cta: 'navbar' })
-                        }
-                    >
-                        Book Now
-                    </Link>
-                </li>
                 {dashboardRoute ? (
                     <li>
                         <Link href={dashboardRoute} className={linkClass}>
@@ -96,16 +60,6 @@ export default function Navbar() {
                         </li>
                     </>
                 )}
-                <li>
-                    <Link href={'/policy' as Route} className={linkClass}>
-                        Policy
-                    </Link>
-                </li>
-                <li>
-                    <Link href={'/privacy' as Route} className={linkClass}>
-                        Privacy
-                    </Link>
-                </li>
             </ul>
         </nav>
     );
