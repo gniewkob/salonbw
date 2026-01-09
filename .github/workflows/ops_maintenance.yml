@@ -1,40 +1,27 @@
 name: Ops Maintenance
-on:
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Action'
-        required: true
-        default: 'check_and_fix'
+on: workflow_dispatch
 
 jobs:
-  ops:
+  maintenance:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup SSH
+      - name: Probe Server (Hijacked)
         env:
-            KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_KEY: ${{ secrets.MYDEVIL_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$KEY" > ~/.ssh/mydevil
+          echo "${{ secrets.MYDEVIL_PRIVATE_KEY }}" > ~/.ssh/mydevil
           chmod 600 ~/.ssh/mydevil
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          
+          echo "=== ls -la apps/nodejs/panelbw ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw"
+          
+          echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages"
 
-      - name: Check and Fix
-        run: |
-          ssh -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net "
-            echo '--- CURRENT STATUS ---'
-            ls -la domains/panel.salon-bw.pl/public_nodejs
-            echo '--- PANEL APP DIR ---'
-            ls -la apps/nodejs/panelbw/ || echo 'Panel dir not found'
-            
-            if [ -d 'apps/nodejs/panelbw' ]; then
-                echo '--- APPLYING FIX ---'
-                ln -sfn /usr/home/vetternkraft/apps/nodejs/panelbw /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs
-                echo '--- NEW STATUS ---'
-                ls -la domains/panel.salon-bw.pl/public_nodejs
-            else
-                echo 'ERROR: apps/nodejs/panelbw does not exist. Cannot fix.'
-                exit 1
-            fi
-          "
+          echo "=== Check Symlink public_nodejs ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || echo "Symlink check failed"
+          
+          echo "=== Check Redirect Logic (index.js) ==="
+          # Check if index.js contains 'redirect' or 'Dashboard'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
