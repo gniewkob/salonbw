@@ -318,7 +318,7 @@ jobs:
              IS_PANEL_TARGET="true"
           fi
           
-          TARGET_APP="apps/${IS_PANEL_TARGET == 'true' && 'panel_fixed' || 'landing'}"
+
           # Fix interpolation above: Bash string manipulation or conditionals
           if [ "$IS_PANEL_TARGET" == "true" ]; then TARGET_APP="apps/panel_fixed"; else TARGET_APP="apps/landing"; fi
           mkdir -p deploy_bundle/.next
