@@ -124,6 +124,9 @@ jobs:
         shell: bash
         run: |
           TARGET="${{ github.event.inputs.target }}"
+          # Default to PANEL on push event (if target is empty)
+          if [ -z "$TARGET" ]; then TARGET="panel"; fi
+          
           INPUT_PATH="${{ github.event.inputs.remote_path }}"
           INPUT_APP="${{ github.event.inputs.app_name }}"
 
@@ -225,7 +228,7 @@ jobs:
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
       - name: Build frontend (Panel)
-        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' }}
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
         run: |
           rm -rf apps/panel_fixed/.next
           pnpm --filter @salonbw/panel --fail-if-no-match build
@@ -286,8 +289,8 @@ jobs:
           # Create destinations
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
 
-          # Special handling for Panel: Create app dir and Symlink
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ]; then
+          # Special handling for Panel: Create app dir and Symlink (Default to Panel on push)
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
              echo "Ensuring Symlink for Panel..."
              ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && ln -sfn /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/${{ steps.dest.outputs.remote_path_panel }} /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/domains/panel.salon-bw.pl/public_nodejs"
           fi
@@ -295,8 +298,8 @@ jobs:
       - name: Upload frontend bundle
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          # Determine correct remote path based on target
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ]; then
+          # Determine correct remote path based on target (Default to Panel on push)
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
              DEST="${{ steps.dest.outputs.remote_path_panel }}"
              APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
              echo "Targeting PANEL: $DEST"
@@ -309,7 +312,15 @@ jobs:
           fi
 
           # 1. Prepare Bundle (Clean Install Strategy)
-          TARGET_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel_fixed' || github.event.inputs.target == 'dashboard' && 'panel_fixed' || 'landing' }}"
+          # Logic: If target is panel OR dashboard OR empty (push default), use panel_fixed. Else landing.
+          IS_PANEL_TARGET="false"
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
+             IS_PANEL_TARGET="true"
+          fi
+          
+          TARGET_APP="apps/${IS_PANEL_TARGET == 'true' && 'panel_fixed' || 'landing'}"
+          # Fix interpolation above: Bash string manipulation or conditionals
+          if [ "$IS_PANEL_TARGET" == "true" ]; then TARGET_APP="apps/panel_fixed"; else TARGET_APP="apps/landing"; fi
           mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
           
