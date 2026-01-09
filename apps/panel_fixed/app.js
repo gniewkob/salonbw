@@ -1,36 +1,40 @@
-const fs = require('fs');
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
 const path = require('path');
-const logFile = path.join(__dirname, 'public', 'diagnostic_logs.txt');
 
-function log(msg) {
-    const time = new Date().toISOString();
-    fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
-    console.log(msg);
-}
+// Verify we are in the correct directory (optional logging)
+// try {
+//   const fs = require('fs');
+//   fs.appendFileSync('public/passenger_boot.log', `Booting at ${new Date().toISOString()} in ${process.cwd()}\n`);
+// } catch (e) {}
 
-try {
-    // Re-initialize the file or append? Let's append but start with a clear separator
-    log('--- Application Startup (app.js) ---');
-    log('Node version: ' + process.version);
-    log('Current dir: ' + __dirname);
-    log('Env PORT: ' + process.env.PORT);
-    log('All Env: ' + JSON.stringify(process.env, null, 2));
+const dev = process.env.NODE_ENV !== 'production';
+const dir = __dirname; // App is in the root of the bundled directory
+const app = next({ dev, dir });
+const handle = app.getRequestHandler();
 
-    require('./server.js');
-} catch (err) {
-    log('FATAL ERROR DURING REQUIRE: ' + err.message);
-    log('Stack: ' + err.stack);
+const port = process.env.PORT || 3000;
 
-    // Fallback to minimal HTTP server to report error if Passenger didn't kill it
-    try {
-        const http = require('http');
-        const port = process.env.PORT || 3000;
-        const server = http.createServer((req, res) => {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Startup Error:\n' + err.stack);
+app.prepare()
+    .then(() => {
+        createServer((req, res) => {
+            const parsedUrl = parse(req.url, true);
+            handle(req, res, parsedUrl);
+        }).listen(port, (err) => {
+            if (err) throw err;
+            console.log(`> Ready on http://localhost:${port}`);
         });
-        server.listen(port);
-    } catch (e) {}
-
-    process.exit(1);
-}
+    })
+    .catch((err) => {
+        console.error('Error starting Next.js app:', err);
+        // Attempt to log to file if console capture fails
+        try {
+            const fs = require('fs');
+            fs.appendFileSync(
+                path.join(__dirname, 'public', 'startup_error.log'),
+                `Startup Error: ${err.message}\n${err.stack}\n`,
+            );
+        } catch (e) {}
+        process.exit(1);
+    });
