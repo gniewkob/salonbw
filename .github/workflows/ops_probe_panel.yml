@@ -1,0 +1,25 @@
+name: Ops Probe Panel
+on: workflow_dispatch
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Server
+        env:
+          SSH_KEY: ${{ secrets.MYDEVIL_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MYDEVIL_PRIVATE_KEY }}" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          
+          # Inspect 'apps/nodejs/panelbw'
+          echo "=== ls -la apps/nodejs/panelbw ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw"
+          
+          echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages"
+
+          echo "=== Check Symlink public_nodejs ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || echo "Symlink check failed"
+
