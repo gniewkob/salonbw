@@ -39,6 +39,7 @@ jobs:
   probe:
     if: ${{ github.event.inputs.target == 'probe' }}
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Probe Server
         env:
