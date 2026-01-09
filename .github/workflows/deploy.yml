@@ -705,7 +705,13 @@ jobs:
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '${{ steps.dest.outputs.app_name_public }}'"
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
+            APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          fi
+          echo "Restarting $APP_NAME..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'"
 
       - name: Debug - List Apps
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
