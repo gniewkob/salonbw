@@ -1,0 +1,40 @@
+name: Ops Maintenance
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action'
+        required: true
+        default: 'check_and_fix'
+
+jobs:
+  ops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        env:
+            KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$KEY" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Check and Fix
+        run: |
+          ssh -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net "
+            echo '--- CURRENT STATUS ---'
+            ls -la domains/panel.salon-bw.pl/public_nodejs
+            echo '--- PANEL APP DIR ---'
+            ls -la apps/nodejs/panelbw/ || echo 'Panel dir not found'
+            
+            if [ -d 'apps/nodejs/panelbw' ]; then
+                echo '--- APPLYING FIX ---'
+                ln -sfn /usr/home/vetternkraft/apps/nodejs/panelbw /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs
+                echo '--- NEW STATUS ---'
+                ls -la domains/panel.salon-bw.pl/public_nodejs
+            else
+                echo 'ERROR: apps/nodejs/panelbw does not exist. Cannot fix.'
+                exit 1
+            fi
+          "
