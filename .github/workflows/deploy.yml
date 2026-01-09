@@ -287,12 +287,12 @@ jobs:
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
           # Create destinations
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
 
           # Special handling for Panel: Create app dir and Symlink (Default to Panel on push)
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
              echo "Ensuring Symlink for Panel..."
-             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && ln -sfn /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/${{ steps.dest.outputs.remote_path_panel }} /usr/home/${{ secrets.MYDEVIL_SSH_USER }}/domains/panel.salon-bw.pl/public_nodejs"
+             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
           fi
 
       - name: Upload frontend bundle
@@ -365,13 +365,14 @@ jobs:
           
           # 2. Upload Tarball
           # 2. Upload Tarball
+          # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la deploy.tar.gz
-          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/deploy.tar.gz
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz vetternkraft@s0.mydevil.net:$DEST/deploy.tar.gz
           
           # 3. Extract and Clean
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
 
 
           # 4. Upload app.js (and other root files) AFTER standalone to avoid deletion by rsync --delete
@@ -384,12 +385,12 @@ jobs:
 
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" \
             $SRC_APP/app.js $SRC_APP/next.config.mjs \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:$DEST/
+            vetternkraft@s0.mydevil.net:$DEST/
 
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "APP_NAME='${{ steps.dest.outputs.app_name_public }}' REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='${{ steps.dest.outputs.app_name_public }}' REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
 
           # Create probe file for diagnostics
@@ -668,7 +669,7 @@ jobs:
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_public }}'"
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '${{ steps.dest.outputs.app_name_public }}'"
 
       - name: Debug - List Apps
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
