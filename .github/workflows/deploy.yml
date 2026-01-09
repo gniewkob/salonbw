@@ -372,6 +372,11 @@ jobs:
           cp "$TARGET_APP/package.json" deploy_bundle/
           cp "$TARGET_APP/next.config.mjs" deploy_bundle/
           
+          # Copy app.js (Passenger Entry Point)
+          if [ -f "$TARGET_APP/app.js" ]; then
+             cp "$TARGET_APP/app.js" deploy_bundle/
+          fi
+          
           # Copy source files (middleware needs src structure?)
           mkdir -p deploy_bundle/src
           if [ -f "$TARGET_APP/src/middleware.ts" ]; then
@@ -432,7 +437,15 @@ jobs:
       - name: Prepare standalone runtime (set node version)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='${{ steps.dest.outputs.app_name_public }}' REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
+             TARGET_APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+             TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
+          else
+             TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+             TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
+          fi
+          
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
           set -euo pipefail
 
           # Create probe file for diagnostics
@@ -712,16 +725,14 @@ jobs:
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
-          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
             APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-            echo "Restarting Panel App via Script..."
-            REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
-            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "chmod +x $REMOTE_PATH/scripts/*.sh && $REMOTE_PATH/scripts/restart_app.sh"
           else
-            echo "Restarting $APP_NAME..."
-            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'"
+            APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           fi
+          
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'"
 
       - name: Debug - List Apps
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
