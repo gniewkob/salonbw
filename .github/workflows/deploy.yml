@@ -227,10 +227,10 @@ jobs:
       - name: Build frontend (Panel)
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' }}
         run: |
-          rm -rf apps/panel/.next
+          rm -rf apps/panel_fixed/.next
           pnpm --filter @salonbw/panel --fail-if-no-match build
           echo "Listing .next directory:"
-          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
+          ls -R apps/panel_fixed/.next || echo "apps/panel_fixed/.next NOT FOUND"
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
@@ -309,7 +309,7 @@ jobs:
           fi
 
           # 1. Prepare Bundle (Clean Install Strategy)
-          TARGET_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel' || github.event.inputs.target == 'dashboard' && 'panel' || 'landing' }}"
+          TARGET_APP="apps/${{ github.event.inputs.target == 'panel' && 'panel_fixed' || github.event.inputs.target == 'dashboard' && 'panel_fixed' || 'landing' }}"
           mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
           
@@ -325,9 +325,10 @@ jobs:
              rsync -a --exclude 'node_modules' "$TARGET_APP/.next/standalone/" deploy_bundle/
           fi
 
-          # Copy Root Handlers
-          cp "$TARGET_APP/.next/standalone/server.js" deploy_bundle/
-          cp "$TARGET_APP/.next/standalone/package.json" deploy_bundle/
+          # Copy files to temp bundle dir
+          cp apps/panel_fixed/server.js deploy_bundle/
+          cp apps/panel_fixed/next.config.mjs deploy_bundle/
+          cp apps/panel_fixed/.next/standalone/apps/panel_fixed/package.json deploy_bundle/
           
           # Copy Static Assets (Standard Next.js location)
           # Note: Standalone server expects .next/static and public to be siblings of server.js (sometimes via symlink or copy)

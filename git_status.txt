@@ -1,67 +1,413 @@
-interactive rebase in progress; onto 6ce161ca
-Last commands done (8 commands done):
-   pick 2f599a49 # fix(ci): remove duplicate keys in deploy.yml
-   pick 1a931370 # chore: add verification script and update tasks
-  (see more in file .git/rebase-merge/done)
-Next commands to do (7 remaining commands):
-   pick b3376856 # fix(ci): ensure DEPLOY_ENV defaults to staging on push
-   pick 9d08ccd9 # fix(ci): use DEPLOY_ENV env var instead of input to support push triggers
-  (use "git rebase --edit-todo" to view and edit)
-You are currently rebasing branch 'master' on '6ce161ca'.
-  (fix conflicts and then run "git rebase --continue")
-  (use "git rebase --skip" to skip this patch)
-  (use "git rebase --abort" to check out the original branch)
+On branch fix-deployment
+Your branch is up to date with 'origin/fix-deployment'.
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-	modified:   backend/salonbw-backend/eslint.config.mjs
-	new file:   backend/salonbw-backend/restore_dtos.py
-	new file:   backend/salonbw-backend/src/appointments/dto/create-appointment.dto.ts
-	new file:   backend/salonbw-backend/src/appointments/dto/get-appointments.dto.ts
-	new file:   backend/salonbw-backend/src/appointments/dto/update-appointment.dto.ts
-	modified:   backend/salonbw-backend/src/auth/auth.module.ts
-	new file:   backend/salonbw-backend/src/auth/dto/refresh-token.dto.ts
-	new file:   backend/salonbw-backend/src/auth/dto/register.dto.ts
-	new file:   backend/salonbw-backend/src/auth/guards/refresh-jwt.guard.ts
-	new file:   backend/salonbw-backend/src/auth/strategies/refresh-jwt.strategy.ts
-	new file:   backend/salonbw-backend/src/chat/dto/join-room.dto.ts
-	new file:   backend/salonbw-backend/src/chat/dto/message.dto.ts
-	new file:   backend/salonbw-backend/src/commissions/dto/get-summary.dto.ts
-	new file:   backend/salonbw-backend/src/dashboard/dto/dashboard-summary.dto.ts
-	new file:   backend/salonbw-backend/src/emails/dto/send-email.dto.ts
-	new file:   backend/salonbw-backend/src/formulas/dto/create-formula.dto.ts
-	new file:   backend/salonbw-backend/src/logs/dto/client-log.dto.ts
-	new file:   backend/salonbw-backend/src/logs/dto/get-logs.dto.ts
-	modified:   backend/salonbw-backend/src/main.ts
-	modified:   backend/salonbw-backend/src/observability/sentry.setup.ts
-	new file:   backend/salonbw-backend/src/products/dto/create-product.dto.ts
-	new file:   backend/salonbw-backend/src/products/dto/update-product.dto.ts
-	new file:   backend/salonbw-backend/src/retail/dto/adjust-inventory.dto.ts
-	new file:   backend/salonbw-backend/src/retail/dto/create-sale.dto.ts
-	new file:   backend/salonbw-backend/src/services/dto/create-service.dto.ts
-	new file:   backend/salonbw-backend/src/services/dto/update-service.dto.ts
-	new file:   backend/salonbw-backend/src/users/dto/create-user.dto.ts
-	new file:   backend/salonbw-backend/src/users/dto/user.dto.ts
-	modified:   backend/salonbw-backend/src/users/users.service.ts
-	new file:   backend/salonbw-backend/test-db.js
-	modified:   backend/salonbw-backend/test/appointments.e2e-spec.ts
-	modified:   backend/salonbw-backend/test/services.e2e-spec.ts
-	new file:   backend/salonbw-backend/tsc_output.txt
-	new file:   docker-compose.yml
-	new file:   frontend/cypress/screenshots/register.cy.ts/Registration Flow -- should register a new user and redirect to dashboard (Auto-Login) (failed) (attempt 2).png
-	new file:   frontend/cypress/screenshots/register.cy.ts/Registration Flow -- should register a new user and redirect to dashboard (Auto-Login) (failed).png
-	modified:   frontend/src/contexts/AuthContext.tsx
-	modified:   packages/api/src/api.ts
-	new file:   runs.txt
-	new file:   scripts/verify-staging.sh
-
-Unmerged paths:
-  (use "git restore --staged <file>..." to unstage)
-  (use "git add <file>..." to mark resolution)
-	both modified:   backend/salonbw-backend/package.json
-	both modified:   pnpm-lock.yaml
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   git_status.txt
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	git_status.txt
+	monitor_final_real.json
+	monitor_final_real_2.json
+	monitor_manual.json
+	monitor_panel.json
+	monitor_panel_2.json
+	monitor_panel_final.json
+	monitor_panel_immediate.json
+	monitor_panel_now.json
+	monitor_panel_retry6.json
+	monitor_panel_retry7.json
+	monitor_panel_retry8.json
+	monitor_panel_retry8_v3.json
+	monitor_retry4.json
+	monitor_retry4_2.json
+	monitor_retry4_3.json
+	monitor_retry5.json
+	monitor_retry5_2.json
+	monitor_retry5_3.json
+	monitor_retry5_4.json
+	run_list.json
+	run_monitor.json
+	run_monitor_2.json
+	run_monitor_3.json
+	run_monitor_final.json
+	start_tunnel.sh
+	status_retry7.json
+	status_retry7_2.json
+	status_retry8_v2.json
 
+Ignored files:
+  (use "git add -f <file>..." to include in what will be committed)
+	.DS_Store
+	.codacy/.gitignore
+	.codacy/cli-config.yaml
+	.codacy/logs/
+	.codacy/tools-configs/
+	.cursor/
+	.github/.DS_Store
+	.husky/_/
+	.nova/
+	.turbo/
+	.vscode/
+	all_node_ps.log
+	api_actual_main_check.log
+	api_app_dir.log
+	api_app_js_remote.log
+	api_cors.txt
+	api_cors_verify.txt
+	api_dir_struct.log
+	api_dist_check_v2.log
+	api_dist_simple.log
+	api_downgrade_check.txt
+	api_error_final.log
+	api_files.log
+	api_final_check.txt
+	api_final_cors_verify.txt
+	api_final_fix_verify.txt
+	api_final_head_check.txt
+	api_final_register.txt
+	api_find_main.log
+	api_fix_check.txt
+	api_fix_verify.txt
+	api_health.txt
+	api_health_3.txt
+	api_health_check_2.txt
+	api_health_v2.log
+	api_internal_logs.log
+	api_main_js_check.log
+	api_manual_debug_v3.log
+	api_manual_test.log
+	api_migration_check_v3.txt
+	api_migration_verify.txt
+	api_new_error_grep.log
+	api_options.log
+	api_package_json.log
+	api_register_check_final.txt
+	api_register_verify.txt
+	api_remote_app_log.log
+	api_restart_check.txt
+	api_restart_v6.log
+	api_root_check.txt
+	api_ver_fix.log
+	api_verify_v5.txt
+	apps/landing/.DS_Store
+	apps/landing/.env.local
+	apps/landing/.env.test
+	apps/landing/coverage/
+	apps/landing/frontend.log
+	apps/landing/install.log
+	apps/landing/next-env.d.ts
+	apps/landing/node_modules/
+	apps/landing/tsconfig.tsbuildinfo
+	apps/node_modules/
+	apps/panel/.DS_Store
+	apps/panel/.env.local
+	apps/panel/.env.test
+	apps/panel/.next/
+	apps/panel/coverage/
+	apps/panel/frontend.log
+	apps/panel/install.log
+	apps/panel/next-env.d.ts
+	apps/panel/node_modules/
+	apps/panel/tsconfig.tsbuildinfo
+	apps_list.txt
+	apps_nodejs_ls.log
+	backend-clean.log
+	backend.log
+	backend/.DS_Store
+	backend/salonbw-backend/.DS_Store
+	backend/salonbw-backend/.env
+	backend/salonbw-backend/.turbo/
+	backend/salonbw-backend/backend.log
+	backend/salonbw-backend/build_log.txt
+	backend/salonbw-backend/dist/
+	backend/salonbw-backend/node_modules/
+	backend_debug.txt
+	backend_env_fix.txt
+	backend_env_retry.txt
+	backend_files.txt
+	backend_local.log
+	backend_ls.txt
+	backend_pkg.txt
+	backend_port.txt
+	backup_20251205_check.txt
+	backup_archives.log
+	backup_check_20251215.txt
+	backup_content.log
+	backup_deep_check.txt
+	backup_domains.log
+	backup_list.log
+	backup_listing.txt
+	backup_root_ls.log
+	backup_slider_ls.log
+	backup_structure.log
+	build_log.txt
+	build_log_retry.txt
+	build_log_retry_2.txt
+	captured_output.log
+	check_nm.txt
+	commit_verify.txt
+	copy_attempt_1.log
+	copy_attempt_2.log
+	copy_attempt_3.log
+	copy_attempt_4.log
+	curl_debug_3002.txt
+	curl_manual_verify.txt
+	curl_manual_verify_retry.txt
+	curl_output.txt
+	curl_register_error.txt
+	curl_valid_register_test.txt
+	curl_verify.txt
+	curl_verify_final.txt
+	current_error_log.txt
+	current_load.log
+	db_check_output.txt
+	db_check_output_nossl.txt
+	debug_env.txt
+	debug_fail.txt
+	debug_fail_branch.txt
+	debug_fail_csrf.txt
+	debug_fail_final.txt
+	debug_fs_test.txt
+	debug_grep.txt
+	debug_log.txt
+	debug_log_2.txt
+	debug_log_final.txt
+	debug_log_real.txt
+	debug_logs_response.txt
+	debug_ls.txt
+	debug_recovery.log
+	debug_ssh_grep.txt
+	debug_ssh_ls.txt
+	debug_state.txt
+	deploy_failure.log
+	deployment_failure_logs.txt
+	deployment_failure_logs_2.txt
+	deployment_failure_logs_3.txt
+	deployment_failure_logs_4.txt
+	deployment_failure_logs_5.txt
+	deployment_failure_logs_5_retry.txt
+	deployment_failure_logs_6.txt
+	deployment_failure_logs_6_retry.txt
+	deployment_failure_logs_7.txt
+	deployment_failure_logs_7_retry.txt
+	deployment_logs_4.txt
+	deployment_partial_logs_5.txt
+	dev_app_dir_check.log
+	dev_app_ls_v2.log
+	dev_health_v2.log
+	dev_ls_simple.log
+	dev_mapping.txt
+	devil_help.log
+	devil_www_list.txt
+	diagnostic_logs_0df615a8.txt
+	diagnostic_logs_3190d00e.txt
+	diagnostic_logs_a491a75d.txt
+	diagnostic_logs_final.txt
+	diagnostic_logs_final_2.txt
+	diagnostic_logs_final_4.txt
+	diagnostic_logs_final_5.txt
+	diagnostic_logs_fixed.txt
+	diagnostic_logs_latest.txt
+	diagnostic_logs_latest_2.txt
+	diff_debug.txt
+	dir_list.txt
+	dir_perms.log
+	directories.txt
+	disk_check.log
+	dist_src_ls.log
+	domain_configs_verbose.log
+	domains_verbose.log
+	env_check.txt
+	error_log_daaca71c.txt
+	extract_log.txt
+	fail_log_3.txt
+	fail_log_3_retry.txt
+	fail_log_4.txt
+	fail_log_5.txt
+	failed_log.txt
+	failed_log_final.txt
+	failed_log_manual.txt
+	final_check.log
+	final_ls_check.log
+	find_result.txt
+	frontend-clean.log
+	frontend.log
+	frontend_dev_manual.log
+	frontend_panel_manual.log
+	fs_report.txt
+	gh_out.txt
+	gh_runs.txt
+	gh_runs_status.txt
+	gh_status_final.txt
+	gh_trigger.log
+	google_out.txt
+	grep_line.txt
+	http_favicon_check.txt
+	http_slider_check.txt
+	internal_logs.txt
+	killall_9_out.txt
+	killall_out.txt
+	latest_failure.log
+	latest_log.txt
+	listing_salonbw.txt
+	load_analysis.log
+	load_trend.log
+	local_dump.txt
+	local_files_check.txt
+	logs_combined.txt
+	logs_list.log
+	logs_list.txt
+	logs_location.log
+	logs_v2.txt
+	ls_debug.txt
+	ls_out.txt
+	manual_debug_run.log
+	manual_env_start.log
+	manual_log_capture.txt
+	manual_probe_result.txt
+	manual_run_output.txt
+	manual_run_output_2.txt
+	manual_run_output_3.txt
+	manual_run_v3.txt
+	manual_start_dist.log
+	manual_start_log.txt
+	manual_startup_latest.txt
+	manual_v2_log.txt
+	manual_v3_log.txt
+	mapping_check.txt
+	migration_output.txt
+	migration_output_v2.txt
+	migration_rt_output.txt
+	migration_v2_output.txt
+	next_image_check.txt
+	node_modules/
+	node_v.txt
+	packages/.DS_Store
+	packages/api/.turbo/
+	packages/api/dist/
+	packages/api/node_modules/
+	panel_app_dir.log
+	panel_app_js.log
+	panel_curl.txt
+	panel_files.txt
+	panel_final_curl.txt
+	panel_health_check.log
+	panel_info.txt
+	panel_logs.txt
+	panel_logs_retry.txt
+	panel_ls.log
+	panel_ls_simple.log
+	panel_nodejs_ls.log
+	panel_public_ls.log
+	panel_public_recursive.log
+	panel_standalone_public_ls.log
+	passenger_error.log
+	passenger_final.txt
+	passenger_startup.txt
+	passenger_tail.txt
+	passenger_tail_local.txt
+	permissions.log
+	permissions_check.log
+	pkill_final_attempt.log
+	previous_log.txt
+	probe_content.txt
+	probe_csrf_debug.txt
+	probe_debug.txt
+	probe_final.txt
+	probe_final_after_fix.txt
+	probe_final_after_push.txt
+	probe_final_success.txt
+	probe_migrate_fix.txt
+	probe_output.txt
+	probe_result_3.txt
+	probe_result_4.txt
+	probe_retry.txt
+	process_check.log
+	ps_final.log
+	ps_passenger_2.log
+	psql_test.log
+	public_diagnostic_logs.txt
+	public_diagnostic_logs_v2.txt
+	public_ls_retry.txt
+	public_nodejs_list.txt
+	recent_files.txt
+	recovery_verified.log
+	registration_error.log
+	remote_app_js.txt
+	remote_check_retry5.txt
+	remote_listing.txt
+	remote_ls.txt
+	remote_verification_logs.txt
+	restart_log.txt
+	restart_log_2.txt
+	restore_and_search.txt
+	restore_final.log
+	retry3_log.txt
+	retry4_log.txt
+	retry6_failure.log
+	retry6_full.log
+	retry7_failed.log
+	retry8_failure.log
+	run.log
+	run_20340530501.log
+	run_20340644511.log
+	run_20340804753.log
+	run_20342747721.log
+	run_failure.log
+	run_latest.log
+	run_list_debug.txt
+	run_list_new.txt
+	run_log_3.txt
+	run_log_4.txt
+	run_log_debug.txt
+	scp_debug.log
+	script_log.txt
+	script_log_final.txt
+	script_log_v2.txt
+	scripts/__pycache__/
+	secrets_debug.txt
+	server_crash.log
+	server_debug_log.log
+	server_dirs.txt
+	server_error_log.txt
+	server_error_log_latest.txt
+	server_info.txt
+	server_startup_check.log
+	server_tail.log
+	server_uuid_version.txt
+	shim_check.log
+	shim_crash_report.log
+	ssh_debug.txt
+	ssh_debug_v2.log
+	ssh_output.txt
+	ssh_test.txt
+	staging_error.log
+	startup_crash.log
+	startup_crash_v5.log
+	startup_crash_v6.log
+	status_debug.txt
+	status_v2.log
+	stop_cleanup.log
+	symlink_check.txt
+	system_logs_check.log
+	term_register.txt
+	test_debug.log
+	top_cpu.log
+	top_v5.log
+	tunnel.log
+	tunnel_manual.log
+	type_check.log
+	uptime_final_check.log
+	uptime_out.txt
+	uptime_v7.log
+	verify_and_find.txt
+	verify_restore.log
+	verify_restore_final.log
+	verify_upload.log
+	www_list.txt
+	www_list_final.log
+	www_list_v4.log
+
+no changes added to commit (use "git add" and/or "git commit -a")
