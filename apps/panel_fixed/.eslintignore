@@ -1,0 +1,7 @@
+design/
+public/assets/js/
+cypress/
+jest.config.js
+jest.setup.ts
+cypress.config.ts
+tailwind.config.ts
