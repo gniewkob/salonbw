@@ -266,8 +266,10 @@ jobs:
         run: |
           rm -rf apps/panel_fixed/.next
           pnpm --filter @salonbw/panel --fail-if-no-match build
-          echo "Listing .next directory:"
+          echo "Listing .next directory RECURSIVE (Debug):"
           ls -R apps/panel_fixed/.next || echo "apps/panel_fixed/.next NOT FOUND"
+          echo "Listing Standalone App Dir:"
+          ls -R apps/panel_fixed/.next/standalone/apps || echo "standalone/apps NOT FOUND"
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
@@ -347,16 +349,16 @@ jobs:
              BUILD_FILTER="@salonbw/landing"
           fi
 
-          # 1. Prepare Bundle (Clean Install Strategy)
-          # Logic: If target is panel OR dashboard OR empty (push default), use panel_fixed. Else landing.
-          IS_PANEL_TARGET="false"
+
+          # LOGIC FIX: Explicitly set TARGET_APP based on validated inputs
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             IS_PANEL_TARGET="true"
+             TARGET_APP="apps/panel_fixed"
+             echo "Targeting PANEL (Hardcoded Path): $TARGET_APP"
+          else
+             TARGET_APP="apps/landing"
+             echo "Targeting LANDING: $TARGET_APP"
           fi
           
-
-          # Fix interpolation above: Bash string manipulation or conditionals
-          if [ "$IS_PANEL_TARGET" == "true" ]; then TARGET_APP="apps/panel_fixed"; else TARGET_APP="apps/landing"; fi
           mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
           
