@@ -3,18 +3,19 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
-    
+
     // Check if user is authenticated via cookie
     const token = request.cookies.get('token');
     const isAuthenticated = !!token;
 
     // Define public routes
     const isAuthRoute = path.startsWith('/auth');
-    const isPublicAsset = path.startsWith('/_next') || 
-                         path.startsWith('/assets') || 
-                         path.startsWith('/favicon.ico') || 
-                         path.startsWith('/api') ||
-                         path.startsWith('/icon'); // icon.ico/svg
+    const isPublicAsset =
+        path.startsWith('/_next') ||
+        path.startsWith('/assets') ||
+        path.startsWith('/favicon.ico') ||
+        path.startsWith('/api') ||
+        path.startsWith('/icon'); // icon.ico/svg
 
     // Allow public access to auth pages and assets
     if (isAuthRoute || isPublicAsset) {
@@ -23,11 +24,16 @@ export function middleware(request: NextRequest) {
 
     // Require authentication for everything else (Dashboard, etc.)
     if (!isAuthenticated) {
+        // Strict redirect for root path
+        if (path === '/') {
+            return NextResponse.redirect(new URL('/auth/login', request.url));
+        }
+
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('redirectTo', path);
         return NextResponse.redirect(loginUrl);
     }
-    
+
     return NextResponse.next();
 }
 
