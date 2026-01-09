@@ -51,6 +51,17 @@ const nextConfig = {
                 source: '/api/:path*',
                 destination: `${target.replace(/\/$/, '')}/:path*`,
             },
+                destination: `${target.replace(/\/$/, '')}/:path*`,
+            },
+        ];
+    },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/auth/login',
+                permanent: false,
+            },
         ];
     },
     async headers() {
