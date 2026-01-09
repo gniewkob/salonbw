@@ -11,7 +11,7 @@ on:
         required: true
         default: master
       target:
-        description: What to deploy (public|dashboard|admin|api)
+        description: What to deploy (public|dashboard|admin|api|probe)
         required: true
         default: public
       environment:
@@ -36,7 +36,32 @@ env:
   NODE_VERSION: "22"
 
 jobs:
+  probe:
+    if: ${{ github.event.inputs.target == 'probe' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Server
+        env:
+          SSH_KEY: ${{ secrets.MYDEVIL_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.MYDEVIL_PRIVATE_KEY }}" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          
+          echo "=== ls -la apps/nodejs/panelbw ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw" || true
+          
+          echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages" || true
+
+          echo "=== Check Symlink public_nodejs ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || true
+          
+          echo "=== Check Redirect Logic (index.js) ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
+
   deploy:
+    if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'staging' }}
