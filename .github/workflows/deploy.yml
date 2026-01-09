@@ -217,14 +217,18 @@ jobs:
 
       - name: Build frontend (Landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' }}
-        run: pnpm --filter @salonbw/landing build
+        run: |
+          rm -rf apps/landing/.next
+          pnpm --filter @salonbw/landing build
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
       - name: Build frontend (Panel)
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' }}
-        run: pnpm --filter @salonbw/panel build
+        run: |
+          rm -rf apps/panel/.next
+          pnpm --filter @salonbw/panel build
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
