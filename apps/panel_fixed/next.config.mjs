@@ -44,14 +44,11 @@ const nextConfig = {
     experimental: {
         typedRoutes: false,
     },
-    transpilePackages: ['@salonbw/api'],
     async rewrites() {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         return [
             {
                 source: '/api/:path*',
-                destination: `${target.replace(/\/$/, '')}/:path*`,
-            },
                 destination: `${target.replace(/\/$/, '')}/:path*`,
             },
         ];
