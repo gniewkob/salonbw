@@ -1,57 +1,18 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import React from 'react';
 import HomePage from '@/pages/index';
-import { useAuth } from '@/contexts/AuthContext';
-import { createAuthValue } from '../testUtils';
+const replace = jest.fn();
+jest.mock('next/router', () => ({
+    useRouter: () => ({ replace }),
+}));
 
-jest.mock('@/contexts/AuthContext');
-const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-
-describe('Home analytics', () => {
+describe('Home redirect', () => {
     beforeEach(() => {
-        process.env.NEXT_PUBLIC_ENABLE_ANALYTICS = 'true';
-        process.env.NEXT_PUBLIC_GA_ID = 'G-TEST123';
-        // @ts-expect-error jsdom window doesn't define gtag
-        window.gtag = jest.fn();
-        mockedUseAuth.mockReturnValue(createAuthValue());
+        replace.mockClear();
     });
 
-    afterEach(() => {
-        // @ts-expect-error jsdom window doesn't define gtag
-        delete window.gtag;
-    });
-
-    it('emits view_item_list for featured services and gallery, and select_item on clicks', () => {
+    it('redirects to dashboard', async () => {
         render(<HomePage />);
-        const calls = (window.gtag as jest.Mock).mock.calls;
-        expect(
-            calls.find(
-                (c) =>
-                    c[1] === 'view_item_list' &&
-                    c[2]?.item_list_name === 'home_featured_services',
-            ),
-        ).toBeTruthy();
-        expect(
-            calls.find(
-                (c) =>
-                    c[1] === 'view_item_list' &&
-                    c[2]?.item_list_name === 'home_gallery',
-            ),
-        ).toBeTruthy();
-
-        // Click Coloring card
-        fireEvent.click(screen.getByText('Coloring'));
-        const after = (window.gtag as jest.Mock).mock.calls;
-        expect(after.find((c) => c[1] === 'select_item')).toBeTruthy();
-
-        // Click first gallery image button by aria-label
-        fireEvent.click(screen.getByLabelText('View gallery image 1'));
-        const after2 = (window.gtag as jest.Mock).mock.calls;
-        const gallerySelect = after2.filter(
-            (c) =>
-                c[1] === 'select_item' &&
-                c[2]?.item_list_name === 'home_gallery',
-        );
-        expect(gallerySelect.length).toBeGreaterThanOrEqual(1);
+        await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
     });
 });
