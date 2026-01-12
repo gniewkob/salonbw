@@ -289,10 +289,11 @@ jobs:
       - name: Build backend
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
-          pnpm --filter salonbw-backend build
+          cd backend/salonbw-backend
+          npm install --no-package-lock
+          npm run build
           # Explicitly compile migrate.ts as it might be missed by nest build
           echo "Explicitly building migrate.ts..."
-          cd backend/salonbw-backend
           npx tsc src/migrate.ts --outDir dist --skipLibCheck --esModuleInterop --target ES2022 --moduleResolution node16 || echo "tsc failed but continuing..."
           ls -l dist/migrate.js || echo "migrate.js missing!"
 
