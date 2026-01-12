@@ -9,12 +9,23 @@ process.env.PORT =
   '3001';
 
 const distRoot = path.join(__dirname, 'dist');
+const polyfillCandidates = [
+  path.join(distRoot, 'polyfills.js'),
+  path.join(distRoot, 'src', 'polyfills.js'),
+  path.join(distRoot, 'polyfills.cjs'),
+  path.join(distRoot, 'src', 'polyfills.cjs'),
+];
 const candidates = [
   path.join(distRoot, 'main.js'),
   path.join(distRoot, 'src', 'main.js'),
   path.join(distRoot, 'main.cjs'),
   path.join(distRoot, 'src', 'main.cjs'),
 ];
+
+const polyfills = polyfillCandidates.find((candidate) => fs.existsSync(candidate));
+if (polyfills) {
+  require(polyfills);
+}
 
 const entry = candidates.find((candidate) => fs.existsSync(candidate));
 
