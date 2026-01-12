@@ -290,7 +290,7 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           cd backend/salonbw-backend
-          npm install --no-package-lock
+          npm install --no-package-lock --include=dev
           npm run build
           # Explicitly compile migrate.ts as it might be missed by nest build
           echo "Explicitly building migrate.ts..."
