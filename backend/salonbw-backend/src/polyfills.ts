@@ -1,6 +1,13 @@
 import * as crypto from 'crypto';
 
-if (!global.crypto) {
-    // @ts-ignore
-    global.crypto = crypto;
+const globalWithCrypto = globalThis as typeof globalThis & {
+    crypto?: typeof crypto;
+};
+
+if (!globalWithCrypto.crypto) {
+    globalWithCrypto.crypto = crypto;
+}
+
+if (!globalWithCrypto.crypto.randomUUID) {
+    globalWithCrypto.crypto.randomUUID = crypto.randomUUID;
 }
