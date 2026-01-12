@@ -27,7 +27,7 @@ describe('LoginPage', () => {
         fireEvent.change(screen.getByLabelText(/password/i), {
             target: { value: 'secret' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /login/i }));
+        fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
         await waitFor(() => expect(login).toHaveBeenCalled());
         expect(push).toHaveBeenCalledWith('/dashboard');
     });
@@ -42,7 +42,7 @@ describe('LoginPage', () => {
         fireEvent.blur(emailInput);
         fireEvent.change(passwordInput, { target: { value: '' } });
         fireEvent.blur(passwordInput);
-        fireEvent.click(screen.getByRole('button', { name: /login/i }));
+        fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
         expect(await screen.findAllByRole('alert')).not.toHaveLength(0);
         expect(login).not.toHaveBeenCalled();
     });
