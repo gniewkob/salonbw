@@ -1,12 +1,4 @@
 import './polyfills';
-import * as crypto from 'crypto';
-
-// Polyfill global crypto for Node < 19
-if (!(global as any).crypto) {
-    (global as any).crypto = crypto;
-} else if (!(global as any).crypto.randomUUID) {
-    (global as any).crypto.randomUUID = crypto.randomUUID;
-}
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
