@@ -28,7 +28,7 @@
     "devDependencies": {
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
-        "turbo": "^2.6.0"
+        "turbo": "^2.7.4"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
