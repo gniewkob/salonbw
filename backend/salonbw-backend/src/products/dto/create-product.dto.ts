@@ -11,4 +11,24 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateProductDto {}
+export class CreateProductDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    brand: string;
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    unitPrice: number;
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    stock: number;
+}
