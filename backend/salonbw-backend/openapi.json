@@ -1185,7 +1185,55 @@
       },
       "Appointment": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "client": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "employee": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "service": {
+            "$ref": "#/components/schemas/Service"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "cancelled",
+              "completed"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "formulas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Formula"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "client",
+          "employee",
+          "service",
+          "startTime",
+          "endTime",
+          "status"
+        ]
       },
       "CreateAppointmentDto": {
         "type": "object",
@@ -1228,27 +1276,157 @@
       },
       "Service": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "commissionPercent": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "duration",
+          "price"
+        ]
       },
       "CreateServiceDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "commissionPercent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "duration",
+          "price"
+        ]
       },
       "UpdateServiceDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "commissionPercent": {
+            "type": "number"
+          }
+        }
       },
       "Product": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "brand",
+          "unitPrice",
+          "stock"
+        ]
       },
       "CreateProductDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "brand",
+          "unitPrice",
+          "stock"
+        ]
       },
       "UpdateProductDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          }
+        }
       },
       "CreateFormulaDto": {
         "type": "object",
@@ -1267,11 +1445,63 @@
       },
       "Formula": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "client": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "date",
+          "client"
+        ]
       },
       "Commission": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "employee": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "appointment": {
+            "$ref": "#/components/schemas/Appointment",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number"
+          },
+          "percent": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "employee",
+          "amount",
+          "percent",
+          "createdAt"
+        ]
       },
       "DashboardSummaryDto": {
         "type": "object",
