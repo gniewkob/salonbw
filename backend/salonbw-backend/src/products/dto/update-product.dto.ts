@@ -11,4 +11,24 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UpdateProductDto {}
+export class UpdateProductDto {
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    brand?: string;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    unitPrice?: number;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    stock?: number;
+}

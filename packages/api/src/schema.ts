@@ -511,7 +511,17 @@ export interface components {
              */
             refreshToken: string;
         };
-        Appointment: Record<string, never>;
+        Appointment: {
+            id: number;
+            client: components["schemas"]["UserDto"];
+            employee: components["schemas"]["UserDto"];
+            service: components["schemas"]["Service"];
+            startTime: string;
+            endTime: string;
+            status: "scheduled" | "cancelled" | "completed";
+            notes?: string;
+            formulas: components["schemas"]["Formula"][];
+        };
         CreateAppointmentDto: {
             employeeId: number;
             serviceId: number;
@@ -525,18 +535,69 @@ export interface components {
             /** @description New end time ISO string */
             endTime?: string;
         };
-        Service: Record<string, never>;
-        CreateServiceDto: Record<string, never>;
-        UpdateServiceDto: Record<string, never>;
-        Product: Record<string, never>;
-        CreateProductDto: Record<string, never>;
-        UpdateProductDto: Record<string, never>;
+        Service: {
+            id: number;
+            name: string;
+            description: string;
+            duration: number;
+            price: number;
+            category?: string;
+            commissionPercent?: number;
+        };
+        CreateServiceDto: {
+            name: string;
+            description: string;
+            duration: number;
+            price: number;
+            category?: string;
+            commissionPercent?: number;
+        };
+        UpdateServiceDto: {
+            name?: string;
+            description?: string;
+            duration?: number;
+            price?: number;
+            category?: string;
+            commissionPercent?: number;
+        };
+        Product: {
+            id: number;
+            name: string;
+            brand: string;
+            unitPrice: number;
+            stock: number;
+        };
+        CreateProductDto: {
+            name: string;
+            brand: string;
+            unitPrice: number;
+            stock: number;
+        };
+        UpdateProductDto: {
+            name?: string;
+            brand?: string;
+            unitPrice?: number;
+            stock?: number;
+        };
         CreateFormulaDto: {
             description: string;
             date: string;
         };
-        Formula: Record<string, never>;
-        Commission: Record<string, never>;
+        Formula: {
+            id: number;
+            description: string;
+            date: string;
+            client: components["schemas"]["UserDto"];
+        };
+        Commission: {
+            id: number;
+            employee: components["schemas"]["UserDto"];
+            appointment?: components["schemas"]["Appointment"];
+            product?: components["schemas"]["Product"];
+            amount: number;
+            percent: number;
+            createdAt: string;
+        };
         DashboardSummaryDto: {
             /**
              * @description Total number of clients
