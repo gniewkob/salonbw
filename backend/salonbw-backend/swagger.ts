@@ -23,6 +23,10 @@ import { CommissionsService } from './src/commissions/commissions.service';
 import { LogService } from './src/logs/log.service';
 import { DashboardController } from './src/dashboard/dashboard.controller';
 import { DashboardService } from './src/dashboard/dashboard.service';
+import { LogsController } from './src/logs/logs.controller';
+import { HealthService } from './src/health.service';
+import { PinoLogger } from 'nestjs-pino';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
     controllers: [
@@ -37,6 +41,7 @@ import { DashboardService } from './src/dashboard/dashboard.service';
         ClientFormulasController,
         CommissionsController,
         DashboardController,
+        LogsController,
     ],
     providers: [
         AppService,
@@ -114,6 +119,32 @@ import { DashboardService } from './src/dashboard/dashboard.service';
                     employeeCount: 0,
                     todayAppointments: 0,
                     upcomingAppointments: [],
+                }),
+            },
+        },
+        {
+            provide: PinoLogger,
+            useValue: {
+                error: () => undefined,
+                info: () => undefined,
+                warn: () => undefined,
+                debug: () => undefined,
+                setContext: () => undefined,
+            },
+        },
+        {
+            provide: ConfigService,
+            useValue: {
+                get: () => undefined,
+            },
+        },
+        {
+            provide: HealthService,
+            useValue: {
+                getHealthSummary: async () => ({
+                    status: 'ok',
+                    timestamp: new Date().toISOString(),
+                    services: {},
                 }),
             },
         },

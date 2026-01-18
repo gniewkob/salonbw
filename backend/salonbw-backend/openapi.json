@@ -16,6 +16,20 @@
         ]
       }
     },
+    "/debug-logs": {
+      "get": {
+        "operationId": "AppController_getLogs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "app"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "HealthController_getHealth",
@@ -26,6 +40,21 @@
           }
         },
         "summary": "Health check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "HealthController_getDeepHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service and dependencies are up"
+          }
+        },
+        "summary": "Health check with dependencies",
         "tags": [
           "health"
         ]
@@ -942,24 +971,6 @@
             "schema": {
               "type": "number"
             }
-          },
-          {
-            "name": "from",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1043,6 +1054,130 @@
           "dashboard"
         ]
       }
+    },
+    "/logs": {
+      "get": {
+        "operationId": "LogsController_getLogs",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "USER_LOGIN",
+                "LOGIN_FAIL",
+                "USER_REGISTERED",
+                "AUTHORIZATION_FAILURE",
+                "PRODUCT_CREATED",
+                "PRODUCT_UPDATED",
+                "PRODUCT_DELETED",
+                "SERVICE_CREATED",
+                "SERVICE_UPDATED",
+                "SERVICE_DELETED",
+                "APPOINTMENT_CREATED",
+                "APPOINTMENT_CANCELLED",
+                "APPOINTMENT_COMPLETED",
+                "APPOINTMENT_RESCHEDULED",
+                "COMMISSION_CREATED"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of logs"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get logs",
+        "tags": [
+          "logs"
+        ]
+      }
+    },
+    "/logs/client": {
+      "post": {
+        "operationId": "LogsController_logClientError",
+        "parameters": [
+          {
+            "name": "x-log-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientLogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Log accepted"
+          }
+        },
+        "summary": "Ingest client-side error log",
+        "tags": [
+          "logs"
+        ]
+      }
     }
   },
   "info": {
@@ -1083,18 +1218,12 @@
           "role": {
             "type": "string",
             "description": "User role",
-            "enum": [
-              "client",
-              "employee",
-              "admin"
-            ],
             "example": "client"
           },
           "phone": {
             "type": "object",
             "description": "International phone number",
-            "example": "+123456789",
-            "nullable": true
+            "example": "+123456789"
           },
           "commissionBase": {
             "type": "number",
@@ -1144,6 +1273,11 @@
             "type": "boolean",
             "description": "Whether the user receives notifications",
             "example": true
+          },
+          "password": {
+            "type": "string",
+            "description": "Password",
+            "example": "password123"
           }
         },
         "required": [
@@ -1163,11 +1297,22 @@
             "type": "string",
             "description": "User full name",
             "example": "John Doe"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "example": "SecurePassword123!"
+          },
+          "phone": {
+            "type": "string",
+            "description": "International phone number",
+            "example": "+123456789"
           }
         },
         "required": [
           "email",
-          "name"
+          "name",
+          "password"
         ]
       },
       "RefreshTokenDto": {
@@ -1183,6 +1328,78 @@
           "refreshToken"
         ]
       },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "client",
+              "employee",
+              "admin"
+            ]
+          },
+          "phone": {
+            "type": "object"
+          },
+          "receiveNotifications": {
+            "type": "boolean"
+          },
+          "commissionBase": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "receiveNotifications",
+          "commissionBase"
+        ]
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "commissionPercent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "duration",
+          "price"
+        ]
+      },
       "Appointment": {
         "type": "object",
         "properties": {
@@ -1190,21 +1407,21 @@
             "type": "number"
           },
           "client": {
-            "$ref": "#/components/schemas/UserDto"
+            "$ref": "#/components/schemas/User"
           },
           "employee": {
-            "$ref": "#/components/schemas/UserDto"
+            "$ref": "#/components/schemas/User"
           },
           "service": {
             "$ref": "#/components/schemas/Service"
           },
           "startTime": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "endTime": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "status": {
             "type": "string",
@@ -1215,8 +1432,7 @@
             ]
           },
           "notes": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "formulas": {
             "type": "array",
@@ -1232,7 +1448,35 @@
           "service",
           "startTime",
           "endTime",
-          "status"
+          "status",
+          "formulas"
+        ]
+      },
+      "Formula": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "client": {
+            "$ref": "#/components/schemas/User"
+          },
+          "appointment": {
+            "$ref": "#/components/schemas/Appointment"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "date",
+          "client"
         ]
       },
       "CreateAppointmentDto": {
@@ -1272,41 +1516,6 @@
         },
         "required": [
           "startTime"
-        ]
-      },
-      "Service": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "integer"
-          },
-          "price": {
-            "type": "number"
-          },
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "commissionPercent": {
-            "type": "number",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "duration",
-          "price"
         ]
       },
       "CreateServiceDto": {
@@ -1377,7 +1586,7 @@
             "type": "number"
           },
           "stock": {
-            "type": "integer"
+            "type": "number"
           }
         },
         "required": [
@@ -1401,7 +1610,7 @@
             "type": "number"
           },
           "stock": {
-            "type": "integer"
+            "type": "number"
           }
         },
         "required": [
@@ -1424,7 +1633,7 @@
             "type": "number"
           },
           "stock": {
-            "type": "integer"
+            "type": "number"
           }
         }
       },
@@ -1443,30 +1652,6 @@
           "date"
         ]
       },
-      "Formula": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "description": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "client": {
-            "$ref": "#/components/schemas/UserDto"
-          }
-        },
-        "required": [
-          "id",
-          "description",
-          "date",
-          "client"
-        ]
-      },
       "Commission": {
         "type": "object",
         "properties": {
@@ -1474,15 +1659,13 @@
             "type": "number"
           },
           "employee": {
-            "$ref": "#/components/schemas/UserDto"
+            "$ref": "#/components/schemas/User"
           },
           "appointment": {
-            "$ref": "#/components/schemas/Appointment",
-            "nullable": true
+            "$ref": "#/components/schemas/Appointment"
           },
           "product": {
-            "$ref": "#/components/schemas/Product",
-            "nullable": true
+            "$ref": "#/components/schemas/Product"
           },
           "amount": {
             "type": "number"
@@ -1491,8 +1674,8 @@
             "type": "number"
           },
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -1524,7 +1707,7 @@
           "upcomingAppointments": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Appointment"
+              "type": "string"
             }
           }
         },
@@ -1534,6 +1717,10 @@
           "todayAppointments",
           "upcomingAppointments"
         ]
+      },
+      "ClientLogDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }
