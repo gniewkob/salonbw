@@ -20,6 +20,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { Commission } from './commission.entity';
 import { GetSummaryDto } from './dto/get-summary.dto';
+import { GetSummaryQueryDto } from './dto/get-summary-query.dto';
 
 @ApiTags('commissions')
 @Controller()
@@ -54,12 +55,12 @@ export class CommissionsController {
     @ApiResponse({
         status: 200,
         description: 'Summary amount',
-        schema: { example: { amount: 0 } },
+        type: GetSummaryDto,
     })
     getSummaryForEmployee(
         @Param('id', ParseIntPipe) id: number,
-        @Query() { from, to }: GetSummaryDto,
-    ): Promise<{ amount: number }> {
+        @Query() { from, to }: GetSummaryQueryDto,
+    ): Promise<GetSummaryDto> {
         return this.commissionsService
             .sumForUser(id, new Date(from), new Date(to))
             .then((amount) => ({ amount }));
