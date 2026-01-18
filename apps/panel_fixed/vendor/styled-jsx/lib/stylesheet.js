@@ -1,1 +1,1 @@
-module.exports = require('../dist/lib/stylesheet')
+module.exports = require('../dist/lib/stylesheet');
