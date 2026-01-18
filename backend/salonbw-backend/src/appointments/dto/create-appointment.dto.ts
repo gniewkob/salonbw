@@ -1,37 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsString,
-    IsNumber,
-    IsBoolean,
-    IsOptional,
-    IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsInt, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateAppointmentDto {
-    @IsNumber()
-    @IsNotEmpty()
-    @ApiProperty({})
+    @ApiProperty()
+    @IsInt()
     employeeId: number;
 
-    @IsNumber()
-    @IsNotEmpty()
-    @ApiProperty({})
+    @ApiProperty()
+    @IsInt()
     serviceId: number;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({})
+    @ApiProperty()
+    @IsDateString()
     startTime: string;
 
-    @IsNumber()
-    @IsOptional()
     @ApiProperty({
-        description: 'Required when creating appointments as Employee or Admin',
         required: false,
+        description: 'Required when creating appointments as Employee or Admin',
     })
+    @IsInt()
+    @IsOptional()
     clientId?: number;
 }
