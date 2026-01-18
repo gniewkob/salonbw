@@ -1,24 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsString,
-    IsNumber,
-    IsBoolean,
-    IsOptional,
-    IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsDateString } from 'class-validator';
 
 export class CreateFormulaDto {
+    @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    @ApiProperty({})
     description: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({})
+    @ApiProperty()
+    @IsDateString()
     date: string;
 }

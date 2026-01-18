@@ -1,24 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsString,
-    IsNumber,
-    IsBoolean,
-    IsOptional,
-    IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class UpdateAppointmentDto {
-    @IsString()
-    @IsNotEmpty()
     @ApiProperty({ description: 'New start time ISO string' })
+    @IsDateString()
     startTime: string;
 
-    @IsString()
+    @ApiProperty({
+        required: false,
+        description: 'New end time ISO string',
+    })
+    @IsDateString()
     @IsOptional()
-    @ApiProperty({ description: 'New end time ISO string', required: false })
     endTime?: string;
 }
