@@ -16,7 +16,6 @@ import {
     sendWebVital,
     trackEvent,
 } from '@/utils/analytics';
-import BookNowFab from '@/components/BookNowFab';
 import { logClientError } from '@/utils/logClient';
 
 // Initialize Sentry once (no-op if DSN is not set)
