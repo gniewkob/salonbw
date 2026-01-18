@@ -16,7 +16,9 @@ describe('public contact form', () => {
         cy.contains('button', 'Send').should('be.disabled');
 
         cy.get('input[name="email"]').clear().type('jane@example.com');
-        cy.get('textarea[name="message"]').type('I would like to book an appointment.');
+        cy.get('textarea[name="message"]').type(
+            'I would like to book an appointment.',
+        );
 
         cy.contains('button', 'Send').should('not.be.disabled').click();
         cy.wait('@sendEmail').its('request.body').should('include', {

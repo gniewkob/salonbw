@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsAuthenticated(false);
             clearSessionState();
         }
-    }, [client, handleLogout]);
+    }, [client, clearSessionState]);
 
     useEffect(() => {
         void fetchProfile().finally(() => setInitialized(true));
