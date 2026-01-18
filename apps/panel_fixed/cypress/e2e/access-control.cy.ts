@@ -41,7 +41,10 @@ describe('Access control', () => {
         cy.intercept('GET', '**/users/profile', clientProfile).as('profile');
         cy.intercept('GET', '**/dashboard', (req) => {
             const accept = req.headers['accept'] ?? '';
-            if (typeof accept === 'string' && accept.includes('application/json')) {
+            if (
+                typeof accept === 'string' &&
+                accept.includes('application/json')
+            ) {
                 req.reply(clientDashboard);
             } else {
                 req.continue();
