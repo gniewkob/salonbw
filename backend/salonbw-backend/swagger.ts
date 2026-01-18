@@ -23,6 +23,9 @@ import { CommissionsService } from './src/commissions/commissions.service';
 import { LogService } from './src/logs/log.service';
 import { DashboardController } from './src/dashboard/dashboard.controller';
 import { DashboardService } from './src/dashboard/dashboard.service';
+import { SalesController } from './src/retail/sales.controller';
+import { InventoryController } from './src/retail/inventory.controller';
+import { RetailService } from './src/retail/retail.service';
 
 @Module({
     controllers: [
@@ -37,6 +40,8 @@ import { DashboardService } from './src/dashboard/dashboard.service';
         ClientFormulasController,
         CommissionsController,
         DashboardController,
+        SalesController,
+        InventoryController,
     ],
     providers: [
         AppService,
@@ -115,6 +120,21 @@ import { DashboardService } from './src/dashboard/dashboard.service';
                     todayAppointments: 0,
                     upcomingAppointments: [],
                 }),
+            },
+        },
+        {
+            provide: RetailService,
+            useValue: {
+                createSale: () => ({ status: 'ok' }),
+                getSalesSummary: () => ({
+                    source: 'none',
+                    from: new Date(),
+                    to: new Date(),
+                    units: 0,
+                    revenue: null,
+                }),
+                adjustInventory: () => ({ status: 'ok' }),
+                getInventoryLevels: () => [],
             },
         },
     ],

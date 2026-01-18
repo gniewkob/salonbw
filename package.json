@@ -26,9 +26,16 @@
         ]
     },
     "devDependencies": {
+        "@nestjs/cli": "^11.0.16",
+        "@nestjs/schematics": "^11.0.9",
+        "@types/node": "^24.10.1",
         "husky": "^9.1.7",
+        "jest": "^30.2.0",
         "lint-staged": "^16.2.7",
-        "turbo": "^2.6.0"
+        "ts-jest": "^29.4.5",
+        "ts-node": "^10.9.2",
+        "turbo": "^2.6.0",
+        "typescript": "^5.9.3"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
