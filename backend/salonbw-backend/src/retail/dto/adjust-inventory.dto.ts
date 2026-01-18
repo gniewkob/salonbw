@@ -1,17 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
     IsString,
-    IsNumber,
-    IsBoolean,
     IsOptional,
     IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
+    IsInt,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class AdjustInventoryDto {
-    // TODO: Properties could not be restored from OpenAPI
-    [key: string]: any;
+    @ApiProperty({ description: 'ID of the product to adjust' })
+    @IsInt()
+    @IsNotEmpty()
+    productId: number;
+
+    @ApiProperty({ description: 'Change in quantity (positive or negative)' })
+    @IsInt()
+    @IsNotEmpty()
+    delta: number;
+
+    @ApiProperty({ description: 'Reason for the adjustment' })
+    @IsString()
+    @IsNotEmpty()
+    reason: string;
+
+    @ApiProperty({ description: 'Optional note', required: false })
+    @IsString()
+    @IsOptional()
+    note?: string;
 }
