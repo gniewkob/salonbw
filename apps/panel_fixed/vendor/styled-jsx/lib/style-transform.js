@@ -1,2 +1,2 @@
 /* eslint-ignore */
-module.exports = require('../dist/lib/style-transform')
+module.exports = require('../dist/lib/style-transform');

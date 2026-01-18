@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';

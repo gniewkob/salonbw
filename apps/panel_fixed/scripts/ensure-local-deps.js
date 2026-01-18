@@ -10,13 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 function ensureNextEnv() {
-    const vendorDir = path.join(
-        __dirname,
-        '..',
-        'vendor',
-        '@next',
-        'env',
-    );
+    const vendorDir = path.join(__dirname, '..', 'vendor', '@next', 'env');
     const vendorPkgPath = path.join(vendorDir, 'package.json');
     if (!fs.existsSync(vendorPkgPath)) {
         return;
@@ -69,7 +63,13 @@ function ensureNextEnv() {
         syncToTarget(targetDir);
     }
 
-    const pnpmStoreDir = path.join(__dirname, '..', '..', 'node_modules', '.pnpm');
+    const pnpmStoreDir = path.join(
+        __dirname,
+        '..',
+        '..',
+        'node_modules',
+        '.pnpm',
+    );
     try {
         const entries = fs.readdirSync(pnpmStoreDir, { withFileTypes: true });
         for (const entry of entries) {
@@ -137,7 +137,13 @@ function ensurePicocolors() {
         fs.cpSync(vendorDir, targetDir, { recursive: true });
     }
 
-    const pnpmStoreDir = path.join(__dirname, '..', '..', 'node_modules', '.pnpm');
+    const pnpmStoreDir = path.join(
+        __dirname,
+        '..',
+        '..',
+        'node_modules',
+        '.pnpm',
+    );
     try {
         const entries = fs.readdirSync(pnpmStoreDir, { withFileTypes: true });
         for (const entry of entries) {
@@ -233,7 +239,13 @@ function ensureStyledJsx() {
         fs.cpSync(vendorDir, targetDir, { recursive: true });
     }
 
-    const pnpmStoreDir = path.join(__dirname, '..', '..', 'node_modules', '.pnpm');
+    const pnpmStoreDir = path.join(
+        __dirname,
+        '..',
+        '..',
+        'node_modules',
+        '.pnpm',
+    );
     try {
         const entries = fs.readdirSync(pnpmStoreDir, { withFileTypes: true });
         for (const entry of entries) {
