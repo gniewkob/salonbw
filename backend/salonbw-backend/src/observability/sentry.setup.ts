@@ -38,9 +38,8 @@ export async function setupSentry(app: INestApplication): Promise<boolean> {
     if (!initialized) {
         let nodeProfilingIntegration: any;
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const profiling = await import('@sentry/profiling-node');
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
             nodeProfilingIntegration = profiling.nodeProfilingIntegration;
         } catch {
             // profiling module not found, skip

@@ -21,10 +21,12 @@ describe('admin dashboard navigation', () => {
         cy.url().should('include', '/dashboard/admin');
         cy.contains('Clients');
         cy.get('[data-testid="value"]').then(($values) => {
-            const metrics = Array.from($values).map((el) =>
-                el.textContent?.trim() ?? null,
+            const metrics = Array.from($values).map(
+                (el) => el.textContent?.trim() ?? null,
             );
-            cy.wrap(metrics).toMatchSnapshot({ name: 'admin-dashboard-metrics' });
+            cy.wrap(metrics).toMatchSnapshot({
+                name: 'admin-dashboard-metrics',
+            });
         });
         cy.intercept('GET', '**/employees*', (req) => {
             const accept = String(req.headers['accept'] ?? '');
@@ -104,9 +106,10 @@ describe('admin dashboard services crud', () => {
 
         // Wait for the create request
         cy.wait('@createSvc').then(({ request }) => {
-            const body = typeof request.body === 'string'
-                ? JSON.parse(request.body)
-                : request.body;
+            const body =
+                typeof request.body === 'string'
+                    ? JSON.parse(request.body)
+                    : request.body;
             expect(body).to.deep.equal({ name: 'Wax' });
         });
 
