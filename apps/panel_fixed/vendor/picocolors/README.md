@@ -5,9 +5,7 @@ The tiniest and the fastest library for terminal output formatting with ANSI col
 ```javascript
 import pc from "picocolors"
 
-console.log(
-  pc.green(`How are ${pc.italic(`you`)} doing?`)
-)
+console.log(pc.green(`How are ${pc.italic(`you`)} doing?`))
 ```
 
 - **No dependencies.**
@@ -108,9 +106,9 @@ The object also includes following background color modifier functions: `bgBlack
 
 ```javascript
 console.log(
-  pc.bgBlack(
-    pc.white(`Tom appeared on the sidewalk with a bucket of whitewash and a long-handled brush.`)
-  )
+	pc.bgBlack(
+		pc.white(`Tom appeared on the sidewalk with a bucket of whitewash and a long-handled brush.`),
+	),
 )
 ```
 
@@ -118,7 +116,7 @@ Besides colors, the object includes following formatting functions: `dim`, `bold
 
 ```javascript
 for (let task of tasks) {
-  console.log(`${pc.bold(task.name)} ${pc.dim(task.durationMs + "ms")}`)
+	console.log(`${pc.bold(task.name)} ${pc.dim(task.durationMs + "ms")}`)
 }
 ```
 
@@ -130,7 +128,7 @@ The library provides additional utilities to ensure the best results for the tas
   import pc from "picocolors"
 
   if (pc.isColorSupported) {
-    console.log("Yay! This script can use colors and formatters")
+	console.log("Yay! This script can use colors and formatters")
   }
   ```
 

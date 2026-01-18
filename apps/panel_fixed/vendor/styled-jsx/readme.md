@@ -8,37 +8,37 @@ Code and docs are for v3 which we highly recommend you to try. Looking for style
 
 - [Getting started](#getting-started)
 - [Configuration options](#configuration-options)
-  - [`optimizeForSpeed`](#optimizeforspeed)
-  - [`sourceMaps`](#sourcemaps)
-  - [`styleModule`](#stylemodule)
-  - [`vendorPrefixes`](#vendorprefixes)
+    - [`optimizeForSpeed`](#optimizeforspeed)
+    - [`sourceMaps`](#sourcemaps)
+    - [`styleModule`](#stylemodule)
+    - [`vendorPrefixes`](#vendorprefixes)
 - [Features](#features)
 - [How It Works](#how-it-works)
-  - [Why It Works Like This](#why-it-works-like-this)
+    - [Why It Works Like This](#why-it-works-like-this)
 - [Targeting The Root](#targeting-the-root)
 - [Global styles](#global-styles)
-  - [One-off global selectors](#one-off-global-selectors)
+    - [One-off global selectors](#one-off-global-selectors)
 - [Dynamic styles](#dynamic-styles)
-  - [Via interpolated dynamic props](#via-interpolated-dynamic-props)
-  - [Via `className` toggling](#via-classname-toggling)
-  - [Via inline `style`](#via-inline-style)
+    - [Via interpolated dynamic props](#via-interpolated-dynamic-props)
+    - [Via `className` toggling](#via-classname-toggling)
+    - [Via inline `style`](#via-inline-style)
 - [Constants](#constants)
 - [Server-Side Rendering](#server-side-rendering)
 - [External CSS and styles outside of the component](#external-css-and-styles-outside-of-the-component)
-  - [External styles](#external-styles)
-  - [Styles outside of components](#styles-outside-of-components)
-  - [The `resolve` tag](#the-resolve-tag)
-  - [Styles in regular CSS files](#styles-in-regular-css-files)
+    - [External styles](#external-styles)
+    - [Styles outside of components](#styles-outside-of-components)
+    - [The `resolve` tag](#the-resolve-tag)
+    - [Styles in regular CSS files](#styles-in-regular-css-files)
 - [CSS Preprocessing via Plugins](#css-preprocessing-via-plugins)
-  - [Plugin options](#plugin-options)
-  - [Example plugins](#example-plugins)
+    - [Plugin options](#plugin-options)
+    - [Example plugins](#example-plugins)
 - [Rendering in tests](#rendering-in-tests)
 - [FAQ](#faq)
-  - [Warning: unknown `jsx` prop on &lt;style&gt; tag](#warning-unknown-jsx-prop-on-style-tag)
-  - [Can I return an array of components when using React 16?](#can-i-return-an-array-of-components-when-using-react-16)
-  - [Styling third parties / child components from the parent](#styling-third-parties--child-components-from-the-parent)
-  - [Some styles are missing in production](https://github.com/vercel/styled-jsx/issues/319#issuecomment-349239326)
-  - [Build a component library with styled-jsx](#build-a-component-library-with-styled-jsx)
+    - [Warning: unknown `jsx` prop on &lt;style&gt; tag](#warning-unknown-jsx-prop-on-style-tag)
+    - [Can I return an array of components when using React 16?](#can-i-return-an-array-of-components-when-using-react-16)
+    - [Styling third parties / child components from the parent](#styling-third-parties--child-components-from-the-parent)
+    - [Some styles are missing in production](https://github.com/vercel/styled-jsx/issues/319#issuecomment-349239326)
+    - [Build a component library with styled-jsx](#build-a-component-library-with-styled-jsx)
 - [Syntax Highlighting](#syntax-highlighting)
 - [ESLint](#eslint)
 - [TypeScript](#typescript)
@@ -56,7 +56,7 @@ Next, add `styled-jsx/babel` to `plugins` in your babel configuration:
 
 ```json
 {
-  "plugins": ["styled-jsx/babel"]
+    "plugins": ["styled-jsx/babel"]
 }
 ```
 
@@ -64,19 +64,19 @@ Now add `<style jsx>` to your code and fill it with CSS:
 
 ```jsx
 export default () => (
-  <div>
-    <p>only this paragraph will get the style :)</p>
+    <div>
+        <p>only this paragraph will get the style :)</p>
 
-    {/* you can include <Component />s here that include
+        {/* you can include <Component />s here that include
          other <p>s that don't get unexpected styles! */}
 
-    <style jsx>{`
-      p {
-        color: red;
-      }
-    `}</style>
-  </div>
-)
+        <style jsx>{`
+            p {
+                color: red;
+            }
+        `}</style>
+    </div>
+);
 ```
 
 ## Configuration options
@@ -89,7 +89,7 @@ Blazing fast and optimized CSS rules injection system based on the CSSOM APIs.
 
 ```json
 {
-  "plugins": [["styled-jsx/babel", { "optimizeForSpeed": true }]]
+    "plugins": [["styled-jsx/babel", { "optimizeForSpeed": true }]]
 }
 ```
 
@@ -132,14 +132,14 @@ Next.js automatically configures `styled-jsx` with babel or swc, you don't have 
 The example above transpiles to the following:
 
 ```jsx
-import _JSXStyle from 'styled-jsx/style'
+import _JSXStyle from 'styled-jsx/style';
 
 export default () => (
-  <div className="jsx-123">
-    <p className="jsx-123">only this paragraph will get the style :)</p>
-    <_JSXStyle id="123">{`p.jsx-123 {color: red;}`}</_JSXStyle>
-  </div>
-)
+    <div className="jsx-123">
+        <p className="jsx-123">only this paragraph will get the style :)</p>
+        <_JSXStyle id="123">{`p.jsx-123 {color: red;}`}</_JSXStyle>
+    </div>
+);
 ```
 
 ### Why It Works Like This
@@ -161,14 +161,14 @@ If you want to target _only_ the host, we suggest you use a class:
 
 ```jsx
 export default () => (
-  <div className="root">
-    <style jsx>{`
-      .root {
-        color: green;
-      }
-    `}</style>
-  </div>
-)
+    <div className="root">
+        <style jsx>{`
+            .root {
+                color: green;
+            }
+        `}</style>
+    </div>
+);
 ```
 
 ### Global styles
@@ -178,14 +178,14 @@ explicit by adding _global_.
 
 ```jsx
 export default () => (
-  <div>
-    <style jsx global>{`
-      body {
-        background: red;
-      }
-    `}</style>
-  </div>
-)
+    <div>
+        <style jsx global>{`
+            body {
+                background: red;
+            }
+        `}</style>
+    </div>
+);
 ```
 
 The advantage of using this over `<style>` is twofold: no need
@@ -202,20 +202,20 @@ you can pass to 3rd-party components. For example, to style
 `react-select` which supports passing a custom class via `optionClassName`:
 
 ```jsx
-import Select from 'react-select'
+import Select from 'react-select';
 export default () => (
-  <div>
-    <Select optionClassName="react-select" />
+    <div>
+        <Select optionClassName="react-select" />
 
-    <style jsx>{`
-      /* "div" will be prefixed, but ".react-select" won't */
+        <style jsx>{`
+            /* "div" will be prefixed, but ".react-select" won't */
 
-      div :global(.react-select) {
-        color: red;
-      }
-    `}</style>
-  </div>
-)
+            div :global(.react-select) {
+                color: red;
+            }
+        `}</style>
+    </div>
+);
 ```
 
 ### Dynamic styles
@@ -227,20 +227,20 @@ To make a component's visual representation customizable from the outside world 
 Any value that comes from the component's `render` method scope is treated as dynamic. This makes it possible to use `props` and `state` for example.
 
 ```jsx
-const Button = props => (
-  <button>
-    {props.children}
-    <style jsx>{`
-      button {
-        padding: ${'large' in props ? '50' : '20'}px;
-        background: ${props.theme.background};
-        color: #999;
-        display: inline-block;
-        font-size: 1em;
-      }
-    `}</style>
-  </button>
-)
+const Button = (props) => (
+    <button>
+        {props.children}
+        <style jsx>{`
+            button {
+                padding: ${'large' in props ? '50' : '20'}px;
+                background: ${props.theme.background};
+                color: #999;
+                display: inline-block;
+                font-size: 1em;
+            }
+        `}</style>
+    </button>
+);
 ```
 
 New styles' injection is optimized to perform well at runtime.
@@ -248,24 +248,24 @@ New styles' injection is optimized to perform well at runtime.
 That said when your CSS is mostly static we recommend to split it up in static and dynamic styles and use two separate `style` tags so that, when changing, only the dynamic parts are recomputed/rendered.
 
 ```jsx
-const Button = props => (
-  <button>
-    {props.children}
-    <style jsx>{`
-      button {
-        color: #999;
-        display: inline-block;
-        font-size: 2em;
-      }
-    `}</style>
-    <style jsx>{`
-      button {
-        padding: ${'large' in props ? '50' : '20'}px;
-        background: ${props.theme.background};
-      }
-    `}</style>
-  </button>
-)
+const Button = (props) => (
+    <button>
+        {props.children}
+        <style jsx>{`
+            button {
+                color: #999;
+                display: inline-block;
+                font-size: 2em;
+            }
+        `}</style>
+        <style jsx>{`
+            button {
+                padding: ${'large' in props ? '50' : '20'}px;
+                background: ${props.theme.background};
+            }
+        `}</style>
+    </button>
+);
 ```
 
 #### Via `className` toggling
@@ -273,21 +273,21 @@ const Button = props => (
 The second option is to pass properties that toggle class names.
 
 ```jsx
-const Button = props => (
-  <button className={'large' in props && 'large'}>
-    {props.children}
-    <style jsx>{`
-      button {
-        padding: 20px;
-        background: #eee;
-        color: #999;
-      }
-      .large {
-        padding: 50px;
-      }
-    `}</style>
-  </button>
-)
+const Button = (props) => (
+    <button className={'large' in props && 'large'}>
+        {props.children}
+        <style jsx>{`
+            button {
+                padding: 20px;
+                background: #eee;
+                color: #999;
+            }
+            .large {
+                padding: 50px;
+            }
+        `}</style>
+    </button>
+);
 ```
 
 Then you would use this component as either `<Button>Hi</Button>` or `<Button large>Big</Button>`.
@@ -300,17 +300,17 @@ Imagine that you wanted to make the padding in the button above completely custo
 
 ```jsx
 const Button = ({ padding, children }) => (
-  <button style={{ padding }}>
-    {children}
-    <style jsx>{`
-      button {
-        padding: 20px;
-        background: #eee;
-        color: #999;
-      }
-    `}</style>
-  </button>
-)
+    <button style={{ padding }}>
+        {children}
+        <style jsx>{`
+            button {
+                padding: 20px;
+                background: #eee;
+                color: #999;
+            }
+        `}</style>
+    </button>
+);
 ```
 
 In this example, the padding defaults to the one set in `<style>` (`20`), but the user can pass a custom one via `<Button padding={30}>`.
@@ -320,21 +320,21 @@ In this example, the padding defaults to the one set in `<style>` (`20`), but th
 It is possible to use constants like so:
 
 ```jsx
-import { colors, spacing } from '../theme'
-import { invertColor } from '../theme/utils'
+import { colors, spacing } from '../theme';
+import { invertColor } from '../theme/utils';
 
 const Button = ({ children }) => (
-  <button>
-    {children}
-    <style jsx>{`
-      button {
-        padding: ${spacing.medium};
-        background: ${colors.primary};
-        color: ${invertColor(colors.primary)};
-      }
-    `}</style>
-  </button>
-)
+    <button>
+        {children}
+        <style jsx>{`
+            button {
+                padding: ${spacing.medium};
+                background: ${colors.primary};
+                color: ${invertColor(colors.primary)};
+            }
+        `}</style>
+    </button>
+);
 ```
 
 Please keep in mind that constants defined outside of the component scope are treated as static styles.
@@ -349,47 +349,47 @@ Please keep in mind that constants defined outside of the component scope are tr
 > Next.js 12 integrates with `styled-jsx` v5 and manages the registry for you.
 
 ```jsx
-import React from 'react'
-import ReactDOM from 'react-dom/server'
-import { StyleRegistry, useStyleRegistry } from 'styled-jsx'
-import App from './app'
+import React from 'react';
+import ReactDOM from 'react-dom/server';
+import { StyleRegistry, useStyleRegistry } from 'styled-jsx';
+import App from './app';
 
 function Styles() {
-  const registry = useStyleRegistry()
-  const styles = registry.styles()
-  return <>{styles}</>
+    const registry = useStyleRegistry();
+    const styles = registry.styles();
+    return <>{styles}</>;
 }
 
 export default (req, res) => {
-  const app = ReactDOM.renderToString(<App />)
-  const html = ReactDOM.renderToStaticMarkup(
-    <StyleRegistry>
-      <html>
-        <head>
-          <Styles />
-        </head>
-        <body>
-          <div id="root" dangerouslySetInnerHTML={{ __html: app }} />
-        </body>
-      </html>
-    </StyleRegistry>
-  )
-  res.end('<!doctype html>' + html)
-}
+    const app = ReactDOM.renderToString(<App />);
+    const html = ReactDOM.renderToStaticMarkup(
+        <StyleRegistry>
+            <html>
+                <head>
+                    <Styles />
+                </head>
+                <body>
+                    <div id="root" dangerouslySetInnerHTML={{ __html: app }} />
+                </body>
+            </html>
+        </StyleRegistry>,
+    );
+    res.end('<!doctype html>' + html);
+};
 ```
 
 There's also a new API `createStyleRegistry` that is introduced when you have to create a registry manually. In this way you can operate the registry yourself to extract the rendered styles (`registry.styles()`) or flush them out (`registry.flush()`).
 
 ```js
-const registry = createStyleRegistry()
-const styles = registry.styles() // access styles
+const registry = createStyleRegistry();
+const styles = registry.styles(); // access styles
 
 function Page() {
-  return (
-    <StyleRegistry registry={registry}>
-      <App />
-    </StyleRegistry>
-  )
+    return (
+        <StyleRegistry registry={registry}>
+            <App />
+        </StyleRegistry>
+    );
 }
 ```
 
@@ -406,9 +406,9 @@ Strict [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) is supported
 You should generate a nonce **per request**.
 
 ```js
-import nanoid from 'nanoid'
+import nanoid from 'nanoid';
 
-const nonce = Buffer.from(nanoid()).toString('base64') //ex: N2M0MDhkN2EtMmRkYi00MTExLWFhM2YtNDhkNTc4NGJhMjA3
+const nonce = Buffer.from(nanoid()).toString('base64'); //ex: N2M0MDhkN2EtMmRkYi00MTExLWFhM2YtNDhkNTc4NGJhMjA3
 ```
 
 You must then pass a nonce to `registry.styles({ nonce })` **and** set a `<meta property="csp-nonce" content={nonce} />` tag.
@@ -430,46 +430,54 @@ In an external file:
 
 ```js
 /* styles.js */
-import css from 'styled-jsx/css'
+import css from 'styled-jsx/css';
 
 // Scoped styles
 export const button = css`
-  button {
-    color: hotpink;
-  }
-`
+    button {
+        color: hotpink;
+    }
+`;
 
 // Global styles
-export const body = css.global`body { margin: 0; }`
+export const body = css.global`
+    body {
+        margin: 0;
+    }
+`;
 
 // Resolved styles
-export const link = css.resolve`a { color: green; }`
+export const link = css.resolve`
+    a {
+        color: green;
+    }
+`;
 // link.className -> scoped className to apply to `a` elements e.g. jsx-123
 // link.styles -> styles element to render inside of your component
 
 // Works also with default exports
 export default css`
-  div {
-    color: green;
-  }
-`
+    div {
+        color: green;
+    }
+`;
 ```
 
 You can then import and use those styles:
 
 ```jsx
-import styles, { button, body } from './styles'
+import styles, { button, body } from './styles';
 
 export default () => (
-  <div>
-    <button>styled-jsx</button>
-    <style jsx>{styles}</style>
-    <style jsx>{button}</style>
-    <style jsx global>
-      {body}
-    </style>
-  </div>
-)
+    <div>
+        <button>styled-jsx</button>
+        <style jsx>{styles}</style>
+        <style jsx>{button}</style>
+        <style jsx global>
+            {body}
+        </style>
+    </div>
+);
 ```
 
 N.B. All the tags except for [`resolve`](#the-resolve-tag) don't support dynamic styles.
@@ -477,8 +485,8 @@ N.B. All the tags except for [`resolve`](#the-resolve-tag) don't support dynamic
 `resolve` and `global` can also be imported individually:
 
 ```js
-import { resolve } from 'styled-jsx/css'
-import { global } from 'styled-jsx/css'
+import { resolve } from 'styled-jsx/css';
+import { global } from 'styled-jsx/css';
 ```
 
 If you use Prettier we recommend you to use the default `css` export syntax since the tool doesn't support named imports.
@@ -488,20 +496,20 @@ If you use Prettier we recommend you to use the default `css` export syntax sinc
 The `css` tag from `styled-jsx/css` can be also used to define styles in your components files but outside of the component itself. This might help with keeping `render` methods smaller.
 
 ```jsx
-import css from 'styled-jsx/css'
+import css from 'styled-jsx/css';
 
 export default () => (
-  <div>
-    <button>styled-jsx</button>
-    <style jsx>{button}</style>
-  </div>
-)
+    <div>
+        <button>styled-jsx</button>
+        <style jsx>{button}</style>
+    </div>
+);
 
 const button = css`
-  button {
-    color: hotpink;
-  }
-`
+    button {
+        color: hotpink;
+    }
+`;
 ```
 
 Like in externals styles `css` doesn't work with dynamic styles. If you have dynamic parts you might want to place them inline inside of your component using a regular `<style jsx>` element.
@@ -513,48 +521,52 @@ The `resolve` tag from `styled-jsx/css` can be used when you need to scope some 
 It works by returning the generated scoped `className` and related `styles`.
 
 ```jsx
-import React from 'react'
-import Link from 'some-library'
+import React from 'react';
+import Link from 'some-library';
 
-import css from 'styled-jsx/css'
+import css from 'styled-jsx/css';
 
 const { className, styles } = css.resolve`
-  a { color: green }
-`
+    a {
+        color: green;
+    }
+`;
 
 export default () => (
-  <div>
-    {/* use the className */}
-    <Link className={className}>About</Link>
+    <div>
+        {/* use the className */}
+        <Link className={className}>About</Link>
 
-    {/* render the styles for it */}
-    {styles}
-  </div>
-)
+        {/* render the styles for it */}
+        {styles}
+    </div>
+);
 ```
 
 The `resolve` tag also supports dynamic styles, via template string interpolation:
 
 ```jsx
-import React from 'react'
-import css from 'styled-jsx/css'
+import React from 'react';
+import css from 'styled-jsx/css';
 
 function getLinkStyles(color) {
-  return css.resolve`
-    a { color: ${color} }
-  `
+    return css.resolve`
+        a {
+            color: ${color};
+        }
+    `;
 }
 
-export default props => {
-  const { className, styles } = getLinkStyles(props.theme.color)
+export default (props) => {
+    const { className, styles } = getLinkStyles(props.theme.color);
 
-  return (
-    <div>
-      <Link className={className}>About</Link>
-      {styles}
-    </div>
-  )
-}
+    return (
+        <div>
+            <Link className={className}>About</Link>
+            {styles}
+        </div>
+    );
+};
 ```
 
 #### Using `resolve` as a Babel macro
@@ -572,25 +584,27 @@ Next, add `babel-plugin-macros` to your Babel configuration:
 
 ```json
 {
-  "plugins": ["babel-plugin-macros"]
+    "plugins": ["babel-plugin-macros"]
 }
 ```
 
 You can then use `resolve` by importing it from `styled-jsx/macro`.
 
 ```jsx
-import css from 'styled-jsx/macro'
+import css from 'styled-jsx/macro';
 
 const { className, styles } = css.resolve`
-  a { color: green }
-`
+    a {
+        color: green;
+    }
+`;
 
 export default () => (
-  <div>
-    <Link className={className}>About</Link>
-    {styles}
-  </div>
-)
+    <div>
+        <Link className={className}>About</Link>
+        {styles}
+    </div>
+);
 ```
 
 ##### Usage with [`create-react-app`](https://create-react-app.dev)
@@ -608,14 +622,14 @@ Then `resolve` can be imported from `styled-jsx/macro` and used the same way as 
 styled-jsx v3 comes with a webpack loader that lets you write styles in regular `css` files and consume them in React.
 
 ```js
-import styles from '../components/button/styles.css'
+import styles from '../components/button/styles.css';
 
 export default () => (
-  <div>
-    <button>styled-jsx</button>
-    <style jsx>{styles}</style>
-  </div>
-)
+    <div>
+        <button>styled-jsx</button>
+        <style jsx>{styles}</style>
+    </div>
+);
 ```
 
 To consume the styles in your component you can import them from your CSS file and render them using a `<style jsx>` tag. Remember to add the `global` prop if you want your styles to be global.
@@ -624,21 +638,21 @@ To use this feature you need to register the loader in your webpack config file,
 
 ```js
 config: {
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: [
-          {
-            loader: require('styled-jsx/webpack').loader,
-            options: {
-              type: 'scoped'
-            }
-          }
-        ]
-      }
-    ]
-  }
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    {
+                        loader: require('styled-jsx/webpack').loader,
+                        options: {
+                            type: 'scoped',
+                        },
+                    },
+                ],
+            },
+        ];
+    }
 }
 ```
 
@@ -653,25 +667,26 @@ type Options = {|
 ```
 
 ```js
-import styles from './styles.css?type=global'
+import styles from './styles.css?type=global';
 
 // webpack
 config: {
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: [
-          {
-            loader: require('styled-jsx/webpack').loader,
-            options: {
-              type: (fileName, options) => options.query.type || 'scoped'
-            }
-          }
-        ]
-      }
-    ]
-  }
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    {
+                        loader: require('styled-jsx/webpack').loader,
+                        options: {
+                            type: (fileName, options) =>
+                                options.query.type || 'scoped',
+                        },
+                    },
+                ],
+            },
+        ];
+    }
 }
 ```
 
@@ -681,7 +696,7 @@ The type can also be set per individual CSS file via CSS comment:
 /* @styled-jsx=scoped */
 
 button {
-  color: red;
+    color: red;
 }
 ```
 
@@ -693,23 +708,23 @@ Example of `next.config.js` to integrate `styled-jsx/webpack`:
 
 ```js
 module.exports = {
-  webpack: (config, { defaultLoaders }) => {
-    config.module.rules.push({
-      test: /\.css$/,
-      use: [
-        defaultLoaders.babel,
-        {
-          loader: require('styled-jsx/webpack').loader,
-          options: {
-            type: 'scoped'
-          }
-        }
-      ]
-    })
+    webpack: (config, { defaultLoaders }) => {
+        config.module.rules.push({
+            test: /\.css$/,
+            use: [
+                defaultLoaders.babel,
+                {
+                    loader: require('styled-jsx/webpack').loader,
+                    options: {
+                        type: 'scoped',
+                    },
+                },
+            ],
+        });
 
-    return config
-  }
-}
+        return config;
+    },
+};
 ```
 
 ## CSS Preprocessing via Plugins
@@ -719,7 +734,7 @@ Styles can be preprocessed via plugins.
 Plugins are regular JavaScript modules that export a simple function with the following signature:
 
 ```ts
-function plugin(css: string, options: Object): string
+function plugin(css: string, options: Object): string;
 ```
 
 Basically they accept a CSS string in input, optionally modify it and finally return it.
@@ -730,17 +745,17 @@ To register a plugin add an option `plugins` for `styled-jsx/babel` to your `.ba
 
 ```json
 {
-  "plugins": [
-    [
-      "styled-jsx/babel",
-      {
-        "plugins": [
-          "my-styled-jsx-plugin-package",
-          "/full/path/to/local/plugin"
+    "plugins": [
+        [
+            "styled-jsx/babel",
+            {
+                "plugins": [
+                    "my-styled-jsx-plugin-package",
+                    "/full/path/to/local/plugin"
+                ]
+            }
         ]
-      }
     ]
-  ]
 }
 ```
 
@@ -750,16 +765,16 @@ To register a plugin add an option `plugins` for `styled-jsx/babel` to your `.ba
 
 ```json
 {
-  "presets": [
-    [
-      "next/babel",
-      {
-        "styled-jsx": {
-          "plugins": ["styled-jsx-plugin-postcss"]
-        }
-      }
+    "presets": [
+        [
+            "next/babel",
+            {
+                "styled-jsx": {
+                    "plugins": ["styled-jsx-plugin-postcss"]
+                }
+            }
+        ]
     ]
-  ]
 }
 ```
 
@@ -795,17 +810,17 @@ the plugin path and an options object.
 
 ```json
 {
-  "plugins": [
-    [
-      "styled-jsx/babel",
-      {
-        "plugins": [
-          ["my-styled-jsx-plugin-package", { "exampleOption": true }]
-        ],
-        "sourceMaps": true
-      }
+    "plugins": [
+        [
+            "styled-jsx/babel",
+            {
+                "plugins": [
+                    ["my-styled-jsx-plugin-package", { "exampleOption": true }]
+                ],
+                "sourceMaps": true
+            }
+        ]
     ]
-  ]
 }
 ```
 
@@ -813,9 +828,9 @@ Each plugin receives a `options` object as second argument which contains
 the babel and user options:
 
 ```js
-;(css, options) => {
-  /* ... */
-}
+(css, options) => {
+    /* ... */
+};
 ```
 
 The `options` object has the following shape:
@@ -872,17 +887,17 @@ The `styled-jsx/babel-test` solves this problem. It simply strips `jsx` attribut
 
 ```json
 {
-  "env": {
-    "production": {
-      "plugins": ["styled-jsx/babel"]
-    },
-    "development": {
-      "plugins": ["styled-jsx/babel"]
-    },
-    "test": {
-      "plugins": ["styled-jsx/babel-test"]
+    "env": {
+        "production": {
+            "plugins": ["styled-jsx/babel"]
+        },
+        "development": {
+            "plugins": ["styled-jsx/babel"]
+        },
+        "test": {
+            "plugins": ["styled-jsx/babel-test"]
+        }
     }
-  }
 }
 ```
 
@@ -910,15 +925,15 @@ No, this feature is not supported. However we support React Fragments, which are
 
 ```jsx
 const StyledImage = ({ src, alt = '' }) => (
-  <React.Fragment>
-    <img src={src} alt={alt} />
-    <style jsx>{`
-      img {
-        max-width: 100%;
-      }
-    `}</style>
-  </React.Fragment>
-)
+    <React.Fragment>
+        <img src={src} alt={alt} />
+        <style jsx>{`
+            img {
+                max-width: 100%;
+            }
+        `}</style>
+    </React.Fragment>
+);
 ```
 
 ### Styling third parties / child components from the parent
@@ -929,18 +944,18 @@ When the component doesn't accept any `className` or doesn't expose any API to c
 
 ```jsx
 export default () => (
-  <div>
-    <ExternalComponent />
+    <div>
+        <ExternalComponent />
 
-    <style jsx>{`
-      /* "div" will be prefixed, but ".nested-element" won't */
+        <style jsx>{`
+            /* "div" will be prefixed, but ".nested-element" won't */
 
-      div > :global(.nested-element) {
-        color: red;
-      }
-    `}</style>
-  </div>
-)
+            div > :global(.nested-element) {
+                color: red;
+            }
+        `}</style>
+    </div>
+);
 ```
 
 Please keep in mind that `:global()` styles will affect the entire subtree, so in many cases you may want to be careful and use the children (direct descendant) selector `>`.
@@ -976,23 +991,23 @@ You get full CSS highlighting and autocompletion and it will last until you clos
 Additionally you can use language injection comments to enable all the IDE language features indefinitely using the language comment style:
 
 ```jsx
-import { colors, spacing } from '../theme'
-import { invertColor } from '../theme/utils'
+import { colors, spacing } from '../theme';
+import { invertColor } from '../theme/utils';
 
 const Button = ({ children }) => (
-  <button>
-    {children}
+    <button>
+        {children}
 
-    {/*language=CSS*/}
-    <style jsx>{`
-      button {
-        padding: ${spacing.medium};
-        background: ${colors.primary};
-        color: ${invertColor(colors.primary)};
-      }
-    `}</style>
-  </button>
-)
+        {/*language=CSS*/}
+        <style jsx>{`
+            button {
+                padding: ${spacing.medium};
+                background: ${colors.primary};
+                color: ${invertColor(colors.primary)};
+            }
+        `}</style>
+    </button>
+);
 ```
 
 ### Emmet
@@ -1001,11 +1016,11 @@ If you're using Emmet you can add the following snippet to `~/emmet/snippets-sty
 
 ```json
 {
-  "html": {
-    "snippets": {
-      "style-jsx": "<style jsx>{`\n\t$1\n`}</style>"
+    "html": {
+        "snippets": {
+            "style-jsx": "<style jsx>{`\n\t$1\n`}</style>"
+        }
     }
-  }
 }
 ```
 
