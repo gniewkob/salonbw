@@ -56,16 +56,16 @@ jobs:
             printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
           fi
           chmod 600 ~/.ssh/mydevil
-          
+
           echo "=== ls -la apps/nodejs/panelbw ==="
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw" || true
-          
+
           echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages" || true
 
           echo "=== Check Symlink public_nodejs ==="
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || true
-          
+
           echo "=== Check Redirect Logic (index.js) ==="
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
 
@@ -160,7 +160,7 @@ jobs:
           TARGET="${{ github.event.inputs.target }}"
           # Default to PANEL on push event (if target is empty)
           if [ -z "$TARGET" ]; then TARGET="panel"; fi
-          
+
           INPUT_PATH="${{ github.event.inputs.remote_path }}"
           INPUT_APP="${{ github.event.inputs.app_name }}"
 
@@ -264,12 +264,12 @@ jobs:
       - name: Build frontend (Panel)
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
         run: |
-          rm -rf apps/panel_fixed/.next
+          rm -rf apps/panel/.next
           pnpm --filter @salonbw/panel --fail-if-no-match build
           echo "Listing .next directory RECURSIVE (Debug):"
-          ls -R apps/panel_fixed/.next || echo "apps/panel_fixed/.next NOT FOUND"
+          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
           echo "Listing Standalone App Dir:"
-          ls -R apps/panel_fixed/.next/standalone/apps || echo "standalone/apps NOT FOUND"
+          ls -R apps/panel/.next/standalone/apps || echo "standalone/apps NOT FOUND"
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
@@ -280,8 +280,10 @@ jobs:
         id: buildid
         shell: bash
         run: |
-          if [ -f frontend/.next/BUILD_ID ]; then
-            echo "id=$(cat frontend/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
+          if [ -f apps/panel/.next/BUILD_ID ]; then
+            echo "id=$(cat apps/panel/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
+          elif [ -f apps/landing/.next/BUILD_ID ]; then
+            echo "id=$(cat apps/landing/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
           else
             echo "id=" >> "$GITHUB_OUTPUT"
           fi
@@ -353,71 +355,71 @@ jobs:
 
           # LOGIC FIX: Explicitly set TARGET_APP based on validated inputs
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             TARGET_APP="apps/panel_fixed"
+             TARGET_APP="apps/panel"
              echo "Targeting PANEL (Hardcoded Path): $TARGET_APP"
           else
              TARGET_APP="apps/landing"
              echo "Targeting LANDING: $TARGET_APP"
           fi
-          
+
           mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
-          
+
           echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
-          
-          
+
+
           # STANDARD BUILD STRATEGY (Non-Standalone)
           # Copy everything necessary for runtime
           cp -r "$TARGET_APP/.next" deploy_bundle/
           cp -r "$TARGET_APP/public" deploy_bundle/
           cp "$TARGET_APP/package.json" deploy_bundle/
           cp "$TARGET_APP/next.config.mjs" deploy_bundle/
-          
+
           # Copy app.js (Passenger Entry Point)
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
           fi
-          
+
           # Copy source files (middleware needs src structure?)
           mkdir -p deploy_bundle/src
           if [ -f "$TARGET_APP/src/middleware.ts" ]; then
              cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
           fi
-          
+
           if [ -d "$TARGET_APP/scripts" ]; then
              cp -r "$TARGET_APP/scripts" deploy_bundle/
           fi
-          
+
           # Copy local packages (dependencies)
           mkdir -p deploy_bundle/packages
           if [ -d "packages/api" ]; then
              cp -r packages/api deploy_bundle/packages/
           fi
-          
+
           # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
           echo "Installing dependencies in bundle..."
           cd deploy_bundle
-          
+
           # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
           # These are already bundled by Next.js Standalone, and npm install won't resolve them.
           # Fix: Rewrite workspace links to local file paths
           sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
           sed -i '/workspace:/d' package.json
-          
+
           # Use npm for flat install (pnpm is not needed for runtime)
           npm install --omit=dev --no-package-lock --no-audit --loglevel=error
           cd ..
-          
+
           # Create Tarball
           tar -czf deploy.tar.gz -C deploy_bundle .
-          
+
           # 2. Upload Tarball
           # 2. Upload Tarball
           # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la deploy.tar.gz
           scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz vetternkraft@s0.mydevil.net:$DEST/deploy.tar.gz
-          
+
           # 3. Extract and Clean
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
@@ -445,7 +447,7 @@ jobs:
              TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
              TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
           fi
-          
+
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
           set -euo pipefail
 
@@ -731,7 +733,7 @@ jobs:
           else
             APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           fi
-          
+
           echo "Restarting $APP_NAME (Passenger)..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'"
 
@@ -893,4 +895,5 @@ jobs:
           else
             echo "No chunk discovered; skipping"
           fi
+
 # force update

@@ -36,49 +36,49 @@ jobs:
           list-files: none
           filters: |
             public:
-              - 'frontend/src/pages/index.tsx'
-              - 'frontend/src/pages/services.tsx'
-              - 'frontend/src/pages/gallery.tsx'
-              - 'frontend/src/pages/contact.tsx'
-              - 'frontend/public/**'
-              - 'frontend/next.config.mjs'
-              - 'frontend/package.json'
-              - 'frontend/tsconfig.json'
-              - 'frontend/**/*.ts'
-              - 'frontend/**/*.tsx'
-              - 'frontend/**/*.js'
-              - 'frontend/**/*.jsx'
-              - 'frontend/**/*.json'
+              - 'apps/landing/src/pages/index.tsx'
+              - 'apps/landing/src/pages/services.tsx'
+              - 'apps/landing/src/pages/gallery.tsx'
+              - 'apps/landing/src/pages/contact.tsx'
+              - 'apps/landing/public/**'
+              - 'apps/landing/next.config.mjs'
+              - 'apps/landing/package.json'
+              - 'apps/landing/tsconfig.json'
+              - 'apps/landing/**/*.ts'
+              - 'apps/landing/**/*.tsx'
+              - 'apps/landing/**/*.js'
+              - 'apps/landing/**/*.jsx'
+              - 'apps/landing/**/*.json'
             dashboard:
-              - 'frontend/src/pages/dashboard/**'
-              - 'frontend/src/components/**'
-              - 'frontend/src/hooks/**'
-              - 'frontend/src/contexts/**'
-              - 'frontend/next.config.mjs'
-              - 'frontend/package.json'
-              - 'frontend/tsconfig.json'
-              - 'frontend/**/*.ts'
-              - 'frontend/**/*.tsx'
-              - 'frontend/**/*.js'
-              - 'frontend/**/*.jsx'
-              - 'frontend/**/*.json'
+              - 'apps/panel/src/pages/dashboard/**'
+              - 'apps/panel/src/components/**'
+              - 'apps/panel/src/hooks/**'
+              - 'apps/panel/src/contexts/**'
+              - 'apps/panel/next.config.mjs'
+              - 'apps/panel/package.json'
+              - 'apps/panel/tsconfig.json'
+              - 'apps/panel/**/*.ts'
+              - 'apps/panel/**/*.tsx'
+              - 'apps/panel/**/*.js'
+              - 'apps/panel/**/*.jsx'
+              - 'apps/panel/**/*.json'
             admin:
-              - 'frontend/src/pages/dashboard/admin/**'
-              - 'frontend/src/pages/dashboard/services/**'
-              - 'frontend/src/pages/dashboard/receptionist/**'
-              - 'frontend/src/pages/dashboard/employee/**'
-              - 'frontend/src/pages/dashboard/client/**'
-              - 'frontend/src/components/**'
-              - 'frontend/src/hooks/**'
-              - 'frontend/src/contexts/**'
-              - 'frontend/next.config.mjs'
-              - 'frontend/package.json'
-              - 'frontend/tsconfig.json'
-              - 'frontend/**/*.ts'
-              - 'frontend/**/*.tsx'
-              - 'frontend/**/*.js'
-              - 'frontend/**/*.jsx'
-              - 'frontend/**/*.json'
+              - 'apps/panel/src/pages/dashboard/admin/**'
+              - 'apps/panel/src/pages/dashboard/services/**'
+              - 'apps/panel/src/pages/dashboard/receptionist/**'
+              - 'apps/panel/src/pages/dashboard/employee/**'
+              - 'apps/panel/src/pages/dashboard/client/**'
+              - 'apps/panel/src/components/**'
+              - 'apps/panel/src/hooks/**'
+              - 'apps/panel/src/contexts/**'
+              - 'apps/panel/next.config.mjs'
+              - 'apps/panel/package.json'
+              - 'apps/panel/tsconfig.json'
+              - 'apps/panel/**/*.ts'
+              - 'apps/panel/**/*.tsx'
+              - 'apps/panel/**/*.js'
+              - 'apps/panel/**/*.jsx'
+              - 'apps/panel/**/*.json'
 
       - name: Decide if job should run
         id: should_run
@@ -137,7 +137,13 @@ jobs:
 
       - name: Lint, typecheck, test, and build
         if: steps.should_run.outputs.run == 'true'
-        run: pnpm turbo run lint typecheck test build --filter=frontend --cache-dir=.turbo
+        run: |
+          if [ "${{ matrix.app }}" == "public" ]; then
+            FILTER="@salonbw/landing"
+          else
+            FILTER="@salonbw/panel"
+          fi
+          pnpm turbo run lint typecheck test build --filter="$FILTER" --cache-dir=.turbo
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
@@ -241,4 +247,5 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           pnpm outdated || true >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
 # cspell:ignore GITHUB npmjs github elif
