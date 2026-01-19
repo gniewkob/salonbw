@@ -1,17 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
     IsString,
-    IsNumber,
-    IsBoolean,
-    IsOptional,
     IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
+    IsOptional,
+    IsObject,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class SendEmailDto {
-    // TODO: Properties could not be restored from OpenAPI
-    [key: string]: any;
+    @ApiProperty({ description: 'Recipient email address' })
+    @IsString()
+    @IsNotEmpty()
+    to: string;
+
+    @ApiProperty({ description: 'Email subject' })
+    @IsString()
+    @IsNotEmpty()
+    subject: string;
+
+    @ApiProperty({ description: 'Email template content with {{placeholders}}' })
+    @IsString()
+    @IsNotEmpty()
+    template: string;
+
+    @ApiProperty({ description: 'Data for template placeholders', required: false })
+    @IsOptional()
+    @IsObject()
+    data?: Record<string, string>;
 }
