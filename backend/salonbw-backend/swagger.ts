@@ -23,10 +23,9 @@ import { CommissionsService } from './src/commissions/commissions.service';
 import { LogService } from './src/logs/log.service';
 import { DashboardController } from './src/dashboard/dashboard.controller';
 import { DashboardService } from './src/dashboard/dashboard.service';
-import { LogsController } from './src/logs/logs.controller';
-import { HealthService } from './src/health.service';
-import { PinoLogger } from 'nestjs-pino';
-import { ConfigService } from '@nestjs/config';
+import { SalesController } from './src/retail/sales.controller';
+import { InventoryController } from './src/retail/inventory.controller';
+import { RetailService } from './src/retail/retail.service';
 
 @Module({
     controllers: [
@@ -41,7 +40,8 @@ import { ConfigService } from '@nestjs/config';
         ClientFormulasController,
         CommissionsController,
         DashboardController,
-        LogsController,
+        SalesController,
+        InventoryController,
     ],
     providers: [
         AppService,
@@ -123,29 +123,18 @@ import { ConfigService } from '@nestjs/config';
             },
         },
         {
-            provide: PinoLogger,
+            provide: RetailService,
             useValue: {
-                error: () => undefined,
-                info: () => undefined,
-                warn: () => undefined,
-                debug: () => undefined,
-                setContext: () => undefined,
-            },
-        },
-        {
-            provide: ConfigService,
-            useValue: {
-                get: () => undefined,
-            },
-        },
-        {
-            provide: HealthService,
-            useValue: {
-                getHealthSummary: async () => ({
-                    status: 'ok',
-                    timestamp: new Date().toISOString(),
-                    services: {},
+                createSale: () => ({ status: 'ok' }),
+                getSalesSummary: () => ({
+                    source: 'none',
+                    from: new Date(),
+                    to: new Date(),
+                    units: 0,
+                    revenue: null,
                 }),
+                adjustInventory: () => ({ status: 'ok' }),
+                getInventoryLevels: () => [],
             },
         },
     ],
