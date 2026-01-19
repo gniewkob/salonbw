@@ -1,17 +1,34 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsString,
-    IsNumber,
-    IsBoolean,
     IsOptional,
     IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
+    IsObject,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class ClientLogDto {
-    // TODO: Properties could not be restored from OpenAPI
-    [key: string]: any;
+    @ApiProperty({ description: 'The error message' })
+    @IsString()
+    @IsNotEmpty()
+    message: string;
+
+    @ApiPropertyOptional({ description: 'The log level', example: 'error' })
+    @IsString()
+    @IsOptional()
+    level?: string;
+
+    @ApiPropertyOptional({ description: 'The path where the error occurred' })
+    @IsString()
+    @IsOptional()
+    path?: string;
+
+    @ApiPropertyOptional({ description: 'The user agent of the client' })
+    @IsString()
+    @IsOptional()
+    userAgent?: string;
+
+    @ApiPropertyOptional({ description: 'Additional context or data' })
+    @IsObject()
+    @IsOptional()
+    extra?: Record<string, any>;
 }
