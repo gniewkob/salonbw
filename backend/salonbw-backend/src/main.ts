@@ -28,6 +28,9 @@ async function bootstrap() {
     const httpAdapterHost = app.get(HttpAdapterHost);
     const sentryEnabled = await setupSentry(app);
 
+    // Ensure Express trusts the proxy (Passenger/Nginx) for secure cookies
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
     const logService = app.get(LogService);
     const globalFilters = [];
     if (sentryEnabled) {
