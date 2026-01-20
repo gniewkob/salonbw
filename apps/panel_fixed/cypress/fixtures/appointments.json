@@ -1,4 +1,0 @@
-[
-  { "id": 1, "startTime": "2024-01-02T10:00:00.000Z", "client": { "id": 1, "name": "A" } },
-  { "id": 2, "startTime": "2024-01-03T11:00:00.000Z", "client": { "id": 2, "name": "B" } }
-]

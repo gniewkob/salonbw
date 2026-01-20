@@ -11,6 +11,12 @@ _Last updated: 2025-11-01 (automated improvements via Claude Code)_
 | Dashboard (`panel.salon-bw.pl`) | `a98d923d` | `18857314859` | 2025-10-27 22:10 | production | Redeployed from master; smoke checks passed |
 | Admin (`dev.salon-bw.pl`) | `1b65bbf5` | `18859477828` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
 
+## Recent Structural Changes (2026-01-19)
+
+- **Consolidated Dashboard App**: Removed legacy `apps/panel` directory and renamed `apps/panel_fixed` to `apps/panel`. All dashboard development should now occur in `apps/panel`.
+- **Backend Testing**: Added necessary dependencies (`ts-jest`, `bcrypt`) and created unit tests for AuthController. Verified `auth.service` and `auth.controller` logic.
+- **Deployment**: Updated `.github/workflows/deploy.yml` to reflect the path change from `apps/panel_fixed` to `apps/panel`.
+
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK`
