@@ -292,11 +292,11 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
         run: |
           cd backend/salonbw-backend
-          npm install --no-package-lock --include=dev
-          npm run build
+          # Dependencies already installed via pnpm workspace in previous step
+          pnpm run build
           # Explicitly compile migrate.ts as it might be missed by nest build
           echo "Explicitly building migrate.ts..."
-          npx tsc src/migrate.ts --outDir dist --skipLibCheck --esModuleInterop --target ES2022 --moduleResolution node16 || echo "tsc failed but continuing..."
+          pnpm exec tsc src/migrate.ts --outDir dist --skipLibCheck --esModuleInterop --target ES2022 --moduleResolution node16 || echo "tsc failed but continuing..."
           ls -l dist/migrate.js || echo "migrate.js missing!"
 
       - name: Configure SSH
