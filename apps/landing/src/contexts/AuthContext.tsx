@@ -99,7 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [persistTokens]);
 
     const handleLogout = useCallback(async () => {
-        console.log('AuthContext: handleLogout called'); // DEBUG LOG
         clearSessionState();
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
@@ -112,7 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         setLogoutCallback(() => {
-            console.log('AuthContext: ApiClient triggered logout'); // DEBUG LOG
             void handleLogout();
         });
     }, [handleLogout]);
@@ -124,7 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return new ApiClient(
             () => readLocalStorageValue(ACCESS_TOKEN_KEY),
             () => {
-                console.log('AuthContext: ApiClient onLogout callback fired'); // DEBUG LOG
                 void handleLogout();
             },
             (nextTokens) => {
@@ -152,10 +149,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setRole(u.role);
             setIsAuthenticated(true);
         } catch (e) {
-            console.log(
-                'AuthContext: fetchProfile failed (expected for public)',
-                e,
-            ); // DEBUG LOG
             setIsAuthenticated(false);
             clearSessionState();
         }
