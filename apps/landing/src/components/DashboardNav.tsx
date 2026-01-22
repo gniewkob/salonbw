@@ -11,24 +11,24 @@ type NavLink = { href: Route; label: string; permission: Permission };
 
 const homeLink: Record<Role, NavLink> = {
     client: {
-        href: '/dashboard/client' as Route,
+        href: '/appointments' as Route,
         label: 'Home',
-        permission: 'dashboard:client',
+        permission: 'nav:appointments',
     },
     employee: {
-        href: '/dashboard/employee' as Route,
+        href: '/appointments' as Route,
         label: 'Home',
-        permission: 'dashboard:employee',
+        permission: 'nav:appointments',
     },
     receptionist: {
-        href: '/dashboard/receptionist' as Route,
+        href: '/appointments' as Route,
         label: 'Home',
-        permission: 'dashboard:receptionist',
+        permission: 'nav:appointments',
     },
     admin: {
-        href: '/dashboard/admin' as Route,
+        href: '/appointments' as Route,
         label: 'Home',
-        permission: 'dashboard:admin',
+        permission: 'nav:appointments',
     },
 } as const;
 

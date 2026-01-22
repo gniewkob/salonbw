@@ -9,15 +9,10 @@ interface Props {
 }
 
 const links: { href: Route; label: string; testId: string }[] = [
-    { href: '/dashboard/admin', label: 'Home', testId: 'nav-home' },
-    {
-        href: '/appointments',
-        label: 'Appointments',
-        testId: 'nav-appointments',
-    },
+    { href: '/appointments', label: 'Home', testId: 'nav-home' },
     { href: '/clients', label: 'Clients', testId: 'nav-clients' },
     { href: '/employees', label: 'Employees', testId: 'nav-employees' },
-    { href: '/dashboard/services', label: 'Services', testId: 'nav-services' },
+    { href: '/services', label: 'Services', testId: 'nav-services' },
     { href: '/products', label: 'Products', testId: 'nav-products' },
     { href: '/emails', label: 'Emails', testId: 'nav-emails' },
 ];

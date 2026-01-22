@@ -10,10 +10,10 @@ export default function Navbar() {
     const linkClass = 'transition duration-150 hover:text-blue-700';
 
     const dashboardLinks: Record<Role, Route> = {
-        client: '/dashboard/client' as Route,
-        employee: '/dashboard/employee' as Route,
-        receptionist: '/dashboard/receptionist' as Route,
-        admin: '/dashboard/admin' as Route,
+        client: '/appointments' as Route,
+        employee: '/appointments' as Route,
+        receptionist: '/appointments' as Route,
+        admin: '/appointments' as Route,
     };
     // During SSR and initial hydration, treat role as null to avoid mismatch
     const effectiveRole = initialized ? role : null;

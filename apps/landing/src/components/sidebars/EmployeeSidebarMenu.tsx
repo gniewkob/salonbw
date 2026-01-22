@@ -9,12 +9,7 @@ interface Props {
 }
 
 const links: { href: Route; label: string; testId: string }[] = [
-    { href: '/dashboard/employee', label: 'Home', testId: 'nav-home' },
-    {
-        href: '/appointments',
-        label: 'Appointments',
-        testId: 'nav-appointments',
-    },
+    { href: '/appointments', label: 'Home', testId: 'nav-home' },
     { href: '/clients', label: 'Clients', testId: 'nav-clients' },
 ];
 
