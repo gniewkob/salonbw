@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import Head from 'next/head';
 import { useAuth } from '@/contexts/AuthContext';
-import Layout from '@/components/Layout';
+import PublicLayout from '@/components/PublicLayout';
 import type { Route } from 'next';
 
 export default function Login() {
@@ -37,7 +38,10 @@ export default function Login() {
     };
 
     return (
-        <Layout title="Login">
+        <PublicLayout>
+            <Head>
+                <title>Login | Salon Black &amp; White</title>
+            </Head>
             <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
                 <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
                 {error && (
@@ -96,6 +100,6 @@ export default function Login() {
                     </Link>
                 </div>
             </div>
-        </Layout>
+        </PublicLayout>
     );
 }
