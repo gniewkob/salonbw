@@ -11,8 +11,14 @@ type Appointment =
         : LocalAppointment;
 
 export const APPOINTMENTS_QUERY_KEY = ['api', '/appointments'] as const;
+export const MY_APPOINTMENTS_QUERY_KEY = ['api', '/appointments/me'] as const;
 
 export function useAppointments() {
     const list = useList<Appointment>('/appointments');
     return { ...list, queryKey: APPOINTMENTS_QUERY_KEY };
+}
+
+export function useMyAppointments() {
+    const list = useList<Appointment>('/appointments/me');
+    return { ...list, queryKey: MY_APPOINTMENTS_QUERY_KEY };
 }
