@@ -10,6 +10,8 @@ export function setLogoutCallback(cb: () => void) {
 const client = new ApiClient(
     () => null,
     () => logoutCallback(),
+    undefined,
+    { baseUrl: process.env.NEXT_PUBLIC_API_URL },
 );
 
 export interface LoginCredentials {
