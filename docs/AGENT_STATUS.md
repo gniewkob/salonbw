@@ -1,6 +1,19 @@
 # Agent Status Dashboard
 
-_Last updated: 2025-11-01 (automated improvements via Claude Code)_
+_Last updated: 2026-01-21 (production readiness verification and database password update)_
+
+## Platform Architecture
+
+The Salon Black & White platform consists of the following services:
+
+- **`api.salon-bw.pl`** - Backend API (NestJS) serving all business logic, authentication, and data
+- **`dev.salon-bw.pl`** - **New client-facing frontend** (Next.js) - public marketing site for end users to browse services and book appointments
+- **`panel.salon-bw.pl`** - **Management dashboard** (Next.js) - authenticated portal for:
+  - **End users**: View reservation history, manage bookings
+  - **Admins**: Manage services, reservation calendar, appointments, user management
+- **`salon-bw.pl`** - **Legacy service** (being phased out, redirects to www.salon-bw.pl)
+
+**Current Focus:** Development on `dev.salon-bw.pl` (client-facing) and `panel.salon-bw.pl` (management dashboard), with `api.salon-bw.pl` as the backend.
 
 ## Current Release
 
@@ -16,12 +29,50 @@ Verification:
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK`
 - `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
 
-## What’s Working
+## Recent Incidents
 
+### 2026-01-21: Database Password Update and Production API Recovery
+
+**Timeline:**
+
+- **21:00 UTC** - Database password changed in MyDevil panel to `B04Pak8q3{1D72$vB`
+- **21:15 UTC** - GitHub secrets updated (`MYDEVIL_DB_PASSWORD`, `PGPASSWORD`)
+- **21:30 UTC** - Initial connection tests failed with auth errors
+- **21:45 UTC** - Used `devil pgsql passwd` to reset password, connection successful
+- **22:00 UTC** - Fixed production API issues:
+  - Rebuilt bcrypt native module for Node 22/FreeBSD
+  - Added missing `COOKIE_DOMAIN=salon-bw.pl` to .env
+  - Added missing `FRONTEND_URL=https://panel.salon-bw.pl` to .env
+  - Fixed app.js to load dotenv before application startup
+  - Manually updated DATABASE_URL with URL-encoded password
+- **22:10 UTC** - Production API fully recovered and verified
+
+**Resolution:**
+
+- API health check: ✅ Database connected (2.1ms latency)
+- SMTP verification: ✅ Working (22ms latency)
+- All production endpoints verified operational
+
+**Lessons Learned:**
+
+- Use `devil pgsql passwd` command for password resets on MyDevil
+- Special characters in passwords require URL encoding in DATABASE_URL (`{` = `%7B`, `$` = `%24`)
+- app.js entry point must call `require("dotenv").config()` before any other code for Passenger deployments
+- Native modules like bcrypt must be rebuilt when Node.js version changes
+
+## What's Working
+
+- **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
+  - ✅ API health endpoints operational (database, SMTP, Prometheus metrics)
+  - ✅ Public site (salon-bw.pl) → redirects to www.salon-bw.pl (200 OK)
+  - ✅ Panel dashboard (panel.salon-bw.pl) → proper auth redirect (307)
+  - ✅ Dev site (dev.salon-bw.pl) → operational (200 OK)
+  - ✅ Database password updated across all environments
+  - ✅ bcrypt native module rebuilt for production environment
 - Contact form calls `/emails/send` (Nest `EmailsModule`) and relays through `kontakt@salon-bw.pl`.
 - Deploy workflows (`deploy_api`, `deploy_public`, `deploy_dashboard`, `deploy_admin`) accept optional `app_name` and tolerate php domains by touching `tmp/restart.txt`.
 - Public Next.js build succeeds with `experimental.typedRoutes=false`.
-- SMTP + JWT secrets and POS flags managed in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env` (`POS_ENABLED=true`; see `docs/ENV.md`).
+- SMTP + JWT secrets and POS flags managed in production `.env` at `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/.env` (`POS_ENABLED=true`; see [docs/ENV.md](./ENV.md)).
 - **2025-11-01 18:32 UTC (`fd0b06d0`)** – POS migrations applied in production (`1710006000000`, `1710007000000`, `1710008000000`), and `POS_ENABLED=true` is live. Verification commands:
   ```bash
   curl -sw '%{http_code}\n' -X POST https://api.salon-bw.pl/sales -H 'Content-Type: application/json' -d '{"saleId":"agent-check","items":[]}' | tail -n1  # 201
@@ -36,7 +87,7 @@ Verification:
 
 | Issue | Impact | Workaround | Last Updated |
 | --- | --- | --- | --- |
-| `npm warn EBADENGINE` on mydevil (Node v18) | Noise during `npm install` in standalone bundles | Safe to ignore; Node 18 is the highest available on shared hosting | 2025-10-24 |
+| CI/CD GitHub secrets may not propagate to generated .env files | Automated deployments may use stale passwords | Manually update production .env at `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/.env` | 2026-01-21 |
 
 ## Uptime Tracking
 
