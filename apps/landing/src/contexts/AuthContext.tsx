@@ -128,6 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 persistTokens(nextTokens);
             },
             {
+                // Explicitly pass baseUrl from app code (where Next.js replaces env vars)
+                baseUrl: process.env.NEXT_PUBLIC_API_URL,
                 // Add CSRF token to requests
                 requestInit: csrfToken
                     ? {
