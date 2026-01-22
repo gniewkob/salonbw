@@ -1,7 +1,7 @@
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
 import Modal from '@/components/Modal';
-import { useAppointments } from '@/hooks/useAppointments';
+import { useAppointments, useMyAppointments } from '@/hooks/useAppointments';
 import { useServices } from '@/hooks/useServices';
 import { useAppointmentsApi } from '@/api/appointments';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,10 +55,16 @@ interface AppointmentFormPayload {
 }
 
 export default function AppointmentsPage() {
-    const { data: appointments, loading, error } = useAppointments();
+    const { role } = useAuth();
+    const isAdmin = role === 'admin';
+
+    // Admin sees all appointments, others see only their own
+    const allAppointments = useAppointments();
+    const myAppointments = useMyAppointments();
+    const { data: appointments, loading, error } = isAdmin ? allAppointments : myAppointments;
+
     const { data: services } = useServices();
     const api = useAppointmentsApi();
-    const { role } = useAuth();
     const [formOpen, setFormOpen] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
