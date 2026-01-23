@@ -32,7 +32,9 @@ export default function Register() {
                 await router.push('/');
             }
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Registration failed');
+            setError(
+                err instanceof Error ? err.message : 'Registration failed',
+            );
             setLoading(false);
         }
     };
@@ -43,13 +45,15 @@ export default function Register() {
                 <title>Register | Salon Black &amp; White</title>
             </Head>
             <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
+                <h1 className="text-2xl font-bold mb-6 text-center">
+                    Register
+                </h1>
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
                         {error}
                     </div>
                 )}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => void handleSubmit(e)}>
                     <div className="mb-4">
                         <label
                             htmlFor="name"
