@@ -59,8 +59,9 @@ export default function AppointmentsPage() {
     const isAdmin = role === 'admin';
 
     // Admin sees all appointments, others see only their own
-    const allAppointments = useAppointments();
-    const myAppointments = useMyAppointments();
+    // Use enabled option to prevent unnecessary API calls
+    const allAppointments = useAppointments({ enabled: isAdmin });
+    const myAppointments = useMyAppointments({ enabled: !isAdmin });
     const { data: appointments, loading, error } = isAdmin ? allAppointments : myAppointments;
 
     const { data: services } = useServices();
