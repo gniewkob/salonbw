@@ -5,6 +5,7 @@ import { createAuthValue } from '../testUtils';
 
 jest.mock('@/hooks/useAppointments', () => ({
     useAppointments: () => ({ data: [], loading: false, error: null }),
+    useMyAppointments: () => ({ data: [], loading: false, error: null }),
 }));
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({ data: [], loading: false }),
