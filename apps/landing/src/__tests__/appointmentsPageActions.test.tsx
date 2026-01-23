@@ -78,6 +78,17 @@ jest.mock('@/hooks/useAppointments', () => ({
         loading: false,
         error: null,
     }),
+    useMyAppointments: () => ({
+        data: [
+            {
+                id: 1,
+                startTime: '2025-01-01T10:00:00Z',
+                client: { id: 1, name: 'Alice' },
+            },
+        ],
+        loading: false,
+        error: null,
+    }),
 }));
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({
