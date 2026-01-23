@@ -8,6 +8,11 @@ jest.mock('@/hooks/useAppointments', () => ({
         loading: false,
         error: new Error('x'),
     }),
+    useMyAppointments: () => ({
+        data: null,
+        loading: false,
+        error: new Error('x'),
+    }),
 }));
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({ data: [], loading: false }),
