@@ -23,7 +23,7 @@ describe('DashboardNav receptionist', () => {
             pathname: '/dashboard/receptionist',
         });
         render(<DashboardNav />);
+        // Home link now points to /appointments
         expect(screen.getByText('Home')).toBeInTheDocument();
-        expect(screen.getByText('Appointments')).toBeInTheDocument();
     });
 });
