@@ -5,6 +5,7 @@ import { Review } from '@/types';
 interface Options {
     employeeId?: number;
     clientId?: number;
+    mine?: boolean;
 }
 
 export function useReviews(options: Options = {}) {
@@ -22,7 +23,9 @@ export function useReviews(options: Options = {}) {
             ? `/employees/${options.employeeId}/reviews`
             : options.clientId
               ? `/clients/${options.clientId}/reviews`
-              : '/reviews';
+              : options.mine
+                ? '/reviews/me'
+                : '/reviews';
         const params = new URLSearchParams();
         params.set('page', String(page));
         params.set('limit', String(limit));
@@ -44,7 +47,7 @@ export function useReviews(options: Options = {}) {
                 setError(err instanceof Error ? err : new Error(String(err))),
             )
             .finally(() => setLoading(false));
-    }, [options.employeeId, options.clientId, page, limit, rating, apiFetch]);
+    }, [options.employeeId, options.clientId, options.mine, page, limit, rating, apiFetch]);
 
     return {
         data,

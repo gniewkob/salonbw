@@ -28,6 +28,8 @@ import { RetailModule } from './retail/retail.module';
 import { CSPModule } from './csp/csp.module';
 import { CacheModule } from './cache/cache.module';
 import { DatabaseSlowQueryService } from './database/database-slow-query.service';
+import { InvoicesModule } from './invoices/invoices.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
     imports: [
@@ -95,6 +97,8 @@ import { DatabaseSlowQueryService } from './database/database-slow-query.service
         ObservabilityModule,
         RetailModule,
         CSPModule,
+        InvoicesModule,
+        ReviewsModule,
     ],
     controllers: [AppController, HealthController],
     providers: [

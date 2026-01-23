@@ -34,6 +34,16 @@ const homeLink: Record<Role, NavLink> = {
 
 const navItems: NavLink[] = [
     {
+        href: '/invoices' as Route,
+        label: 'Invoices',
+        permission: 'nav:invoices',
+    },
+    {
+        href: '/reviews' as Route,
+        label: 'Reviews',
+        permission: 'nav:reviews',
+    },
+    {
         href: '/clients' as Route,
         label: 'Clients',
         permission: 'nav:clients',
@@ -53,9 +63,6 @@ const navItems: NavLink[] = [
         label: 'Emails',
         permission: 'nav:emails',
     },
-    // TODO: Enable when backend supports these endpoints
-    // { href: '/invoices' as Route, label: 'Invoices', permission: 'nav:invoices' },
-    // { href: '/reviews' as Route, label: 'Reviews', permission: 'nav:reviews' },
 ];
 
 export default function DashboardNav() {
