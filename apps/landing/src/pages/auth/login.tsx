@@ -49,7 +49,7 @@ export default function Login() {
                         {error}
                     </div>
                 )}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => void handleSubmit(e)}>
                     <div className="mb-4">
                         <label
                             htmlFor="email"
@@ -91,7 +91,7 @@ export default function Login() {
                     </button>
                 </form>
                 <div className="mt-4 text-center text-sm">
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <Link
                         href={'/auth/register' as Route}
                         className="text-blue-600 hover:underline"
