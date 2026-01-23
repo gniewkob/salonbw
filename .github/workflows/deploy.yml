@@ -259,6 +259,7 @@ jobs:
           pnpm --filter @salonbw/landing build
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
       - name: Build frontend (Panel)

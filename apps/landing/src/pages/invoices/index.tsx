@@ -1,9 +1,16 @@
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import { useInvoices } from '@/hooks/useInvoices';
+import { useInvoices, useMyInvoices } from '@/hooks/useInvoices';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function InvoicesPage() {
-    const { data, loading } = useInvoices();
+    const { role } = useAuth();
+    const isAdmin = role === 'admin';
+
+    // Admin sees all invoices, others see only their own
+    const allInvoices = useInvoices({ enabled: isAdmin });
+    const myInvoices = useMyInvoices({ enabled: !isAdmin });
+    const { data, loading } = isAdmin ? allInvoices : myInvoices;
 
     return (
         <RouteGuard permission="nav:invoices">
