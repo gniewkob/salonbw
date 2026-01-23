@@ -10,8 +10,9 @@ interface Props {
 
 const links: { href: Route; label: string; testId: string }[] = [
     { href: '/appointments', label: 'Home', testId: 'nav-home' },
-    { href: '/invoices', label: 'Invoices', testId: 'nav-invoices' },
-    { href: '/reviews', label: 'Reviews', testId: 'nav-reviews' },
+    // TODO: Enable when backend supports these endpoints
+    // { href: '/invoices', label: 'Invoices', testId: 'nav-invoices' },
+    // { href: '/reviews', label: 'Reviews', testId: 'nav-reviews' },
 ];
 
 export default function ClientSidebarMenu(props: Props) {
