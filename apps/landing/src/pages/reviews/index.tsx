@@ -118,9 +118,11 @@ export default function ReviewsPage() {
                                 <input
                                     className="border ml-1 p-1 w-16"
                                     value={employeeId}
-                                    onChange={(e) =>
-                                        setEmployeeId(Number(e.target.value) || 1)
-                                    }
+                                    onChange={(e) => {
+                                        setEmployeeId(
+                                            Number(e.target.value) || 1,
+                                        );
+                                    }}
                                 />
                             </label>
                         )}

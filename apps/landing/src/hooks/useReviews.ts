@@ -47,7 +47,15 @@ export function useReviews(options: Options = {}) {
                 setError(err instanceof Error ? err : new Error(String(err))),
             )
             .finally(() => setLoading(false));
-    }, [options.employeeId, options.clientId, options.mine, page, limit, rating, apiFetch]);
+    }, [
+        options.employeeId,
+        options.clientId,
+        options.mine,
+        page,
+        limit,
+        rating,
+        apiFetch,
+    ]);
 
     return {
         data,

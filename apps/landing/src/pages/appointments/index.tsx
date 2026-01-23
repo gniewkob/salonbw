@@ -62,7 +62,11 @@ export default function AppointmentsPage() {
     // Use enabled option to prevent unnecessary API calls
     const allAppointments = useAppointments({ enabled: isAdmin });
     const myAppointments = useMyAppointments({ enabled: !isAdmin });
-    const { data: appointments, loading, error } = isAdmin ? allAppointments : myAppointments;
+    const {
+        data: appointments,
+        loading,
+        error,
+    } = isAdmin ? allAppointments : myAppointments;
 
     const { data: services } = useServices();
     const api = useAppointmentsApi();
