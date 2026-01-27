@@ -116,7 +116,7 @@ importers:
         version: 30.2.0
       '@suchipi/cypress-plugin-snapshots':
         specifier: ^1.4.5
-        version: 1.4.5(cypress@15.7.1)
+        version: 1.4.5(cypress@15.9.0)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.14
@@ -139,8 +139,8 @@ importers:
         specifier: ^18
         version: 18.3.7(@types/react@18.3.26)
       cypress:
-        specifier: ^15.7.1
-        version: 15.7.1
+        specifier: ^15.9.0
+        version: 15.9.0
       eslint:
         specifier: ^8
         version: 8.57.1
@@ -255,7 +255,7 @@ importers:
         version: 30.2.0
       '@suchipi/cypress-plugin-snapshots':
         specifier: ^1.4.5
-        version: 1.4.5(cypress@15.7.1)
+        version: 1.4.5(cypress@15.9.0)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.14
@@ -278,8 +278,8 @@ importers:
         specifier: ^18
         version: 18.3.7(@types/react@18.3.26)
       cypress:
-        specifier: ^15.7.1
-        version: 15.7.1
+        specifier: ^15.9.0
+        version: 15.9.0
       eslint:
         specifier: ^8
         version: 8.57.1
@@ -992,8 +992,8 @@ packages:
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
 
-  '@cypress/request@3.0.9':
-    resolution: {integrity: sha512-I3l7FdGRXluAS44/0NguwWlO83J18p0vlr2FYHrJkWdNYhgVoiYo61IXPqaOsL+vNxU1ZqMACzItGK3/KKDsdw==}
+  '@cypress/request@3.0.10':
+    resolution: {integrity: sha512-hauBrOdvu08vOsagkZ/Aju5XuiZx6ldsLfByg1htFeldhex+PeMrYauANzFsMJeAA0+dyPLbDoX2OYuvVoLDkQ==}
     engines: {node: '>= 6'}
 
   '@cypress/xvfb@1.2.4':
@@ -4256,8 +4256,8 @@ packages:
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
-  cypress@15.7.1:
-    resolution: {integrity: sha512-U3sYnJ+Cnpgr6IPycxsznTg//mGVXfPGeGV+om7VQCyp5XyVkhG4oPr3X3hTq1+OB0Om0O5DxusYmt7cbvwqMQ==}
+  cypress@15.9.0:
+    resolution: {integrity: sha512-Ks6Bdilz3TtkLZtTQyqYaqtL/WT3X3APKaSLhTV96TmTyudzSjc6EJsJCHmBb7DxO+3R12q3Jkbjgm/iPgmwfg==}
     engines: {node: ^20.1.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
 
@@ -7397,8 +7397,8 @@ packages:
     resolution: {integrity: sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  systeminformation@5.27.7:
-    resolution: {integrity: sha512-saaqOoVEEFaux4v0K8Q7caiauRwjXC4XbD2eH60dxHXbpKxQ8kH9Rf7Jh+nryKpOUSEFxtCdBlSUx0/lO6rwRg==}
+  systeminformation@5.30.5:
+    resolution: {integrity: sha512-DpWmpCckhwR3hG+6udb6/aQB7PpiqVnvSljrjbKxNSvTRsGsg7NVE3/vouoYf96xgwMxXFKcS4Ux+cnkFwYM7A==}
     engines: {node: '>=8.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -8990,7 +8990,7 @@ snapshots:
 
   '@csstools/css-tokenizer@3.0.4': {}
 
-  '@cypress/request@3.0.9':
+  '@cypress/request@3.0.10':
     dependencies:
       aws-sign2: 0.7.0
       aws4: 1.13.2
@@ -9005,7 +9005,7 @@ snapshots:
       json-stringify-safe: 5.0.1
       mime-types: 2.1.35
       performance-now: 2.1.0
-      qs: 6.14.0
+      qs: 6.14.1
       safe-buffer: 5.2.1
       tough-cookie: 5.1.2
       tunnel-agent: 0.6.0
@@ -11401,9 +11401,9 @@ snapshots:
 
   '@standard-schema/spec@1.0.0': {}
 
-  '@suchipi/cypress-plugin-snapshots@1.4.5(cypress@15.7.1)':
+  '@suchipi/cypress-plugin-snapshots@1.4.5(cypress@15.9.0)':
     dependencies:
-      cypress: 15.7.1
+      cypress: 15.9.0
       diff2html: 2.12.2
       fs-extra: 7.0.1
       image-size: 0.7.5
@@ -12907,9 +12907,9 @@ snapshots:
 
   csstype@3.1.3: {}
 
-  cypress@15.7.1:
+  cypress@15.9.0:
     dependencies:
-      '@cypress/request': 3.0.9
+      '@cypress/request': 3.0.10
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
       '@types/sinonjs__fake-timers': 8.1.1
       '@types/sizzle': 2.3.10
@@ -12946,7 +12946,7 @@ snapshots:
       proxy-from-env: 1.0.0
       request-progress: 3.0.0
       supports-color: 8.1.1
-      systeminformation: 5.27.7
+      systeminformation: 5.30.5
       tmp: 0.2.5
       tree-kill: 1.2.2
       untildify: 4.0.0
@@ -16806,7 +16806,7 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.2.9
 
-  systeminformation@5.27.7: {}
+  systeminformation@5.30.5: {}
 
   tailwindcss@4.1.14: {}
 
