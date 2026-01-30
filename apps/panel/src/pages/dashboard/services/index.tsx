@@ -48,14 +48,16 @@ export default function ServicesPage() {
 
     if (role !== 'admin') {
         return (
-            <DashboardLayout title="Services">
-                <div className="p-4">You do not have permission to view this page.</div>
+            <DashboardLayout>
+                <div className="p-4">
+                    You do not have permission to view this page.
+                </div>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout title="Services">
+        <DashboardLayout>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Services</h1>
                 <button
@@ -116,13 +118,12 @@ export default function ServicesPage() {
                 </table>
             </div>
 
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={editingService ? 'Edit Service' : 'Add Service'}
-            >
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <h3 className="text-lg font-bold mb-4">
+                    {editingService ? 'Edit Service' : 'Add Service'}
+                </h3>
                 <ServiceForm
-                    initialData={editingService || undefined}
+                    initial={editingService || undefined}
                     onSubmit={editingService ? handleUpdate : handleCreate}
                     onCancel={() => setIsModalOpen(false)}
                 />
