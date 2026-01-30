@@ -30,10 +30,10 @@ type SuccessResponse<T> = T extends {
         ? 200 extends keyof Responses
             ? JsonPayload<Responses[200]>
             : 201 extends keyof Responses
-            ? JsonPayload<Responses[201]>
-            : 204 extends keyof Responses
-            ? void
-            : unknown
+              ? JsonPayload<Responses[201]>
+              : 204 extends keyof Responses
+                ? void
+                : unknown
         : unknown
     : unknown;
 
@@ -43,8 +43,8 @@ type JsonPayload<T> = T extends {
     ? Content extends { "application/json": infer Json }
         ? Json
         : Content extends { "*/*": infer Any }
-        ? Any
-        : unknown
+          ? Any
+          : unknown
     : unknown;
 
 type RequestBody<T> = T extends {
@@ -63,7 +63,7 @@ type PathParams<T> = T extends { parameters: { path: infer PathParams } }
 
 export interface TypedRequest<
     Path extends keyof paths,
-    Method extends keyof paths[Path]
+    Method extends keyof paths[Path],
 > {
     path: Path;
     method: Method;
@@ -99,7 +99,7 @@ export class ApiClient {
         private readonly getAccessToken: () => string | null,
         private readonly onLogout: () => void,
         private readonly onTokenRefresh?: (tokens: AuthTokens) => void,
-        private readonly options: ApiClientOptions = {}
+        private readonly options: ApiClientOptions = {},
     ) {
         const rawBase =
             options.baseUrl ??
@@ -109,12 +109,12 @@ export class ApiClient {
             const u = new URL(rawBase);
             this.baseUrl =
                 u.protocol === "http:" || u.protocol === "https:"
-                    ? rawBase.replace(/\/api\/?$/, "")
+                    ? rawBase
                     : "http://localhost:3000";
         } catch {
             // Allow relative paths for proxy usage
             if (rawBase.startsWith("/")) {
-                this.baseUrl = rawBase.replace(/\/api\/?$/, "");
+                this.baseUrl = rawBase;
             } else {
                 this.baseUrl = "http://localhost:3000";
             }
@@ -178,7 +178,7 @@ export class ApiClient {
 
     private buildUrl(
         endpoint: string,
-        query?: Record<string, unknown> | undefined
+        query?: Record<string, unknown> | undefined,
     ): string {
         const url =
             endpoint.startsWith("http://") || endpoint.startsWith("https://")
@@ -215,7 +215,9 @@ export class ApiClient {
                 credentials: "include",
                 // Send refreshToken in body if available (localStorage), otherwise
                 // backend will attempt to read it from cookies
-                body: JSON.stringify({ refreshToken: refreshToken ?? undefined }),
+                body: JSON.stringify({
+                    refreshToken: refreshToken ?? undefined,
+                }),
             });
             if (!response.ok) {
                 return null;
@@ -232,7 +234,7 @@ export class ApiClient {
     private async execute<T>(
         endpoint: string,
         init: RequestInit = {},
-        retry = true
+        retry = true,
     ): Promise<T> {
         const baseInit = this.options.requestInit ?? {};
         const mergedInit: RequestInit = {
@@ -263,7 +265,7 @@ export class ApiClient {
 
         // Get CSRF token from cookie and add to headers for non-GET requests
         const method = String(
-            mergedInit.method ?? init.method ?? "GET"
+            mergedInit.method ?? init.method ?? "GET",
         ).toUpperCase();
 
         if (method !== "GET" && typeof document !== "undefined") {
@@ -350,9 +352,9 @@ export class ApiClient {
 
     async requestTyped<
         Path extends keyof paths,
-        Method extends keyof paths[Path]
+        Method extends keyof paths[Path],
     >(
-        request: TypedRequest<Path, Method>
+        request: TypedRequest<Path, Method>,
     ): Promise<SuccessResponse<paths[Path][Method]>> {
         const operation = request;
         const method = String(operation.method).toUpperCase();
@@ -361,7 +363,7 @@ export class ApiClient {
             for (const [key, value] of Object.entries(operation.pathParams)) {
                 path = path.replace(
                     `{${key}}`,
-                    encodeURIComponent(String(value))
+                    encodeURIComponent(String(value)),
                 );
             }
         }
@@ -375,7 +377,7 @@ export class ApiClient {
                 method,
                 body,
                 headers: operation.headers,
-            }
+            },
         );
     }
 }
