@@ -30,6 +30,6 @@ describe('Layout', () => {
             createAuthValue({ isAuthenticated: true, role: 'admin' }),
         );
         render(<Layout>content</Layout>);
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Home')).toBeInTheDocument();
     });
 });
