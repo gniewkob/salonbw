@@ -159,14 +159,13 @@ export const getServerSideProps: GetServerSideProps<
         if (!Array.isArray(data) || data.length === 0) {
             return { props: { categories: fallbackCategories } };
         }
-        const map = new Map<number | null, ServiceCategory>();
+        const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
-            const key = svc.category?.id ?? null;
-            const name = svc.category?.name ?? 'Other';
-            if (!map.has(key)) {
-                map.set(key, { id: key, name, services: [] });
+            const categoryName = svc.category ?? 'Other';
+            if (!map.has(categoryName)) {
+                map.set(categoryName, { id: null, name: categoryName, services: [] });
             }
-            map.get(key)!.services.push(svc);
+            map.get(categoryName)!.services.push(svc);
         }
         const categories = Array.from(map.values());
         if (!categories.length) {

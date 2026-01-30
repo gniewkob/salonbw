@@ -5,40 +5,71 @@ import {
     IsBoolean,
     IsOptional,
     IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
+    IsEnum,
+    Min,
+    Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { PriceType } from '../service.entity';
 
 export class CreateServiceDto {
-    @ApiProperty()
+    @ApiProperty({ description: 'Service name' })
     @IsString()
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false, description: 'Service description' })
     @IsString()
-    @IsNotEmpty()
-    description: string;
+    @IsOptional()
+    description?: string;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Duration in minutes' })
     @IsNumber()
-    @IsNotEmpty()
+    @Min(5)
     duration: number;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Price in PLN' })
     @IsNumber()
-    @IsNotEmpty()
+    @Min(0)
     price: number;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({
+        enum: PriceType,
+        default: PriceType.Fixed,
+        description: 'Price type: fixed or from (minimum)',
+    })
+    @IsEnum(PriceType)
+    @IsOptional()
+    priceType?: PriceType;
+
+    @ApiProperty({ required: false, description: 'Legacy string category (deprecated)' })
     @IsString()
     @IsOptional()
     category?: string;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ required: false, description: 'Category ID (new hierarchical system)' })
     @IsNumber()
     @IsOptional()
+    categoryId?: number;
+
+    @ApiProperty({ required: false, description: 'Commission percentage (0-100)' })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    @Max(100)
     commissionPercent?: number;
+
+    @ApiProperty({ required: false, default: true, description: 'Is service active' })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
+
+    @ApiProperty({ required: false, default: true, description: 'Available for online booking' })
+    @IsBoolean()
+    @IsOptional()
+    onlineBooking?: boolean;
+
+    @ApiProperty({ required: false, default: 0, description: 'Sort order' })
+    @IsNumber()
+    @IsOptional()
+    sortOrder?: number;
 }

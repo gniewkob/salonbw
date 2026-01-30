@@ -4,7 +4,7 @@ import type { UpdateResult } from 'typeorm';
 import { Appointment, AppointmentStatus } from './appointment.entity';
 import { AppointmentsService } from './appointments.service';
 import { Role } from '../users/role.enum';
-import { Service as SalonService } from '../services/service.entity';
+import { Service as SalonService, PriceType } from '../services/service.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
@@ -27,6 +27,7 @@ export interface AppointmentsTestContext {
 
 export function createAppointmentsTestContext(): AppointmentsTestContext {
     const appointments: Appointment[] = [];
+    const now = new Date();
     const users: User[] = [
         {
             id: 1,
@@ -37,6 +38,11 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             phone: '123',
             receiveNotifications: true,
             commissionBase: 0,
+            smsConsent: true,
+            emailConsent: true,
+            gdprConsent: true,
+            createdAt: now,
+            updatedAt: now,
         },
         {
             id: 2,
@@ -47,6 +53,11 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             phone: '456',
             receiveNotifications: true,
             commissionBase: 0,
+            smsConsent: true,
+            emailConsent: true,
+            gdprConsent: true,
+            createdAt: now,
+            updatedAt: now,
         },
     ];
 
@@ -57,6 +68,14 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             name: '',
             description: '',
             price: 0,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+            sortOrder: 0,
+            variants: [],
+            employeeServices: [],
+            createdAt: now,
+            updatedAt: now,
         },
     ];
 

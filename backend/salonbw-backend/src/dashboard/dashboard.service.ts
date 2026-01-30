@@ -8,6 +8,7 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { DashboardSummaryDto } from './dto/dashboard-summary.dto';
+import { ClientDashboardDto } from './dto/client-dashboard.dto';
 
 @Injectable()
 export class DashboardService {
@@ -53,6 +54,92 @@ export class DashboardService {
             employeeCount,
             todayAppointments,
             upcomingAppointments,
+        };
+    }
+
+    async getClientSummary(userId: number): Promise<ClientDashboardDto> {
+        const now = new Date();
+
+        // Get next upcoming appointment for this client
+        const upcomingAppointment = await this.appointmentsRepository.findOne({
+            where: {
+                client: { id: userId },
+                startTime: MoreThan(now),
+                status: AppointmentStatus.Scheduled,
+            },
+            relations: ['service', 'employee'],
+            order: { startTime: 'ASC' },
+        });
+
+        // Count completed appointments
+        const completedCount = await this.appointmentsRepository.count({
+            where: {
+                client: { id: userId },
+                status: AppointmentStatus.Completed,
+            },
+        });
+
+        // Get all appointments for service history aggregation
+        const allAppointments = await this.appointmentsRepository.find({
+            where: {
+                client: { id: userId },
+            },
+            relations: ['service'],
+        });
+
+        // Aggregate services used with counts
+        const serviceMap = new Map<
+            number,
+            { id: number; name: string; count: number }
+        >();
+        for (const apt of allAppointments) {
+            if (apt.service) {
+                const existing = serviceMap.get(apt.service.id);
+                if (existing) {
+                    existing.count++;
+                } else {
+                    serviceMap.set(apt.service.id, {
+                        id: apt.service.id,
+                        name: apt.service.name,
+                        count: 1,
+                    });
+                }
+            }
+        }
+        const serviceHistory = Array.from(serviceMap.values()).sort(
+            (a, b) => b.count - a.count,
+        );
+
+        // Get recent appointments (last 10)
+        const recentAppointments = await this.appointmentsRepository.find({
+            where: {
+                client: { id: userId },
+            },
+            relations: ['service'],
+            order: { startTime: 'DESC' },
+            take: 10,
+        });
+
+        return {
+            upcomingAppointment: upcomingAppointment
+                ? {
+                      id: upcomingAppointment.id,
+                      serviceName: upcomingAppointment.service?.name ?? '',
+                      startTime: upcomingAppointment.startTime,
+                      employeeName:
+                          upcomingAppointment.employee?.name ??
+                          upcomingAppointment.employee?.email ??
+                          '',
+                  }
+                : null,
+            completedCount,
+            serviceHistory,
+            recentAppointments: recentAppointments.map((apt) => ({
+                id: apt.id,
+                serviceName: apt.service?.name ?? '',
+                startTime: apt.startTime,
+                status: apt.status,
+            })),
         };
     }
 }

@@ -9,13 +9,15 @@ const config: Config = {
         extend: {
             colors: {
                 brand: {
-                    black: '#000000',
+                    DEFAULT: '#25B4C1', // Versum Teal
+                    hover: '#1f9ba8',
+                    black: '#333333',
                     white: '#ffffff',
-                    gold: '#c5a880',
+                    gray: '#f5f5f5',
                 },
             },
             fontFamily: {
-                heading: ['"Playfair Display"', 'serif'],
+                sans: ['"Open Sans"', 'sans-serif'],
                 body: ['"Open Sans"', 'sans-serif'],
             },
         },

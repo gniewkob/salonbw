@@ -31,6 +31,8 @@ import { Service as SalonService } from '../services/service.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
+import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -192,5 +194,142 @@ export class AppointmentsController {
         );
         if (!updated) throw new NotFoundException();
         return updated;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Employee)
+    @Patch(':id/reschedule')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Reschedule appointment (drag & drop support)',
+        description:
+            'Reschedule an appointment to a new time and optionally a different employee. ' +
+            'Use force=true to ignore conflicts.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment rescheduled',
+        type: Appointment,
+    })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    @ApiResponse({
+        status: 409,
+        description: 'Conflict - employee already booked for this time',
+    })
+    async reschedule(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() body: RescheduleAppointmentDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const appointment = await this.appointmentsService.findOne(id);
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+
+        if (
+            user.role === Role.Employee &&
+            appointment.employee.id !== user.userId
+        ) {
+            throw new ForbiddenException(
+                'Employees can only reschedule their own appointments',
+            );
+        }
+
+        const updated = await this.appointmentsService.reschedule(
+            id,
+            new Date(body.startTime),
+            body.endTime ? new Date(body.endTime) : undefined,
+            body.employeeId,
+            body.force ?? false,
+            { id: user.userId } as User,
+        );
+
+        if (!updated) {
+            throw new NotFoundException();
+        }
+
+        return updated;
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Employee)
+    @Get(':id/conflicts')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Check for scheduling conflicts',
+        description:
+            'Check if rescheduling an appointment would cause conflicts',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Conflict check result',
+    })
+    async checkConflicts(
+        @Param('id', ParseIntPipe) id: number,
+        @Query('startTime') startTime: string,
+        @Query('endTime') endTime: string,
+        @Query('employeeId') employeeId?: string,
+    ) {
+        const appointment = await this.appointmentsService.findOne(id);
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+
+        const targetEmployeeId = employeeId
+            ? parseInt(employeeId, 10)
+            : appointment.employee.id;
+
+        return this.appointmentsService.checkConflicts(
+            targetEmployeeId,
+            new Date(startTime),
+            new Date(endTime),
+            id,
+        );
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin, Role.Receptionist)
+    @Post(':id/finalize')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Finalize appointment with payment details',
+        description:
+            'Complete the visit checkout with payment method, amounts, tips, discounts, ' +
+            'and optional product sales (upselling). Creates commission records.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment finalized successfully',
+        type: Appointment,
+    })
+    @ApiResponse({ status: 400, description: 'Invalid payment data or appointment state' })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async finalize(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ transform: true })) body: FinalizeAppointmentDto,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment | null> {
+        const appointment = await this.appointmentsService.findOne(id);
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+
+        // Authorization: Admin/Receptionist can finalize any, Employee only their own
+        if (
+            user.role === Role.Employee &&
+            appointment.employee.id !== user.userId
+        ) {
+            throw new ForbiddenException(
+                'Employees can only finalize their own appointments',
+            );
+        }
+
+        return this.appointmentsService.finalizeAppointment(
+            id,
+            body,
+            { id: user.userId } as User,
+        );
     }
 }

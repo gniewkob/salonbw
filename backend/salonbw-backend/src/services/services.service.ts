@@ -10,7 +10,16 @@ import { User } from '../users/user.entity';
 import { AppCacheService } from '../cache/cache.service';
 
 const ALL_SERVICES_CACHE_KEY = 'services:all';
+const SERVICES_WITH_RELATIONS_CACHE_KEY = 'services:all:relations';
 const serviceCacheKey = (id: number) => `services:${id}`;
+
+export interface ServiceQueryOptions {
+    categoryId?: number;
+    isActive?: boolean;
+    onlineBooking?: boolean;
+    includeVariants?: boolean;
+    includeCategory?: boolean;
+}
 
 @Injectable()
 export class ServicesService {
@@ -36,9 +45,59 @@ export class ServicesService {
         return saved;
     }
 
-    async findAll(): Promise<Service[]> {
-        return this.cache.wrap<Service[]>(ALL_SERVICES_CACHE_KEY, () =>
-            this.servicesRepository.find(),
+    async findAll(options?: ServiceQueryOptions): Promise<Service[]> {
+        // Simple cache for basic findAll without filters
+        if (!options || Object.keys(options).length === 0) {
+            return this.cache.wrap<Service[]>(ALL_SERVICES_CACHE_KEY, () =>
+                this.servicesRepository.find({
+                    order: { sortOrder: 'ASC', name: 'ASC' },
+                }),
+            );
+        }
+
+        // Build query with filters
+        const qb = this.servicesRepository.createQueryBuilder('service');
+
+        if (options.includeCategory) {
+            qb.leftJoinAndSelect('service.categoryRelation', 'category');
+        }
+
+        if (options.includeVariants) {
+            qb.leftJoinAndSelect('service.variants', 'variants');
+        }
+
+        if (options.categoryId !== undefined) {
+            qb.andWhere('service.categoryId = :categoryId', {
+                categoryId: options.categoryId,
+            });
+        }
+
+        if (options.isActive !== undefined) {
+            qb.andWhere('service.isActive = :isActive', {
+                isActive: options.isActive,
+            });
+        }
+
+        if (options.onlineBooking !== undefined) {
+            qb.andWhere('service.onlineBooking = :onlineBooking', {
+                onlineBooking: options.onlineBooking,
+            });
+        }
+
+        qb.orderBy('service.sortOrder', 'ASC');
+        qb.addOrderBy('service.name', 'ASC');
+
+        return qb.getMany();
+    }
+
+    async findAllWithRelations(): Promise<Service[]> {
+        return this.cache.wrap<Service[]>(
+            SERVICES_WITH_RELATIONS_CACHE_KEY,
+            () =>
+                this.servicesRepository.find({
+                    relations: ['categoryRelation', 'variants'],
+                    order: { sortOrder: 'ASC', name: 'ASC' },
+                }),
         );
     }
 
@@ -49,12 +108,29 @@ export class ServicesService {
         }
         const service = await this.servicesRepository.findOne({
             where: { id },
+            relations: ['categoryRelation', 'variants', 'employeeServices'],
         });
         if (!service) {
             throw new NotFoundException('Service not found');
         }
         await this.cache.set(serviceCacheKey(id), service);
         return service;
+    }
+
+    async findByCategory(categoryId: number): Promise<Service[]> {
+        return this.servicesRepository.find({
+            where: { categoryId },
+            relations: ['variants'],
+            order: { sortOrder: 'ASC', name: 'ASC' },
+        });
+    }
+
+    async findActiveForOnlineBooking(): Promise<Service[]> {
+        return this.servicesRepository.find({
+            where: { isActive: true, onlineBooking: true },
+            relations: ['categoryRelation', 'variants'],
+            order: { sortOrder: 'ASC', name: 'ASC' },
+        });
     }
 
     async update(
@@ -90,10 +166,19 @@ export class ServicesService {
         await this.invalidateCache(id);
     }
 
-    private async invalidateCache(id: number): Promise<void> {
-        await Promise.all([
-            this.cache.del(ALL_SERVICES_CACHE_KEY),
-            this.cache.del(serviceCacheKey(id)),
-        ]);
+    async reorder(serviceIds: number[]): Promise<void> {
+        const updates = serviceIds.map((serviceId, index) =>
+            this.servicesRepository.update(serviceId, { sortOrder: index }),
+        );
+        await Promise.all(updates);
+        await this.invalidateCache();
+    }
+
+    private async invalidateCache(id?: number): Promise<void> {
+        const keys = [ALL_SERVICES_CACHE_KEY, SERVICES_WITH_RELATIONS_CACHE_KEY];
+        if (id) {
+            keys.push(serviceCacheKey(id));
+        }
+        await Promise.all(keys.map((key) => this.cache.del(key)));
     }
 }

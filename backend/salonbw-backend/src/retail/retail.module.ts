@@ -17,5 +17,6 @@ import { LogsModule } from '../logs/logs.module';
     ],
     controllers: [SalesController, InventoryController],
     providers: [RetailService],
+    exports: [RetailService],
 })
 export class RetailModule {}

@@ -204,15 +204,18 @@ export class ApiClient {
 
     private async refreshTokens(): Promise<AuthTokens | null> {
         const refreshToken = this.getRefreshToken();
-        if (!refreshToken) {
-            return null;
-        }
+        // Even if localStorage has no refresh token, attempt the request anyway.
+        // The backend can read the refresh token from HTTP-only cookies (SSO flow
+        // between subdomains like dev.salon-bw.pl → panel.salon-bw.pl).
+        // credentials: 'include' ensures cookies are sent with the request.
         try {
             const response = await fetch(this.buildUrl("/auth/refresh"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ refreshToken }),
+                // Send refreshToken in body if available (localStorage), otherwise
+                // backend will attempt to read it from cookies
+                body: JSON.stringify({ refreshToken: refreshToken ?? undefined }),
             });
             if (!response.ok) {
                 return null;

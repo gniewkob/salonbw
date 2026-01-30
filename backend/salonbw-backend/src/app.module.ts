@@ -30,6 +30,18 @@ import { CacheModule } from './cache/cache.module';
 import { DatabaseSlowQueryService } from './database/database-slow-query.service';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { CalendarModule } from './calendar/calendar.module';
+import { CustomersModule } from './customers/customers.module';
+import { WarehouseModule } from './warehouse/warehouse.module';
+import { TimetablesModule } from './timetables/timetables.module';
+import { SmsModule } from './sms/sms.module';
+import { StatisticsModule } from './statistics/statistics.module';
+import { AutomaticMessagesModule } from './automatic-messages/automatic-messages.module';
+import { NewslettersModule } from './newsletters/newsletters.module';
+import { SettingsModule } from './settings/settings.module';
+import { BranchesModule } from './branches/branches.module';
+import { GiftCardsModule } from './gift-cards/gift-cards.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
 
 @Module({
     imports: [
@@ -99,6 +111,18 @@ import { ReviewsModule } from './reviews/reviews.module';
         CSPModule,
         InvoicesModule,
         ReviewsModule,
+        CalendarModule,
+        CustomersModule,
+        WarehouseModule,
+        TimetablesModule,
+        SmsModule,
+        StatisticsModule,
+        AutomaticMessagesModule,
+        NewslettersModule,
+        SettingsModule,
+        BranchesModule,
+        GiftCardsModule,
+        LoyaltyModule,
     ],
     controllers: [AppController, HealthController],
     providers: [
