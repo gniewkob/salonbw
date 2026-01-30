@@ -9,9 +9,14 @@ interface Props {
 }
 
 const links: { href: Route; label: string; testId: string }[] = [
-    { href: '/appointments', label: 'Home', testId: 'nav-home' },
-    { href: '/invoices', label: 'Invoices', testId: 'nav-invoices' },
-    { href: '/reviews', label: 'Reviews', testId: 'nav-reviews' },
+    { href: '/dashboard', label: 'Pulpit', testId: 'nav-home' },
+    {
+        href: '/appointments',
+        label: 'Moje wizyty',
+        testId: 'nav-appointments',
+    },
+    { href: '/invoices', label: 'Faktury', testId: 'nav-invoices' },
+    { href: '/reviews', label: 'Opinie', testId: 'nav-reviews' },
 ];
 
 export default function ClientSidebarMenu(props: Props) {

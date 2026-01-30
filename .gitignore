@@ -94,3 +94,7 @@ archive/
 .cursor/rules/codacy.mdc
 *.txt
 *.log
+
+# Versum dump and static preview - reference only
+dump/
+static_preview/

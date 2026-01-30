@@ -2,6 +2,8 @@ import {
     ConflictException,
     Injectable,
     BadRequestException,
+    Inject,
+    forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -12,7 +14,7 @@ import {
     Between,
     FindOptionsWhere,
 } from 'typeorm';
-import { Appointment, AppointmentStatus } from './appointment.entity';
+import { Appointment, AppointmentStatus, PaymentMethod } from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
@@ -22,6 +24,8 @@ import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
 import { MetricsService } from '../observability/metrics.service';
 import { Optional } from '@nestjs/common';
+import { RetailService } from '../retail/retail.service';
+import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -36,6 +40,8 @@ export class AppointmentsService {
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
         @Optional() private readonly metrics?: MetricsService,
+        @Optional() @Inject(forwardRef(() => RetailService))
+        private readonly retailService?: RetailService,
     ) {}
 
     private async loadClientOrThrow(id: number): Promise<User> {
@@ -344,6 +350,221 @@ export class AppointmentsService {
                 endTime: updated.endTime,
             });
         }
+        return updated;
+    }
+
+    async reschedule(
+        id: number,
+        startTime: Date,
+        endTime: Date | undefined,
+        employeeId: number | undefined,
+        force: boolean,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+
+        if (
+            appointment.status !== AppointmentStatus.Scheduled &&
+            appointment.status !== AppointmentStatus.Confirmed
+        ) {
+            throw new BadRequestException(
+                'Only scheduled or confirmed appointments can be rescheduled',
+            );
+        }
+
+        if (!startTime || isNaN(startTime.getTime())) {
+            throw new BadRequestException('startTime must be a valid date');
+        }
+
+        const targetEmployeeId = employeeId ?? appointment.employee.id;
+        let employee = appointment.employee;
+
+        if (employeeId && employeeId !== appointment.employee.id) {
+            employee = await this.loadEmployeeOrThrow(employeeId);
+        }
+
+        const newEnd = endTime
+            ? endTime
+            : new Date(
+                  startTime.getTime() +
+                      appointment.service.duration * 60 * 1000,
+              );
+
+        if (!force) {
+            await this.assertNoConflict(targetEmployeeId, startTime, newEnd, id);
+        }
+
+        const updateData: Partial<Appointment> = {
+            startTime,
+            endTime: newEnd,
+        };
+
+        if (employeeId && employeeId !== appointment.employee.id) {
+            updateData.employee = employee;
+        }
+
+        await this.appointmentsRepository.update(id, updateData);
+
+        const updated = await this.findOne(id);
+        if (updated) {
+            await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
+                action: 'reschedule',
+                appointmentId: updated.id,
+                startTime: updated.startTime,
+                endTime: updated.endTime,
+                employeeId: updated.employee.id,
+                previousEmployeeId: appointment.employee.id,
+            });
+
+            if (updated.client.phone && updated.client.receiveNotifications) {
+                const { date, time } = this.formatDate(updated.startTime);
+                try {
+                    await this.whatsappService.sendBookingConfirmation(
+                        updated.client.phone,
+                        date,
+                        time,
+                    );
+                } catch (error) {
+                    console.error(
+                        'Failed to send reschedule confirmation',
+                        error,
+                    );
+                }
+            }
+        }
+
+        return updated;
+    }
+
+    async checkConflicts(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        excludeId?: number,
+    ): Promise<{ hasConflict: boolean; conflictingAppointments: Appointment[] }> {
+        const where: FindOptionsWhere<Appointment> = {
+            employee: { id: employeeId },
+            status: Not(AppointmentStatus.Cancelled),
+            startTime: LessThan(endTime),
+            endTime: MoreThan(startTime),
+            ...(excludeId ? { id: Not(excludeId) } : {}),
+        };
+
+        const conflictingAppointments = await this.appointmentsRepository.find({
+            where,
+        });
+
+        return {
+            hasConflict: conflictingAppointments.length > 0,
+            conflictingAppointments,
+        };
+    }
+
+    /**
+     * Finalize an appointment with full payment details and optional product sales.
+     * This is the main checkout flow for completing a visit.
+     */
+    async finalizeAppointment(
+        id: number,
+        dto: FinalizeAppointmentDto,
+        user: User,
+    ): Promise<Appointment | null> {
+        const appointment = await this.findOne(id);
+        if (!appointment) {
+            return null;
+        }
+
+        if (appointment.status === AppointmentStatus.Completed) {
+            throw new BadRequestException('Appointment already completed');
+        }
+        if (appointment.status === AppointmentStatus.Cancelled) {
+            throw new BadRequestException(
+                'Cannot finalize a cancelled appointment',
+            );
+        }
+
+        // Convert cents to decimal for storage
+        const paidAmount = dto.paidAmountCents / 100;
+        const tipAmount = dto.tipAmountCents ? dto.tipAmountCents / 100 : 0;
+        const discount = dto.discountCents ? dto.discountCents / 100 : 0;
+
+        await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                // Update appointment with finalization data
+                await manager.update(Appointment, id, {
+                    status: AppointmentStatus.Completed,
+                    paymentMethod: dto.paymentMethod,
+                    paidAmount,
+                    tipAmount,
+                    discount,
+                    finalizedAt: new Date(),
+                    finalizedBy: user,
+                    internalNote: dto.note
+                        ? (appointment.internalNote
+                              ? `${appointment.internalNote}\n${dto.note}`
+                              : dto.note)
+                        : appointment.internalNote,
+                });
+
+                // Create commission for the service
+                await this.commissionsService.createFromAppointment(
+                    appointment,
+                    user,
+                    manager,
+                );
+
+                // Process product sales (upselling) if any
+                if (dto.products && dto.products.length > 0 && this.retailService) {
+                    for (const productSale of dto.products) {
+                        await this.retailService.createSale(
+                            {
+                                productId: productSale.productId,
+                                quantity: productSale.quantity,
+                                unitPriceCents: productSale.unitPriceCents,
+                                discountCents: productSale.discountCents,
+                                employeeId: appointment.employee.id,
+                                appointmentId: appointment.id,
+                            },
+                            user,
+                        );
+                    }
+                }
+            },
+        );
+
+        const updated = await this.findOne(id);
+        if (updated) {
+            this.metrics?.incAppointmentCompleted();
+            await this.safeLog(user, LogAction.APPOINTMENT_COMPLETED, {
+                action: 'finalize',
+                id: updated.id,
+                appointmentId: updated.id,
+                status: AppointmentStatus.Completed,
+                paymentMethod: dto.paymentMethod,
+                paidAmount,
+                tipAmount,
+                discount,
+                productsCount: dto.products?.length ?? 0,
+            });
+
+            // Send follow-up notification
+            if (updated.client.phone && updated.client.receiveNotifications) {
+                const { date, time } = this.formatDate(updated.startTime);
+                try {
+                    await this.whatsappService.sendFollowUp(
+                        updated.client.phone,
+                        date,
+                        time,
+                    );
+                } catch (error) {
+                    console.error('Failed to send follow up message', error);
+                }
+            }
+        }
+
         return updated;
     }
 }

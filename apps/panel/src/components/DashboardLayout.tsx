@@ -65,15 +65,18 @@ export default function DashboardLayout({ children }: Props) {
     }, [role]);
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-brand-gray font-body text-brand-black">
+            {/* Navigation Bar (Formerly SidebarComponent) */}
             <SidebarComponent
                 open={menuOpen}
-                onClose={() => setMenuOpen(false)}
+                onClose={() => setMenuOpen(!menuOpen)}
             />
-            <div className="flex flex-col flex-1">
-                <Topbar onMenu={() => setMenuOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4">{children}</main>
-            </div>
+
+            {/* Main Content Area */}
+            <main className="pt-20 px-4 md:px-8 pb-8 max-w-7xl mx-auto">
+                {/* Topbar removed as it is replaced by the main Navbar */}
+                {children}
+            </main>
         </div>
     );
 }
