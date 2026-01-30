@@ -6,12 +6,14 @@ export type Permission =
     | 'dashboard:receptionist'
     | 'dashboard:admin'
     | 'nav:appointments'
+    | 'nav:calendar'
     | 'nav:invoices'
     | 'nav:reviews'
     | 'nav:clients'
     | 'nav:employees'
     | 'nav:products'
     | 'nav:services'
+    | 'nav:warehouse'
     | 'nav:emails';
 
 const rolePermissions: Record<Role, Set<Permission>> = {
@@ -24,16 +26,23 @@ const rolePermissions: Record<Role, Set<Permission>> = {
     employee: new Set([
         'dashboard:employee',
         'nav:appointments',
+        'nav:calendar',
         'nav:clients',
     ]),
-    receptionist: new Set(['dashboard:receptionist', 'nav:appointments']),
+    receptionist: new Set([
+        'dashboard:receptionist',
+        'nav:appointments',
+        'nav:calendar',
+    ]),
     admin: new Set([
         'dashboard:admin',
         'nav:appointments',
+        'nav:calendar',
         'nav:clients',
         'nav:employees',
         'nav:products',
         'nav:services',
+        'nav:warehouse',
         'nav:emails',
     ]),
 };
