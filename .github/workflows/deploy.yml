@@ -3,6 +3,7 @@ name: Deploy (MyDevil)
 on:
   push:
     branches:
+      - master
       - fix-deployment
   workflow_dispatch:
     inputs:
@@ -73,9 +74,9 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'staging' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
     env:
-      DEPLOY_ENV: ${{ github.event.inputs.environment || 'staging' }}
+      DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
       # Pass through for steps to use comfortably
     steps:
       - name: Checkout
