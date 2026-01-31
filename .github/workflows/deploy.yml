@@ -334,6 +334,7 @@ jobs:
           echo "🚀 STEP: Building Panel frontend"
           echo "============================================"
           set -x  # Enable verbose debugging
+          set -o pipefail
           echo "=== DEBUG: Environment variables ==="
           echo "NEXT_PUBLIC_API_URL: $NEXT_PUBLIC_API_URL"
           echo "API_PROXY_URL: $API_PROXY_URL"
