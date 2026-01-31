@@ -19,7 +19,6 @@ const nextConfig = {
     transpilePackages: ['@salonbw/api'], // Validation: Force compilation of local TS package
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
-    // output: 'standalone', // Validation: Switching to standard build to fix asset 404s
     // Image optimization configuration
     // Enable optimization by default, can be disabled with NEXT_IMAGE_UNOPTIMIZED=true for shared hosting
     images: {
