@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&subset=latin,latin-ext');
 
 :root {
@@ -27,7 +26,7 @@ body {
     }
 
     .btn-primary {
-        @apply bg-brand-DEFAULT text-white hover:bg-brand-hover;
+        @apply bg-[#25B4C1] text-white hover:bg-[#1f9ba8];
     }
 
     .btn-secondary {
