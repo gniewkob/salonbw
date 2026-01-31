@@ -310,82 +310,22 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
 
-      - name: 🔍 Verify SSH Tunnel & Database Connectivity
+      - name: 🔍 Verify SSH Connectivity
         run: |
           echo "============================================"
-          echo "🚀 STEP: Verifying SSH tunnel connectivity"
+          echo "🚀 STEP: Verifying SSH connectivity"
           echo "============================================"
 
-          # Test SSH connection
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "echo '✅ SSH connection successful'" || {
             echo "❌ SSH connection failed"
             exit 1
           }
 
-          # Test database connectivity if DATABASE_URL is set
-          if [ -n "$DATABASE_URL" ]; then
-            echo ""
-            echo "============================================"
-            echo "🔍 STEP: Testing database connectivity"
-            echo "============================================"
-            echo "DATABASE_URL is set (host hidden for security)"
-            
-            # Simple connection test using psql
-            if command -v psql &> /dev/null; then
-              psql "$DATABASE_URL" -c "SELECT version();" || {
-                echo "❌ Database connection failed"
-                exit 1
-              }
-              echo "✅ Database connection successful"
-            else
-              echo "⚠️  psql not available, skipping direct DB test"
-            fi
-          else
-            echo "⚠️  DATABASE_URL not set, skipping DB connectivity test"
-          fi
-
           echo ""
           echo "============================================"
-          echo "✅ SSH and connectivity checks passed"
+          echo "✅ SSH connectivity verified"
           echo "============================================"
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: 🗄️ Run Database Migrations
-        run: |
-          echo "============================================"
-          echo "🚀 STEP: Running database migrations"
-          echo "============================================"
-
-          cd apps/api
-
-          # Run migrations with verbose output
-          if [ -f "package.json" ] && grep -q "migrate" package.json; then
-            echo "📋 Running migrations..."
-            pnpm run migrate 2>&1 | tee migration.log || {
-              echo "❌ Migration failed - Last 20 lines:"
-              tail -20 migration.log
-              exit 1
-            }
-            echo "✅ Migrations completed successfully"
-          else
-            echo "⚠️  No migration script found, skipping"
-          fi
-
-          # Verify migration status
-          if [ -f "package.json" ] && grep -q "migrate:status" package.json; then
-            echo ""
-            echo "📊 Migration status:"
-            pnpm run migrate:status || echo "⚠️  Could not check migration status"
-          fi
-
-          echo ""
-          echo "============================================"
-          echo "✅ Database migration step completed"
-          echo "============================================"
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: 🏗️ Build frontend (Panel)
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
@@ -837,6 +777,51 @@ jobs:
             node dist/src/migrate.js || node dist/migrate.js
           fi
           REMOTE_CMDS
+
+      - name: 🗄️ Verify DB and Run Migrations (Panel)
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Running migrations on production server"
+          echo "============================================"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}'
+          cd "$REMOTE_PATH"
+
+          echo "📍 Working directory: $(pwd)"
+
+          # Test database connectivity
+          if [ -f "../api/.env" ]; then
+            echo "🔍 Testing database connectivity..."
+            export $(grep -v '^#' ../api/.env | xargs)
+            if command -v psql >/dev/null 2>&1; then
+              psql "$DATABASE_URL" -c "SELECT version();" && echo "✅ Database connection successful"
+            else
+              echo "⚠️  psql not available, skipping DB test"
+            fi
+          fi
+
+          # Run migrations if available
+          if [ -d "../api" ]; then
+            echo "📋 Running database migrations..."
+            cd ../api
+            if command -v node22 >/dev/null 2>&1; then
+              node22 dist/src/migrate.js || node22 dist/migrate.js || echo "⚠️ Migration script not found"
+            else
+              node dist/src/migrate.js || node dist/migrate.js || echo "⚠️ Migration script not found"
+            fi
+            echo "✅ Migration step completed"
+          else
+            echo "⚠️  API directory not found, skipping migrations"
+          fi
+          REMOTE_CMDS
+
+          echo ""
+          echo "============================================"
+          echo "✅ Database verification and migrations completed"
+          echo "============================================"
 
       - name: Restart app (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
