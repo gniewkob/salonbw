@@ -273,7 +273,7 @@ jobs:
           echo "Listing Standalone App Dir:"
           ls -R apps/panel/.next/standalone/apps || echo "standalone/apps NOT FOUND"
         env:
-          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_API_URL: ${{ env.DEPLOY_ENV == 'production' && '/api' || steps.api.outputs.api_url }}
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
           NEXT_PANEL_HTML_NOSTORE: "true"
 
