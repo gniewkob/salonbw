@@ -263,20 +263,6 @@ jobs:
           NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
-      - name: Build frontend (Panel)
-        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
-        run: |
-          rm -rf apps/panel/.next
-          pnpm --filter @salonbw/panel --fail-if-no-match build
-          echo "Listing .next directory RECURSIVE (Debug):"
-          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
-          echo "Listing Standalone App Dir:"
-          ls -R apps/panel/.next/standalone/apps || echo "standalone/apps NOT FOUND"
-        env:
-          NEXT_PUBLIC_API_URL: ${{ env.DEPLOY_ENV == 'production' && '/api' || steps.api.outputs.api_url }}
-          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
-          NEXT_PANEL_HTML_NOSTORE: "true"
-
       - name: Read BUILD_ID (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
         id: buildid
@@ -323,6 +309,121 @@ jobs:
           MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+
+      - name: 🔍 Verify SSH Tunnel & Database Connectivity
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Verifying SSH tunnel connectivity"
+          echo "============================================"
+
+          # Test SSH connection
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net "echo '✅ SSH connection successful'" || {
+            echo "❌ SSH connection failed"
+            exit 1
+          }
+
+          # Test database connectivity if DATABASE_URL is set
+          if [ -n "$DATABASE_URL" ]; then
+            echo ""
+            echo "============================================"
+            echo "🔍 STEP: Testing database connectivity"
+            echo "============================================"
+            echo "DATABASE_URL is set (host hidden for security)"
+            
+            # Simple connection test using psql
+            if command -v psql &> /dev/null; then
+              psql "$DATABASE_URL" -c "SELECT version();" || {
+                echo "❌ Database connection failed"
+                exit 1
+              }
+              echo "✅ Database connection successful"
+            else
+              echo "⚠️  psql not available, skipping direct DB test"
+            fi
+          else
+            echo "⚠️  DATABASE_URL not set, skipping DB connectivity test"
+          fi
+
+          echo ""
+          echo "============================================"
+          echo "✅ SSH and connectivity checks passed"
+          echo "============================================"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🗄️ Run Database Migrations
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Running database migrations"
+          echo "============================================"
+
+          cd apps/api
+
+          # Run migrations with verbose output
+          if [ -f "package.json" ] && grep -q "migrate" package.json; then
+            echo "📋 Running migrations..."
+            pnpm run migrate 2>&1 | tee migration.log || {
+              echo "❌ Migration failed - Last 20 lines:"
+              tail -20 migration.log
+              exit 1
+            }
+            echo "✅ Migrations completed successfully"
+          else
+            echo "⚠️  No migration script found, skipping"
+          fi
+
+          # Verify migration status
+          if [ -f "package.json" ] && grep -q "migrate:status" package.json; then
+            echo ""
+            echo "📊 Migration status:"
+            pnpm run migrate:status || echo "⚠️  Could not check migration status"
+          fi
+
+          echo ""
+          echo "============================================"
+          echo "✅ Database migration step completed"
+          echo "============================================"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🏗️ Build frontend (Panel)
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Building Panel frontend"
+          echo "============================================"
+          set -x  # Enable verbose debugging
+          echo "=== DEBUG: Environment variables ==="
+          echo "NEXT_PUBLIC_API_URL: $NEXT_PUBLIC_API_URL"
+          echo "API_PROXY_URL: $API_PROXY_URL"
+          echo "DATABASE_URL: ${DATABASE_URL:+ [SET]}"
+          echo "NODE_VERSION: $(node --version)"
+          echo "PNPM_VERSION: $(pnpm --version)"
+          echo ""
+          echo "=== DEBUG: Starting build ==="
+          rm -rf apps/panel/.next
+          pnpm --filter @salonbw/panel --fail-if-no-match build 2>&1 | tee build.log || {
+            echo ""
+            echo "❌ BUILD FAILED - Last 50 lines of output:" 
+            tail -50 build.log
+            exit 1
+          }
+          echo ""
+          echo "✅ Build completed successfully"
+          echo "Listing .next directory RECURSIVE (Debug):"
+          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
+          echo "Listing Standalone App Dir:"
+          ls -R apps/panel/.next/standalone/apps || echo "standalone/apps NOT FOUND"
+          echo ""
+          echo "============================================"
+          echo "✅ Panel frontend build completed"
+          echo "============================================"
+        env:
+          NEXT_PUBLIC_API_URL: ${{ env.DEPLOY_ENV == 'production' && '/api' || steps.api.outputs.api_url }}
+          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PANEL_HTML_NOSTORE: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Ensure remote directories exist (frontend)
         if: ${{ github.event.inputs.target != 'api' }}
