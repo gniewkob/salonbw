@@ -380,7 +380,17 @@ jobs:
           # Copy app.js (Passenger Entry Point)
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
+             
+             # PATCH APP.JS FOR MYDEVIL/PASSENGER COMPATIBILITY
+             echo "Patching app.js for Passenger Binding..."
+             sed -i "s/const currentPort = parseInt(process.env.PORT, 10) || 3000/const currentPort = process.env.PORT || 3000/" deploy_bundle/app.js
+             sed -i "s/const hostname = process.env.HOSTNAME || '0.0.0.0'/const hostname = process.env.HOSTNAME/" deploy_bundle/app.js
           fi
+
+          # FIX STATIC ASSETS (Passenger 404s)
+          echo "Fixing Static Assets (Hard Copy)..."
+          mkdir -p deploy_bundle/public/_next
+          cp -r deploy_bundle/.next/static deploy_bundle/public/_next/
 
           # Copy source files (middleware needs src structure?)
           mkdir -p deploy_bundle/src
