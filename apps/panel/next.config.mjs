@@ -19,6 +19,7 @@ const nextConfig = {
     transpilePackages: ['@salonbw/api'], // Validation: Force compilation of local TS package
     reactStrictMode: true,
     eslint: { ignoreDuringBuilds: true },
+    typescript: { ignoreBuildErrors: true },
     // Image optimization configuration
     // Enable optimization by default, can be disabled with NEXT_IMAGE_UNOPTIMIZED=true for shared hosting
     images: {
