@@ -134,9 +134,10 @@ def run_checks() -> int:
         method = spec.get("method", "GET").upper()
         path = spec.get("path", "/")
         headers: Dict[str, str] = {
-            key: value
-            for key, value in spec.get("headers", {}).items()
+            key: value for key, value in spec.get("headers", {}).items()
         }
+        if "User-Agent" not in headers:
+            headers["User-Agent"] = "SalonBW-Deploy-Check/1.0"
         body = _serialise_body(spec)
         if body is not None and "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
