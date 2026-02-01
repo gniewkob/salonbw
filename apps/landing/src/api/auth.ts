@@ -1,4 +1,5 @@
 import { ApiClient } from './apiClient';
+import Cookies from 'js-cookie';
 import { User } from '@/types';
 
 let logoutCallback: () => void = () => {};
@@ -87,9 +88,12 @@ export async function register(data: RegisterData): Promise<User> {
 export async function refreshToken(): Promise<AuthTokens> {
     try {
         const refreshToken =
-            typeof localStorage !== 'undefined'
+            (typeof localStorage !== 'undefined'
                 ? localStorage.getItem(REFRESH_TOKEN_KEY)
-                : null;
+                : null) ||
+            (typeof document !== 'undefined'
+                ? Cookies.get(REFRESH_TOKEN_KEY)
+                : null);
         const raw = await client.request<ServerTokens>('/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

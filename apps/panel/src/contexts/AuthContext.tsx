@@ -8,6 +8,7 @@ import {
     useState,
 } from 'react';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
@@ -80,6 +81,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
     const persistTokens = useCallback((nextTokens: AuthTokens | null) => {
+        const cookieOptions = window.location.hostname.includes('salon-bw.pl')
+            ? { domain: '.salon-bw.pl', path: '/' }
+            : { path: '/' };
+
+        if (nextTokens) {
+            Cookies.set('accessToken', nextTokens.accessToken, cookieOptions);
+            Cookies.set('refreshToken', nextTokens.refreshToken, cookieOptions);
+            Cookies.set('sbw_auth', 'true', cookieOptions);
+        } else {
+            Cookies.remove('accessToken', cookieOptions);
+            Cookies.remove('refreshToken', cookieOptions);
+            Cookies.remove('sbw_auth', cookieOptions);
+            Cookies.remove('token', cookieOptions);
+        }
+
         writeLocalStorageValue(
             ACCESS_TOKEN_KEY,
             nextTokens?.accessToken ?? null,
@@ -125,7 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const client = useMemo(() => {
         return new ApiClient(
-            () => readLocalStorageValue(ACCESS_TOKEN_KEY),
+            () => {
+                const cookieToken = Cookies.get('accessToken');
+                return cookieToken || readLocalStorageValue(ACCESS_TOKEN_KEY);
+            },
             () => {
                 void handleLogout();
             },
