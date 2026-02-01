@@ -6,6 +6,7 @@ import {
     OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
+    JoinColumn,
 } from 'typeorm';
 import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { ServiceCategory } from './entities/service-category.entity';
@@ -50,6 +51,7 @@ export class Service {
         nullable: true,
         onDelete: 'SET NULL',
     })
+    @JoinColumn({ name: 'categoryId' })
     categoryRelation?: ServiceCategory;
 
     @Column({ nullable: true })
