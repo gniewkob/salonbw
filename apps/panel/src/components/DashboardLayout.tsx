@@ -4,7 +4,6 @@ import type { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
-import Topbar from './Topbar';
 
 interface Props {
     children: ReactNode;

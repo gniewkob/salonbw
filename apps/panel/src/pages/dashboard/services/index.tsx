@@ -15,13 +15,13 @@ export default function ServicesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<Service | null>(null);
 
-    const handleCreate = async (data: any) => {
+    const handleCreate = async (data: { name: string }) => {
         await create(data);
         setIsModalOpen(false);
         void refetch();
     };
 
-    const handleUpdate = async (data: any) => {
+    const handleUpdate = async (data: { name: string }) => {
         if (!editingService) return;
         await update(editingService.id, data);
         setEditingService(null);
@@ -96,7 +96,9 @@ export default function ServicesPage() {
                                         Edit
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(service.id)}
+                                        onClick={() => {
+                                            void handleDelete(service.id);
+                                        }}
                                         className="text-red-600 hover:text-red-900"
                                     >
                                         Delete
