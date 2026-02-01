@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 
 export default function Navbar() {
-    const { role, initialized } = useAuth();
+    const { role, initialized, logout } = useAuth();
     const linkClass = 'transition duration-150 hover:text-blue-700';
 
     const panelAppointments = getPanelUrl('/appointments');
@@ -16,8 +16,14 @@ export default function Navbar() {
 
     // During SSR and initial hydration, treat role as null to avoid mismatch
     const effectiveRole = initialized ? role : null;
-    const dashboardRoute =
-        effectiveRole ? panelDashboard : undefined;
+    const dashboardRoute = effectiveRole ? panelDashboard : undefined;
+
+    const handleLogout = async () => {
+        await logout();
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
+    };
 
     return (
         <nav
@@ -68,11 +74,24 @@ export default function Navbar() {
                     </a>
                 </li>
                 {dashboardRoute ? (
-                    <li>
-                        <a href={dashboardRoute} className={linkClass}>
-                            Dashboard
-                        </a>
-                    </li>
+                    <>
+                        <li>
+                            <a href={dashboardRoute} className={linkClass}>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => {
+                                    void handleLogout();
+                                }}
+                                className={linkClass}
+                                type="button"
+                            >
+                                Wyloguj
+                            </button>
+                        </li>
+                    </>
                 ) : (
                     <>
                         <li>

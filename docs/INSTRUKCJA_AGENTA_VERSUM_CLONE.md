@@ -14,6 +14,11 @@ Stworzenie kompleksowego systemu SaaS do zarządzania salonami kosmetycznymi, fr
 - **Recepcja** - zarządzanie wizytami bez dostępu do statystyk finansowych
 - **Klienci** - panel rezerwacji online (osobna aplikacja/widok)
 
+### 1.4 Kluczowy podział aplikacji (ważne)
+- **`dev.salon-bw.pl` (`apps/landing`)** – **tylko wizytówka** (strony publiczne: oferta, galeria, kontakt) + CTA prowadzące do panelu.
+- **`panel.salon-bw.pl` (`apps/panel`)** – **pełny klon Versum**: logowanie/rejestracja, dashboard, kalendarz, CRM, magazyn, komunikacja, ustawienia itd.
+- **Zasada obowiązkowa:** jeśli jakakolwiek funkcja dashboardu została zrobiona na dev, **musi zostać przeniesiona do panelu**, a z dev usunięta.
+
 ---
 
 ## 2. Architektura Techniczna
@@ -59,6 +64,8 @@ Infrastruktura:
 ├── /settings                    # Ustawienia salonu
 └── /extension                   # Dodatki i rozszerzenia
 ```
+
+> **Uwaga:** Powyższa struktura dotyczy **panelu** (aplikacji dashboardowej). Dev to wyłącznie wizytówka i nie powinien zawierać tych ścieżek.
 
 ### 2.3 Schemat Bazy Danych (Kluczowe Encje)
 

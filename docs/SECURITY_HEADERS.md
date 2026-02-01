@@ -1,12 +1,12 @@
 # Security Headers & Robots Policy
 
-This document outlines the HTTP response headers and crawler directives applied by the Next.js frontend.
+This document outlines the HTTP response headers and crawler directives applied by the Next.js apps (landing + panel).
 
 ## Global HTTP Headers
 
 ### Content Security Policy (CSP)
 
-**NEW (2025-11-01):** CSP is now dynamically generated with nonces via `frontend/middleware.ts` for enhanced security.
+**NEW (2025-11-01):** CSP is now dynamically generated with nonces via `apps/landing/src/middleware.ts` and `apps/panel/src/middleware.ts` for enhanced security.
 
 **Strict CSP Configuration:**
 - `default-src 'self'` - Only allow resources from same origin
@@ -31,7 +31,7 @@ This document outlines the HTTP response headers and crawler directives applied 
 
 ### Static Security Headers
 
-Configured in `frontend/next.config.mjs`:
+Configured in `apps/landing/next.config.mjs` and `apps/panel/next.config.mjs`:
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`
@@ -48,17 +48,17 @@ Additional caching headers are applied to reduce bandwidth and improve page load
 
 These targets are fingerprinted or versioned, making them safe to cache for a year. HTML and API responses remain non-cacheable by default.
 
-## Dashboard / Auth Protections
+## Panel / Auth Protections
 
-Requests under `/dashboard/*` and `/auth/*` receive an additional header:
+Requests under the panel routes `/dashboard/*` and `/auth/*` receive an additional header:
 
 - `X-Robots-Tag: noindex, nofollow`
 
-This prevents private panel routes from being indexed by search engines even if accidentally exposed.
+This prevents private panel routes from being indexed by search engines even if accidentally exposed. The public landing app redirects these paths to the panel, so indexing protections should be validated on the panel domain.
 
 ## Robots.txt
 
-`frontend/public/robots.txt` instructs crawlers to index public pages while omitting privileged areas:
+`apps/landing/public/robots.txt` instructs crawlers to index public pages while omitting privileged areas:
 
 ```
 User-agent: *
@@ -67,11 +67,11 @@ Disallow: /auth/
 Disallow: /dashboard/
 ```
 
-Update the disallow list if new sensitive sections are added (e.g. `/admin/`).
+Update the disallow list if new sensitive sections are added (e.g. `/admin/`). Panel routes are primarily protected via headers and auth middleware.
 
 ## Verification Steps
 
-1. Run `pnpm build` to ensure the Next.js config parses correctly.
-2. In development, inspect responses via browser devtools or `curl -I http://localhost:3000/` to validate headers.
-3. For `/dashboard` or `/auth` paths, confirm the `X-Robots-Tag` header is present.
+1. Run `pnpm --filter @salonbw/landing build` and `pnpm --filter @salonbw/panel build` to ensure the Next.js configs parse correctly.
+2. In development, inspect responses via browser devtools or `curl -I http://localhost:3000/` (landing) and the panel dev port to validate headers.
+3. For `/dashboard` or `/auth` paths on the panel domain, confirm the `X-Robots-Tag` header is present.
 4. Fetch `/robots.txt` to verify crawler directives.

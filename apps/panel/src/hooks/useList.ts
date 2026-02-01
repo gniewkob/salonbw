@@ -3,11 +3,17 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const listQueryKey = (endpoint: string) => ['api', endpoint] as const;
 
-export function useList<T>(endpoint: string) {
+interface UseListOptions {
+    enabled?: boolean;
+}
+
+export function useList<T>(endpoint: string, options: UseListOptions = {}) {
     const { apiFetch } = useAuth();
+    const { enabled = true } = options;
     const query = useQuery({
         queryKey: listQueryKey(endpoint),
         queryFn: () => apiFetch<T[]>(endpoint),
+        enabled,
     });
 
     return {
