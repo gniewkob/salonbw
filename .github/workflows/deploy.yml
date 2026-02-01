@@ -83,6 +83,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
         with:
           ref: ${{ github.event.inputs.ref }}
+          fetch-depth: 2
 
       - name: Detect changes
         if: ${{ github.event_name == 'push' }}
