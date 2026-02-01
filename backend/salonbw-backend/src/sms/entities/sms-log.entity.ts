@@ -38,10 +38,10 @@ export class SmsLog {
     @Column({ type: 'enum', enum: SmsStatus, default: SmsStatus.Pending })
     status: SmsStatus;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     externalId: string | null; // ID from SMS provider
 
-    @Column({ nullable: true })
+    @Column({ type: 'text', nullable: true })
     errorMessage: string | null;
 
     @Column({ type: 'int', default: 0 })

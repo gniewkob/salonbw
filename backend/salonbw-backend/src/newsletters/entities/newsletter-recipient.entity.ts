@@ -40,14 +40,14 @@ export class NewsletterRecipient {
     @JoinColumn({ name: 'recipientId' })
     recipient: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     recipientId: number | null;
 
     // Store recipient email/phone at send time (in case user is deleted later)
     @Column({ length: 255 })
     recipientEmail: string;
 
-    @Column({ length: 100, nullable: true })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     recipientName: string | null;
 
     @Column({
@@ -73,7 +73,7 @@ export class NewsletterRecipient {
     errorMessage: string | null;
 
     // External tracking ID from email service
-    @Column({ length: 255, nullable: true })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     externalId: string | null;
 
     @CreateDateColumn()

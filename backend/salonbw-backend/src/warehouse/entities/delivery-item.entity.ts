@@ -47,7 +47,7 @@ export class DeliveryItem {
     })
     totalCost: number;
 
-    @Column({ length: 50, nullable: true })
+    @Column({ type: 'varchar', length: 50, nullable: true })
     batchNumber: string | null;
 
     @Column({ type: 'date', nullable: true })

@@ -24,16 +24,16 @@ export class Product {
     @Column({ length: 200 })
     name: string;
 
-    @Column({ length: 100, nullable: true })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     brand: string | null;
 
     @Column({ type: 'text', nullable: true })
     description: string | null;
 
-    @Column({ length: 50, nullable: true })
+    @Column({ type: 'varchar', length: 50, nullable: true })
     sku: string | null;
 
-    @Column({ length: 50, nullable: true })
+    @Column({ type: 'varchar', length: 50, nullable: true })
     barcode: string | null;
 
     @Column({
@@ -64,14 +64,14 @@ export class Product {
     @Column('int', { nullable: true })
     minQuantity: number | null;
 
-    @Column({ length: 20, nullable: true })
+    @Column({ type: 'varchar', length: 20, nullable: true })
     unit: string | null;
 
     @ManyToOne(() => Supplier, { nullable: true })
     @JoinColumn({ name: 'defaultSupplierId' })
     defaultSupplier: Supplier | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     defaultSupplierId: number | null;
 
     @Column({ default: true })
