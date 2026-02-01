@@ -15,7 +15,7 @@ interface Props {
     onLogout: () => Promise<void> | void;
 }
 
-export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
+export default function SidebarMenu({ onClose, links, onLogout }: Props) {
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 h-16 flex items-center justify-between shadow-sm">
             {/* Brand Logo */}
