@@ -128,7 +128,7 @@ The library provides additional utilities to ensure the best results for the tas
   import pc from "picocolors"
 
   if (pc.isColorSupported) {
-	console.log("Yay! This script can use colors and formatters")
+  	console.log("Yay! This script can use colors and formatters")
   }
   ```
 

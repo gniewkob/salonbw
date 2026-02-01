@@ -9,13 +9,14 @@ interface Props {
 }
 
 const links: { href: Route; label: string; testId: string }[] = [
-    { href: '/dashboard/employee', label: 'Home', testId: 'nav-home' },
+    { href: '/dashboard', label: 'Pulpit', testId: 'nav-home' },
+    { href: '/calendar', label: 'Kalendarz', testId: 'nav-calendar' },
     {
         href: '/appointments',
-        label: 'Appointments',
+        label: 'Moje wizyty',
         testId: 'nav-appointments',
     },
-    { href: '/clients', label: 'Clients', testId: 'nav-clients' },
+    { href: '/clients', label: 'Klienci', testId: 'nav-clients' },
 ];
 
 export default function EmployeeSidebarMenu(props: Props) {

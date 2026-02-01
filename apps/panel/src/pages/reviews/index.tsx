@@ -6,6 +6,7 @@ import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
 import { useReviewApi } from '@/api/reviews';
+import { useAuth } from '@/contexts/AuthContext';
 import { Review } from '@/types';
 
 import type ReviewFormComponent from '@/components/ReviewForm';
@@ -23,9 +24,12 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
 );
 
 export default function ReviewsPage() {
+    const { role } = useAuth();
+    const isAdmin = role === 'admin';
     const [employeeId, setEmployeeId] = useState(1);
+    // Admin sees all reviews (filtered by employee), others see only their own
     const { data, page, total, limit, setPage, rating, setRating } = useReviews(
-        { employeeId },
+        isAdmin ? { employeeId } : { mine: true },
     );
     const api = useReviewApi();
     type Row = Review & { employeeName?: string; authorName?: string };
@@ -108,16 +112,20 @@ export default function ReviewsPage() {
             <DashboardLayout>
                 <div className="mb-2 flex justify-between">
                     <div className="flex items-center gap-2">
-                        <label>
-                            Employee
-                            <input
-                                className="border ml-1 p-1 w-16"
-                                value={employeeId}
-                                onChange={(e) =>
-                                    setEmployeeId(Number(e.target.value) || 1)
-                                }
-                            />
-                        </label>
+                        {isAdmin && (
+                            <label>
+                                Employee
+                                <input
+                                    className="border ml-1 p-1 w-16"
+                                    value={employeeId}
+                                    onChange={(e) => {
+                                        setEmployeeId(
+                                            Number(e.target.value) || 1,
+                                        );
+                                    }}
+                                />
+                            </label>
+                        )}
                         <label>
                             Rating
                             <input

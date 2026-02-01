@@ -9,13 +9,15 @@ Use this list whenever preparing a new production deployment. Check off each ite
     ```bash
     pnpm lint
     pnpm typecheck
-    pnpm --filter frontend test
+    pnpm --filter @salonbw/landing test
+    pnpm --filter @salonbw/panel test
     pnpm --filter salonbw-backend test
-    pnpm --filter frontend build
+    pnpm --filter @salonbw/landing build
+    pnpm --filter @salonbw/panel build
     pnpm --filter salonbw-backend build
     ```
 - [ ] (If API changed) Regenerate the OpenAPI client and commit: `pnpm --filter @salonbw/api gen:api`.
-- [ ] Review `frontend/CHANGELOG.md` (or author new entries) and ensure user-visible changes are documented.
+- [ ] Review `apps/landing/CHANGELOG.md` and `apps/panel/CHANGELOG.md` (or author new entries) and ensure user-visible changes are documented.
 - [ ] Verify environment variables in `docs/ENV.md` match the expected production configuration.
 - [ ] Audit secrets in GitHub → Settings → Secrets (tunnel credentials, JWT secrets, WhatsApp tokens) and update if rotations occurred.
 - [ ] Smoke-test the app locally with Staging/Prod configuration if possible (set `NEXT_PUBLIC_API_URL`, use the SSH tunnel).
@@ -37,7 +39,7 @@ Use this list whenever preparing a new production deployment. Check off each ite
 
 - [ ] Follow [`docs/DEPLOYMENT_MYDEVIL.md`](./DEPLOYMENT_MYDEVIL.md) to build and upload the frontend + backend.
 - [ ] Ensure the SSH tunnel secrets (`MYDEVIL_*`) are loaded in the deployment environment.
-- [ ] After uploading, run `devil www restart <app>` for each Passenger app (public/dashboard/admin) and watch logs for errors.
+- [ ] After uploading, run `devil www restart <app>` for each Passenger app (public/dev + panel). (`admin` target is legacy.)
 - [ ] Run database migrations if the backend introduces schema changes.
 - [ ] Hit application health endpoints manually:
     - `https://<public-domain>/`

@@ -9,9 +9,10 @@ Generated: 2025-03-09 (last refreshed 2025-03-09)
 
 ## Repository Layout & Frameworks
 
-- `frontend/` – Next.js 14 application (React 18, Tailwind, Jest, Cypress).
+- `apps/landing/` – Next.js application for the public site (React 18, Tailwind, Jest, Cypress).
+- `apps/panel/` – Next.js application for the dashboard (React 18, Tailwind, Jest, Cypress).
 - `backend/salonbw-backend/` – NestJS 11 API server (TypeORM, Jest).
-- Root `package.json` with a pnpm workspace (`pnpm-workspace.yaml`) orchestrates all packages (`frontend`, `backend/salonbw-backend`, `packages/*`).
+- Root `package.json` with a pnpm workspace (`pnpm-workspace.yaml`) orchestrates all packages (`apps/landing`, `apps/panel`, `backend/salonbw-backend`, `packages/*`).
 
 ## Tooling & Package Management
 
@@ -21,7 +22,7 @@ Generated: 2025-03-09 (last refreshed 2025-03-09)
 
 ## Node Versions
 
-- Root `.nvmrc` pins **Node 22**; frontend `.nvmrc` still specifies Node 20. Backend relies on ambient Node version.
+- Root `.nvmrc` pins **Node 22**; `apps/landing/.nvmrc` and `apps/panel/.nvmrc` still specify Node 20. Backend relies on ambient Node version.
 - Coordinate a Node upgrade across apps or update the runbook before toggling CI/tooling to Node 22 only.
 
 ## Configuration Baseline

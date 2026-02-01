@@ -2,24 +2,14 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Role } from '@/types';
 
 export default function Navbar() {
     const { role, initialized } = useAuth();
     const linkClass = 'transition duration-150 hover:text-blue-700';
 
-    const dashboardLinks: Record<Role, Route> = {
-        client: '/dashboard/client' as Route,
-        employee: '/dashboard/employee' as Route,
-        receptionist: '/dashboard/receptionist' as Route,
-        admin: '/dashboard/admin' as Route,
-    };
     // During SSR and initial hydration, treat role as null to avoid mismatch
     const effectiveRole = initialized ? role : null;
-    const dashboardRoute =
-        effectiveRole && effectiveRole in dashboardLinks
-            ? dashboardLinks[effectiveRole as Role]
-            : undefined;
+    const dashboardRoute = effectiveRole ? ('/dashboard' as Route) : undefined;
 
     return (
         <nav

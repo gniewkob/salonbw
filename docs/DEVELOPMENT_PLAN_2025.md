@@ -28,7 +28,7 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 **Objectives:**
 - Enable `noImplicitAny: true` in backend `tsconfig.json`
 - Remove all explicit `any` types, replace with proper types or `unknown`
-- Generate and use OpenAPI types consistently across frontend/backend
+- Generate and use OpenAPI types consistently across landing/panel and backend
 - Add `strictNullChecks` and `strictFunctionTypes`
 
 **Tasks:**
@@ -178,7 +178,7 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 **Success Metrics:**
 - First Load JS < 250KB (Next build reports ~153 kB shared first-load JS as of 2025-11-09)
 - Dashboard route chunks < 100KB each (individual `/dashboard/*` pages now render with ~1–3 kB route code after lazy loading)
-- Time to Interactive < 3.5s on 3G (Lighthouse desktop run on `/dashboard/admin` reports TTI ≈ 1.4 s)
+- Time to Interactive < 3.5s on 3G (Lighthouse desktop run on `/dashboard` reports TTI ≈ 1.4 s)
 - Lighthouse Performance score 95+ on desktop (latest run scored 0.91/1.00 ≈ 91; follow-up tuning needed to clear the final gap)
 
 **Dependencies:** None
@@ -188,7 +188,7 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 - 2025-11-01 – Admin scheduler first-load shrank from 239 kB → 159 kB after async plugin loading and modal code splitting; admin retail route now 157 kB (was 195 kB).
 - 2025-11-01 – Shared appointments hub defers FullCalendar + forms, cutting route chunk from 109 kB to ~3 kB with 158 kB first-load.
 - 2025-11-01 – Bundle analyzer confirms all calendar-driven dashboards now ship <4 kB route code with ~158 kB first-load JS (down from 195–261 kB).
-- 2025-11-03 – CI now fails builds if monitored routes exceed 300 kB gzipped first-load JS (`frontend/scripts/check-bundle-size.mjs`, enforced in `ci.yml`).
+- 2025-11-03 – CI now fails builds if monitored routes exceed 300 kB gzipped first-load JS (`apps/panel/scripts/check-bundle-size.mjs`, enforced in `ci.yml`).
 - 2025-11-03 – `depcheck` (frontend) flagged `autoprefixer`, `axios`, `sharp`, and several dev dependencies; confirmed PostCSS relies on `autoprefixer`/`@tailwindcss/postcss`, kept `sharp` for Next image optimisation, removed unused `axios`/`axios-mock-adapter`/`msw`, and added `@jest/globals` dev dep for explicit import.
 - 2025-11-06 – Removed `@radix-ui/react-select` usage across dashboard/public forms; native `<select>` elements now replace Radix widgets, eliminating the 255 kB Floating UI chunk from `_app` and keeping shared JS ~149 kB.
 - 2025-11-09 – Client/admin/receptionist/services dashboards now lazy-load Stats widgets, tables, shortcut cards, and modals; receptionist calendar defers plugin loading, keeping each dashboard chunk under 4 kB while the shared first-load bundle remains ~150 kB.
@@ -354,8 +354,8 @@ The Salon Black & White platform is production-ready with strong foundations. Th
 
 **Tasks:**
 - [ ] Finalize `product_sales` and `inventory_movements` tables (already in progress)
-- [ ] Complete [frontend/src/components/SaleForm.tsx](../frontend/src/components/SaleForm.tsx)
-- [ ] Complete [frontend/src/components/InventoryAdjustmentForm.tsx](../frontend/src/components/InventoryAdjustmentForm.tsx)
+- [ ] Complete [apps/panel/src/components/SaleForm.tsx](../apps/panel/src/components/SaleForm.tsx)
+- [ ] Complete [apps/panel/src/components/InventoryAdjustmentForm.tsx](../apps/panel/src/components/InventoryAdjustmentForm.tsx)
 - [ ] Add barcode scanning support (optional, camera or USB scanner)
 - [ ] Implement receipt generation (PDF via PDFKit or thermal printer)
 - [ ] Add daily sales summary dashboard widget
