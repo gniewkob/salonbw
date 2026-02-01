@@ -176,8 +176,14 @@ export class AuthService {
         csrfHash: string,
     ) {
         const jti = randomUUID();
-        const expiresIn =
+        const expiresInRaw =
             this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
+        const expiresIn: JwtSignOptions['expiresIn'] =
+            typeof expiresInRaw === 'string'
+                ? /^\d+$/.test(expiresInRaw)
+                    ? Number(expiresInRaw)
+                    : (expiresInRaw as JwtSignOptions['expiresIn'])
+                : expiresInRaw;
 
         const payload: { sub: number; role: string; jti: string } = {
             sub: user.id,
@@ -186,8 +192,7 @@ export class AuthService {
         };
 
         const token = this.jwtService.sign(payload, {
-            expiresIn:
-                typeof expiresIn === 'string' ? parseInt(expiresIn) : expiresIn,
+            expiresIn,
             secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         } satisfies JwtSignOptions);
 
