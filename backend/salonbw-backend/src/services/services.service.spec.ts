@@ -29,10 +29,9 @@ describe('ServicesService', () => {
             find: jest.fn<Promise<Service[]>, []>(() =>
                 Promise.resolve([serviceEntity]),
             ),
-            findOne: jest.fn<
-                Promise<Service | null>,
-                [{ where: { id: number } }]
-            >(() => Promise.resolve(serviceEntity)),
+            findOne: jest.fn<Promise<Service | null>, [unknown]>(() =>
+                Promise.resolve(serviceEntity),
+            ),
             update: jest.fn<Promise<void>, [number, Partial<Service>]>(() =>
                 Promise.resolve(),
             ),
@@ -164,7 +163,10 @@ describe('ServicesService', () => {
     it('returns a service by id and caches it', async () => {
         const findOneSpy = jest.spyOn(repo, 'findOne');
         await expect(service.findOne(1)).resolves.toBe(serviceEntity);
-        expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 1 } });
+        expect(findOneSpy).toHaveBeenCalledWith({
+            where: { id: 1 },
+            relations: ['categoryRelation', 'variants', 'employeeServices'],
+        });
         expect(cache.get).toHaveBeenCalledWith('services:1');
         expect(cache.set).toHaveBeenCalledWith(
             'services:1',
@@ -188,7 +190,10 @@ describe('ServicesService', () => {
         await expect(service.findOne(2)).rejects.toBeInstanceOf(
             NotFoundException,
         );
-        expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 2 } });
+        expect(findOneSpy).toHaveBeenCalledWith({
+            where: { id: 2 },
+            relations: ['categoryRelation', 'variants', 'employeeServices'],
+        });
         expect(cache.set).not.toHaveBeenCalled();
     });
 

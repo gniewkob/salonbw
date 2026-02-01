@@ -5,8 +5,13 @@ export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
 
     // Check if user is authenticated via cookie
-    const token = request.cookies.get('token');
-    const isAuthenticated = !!token;
+    const legacyToken = request.cookies.get('token')?.value;
+    const accessToken = request.cookies.get('accessToken')?.value;
+    const refreshToken = request.cookies.get('refreshToken')?.value;
+    const sessionFlag = request.cookies.get('sbw_auth')?.value;
+    const isAuthenticated = Boolean(
+        legacyToken || accessToken || refreshToken || sessionFlag,
+    );
 
     // Define public routes
     const isAuthRoute = path.startsWith('/auth');

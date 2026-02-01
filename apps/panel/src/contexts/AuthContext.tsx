@@ -143,7 +143,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchProfile = useCallback(async () => {
         try {
             const u = await client.request<User>('/users/profile', {
-                headers: { 'x-skip-logout': 'true' },
+                headers: {
+                    'x-skip-logout': 'true',
+                    'Cache-Control': 'no-store',
+                },
+                cache: 'no-store',
             });
             setUser(u);
             setRole(u.role);
