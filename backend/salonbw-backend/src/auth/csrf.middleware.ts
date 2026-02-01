@@ -99,7 +99,17 @@ export class CsrfMiddleware implements NestMiddleware {
             throw new UnauthorizedException('CSRF token validation failed');
         }
 
-        const storedHash = (refresh.meta?.csrfSecretHash ?? null) as
+        let metaValue: Record<string, unknown> | null = null;
+        if (refresh.meta && typeof refresh.meta === 'object') {
+            metaValue = refresh.meta as Record<string, unknown>;
+        } else if (typeof refresh.meta === 'string') {
+            try {
+                metaValue = JSON.parse(refresh.meta) as Record<string, unknown>;
+            } catch {
+                metaValue = null;
+            }
+        }
+        const storedHash = (metaValue?.csrfSecretHash ?? null) as
             | string
             | null;
         if (!storedHash) {

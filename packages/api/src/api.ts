@@ -105,6 +105,11 @@ export class ApiClient {
             options.baseUrl ??
             process.env.NEXT_PUBLIC_API_URL ??
             "http://localhost:3000";
+        console.log("[ApiClient] Init", {
+            env: process.env.NEXT_PUBLIC_API_URL,
+            optionsBase: options.baseUrl,
+            rawBase,
+        });
         try {
             const u = new URL(rawBase);
             this.baseUrl =
@@ -209,9 +214,19 @@ export class ApiClient {
         // between subdomains like dev.salon-bw.pl → panel.salon-bw.pl).
         // credentials: 'include' ensures cookies are sent with the request.
         try {
+            const headers = new Headers({ "Content-Type": "application/json" });
+            if (typeof document !== "undefined") {
+                const csrfToken = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("XSRF-TOKEN="))
+                    ?.split("=")[1];
+                if (csrfToken) {
+                    headers.set("X-XSRF-TOKEN", csrfToken);
+                }
+            }
             const response = await fetch(this.buildUrl("/auth/refresh"), {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 credentials: "include",
                 // Send refreshToken in body if available (localStorage), otherwise
                 // backend will attempt to read it from cookies
