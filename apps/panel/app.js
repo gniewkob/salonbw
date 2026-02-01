@@ -1,7 +1,3 @@
-const { createServer } = require('http');
-const { parse } = require('url');
-const next = require('next');
-
 try {
     const tracer = require('next/dist/server/lib/trace/tracer');
     if (tracer && typeof tracer.getTracer === 'function') {
@@ -21,6 +17,10 @@ try {
     console.warn('Tracer patch skipped:', err?.message || err);
 }
 
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || '0.0.0.0';
@@ -32,7 +32,7 @@ const currentPort = Number(
 );
 
 // Initialize Next.js app
-const app = next({ dev, hostname, port: currentPort });
+const app = next({ dev, hostname, port: currentPort, dir: __dirname });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
