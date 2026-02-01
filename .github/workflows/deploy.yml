@@ -751,7 +751,8 @@ jobs:
           devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
 
           echo "=== File Checks ===" >> "$LOG"
-          ls -la app.js server.js package.json >> "$LOG"
+          ls -la app.js package.json >> "$LOG" 2>&1 || true
+          if [ -f server.js ]; then ls -la server.js >> "$LOG"; fi
 
           echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
           echo "console.log('Hello from Simple Node');" > test_simple.js
@@ -802,7 +803,8 @@ jobs:
           devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
 
           echo "=== File Checks ===" >> "$LOG"
-          ls -la app.js server.js package.json >> "$LOG"
+          ls -la app.js package.json >> "$LOG" 2>&1 || true
+          if [ -f server.js ]; then ls -la server.js >> "$LOG"; fi
 
           echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
           echo "console.log('Hello from Simple Node');" > test_simple.js
