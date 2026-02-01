@@ -152,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(u);
             setRole(u.role);
             setIsAuthenticated(true);
-        } catch (e) {
+        } catch {
             setIsAuthenticated(false);
             clearSessionState();
         }
