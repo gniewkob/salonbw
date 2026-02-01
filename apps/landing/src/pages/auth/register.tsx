@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import Head from 'next/head';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicLayout from '@/components/PublicLayout';
-import type { Route } from 'next';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 export default function Register() {
     const router = useRouter();
@@ -15,6 +14,7 @@ export default function Register() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const panelLogin = getPanelUrl('/auth/login');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,12 +128,9 @@ export default function Register() {
                 </form>
                 <div className="mt-4 text-center text-sm">
                     Already have an account?{' '}
-                    <Link
-                        href={'/auth/login' as Route}
-                        className="text-blue-600 hover:underline"
-                    >
+                    <a href={panelLogin} className="text-blue-600 hover:underline">
                         Login
-                    </Link>
+                    </a>
                 </div>
             </div>
         </PublicLayout>

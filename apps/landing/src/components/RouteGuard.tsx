@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Forbidden from '@/components/Forbidden';
 import { can, type Permission } from '@/utils/access';
 import type { Role } from '@/types';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 interface Props {
     children: ReactNode;
@@ -22,7 +23,10 @@ export default function RouteGuard({ children, roles, permission }: Props) {
                 router.asPath && router.asPath !== '/auth/login'
                     ? `?redirectTo=${encodeURIComponent(router.asPath)}`
                     : '';
-            void router.replace(`/auth/login${redirectTo}`);
+            const loginUrl = `${getPanelUrl('/auth/login')}${redirectTo}`;
+            void router.replace(loginUrl).catch(() => {
+                window.location.href = loginUrl;
+            });
         }
     }, [initialized, isAuthenticated, router]);
 

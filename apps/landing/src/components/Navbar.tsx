@@ -3,24 +3,21 @@ import Link from 'next/link';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Role } from '@/types';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 export default function Navbar() {
     const { role, initialized } = useAuth();
     const linkClass = 'transition duration-150 hover:text-blue-700';
 
-    const dashboardLinks: Record<Role, Route> = {
-        client: '/appointments' as Route,
-        employee: '/appointments' as Route,
-        receptionist: '/appointments' as Route,
-        admin: '/appointments' as Route,
-    };
+    const panelAppointments = getPanelUrl('/appointments');
+    const panelDashboard = getPanelUrl('/dashboard');
+    const panelLogin = getPanelUrl('/auth/login');
+    const panelRegister = getPanelUrl('/auth/register');
+
     // During SSR and initial hydration, treat role as null to avoid mismatch
     const effectiveRole = initialized ? role : null;
     const dashboardRoute =
-        effectiveRole && effectiveRole in dashboardLinks
-            ? dashboardLinks[effectiveRole as Role]
-            : undefined;
+        effectiveRole ? panelDashboard : undefined;
 
     return (
         <nav
@@ -60,39 +57,33 @@ export default function Navbar() {
                     </Link>
                 </li>
                 <li>
-                    <Link
-                        href={'/appointments' as Route}
+                    <a
+                        href={panelAppointments}
                         className={linkClass}
                         onClick={() =>
                             trackEvent('begin_checkout', { cta: 'navbar' })
                         }
                     >
                         Book Now
-                    </Link>
+                    </a>
                 </li>
                 {dashboardRoute ? (
                     <li>
-                        <Link href={dashboardRoute} className={linkClass}>
+                        <a href={dashboardRoute} className={linkClass}>
                             Dashboard
-                        </Link>
+                        </a>
                     </li>
                 ) : (
                     <>
                         <li>
-                            <Link
-                                href={'/auth/login' as Route}
-                                className={linkClass}
-                            >
+                            <a href={panelLogin} className={linkClass}>
                                 Login
-                            </Link>
+                            </a>
                         </li>
                         <li>
-                            <Link
-                                href={'/auth/register' as Route}
-                                className={linkClass}
-                            >
+                            <a href={panelRegister} className={linkClass}>
                                 Register
-                            </Link>
+                            </a>
                         </li>
                     </>
                 )}

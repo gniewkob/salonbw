@@ -9,7 +9,6 @@ const staticPaths = [
     '/gallery',
     '/faq',
     '/contact',
-    '/appointments',
     '/policy',
     '/privacy',
 ];
