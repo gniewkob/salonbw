@@ -21,9 +21,15 @@ try {
     console.warn('Tracer patch skipped:', err?.message || err);
 }
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || '0.0.0.0';
-const currentPort = parseInt(process.env.PORT, 10) || 3000;
+const currentPort = Number(
+    process.env.PORT ||
+        process.env.PASSENGER_PORT ||
+        process.env.APP_PORT ||
+        3000,
+);
 
 // Initialize Next.js app
 const app = next({ dev, hostname, port: currentPort });
