@@ -429,10 +429,7 @@ jobs:
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
              
-             # PATCH APP.JS FOR MYDEVIL/PASSENGER COMPATIBILITY
-             echo "Patching app.js for Passenger Binding..."
-             sed -i "s/const currentPort = parseInt(process.env.PORT, 10) || 3000/const currentPort = process.env.PORT || 3000/" deploy_bundle/app.js
-             sed -i "s/const hostname = process.env.HOSTNAME || '0.0.0.0'/const hostname = process.env.HOSTNAME/" deploy_bundle/app.js
+          # NOTE: app.js already handles Passenger/host binding in-repo.
           fi
 
           # FIX STATIC ASSETS (Passenger 404s)
