@@ -82,9 +82,16 @@ function redirectToLogin(router: NextRouter) {
 
     const loginUrl = getPanelUrl('/auth/login');
     const target = `${loginUrl}?redirectTo=${encodeURIComponent(router.asPath)}`;
-    void router.push(target).catch(() => {
+    const navigation = router.push(target);
+    if (navigation && typeof navigation.catch === 'function') {
+        void navigation.catch(() => {
+            if (typeof window !== 'undefined') {
+                window.location.href = target;
+            }
+        });
+    } else if (typeof window !== 'undefined') {
         window.location.href = target;
-    });
+    }
 }
 
 async function handleApiError(
