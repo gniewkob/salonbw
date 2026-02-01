@@ -2,6 +2,25 @@ const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
 
+try {
+    const tracer = require('next/dist/server/lib/trace/tracer');
+    if (tracer && typeof tracer.getTracer === 'function') {
+        const originalGetTracer = tracer.getTracer;
+        tracer.getTracer = () => {
+            const instance = originalGetTracer();
+            if (
+                instance &&
+                typeof instance.setRootSpanAttribute !== 'function'
+            ) {
+                instance.setRootSpanAttribute = () => {};
+            }
+            return instance;
+        };
+    }
+} catch (err) {
+    console.warn('Tracer patch skipped:', err?.message || err);
+}
+
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = process.env.HOSTNAME || '0.0.0.0';
 const currentPort = parseInt(process.env.PORT, 10) || 3000;
