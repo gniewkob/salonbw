@@ -17,6 +17,7 @@ import {
     type RegisterData,
 } from '@/api/auth';
 import type { Role, User } from '@/types';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 interface AuthContextValue {
     user: User | null;
@@ -105,7 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            void router.push('/auth/login');
+            const loginUrl = getPanelUrl('/auth/login');
+            void router.push(loginUrl).catch(() => {
+                window.location.href = loginUrl;
+            });
         }
     }, [clearSessionState, router]);
 

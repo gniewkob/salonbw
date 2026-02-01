@@ -4,7 +4,7 @@ import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
-const replace = jest.fn();
+const replace = jest.fn().mockResolvedValue(true);
 jest.mock('next/router', () => ({
     useRouter: () => ({ replace, push: jest.fn() }),
 }));
@@ -25,7 +25,9 @@ describe('RouteGuard', () => {
                 <div>Secret</div>
             </RouteGuard>,
         );
-        expect(replace).toHaveBeenCalledWith('/auth/login');
+        expect(replace).toHaveBeenCalledWith(
+            'https://panel.salon-bw.pl/auth/login',
+        );
         expect(screen.queryByText('Secret')).toBeNull();
     });
 

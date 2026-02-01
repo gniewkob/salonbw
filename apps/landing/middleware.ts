@@ -4,9 +4,35 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
 
-    // Explicitly block standard dashboard routes if they somehow exist
-    if (path.startsWith('/dashboard') || path.startsWith('/settings')) {
-         return new NextResponse(null, { status: 404 });
+    const panelOnlyPrefixes = [
+        '/auth',
+        '/appointments',
+        '/dashboard',
+        '/admin',
+        '/clients',
+        '/employees',
+        '/invoices',
+        '/notifications',
+        '/products',
+        '/reviews',
+        '/calendar',
+        '/emails',
+        '/settings',
+    ];
+
+    if (
+        panelOnlyPrefixes.some(
+            (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+        )
+    ) {
+        const base =
+            process.env.NEXT_PUBLIC_PANEL_URL || 'https://panel.salon-bw.pl';
+        const destination = new URL(base);
+        const targetPath =
+            path === '/auth' || path === '/auth/' ? '/auth/login' : path;
+        destination.pathname = targetPath;
+        destination.search = request.nextUrl.search;
+        return NextResponse.redirect(destination, 308);
     }
 
     return NextResponse.next();
