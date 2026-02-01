@@ -7,6 +7,7 @@ import {
     useMemo,
     useState,
 } from 'react';
+import { useRouter } from 'next/router';
 import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
@@ -71,6 +72,7 @@ const readCsrfCookie = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
     const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [initialized, setInitialized] = useState(false);
@@ -100,13 +102,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
         } catch (error) {
-            console.error('Logout error:', error);
         } finally {
+            void router.push('/');
             if (typeof window !== 'undefined') {
-                window.location.href = '/';
+                // Force reload to clear any in-memory states if needed
+                // window.location.href = '/';
             }
         }
-    }, [clearSessionState]);
+    }, [clearSessionState, router]);
 
     useEffect(() => {
         setLogoutCallback(() => {
