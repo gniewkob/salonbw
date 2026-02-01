@@ -12,8 +12,13 @@ import {
 import { Type } from 'class-transformer';
 
 export class RefreshTokenDto {
+    @IsOptional()
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ description: 'JWT refresh token', example: 'eyJhbGci...' })
-    refreshToken: string;
+    @ApiProperty({
+        description: 'JWT refresh token (optional when sent via cookie)',
+        example: 'eyJhbGci...',
+        required: false,
+    })
+    refreshToken?: string;
 }
