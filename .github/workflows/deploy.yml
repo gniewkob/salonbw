@@ -419,6 +419,12 @@ jobs:
           cp "$TARGET_APP/package.json" deploy_bundle/
           cp "$TARGET_APP/next.config.mjs" deploy_bundle/
 
+          # Ensure font manifest exists (Next.js expects this file at runtime)
+          if [ ! -f "deploy_bundle/.next/server/font-manifest.json" ]; then
+             mkdir -p deploy_bundle/.next/server
+             echo "[]" > deploy_bundle/.next/server/font-manifest.json
+          fi
+
           # Copy app.js (Passenger Entry Point)
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
