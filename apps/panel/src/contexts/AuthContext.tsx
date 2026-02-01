@@ -105,7 +105,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            void router.push('/auth/login');
+            if (typeof window !== 'undefined') {
+                const landingUrl =
+                    process.env.NEXT_PUBLIC_SITE_URL ||
+                    'https://dev.salon-bw.pl';
+                window.location.href = landingUrl;
+            }
         }
     }, [clearSessionState, router]);
 
