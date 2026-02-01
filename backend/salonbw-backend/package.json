@@ -20,7 +20,7 @@
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "swagger:generate": "npx ts-node --project tsconfig.json swagger.ts",
-        "db:migrate": "node dist/migrate"
+        "db:migrate": "node dist/src/migrate"
     },
     "dependencies": {
         "@nestjs/axios": "^4.0.1",
