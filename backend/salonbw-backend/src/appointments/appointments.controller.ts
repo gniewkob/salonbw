@@ -40,7 +40,7 @@ export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List appointments (admin, optional filters)' })
@@ -48,12 +48,16 @@ export class AppointmentsController {
     findAll(
         @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment[]> {
-        return this.appointmentsService.findAllInRange({
-            from: query.from ? new Date(query.from) : undefined,
-            to: query.to ? new Date(query.to) : undefined,
-            employeeId: query.employeeId,
-        });
+        if (user.role === Role.Admin || user.role === Role.Receptionist) {
+            return this.appointmentsService.findAllInRange({
+                from: query.from ? new Date(query.from) : undefined,
+                to: query.to ? new Date(query.to) : undefined,
+                employeeId: query.employeeId,
+            });
+        }
+        return this.appointmentsService.findForUser(user.userId);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
