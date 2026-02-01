@@ -28,13 +28,13 @@
     "devDependencies": {
         "@nestjs/cli": "^11.0.16",
         "@nestjs/schematics": "^11.0.9",
-        "@types/node": "^24.10.1",
+        "@types/node": "^24.10.9",
         "husky": "^9.1.7",
         "jest": "^30.2.0",
         "lint-staged": "^16.2.7",
-        "ts-jest": "^29.4.5",
+        "ts-jest": "^29.4.6",
         "ts-node": "^10.9.2",
-        "turbo": "^2.6.0",
+        "turbo": "^2.8.1",
         "typescript": "^5.9.3"
     },
     "pnpm": {
