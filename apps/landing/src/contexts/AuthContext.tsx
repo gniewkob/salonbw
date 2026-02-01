@@ -107,9 +107,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Logout error:', error);
         } finally {
             const loginUrl = getPanelUrl('/auth/login');
-            void router.push(loginUrl).catch(() => {
+            const navigation = router.push(loginUrl);
+            if (navigation && typeof navigation.catch === 'function') {
+                void navigation.catch(() => {
+                    if (typeof window !== 'undefined') {
+                        window.location.href = loginUrl;
+                    }
+                });
+            } else if (typeof window !== 'undefined') {
                 window.location.href = loginUrl;
-            });
+            }
         }
     }, [clearSessionState, router]);
 

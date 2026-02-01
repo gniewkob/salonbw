@@ -24,9 +24,16 @@ export default function RouteGuard({ children, roles, permission }: Props) {
                     ? `?redirectTo=${encodeURIComponent(router.asPath)}`
                     : '';
             const loginUrl = `${getPanelUrl('/auth/login')}${redirectTo}`;
-            void router.replace(loginUrl).catch(() => {
+            const navigation = router.replace(loginUrl);
+            if (navigation && typeof navigation.catch === 'function') {
+                void navigation.catch(() => {
+                    if (typeof window !== 'undefined') {
+                        window.location.href = loginUrl;
+                    }
+                });
+            } else if (typeof window !== 'undefined') {
                 window.location.href = loginUrl;
-            });
+            }
         }
     }, [initialized, isAuthenticated, router]);
 
