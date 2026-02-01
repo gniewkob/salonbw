@@ -6,9 +6,11 @@ import type { Route } from 'next';
 import PublicLayout from '@/components/PublicLayout';
 import { jsonLd } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 export default function HairColoringPage() {
     const name = process.env.NEXT_PUBLIC_BUSINESS_NAME || 'Salon Black & White';
+    const panelAppointments = getPanelUrl('/appointments');
     useEffect(() => {
         try {
             trackEvent('view_item', {
@@ -66,8 +68,8 @@ export default function HairColoringPage() {
                     <li>Gloss/toner refresh</li>
                 </ul>
                 <div>
-                    <Link
-                        href={'/appointments' as Route}
+                    <a
+                        href={panelAppointments}
                         className="inline-block bg-blue-600 text-white px-4 py-2 rounded"
                         onClick={() => {
                             try {
@@ -94,7 +96,7 @@ export default function HairColoringPage() {
                         }}
                     >
                         Book an appointment
-                    </Link>
+                    </a>
                 </div>
 
                 <div className="mt-8">

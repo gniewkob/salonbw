@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { ApiClient } from '@salonbw/api';
 import { useRouter } from 'next/router';
 import type { NextRouter } from 'next/router';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 interface ApiErrorResponse {
     status: number;
@@ -79,9 +80,10 @@ function normalizeRequestArg(arg: RequestArg): RequestConfig {
 function redirectToLogin(router: NextRouter) {
     if (typeof window === 'undefined') return;
 
-    const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(router.asPath)}`;
-    void router.push(loginUrl).catch(() => {
-        window.location.href = loginUrl;
+    const loginUrl = getPanelUrl('/auth/login');
+    const target = `${loginUrl}?redirectTo=${encodeURIComponent(router.asPath)}`;
+    void router.push(target).catch(() => {
+        window.location.href = target;
     });
 }
 
