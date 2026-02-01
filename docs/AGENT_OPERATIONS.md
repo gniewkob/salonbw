@@ -81,7 +81,7 @@ ssh devil "devil www list --verbose"
 | `panel.salon-bw.pl` | Next.js standalone (Passenger) | `devil www restart <domain>` |
 | `dev.salon-bw.pl` | Next.js standalone (Passenger) | `devil www restart <domain>` |
 
-If a restart does not pick up a new build, the emergency fallback is to touch `tmp/restart.txt` inside the domain root and re-run the restart command.
+If Devil reports an invalid domain type or the restart does not pick up a new build, fall back to touching `tmp/restart.txt` in the domain root.
 
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 

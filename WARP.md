@@ -242,6 +242,7 @@ gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=a
 
 After deployment:
 - Restart each domain via Devil CLI: `devil www restart <domain>` (automated in workflow)
+- If Devil reports an invalid domain type, touch `tmp/restart.txt` inside the domain root.
 - Verify: `curl -I https://api.salon-bw.pl/healthz`
 
 See `docs/AGENT_OPERATIONS.md` for complete runbook.

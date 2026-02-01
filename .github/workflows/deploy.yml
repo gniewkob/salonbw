@@ -666,6 +666,8 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           # Legacy/Duplicate vars support
           NODE_ENV_VAL: ${{ secrets.NODE_ENV }}
           PGHOST_VAL: ${{ secrets.PGHOST }}
@@ -701,6 +703,8 @@ jobs:
               `DATABASE_URL="${esc(dbUrl)}"`,
               `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
               `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,
+              `COOKIE_DOMAIN="${esc(env.COOKIE_DOMAIN)}"`,
+              `FRONTEND_URL="${esc(env.FRONTEND_URL)}"`,
               `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
               `SMTP_HOST="${esc(env.SMTP_HOST)}"`,
               `SMTP_PORT="${esc(env.SMTP_PORT)}"`,
@@ -800,12 +804,14 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
             APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+            REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
           else
             APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+            REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
           fi
 
           echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
 
       - name: Debug - List Apps
         if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
