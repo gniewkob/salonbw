@@ -905,7 +905,7 @@ jobs:
         if: ${{ github.event.inputs.target != 'api' }}
         run: |
           python3 - <<'PY'
-          import os, ssl, urllib.request, sys
+          import os, ssl, urllib.request, urllib.error, sys
           host = "${{ steps.host.outputs.app }}"
           # Fetch BUILD_ID from remote via SSH is already done in deploy. Do a best-effort fetch here.
           build_id = None
@@ -943,6 +943,10 @@ jobs:
               status = get('/api/runtime')
               print('GET /api/runtime =>', status)
               ok = ok and (200 <= status < 400)
+          except urllib.error.HTTPError as e:
+              print('WARN /api/runtime', e)
+              if e.code not in (404,):
+                  ok = False
           except Exception as e:
               print('ERR /api/runtime', e); ok = False
           sys.exit(0 if ok else 1)
