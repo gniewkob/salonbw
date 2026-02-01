@@ -28,7 +28,7 @@ gh run list --workflow .github/workflows/deploy.yml --limit 5
 ```
 
 ## 3. Restarts (MyDevil official)
-- Restart via Devil CLI (after SSH):
+- Restart via Devil CLI (after SSH). If Devil reports an invalid domain type or the build is not picked up, fall back to touching `tmp/restart.txt`.
 
 ```bash
 ssh vetternkraft@s0.mydevil.net
@@ -40,14 +40,14 @@ devil www restart <domain>
 devil www options <domain> processes <COUNT>
 ```
 
-- If a restart does not pick up the new build, fallback is:
+- Fallback when Devil restart fails:
 
 ```bash
 ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/public_nodejs/tmp/restart.txt"
 ```
 
 ## 4. Production paths (MyDevil)
-- API: `/usr/home/vetternkraft/apps/nodejs/api_salonbw`
+- API: `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs`
 - Public: `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs`
 - Panel: `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs`
 - Dev: `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs`

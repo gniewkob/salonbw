@@ -99,6 +99,12 @@ Optional: adjust Passenger process limits for Node.js domains if needed:
 devil www options <domain> processes <COUNT>
 ```
 
+If Devil returns an invalid domain type, or the new build is not picked up, touch the Passenger restart file and retry:
+
+```bash
+ssh <user>@s0.mydevil.net "touch /home/<user>/domains/<domain>/public_nodejs/tmp/restart.txt"
+```
+
 You can also perform the restart from DevilWEB (WWW tab) if you prefer the GUI. Confirm the application process started cleanly by inspecting the Passenger logs (e.g. `~/logs/nodejs/<app>/passenger.log`).
 
 ## 5a. Image Optimization (Next.js)
