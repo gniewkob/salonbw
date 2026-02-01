@@ -98,3 +98,7 @@ archive/
 # Versum dump and static preview - reference only
 dump/
 static_preview/
+
+# Allow vendored Next env dist for panel fallback
+!apps/panel/vendor/@next/env/dist/
+!apps/panel/vendor/@next/env/dist/**
