@@ -41,17 +41,29 @@ function ensureNextEnv() {
         }
 
         const targetPkgPath = path.join(realTarget, 'package.json');
-        if (fs.existsSync(targetPkgPath)) {
+        let shouldSync = false;
+        if (!fs.existsSync(targetPkgPath)) {
+            shouldSync = true;
+        } else {
             try {
                 const existingPkg = JSON.parse(
                     fs.readFileSync(targetPkgPath, 'utf8'),
                 );
-                if (existingPkg.version === expectedVersion) {
+                if (existingPkg.version !== expectedVersion) {
                     return;
                 }
             } catch {
-                // fall through to rehydrate package
+                return;
             }
+
+            const distIndex = path.join(realTarget, 'dist', 'index.js');
+            if (!fs.existsSync(distIndex)) {
+                shouldSync = true;
+            }
+        }
+
+        if (!shouldSync) {
+            return;
         }
 
         fs.rmSync(realTarget, { recursive: true, force: true });
