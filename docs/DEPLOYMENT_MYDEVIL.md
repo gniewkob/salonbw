@@ -84,16 +84,22 @@ npm install --production
 
 If you generated a standalone build (`.next/standalone`), dependencies are already bundled and you may skip `npm install` for the frontend. Keep the `public` and `.next/static` directories alongside the standalone server; the bootstrap script will create symlinks (or copies as a fallback) pointing to them when Passenger starts the app.
 
-## 5. Restart Passenger / processes
+## 5. Restart apps (MyDevil official)
+
+MyDevil restarts are handled via the Devil CLI after SSH login. The `www` module manages WWW domains, including Node.js apps. Use the official restart command for each domain:
 
 ```bash
-devil www restart <frontend-app-name>
-devil www restart <dashboard-app-name>    # if using multiple Passenger apps
-# or for command-line Node apps:
-devil nodejs restart <backend-app-name>
+ssh <user>@s0.mydevil.net
+devil www restart <domain>
 ```
 
-Confirm the application process started cleanly by inspecting the Passenger logs (e.g. `~/logs/nodejs/<app>/passenger.log`).
+Optional: adjust Passenger process limits for Node.js domains if needed:
+
+```bash
+devil www options <domain> processes <COUNT>
+```
+
+You can also perform the restart from DevilWEB (WWW tab) if you prefer the GUI. Confirm the application process started cleanly by inspecting the Passenger logs (e.g. `~/logs/nodejs/<app>/passenger.log`).
 
 ## 5a. Image Optimization (Next.js)
 

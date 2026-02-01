@@ -241,8 +241,7 @@ gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=a
 ```
 
 After deployment:
-- API restart: `devil www restart api.salon-bw.pl` (automated in workflow)
-- Frontend restart: Touch `tmp/restart.txt` in app root (Passenger-watched)
+- Restart each domain via Devil CLI: `devil www restart <domain>` (automated in workflow)
 - Verify: `curl -I https://api.salon-bw.pl/healthz`
 
 See `docs/AGENT_OPERATIONS.md` for complete runbook.

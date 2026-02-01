@@ -76,8 +76,12 @@ ssh devil "devil www list --verbose"
 
 | Domain | Type | Preferred restart command |
 | --- | --- | --- |
-| `api.salon-bw.pl`, `dev.salon-bw.pl` | nodejs | `devil www restart <domain>` |
-| `salon-bw.pl`, `panel.salon-bw.pl` (dashboard), any PHP-wrapped domain | php wrapper around standalone app | Passenger ignores `devil www restart`. Instead, create `tmp/restart.txt` in the deployment root (handled automatically by workflows). Manual fallback: `ssh devil "touch /path/to/app/tmp/restart.txt"` |
+| `api.salon-bw.pl` | nodejs (Passenger) | `devil www restart <domain>` |
+| `salon-bw.pl` | Next.js standalone (Passenger) | `devil www restart <domain>` |
+| `panel.salon-bw.pl` | Next.js standalone (Passenger) | `devil www restart <domain>` |
+| `dev.salon-bw.pl` | Next.js standalone (Passenger) | `devil www restart <domain>` |
+
+If a restart does not pick up a new build, the emergency fallback is to touch `tmp/restart.txt` inside the domain root and re-run the restart command.
 
 Passenger log files (if needed) live under `~/logs/nodejs/<app>/passenger.log`.
 
