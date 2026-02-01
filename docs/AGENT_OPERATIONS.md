@@ -7,7 +7,7 @@ This runbook captures the minimum context an AI agent (or on-call human) needs t
 | Workflow | Purpose | Required Inputs | Production defaults | Dispatch example |
 | --- | --- | --- | --- | --- |
 | `ci.yml` | Lint, test, build (frontend + backend) | none | n/a | `gh workflow run ci.yml -r master` |
-| `deploy.yml` (Deploy MyDevil) | Deploy target (api/public/dashboard/admin) | `ref`, `target`, optional `api_url`, optional `remote_path`, optional `app_name` | see repo variables below | `gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api` |
+| `deploy.yml` (Deploy MyDevil) | Deploy target (api/public/dashboard/admin*) | `ref`, `target`, optional `api_url`, optional `remote_path`, optional `app_name` | see repo variables below | `gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api` |
 
 Monitor progress with:
 
@@ -27,16 +27,18 @@ All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are 
    gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
    ```
 
-3. **Dispatch frontends** (public → dashboard → admin):
+3. **Dispatch frontends** (public → dashboard):
+   - `public` → `dev.salon-bw.pl` (landing / wizytówka)
+   - `dashboard` → `panel.salon-bw.pl` (Versum clone)
 
    ```bash
    gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=public
    gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=dashboard
-   gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=admin
    ```
+   \* `admin` target is legacy; do not use unless explicitly required.
 4. **Monitor logs**:
    - API: look for tar upload + `npm22 ci --omit=dev` finishing, `OK: /healthz`.
-   - Public/Dashboard/Admin: Next.js build plus standalone runtime install. Warnings about Node engines on mydevil (Node 18) are expected.
+   - Public/Panel: Next.js build plus standalone runtime install. Warnings about Node engines on mydevil (Node 18) are expected.
    - Restart step now tolerates PHP domains—should either log `[Ok]` or simply touch `tmp/restart.txt`.
 5. **Post-deploy verification**:
    ```bash
@@ -45,7 +47,7 @@ All workflows assume the secrets described in [`docs/CI_CD.md`](./CI_CD.md) are 
      -H 'Content-Type: application/json' \
      -d '{"to":"kontakt@salon-bw.pl","subject":"Smoke","template":"Hello {{name}}","data":{"name":"Smoke"}}'
    ```
-   Load `https://salon-bw.pl`, `https://dashboard.salon-bw.pl`, and `https://admin.salon-bw.pl` in a browser.
+   Load `https://salon-bw.pl` (legacy), `https://dev.salon-bw.pl` (public), and `https://panel.salon-bw.pl` (dashboard) in a browser.
 6. **Update [`docs/AGENT_STATUS.md`](./AGENT_STATUS.md)** with the new run IDs and any issues discovered.
 
 ## 3. SSH & File Layout
@@ -61,10 +63,9 @@ Key directories:
 | App | Path |
 | --- | --- |
 | Backend API | `/usr/home/vetternkraft/apps/nodejs/api_salonbw` |
-| Public Next.js | `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs` |
-| Dashboard | `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs` |
-| Admin | `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs` |
-| Dev environment (preview) | `/usr/home/vetternkraft/domains/dev.salon-bw.pl` |
+| Public legacy (`salon-bw.pl`) | `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs` |
+| Public (dev) | `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs` |
+| Dashboard (panel) | `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs` |
 
 List configured domains:
 
@@ -151,10 +152,10 @@ Tip: when debugging client flows locally, set `NEXT_PUBLIC_ENABLE_DEBUG=true` or
 
 #### 5.6 Uptime Monitoring & Alerts
 
-- **Provider:** UptimeRobot monitors the four production surfaces (`https://api.salon-bw.pl/healthz`, `https://salon-bw.pl/`, `https://panel.salon-bw.pl/dashboard`, `https://admin.salon-bw.pl/dashboard`). Each monitor runs every 60 seconds from **US-East (Ashburn)** and **EU-West (Frankfurt)** to catch regional network issues.
+- **Provider:** UptimeRobot monitors the four production surfaces (`https://api.salon-bw.pl/healthz`, `https://salon-bw.pl/`, `https://dev.salon-bw.pl/`, `https://panel.salon-bw.pl/dashboard`). Each monitor runs every 60 seconds from **US-East (Ashburn)** and **EU-West (Frankfurt)** to catch regional network issues.
 - **Authentication:** Dashboard and API key secrets live in 1Password (“UptimeRobot – SalonBW”). Only on-call engineers and team leads have access; rotate credentials whenever someone leaves the rotation.
 - **Alerting:** Primary channel is `#ops-alerts` in Slack plus the “On-call – SalonBW” SMS list configured in UptimeRobot → Integrations. Alerts trigger after one failed check (<1 minute). Acknowledge in UptimeRobot to mute the paging loop, then start the incident template below.
-- **Adding monitors:** In UptimeRobot create an HTTPS monitor, paste the URL, set the timeout to `30 seconds`, enable both regions, and tag it (`api`, `public`, `dashboard`, `admin`). Update the uptime table in `docs/AGENT_STATUS.md` after the monitor reports its first success.
+- **Adding monitors:** In UptimeRobot create an HTTPS monitor, paste the URL, set the timeout to `30 seconds`, enable both regions, and tag it (`api`, `public`, `panel`). Update the uptime table in `docs/AGENT_STATUS.md` after the monitor reports its first success.
 - **Secondary probes:** Pingdom checks `/api/appointments` and `/api/healthz` from APAC every 5 minutes for redundancy. Credentials sit next to the UptimeRobot entry in 1Password. Keep Pingdom alerts muted unless requested; it mainly supplies latency timelines.
 
 ##### Incident response template
@@ -195,7 +196,7 @@ curl -s https://api.salon-bw.pl/metrics | grep salonbw_http_server_requests_tota
 1. **Missing logs** – ensure the workflow restart step succeeded; `devil www status api.salon-bw.pl` should list the Node app. If the log file is empty, tail `~/logs/nodejs/api.salon-bw.pl/passenger.log` for startup errors.
 2. **Unexpected 5xx spikes** – correlate with request IDs in `salonbw_http_server_requests_total{status_code="500"}` and fetch the matching log lines via `grep <request-id> app.log`.
 3. **Metrics endpoint down** – run `curl -I https://api.salon-bw.pl/metrics`; if it returns 5xx, restart (`devil www restart api.salon-bw.pl`) and re-test `/healthz` before retrying the scrape.
-4. **Next build fails with `Cannot find module '@next/env'`** – run `pnpm --filter frontend run build` locally; if it errors before copying standalone deps, execute `node frontend/scripts/ensure-local-deps.js` once to rehydrate the vendored packages (stored under `frontend/vendor`). Commit those vendor folders so CI/postinstall environments have the same copies; without them the standalone runtime strips `@next/env`, `styled-jsx`, `picocolors`, and `@swc/helpers` from the pnpm store and `next build` halts midway.
+4. **Next build fails with `Cannot find module '@next/env'`** – run `pnpm --filter @salonbw/landing run build` or `pnpm --filter @salonbw/panel run build` locally; if it errors before copying standalone deps, execute `node apps/landing/scripts/ensure-local-deps.js` or `node apps/panel/scripts/ensure-local-deps.js` once to rehydrate the vendored packages (stored under `apps/landing/vendor` or `apps/panel/vendor`). Commit those vendor folders so CI/postinstall environments have the same copies; without them the standalone runtime strips `@next/env`, `styled-jsx`, `picocolors`, and `@swc/helpers` from the pnpm store and `next build` halts midway.
 
 ### Suggested Alerts (Prometheus)
 
@@ -212,7 +213,7 @@ i
 ## 7. Notes on MyDevil Environment
 
 - Node.js 22 is available via `/usr/local/bin/node22`, but the global default is Node 18. That is why `npm` prints `EBADENGINE` warnings—safe to ignore.
-- Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`; the startup script (`frontend/app.cjs`) now links/copies those asset folders into the standalone dir automatically, but the sources must still exist beside the deployment.
+- Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`; the startup script (`apps/landing/app.cjs` or `apps/panel/app.cjs`) now links/copies those asset folders into the standalone dir automatically, but the sources must still exist beside the deployment.
 - SMTP credentials for contact form use the mailbox `kontakt@salon-bw.pl` on `mail0.mydevil.net` (port 465, SSL). Stored in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`.
 
 ## 8. Documentation Hygiene
@@ -246,5 +247,5 @@ If in doubt, document the outcome and leave breadcrumbs for the next operator. A
 
 - On the first Monday of January, April, July, and October:
   - Run `pnpm outdated` at the repo root and file follow-up issues for major upgrades.
-  - Execute `pnpm --filter frontend dlx depcheck` and `pnpm --filter salonbw-backend dlx depcheck`; remove unused packages immediately or justify them in the PR description.
+  - Execute `pnpm --filter @salonbw/landing dlx depcheck`, `pnpm --filter @salonbw/panel dlx depcheck`, and `pnpm --filter salonbw-backend dlx depcheck`; remove unused packages immediately or justify them in the PR description.
   - Capture findings and assigned follow-ups in `docs/AGENT_STATUS.md`.

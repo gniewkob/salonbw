@@ -7,7 +7,7 @@ Use this guide to configure local, staging, and production environments for Salo
 | Variable | Required | Default / Example | Description |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | ✅ | `postgres://user:password@localhost:5432/database` | PostgreSQL connection string. In development, point to the SSH tunnel (`localhost:8543`). |
-| `FRONTEND_URL` | ✅ (prod) | `https://salon-bw.pl,https://panel.salon-bw.pl,https://admin.salon-bw.pl` | Comma-separated list of allowed origins for CORS and WebSockets. Origins are normalised on startup; invalid URLs fail fast. Leave unset only in local dev. |
+| `FRONTEND_URL` | ✅ (prod) | `https://salon-bw.pl,https://dev.salon-bw.pl,https://panel.salon-bw.pl` | Comma-separated list of allowed origins for CORS and WebSockets. Origins are normalised on startup; invalid URLs fail fast. Leave unset only in local dev. |
 | `COOKIE_DOMAIN` | ✅ (prod) | `.salon-bw.pl` | Domain applied to auth/CSRF cookies. Must include leading dot for cross-subdomain flows. Optional in local dev (`localhost`). |
 | `JWT_SECRET` | ✅ | `example_jwt_secret` | Secret for signing access tokens. Use a long random string in non-prod environments. |
 | `JWT_REFRESH_SECRET` | ✅ | `example_refresh_secret` | Secret for signing refresh tokens. Must differ from `JWT_SECRET`. |
@@ -58,12 +58,13 @@ Defined in `.env.development.local` / `.env.test.local` when using the SSH tunne
 | `MYDEVIL_PG_HOST` | `pgsql0.mydevil.net` | PostgreSQL host inside mydevil. |
 | `MYDEVIL_PG_PORT` | `5432` | PostgreSQL port on mydevil. |
 
-## Frontend (`frontend`)
+## Frontends (`apps/landing`, `apps/panel`)
 
 | Variable | Required | Default / Example | Description |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | ✅ | `http://localhost:3001` | Base URL for the backend API. Prefix with `https://` in production. |
-| `NEXT_PUBLIC_SITE_URL` | ➖ | `https://example.com` | Public site URL used for metadata, share links, etc. |
+| `NEXT_PUBLIC_SITE_URL` | ➖ | `https://dev.salon-bw.pl` | Public site URL used for metadata/share links and panel back-links. |
+| `NEXT_PUBLIC_PANEL_URL` | ➖ | `https://panel.salon-bw.pl` | Panel URL used by the landing site to redirect login/register and booking flows. |
 | `NEXT_PUBLIC_BUSINESS_NAME` | ➖ | `Salon Black & White` | Business display name used in JSON-LD |
 | `NEXT_PUBLIC_BUSINESS_PHONE` | ➖ | `+48 000 000 000` | Business phone number |
 | `NEXT_PUBLIC_BUSINESS_STREET` | ➖ | `123 Salon Street` | Street address |
@@ -105,5 +106,5 @@ Enable analytics by setting `NEXT_PUBLIC_ENABLE_ANALYTICS=true` and `NEXT_PUBLIC
 After updating environment values:
 
 1. Run `pnpm tunnel:start` (if you need remote DB access) and ensure `pnpm be:dev` successfully connects.
-2. From `frontend/`, run `pnpm dev` and confirm requests hit the expected backend URL.
+2. From `apps/landing/` (public) or `apps/panel/` (dashboard), run `pnpm dev` and confirm requests hit the expected backend URL.
 3. Hit `/healthz` on the backend (`curl http://localhost:3001/healthz`) to verify the database check passes.

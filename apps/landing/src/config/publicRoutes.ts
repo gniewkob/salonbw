@@ -6,5 +6,4 @@ export const publicRoutes = [
     '/faq',
     '/policy',
     '/privacy',
-    '/auth',
 ];

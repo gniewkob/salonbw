@@ -9,12 +9,14 @@ interface Props {
 }
 
 const links: { href: Route; label: string; testId: string }[] = [
-    { href: '/dashboard/receptionist', label: 'Home', testId: 'nav-home' },
+    { href: '/dashboard', label: 'Pulpit', testId: 'nav-home' },
+    { href: '/calendar', label: 'Kalendarz', testId: 'nav-calendar' },
     {
         href: '/appointments',
-        label: 'Appointments',
+        label: 'Wizyty',
         testId: 'nav-appointments',
     },
+    { href: '/clients', label: 'Klienci', testId: 'nav-clients' },
 ];
 
 export default function ReceptionistSidebarMenu(props: Props) {

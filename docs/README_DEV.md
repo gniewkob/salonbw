@@ -13,10 +13,11 @@ This guide helps new contributors get a working environment in less than 15 minu
     pnpm install
     ```
 
-The workspace contains three projects:
+The workspace contains four projects:
 
 ```
-frontend/               # Next.js app
+apps/landing/           # Next.js public site (dev)
+apps/panel/             # Next.js dashboard (panel)
 backend/salonbw-backend # NestJS API
 packages/api/           # Shared OpenAPI client + types
 ```
@@ -26,7 +27,8 @@ packages/api/           # Shared OpenAPI client + types
 Copy the sample files and set local values. Reference [`docs/ENV.md`](./ENV.md) for the complete variable list.
 
 ```bash
-cp frontend/.env.local.example frontend/.env.local
+cp apps/landing/.env.local.example apps/landing/.env.local
+cp apps/panel/.env.local.example apps/panel/.env.local
 cp backend/salonbw-backend/.env.example backend/salonbw-backend/.env
 cp .env.development.local.example .env.development.local   # optional, for DB tunnel defaults
 ```
@@ -41,12 +43,14 @@ When working with the production database through SSH, fill in the `MYDEVIL_*` v
 # Terminal 1 – backend
 pnpm --filter salonbw-backend start:dev
 
-# Terminal 2 – frontend
-cd frontend
-pnpm dev
+# Terminal 2 – landing (public site)
+pnpm --filter @salonbw/landing dev
+
+# Terminal 3 – panel (dashboard)
+pnpm --filter @salonbw/panel dev
 ```
 
-Visit <http://localhost:3000>. The frontend proxies requests to the backend via `NEXT_PUBLIC_API_URL`.
+Visit the URLs printed by the dev servers (landing typically 3000, panel on the next free port). Both apps proxy requests to the backend via `NEXT_PUBLIC_API_URL`.
 
 ### With mydevil database tunnel
 
@@ -68,7 +72,8 @@ Detailed instructions and troubleshooting live in [`docs/TUNNELING.md`](./TUNNEL
 | ------------------------- | --------------------------------------------------- |
 | Lint whole repo           | `pnpm lint` (uses workspace-aware scripts)         |
 | Type check                | `pnpm typecheck`                                   |
-| Frontend tests            | `pnpm --filter frontend test`                      |
+| Landing tests             | `pnpm --filter @salonbw/landing test`              |
+| Panel tests               | `pnpm --filter @salonbw/panel test`                |
 | Backend tests             | `pnpm --filter salonbw-backend test`               |
 | OpenAPI client generation| `pnpm --filter @salonbw/api gen:api`               |
 | CI/CD overview           | [`docs/CI_CD.md`](./CI_CD.md)                      |
@@ -80,7 +85,8 @@ Before pushing, run at least:
 
 ```bash
 pnpm lint
-pnpm --filter frontend test
+pnpm --filter @salonbw/landing test
+pnpm --filter @salonbw/panel test
 pnpm --filter salonbw-backend test
 ```
 

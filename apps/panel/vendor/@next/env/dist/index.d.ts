@@ -12,9 +12,21 @@ type Log = {
     info: (...args: any[]) => void;
     error: (...args: any[]) => void;
 };
-export declare function processEnv(loadedEnvFiles: LoadedEnvFiles, dir?: string, log?: Log, forceReload?: boolean, onReload?: (envFilePath: string) => void): Env[];
+export declare function processEnv(
+    loadedEnvFiles: LoadedEnvFiles,
+    dir?: string,
+    log?: Log,
+    forceReload?: boolean,
+    onReload?: (envFilePath: string) => void,
+): Env[];
 export declare function resetEnv(): void;
-export declare function loadEnvConfig(dir: string, dev?: boolean, log?: Log, forceReload?: boolean, onReload?: (envFilePath: string) => void): {
+export declare function loadEnvConfig(
+    dir: string,
+    dev?: boolean,
+    log?: Log,
+    forceReload?: boolean,
+    onReload?: (envFilePath: string) => void,
+): {
     combinedEnv: Env;
     parsedEnv: Env | undefined;
     loadedEnvFiles: LoadedEnvFiles;

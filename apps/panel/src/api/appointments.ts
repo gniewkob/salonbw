@@ -48,7 +48,7 @@ export function useAppointmentsApi() {
                             {
                                 item_id: appt.service.id,
                                 item_name: appt.service.name,
-                                item_category: appt.service.category?.name,
+                                item_category: appt.service.category,
                             },
                         ],
                         event_source: 'appointments',
@@ -107,7 +107,7 @@ export function useAppointmentsApi() {
                             {
                                 item_id: appt.service.id,
                                 item_name: appt.service.name,
-                                item_category: appt.service.category?.name,
+                                item_category: appt.service.category,
                             },
                         ],
                         event_source: 'appointments',

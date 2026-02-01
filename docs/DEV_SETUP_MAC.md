@@ -41,14 +41,15 @@ The repository is configured as a pnpm workspace.
 pnpm install
 ```
 
-This installs dependencies for both the frontend (`frontend/`) and backend (`backend/salonbw-backend/`) workspaces. If you receive `NPM_TOKEN` warnings, provide a token or set a dummy value (e.g. `export NPM_TOKEN=unused`) for local development.
+This installs dependencies for both Next.js apps (`apps/landing/`, `apps/panel/`) and the backend (`backend/salonbw-backend/`) workspace. If you receive `NPM_TOKEN` warnings, provide a token or set a dummy value (e.g. `export NPM_TOKEN=unused`) for local development.
 
 ## 5. Environment Variables
 
 Copy the relevant templates and fill in values:
 
 ```bash
-cp frontend/.env.local.example frontend/.env.local
+cp apps/landing/.env.local.example apps/landing/.env.local
+cp apps/panel/.env.local.example apps/panel/.env.local
 cp backend/salonbw-backend/.env.example backend/salonbw-backend/.env
 ```
 
@@ -56,14 +57,21 @@ For advanced workflows (DB tunnelling, CI), additional `.env.*.example` files wi
 
 ## 6. Running the Applications
 
-### Frontend (Next.js)
+### Landing (Next.js public site)
 
 ```bash
-cd frontend
-pnpm dev        # starts the dev server with smart port management
+pnpm --filter @salonbw/landing dev  # starts the dev server with smart port management
 ```
 
-Visit <http://localhost:3000>. Use `pnpm lint`, `pnpm test`, and `pnpm e2e` for linting, unit tests, and Cypress tests respectively.
+Visit the URL printed by the dev server (typically <http://localhost:3000>). Use `pnpm lint`, `pnpm test`, and `pnpm e2e` for linting, unit tests, and Cypress tests respectively.
+
+### Panel (Next.js dashboard)
+
+```bash
+pnpm --filter @salonbw/panel dev  # starts the dev server with smart port management
+```
+
+Visit the URL printed by the dev server (typically the next free port after 3000).
 
 ### Backend (NestJS)
 
@@ -95,6 +103,6 @@ If a hook fails, fix the reported issues before committing.
 
 - **Node version mismatch:** Run `nvm use` at the repo root. If errors persist, clear `.npmrc` auth token or export `NPM_TOKEN=unused`.
 - **Permission denied on hooks:** Ensure the repo directory is not on a restricted volume. Re-run `pnpm install` to reinstall Husky hooks.
-- **Cypress binary missing:** Run `pnpm --filter frontend cypress:install`.
+- **Cypress binary missing:** Run `pnpm --filter @salonbw/landing cypress:install` or `pnpm --filter @salonbw/panel cypress:install`.
 
 You’re ready to develop! Proceed with the runbook to configure additional tooling (SSH tunnels, CI/CD, etc.).

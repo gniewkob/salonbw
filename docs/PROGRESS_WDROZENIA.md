@@ -11,6 +11,9 @@
 | Faza 3: Advanced | ✅ Ukończona | ~95% |
 | Faza 4: Enterprise | 🟡 W trakcie | ~25% |
 
+> **Ważne:** Cały „Versum clone” (dashboard, kalendarz, CRM, magazyn, komunikacja, ustawienia) działa **wyłącznie** w **panelu** (`apps/panel`, `panel.salon-bw.pl`).  
+> `dev.salon-bw.pl` (`apps/landing`) to **tylko wizytówka** + CTA do panelu — nie dodajemy tam logiki dashboardu.
+
 ---
 
 ## Faza 1: MVP

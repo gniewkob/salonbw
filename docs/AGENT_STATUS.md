@@ -7,7 +7,7 @@ _Last updated: 2026-01-21 (production readiness verification and database passwo
 The Salon Black & White platform consists of the following services:
 
 - **`api.salon-bw.pl`** - Backend API (NestJS) serving all business logic, authentication, and data
-- **`dev.salon-bw.pl`** - **New client-facing frontend** (Next.js) - public marketing site for end users to browse services and book appointments
+- **`dev.salon-bw.pl`** - **New client-facing frontend** (Next.js) - public marketing site for end users to browse services and book appointments (**bez logiki dashboardu**)
 - **`panel.salon-bw.pl`** - **Management dashboard** (Next.js) - authenticated portal for:
   - **End users**: View reservation history, manage bookings
   - **Admins**: Manage services, reservation calendar, appointments, user management
@@ -22,7 +22,6 @@ The Salon Black & White platform consists of the following services:
 | API (`api.salon-bw.pl`) | `a98d923d` | `18857312225` | 2025-10-27 22:09 | production | Redeployed after security fixes; `/healthz` 200 |
 | Public site (`dev.salon-bw.pl`) | `1b65bbf5` | `18859475724` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
 | Dashboard (`panel.salon-bw.pl`) | `a98d923d` | `18857314859` | 2025-10-27 22:10 | production | Redeployed from master; smoke checks passed |
-| Admin (`dev.salon-bw.pl`) | `1b65bbf5` | `18859477828` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
 
 Verification:
 
@@ -70,7 +69,7 @@ Verification:
   - ✅ Database password updated across all environments
   - ✅ bcrypt native module rebuilt for production environment
 - Contact form calls `/emails/send` (Nest `EmailsModule`) and relays through `kontakt@salon-bw.pl`.
-- Deploy workflows (`deploy_api`, `deploy_public`, `deploy_dashboard`, `deploy_admin`) accept optional `app_name` and tolerate php domains by touching `tmp/restart.txt`.
+- Deploy workflows (`deploy_api`, `deploy_public`, `deploy_dashboard`) accept optional `app_name` and tolerate php domains by touching `tmp/restart.txt`. (`deploy_admin` is legacy.)
 - Public Next.js build succeeds with `experimental.typedRoutes=false`.
 - SMTP + JWT secrets and POS flags managed in production `.env` at `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/.env` (`POS_ENABLED=true`; see [docs/ENV.md](./ENV.md)).
 - **2025-11-01 18:32 UTC (`fd0b06d0`)** – POS migrations applied in production (`1710006000000`, `1710007000000`, `1710008000000`), and `POS_ENABLED=true` is live. Verification commands:
@@ -91,9 +90,9 @@ Verification:
 
 ## Uptime Tracking
 
-| Month (UTC) | API (`/healthz`) | Public (`/`) | Dashboard (`/dashboard`) | Admin (`/dashboard`) | Notes |
-| --- | --- | --- | --- | --- | --- |
-| 2025-11 | Monitoring (initializing) | Monitoring (initializing) | Monitoring (initializing) | Monitoring (initializing) | UptimeRobot + Pingdom probes activated 2025-11-19; first full month of data available in December. |
+| Month (UTC) | API (`/healthz`) | Public (dev `/`) | Panel (`/dashboard`) | Notes |
+| --- | --- | --- | --- | --- |
+| 2025-11 | Monitoring (initializing) | Monitoring (initializing) | Monitoring (initializing) | UptimeRobot + Pingdom probes activated 2025-11-19; first full month of data available in December. |
 
 ## Improvements in Progress
 
@@ -137,5 +136,5 @@ Verification:
 4. **Access servers** through the `devil` host alias (`ssh devil`). Node apps live under `/usr/home/vetternkraft/apps/nodejs/*`; public Next.js lives at `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs`.
 5. **Restart rules:**
    - Node.js domains (e.g. `api.salon-bw.pl`, `dev.salon-bw.pl`): `devil www restart <domain>`.
-   - PHP/Passenger wrappers (e.g. `salon-bw.pl`, `dashboard.salon-bw.pl`, `admin.salon-bw.pl`): write `tmp/restart.txt` instead—see operations doc.
+   - PHP/Passenger wrappers (e.g. `salon-bw.pl`, `panel.salon-bw.pl`, `dev.salon-bw.pl`): write `tmp/restart.txt` instead—see operations doc.
 6. **Document everything**—if you learn a new path, secret, or behaviour, append it here and cross-link the deeper documentation.

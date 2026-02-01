@@ -1,28 +1,55 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useQuery } from '@tanstack/react-query';
-import { useApi } from '@/hooks/useApi';
+import dynamic from 'next/dynamic';
+import type { ComponentProps } from 'react';
+import RouteGuard from '@/components/RouteGuard';
+import DashboardLayout from '@/components/DashboardLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function DashboardRedirect() {
-    const router = useRouter();
-    const api = useApi();
+import type ClientDashboardComponent from '@/components/dashboard/ClientDashboard';
+import type AdminDashboardComponent from '@/components/dashboard/AdminDashboard';
 
-    const { data: profile, isError } = useQuery<{ role?: string }>({
-        queryKey: ['api', '/users/profile'],
-        queryFn: () => api.request<{ role?: string }>('/users/profile'),
-    });
+const ClientDashboard = dynamic<
+    ComponentProps<typeof ClientDashboardComponent>
+>(() => import('@/components/dashboard/ClientDashboard'), {
+    ssr: false,
+    loading: () => (
+        <div className="p-4 text-sm text-gray-500">Loading dashboard...</div>
+    ),
+});
 
-    // Ensure TS sees the expected shape when build type-check runs
-    const typedProfile = profile as { role?: string } | undefined;
+const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
+    () => import('@/components/dashboard/AdminDashboard'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="p-4 text-sm text-gray-500">
+                Loading dashboard...
+            </div>
+        ),
+    },
+);
 
-    useEffect(() => {
-        if (typedProfile?.role) {
-            void router.replace(`/dashboard/${typedProfile.role}`);
-        } else if (isError) {
-            // If there's an error fetching the role, redirect to client dashboard
-            void router.replace('/dashboard/client');
+export default function DashboardPage() {
+    const { role } = useAuth();
+
+    const renderDashboard = () => {
+        switch (role) {
+            case 'client':
+                return <ClientDashboard />;
+            case 'admin':
+                return <AdminDashboard />;
+            case 'employee':
+            case 'receptionist':
+                // For now, employees and receptionists see the admin dashboard
+                // (they have access to /dashboard endpoint)
+                return <AdminDashboard />;
+            default:
+                return <div>Please log in to view your dashboard</div>;
         }
-    }, [router, typedProfile, isError]);
+    };
 
-    return null;
+    return (
+        <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
+            <DashboardLayout>{renderDashboard()}</DashboardLayout>
+        </RouteGuard>
+    );
 }

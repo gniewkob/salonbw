@@ -84,3 +84,4 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 - `docs/DEPLOYMENT_MYDEVIL.md`
 - `docs/CI_CD.md`
 - `docs/RELEASE_CHECKLIST.md`
+- **More context lives in `docs/`** (architecture, rollout, monitoring, and Versum-clone notes).

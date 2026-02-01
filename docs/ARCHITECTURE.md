@@ -2,16 +2,19 @@
 
 ## Overview
 
-- Monorepo with two primary applications:
-  - `frontend/` – Next.js 14 web app for public marketing pages and authenticated dashboards.
+- Monorepo with the following primary applications:
+  - `apps/landing` – **public marketing site only** (`dev.salon-bw.pl`) for services, gallery, contact, CTA.
+  - `apps/panel` – **Versum clone dashboard** (`panel.salon-bw.pl`) with all authenticated functionality.
   - `backend/salonbw-backend/` – NestJS 11 API server with TypeORM persistence.
-- Each application is currently managed as an independent npm project (no top-level workspace tooling).
+  - `packages/api/` – OpenAPI TypeScript client wrapper shared by frontends.
+- Development and deployments are managed via the pnpm workspace.
 - PostgreSQL is the expected primary database; local development relies on `.env` configuration.
 
 ## Frontend (Next.js)
 
-- Uses the file-based router under `src/pages` with role-specific dashboard routes.
-- TailwindCSS powers styling; scripts in `frontend/scripts/` handle dev server orchestration and port management.
+- Both `apps/landing` and `apps/panel` use the file-based router under `src/pages`.
+- **Landing** serves only public pages; **panel** hosts all dashboard/Versum clone routes.
+- TailwindCSS powers styling; scripts in `apps/*/scripts/` handle dev server orchestration and port management.
 - Testing stack: Jest for unit tests, Cypress for E2E (mocked API responses).
 - Builds target standard Next.js output (`next build`); production bootstrap handled by custom scripts.
 

@@ -7,7 +7,6 @@ import {
     useMemo,
     useState,
 } from 'react';
-import { useRouter } from 'next/router';
 import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
@@ -17,7 +16,6 @@ import {
     type RegisterData,
 } from '@/api/auth';
 import type { Role, User } from '@/types';
-import { getPanelUrl } from '@/utils/panelUrl';
 
 interface AuthContextValue {
     user: User | null;
@@ -73,8 +71,6 @@ const readCsrfCookie = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-
     const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [initialized, setInitialized] = useState(false);
@@ -106,19 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            const loginUrl = getPanelUrl('/auth/login');
-            const navigation = router.push(loginUrl);
-            if (navigation && typeof navigation.catch === 'function') {
-                void navigation.catch(() => {
-                    if (typeof window !== 'undefined') {
-                        window.location.href = loginUrl;
-                    }
-                });
-            } else if (typeof window !== 'undefined') {
-                window.location.href = loginUrl;
+            if (typeof window !== 'undefined') {
+                window.location.href = '/';
             }
         }
-    }, [clearSessionState, router]);
+    }, [clearSessionState]);
 
     useEffect(() => {
         setLogoutCallback(() => {

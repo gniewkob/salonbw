@@ -44,11 +44,13 @@
         "@swc/helpers": "^0.5.17",
         "@tanstack/react-query": "^5.90.7",
         "autoprefixer": "^10.4.22",
+        "date-fns": "^4.1.0",
         "next": "15.2.9",
         "picocolors": "^1.1.0",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-hot-toast": "^2.4.0",
+        "recharts": "^3.7.0",
         "sharp": "^0.34.5",
         "styled-jsx": "^5.1.7"
     },
