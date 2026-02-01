@@ -54,13 +54,7 @@ const nextConfig = {
         ];
     },
     async redirects() {
-        return [
-            {
-                source: '/',
-                destination: '/auth/login',
-                permanent: false,
-            },
-        ];
+        return [];
     },
     async headers() {
         const rules = [
