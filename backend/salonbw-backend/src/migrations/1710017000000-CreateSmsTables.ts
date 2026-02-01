@@ -238,7 +238,7 @@ export class CreateSmsTables1710017000000 implements MigrationInterface {
 
         // Insert default templates
         await queryRunner.query(`
-            INSERT INTO message_templates (name, type, channel, content, isDefault, availableVariables)
+            INSERT INTO message_templates (name, type, channel, content, "isDefault", "availableVariables")
             VALUES
             (
                 'Przypomnienie o wizycie',
