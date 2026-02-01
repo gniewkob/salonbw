@@ -43,14 +43,14 @@ export class Stocktaking {
     @JoinColumn({ name: 'createdById' })
     createdBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     createdById: number | null;
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'completedById' })
     completedBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     completedById: number | null;
 
     @Column({ type: 'timestamp', nullable: true })

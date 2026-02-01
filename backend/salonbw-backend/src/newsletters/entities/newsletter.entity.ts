@@ -93,14 +93,14 @@ export class Newsletter {
     @JoinColumn({ name: 'createdById' })
     createdBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     createdById: number | null;
 
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'sentById' })
     sentBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     sentById: number | null;
 
     @OneToMany(() => NewsletterRecipient, (recipient) => recipient.newsletter)

@@ -32,7 +32,7 @@ export class Delivery {
     @JoinColumn({ name: 'supplierId' })
     supplier: Supplier | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     supplierId: number | null;
 
     @Column({
@@ -48,7 +48,7 @@ export class Delivery {
     @Column({ type: 'date', nullable: true })
     receivedDate: Date | null;
 
-    @Column({ length: 100, nullable: true })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     invoiceNumber: string | null;
 
     @Column('decimal', {
@@ -66,7 +66,7 @@ export class Delivery {
     @JoinColumn({ name: 'receivedById' })
     receivedBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     receivedById: number | null;
 
     @OneToMany(() => DeliveryItem, (item) => item.delivery, { cascade: true })

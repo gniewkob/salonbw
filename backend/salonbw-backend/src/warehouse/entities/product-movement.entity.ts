@@ -55,24 +55,24 @@ export class ProductMovement {
     @JoinColumn({ name: 'createdById' })
     createdBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     createdById: number | null;
 
     @ManyToOne(() => Delivery, { nullable: true })
     @JoinColumn({ name: 'deliveryId' })
     delivery: Delivery | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     deliveryId: number | null;
 
     @ManyToOne(() => Stocktaking, { nullable: true })
     @JoinColumn({ name: 'stocktakingId' })
     stocktaking: Stocktaking | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     stocktakingId: number | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     appointmentId: number | null;
 
     @CreateDateColumn()
