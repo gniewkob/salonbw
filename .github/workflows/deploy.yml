@@ -84,6 +84,52 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref }}
 
+      - name: Detect changes
+        if: ${{ github.event_name == 'push' }}
+        id: changes
+        shell: bash
+        run: |
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+
+          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO_SHA" ]; then
+            echo "panel=true" >> "$GITHUB_OUTPUT"
+            echo "landing=true" >> "$GITHUB_OUTPUT"
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only "$BASE" "$HEAD")"
+          echo "Changed files:" && echo "$files"
+
+          panel=false
+          landing=false
+          api=false
+          shared=false
+
+          if echo "$files" | rg -q "^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|turbo.json|packages/api/)"; then
+            shared=true
+          fi
+          if echo "$files" | rg -q "^apps/panel/"; then
+            panel=true
+          fi
+          if echo "$files" | rg -q "^apps/landing/"; then
+            landing=true
+          fi
+          if echo "$files" | rg -q "^backend/"; then
+            api=true
+          fi
+
+          if [ "$shared" = "true" ]; then
+            panel=true
+            landing=true
+          fi
+
+          echo "panel=$panel" >> "$GITHUB_OUTPUT"
+          echo "landing=$landing" >> "$GITHUB_OUTPUT"
+          echo "api=$api" >> "$GITHUB_OUTPUT"
+
       # Input validation intentionally omitted due to quoting issues in GitHub runner
 
       - name: Setup Node
@@ -254,7 +300,7 @@ jobs:
           validate "$P_API" "$A_API" "api"
 
       - name: Build frontend (Landing)
-        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' }}
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
           rm -rf apps/landing/.next
           pnpm --filter @salonbw/landing build
@@ -264,7 +310,7 @@ jobs:
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
 
       - name: Read BUILD_ID (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ github.event.inputs.target != 'api' && (github.event_name != 'push' || steps.changes.outputs.panel == 'true' || steps.changes.outputs.landing == 'true') }}
         id: buildid
         shell: bash
         run: |
@@ -277,7 +323,7 @@ jobs:
           fi
 
       - name: Build backend
-        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           cd backend/salonbw-backend
           # Dependencies already installed via pnpm workspace in previous step
@@ -328,7 +374,7 @@ jobs:
           echo "============================================"
 
       - name: 🏗️ Build frontend (Panel)
-        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
           echo "============================================"
           echo "🚀 STEP: Building Panel frontend"
@@ -366,45 +412,27 @@ jobs:
           NEXT_PANEL_HTML_NOSTORE: "true"
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Ensure remote directories exist (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+      - name: Ensure remote directories exist (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
           # Create destinations
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
 
-          # Special handling for Panel: Create app dir and Symlink (Default to Panel on push)
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             echo "Ensuring Symlink for Panel..."
-             # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
-             # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
-             ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
-          fi
-
-      - name: Upload frontend bundle
-        if: ${{ github.event.inputs.target != 'api' }}
+      - name: Ensure remote directories exist (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
-          # Determine correct remote path based on target (Default to Panel on push)
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             DEST="${{ steps.dest.outputs.remote_path_panel }}"
-             APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-             echo "Targeting PANEL: $DEST"
-             BUILD_FILTER="@salonbw/panel"
-          else
-             DEST="${{ steps.dest.outputs.remote_path_public }}"
-             APP_NAME="${{ steps.dest.outputs.app_name_public }}"
-             echo "Targeting LANDING: $DEST"
-             BUILD_FILTER="@salonbw/landing"
-          fi
+          echo "Ensuring Symlink for Panel..."
+          # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
+          # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
 
-
-          # LOGIC FIX: Explicitly set TARGET_APP based on validated inputs
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             TARGET_APP="apps/panel"
-             echo "Targeting PANEL (Hardcoded Path): $TARGET_APP"
-          else
-             TARGET_APP="apps/landing"
-             echo "Targeting LANDING: $TARGET_APP"
-          fi
+      - name: Upload frontend bundle (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          DEST="${{ steps.dest.outputs.remote_path_panel }}"
+          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          TARGET_APP="apps/panel"
+          echo "Targeting PANEL: $DEST"
 
           mkdir -p deploy_bundle/.next
           mkdir -p deploy_bundle/public
@@ -481,16 +509,89 @@ jobs:
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
 
-      - name: Prepare standalone runtime (set node version)
-        if: ${{ github.event.inputs.target != 'api' }}
+      - name: Upload frontend bundle (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-             TARGET_APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-             TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
-          else
-             TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
-             TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
+          DEST="${{ steps.dest.outputs.remote_path_public }}"
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          TARGET_APP="apps/landing"
+          echo "Targeting LANDING: $DEST"
+
+          mkdir -p deploy_bundle/.next
+          mkdir -p deploy_bundle/public
+
+          echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
+
+          # STANDARD BUILD STRATEGY (Non-Standalone)
+          # Copy everything necessary for runtime
+          cp -r "$TARGET_APP/.next" deploy_bundle/
+          cp -r "$TARGET_APP/public" deploy_bundle/
+          cp "$TARGET_APP/package.json" deploy_bundle/
+          cp "$TARGET_APP/next.config.mjs" deploy_bundle/
+
+          # Ensure font manifest exists (Next.js expects this file at runtime)
+          if [ ! -f "deploy_bundle/.next/server/font-manifest.json" ]; then
+             mkdir -p deploy_bundle/.next/server
+             echo "[]" > deploy_bundle/.next/server/font-manifest.json
           fi
+
+          # Copy app.js (Passenger Entry Point)
+          if [ -f "$TARGET_APP/app.js" ]; then
+             cp "$TARGET_APP/app.js" deploy_bundle/
+          fi
+
+          # FIX STATIC ASSETS (Passenger 404s)
+          echo "Fixing Static Assets (Hard Copy)..."
+          mkdir -p deploy_bundle/public/_next
+          cp -r deploy_bundle/.next/static deploy_bundle/public/_next/
+
+          # Copy source files (middleware needs src structure?)
+          mkdir -p deploy_bundle/src
+          if [ -f "$TARGET_APP/src/middleware.ts" ]; then
+             cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
+          fi
+
+          if [ -d "$TARGET_APP/scripts" ]; then
+             cp -r "$TARGET_APP/scripts" deploy_bundle/
+          fi
+
+          # Copy local packages (dependencies)
+          mkdir -p deploy_bundle/packages
+          if [ -d "packages/api" ]; then
+             cp -r packages/api deploy_bundle/packages/
+          fi
+
+          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
+          echo "Installing dependencies in bundle..."
+          cd deploy_bundle
+
+          # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
+          # These are already bundled by Next.js Standalone, and npm install won't resolve them.
+          # Fix: Rewrite workspace links to local file paths
+          sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
+          sed -i '/workspace:/d' package.json
+
+          # Use npm for flat install (pnpm is not needed for runtime)
+          npm install --omit=dev --no-package-lock --no-audit --loglevel=error
+          cd ..
+
+          # Create Tarball
+          tar -czf deploy.tar.gz -C deploy_bundle .
+
+          # Upload Tarball
+          echo "Uploading Bundle to $DEST..."
+          ls -la deploy.tar.gz
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz vetternkraft@s0.mydevil.net:$DEST/deploy.tar.gz
+
+          # Extract and Clean
+          echo "Extracting Bundle..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
+
+      - name: Prepare standalone runtime (set node version) (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          TARGET_APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
 
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
           set -euo pipefail
@@ -521,10 +622,45 @@ jobs:
           fi
           SSH
 
-      - name: "Diagnostic: Expose and Print logs (frontend)"
-        if: ${{ always() && github.event.inputs.target != 'api' }}
+      - name: Prepare standalone runtime (set node version) (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
+          set -euo pipefail
+
+          # Create probe file for diagnostics
+          mkdir -p "$REMOTE_PATH/public"
+          echo "--- Startup Probe $(date) ---" > "$REMOTE_PATH/public/startup_probe.txt"
+          echo "Node Version: $(node -v)" >> "$REMOTE_PATH/public/startup_probe.txt"
+
+          if command -v devil >/dev/null 2>&1; then
+             echo "--- Devil Version/Help ---"
+             devil --version || true
+             devil www help || true
+             
+             echo "--- Attempting to set Node 22 ---"
+             echo "Try 1: devil www options $APP_NAME nodejs_version 22"
+             devil www options "$APP_NAME" nodejs_version 22 || echo "Try 1 failed"
+             
+             # Fallback mechanism: Local node symlink
+             echo "--- Setting up ~/bin/node fallback ---"
+             mkdir -p $HOME/bin
+             if command -v node22 >/dev/null; then
+                ln -sf $(command -v node22) $HOME/bin/node
+                ln -sf $(command -v node22) $HOME/bin/node22
+                echo "Linked node22 to ~/bin/node"
+                export PATH=$HOME/bin:$PATH
+             fi
+          fi
+          SSH
+
+      - name: "Diagnostic: Expose and Print logs (panel)"
+        if: ${{ always() && (github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true')) }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
           mkdir -p public
@@ -548,8 +684,8 @@ jobs:
           if [ -f stderr.log ]; then tail -n 50 stderr.log; fi
           SSH
 
-      - name: "Diagnostic: Expose logs (frontend)"
-        if: ${{ always() && github.event.inputs.target != 'api' }}
+      - name: "Diagnostic: Expose logs (landing)"
+        if: ${{ always() && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
@@ -565,7 +701,7 @@ jobs:
           SSH
 
       - name: Upload backend bundle
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           rsync -az --delete \
             --exclude='.git' \
@@ -577,7 +713,7 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
 
       - name: Install dependencies (backend)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
           cd "$REMOTE_PATH"
@@ -591,7 +727,7 @@ jobs:
           SSH
 
       - name: "Diagnostic: Startup Probe (frontend)"
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
           set -euo pipefail
@@ -642,8 +778,58 @@ jobs:
 
           END_PROBE
 
+      - name: "Diagnostic: Startup Probe (panel)"
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          LOG="public/startup_probe.txt"
+          echo "--- Startup Probe $(date) ---" > "$LOG"
+
+          echo "=== Environment Info ===" >> "$LOG"
+          echo "User: $(whoami)" >> "$LOG"
+          echo "Path: $PATH" >> "$LOG"
+          echo "Node (default): $(node -v 2>&1 || echo 'missing')" >> "$LOG"
+          echo "Node22: $(command -v node22 2>&1 || echo 'missing')" >> "$LOG"
+          if command -v node22 >/dev/null; then
+             echo "Node22 Version: $(node22 -v)" >> "$LOG"
+          fi
+
+          echo "=== Devil Info ===" >> "$LOG"
+          devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
+
+          echo "=== File Checks ===" >> "$LOG"
+          ls -la app.js server.js package.json >> "$LOG"
+
+          echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
+          echo "console.log('Hello from Simple Node');" > test_simple.js
+          node test_simple.js >> "$LOG" 2>&1 || echo "Simple Node execution failed" >> "$LOG"
+
+          echo "=== Manual Execution Test (App.js) ===" >> "$LOG"
+          RUN_NODE=node
+          if command -v node22 >/dev/null; then RUN_NODE=node22; fi
+
+          echo "Running with $RUN_NODE..." >> "$LOG"
+          $RUN_NODE app.js > public/manual_app_start.log 2>&1 &
+          PID=$!
+          echo "Started app.js with PID $PID. Waiting 5s..." >> "$LOG"
+          sleep 5
+          if ps -p $PID > /dev/null; then
+             echo "Process $PID still running." >> "$LOG"
+             kill $PID
+          else
+             echo "Process $PID died." >> "$LOG"
+          fi
+
+          echo "=== Manual App Log ===" >> "$LOG"
+          head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
+
+          END_PROBE
+
       - name: Generate and Upload .env (api)
-        if: ${{ github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         shell: bash
         env:
           # Pass all secrets to the local environment first
@@ -726,7 +912,7 @@ jobs:
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env
 
       - name: Validate DB connectivity (api)
-        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
@@ -738,7 +924,7 @@ jobs:
           REMOTE_CMDS
 
       - name: Run DB migrations (api)
-        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
           set -euo pipefail
@@ -752,7 +938,7 @@ jobs:
           REMOTE_CMDS
 
       - name: 🗄️ Verify DB and Run Migrations (Panel)
-        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || github.event.inputs.target == '' }}
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
           echo "============================================"
           echo "🚀 STEP: Running migrations on production server"
@@ -796,26 +982,28 @@ jobs:
           echo "✅ Database verification and migrations completed"
           echo "============================================"
 
-      - name: Restart app (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+      - name: Restart app (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
-          if [ "${{ github.event.inputs.target }}" == "panel" ] || [ "${{ github.event.inputs.target }}" == "dashboard" ] || [ -z "${{ github.event.inputs.target }}" ]; then
-            APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-            REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
-          else
-            APP_NAME="${{ steps.dest.outputs.app_name_public }}"
-            REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
-          fi
+          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
 
+      - name: Restart app (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
           echo "Restarting $APP_NAME (Passenger)..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
 
       - name: Debug - List Apps
-        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
 
       - name: Restart app (backend)
-        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
 
       - name: Smoke test (backend)
