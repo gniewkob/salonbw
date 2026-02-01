@@ -75,7 +75,7 @@ export class AutomaticMessageRule {
     @JoinColumn({ name: 'templateId' })
     template: MessageTemplate | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     templateId: number | null;
 
     // Direct content (used if no template)
@@ -110,7 +110,7 @@ export class AutomaticMessageRule {
     @JoinColumn({ name: 'createdById' })
     createdBy: User | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int', nullable: true })
     createdById: number | null;
 
     @CreateDateColumn()
