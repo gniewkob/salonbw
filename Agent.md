@@ -47,7 +47,7 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 ```
 
 ## 4. Production paths (MyDevil)
-- API: `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs`
+- API: `/usr/home/vetternkraft/apps/nodejs/api_salonbw` (symlinked into `/usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs`)
 - Public: `/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs`
 - Panel: `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs`
 - Dev: `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs`
