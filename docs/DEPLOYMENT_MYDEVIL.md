@@ -33,11 +33,12 @@ Folder structure recommended on the server:
 **Domain mapping:**
 - `dev.salon-bw.pl` → public site (landing / wizytówka)
 - `panel.salon-bw.pl` → dashboard (Versum clone)
+- `api.salon-bw.pl` → backend API (symlinked domain root)
 
 ```
 /home/<user>/domains/dev.salon-bw.pl/public_nodejs/    # Passenger app root (landing)
 /home/<user>/domains/panel.salon-bw.pl/public_nodejs/  # Passenger app root (panel)
-/home/<user>/apps/api/                                 # NestJS backend (optional separate app)
+/home/<user>/apps/nodejs/api_salonbw                   # NestJS backend (symlinked into domains/api.salon-bw.pl/public_nodejs)
 ```
 
 ## 2. Build artifacts locally
@@ -84,7 +85,7 @@ rsync -avz \
   apps/panel/package-lock.json \
   <user>@s0.mydevil.net:/home/<user>/domains/panel.salon-bw.pl/public_nodejs/
 
-# Backend API (if hosted separately)
+# Backend API (symlinked)
 rsync -avz \
   --delete \
   --exclude='.git' \
@@ -92,7 +93,7 @@ rsync -avz \
   backend/salonbw-backend/node_modules \
   backend/salonbw-backend/package.json \
   backend/salonbw-backend/package-lock.json \
-  <user>@s0.mydevil.net:/home/<user>/apps/api/
+  <user>@s0.mydevil.net:/home/<user>/apps/nodejs/api_salonbw/
 ```
 
 Upload environment files securely (never commit them):
@@ -116,8 +117,8 @@ npm install --production
 cd /home/<user>/domains/panel.salon-bw.pl/public_nodejs
 npm install --production
 
-# Backend (if separate)
-cd /home/<user>/apps/api
+# Backend
+cd /home/<user>/apps/nodejs/api_salonbw
 npm install --production
 ```
 
