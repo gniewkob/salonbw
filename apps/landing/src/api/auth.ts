@@ -106,3 +106,10 @@ export async function refreshToken(): Promise<AuthTokens> {
         );
     }
 }
+
+export async function logout(): Promise<void> {
+    await client.request('/auth/logout', {
+        method: 'POST',
+        headers: { 'x-skip-logout': 'true' },
+    });
+}

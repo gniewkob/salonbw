@@ -102,4 +102,13 @@ export class AuthController {
         }
         return this.authService.refresh(token, res);
     }
+
+    @Post('logout')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Log out user' })
+    @ApiResponse({ status: 200, description: 'User successfully logged out' })
+    async logout(@Response({ passthrough: true }) res: ExpressResponse) {
+        this.authService.clearAuthCookies(res);
+        return { success: true };
+    }
 }

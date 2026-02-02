@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-01-21 (production readiness verification and database password update)_
+_Last updated: 2026-02-02 (applied migration `1760069000000-CreateReviewsTable` to fix `/reviews` 500s)_
 
 ## Platform Architecture
 
@@ -29,6 +29,13 @@ Verification:
 - `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
 
 ## Recent Incidents
+
+### 2026-02-02: `/reviews` 500s due to missing `reviews` table
+
+- **Impact:** `GET /reviews/me` returned 500 (`relation "reviews" does not exist`).
+- **Root cause:** Missing DB migration for `reviews` table in production.
+- **Mitigation:** Applied migration `1760069000000-CreateReviewsTable` manually on production DB.
+- **Status:** Resolved.
 
 ### 2026-01-21: Database Password Update and Production API Recovery
 
