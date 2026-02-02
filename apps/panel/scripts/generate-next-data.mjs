@@ -13,6 +13,7 @@ if (!fs.existsSync(buildIdPath) || !fs.existsSync(manifestPath)) {
 const buildId = fs.readFileSync(buildIdPath, 'utf8').trim();
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const outDir = path.join(nextDir, 'data', buildId);
+const publicOutDir = path.join(process.cwd(), 'public', '_next', 'data', buildId);
 
 const shouldSkip = (route) => {
     if (route.startsWith('/_')) return true;
@@ -24,20 +25,30 @@ const shouldSkip = (route) => {
 
 const toDataPath = (route) => {
     const normalized = route === '/' ? '/index' : route;
-    return path.join(outDir, `${normalized}.json`);
+    return `${normalized}.json`;
 };
 
 fs.mkdirSync(outDir, { recursive: true });
+fs.mkdirSync(publicOutDir, { recursive: true });
 
 let count = 0;
 for (const route of Object.keys(manifest)) {
     if (shouldSkip(route)) continue;
-    const target = toDataPath(route);
+    const rel = toDataPath(route);
+    const target = path.join(outDir, rel);
+    const publicTarget = path.join(publicOutDir, rel);
     fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.mkdirSync(path.dirname(publicTarget), { recursive: true });
     if (!fs.existsSync(target)) {
-        fs.writeFileSync(target, JSON.stringify({ pageProps: {} }));
+        const payload = JSON.stringify({ pageProps: {} });
+        fs.writeFileSync(target, payload);
+        fs.writeFileSync(publicTarget, payload);
         count += 1;
+    } else if (!fs.existsSync(publicTarget)) {
+        fs.copyFileSync(target, publicTarget);
     }
 }
 
-console.log(`[generate-next-data] Wrote ${count} data files to ${outDir}`);
+console.log(
+    `[generate-next-data] Wrote ${count} data files to ${outDir} and ${publicOutDir}`,
+);
