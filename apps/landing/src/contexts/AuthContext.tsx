@@ -13,6 +13,7 @@ import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
     register as apiRegister,
+    logout as apiLogout,
     refreshToken as apiRefreshToken,
     setLogoutCallback,
     type RegisterData,
@@ -114,11 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [persistTokens]);
 
     const handleLogout = useCallback(async () => {
-        clearSessionState();
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            await apiLogout();
         } catch (error) {
+            console.error('Logout error:', error);
         } finally {
+            clearSessionState();
             void router.push('/');
             if (typeof window !== 'undefined') {
                 // Force reload to clear any in-memory states if needed
