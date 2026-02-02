@@ -17,6 +17,8 @@ try {
     console.warn('Tracer patch skipped:', err?.message || err);
 }
 
+const fs = require('fs');
+const path = require('path');
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
@@ -31,6 +33,28 @@ const currentPort = Number(
         3000,
 );
 
+const dataBase = path.join(__dirname, '.next', 'data');
+
+function tryServeNextData(req, res, pathname) {
+    if (!pathname || !pathname.startsWith('/_next/data/')) return false;
+    const relative = pathname.replace(/^\/\/_next\/data\//, '');
+    const dataPath = path.join(dataBase, relative);
+    if (!dataPath.startsWith(dataBase + path.sep)) {
+        res.statusCode = 400;
+        res.end('Bad request');
+        return true;
+    }
+    if (!fs.existsSync(dataPath)) return false;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    if (req.method === 'HEAD') {
+        res.end();
+        return true;
+    }
+    res.end(fs.readFileSync(dataPath));
+    return true;
+}
+
 // Initialize Next.js app
 const app = next({ dev, hostname, port: currentPort, dir: __dirname });
 const handle = app.getRequestHandler();
@@ -38,11 +62,10 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
     createServer(async (req, res) => {
         try {
-            // Be sure to pass `true` as the second argument to `url.parse`.
-            // This tells it to parse the query portion of the URL.
             const parsedUrl = parse(req.url, true);
-
-            // Handle request
+            if (tryServeNextData(req, res, parsedUrl.pathname)) {
+                return;
+            }
             await handle(req, res, parsedUrl);
         } catch (err) {
             console.error('Error occurred handling', req.url, err);
