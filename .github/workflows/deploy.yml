@@ -309,6 +309,7 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
 
       - name: Read BUILD_ID (frontend)
         if: ${{ github.event.inputs.target != 'api' && (github.event_name != 'push' || steps.changes.outputs.panel == 'true' || steps.changes.outputs.landing == 'true') }}
@@ -412,6 +413,7 @@ jobs:
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
           NEXT_PANEL_HTML_NOSTORE: "true"
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
