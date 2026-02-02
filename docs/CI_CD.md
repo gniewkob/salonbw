@@ -54,6 +54,23 @@ Set the optional repository variable `SMOKE_EMAIL_TO` to change the API smoke-te
 TARGET_HOST=api.salon-bw.pl DEPLOY_TARGET=api python3 scripts/post_deploy_checks.py
 ```
 
+#### Recommended: targeted deploys (GitHub CLI)
+
+Deploy only the app that changed and restart only that domain:
+
+```bash
+# Panel only
+gh workflow run deploy.yml -f ref=master -f target=panel -f environment=production
+
+# Landing only
+gh workflow run deploy.yml -f ref=master -f target=public -f environment=production
+
+# API only
+gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
+```
+
+On `push`, the workflow detects changed paths and skips apps that did not change.
+
 #### Inputs and variables
 
 - Inputs: `ref` (branch/tag/SHA), `target` (`api|public|dashboard|admin`*), optional `api_url`, optional `remote_path`, optional `app_name`. (`dashboard` = panel; `admin` legacy.)
