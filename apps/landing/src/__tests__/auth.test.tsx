@@ -7,6 +7,7 @@ jest.mock('@/api/auth', () => ({
         .fn()
         .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),
     register: jest.fn(),
+    logout: jest.fn().mockResolvedValue(undefined),
     refreshToken: jest
         .fn()
         .mockResolvedValue({ accessToken: 'abc', refreshToken: 'def' }),

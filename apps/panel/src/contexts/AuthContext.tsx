@@ -7,12 +7,12 @@ import {
     useMemo,
     useState,
 } from 'react';
-import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 import { ApiClient, type AuthTokens } from '@/api/apiClient';
 import {
     login as apiLogin,
     register as apiRegister,
+    logout as apiLogout,
     refreshToken as apiRefreshToken,
     setLogoutCallback,
     type RegisterData,
@@ -73,8 +73,6 @@ const readCsrfCookie = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-
     const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [initialized, setInitialized] = useState(false);
@@ -115,12 +113,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [persistTokens]);
 
     const handleLogout = useCallback(async () => {
-        clearSessionState();
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            await apiLogout();
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
+            clearSessionState();
             if (typeof window !== 'undefined') {
                 const landingUrl =
                     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -128,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 window.location.href = landingUrl;
             }
         }
-    }, [clearSessionState, router]);
+    }, [clearSessionState]);
 
     useEffect(() => {
         setLogoutCallback(() => {

@@ -83,7 +83,7 @@ describe('<AdminDashboard />', () => {
             return Promise.resolve(asJsonResponse(win, mockDashboard));
           }
 
-          if (url.includes('/api/auth/logout')) {
+          if (url.includes('/auth/logout')) {
             return Promise.resolve(new win.Response(null, { status: 200 }));
           }
 

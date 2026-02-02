@@ -84,7 +84,7 @@ export class AuthService {
         });
     }
 
-    private clearAuthCookies(response: Response): void {
+    clearAuthCookies(response: Response): void {
         const expires = new Date(0);
         response.cookie('accessToken', '', {
             ...this.getCookieOptions(0),
