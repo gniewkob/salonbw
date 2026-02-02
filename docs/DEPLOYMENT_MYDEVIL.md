@@ -4,6 +4,23 @@ This document describes how to deploy the Salon Black & White stack to the mydev
 
 Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)` at `.github/workflows/deploy.yml` (see [`docs/CI_CD.md`](./CI_CD.md)). The steps below are a manual fallback and a useful reference when debugging.
 
+## 0. Recommended: targeted deploys (GitHub Actions)
+
+Use the workflow inputs to deploy only the app that changed and restart only that domain:
+
+```bash
+# Panel only
+gh workflow run deploy.yml -f ref=master -f target=panel -f environment=production
+
+# Landing only
+gh workflow run deploy.yml -f ref=master -f target=public -f environment=production
+
+# API only
+gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
+```
+
+On `push`, the workflow detects changed paths and skips apps that did not change.
+
 ## 1. Prerequisites
 
 - SSH access to the production account (e.g. `user@s0.mydevil.net`) with public key authentication.
