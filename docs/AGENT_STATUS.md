@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-02 (applied migration `1760069000000-CreateReviewsTable` to fix `/reviews` 500s)_
+_Last updated: 2026-02-02 (API symlinked to apps path; deploy variables updated)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `a98d923d` | `18857312225` | 2025-10-27 22:09 | production | Redeployed after security fixes; `/healthz` 200 |
-| Public site (`dev.salon-bw.pl`) | `1b65bbf5` | `18859475724` | 2025-10-27 23:57 | production | Deployed static assets fix, image optimization + caching, GA4/Web Vitals wiring; smoke checks OK |
-| Dashboard (`panel.salon-bw.pl`) | `a98d923d` | `18857314859` | 2025-10-27 22:10 | production | Redeployed from master; smoke checks passed |
+| API (`api.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:54 | production | Manual deploy; `/healthz` 200 |
+| Public site (`dev.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:55 | production | Manual deploy for logout fix |
+| Dashboard (`panel.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:56 | production | Manual deploy for logout fix |
 
 Verification:
 
@@ -29,6 +29,19 @@ Verification:
 - `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
 
 ## Recent Incidents
+
+### 2026-02-02: API deploy path normalized (symlink to apps path)
+
+- **Impact:** None observed (path alignment only).
+- **Change:** `api.salon-bw.pl/public_nodejs` now symlinks to `/usr/home/vetternkraft/apps/nodejs/api_salonbw`.
+- **Mitigation:** Synced content, updated deploy variable `MYDEVIL_API_REMOTE_PATH_PRODUCTION`, restarted `api.salon-bw.pl`.
+- **Status:** Resolved.
+
+### 2026-02-02: Panel logout verified after manual deploy
+
+- **Impact:** Logout flow confirmed working.
+- **Verification:** Login → Logout in `panel.salon-bw.pl` redirects to `dev.salon-bw.pl`; cookies + localStorage cleared.
+- **Status:** Resolved.
 
 ### 2026-02-02: `/reviews` 500s due to missing `reviews` table
 
