@@ -17,7 +17,7 @@
         "lint": "eslint src",
         "typecheck": "tsc --noEmit",
         "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
-        "test": "jest",
+        "test": "jest --passWithNoTests",
         "cypress:install": "cypress install",
         "start:e2e": "pnpm run start:standalone",
         "e2e": "node scripts/server-utils.js cleanup && NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api} pnpm run build && NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api} start-server-and-test \"pnpm run start:e2e\" http://localhost:3000 'cypress run'",
