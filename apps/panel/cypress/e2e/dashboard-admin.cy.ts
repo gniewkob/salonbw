@@ -3,7 +3,7 @@ import { mockAdminLogin } from '../support/mockLogin';
 describe('admin dashboard navigation', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '**/dashboard', (req) => {
+        cy.intercept('GET', 'http://localhost:3001/dashboard', (req) => {
             const accept = String(req.headers['accept'] ?? '');
             if (!accept.includes('text/html')) {
                 req.alias = 'dashboardJson';
@@ -28,7 +28,7 @@ describe('admin dashboard navigation', () => {
                 name: 'admin-dashboard-metrics',
             });
         });
-        cy.intercept('GET', '**/employees*', (req) => {
+        cy.intercept('GET', 'http://localhost:3001/employees*', (req) => {
             const accept = String(req.headers['accept'] ?? '');
             if (!accept.includes('text/html')) {
                 req.alias = 'getEmployeesJson';
@@ -50,7 +50,7 @@ describe('admin dashboard navigation', () => {
         cy.visit('/dashboard/admin');
         cy.wait('@profile');
         cy.get('main', { timeout: 10000 }).should('exist');
-        cy.intercept('GET', '**/employees*', (req) => {
+        cy.intercept('GET', 'http://localhost:3001/employees*', (req) => {
             const accept = String(req.headers['accept'] ?? '');
             if (!accept.includes('text/html')) {
                 req.alias = 'getEmployeesJson';
@@ -72,7 +72,7 @@ describe('admin dashboard navigation', () => {
 describe('admin dashboard services crud', () => {
     beforeEach(() => {
         mockAdminLogin();
-        cy.intercept('GET', '**/services*', (req) => {
+        cy.intercept('GET', 'http://localhost:3001/services*', (req) => {
             const accept = String(req.headers['accept'] ?? '');
             if (!accept.includes('text/html')) {
                 req.alias = 'getSvcJson';
@@ -90,7 +90,7 @@ describe('admin dashboard services crud', () => {
         cy.location('pathname').should('include', '/dashboard/services');
 
         // Setup interceptor for creation
-        cy.intercept('POST', '**/services', {
+        cy.intercept('POST', 'http://localhost:3001/services', {
             statusCode: 201,
             body: { id: 3, name: 'Wax' },
         }).as('createSvc');
@@ -122,7 +122,9 @@ describe('admin dashboard services crud', () => {
 
 describe('admin dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '**/users/profile', { statusCode: 401 });
+        cy.intercept('GET', 'http://localhost:3001/users/profile', {
+            statusCode: 401,
+        });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/admin');
         cy.url().should('include', '/auth/login');
