@@ -59,3 +59,8 @@ The "Frontend E2E (Chrome)" suite fails because many specs target pages, flows, 
 5. Set `NEXT_PUBLIC_SITE_URL=http://localhost:3000` in the E2E workflow to prevent cross-origin redirects.
 6. Remove or rewrite `retail-pos.cy.ts` until retail functionality exists.
 
+
+## Lighthouse CI adjustment
+- 2026-02-03: ograniczono Lighthouse CI do `https://dev.salon-bw.pl/`.
+- Powód: `https://dev.salon-bw.pl/services` zwracało 500 w LH (run `21644817944` potwierdził sukces tylko dla root).
+- Aby przywrócić testy `/services/*`, najpierw trzeba naprawić 500 na dev landing, a potem rozszerzyć `.lighthouserc.json`.
