@@ -180,6 +180,7 @@ jobs:
           install: false
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001
+          PORT: 3000
 
       - name: Upload Cypress videos
         if: failure()
