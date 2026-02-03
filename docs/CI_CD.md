@@ -26,11 +26,11 @@ Manual (`workflow_dispatch`) and automatic on pushes to `main`. Steps:
 
 ### `e2e-frontend-chrome.yml`
 
-Runs the public landing E2E suite against a locally started Next.js server using Chrome in headless mode. This job does not depend on the backend or the SSH tunnel and is suitable for PR validation of UI flows covered by mocks.
+Runs the panel E2E suite against a locally started Next.js server using Chrome in headless mode, with a locally started backend connected via the MyDevil SSH tunnel. This workflow requires the same secrets as `e2e.yml`.
 
-- Detects landing changes via path filters and skips when unaffected.
-- Installs dependencies with pnpm, builds the landing app, starts `next start`, and runs `cypress run --browser chrome`.
-- Uploads videos/screenshots on failure for debugging.
+- Detects frontend changes via path filters and skips when unaffected.
+- Installs dependencies with pnpm, starts the backend on port `3001`, builds the panel app, starts `next start`, and runs `cypress run --browser chrome`.
+- Uploads screenshots/videos on failure for debugging.
 
 Trigger manually with the GitHub CLI:
 

@@ -9,6 +9,8 @@ on:
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: '22'
+  DB_LOCAL_PORT: 8543
+  CI: true
 
 jobs:
   e2e:
@@ -34,34 +36,137 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
 
-      - name: Setup Node
+      - name: Verify required secrets
+        id: secrets
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          missing=()
+          for var in MYDEVIL_SSH_HOST MYDEVIL_SSH_USER MYDEVIL_SSH_KEY MYDEVIL_PG_HOST MYDEVIL_PG_PORT MYDEVIL_DB_USER MYDEVIL_DB_PASSWORD MYDEVIL_DB_NAME JWT_SECRET JWT_REFRESH_SECRET; do
+            if [ -z "${!var}" ]; then
+              missing+=("$var")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf 'Missing secrets: %s\n' "${missing[@]}"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Required secrets missing – skipping E2E run." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          MYDEVIL_PG_HOST: ${{ secrets.MYDEVIL_PG_HOST }}
+          MYDEVIL_PG_PORT: ${{ secrets.MYDEVIL_PG_PORT }}
+          MYDEVIL_DB_USER: ${{ secrets.MYDEVIL_DB_USER }}
+          MYDEVIL_DB_PASSWORD: ${{ secrets.MYDEVIL_DB_PASSWORD }}
+          MYDEVIL_DB_NAME: ${{ secrets.MYDEVIL_DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+
+      - name: Setup Node
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
       - name: Setup pnpm
-        if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
+      - name: Configure npm registry
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && secrets.NPM_TOKEN != ''
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Install dependencies
-        if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         run: pnpm install --frozen-lockfile
 
+      - name: Configure SSH
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "$MYDEVIL_SSH_KEY" > ~/.ssh/mydevil
+          chmod 600 ~/.ssh/mydevil
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/mydevil
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            echo "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+
+      - name: Start database tunnel
+        id: tunnel
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
+        run: pnpm tunnel:start
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_USER: ${{ secrets.MYDEVIL_SSH_USER }}
+          MYDEVIL_PG_HOST: ${{ secrets.MYDEVIL_PG_HOST }}
+          MYDEVIL_PG_PORT: ${{ secrets.MYDEVIL_PG_PORT }}
+          DB_LOCAL_PORT: ${{ env.DB_LOCAL_PORT }}
+
+      - name: Export backend environment
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
+        run: |
+          echo "DATABASE_URL=postgresql://${MYDEVIL_DB_USER}:${MYDEVIL_DB_PASSWORD}@localhost:${DB_LOCAL_PORT}/${MYDEVIL_DB_NAME}" >> "$GITHUB_ENV"
+          echo "PORT=3001" >> "$GITHUB_ENV"
+          echo "FRONTEND_URL=http://localhost:3000" >> "$GITHUB_ENV"
+        env:
+          MYDEVIL_DB_USER: ${{ secrets.MYDEVIL_DB_USER }}
+          MYDEVIL_DB_PASSWORD: ${{ secrets.MYDEVIL_DB_PASSWORD }}
+          MYDEVIL_DB_NAME: ${{ secrets.MYDEVIL_DB_NAME }}
+          DB_LOCAL_PORT: ${{ env.DB_LOCAL_PORT }}
+
+      - name: Start backend
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
+        run: |
+          pnpm --filter salonbw-backend build
+          pnpm --filter salonbw-backend start:prod > backend.log 2>&1 &
+          echo $! > backend.pid
+          for attempt in {1..30}; do
+            if curl -sSf http://localhost:3001/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Backend failed to become healthy" >&2
+          cat backend.log || true
+          exit 1
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          PORT: 3001
+          FRONTEND_URL: ${{ env.FRONTEND_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_ID: ${{ secrets.WHATSAPP_PHONE_ID }}
+          REMINDER_HOURS_BEFORE: ${{ secrets.REMINDER_HOURS_BEFORE }}
+
       - name: Build frontend
-        if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         run: pnpm --filter @salonbw/panel build
         env:
           # Must be set at build time so Next.js embeds the correct value
           # into the client bundle. Cypress intercepts expect requests under /api/*.
-          NEXT_PUBLIC_API_URL: /api
+          NEXT_PUBLIC_API_URL: http://localhost:3001
           NEXT_DISABLE_TURBOPACK: '1'
 
       - name: Run Cypress (Chrome)
-        if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         uses: cypress-io/github-action@7ef72e250a9e564efb4ed4c2433971ada4cc38b4 # v6 branch
         with:
           working-directory: apps/panel
@@ -71,7 +176,7 @@ jobs:
           spec: cypress/e2e/**/*.cy.{js,jsx,ts,tsx}
           install: false
         env:
-          NEXT_PUBLIC_API_URL: /api
+          NEXT_PUBLIC_API_URL: http://localhost:3001
 
       - name: Upload Cypress videos
         if: failure()
@@ -88,3 +193,15 @@ jobs:
           name: cypress-screenshots
           path: apps/panel/cypress/screenshots
           if-no-files-found: ignore
+
+      - name: Stop backend
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill "$(cat backend.pid)" || true
+            rm backend.pid
+          fi
+
+      - name: Stop tunnel
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && always()
+        run: pnpm tunnel:stop
