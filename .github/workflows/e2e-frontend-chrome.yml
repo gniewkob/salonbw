@@ -28,7 +28,7 @@ jobs:
           list-files: none
           filters: |
             frontend:
-              - 'frontend/**'
+              - 'apps/landing/**'
               - 'packages/api/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build frontend
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-        run: pnpm --filter frontend build
+        run: pnpm --filter @salonbw/landing build
         env:
           # Must be set at build time so Next.js embeds the correct value
           # into the client bundle. Cypress intercepts expect requests under /api/*.
@@ -62,7 +62,7 @@ jobs:
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
         uses: cypress-io/github-action@7ef72e250a9e564efb4ed4c2433971ada4cc38b4 # v6 branch
         with:
-          working-directory: frontend
+          working-directory: apps/landing
           browser: chrome
           start: npm run start:standalone
           wait-on: 'http://localhost:3000'
@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: cypress-videos
-          path: frontend/cypress/videos
+          path: apps/landing/cypress/videos
           if-no-files-found: ignore
 
       - name: Upload Cypress screenshots
@@ -84,5 +84,5 @@ jobs:
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
         with:
           name: cypress-screenshots
-          path: frontend/cypress/screenshots
+          path: apps/landing/cypress/screenshots
           if-no-files-found: ignore
