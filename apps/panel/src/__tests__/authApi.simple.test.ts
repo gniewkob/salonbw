@@ -13,9 +13,8 @@ describe('auth api simple', () => {
     });
 
     it('login maps snake_case tokens and refreshToken maps camelCase', async () => {
-        const { login, refreshToken, REFRESH_TOKEN_KEY } = await import(
-            '@/api/auth'
-        );
+        const { login, refreshToken, REFRESH_TOKEN_KEY } =
+            await import('@/api/auth');
         requestMock.mockResolvedValueOnce({
             access_token: 'a',
             refresh_token: 'r',
