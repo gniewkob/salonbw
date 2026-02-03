@@ -33,12 +33,20 @@ fi
 
 echo "Opening SSH tunnel ${MYDEVIL_SSH_USER}@${MYDEVIL_SSH_HOST} -> localhost:${DB_LOCAL_PORT}"
 
+SSH_IDENTITY_ARGS=()
+if [[ -z "${SSH_AUTH_SOCK:-}" && -f "$HOME/.ssh/mydevil" ]]; then
+    SSH_IDENTITY_ARGS=(-i "$HOME/.ssh/mydevil" -o IdentitiesOnly=yes)
+fi
+
 ssh -f \
     -N \
     -L "${DB_LOCAL_PORT}:${MYDEVIL_PG_HOST}:${MYDEVIL_PG_PORT}" \
+    -o BatchMode=yes \
     -o ExitOnForwardFailure=yes \
+    -o PreferredAuthentications=publickey \
     -o ServerAliveInterval=60 \
     -o ServerAliveCountMax=3 \
+    "${SSH_IDENTITY_ARGS[@]}" \
     "${MYDEVIL_SSH_USER}@${MYDEVIL_SSH_HOST}"
 
 TUNNEL_PID=$(pgrep -f "ssh -f -N -L ${DB_LOCAL_PORT}:${MYDEVIL_PG_HOST}:${MYDEVIL_PG_PORT}")

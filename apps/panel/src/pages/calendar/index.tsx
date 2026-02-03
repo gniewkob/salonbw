@@ -164,9 +164,7 @@ export default function CalendarPage() {
                                 initial={{
                                     startTime: selectedStartTime,
                                 }}
-                                onSubmit={(payload) => {
-                                    void handleFormSubmit(payload);
-                                }}
+                                onSubmit={handleFormSubmit}
                                 onCancel={handleFormClose}
                             />
                         </div>

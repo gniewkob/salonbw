@@ -3,10 +3,12 @@ import { mockClientLogin } from '../support/mockLogin';
 describe('client booking flow', () => {
     beforeEach(() => {
         mockClientLogin();
-        cy.intercept('GET', '**/services*', {
+        cy.intercept('GET', 'http://localhost:3001/services*', {
             fixture: 'services.json',
         }).as('getServices');
-        cy.intercept('GET', '**/appointments*', []).as('getAppointments');
+        cy.intercept('GET', 'http://localhost:3001/appointments*', []).as(
+            'getAppointments',
+        );
     });
 
     it('books an appointment from calendar', () => {
@@ -21,7 +23,7 @@ describe('client booking flow', () => {
             .click();
 
         // Intercept create request
-        cy.intercept('POST', '**/appointments', {
+        cy.intercept('POST', 'http://localhost:3001/appointments', {
             statusCode: 201,
             body: { id: 101, startTime: '2025-01-01T10:00:00.000Z' },
         }).as('createAppt');
