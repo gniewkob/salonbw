@@ -156,13 +156,7 @@ const formatDuration = (minutes: number) => {
     return mins > 0 ? `${hours} godz. ${mins} minut` : `${hours} godz.`;
 };
 
-const StatCard = ({
-    title,
-    value,
-}: {
-    title: string;
-    value: string;
-}) => (
+const StatCard = ({ title, value }: { title: string; value: string }) => (
     <div className="flex-1">
         <div className="text-xs text-gray-500 uppercase tracking-wide">
             {title}
@@ -176,8 +170,7 @@ export default function AdminServiceDetailsPage() {
     const router = useRouter();
     const serviceId = Number(router.query.id);
     const [activeTab, setActiveTab] = useState<TabKey>('summary');
-    const [commentTab, setCommentTab] =
-        useState<ServiceReviewSource>('booksy');
+    const [commentTab, setCommentTab] = useState<ServiceReviewSource>('booksy');
     const [historyPage, setHistoryPage] = useState(1);
 
     const summary = useServiceSummary(serviceId);
@@ -256,9 +249,7 @@ export default function AdminServiceDetailsPage() {
                                 d="M3 7h18M3 12h18M3 17h8"
                             />
                         </svg>
-                        <span>
-                            Usługi / {summaryData?.name ?? 'Usługa'}
-                        </span>
+                        <span>Usługi / {summaryData?.name ?? 'Usługa'}</span>
                     </div>
 
                     <div className="flex items-center justify-between mb-4">
@@ -348,7 +339,9 @@ export default function AdminServiceDetailsPage() {
                                                             <path
                                                                 strokeLinecap="round"
                                                                 strokeLinejoin="round"
-                                                                strokeWidth={1.6}
+                                                                strokeWidth={
+                                                                    1.6
+                                                                }
                                                                 d="M12 6v6l4 2"
                                                             />
                                                         </svg>
@@ -366,7 +359,9 @@ export default function AdminServiceDetailsPage() {
                                                             <path
                                                                 strokeLinecap="round"
                                                                 strokeLinejoin="round"
-                                                                strokeWidth={1.6}
+                                                                strokeWidth={
+                                                                    1.6
+                                                                }
                                                                 d="M12 2v20M6 6h8a4 4 0 010 8H6"
                                                             />
                                                         </svg>
@@ -405,7 +400,8 @@ export default function AdminServiceDetailsPage() {
                                                     Kategoria
                                                 </div>
                                                 <div className="text-blue-500">
-                                                    {summaryData?.categoryRelation
+                                                    {summaryData
+                                                        ?.categoryRelation
                                                         ?.name ??
                                                         summaryData?.category ??
                                                         'Bez kategorii'}
@@ -625,15 +621,19 @@ export default function AdminServiceDetailsPage() {
                                                                 )}
                                                             </td>
                                                             <td className="px-3 py-2">
-                                                                {item.serviceVariant
-                                                                    ?.name ?? '—'}
-                                                            </td>
-                                                            <td className="px-3 py-2">
-                                                                {item.client?.name ??
+                                                                {item
+                                                                    .serviceVariant
+                                                                    ?.name ??
                                                                     '—'}
                                                             </td>
                                                             <td className="px-3 py-2">
-                                                                {item.employee?.name ??
+                                                                {item.client
+                                                                    ?.name ??
+                                                                    '—'}
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                {item.employee
+                                                                    ?.name ??
                                                                     '—'}
                                                             </td>
                                                             <td className="px-3 py-2">
@@ -722,7 +722,8 @@ export default function AdminServiceDetailsPage() {
                                                         Nazwa
                                                     </th>
                                                     <th className="text-left px-3 py-2">
-                                                        Pracownicy i czas wykonywania
+                                                        Pracownicy i czas
+                                                        wykonywania
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -739,8 +740,13 @@ export default function AdminServiceDetailsPage() {
                                                         >
                                                             <td className="px-3 py-3 align-top">
                                                                 <div className="font-semibold">
-                                                                    {summaryData?.name}{' '}
-                                                                    - {variant.name}
+                                                                    {
+                                                                        summaryData?.name
+                                                                    }{' '}
+                                                                    -{' '}
+                                                                    {
+                                                                        variant.name
+                                                                    }
                                                                 </div>
                                                                 <div className="text-xs text-gray-500">
                                                                     {formatDuration(
@@ -763,11 +769,14 @@ export default function AdminServiceDetailsPage() {
                                                                 {assigned.length ===
                                                                 0 ? (
                                                                     <div className="text-gray-500 text-sm">
-                                                                        Brak przypisań
+                                                                        Brak
+                                                                        przypisań
                                                                     </div>
                                                                 ) : (
                                                                     assigned.map(
-                                                                        (assignment) => (
+                                                                        (
+                                                                            assignment,
+                                                                        ) => (
                                                                             <div
                                                                                 key={
                                                                                     assignment.id
@@ -833,13 +842,11 @@ export default function AdminServiceDetailsPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1 text-gray-400">
-                                                    {Array.from({ length: 5 }).map(
-                                                        (_, i) => (
-                                                            <span key={i}>
-                                                                ★
-                                                            </span>
-                                                        ),
-                                                    )}
+                                                    {Array.from({
+                                                        length: 5,
+                                                    }).map((_, i) => (
+                                                        <span key={i}>★</span>
+                                                    ))}
                                                 </div>
                                                 <div className="text-xs text-gray-500 mt-2">
                                                     {source.count} ocen
@@ -850,27 +857,27 @@ export default function AdminServiceDetailsPage() {
 
                                     <div className="border-b border-gray-200 mb-4">
                                         <nav className="-mb-px flex gap-4">
-                                            {(['booksy', 'moment'] as const).map(
-                                                (tab) => (
-                                                    <button
-                                                        key={tab}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setCommentTab(tab)
-                                                        }
-                                                        className={`px-4 py-2 text-sm border-b-2 ${
-                                                            commentTab === tab
-                                                                ? 'border-blue-500 text-blue-600'
-                                                                : 'border-transparent text-gray-500'
-                                                        }`}
-                                                    >
-                                                        Komentarze{' '}
-                                                        {tab === 'booksy'
-                                                            ? 'Booksy'
-                                                            : 'Moment'}
-                                                    </button>
-                                                ),
-                                            )}
+                                            {(
+                                                ['booksy', 'moment'] as const
+                                            ).map((tab) => (
+                                                <button
+                                                    key={tab}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setCommentTab(tab)
+                                                    }
+                                                    className={`px-4 py-2 text-sm border-b-2 ${
+                                                        commentTab === tab
+                                                            ? 'border-blue-500 text-blue-600'
+                                                            : 'border-transparent text-gray-500'
+                                                    }`}
+                                                >
+                                                    Komentarze{' '}
+                                                    {tab === 'booksy'
+                                                        ? 'Booksy'
+                                                        : 'Moment'}
+                                                </button>
+                                            ))}
                                         </nav>
                                     </div>
 
@@ -909,8 +916,8 @@ export default function AdminServiceDetailsPage() {
                                             )
                                         ) : (
                                             <div>
-                                                1. Recepcja (prowizja: 0%) (Dodaj
-                                                wyjątek)
+                                                1. Recepcja (prowizja: 0%)
+                                                (Dodaj wyjątek)
                                             </div>
                                         )}
                                     </div>

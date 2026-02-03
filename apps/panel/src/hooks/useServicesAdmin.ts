@@ -633,7 +633,8 @@ export function useServiceEmployeesDetails(serviceId: number) {
     const { apiFetch } = useAuth();
     return useQuery<EmployeeService[]>({
         queryKey: ['services', serviceId, 'employees'],
-        queryFn: () => apiFetch<EmployeeService[]>(`/services/${serviceId}/employees`),
+        queryFn: () =>
+            apiFetch<EmployeeService[]>(`/services/${serviceId}/employees`),
         enabled: !!serviceId,
     });
 }
@@ -707,7 +708,8 @@ export function useServicePhotos(serviceId: number) {
     const { apiFetch } = useAuth();
     return useQuery<ServiceMedia[]>({
         queryKey: ['services', serviceId, 'photos'],
-        queryFn: () => apiFetch<ServiceMedia[]>(`/services/${serviceId}/photos`),
+        queryFn: () =>
+            apiFetch<ServiceMedia[]>(`/services/${serviceId}/photos`),
         enabled: !!serviceId,
     });
 }
@@ -767,7 +769,8 @@ export function useServiceRecipe(serviceId: number) {
     const { apiFetch } = useAuth();
     return useQuery<ServiceRecipeItem[]>({
         queryKey: ['services', serviceId, 'recipe'],
-        queryFn: () => apiFetch<ServiceRecipeItem[]>(`/services/${serviceId}/recipe`),
+        queryFn: () =>
+            apiFetch<ServiceRecipeItem[]>(`/services/${serviceId}/recipe`),
         enabled: !!serviceId,
     });
 }
@@ -813,7 +816,9 @@ export function useServiceCommissions(serviceId: number) {
     return useQuery<CommissionRuleItem[]>({
         queryKey: ['services', serviceId, 'commissions'],
         queryFn: () =>
-            apiFetch<CommissionRuleItem[]>(`/services/${serviceId}/commissions`),
+            apiFetch<CommissionRuleItem[]>(
+                `/services/${serviceId}/commissions`,
+            ),
         enabled: !!serviceId,
     });
 }
