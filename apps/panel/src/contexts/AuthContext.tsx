@@ -84,10 +84,10 @@ const hasAuthHint = () => {
 
     return Boolean(
         cookieToken ||
-            cookieRefresh ||
-            cookieAuth ||
-            storageToken ||
-            storageRefresh,
+        cookieRefresh ||
+        cookieAuth ||
+        storageToken ||
+        storageRefresh,
     );
 };
 

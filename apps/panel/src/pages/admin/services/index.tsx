@@ -265,22 +265,22 @@ export default function AdminServicesPage() {
                                     </h2>
                                 </div>
 
-                            <ServiceList
-                                services={filteredServices}
-                                categories={categories}
-                                onEdit={handleOpenServiceModal}
-                                onDelete={handleDeleteService}
-                                onToggleActive={handleToggleServiceActive}
-                                onManageVariants={(service) => {
-                                    setVariantsService(service);
-                                    setVariantsModalOpen(true);
-                                }}
-                                onOpenDetails={(service) => {
-                                    void router.push(
-                                        `/admin/services/${service.id}`,
-                                    );
-                                }}
-                            />
+                                <ServiceList
+                                    services={filteredServices}
+                                    categories={categories}
+                                    onEdit={handleOpenServiceModal}
+                                    onDelete={handleDeleteService}
+                                    onToggleActive={handleToggleServiceActive}
+                                    onManageVariants={(service) => {
+                                        setVariantsService(service);
+                                        setVariantsModalOpen(true);
+                                    }}
+                                    onOpenDetails={(service) => {
+                                        void router.push(
+                                            `/admin/services/${service.id}`,
+                                        );
+                                    }}
+                                />
                             </div>
                         </div>
                     )}
