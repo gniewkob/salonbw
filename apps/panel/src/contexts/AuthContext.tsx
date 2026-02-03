@@ -72,6 +72,25 @@ const readCsrfCookie = () => {
         ?.split('=')[1];
 };
 
+const hasAuthHint = () => {
+    if (typeof window === 'undefined') {
+        return false;
+    }
+    const cookieToken = Cookies.get('accessToken');
+    const cookieRefresh = Cookies.get('refreshToken');
+    const cookieAuth = Cookies.get('sbw_auth');
+    const storageToken = readLocalStorageValue(ACCESS_TOKEN_KEY);
+    const storageRefresh = readLocalStorageValue(REFRESH_TOKEN_KEY);
+
+    return Boolean(
+        cookieToken ||
+            cookieRefresh ||
+            cookieAuth ||
+            storageToken ||
+            storageRefresh,
+    );
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [role, setRole] = useState<Role | null>(null);
     const [user, setUser] = useState<User | null>(null);
@@ -181,6 +200,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [client, clearSessionState]);
 
     useEffect(() => {
+        if (!hasAuthHint()) {
+            setInitialized(true);
+            return;
+        }
         void fetchProfile().finally(() => setInitialized(true));
         // We only need to run the initial profile fetch once on mount.
         // eslint-disable-next-line react-hooks/exhaustive-deps
