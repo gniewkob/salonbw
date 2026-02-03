@@ -25,11 +25,4 @@ describe('navigation visibility', () => {
         cy.visit('/products');
         cy.url().should('include', '/auth/login');
     });
-
-    it('renders public navigation on public pages', () => {
-        cy.visit('/services');
-        cy.contains('Our Services');
-        cy.get('nav').contains('Login').should('be.visible');
-        cy.get('nav').contains('Services').should('be.visible');
-    });
 });

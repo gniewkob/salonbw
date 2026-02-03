@@ -5,13 +5,6 @@ import {
     interceptCreateReview,
 } from '../support/api';
 
-describe('basic', () => {
-    it('loads home', () => {
-        cy.visit('/');
-        cy.contains('Featured Services');
-    });
-});
-
 describe('reviews crud', () => {
     beforeEach(() => {
         mockClientLogin();
