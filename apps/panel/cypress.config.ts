@@ -10,13 +10,14 @@ export default defineConfig({
         viewportWidth: 1280,
         viewportHeight: 720,
         retries: 1,
+        screenshotOnRunFailure: true,
         setupNodeEvents(on, config) {
             initPlugin(on, config);
             return config;
         },
     },
 
-    video: false,
+    video: true,
     screenshotsFolder: 'cypress/screenshots',
     videosFolder: 'cypress/videos',
 
