@@ -2,13 +2,17 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import AppointmentsPage from '@/pages/appointments';
 
-jest.mock('@/hooks/useAppointments', () => ({
-    useAppointments: () => ({
+jest.mock('@/hooks/useAppointments', () => {
+    const response = {
         data: null,
         loading: false,
         error: new Error('x'),
-    }),
-}));
+    };
+    return {
+        useAppointments: () => response,
+        useMyAppointments: () => response,
+    };
+});
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({ data: [], loading: false }),
 }));
