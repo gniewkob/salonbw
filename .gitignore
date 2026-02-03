@@ -102,3 +102,8 @@ static_preview/
 # Allow vendored Next env dist for panel fallback
 !apps/panel/vendor/@next/env/dist/
 !apps/panel/vendor/@next/env/dist/**
+# Allow vendored styled-jsx dist for standalone runtime
+!apps/landing/vendor/styled-jsx/dist/
+!apps/landing/vendor/styled-jsx/dist/**
+!apps/panel/vendor/styled-jsx/dist/
+!apps/panel/vendor/styled-jsx/dist/**
