@@ -3,7 +3,9 @@ import { mockEmployeeLogin } from '../support/mockLogin';
 describe('employee dashboard navigation', () => {
     beforeEach(() => {
         mockEmployeeLogin();
-        cy.intercept('GET', '**/appointments/me', []).as('getMine');
+        cy.intercept('GET', 'http://localhost:3001/appointments/me', []).as(
+            'getMine',
+        );
     });
 
     it('redirects to employee dashboard and shows UI', () => {
@@ -44,7 +46,9 @@ describe('employee dashboard clients access', () => {
 
 describe('employee dashboard permissions', () => {
     it('redirects anonymous user', () => {
-        cy.intercept('GET', '**/users/profile', { statusCode: 401 });
+        cy.intercept('GET', 'http://localhost:3001/users/profile', {
+            statusCode: 401,
+        });
         cy.on('uncaught:exception', () => false);
         cy.visit('/dashboard/employee');
         cy.url().should('include', '/auth/login');

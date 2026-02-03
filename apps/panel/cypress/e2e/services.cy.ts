@@ -6,10 +6,13 @@ describe('services crud', () => {
     });
 
     it('loads and creates service', () => {
-        cy.intercept('GET', '**/services*', {
+        cy.intercept('GET', 'http://localhost:3001/services*', {
             fixture: 'services.json',
         }).as('getSvc');
-        cy.intercept('POST', '**/services', { id: 3, name: 'New' }).as(
+        cy.intercept('POST', 'http://localhost:3001/services', {
+            id: 3,
+            name: 'New',
+        }).as(
             'createSvc',
         );
         cy.visit('/dashboard/services');

@@ -16,7 +16,7 @@ describe('Registration Flow', () => {
         // 2. Fill Form
         cy.get('input[placeholder="Name"]').type('Cypress Tester');
         cy.get('input[placeholder="Email"]').type(email);
-        cy.get('input[placeholder="Phone"]').type('123456789');
+        cy.get('input[placeholder="Phone (optional)"]').type('123456789');
         cy.get('input[placeholder="Password"]').type(password);
 
         // 3. Submit

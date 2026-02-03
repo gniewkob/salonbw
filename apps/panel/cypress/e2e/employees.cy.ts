@@ -6,10 +6,10 @@ describe('employees crud', () => {
     });
 
     it('loads and creates employee', () => {
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmps');
-        cy.intercept('POST', '**/employees', {
+        cy.intercept('POST', 'http://localhost:3001/employees', {
             id: 3,
             firstName: 'New',
             lastName: 'Employee',

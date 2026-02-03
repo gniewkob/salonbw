@@ -32,14 +32,18 @@ describe('Access control', () => {
     });
 
     it('redirects client to their dashboard and blocks admin routes', () => {
-        cy.intercept('POST', '**/auth/login', (req) => {
+        cy.intercept('POST', 'http://localhost:3001/auth/login', (req) => {
             req.reply({
                 statusCode: 200,
                 body: clientTokens,
             });
         }).as('login');
-        cy.intercept('GET', '**/users/profile', clientProfile).as('profile');
-        cy.intercept('GET', '**/dashboard', (req) => {
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/users/profile',
+            clientProfile,
+        ).as('profile');
+        cy.intercept('GET', 'http://localhost:3001/dashboard', (req) => {
             const accept = req.headers['accept'] ?? '';
             if (
                 typeof accept === 'string' &&
@@ -54,7 +58,7 @@ describe('Access control', () => {
         cy.visit('/auth/login');
         cy.get('input[name="email"]').type('client@demo.com');
         cy.get('input[name="password"]').type('password123');
-        cy.contains('button', 'Login').click();
+        cy.contains('button', 'Sign in').click();
 
         cy.wait(['@login', '@profile', '@dashboard']).then(() => {
             cy.setCookie('jwtToken', clientTokens.access_token);

@@ -3,10 +3,12 @@ import { mockClientLogin } from '../support/mockLogin';
 describe('appointments', () => {
     beforeEach(() => {
         mockClientLogin();
-        cy.intercept('GET', '**/services*', {
+        cy.intercept('GET', 'http://localhost:3001/services*', {
             fixture: 'services.json',
         }).as('getServices');
-        cy.intercept('GET', '**/appointments*', []).as('getAppointments');
+        cy.intercept('GET', 'http://localhost:3001/appointments*', []).as(
+            'getAppointments',
+        );
     });
 
     it('loads appointment calendar successfully', () => {
