@@ -66,8 +66,8 @@ jest.mock('next/dynamic', () => () => {
     return Dynamic;
 });
 
-jest.mock('@/hooks/useAppointments', () => ({
-    useAppointments: () => ({
+jest.mock('@/hooks/useAppointments', () => {
+    const response = {
         data: [
             {
                 id: 1,
@@ -77,8 +77,12 @@ jest.mock('@/hooks/useAppointments', () => ({
         ],
         loading: false,
         error: null,
-    }),
-}));
+    };
+    return {
+        useAppointments: () => response,
+        useMyAppointments: () => response,
+    };
+});
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({
         data: [{ id: 1, name: 'Cut', duration: 30, price: 10 }],
