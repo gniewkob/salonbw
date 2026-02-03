@@ -280,7 +280,73 @@ function ensureStyledJsx() {
     }
 }
 
+function ensureClientOnly() {
+    const vendorDir = path.join(__dirname, '..', 'vendor', 'client-only');
+    const vendorPkgPath = path.join(vendorDir, 'package.json');
+    if (!fs.existsSync(vendorPkgPath)) {
+        return;
+    }
+    let expectedVersion;
+    try {
+        const pkg = JSON.parse(fs.readFileSync(vendorPkgPath, 'utf8'));
+        expectedVersion = pkg.version;
+    } catch {
+        return;
+    }
+    const nodeModuleTargets = [
+        path.join(__dirname, '..', 'node_modules', 'client-only'),
+        path.join(__dirname, '..', '..', 'node_modules', 'client-only'),
+    ];
+    for (const targetDir of nodeModuleTargets) {
+        const targetPkgPath = path.join(targetDir, 'package.json');
+        if (fs.existsSync(targetPkgPath)) {
+            try {
+                const existingPkg = JSON.parse(
+                    fs.readFileSync(targetPkgPath, 'utf8'),
+                );
+                if (existingPkg.version === expectedVersion) {
+                    continue;
+                }
+            } catch {
+                // fall through
+            }
+        }
+        fs.rmSync(targetDir, { recursive: true, force: true });
+        fs.mkdirSync(path.dirname(targetDir), { recursive: true });
+        fs.cpSync(vendorDir, targetDir, { recursive: true });
+    }
+
+    const pnpmStoreDir = path.join(
+        __dirname,
+        '..',
+        '..',
+        'node_modules',
+        '.pnpm',
+    );
+    try {
+        const entries = fs.readdirSync(pnpmStoreDir, { withFileTypes: true });
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            if (!entry.name.startsWith(`client-only@${expectedVersion}`)) {
+                continue;
+            }
+            const storeTarget = path.join(
+                pnpmStoreDir,
+                entry.name,
+                'node_modules',
+                'client-only',
+            );
+            fs.rmSync(storeTarget, { recursive: true, force: true });
+            fs.mkdirSync(path.dirname(storeTarget), { recursive: true });
+            fs.cpSync(vendorDir, storeTarget, { recursive: true });
+        }
+    } catch {
+        // ignore if pnpm virtual store missing
+    }
+}
+
 ensurePicocolors();
 ensureSwcHelpers();
 ensureStyledJsx();
+ensureClientOnly();
 ensureNextEnv();
