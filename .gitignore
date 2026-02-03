@@ -107,3 +107,8 @@ static_preview/
 !apps/landing/vendor/styled-jsx/dist/**
 !apps/panel/vendor/styled-jsx/dist/
 !apps/panel/vendor/styled-jsx/dist/**
+# Allow vendored client-only for standalone runtime
+!apps/landing/vendor/client-only/
+!apps/landing/vendor/client-only/**
+!apps/panel/vendor/client-only/
+!apps/panel/vendor/client-only/**
