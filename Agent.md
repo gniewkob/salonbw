@@ -89,3 +89,6 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 - `docs/CI_CD.md`
 - `docs/RELEASE_CHECKLIST.md`
 - **More context lives in `docs/`** (architecture, rollout, monitoring, and Versum-clone notes).
+
+## 11. CI notes
+- `e2e-frontend-chrome.yml` runs panel E2E with a local backend via the MyDevil SSH tunnel and needs the same secrets as `e2e.yml`.
