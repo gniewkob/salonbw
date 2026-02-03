@@ -70,7 +70,6 @@ jobs:
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
 
       - name: Setup pnpm
         if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
@@ -203,5 +202,5 @@ jobs:
           fi
 
       - name: Stop tunnel
-        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && always()
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && always() && steps.tunnel.outcome == 'success'
         run: pnpm tunnel:stop
