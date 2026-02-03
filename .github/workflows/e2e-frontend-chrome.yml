@@ -53,7 +53,9 @@ jobs:
 
       - name: Build frontend
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-        run: pnpm --filter @salonbw/panel build -- --webpack
+        run: |
+          pnpm --filter @salonbw/panel exec next build --webpack
+          pnpm --filter @salonbw/panel exec node scripts/generate-next-data.mjs
         env:
           # Must be set at build time so Next.js embeds the correct value
           # into the client bundle. Cypress intercepts expect requests under /api/*.
