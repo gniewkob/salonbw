@@ -3,9 +3,13 @@ import AppointmentsPage from '@/pages/appointments';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
-jest.mock('@/hooks/useAppointments', () => ({
-    useAppointments: () => ({ data: [], loading: false, error: null }),
-}));
+jest.mock('@/hooks/useAppointments', () => {
+    const response = { data: [], loading: false, error: null };
+    return {
+        useAppointments: () => response,
+        useMyAppointments: () => response,
+    };
+});
 jest.mock('@/hooks/useServices', () => ({
     useServices: () => ({ data: [], loading: false }),
 }));
