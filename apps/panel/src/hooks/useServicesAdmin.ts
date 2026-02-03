@@ -6,6 +6,10 @@ import type {
     ServiceVariant,
     EmployeeService,
     PriceType,
+    ServiceMedia,
+    ServiceReview,
+    ServiceReviewSource,
+    ServiceRecipeItem,
 } from '@/types';
 
 // ==================== Service Categories ====================
@@ -171,9 +175,13 @@ export function useService(id: number) {
 export interface CreateServiceDto {
     name: string;
     description?: string;
+    publicDescription?: string;
+    privateDescription?: string;
     duration: number;
     price: number;
     priceType?: PriceType;
+    vatRate?: number;
+    isFeatured?: boolean;
     category?: string;
     categoryId?: number;
     commissionPercent?: number;
@@ -414,6 +422,7 @@ export function useServicesForEmployee(employeeId: number) {
 export interface CreateEmployeeServiceDto {
     employeeId: number;
     serviceId: number;
+    serviceVariantId?: number | null;
     customDuration?: number;
     customPrice?: number;
     commissionPercent?: number;
@@ -486,16 +495,18 @@ export function useAssignEmployeesToService() {
         mutationFn: ({
             serviceId,
             employeeIds,
+            serviceVariantId,
         }: {
             serviceId: number;
             employeeIds: number[];
+            serviceVariantId?: number | null;
         }) =>
             apiFetch<EmployeeService[]>(
                 `/employee-services/service/${serviceId}/assign-employees`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employeeIds }),
+                    body: JSON.stringify({ employeeIds, serviceVariantId }),
                 },
             ),
         onSuccess: (_, { serviceId }) => {
@@ -534,6 +545,301 @@ export function useAssignServicesToEmployee() {
             });
             void queryClient.invalidateQueries({
                 queryKey: ['employee-services'],
+            });
+        },
+    });
+}
+
+// ==================== Service Details ====================
+
+export function useServiceSummary(serviceId: number) {
+    const { apiFetch } = useAuth();
+    return useQuery<Service>({
+        queryKey: ['services', serviceId, 'summary'],
+        queryFn: () => apiFetch<Service>(`/services/${serviceId}/summary`),
+        enabled: !!serviceId,
+    });
+}
+
+export interface ServiceStatsResponse {
+    totalRevenue: number;
+    totalCount: number;
+    data: Array<{
+        date: string;
+        label: string;
+        revenue: number;
+        appointments: number;
+    }>;
+}
+
+export function useServiceStats(
+    serviceId: number,
+    params?: { from?: string; to?: string; groupBy?: 'day' | 'week' | 'month' },
+) {
+    const { apiFetch } = useAuth();
+    const qs = new URLSearchParams();
+    if (params?.from) qs.append('from', params.from);
+    if (params?.to) qs.append('to', params.to);
+    if (params?.groupBy) qs.append('groupBy', params.groupBy);
+    const query = qs.toString();
+    return useQuery<ServiceStatsResponse>({
+        queryKey: ['services', serviceId, 'stats', params],
+        queryFn: () =>
+            apiFetch<ServiceStatsResponse>(
+                `/services/${serviceId}/stats${query ? `?${query}` : ''}`,
+            ),
+        enabled: !!serviceId,
+    });
+}
+
+export interface ServiceHistoryResponse {
+    items: Array<{
+        id: number;
+        startTime: string;
+        endTime: string;
+        status: string;
+        client?: { id: number; name: string };
+        employee?: { id: number; name: string };
+        serviceVariant?: ServiceVariant | null;
+        paidAmount?: number | null;
+    }>;
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export function useServiceHistory(
+    serviceId: number,
+    params?: { page?: number; limit?: number; from?: string; to?: string },
+) {
+    const { apiFetch } = useAuth();
+    const qs = new URLSearchParams();
+    if (params?.page) qs.append('page', String(params.page));
+    if (params?.limit) qs.append('limit', String(params.limit));
+    if (params?.from) qs.append('from', params.from);
+    if (params?.to) qs.append('to', params.to);
+    const query = qs.toString();
+    return useQuery<ServiceHistoryResponse>({
+        queryKey: ['services', serviceId, 'history', params],
+        queryFn: () =>
+            apiFetch<ServiceHistoryResponse>(
+                `/services/${serviceId}/history${query ? `?${query}` : ''}`,
+            ),
+        enabled: !!serviceId,
+    });
+}
+
+export function useServiceEmployeesDetails(serviceId: number) {
+    const { apiFetch } = useAuth();
+    return useQuery<EmployeeService[]>({
+        queryKey: ['services', serviceId, 'employees'],
+        queryFn: () => apiFetch<EmployeeService[]>(`/services/${serviceId}/employees`),
+        enabled: !!serviceId,
+    });
+}
+
+export function useServiceComments(
+    serviceId: number,
+    source?: ServiceReviewSource,
+) {
+    const { apiFetch } = useAuth();
+    const qs = source ? `?source=${source}` : '';
+    return useQuery<ServiceReview[]>({
+        queryKey: ['services', serviceId, 'comments', source],
+        queryFn: () =>
+            apiFetch<ServiceReview[]>(`/services/${serviceId}/comments${qs}`),
+        enabled: !!serviceId,
+    });
+}
+
+export function useAddServiceComment() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            data,
+        }: {
+            serviceId: number;
+            data: {
+                source?: ServiceReviewSource;
+                rating: number;
+                comment?: string;
+                authorName?: string;
+            };
+        }) =>
+            apiFetch<ServiceReview>(`/services/${serviceId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'comments'],
+            });
+        },
+    });
+}
+
+export function useDeleteServiceComment() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            commentId,
+        }: {
+            serviceId: number;
+            commentId: number;
+        }) =>
+            apiFetch<void>(`/services/${serviceId}/comments/${commentId}`, {
+                method: 'DELETE',
+            }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'comments'],
+            });
+        },
+    });
+}
+
+export function useServicePhotos(serviceId: number) {
+    const { apiFetch } = useAuth();
+    return useQuery<ServiceMedia[]>({
+        queryKey: ['services', serviceId, 'photos'],
+        queryFn: () => apiFetch<ServiceMedia[]>(`/services/${serviceId}/photos`),
+        enabled: !!serviceId,
+    });
+}
+
+export function useAddServicePhoto() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            data,
+        }: {
+            serviceId: number;
+            data: {
+                url: string;
+                caption?: string;
+                sortOrder?: number;
+                isPublic?: boolean;
+            };
+        }) =>
+            apiFetch<ServiceMedia>(`/services/${serviceId}/photos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'photos'],
+            });
+        },
+    });
+}
+
+export function useDeleteServicePhoto() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            photoId,
+        }: {
+            serviceId: number;
+            photoId: number;
+        }) =>
+            apiFetch<void>(`/services/${serviceId}/photos/${photoId}`, {
+                method: 'DELETE',
+            }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'photos'],
+            });
+        },
+    });
+}
+
+export function useServiceRecipe(serviceId: number) {
+    const { apiFetch } = useAuth();
+    return useQuery<ServiceRecipeItem[]>({
+        queryKey: ['services', serviceId, 'recipe'],
+        queryFn: () => apiFetch<ServiceRecipeItem[]>(`/services/${serviceId}/recipe`),
+        enabled: !!serviceId,
+    });
+}
+
+export function useUpdateServiceRecipe() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            items,
+        }: {
+            serviceId: number;
+            items: Array<{
+                serviceVariantId?: number | null;
+                productId?: number | null;
+                quantity?: number | null;
+                unit?: string | null;
+                notes?: string | null;
+            }>;
+        }) =>
+            apiFetch<ServiceRecipeItem[]>(`/services/${serviceId}/recipe`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items }),
+            }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'recipe'],
+            });
+        },
+    });
+}
+
+export interface CommissionRuleItem {
+    id?: number;
+    employeeId: number;
+    commissionPercent: number;
+}
+
+export function useServiceCommissions(serviceId: number) {
+    const { apiFetch } = useAuth();
+    return useQuery<CommissionRuleItem[]>({
+        queryKey: ['services', serviceId, 'commissions'],
+        queryFn: () =>
+            apiFetch<CommissionRuleItem[]>(`/services/${serviceId}/commissions`),
+        enabled: !!serviceId,
+    });
+}
+
+export function useUpdateServiceCommissions() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            rules,
+        }: {
+            serviceId: number;
+            rules: CommissionRuleItem[];
+        }) =>
+            apiFetch<CommissionRuleItem[]>(
+                `/services/${serviceId}/commissions`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rules }),
+                },
+            ),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'commissions'],
             });
         },
     });

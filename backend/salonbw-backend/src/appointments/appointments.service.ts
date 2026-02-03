@@ -18,6 +18,7 @@ import { Appointment, AppointmentStatus, PaymentMethod } from './appointment.ent
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
+import { ServiceVariant } from '../services/entities/service-variant.entity';
 import { User } from '../users/user.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -34,6 +35,8 @@ export class AppointmentsService {
         private readonly appointmentsRepository: Repository<Appointment>,
         @InjectRepository(SalonService)
         private readonly servicesRepository: Repository<SalonService>,
+        @InjectRepository(ServiceVariant)
+        private readonly serviceVariantsRepository: Repository<ServiceVariant>,
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
         private readonly commissionsService: CommissionsService,
@@ -72,6 +75,19 @@ export class AppointmentsService {
         });
         if (!service) throw new BadRequestException('Invalid serviceId');
         return service;
+    }
+
+    private async loadServiceVariantOrThrow(
+        variantId: number | undefined,
+        serviceId: number,
+    ): Promise<ServiceVariant> {
+        const variant = await this.serviceVariantsRepository.findOne({
+            where: { id: variantId },
+        });
+        if (!variant || variant.serviceId !== serviceId) {
+            throw new BadRequestException('Invalid serviceVariantId');
+        }
+        return variant;
     }
 
     private ensureFuture(date: Date | undefined): asserts date is Date {
@@ -158,7 +174,19 @@ export class AppointmentsService {
         this.ensureFuture(data.startTime);
         const service = await this.loadServiceOrThrow(data.service?.id);
         data.service = service;
-        data.endTime = this.computeEnd(data.startTime, service.duration);
+        const candidateVariantId =
+            data.serviceVariant?.id ?? data.serviceVariantId ?? undefined;
+        if (candidateVariantId !== undefined) {
+            const variant = await this.loadServiceVariantOrThrow(
+                candidateVariantId,
+                service.id,
+            );
+            data.serviceVariant = variant;
+            data.serviceVariantId = variant.id;
+            data.endTime = this.computeEnd(data.startTime, variant.duration);
+        } else {
+            data.endTime = this.computeEnd(data.startTime, service.duration);
+        }
         await this.assertNoConflict(employee.id, data.startTime, data.endTime);
         const appointment = this.appointmentsRepository.create(data);
         const saved = await this.appointmentsRepository.save(appointment);
@@ -206,7 +234,7 @@ export class AppointmentsService {
     async findOne(id: number): Promise<Appointment | null> {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
-            relations: ['formulas'],
+            relations: ['formulas', 'service', 'serviceVariant', 'client', 'employee'],
         });
         return appointment ?? null;
     }
@@ -311,6 +339,7 @@ export class AppointmentsService {
         id: number,
         startTime: Date,
         endTime: Date | undefined,
+        serviceVariantId: number | null | undefined,
         user: User,
     ): Promise<Appointment | null> {
         const appointment = await this.findOne(id);
@@ -325,12 +354,25 @@ export class AppointmentsService {
         if (!startTime || isNaN(startTime.getTime())) {
             throw new BadRequestException('startTime must be a valid date');
         }
+        let duration = appointment.serviceVariant?.duration ?? appointment.service.duration;
+        if (serviceVariantId !== undefined) {
+            if (serviceVariantId === null || serviceVariantId === 0) {
+                appointment.serviceVariant = null;
+                appointment.serviceVariantId = null;
+                duration = appointment.service.duration;
+            } else {
+                const variant = await this.loadServiceVariantOrThrow(
+                    serviceVariantId,
+                    appointment.service.id,
+                );
+                appointment.serviceVariant = variant;
+                appointment.serviceVariantId = variant.id;
+                duration = variant.duration;
+            }
+        }
         const newEnd = endTime
             ? endTime
-            : new Date(
-                  startTime.getTime() +
-                      appointment.service.duration * 60 * 1000,
-              );
+            : new Date(startTime.getTime() + duration * 60 * 1000);
         await this.assertNoConflict(
             appointment.employee.id,
             startTime,
@@ -340,6 +382,7 @@ export class AppointmentsService {
         await this.appointmentsRepository.update(id, {
             startTime,
             endTime: newEnd,
+            serviceVariantId: appointment.serviceVariantId ?? null,
         });
         const updated = await this.findOne(id);
         if (updated) {
@@ -386,12 +429,11 @@ export class AppointmentsService {
             employee = await this.loadEmployeeOrThrow(employeeId);
         }
 
+        const duration =
+            appointment.serviceVariant?.duration ?? appointment.service.duration;
         const newEnd = endTime
             ? endTime
-            : new Date(
-                  startTime.getTime() +
-                      appointment.service.duration * 60 * 1000,
-              );
+            : new Date(startTime.getTime() + duration * 60 * 1000);
 
         if (!force) {
             await this.assertNoConflict(targetEmployeeId, startTime, newEnd, id);

@@ -5,6 +5,7 @@ import { Appointment, AppointmentStatus } from './appointment.entity';
 import { AppointmentsService } from './appointments.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService, PriceType } from '../services/service.entity';
+import { ServiceVariant } from '../services/entities/service-variant.entity';
 import { User } from '../users/user.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
@@ -69,10 +70,17 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             description: '',
             price: 0,
             priceType: PriceType.Fixed,
+            vatRate: 23,
+            isFeatured: false,
+            publicDescription: '',
+            privateDescription: '',
             isActive: true,
             onlineBooking: true,
             sortOrder: 0,
             variants: [],
+            media: [],
+            reviews: [],
+            recipeItems: [],
             employeeServices: [],
             createdAt: now,
             updatedAt: now,
@@ -84,6 +92,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
 
     const mockUsersRepo = createUsersRepo(users);
     const mockServicesRepo = createServicesRepo(services);
+    const mockServiceVariantsRepo = createServiceVariantsRepo();
     const mockAppointmentsRepo = createAppointmentsRepo(
         appointments,
         services,
@@ -128,6 +137,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const service = new AppointmentsService(
         mockAppointmentsRepo,
         mockServicesRepo,
+        mockServiceVariantsRepo,
         mockUsersRepo,
         mockCommissionsService,
         mockLogService,
@@ -172,6 +182,14 @@ function createServicesRepo(services: SalonService[]) {
                 Promise.resolve(services.find((s) => s.id === id) ?? null),
         ),
     } as unknown as jest.Mocked<Repository<SalonService>>;
+}
+
+function createServiceVariantsRepo() {
+    return {
+        findOne: jest.fn<Promise<null>, [{ where: { id: number } } | undefined]>(
+            () => Promise.resolve(null),
+        ),
+    } as unknown as jest.Mocked<Repository<ServiceVariant>>;
 }
 
 function createAppointmentsRepo(

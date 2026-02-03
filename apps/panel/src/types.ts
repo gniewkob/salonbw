@@ -46,9 +46,13 @@ export interface Service {
     id: number;
     name: string;
     description?: string;
+    publicDescription?: string;
+    privateDescription?: string;
     duration: number;
     price: number;
     priceType: PriceType;
+    vatRate?: number;
+    isFeatured?: boolean;
     category?: string;
     categoryId?: number;
     categoryRelation?: ServiceCategory;
@@ -57,6 +61,9 @@ export interface Service {
     onlineBooking: boolean;
     sortOrder: number;
     variants?: ServiceVariant[];
+    media?: ServiceMedia[];
+    reviews?: ServiceReview[];
+    recipeItems?: ServiceRecipeItem[];
     employeeServices?: EmployeeService[];
     createdAt?: string;
     updatedAt?: string;
@@ -95,12 +102,50 @@ export interface EmployeeService {
     id: number;
     employeeId: number;
     serviceId: number;
+    serviceVariantId?: number | null;
     employee?: Employee;
     service?: Service;
+    serviceVariant?: ServiceVariant;
     customDuration?: number;
     customPrice?: number;
     commissionPercent?: number;
     isActive: boolean;
+    createdAt?: string;
+}
+
+export interface ServiceMedia {
+    id: number;
+    serviceId: number;
+    url: string;
+    caption?: string | null;
+    sortOrder: number;
+    isPublic: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export type ServiceReviewSource = 'booksy' | 'moment' | 'internal';
+
+export interface ServiceReview {
+    id: number;
+    serviceId: number;
+    source: ServiceReviewSource;
+    rating: number;
+    comment?: string | null;
+    authorName?: string | null;
+    createdAt?: string;
+}
+
+export interface ServiceRecipeItem {
+    id: number;
+    serviceId: number;
+    serviceVariantId?: number | null;
+    productId?: number | null;
+    quantity?: number | null;
+    unit?: string | null;
+    notes?: string | null;
+    product?: Product | null;
+    serviceVariant?: ServiceVariant | null;
     createdAt?: string;
 }
 

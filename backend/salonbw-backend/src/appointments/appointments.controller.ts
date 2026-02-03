@@ -98,6 +98,7 @@ export class AppointmentsController {
                 client,
                 employee: { id: body.employeeId } as User,
                 service: { id: body.serviceId } as SalonService,
+                serviceVariantId: body.serviceVariantId,
                 startTime: new Date(body.startTime),
             },
             { id: user.userId } as User,
@@ -194,6 +195,7 @@ export class AppointmentsController {
             id,
             new Date(body.startTime),
             body.endTime ? new Date(body.endTime) : undefined,
+            body.serviceVariantId,
             { id: user.userId } as User,
         );
         if (!updated) throw new NotFoundException();

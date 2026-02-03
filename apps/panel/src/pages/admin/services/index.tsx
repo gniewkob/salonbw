@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import Topbar from '@/components/Topbar';
 import AdminSidebarMenu from '@/components/sidebars/AdminSidebarMenu';
@@ -28,6 +29,7 @@ import {
 
 export default function AdminServicesPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
         null,
     );
@@ -263,17 +265,22 @@ export default function AdminServicesPage() {
                                     </h2>
                                 </div>
 
-                                <ServiceList
-                                    services={filteredServices}
-                                    categories={categories}
-                                    onEdit={handleOpenServiceModal}
-                                    onDelete={handleDeleteService}
-                                    onToggleActive={handleToggleServiceActive}
-                                    onManageVariants={(service) => {
-                                        setVariantsService(service);
-                                        setVariantsModalOpen(true);
-                                    }}
-                                />
+                            <ServiceList
+                                services={filteredServices}
+                                categories={categories}
+                                onEdit={handleOpenServiceModal}
+                                onDelete={handleDeleteService}
+                                onToggleActive={handleToggleServiceActive}
+                                onManageVariants={(service) => {
+                                    setVariantsService(service);
+                                    setVariantsModalOpen(true);
+                                }}
+                                onOpenDetails={(service) => {
+                                    void router.push(
+                                        `/admin/services/${service.id}`,
+                                    );
+                                }}
+                            />
                             </div>
                         </div>
                     )}

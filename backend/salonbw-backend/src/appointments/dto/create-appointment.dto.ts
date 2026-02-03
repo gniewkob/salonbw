@@ -10,6 +10,11 @@ export class CreateAppointmentDto {
     @IsInt()
     serviceId: number;
 
+    @ApiProperty({ required: false })
+    @IsInt()
+    @IsOptional()
+    serviceVariantId?: number;
+
     @ApiProperty()
     @IsDateString()
     startTime: string;
