@@ -16,7 +16,12 @@ try {
     log('Env PORT: ' + process.env.PORT);
     log('All Env: ' + JSON.stringify(process.env, null, 2));
 
-    require('./server.js');
+    const serverPath = path.join(__dirname, '.next', 'standalone', 'server.js');
+    if (!fs.existsSync(serverPath)) {
+        throw new Error(`Missing standalone server at ${serverPath}`);
+    }
+    log('Standalone server: ' + serverPath);
+    require(serverPath);
 } catch (err) {
     log('FATAL ERROR DURING REQUIRE: ' + err.message);
     log('Stack: ' + err.stack);
