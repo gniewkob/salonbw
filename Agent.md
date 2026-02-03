@@ -79,6 +79,10 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
   - `docs/DEPLOYMENT_MYDEVIL.md` (if steps changed)
   - This file (Agent.md)
 
+## 9a. CI audit policy
+- CI security audit fails only on **high/critical** vulnerabilities.
+- Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
+
 ## 10. References
 - `docs/AGENT_OPERATIONS.md`
 - `docs/DEPLOYMENT_MYDEVIL.md`

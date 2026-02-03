@@ -66,6 +66,9 @@ Mental mapping:
 
 ### Rule
 - Do not merge PRs that break CI unless the intent is explicitly to fix CI infrastructure.
+### Audit policy
+- Security audit fails CI only on **high/critical** vulnerabilities.
+- Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
 
 ---
 

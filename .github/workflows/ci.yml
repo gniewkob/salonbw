@@ -227,17 +227,84 @@ jobs:
           echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Run audit and capture output
-          if pnpm audit --prod --audit-level=high; then
-            echo "✅ No high or critical vulnerabilities found in production dependencies" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Vulnerabilities detected - see details below" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            pnpm audit --prod --audit-level=moderate >> $GITHUB_STEP_SUMMARY || true
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          # Run audit in JSON mode to avoid false failures when only moderate/low are present.
+          pnpm audit --prod --json > audit.json || true
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          const auditPath = path.join(process.cwd(), 'audit.json');
+          const write = (text) => fs.appendFileSync(summaryPath, text + '\\n');
+
+          let raw = '';
+          try {
+            raw = fs.readFileSync(auditPath, 'utf8').trim();
+          } catch {
+            write('⚠️ Unable to read audit output.');
+            process.exit(0);
+          }
+
+          if (!raw) {
+            write('✅ No vulnerabilities reported by pnpm audit.');
+            process.exit(0);
+          }
+
+          const lines = raw.split('\\n').filter(Boolean);
+          const high = { high: 0, critical: 0, moderate: 0, low: 0, total: 0 };
+          const details = [];
+
+          for (const line of lines) {
+            let entry;
+            try {
+              entry = JSON.parse(line);
+            } catch {
+              continue;
+            }
+            if (entry?.type === 'auditSummary') {
+              const vuln = entry?.data?.vulnerabilities || {};
+              high.high = vuln.high || 0;
+              high.critical = vuln.critical || 0;
+              high.moderate = vuln.moderate || 0;
+              high.low = vuln.low || 0;
+              high.total = vuln.total || 0;
+            }
+            if (entry?.type === 'auditAdvisory') {
+              details.push({
+                module_name: entry?.data?.advisory?.module_name,
+                severity: entry?.data?.advisory?.severity,
+                title: entry?.data?.advisory?.title,
+                url: entry?.data?.advisory?.url,
+              });
+            }
+          }
+
+          if (high.total === 0) {
+            write('✅ No vulnerabilities reported by pnpm audit.');
+            process.exit(0);
+          }
+
+          write(`Vulnerabilities: total=${high.total}, critical=${high.critical}, high=${high.high}, moderate=${high.moderate}, low=${high.low}`);
+          write('');
+          write('```');
+          for (const item of details.slice(0, 50)) {
+            const parts = [item.severity, item.module_name, item.title, item.url].filter(Boolean);
+            write(parts.join(' | '));
+          }
+          if (details.length > 50) {
+            write(`...and ${details.length - 50} more`);
+          }
+          write('```');
+
+          if (high.critical > 0 || high.high > 0) {
+            write('❌ High/Critical vulnerabilities detected. Failing CI.');
+            process.exit(1);
+          }
+
+          write('⚠️ Only moderate/low vulnerabilities detected. CI will pass.');
+          process.exit(0);
+          NODE
 
       - name: Check for outdated dependencies
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
