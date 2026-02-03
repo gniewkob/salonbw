@@ -9,9 +9,8 @@ export class SentryGlobalFilter extends BaseExceptionFilter {
     }
 
     catch(exception: unknown, host: ArgumentsHost) {
-        const hub = Sentry.getCurrentHub();
-        if (hub.getClient()) {
-            hub.captureException(exception);
+        if (Sentry.getClient()) {
+            Sentry.captureException(exception);
         }
         super.catch(exception, host);
     }
