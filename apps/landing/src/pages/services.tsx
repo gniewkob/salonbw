@@ -17,6 +17,47 @@ interface ServicesPageProps {
     categories: ServiceCategory[];
 }
 
+function resolveCategoryName(service: Service): string {
+    return (
+        service.categoryRelation?.name ||
+        service.category ||
+        'Inne'
+    );
+}
+
+function getServicePrice(service: Service): { label: string } {
+    if (service.variants && service.variants.length > 0) {
+        const prices = service.variants.map((v) => v.price);
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        const formattedMin = new Intl.NumberFormat('pl-PL', {
+            style: 'currency',
+            currency: 'PLN',
+        }).format(min);
+        if (max > min) {
+            return { label: `od ${formattedMin}` };
+        }
+        return { label: formattedMin };
+    }
+    const formatted = new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
+        currency: 'PLN',
+    }).format(service.price);
+    return {
+        label: service.priceType === 'from' ? `od ${formatted}` : formatted,
+    };
+}
+
+function getServiceDuration(service: Service): string {
+    if (service.variants && service.variants.length > 0) {
+        const durations = service.variants.map((v) => v.duration);
+        const min = Math.min(...durations);
+        const max = Math.max(...durations);
+        return min === max ? `${min} min` : `${min}-${max} min`;
+    }
+    return `${service.duration} min`;
+}
+
 export default function ServicesPage({ categories }: ServicesPageProps) {
     const items = useMemo(
         () =>
@@ -108,7 +149,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                         })()}
                                     </span>
                                     <span className="text-sm text-gray-600">
-                                        {s.duration} min - {s.price} zł
+                                        {getServiceDuration(s)} -{' '}
+                                        {getServicePrice(s).label}
                                     </span>
                                 </li>
                             ))}
@@ -151,7 +193,7 @@ export const getServerSideProps: GetServerSideProps<
         },
     ];
     try {
-        const res = await fetch(`${apiUrl}/services`, {
+        const res = await fetch(`${apiUrl}/services/public`, {
             headers: { Accept: 'application/json' },
         });
         if (!res.ok) throw new Error('services_fetch_failed');
@@ -161,7 +203,7 @@ export const getServerSideProps: GetServerSideProps<
         }
         const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
-            const categoryName = svc.category ?? 'Other';
+            const categoryName = resolveCategoryName(svc);
             if (!map.has(categoryName)) {
                 map.set(categoryName, { id: null, name: categoryName, services: [] });
             }

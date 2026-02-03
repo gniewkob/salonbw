@@ -4,12 +4,11 @@ import {
     IsNumber,
     IsBoolean,
     IsOptional,
-    IsNotEmpty,
-    IsDateString,
-    IsArray,
-    ValidateNested,
+    IsEnum,
+    Min,
+    Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { PriceType } from '../service.entity';
 
 export class UpdateServiceDto {
     @ApiProperty({ required: false })
@@ -32,6 +31,11 @@ export class UpdateServiceDto {
     @IsOptional()
     price?: number;
 
+    @ApiProperty({ required: false, enum: PriceType })
+    @IsEnum(PriceType)
+    @IsOptional()
+    priceType?: PriceType;
+
     @ApiProperty({ required: false })
     @IsString()
     @IsOptional()
@@ -40,5 +44,47 @@ export class UpdateServiceDto {
     @ApiProperty({ required: false })
     @IsNumber()
     @IsOptional()
+    categoryId?: number;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
     commissionPercent?: number;
+
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
+
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    @IsOptional()
+    onlineBooking?: boolean;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    sortOrder?: number;
+
+    @ApiProperty({ required: false, description: 'VAT rate (%)' })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    @Max(100)
+    vatRate?: number;
+
+    @ApiProperty({ required: false })
+    @IsBoolean()
+    @IsOptional()
+    isFeatured?: boolean;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    publicDescription?: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    privateDescription?: string;
 }

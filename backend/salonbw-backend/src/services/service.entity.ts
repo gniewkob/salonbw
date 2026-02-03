@@ -12,6 +12,9 @@ import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { ServiceCategory } from './entities/service-category.entity';
 import { ServiceVariant } from './entities/service-variant.entity';
 import { EmployeeService } from './entities/employee-service.entity';
+import { ServiceMedia } from './entities/service-media.entity';
+import { ServiceReview } from './entities/service-review.entity';
+import { ServiceRecipeItem } from './entities/service-recipe-item.entity';
 
 export enum PriceType {
     Fixed = 'fixed',
@@ -41,6 +44,21 @@ export class Service {
         default: PriceType.Fixed,
     })
     priceType: PriceType;
+
+    @Column('decimal', {
+        nullable: true,
+        transformer: new ColumnNumericTransformer(),
+    })
+    vatRate?: number;
+
+    @Column({ default: false })
+    isFeatured: boolean;
+
+    @Column({ type: 'text', nullable: true })
+    publicDescription?: string;
+
+    @Column({ type: 'text', nullable: true })
+    privateDescription?: string;
 
     // Legacy string category (kept for backward compatibility)
     @Column({ nullable: true })
@@ -75,6 +93,15 @@ export class Service {
     // Variants for this service
     @OneToMany(() => ServiceVariant, (variant) => variant.service)
     variants: ServiceVariant[];
+
+    @OneToMany(() => ServiceMedia, (media) => media.service)
+    media: ServiceMedia[];
+
+    @OneToMany(() => ServiceReview, (review) => review.service)
+    reviews: ServiceReview[];
+
+    @OneToMany(() => ServiceRecipeItem, (item) => item.service)
+    recipeItems: ServiceRecipeItem[];
 
     // Employee assignments
     @OneToMany(() => EmployeeService, (es) => es.service)

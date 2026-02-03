@@ -33,6 +33,13 @@ import { User } from '../users/user.entity';
 export class ServicesController {
     constructor(private readonly servicesService: ServicesService) {}
 
+    @Get('public')
+    @ApiOperation({ summary: 'Get public services for landing' })
+    @ApiResponse({ status: 200, type: Service, isArray: true })
+    findPublic(): Promise<Service[]> {
+        return this.servicesService.findPublicForLanding();
+    }
+
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)
     @Get()

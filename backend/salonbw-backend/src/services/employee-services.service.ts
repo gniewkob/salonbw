@@ -4,9 +4,10 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, IsNull } from 'typeorm';
 import { EmployeeService } from './entities/employee-service.entity';
 import { Service } from './service.entity';
+import { ServiceVariant } from './entities/service-variant.entity';
 import { User } from '../users/user.entity';
 import {
     CreateEmployeeServiceDto,
@@ -28,6 +29,8 @@ export class EmployeeServicesService {
         private readonly employeeServiceRepository: Repository<EmployeeService>,
         @InjectRepository(Service)
         private readonly serviceRepository: Repository<Service>,
+        @InjectRepository(ServiceVariant)
+        private readonly serviceVariantRepository: Repository<ServiceVariant>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly cache: AppCacheService,
@@ -36,7 +39,14 @@ export class EmployeeServicesService {
     async create(dto: CreateEmployeeServiceDto): Promise<EmployeeService> {
         // Check if assignment already exists
         const existing = await this.employeeServiceRepository.findOne({
-            where: { employeeId: dto.employeeId, serviceId: dto.serviceId },
+            where: {
+                employeeId: dto.employeeId,
+                serviceId: dto.serviceId,
+                serviceVariantId:
+                    dto.serviceVariantId === null || dto.serviceVariantId === undefined
+                        ? IsNull()
+                        : dto.serviceVariantId,
+            },
         });
         if (existing) {
             throw new ConflictException(
@@ -60,6 +70,15 @@ export class EmployeeServicesService {
             throw new NotFoundException('Service not found');
         }
 
+        if (dto.serviceVariantId) {
+            const variant = await this.serviceVariantRepository.findOne({
+                where: { id: dto.serviceVariantId },
+            });
+            if (!variant || variant.serviceId !== service.id) {
+                throw new NotFoundException('Service variant not found');
+            }
+        }
+
         const assignment = this.employeeServiceRepository.create(dto);
         const saved = await this.employeeServiceRepository.save(assignment);
         await this.invalidateCache(dto.employeeId, dto.serviceId);
@@ -72,7 +91,7 @@ export class EmployeeServicesService {
             () =>
                 this.employeeServiceRepository.find({
                     where: { employeeId },
-                    relations: ['service', 'service.categoryRelation'],
+                    relations: ['service', 'service.categoryRelation', 'serviceVariant'],
                 }),
         );
     }
@@ -83,7 +102,7 @@ export class EmployeeServicesService {
             () =>
                 this.employeeServiceRepository.find({
                     where: { serviceId },
-                    relations: ['employee'],
+                    relations: ['employee', 'serviceVariant'],
                 }),
         );
     }
@@ -94,9 +113,14 @@ export class EmployeeServicesService {
             .filter((a) => a.isActive && a.service)
             .map((a) => ({
                 ...a.service,
-                // Override with custom values if set
-                duration: a.customDuration ?? a.service.duration,
-                price: a.customPrice ?? a.service.price,
+                duration:
+                    a.customDuration ??
+                    a.serviceVariant?.duration ??
+                    a.service.duration,
+                price:
+                    a.customPrice ??
+                    a.serviceVariant?.price ??
+                    a.service.price,
             })) as Service[];
     }
 
@@ -140,9 +164,24 @@ export class EmployeeServicesService {
             throw new NotFoundException('Service not found');
         }
 
+        if (dto.serviceVariantId) {
+            const variant = await this.serviceVariantRepository.findOne({
+                where: { id: dto.serviceVariantId },
+            });
+            if (!variant || variant.serviceId !== serviceId) {
+                throw new NotFoundException('Service variant not found');
+            }
+        }
+
         // Get existing assignments
         const existing = await this.employeeServiceRepository.find({
-            where: { serviceId },
+            where: {
+                serviceId,
+                serviceVariantId:
+                    dto.serviceVariantId === null || dto.serviceVariantId === undefined
+                        ? IsNull()
+                        : dto.serviceVariantId,
+            },
         });
         const existingEmployeeIds = new Set(existing.map((e) => e.employeeId));
 
@@ -153,6 +192,7 @@ export class EmployeeServicesService {
                 const assignment = this.employeeServiceRepository.create({
                     employeeId,
                     serviceId,
+                    serviceVariantId: dto.serviceVariantId ?? null,
                 });
                 newAssignments.push(assignment);
             }

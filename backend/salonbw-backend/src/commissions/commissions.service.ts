@@ -111,7 +111,13 @@ export class CommissionsService {
                 return existing;
             }
         }
-        const price = Number(service.price);
+        const price = appointment
+            ? Number(
+                  appointment.paidAmount ??
+                      appointment.serviceVariant?.price ??
+                      service.price,
+              )
+            : Number(service.price);
         const percent = await this.resolveCommissionPercent(employee, service);
         const priceCents = this.toCents(price);
         const amountCents = Math.floor((priceCents * percent) / 100);

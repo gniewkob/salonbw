@@ -133,6 +133,21 @@ export class ServicesService {
         });
     }
 
+    async findPublicForLanding(): Promise<Service[]> {
+        const services = await this.servicesRepository.find({
+            where: { isActive: true },
+            relations: ['categoryRelation', 'variants'],
+            order: { sortOrder: 'ASC', name: 'ASC' },
+        });
+        return services.map((service) => {
+            if ('privateDescription' in service) {
+                // Do not expose private description on public surface
+                service.privateDescription = undefined;
+            }
+            return service;
+        });
+    }
+
     async update(
         id: number,
         dto: UpdateServiceDto,
