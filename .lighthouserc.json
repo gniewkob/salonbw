@@ -2,11 +2,7 @@
   "ci": {
     "collect": {
       "url": [
-        "https://dev.salon-bw.pl/",
-        "https://dev.salon-bw.pl/services",
-        "https://dev.salon-bw.pl/services/coloring",
-        "https://dev.salon-bw.pl/services/highlights",
-        "https://dev.salon-bw.pl/services/balayage"
+        "https://dev.salon-bw.pl/"
       ],
       "numberOfRuns": 1
     },
