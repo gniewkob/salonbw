@@ -35,14 +35,18 @@ describe('Authentication', () => {
     };
 
     beforeEach(() => {
-        cy.intercept('POST', '**/auth/login', (req) => {
+        cy.intercept('POST', 'http://localhost:3001/auth/login', (req) => {
             req.reply({
                 statusCode: 200,
                 body: adminTokens,
             });
         }).as('login');
-        cy.intercept('GET', '**/users/profile', adminProfile).as('profile');
-        cy.intercept('GET', '**/dashboard', (req) => {
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/users/profile',
+            adminProfile,
+        ).as('profile');
+        cy.intercept('GET', 'http://localhost:3001/dashboard', (req) => {
             const accept = req.headers['accept'] ?? '';
             if (
                 typeof accept === 'string' &&
@@ -60,7 +64,7 @@ describe('Authentication', () => {
 
         cy.get('input[name="email"]').type('admin@demo.com');
         cy.get('input[name="password"]').type('password123');
-        cy.contains('button', 'Login').click();
+        cy.contains('button', 'Sign in').click();
 
         cy.wait(['@login', '@profile', '@dashboard']).then(() => {
             cy.setCookie('jwtToken', adminTokens.access_token);
