@@ -7,10 +7,14 @@ describe('admin manage data', () => {
 
     it('deletes a product', () => {
         // Load with a single product from fixture
-        cy.intercept('GET', '**/products*', {
+        cy.intercept('GET', 'http://localhost:3001/products*', {
             fixture: 'products.json',
         }).as('getProd');
-        cy.intercept('DELETE', '**/products/1', { statusCode: 204 }).as(
+        cy.intercept(
+            'DELETE',
+            'http://localhost:3001/products/1',
+            { statusCode: 204 },
+        ).as(
             'deleteProd',
         );
 
@@ -32,10 +36,10 @@ describe('admin manage data', () => {
     });
 
     it('edits an employee', () => {
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmps');
-        cy.intercept('PUT', '**/employees/1', {
+        cy.intercept('PUT', 'http://localhost:3001/employees/1', {
             statusCode: 200,
             body: {
                 id: 1,

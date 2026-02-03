@@ -1,0 +1,4 @@
+[
+  { "id": 1, "name": "Shampoo", "brand": "B", "unitPrice": 10, "stock": 5 },
+  { "id": 2, "name": "Conditioner", "brand": "C", "unitPrice": 12, "stock": 8 }
+]
