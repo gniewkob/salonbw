@@ -28,6 +28,7 @@ jobs:
           list-files: none
           filters: |
             frontend:
+              - 'apps/panel/**'
               - 'apps/landing/**'
               - 'packages/api/**'
               - 'pnpm-lock.yaml'
@@ -52,7 +53,7 @@ jobs:
 
       - name: Build frontend
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-        run: pnpm --filter @salonbw/landing build
+        run: pnpm --filter @salonbw/panel build
         env:
           # Must be set at build time so Next.js embeds the correct value
           # into the client bundle. Cypress intercepts expect requests under /api/*.
@@ -62,7 +63,7 @@ jobs:
         if: steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
         uses: cypress-io/github-action@7ef72e250a9e564efb4ed4c2433971ada4cc38b4 # v6 branch
         with:
-          working-directory: apps/landing
+          working-directory: apps/panel
           browser: chrome
           start: npm run start:standalone
           wait-on: 'http://localhost:3000'
