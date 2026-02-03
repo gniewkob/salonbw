@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-02 (API symlinked to apps path; deploy variables updated)_
+_Last updated: 2026-02-03 (CI audit policy adjusted to fail only on high/critical)_
 
 ## Platform Architecture
 
@@ -29,6 +29,12 @@ Verification:
 - `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
 
 ## Recent Incidents
+
+### 2026-02-03: CI security audit policy adjusted
+
+- **Impact:** CI no longer fails on moderate/low vulnerabilities; still fails on high/critical.
+- **Change:** `ci.yml` audit step parses JSON and gates only on high/critical severities.
+- **Status:** Resolved.
 
 ### 2026-02-02: API deploy path normalized (symlink to apps path)
 
