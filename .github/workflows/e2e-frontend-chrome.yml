@@ -93,7 +93,11 @@ jobs:
         if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true'
         run: |
           mkdir -p ~/.ssh
-          echo "$MYDEVIL_SSH_KEY" > ~/.ssh/mydevil
+          if echo "$MYDEVIL_SSH_KEY" | grep -q "BEGIN"; then
+            printf '%s\n' "$MYDEVIL_SSH_KEY" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            echo "$MYDEVIL_SSH_KEY" | base64 -d > ~/.ssh/mydevil
+          fi
           chmod 600 ~/.ssh/mydevil
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/mydevil
