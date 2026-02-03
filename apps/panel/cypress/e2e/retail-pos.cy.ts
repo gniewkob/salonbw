@@ -7,26 +7,32 @@ describe('POS operations', () => {
 
     it('records a product sale', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/products*',
+            { fixture: 'products.json' },
+        ).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/appointments*', {
+        cy.intercept('GET', 'http://localhost:3001/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/inventory*', {
+        cy.intercept('GET', 'http://localhost:3001/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/sales/summary*', {
+        cy.intercept('GET', 'http://localhost:3001/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/sales', { status: 'ok' }).as('createSale');
+        cy.intercept('POST', 'http://localhost:3001/sales', {
+            status: 'ok',
+        }).as('createSale');
 
         cy.visit('/dashboard/admin/retail');
         cy.wait([
@@ -53,26 +59,30 @@ describe('POS operations', () => {
 
     it('adjusts inventory with positive delta', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/products*',
+            { fixture: 'products.json' },
+        ).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/appointments*', {
+        cy.intercept('GET', 'http://localhost:3001/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/inventory*', {
+        cy.intercept('GET', 'http://localhost:3001/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/sales/summary*', {
+        cy.intercept('GET', 'http://localhost:3001/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/inventory/adjust', {
+        cy.intercept('POST', 'http://localhost:3001/inventory/adjust', {
             status: 'ok',
         }).as('adjustInventory');
 
@@ -102,26 +112,30 @@ describe('POS operations', () => {
 
     it('adjusts inventory with negative delta', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/products*',
+            { fixture: 'products.json' },
+        ).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/appointments*', {
+        cy.intercept('GET', 'http://localhost:3001/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/inventory*', {
+        cy.intercept('GET', 'http://localhost:3001/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/sales/summary*', {
+        cy.intercept('GET', 'http://localhost:3001/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
             from: now,
             to: now,
         }).as('getSummary');
-        cy.intercept('POST', '**/inventory/adjust', {
+        cy.intercept('POST', 'http://localhost:3001/inventory/adjust', {
             status: 'ok',
         }).as('adjustInventory');
 
@@ -150,19 +164,23 @@ describe('POS operations', () => {
 
     it('shows validation error for empty sale form', () => {
         const now = new Date().toISOString();
-        cy.intercept('GET', '**/products*', { fixture: 'products.json' }).as(
+        cy.intercept(
+            'GET',
+            'http://localhost:3001/products*',
+            { fixture: 'products.json' },
+        ).as(
             'getProducts',
         );
-        cy.intercept('GET', '**/employees*', {
+        cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
-        cy.intercept('GET', '**/appointments*', {
+        cy.intercept('GET', 'http://localhost:3001/appointments*', {
             fixture: 'appointments.json',
         }).as('getAppointments');
-        cy.intercept('GET', '**/inventory*', {
+        cy.intercept('GET', 'http://localhost:3001/inventory*', {
             fixture: 'inventory.json',
         }).as('getInventory');
-        cy.intercept('GET', '**/sales/summary*', {
+        cy.intercept('GET', 'http://localhost:3001/sales/summary*', {
             source: 'product_sales',
             units: 0,
             revenue: 0,
@@ -170,7 +188,7 @@ describe('POS operations', () => {
             to: now,
         }).as('getSummary');
         let createSaleCalled = false;
-        cy.intercept('POST', '**/sales', (req) => {
+        cy.intercept('POST', 'http://localhost:3001/sales', (req) => {
             createSaleCalled = true;
             req.reply({ status: 'ok' });
         }).as('createSale');

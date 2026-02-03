@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-03 (CI audit policy adjusted to fail only on high/critical)_
+_Last updated: 2026-02-03 (CI: Frontend E2E removed; Lighthouse targets dev root)_
 
 ## Platform Architecture
 
@@ -29,12 +29,6 @@ Verification:
 - `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
 
 ## Recent Incidents
-
-### 2026-02-03: CI security audit policy adjusted
-
-- **Impact:** CI no longer fails on moderate/low vulnerabilities; still fails on high/critical.
-- **Change:** `ci.yml` audit step parses JSON and gates only on high/critical severities.
-- **Status:** Resolved.
 
 ### 2026-02-02: API deploy path normalized (symlink to apps path)
 
@@ -87,6 +81,7 @@ Verification:
 
 ## What's Working
 
+- **2026-02-03** – Frontend E2E workflow removed; Lighthouse CI now targets only `https://dev.salon-bw.pl/` due to `/services` returning 500.
 - **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
   - ✅ API health endpoints operational (database, SMTP, Prometheus metrics)
   - ✅ Public site (salon-bw.pl) → redirects to www.salon-bw.pl (200 OK)
