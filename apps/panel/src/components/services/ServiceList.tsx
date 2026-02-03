@@ -9,6 +9,7 @@ interface Props {
     onDelete: (id: number) => Promise<void> | void;
     onToggleActive: (id: number, isActive: boolean) => Promise<void> | void;
     onManageVariants: (service: Service) => void;
+    onOpenDetails: (service: Service) => void;
 }
 
 export default function ServiceList({
@@ -18,6 +19,7 @@ export default function ServiceList({
     onDelete,
     onToggleActive,
     onManageVariants,
+    onOpenDetails,
 }: Props) {
     const formatPrice = (price: number, priceType: string) => {
         const formatted = new Intl.NumberFormat('pl-PL', {
@@ -211,6 +213,27 @@ export default function ServiceList({
                             </td>
                             <td className="px-4 py-3 text-right">
                                 <div className="flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => onOpenDetails(service)}
+                                        className="p-1 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                                        title="Szczegóły usługi"
+                                        aria-label="Szczegóły usługi"
+                                    >
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() =>

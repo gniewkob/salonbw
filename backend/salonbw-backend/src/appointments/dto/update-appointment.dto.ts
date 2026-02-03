@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateAppointmentDto {
     @ApiProperty({ description: 'New start time ISO string' })
@@ -13,4 +13,9 @@ export class UpdateAppointmentDto {
     @IsDateString()
     @IsOptional()
     endTime?: string;
+
+    @ApiProperty({ required: false, description: 'Service variant ID' })
+    @IsInt()
+    @IsOptional()
+    serviceVariantId?: number;
 }

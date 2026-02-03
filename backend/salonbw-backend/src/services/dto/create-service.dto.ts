@@ -41,6 +41,28 @@ export class CreateServiceDto {
     @IsOptional()
     priceType?: PriceType;
 
+    @ApiProperty({ required: false, description: 'VAT rate (%)' })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    @Max(100)
+    vatRate?: number;
+
+    @ApiProperty({ required: false, default: false })
+    @IsBoolean()
+    @IsOptional()
+    isFeatured?: boolean;
+
+    @ApiProperty({ required: false, description: 'Public description' })
+    @IsString()
+    @IsOptional()
+    publicDescription?: string;
+
+    @ApiProperty({ required: false, description: 'Private description' })
+    @IsString()
+    @IsOptional()
+    privateDescription?: string;
+
     @ApiProperty({ required: false, description: 'Legacy string category (deprecated)' })
     @IsString()
     @IsOptional()

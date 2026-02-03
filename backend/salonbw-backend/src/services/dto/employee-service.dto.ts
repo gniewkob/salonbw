@@ -17,6 +17,11 @@ export class CreateEmployeeServiceDto {
     @IsNumber()
     serviceId: number;
 
+    @ApiProperty({ required: false, description: 'Service variant ID' })
+    @IsNumber()
+    @IsOptional()
+    serviceVariantId?: number;
+
     @ApiProperty({
         required: false,
         description: 'Custom duration for this employee (overrides service default)',
@@ -61,6 +66,11 @@ export class AssignEmployeesToServiceDto {
     @IsArray()
     @IsNumber({}, { each: true })
     employeeIds: number[];
+
+    @ApiProperty({ required: false, description: 'Service variant ID' })
+    @IsNumber()
+    @IsOptional()
+    serviceVariantId?: number;
 }
 
 export class AssignServicesToEmployeeDto {

@@ -58,7 +58,7 @@ export class StatisticsService {
             where: {
                 startTime: Between(todayStart, todayEnd),
             },
-            relations: ['service'],
+            relations: ['service', 'serviceVariant'],
         });
 
         const todayCompleted = todayAppointments.filter(
@@ -66,7 +66,7 @@ export class StatisticsService {
         );
 
         const todayRevenue = todayCompleted.reduce(
-            (sum, a) => sum + (a.paidAmount ?? a.service?.price ?? 0),
+            (sum, a) => sum + this.resolveAppointmentPrice(a),
             0,
         );
 
@@ -84,11 +84,11 @@ export class StatisticsService {
                 startTime: Between(weekStart, todayEnd),
                 status: AppointmentStatus.Completed,
             },
-            relations: ['service'],
+            relations: ['service', 'serviceVariant'],
         });
 
         const weekRevenue = weekAppointments.reduce(
-            (sum, a) => sum + (a.paidAmount ?? a.service?.price ?? 0),
+            (sum, a) => sum + this.resolveAppointmentPrice(a),
             0,
         );
 
@@ -98,11 +98,11 @@ export class StatisticsService {
                 startTime: Between(monthStart, todayEnd),
                 status: AppointmentStatus.Completed,
             },
-            relations: ['service'],
+            relations: ['service', 'serviceVariant'],
         });
 
         const monthRevenue = monthAppointments.reduce(
-            (sum, a) => sum + (a.paidAmount ?? a.service?.price ?? 0),
+            (sum, a) => sum + this.resolveAppointmentPrice(a),
             0,
         );
 
@@ -151,7 +151,7 @@ export class StatisticsService {
 
         const appointments = await this.appointmentRepository.find({
             where: whereClause,
-            relations: ['service'],
+            relations: ['service', 'serviceVariant'],
         });
 
         // Generate date intervals
@@ -196,7 +196,7 @@ export class StatisticsService {
             });
 
             const revenue = periodAppointments.reduce(
-                (sum, a) => sum + (a.paidAmount ?? a.service?.price ?? 0),
+                (sum, a) => sum + this.resolveAppointmentPrice(a),
                 0,
             );
             const tips = periodAppointments.reduce(
@@ -234,11 +234,11 @@ export class StatisticsService {
                     startTime: Between(from, to),
                     status: AppointmentStatus.Completed,
                 },
-                relations: ['service'],
+                relations: ['service', 'serviceVariant'],
             });
 
             const revenue = appointments.reduce(
-                (sum, a) => sum + (a.paidAmount ?? a.service?.price ?? 0),
+                (sum, a) => sum + this.resolveAppointmentPrice(a),
                 0,
             );
             const tips = appointments.reduce(
@@ -246,7 +246,9 @@ export class StatisticsService {
                 0,
             );
             const totalDuration = appointments.reduce(
-                (sum, a) => sum + (a.service?.duration ?? 0),
+                (sum, a) =>
+                    sum +
+                    (a.serviceVariant?.duration ?? a.service?.duration ?? 0),
                 0,
             );
 
@@ -291,6 +293,7 @@ export class StatisticsService {
         const result = await this.appointmentRepository
             .createQueryBuilder('appointment')
             .innerJoin('appointment.service', 'service')
+            .leftJoin('appointment.serviceVariant', 'serviceVariant')
             .leftJoin('service.categoryRelation', 'category')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
             .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
@@ -299,14 +302,14 @@ export class StatisticsService {
             .addSelect('category.name', 'categoryName')
             .addSelect('COUNT(*)', 'bookingCount')
             .addSelect(
-                'SUM(COALESCE(appointment.paidAmount, service.price))',
+                'SUM(COALESCE(appointment.paidAmount, serviceVariant.price, service.price))',
                 'revenue',
             )
             .addSelect(
-                'AVG(COALESCE(appointment.paidAmount, service.price))',
+                'AVG(COALESCE(appointment.paidAmount, serviceVariant.price, service.price))',
                 'averagePrice',
             )
-            .addSelect('AVG(service.duration)', 'averageDuration')
+            .addSelect('AVG(COALESCE(serviceVariant.duration, service.duration))', 'averageDuration')
             .groupBy('service.id')
             .addGroupBy('service.name')
             .addGroupBy('category.name')
@@ -352,13 +355,15 @@ export class StatisticsService {
         const topClientsResult = await this.appointmentRepository
             .createQueryBuilder('appointment')
             .innerJoin('appointment.client', 'client')
+            .leftJoin('appointment.service', 'service')
+            .leftJoin('appointment.serviceVariant', 'serviceVariant')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
             .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
             .select('client.id', 'clientId')
             .addSelect('client.name', 'clientName')
             .addSelect('COUNT(*)', 'visits')
             .addSelect(
-                'SUM(COALESCE(appointment.paidAmount, 0))',
+                'SUM(COALESCE(appointment.paidAmount, serviceVariant.price, service.price, 0))',
                 'totalSpent',
             )
             .groupBy('client.id')
@@ -393,7 +398,7 @@ export class StatisticsService {
                 finalizedAt: Between(dayStart, dayEnd),
                 status: AppointmentStatus.Completed,
             },
-            relations: ['service', 'employee', 'client'],
+            relations: ['service', 'serviceVariant', 'employee', 'client'],
             order: { finalizedAt: 'ASC' },
         });
 
@@ -403,7 +408,7 @@ export class StatisticsService {
             type: 'appointment' as const,
             description: a.service?.name ?? 'Wizyta',
             paymentMethod: a.paymentMethod ?? 'cash',
-            amount: a.paidAmount ?? a.service?.price ?? 0,
+            amount: this.resolveAppointmentPrice(a),
             tip: a.tipAmount ?? 0,
             employeeName: a.employee?.name ?? null,
             clientName: a.client?.name ?? null,
@@ -459,6 +464,17 @@ export class StatisticsService {
             tipsTotal: parseFloat(r.tipsTotal) || 0,
             averageTip: parseFloat(r.averageTip) || 0,
         }));
+    }
+
+    private resolveAppointmentPrice(appointment: Appointment): number {
+        return (
+            appointment.paidAmount ??
+            Number(
+                appointment.serviceVariant?.price ??
+                    appointment.service?.price ??
+                    0,
+            )
+        );
     }
 
     // Helper method to resolve date range

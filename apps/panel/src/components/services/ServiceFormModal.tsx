@@ -14,9 +14,13 @@ interface Props {
 export interface ServiceFormData {
     name: string;
     description: string;
+    publicDescription?: string;
+    privateDescription?: string;
     duration: number;
     price: number;
     priceType: PriceType;
+    vatRate?: number;
+    isFeatured?: boolean;
     categoryId: number | undefined;
     commissionPercent: number | undefined;
     isActive: boolean;
@@ -35,9 +39,13 @@ export default function ServiceFormModal({
     const [formData, setFormData] = useState<ServiceFormData>({
         name: '',
         description: '',
+        publicDescription: '',
+        privateDescription: '',
         duration: 60,
         price: 0,
         priceType: 'fixed',
+        vatRate: 23,
+        isFeatured: false,
         categoryId: undefined,
         commissionPercent: undefined,
         isActive: true,
@@ -49,9 +57,13 @@ export default function ServiceFormModal({
             setFormData({
                 name: service.name,
                 description: service.description || '',
+                publicDescription: service.publicDescription || '',
+                privateDescription: service.privateDescription || '',
                 duration: service.duration,
                 price: service.price,
                 priceType: service.priceType,
+                vatRate: service.vatRate ?? 23,
+                isFeatured: service.isFeatured ?? false,
                 categoryId: service.categoryId,
                 commissionPercent: service.commissionPercent,
                 isActive: service.isActive,
@@ -61,9 +73,13 @@ export default function ServiceFormModal({
             setFormData({
                 name: '',
                 description: '',
+                publicDescription: '',
+                privateDescription: '',
                 duration: 60,
                 price: 0,
                 priceType: 'fixed',
+                vatRate: 23,
+                isFeatured: false,
                 categoryId: undefined,
                 commissionPercent: undefined,
                 isActive: true,
@@ -168,6 +184,49 @@ export default function ServiceFormModal({
                                 rows={3}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    htmlFor="service-public-description"
+                                    className="block text-sm font-medium text-gray-700 mb-1"
+                                >
+                                    Opis publiczny
+                                </label>
+                                <textarea
+                                    id="service-public-description"
+                                    value={formData.publicDescription || ''}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            publicDescription: e.target.value,
+                                        })
+                                    }
+                                    rows={3}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="service-private-description"
+                                    className="block text-sm font-medium text-gray-700 mb-1"
+                                >
+                                    Opis prywatny
+                                </label>
+                                <textarea
+                                    id="service-private-description"
+                                    value={formData.privateDescription || ''}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            privateDescription: e.target.value,
+                                        })
+                                    }
+                                    rows={3}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -311,6 +370,53 @@ export default function ServiceFormModal({
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="Domyślna"
                             />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                htmlFor="service-vat"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                VAT (%)
+                            </label>
+                            <input
+                                id="service-vat"
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value={formData.vatRate ?? ''}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        vatRate: e.target.value
+                                            ? parseFloat(e.target.value)
+                                            : undefined,
+                                    })
+                                }
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="23"
+                            />
+                        </div>
+                        <div className="flex items-end">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={!!formData.isFeatured}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            isFeatured: e.target.checked,
+                                        })
+                                    }
+                                    className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">
+                                    Wyróżniona usługa
+                                </span>
+                            </label>
                         </div>
                     </div>
 

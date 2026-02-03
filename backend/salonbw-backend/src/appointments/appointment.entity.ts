@@ -12,6 +12,7 @@ import {
 import { User } from '../users/user.entity';
 import { Service } from '../services/service.entity';
 import { Formula } from '../formulas/formula.entity';
+import { ServiceVariant } from '../services/entities/service-variant.entity';
 
 export enum AppointmentStatus {
     Scheduled = 'scheduled',
@@ -49,6 +50,9 @@ export class Appointment {
     @Column()
     serviceId: number;
 
+    @Column({ nullable: true })
+    serviceVariantId?: number | null;
+
     // Relations - NO eager loading, use explicit joins when needed
     @ManyToOne(() => User)
     @JoinColumn({ name: 'clientId' })
@@ -61,6 +65,10 @@ export class Appointment {
     @ManyToOne(() => Service)
     @JoinColumn({ name: 'serviceId' })
     service: Service;
+
+    @ManyToOne(() => ServiceVariant, { nullable: true })
+    @JoinColumn({ name: 'serviceVariantId' })
+    serviceVariant?: ServiceVariant | null;
 
     @Column()
     startTime: Date;

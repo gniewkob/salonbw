@@ -7,11 +7,12 @@ import {
     Unique,
 } from 'typeorm';
 import { Service } from '../service.entity';
+import { ServiceVariant } from './service-variant.entity';
 import { User } from '../../users/user.entity';
 import { ColumnNumericTransformer } from '../../column-numeric.transformer';
 
 @Entity('employee_services')
-@Unique(['employee', 'service'])
+@Unique(['employee', 'service', 'serviceVariant'])
 export class EmployeeService {
     @PrimaryGeneratedColumn()
     id: number;
@@ -29,6 +30,12 @@ export class EmployeeService {
 
     @Column()
     serviceId: number;
+
+    @ManyToOne(() => ServiceVariant, { onDelete: 'CASCADE', nullable: true })
+    serviceVariant?: ServiceVariant | null;
+
+    @Column({ nullable: true })
+    serviceVariantId?: number | null;
 
     // Optional custom duration for this employee (overrides service duration)
     @Column({ nullable: true, type: 'int' })
