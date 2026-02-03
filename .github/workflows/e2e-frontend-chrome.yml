@@ -80,7 +80,7 @@ jobs:
           run_install: false
 
       - name: Configure npm registry
-        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && secrets.NPM_TOKEN != ''
+        if: (steps.paths.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch') && steps.secrets.outputs.available == 'true' && env.NPM_TOKEN != ''
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
         env:
