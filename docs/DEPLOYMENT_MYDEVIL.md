@@ -139,6 +139,10 @@ Optional: adjust Passenger process limits for Node.js domains if needed:
 devil www options <domain> processes <COUNT>
 ```
 
+Important:
+- On this MyDevil profile, `devil www options <domain> nodejs_version ...` is unsupported and returns a syntax error.
+- Treat Node version as an app/runtime concern (e.g. `node22` in startup scripts); do not automate `nodejs_version` via Devil CLI.
+
 If Devil returns an invalid domain type, or the new build is not picked up, touch the Passenger restart file and retry:
 
 ```bash
