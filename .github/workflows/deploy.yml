@@ -236,6 +236,9 @@ jobs:
              # FORCE Standard Path for Panel (User Requirement)
              P_PANEL="apps/nodejs/panelbw"
              N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_STAGING }}"
+             if [ -z "$N_PANEL" ]; then
+               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}"
+             fi
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
@@ -246,6 +249,9 @@ jobs:
              # FORCE Standard Path for Panel (User Requirement)
              P_PANEL="apps/nodejs/panelbw"
              N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_PRODUCTION }}"
+             if [ -z "$N_PANEL" ]; then
+               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}"
+             fi
              P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
              N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
              P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
@@ -610,27 +616,24 @@ jobs:
 
           # Create probe file for diagnostics
           mkdir -p "$REMOTE_PATH/public"
-          echo "--- Startup Probe $(date) ---" > "$REMOTE_PATH/public/startup_probe.txt"
-          echo "Node Version: $(node -v)" >> "$REMOTE_PATH/public/startup_probe.txt"
+          {
+            echo "--- Startup Probe $(date) ---"
+            echo "Node (default): $(node -v 2>&1 || echo missing)"
+            echo "node22 path: $(command -v node22 2>/dev/null || echo missing)"
+            if command -v node22 >/dev/null 2>&1; then
+              echo "Node22 Version: $(node22 -v)"
+            fi
+          } > "$REMOTE_PATH/public/startup_probe.txt"
 
-          if command -v devil >/dev/null 2>&1; then
-             echo "--- Devil Version/Help ---"
-             devil --version || true
-             devil www help || true
-             
-             echo "--- Attempting to set Node 22 ---"
-             echo "Try 1: devil www options $APP_NAME nodejs_version 22"
-             devil www options "$APP_NAME" nodejs_version 22 || echo "Try 1 failed"
-             
-             # Fallback mechanism: Local node symlink
-             echo "--- Setting up ~/bin/node fallback ---"
-             mkdir -p $HOME/bin
-             if command -v node22 >/dev/null; then
-                ln -sf $(command -v node22) $HOME/bin/node
-                ln -sf $(command -v node22) $HOME/bin/node22
-                echo "Linked node22 to ~/bin/node"
-                export PATH=$HOME/bin:$PATH
-             fi
+          # MyDevil does not support setting Node version via devil www options.
+          # Keep a local fallback so manual scripts can use node22 explicitly.
+          mkdir -p "$HOME/bin"
+          if command -v node22 >/dev/null 2>&1; then
+             ln -sfn "$(command -v node22)" "$HOME/bin/node"
+             ln -sfn "$(command -v node22)" "$HOME/bin/node22"
+             echo "Linked node22 to ~/bin/node"
+          else
+             echo "node22 unavailable; leaving default node untouched"
           fi
           SSH
 
@@ -645,27 +648,24 @@ jobs:
 
           # Create probe file for diagnostics
           mkdir -p "$REMOTE_PATH/public"
-          echo "--- Startup Probe $(date) ---" > "$REMOTE_PATH/public/startup_probe.txt"
-          echo "Node Version: $(node -v)" >> "$REMOTE_PATH/public/startup_probe.txt"
+          {
+            echo "--- Startup Probe $(date) ---"
+            echo "Node (default): $(node -v 2>&1 || echo missing)"
+            echo "node22 path: $(command -v node22 2>/dev/null || echo missing)"
+            if command -v node22 >/dev/null 2>&1; then
+              echo "Node22 Version: $(node22 -v)"
+            fi
+          } > "$REMOTE_PATH/public/startup_probe.txt"
 
-          if command -v devil >/dev/null 2>&1; then
-             echo "--- Devil Version/Help ---"
-             devil --version || true
-             devil www help || true
-             
-             echo "--- Attempting to set Node 22 ---"
-             echo "Try 1: devil www options $APP_NAME nodejs_version 22"
-             devil www options "$APP_NAME" nodejs_version 22 || echo "Try 1 failed"
-             
-             # Fallback mechanism: Local node symlink
-             echo "--- Setting up ~/bin/node fallback ---"
-             mkdir -p $HOME/bin
-             if command -v node22 >/dev/null; then
-                ln -sf $(command -v node22) $HOME/bin/node
-                ln -sf $(command -v node22) $HOME/bin/node22
-                echo "Linked node22 to ~/bin/node"
-                export PATH=$HOME/bin:$PATH
-             fi
+          # MyDevil does not support setting Node version via devil www options.
+          # Keep a local fallback so manual scripts can use node22 explicitly.
+          mkdir -p "$HOME/bin"
+          if command -v node22 >/dev/null 2>&1; then
+             ln -sfn "$(command -v node22)" "$HOME/bin/node"
+             ln -sfn "$(command -v node22)" "$HOME/bin/node22"
+             echo "Linked node22 to ~/bin/node"
+          else
+             echo "node22 unavailable; leaving default node untouched"
           fi
           SSH
 
@@ -758,8 +758,11 @@ jobs:
           fi
 
           echo "=== Devil Info ===" >> "$LOG"
-          # Try to get valid options for devil
-          devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
+          if command -v devil >/dev/null 2>&1; then
+             devil www list --verbose 2>&1 | grep -F "$APP_NAME" >> "$LOG" || echo "No devil www entry found for $APP_NAME" >> "$LOG"
+          else
+             echo "devil command unavailable" >> "$LOG"
+          fi
 
           echo "=== File Checks ===" >> "$LOG"
           ls -la app.js package.json >> "$LOG" 2>&1 || true
@@ -811,7 +814,11 @@ jobs:
           fi
 
           echo "=== Devil Info ===" >> "$LOG"
-          devil www options "$APP_NAME" || echo "failed to list options" >> "$LOG"
+          if command -v devil >/dev/null 2>&1; then
+             devil www list --verbose 2>&1 | grep -F "$APP_NAME" >> "$LOG" || echo "No devil www entry found for $APP_NAME" >> "$LOG"
+          else
+             echo "devil command unavailable" >> "$LOG"
+          fi
 
           echo "=== File Checks ===" >> "$LOG"
           ls -la app.js package.json >> "$LOG" 2>&1 || true
@@ -951,11 +958,11 @@ jobs:
           fi
           REMOTE_CMDS
 
-      - name: 🗄️ Verify DB and Run Migrations (Panel)
+      - name: 🧪 Verify panel runtime bundle
         if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
         run: |
           echo "============================================"
-          echo "🚀 STEP: Running migrations on production server"
+          echo "🚀 STEP: Verifying panel bundle on remote server"
           echo "============================================"
 
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
@@ -964,36 +971,16 @@ jobs:
           cd "$REMOTE_PATH"
 
           echo "📍 Working directory: $(pwd)"
-
-          # Test database connectivity
-          if [ -f "../api/.env" ]; then
-            echo "🔍 Testing database connectivity..."
-            export $(grep -v '^#' ../api/.env | xargs)
-            if command -v psql >/dev/null 2>&1; then
-              psql "$DATABASE_URL" -c "SELECT version();" && echo "✅ Database connection successful"
-            else
-              echo "⚠️  psql not available, skipping DB test"
-            fi
-          fi
-
-          # Run migrations if available
-          if [ -d "../api" ]; then
-            echo "📋 Running database migrations..."
-            cd ../api
-            if command -v node22 >/dev/null 2>&1; then
-              node22 dist/src/migrate.js || node22 dist/migrate.js || echo "⚠️ Migration script not found"
-            else
-              node dist/src/migrate.js || node dist/migrate.js || echo "⚠️ Migration script not found"
-            fi
-            echo "✅ Migration step completed"
-          else
-            echo "⚠️  API directory not found, skipping migrations"
-          fi
+          test -f app.js
+          test -f package.json
+          test -d .next
+          test -d public
+          echo "✅ Panel runtime bundle looks complete"
           REMOTE_CMDS
 
           echo ""
           echo "============================================"
-          echo "✅ Database verification and migrations completed"
+          echo "✅ Panel bundle verification completed"
           echo "============================================"
 
       - name: Restart app (panel)

@@ -41,6 +41,8 @@ devil www restart <domain>
 devil www options <domain> processes <COUNT>
 ```
 
+- Do **not** use `devil www options <domain> nodejs_version ...` on this host profile; this syntax is not supported and returns an error.
+
 - Fallback when Devil restart fails:
 
 ```bash
@@ -67,6 +69,7 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 
 ## 7. DB migrations
 - Prefer running migrations via deploy workflow.
+- Migrations are API-only (`target=api`); dashboard/panel deploys should not attempt DB migrations.
 - Manual fallback: see `docs/DEPLOYMENT_MYDEVIL.md`.
 
 ## 8. Logs

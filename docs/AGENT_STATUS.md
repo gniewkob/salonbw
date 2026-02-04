@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-04 (panel canonical admin routes + Versum shell)_
+_Last updated: 2026-02-04 (panel deploy workflow hardening + dashboard redeploy)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:54 | production | Manual deploy; `/healthz` 200 |
 | Public site (`dev.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:55 | production | Manual deploy for logout fix |
-| Dashboard (`panel.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:56 | production | Manual deploy for logout fix |
+| Dashboard (`panel.salon-bw.pl`) | `8d15e2f2` | `21685904626` | 2026-02-04 19:49 | production | Dashboard redeployed via workflow_dispatch (`target=dashboard`) |
 
 Verification:
 
@@ -81,6 +81,11 @@ Verification:
 
 ## What's Working
 
+- **2026-02-04** – Deploy workflow hardened for panel/dashboard:
+  - path-change detection now falls back to `grep` when `rg` is unavailable on GitHub runners;
+  - panel app-name resolution now falls back to `MYDEVIL_DASHBOARD_APP_NAME_*` vars (fixes wrong `dev.salon-bw.pl` app target on panel deploy);
+  - removed unsupported `devil www options <domain> nodejs_version ...` calls from runtime prep and startup probes;
+  - replaced incorrect panel-side DB migration step with panel bundle verification.
 - **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/admin/*` entry routes now redirect to canonical equivalents.
 - **2026-02-03** – Frontend E2E workflow removed; Lighthouse CI now targets only `https://dev.salon-bw.pl/` due to `/services` returning 500.
 - **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
