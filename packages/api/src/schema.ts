@@ -21,6 +21,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/debug-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AppController_getLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -30,6 +46,23 @@ export interface paths {
         };
         /** Health check */
         get: operations["HealthController_getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/healthz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health check with dependencies */
+        get: operations["HealthController_getDeepHealth"];
         put?: never;
         post?: never;
         delete?: never;
@@ -118,6 +151,23 @@ export interface paths {
         put?: never;
         /** Refresh access token */
         post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log out user */
+        post: operations["AuthController_logout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -213,6 +263,83 @@ export interface paths {
         patch: operations["AppointmentsController_update"];
         trace?: never;
     };
+    "/appointments/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reschedule appointment (drag & drop support)
+         * @description Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.
+         */
+        patch: operations["AppointmentsController_reschedule"];
+        trace?: never;
+    };
+    "/appointments/{id}/conflicts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check for scheduling conflicts
+         * @description Check if rescheduling an appointment would cause conflicts
+         */
+        get: operations["AppointmentsController_checkConflicts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appointments/{id}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finalize appointment with payment details
+         * @description Complete the visit checkout with payment method, amounts, tips, discounts, and optional product sales (upselling). Creates commission records.
+         */
+        post: operations["AppointmentsController_finalize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/services/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get public services for landing */
+        get: operations["ServicesController_findPublic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/services": {
         parameters: {
             query?: never;
@@ -220,11 +347,62 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all services */
+        /** Get all services with optional filters */
         get: operations["ServicesController_findAll"];
         put?: never;
         /** Create service */
         post: operations["ServicesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/services/with-relations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all services with categories and variants */
+        get: operations["ServicesController_findAllWithRelations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/services/online-booking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get services available for online booking */
+        get: operations["ServicesController_findActiveForOnlineBooking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/services/by-category/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get services by category */
+        get: operations["ServicesController_findByCategory"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -248,6 +426,23 @@ export interface paths {
         head?: never;
         /** Update service */
         patch: operations["ServicesController_update"];
+        trace?: never;
+    };
+    "/services/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reorder services (drag & drop) */
+        patch: operations["ServicesController_reorder"];
         trace?: never;
     };
     "/products": {
@@ -285,6 +480,129 @@ export interface paths {
         head?: never;
         /** Update product */
         patch: operations["ProductsController_update"];
+        trace?: never;
+    };
+    "/products/{id}/card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product card details for warehouse view */
+        get: operations["ProductsController_findCard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product stock and sales history */
+        get: operations["ProductsController_findHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{id}/formulas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get formulas using this product */
+        get: operations["ProductsController_findFormulas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{id}/commissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product commissions by employee */
+        get: operations["ProductsController_findCommissions"];
+        /** Replace product commissions by employee */
+        put: operations["ProductsController_updateCommissions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/product-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List product categories */
+        get: operations["ProductCategoriesController_findAll"];
+        put?: never;
+        /** Create product category */
+        post: operations["ProductCategoriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/product-categories/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product categories as tree */
+        get: operations["ProductCategoriesController_findTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/product-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product category by id */
+        get: operations["ProductCategoriesController_findOne"];
+        put?: never;
+        post?: never;
+        /** Delete product category */
+        delete: operations["ProductCategoriesController_remove"];
+        options?: never;
+        head?: never;
+        /** Update product category */
+        patch: operations["ProductCategoriesController_update"];
         trace?: never;
     };
     "/appointments/{appointmentId}/formulas": {
@@ -423,6 +741,574 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/client": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get client dashboard summary */
+        get: operations["DashboardController_getClientSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List warehouse sales */
+        get: operations["SalesController_findSales"];
+        put?: never;
+        /** Create a product sale */
+        post: operations["SalesController_createSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sales summary for a period */
+        get: operations["SalesController_getSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get warehouse sale details */
+        get: operations["SalesController_findSale"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List product usage records */
+        get: operations["UsageController_findUsage"];
+        put?: never;
+        /** Create product usage (material consumption) */
+        post: operations["UsageController_createUsage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usage/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get usage details */
+        get: operations["UsageController_findOneUsage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List inventory levels */
+        get: operations["InventoryController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inventory/adjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjust inventory (manual adjustment) */
+        post: operations["InventoryController_adjust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stocktaking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista wszystkich inwentaryzacji */
+        get: operations["StocktakingController_findAll"];
+        put?: never;
+        /** Utwórz nową inwentaryzację */
+        post: operations["StocktakingController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stocktaking/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Historia inwentaryzacji (agregaty) */
+        get: operations["StocktakingController_findHistorySummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stocktaking/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pobierz inwentaryzację po ID */
+        get: operations["StocktakingController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Aktualizuj inwentaryzację */
+        patch: operations["StocktakingController_update"];
+        trace?: never;
+    };
+    "/stocktaking/{id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rozpocznij inwentaryzację (załaduj produkty) */
+        post: operations["StocktakingController_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stocktaking/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dodaj/aktualizuj pozycje inwentaryzacji */
+        post: operations["StocktakingController_addItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stocktaking/{id}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Aktualizuj pozycję inwentaryzacji */
+        patch: operations["StocktakingController_updateItem"];
+        trace?: never;
+    };
+    "/stocktaking/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Zakończ inwentaryzację (opcjonalnie zastosuj różnice) */
+        post: operations["StocktakingController_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get warehouse orders */
+        get: operations["OrdersController_findAll"];
+        put?: never;
+        /** Create warehouse order */
+        post: operations["OrdersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get warehouse order details */
+        get: operations["OrdersController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update warehouse order */
+        patch: operations["OrdersController_update"];
+        trace?: never;
+    };
+    "/orders/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Send warehouse order */
+        patch: operations["OrdersController_send"];
+        trace?: never;
+    };
+    "/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel warehouse order */
+        patch: operations["OrdersController_cancel"];
+        trace?: never;
+    };
+    "/orders/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Receive warehouse order */
+        patch: operations["OrdersController_receive"];
+        trace?: never;
+    };
+    "/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista wszystkich dostaw */
+        get: operations["DeliveriesController_findAll"];
+        put?: never;
+        /** Utwórz nową dostawę */
+        post: operations["DeliveriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deliveries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pobierz dostawę po ID */
+        get: operations["DeliveriesController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Aktualizuj dostawę */
+        patch: operations["DeliveriesController_update"];
+        trace?: never;
+    };
+    "/deliveries/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dodaj pozycję do dostawy */
+        post: operations["DeliveriesController_addItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deliveries/{id}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Usuń pozycję z dostawy */
+        delete: operations["DeliveriesController_removeItem"];
+        options?: never;
+        head?: never;
+        /** Aktualizuj pozycję w dostawie */
+        patch: operations["DeliveriesController_updateItem"];
+        trace?: never;
+    };
+    "/deliveries/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Przyjmij dostawę (zaktualizuj stany magazynowe) */
+        post: operations["DeliveriesController_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deliveries/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Anuluj dostawę */
+        post: operations["DeliveriesController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista wszystkich dostawców */
+        get: operations["SuppliersController_findAll"];
+        put?: never;
+        /** Utwórz nowego dostawcę */
+        post: operations["SuppliersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pobierz dostawcę po ID */
+        get: operations["SuppliersController_findOne"];
+        put?: never;
+        post?: never;
+        /** Usuń dostawcę */
+        delete: operations["SuppliersController_remove"];
+        options?: never;
+        head?: never;
+        /** Aktualizuj dostawcę */
+        patch: operations["SuppliersController_update"];
+        trace?: never;
+    };
+    "/stock-alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockAlertsController_getStockAlerts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-alerts/low-stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockAlertsController_getLowStockProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-alerts/critical": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockAlertsController_getCriticalStockProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-alerts/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockAlertsController_getStockSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stock-alerts/suppliers/{supplierId}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StockAlertsController_getReorderSuggestionsBySupplier"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -446,14 +1332,13 @@ export interface components {
             /**
              * @description User role
              * @example client
-             * @enum {string}
              */
-            role: "client" | "employee" | "admin";
+            role: string;
             /**
              * @description International phone number
              * @example +123456789
              */
-            phone: Record<string, never> | null;
+            phone: Record<string, never>;
             /**
              * @description Commission base for the user
              * @example 0
@@ -491,6 +1376,11 @@ export interface components {
              * @example true
              */
             receiveNotifications?: boolean;
+            /**
+             * @description Password
+             * @example password123
+             */
+            password?: string;
         };
         RegisterDto: {
             /**
@@ -503,28 +1393,29 @@ export interface components {
              * @example John Doe
              */
             name: string;
+            /**
+             * @description User password
+             * @example SecurePassword123!
+             */
+            password: string;
+            /**
+             * @description International phone number
+             * @example +123456789
+             */
+            phone?: string;
         };
         RefreshTokenDto: {
             /**
-             * @description JWT refresh token
+             * @description JWT refresh token (optional when sent via cookie)
              * @example eyJhbGci...
              */
-            refreshToken: string;
+            refreshToken?: string;
         };
-        Appointment: {
-            id: number;
-            client: components["schemas"]["UserDto"];
-            employee: components["schemas"]["UserDto"];
-            service: components["schemas"]["Service"];
-            startTime: string;
-            endTime: string;
-            status: "scheduled" | "cancelled" | "completed";
-            notes?: string;
-            formulas: components["schemas"]["Formula"][];
-        };
+        Appointment: Record<string, never>;
         CreateAppointmentDto: {
             employeeId: number;
             serviceId: number;
+            serviceVariantId?: number;
             startTime: string;
             /** @description Required when creating appointments as Employee or Admin */
             clientId?: number;
@@ -534,69 +1425,206 @@ export interface components {
             startTime: string;
             /** @description New end time ISO string */
             endTime?: string;
+            /** @description Service variant ID */
+            serviceVariantId?: number;
         };
-        Service: {
-            id: number;
-            name: string;
-            description: string;
-            duration: number;
-            price: number;
-            category?: string;
-            commissionPercent?: number;
+        RescheduleAppointmentDto: {
+            /** @description New start time ISO string */
+            startTime: string;
+            /** @description New end time ISO string */
+            endTime?: string;
+            /** @description New employee ID (optional) */
+            employeeId?: number;
+            /**
+             * @description Force reschedule even if there are conflicts
+             * @default false
+             */
+            force: boolean;
         };
+        ProductSaleItemDto: {
+            /** @description Product ID */
+            productId: number;
+            /** @description Quantity sold */
+            quantity: number;
+            /** @description Unit price in cents (optional, uses product price if not specified) */
+            unitPriceCents?: number;
+            /** @description Discount in cents for this item */
+            discountCents?: number;
+        };
+        FinalizeAppointmentDto: {
+            /**
+             * @description Payment method used
+             * @example card
+             * @enum {string}
+             */
+            paymentMethod: "cash" | "card" | "transfer" | "online" | "voucher";
+            /**
+             * @description Amount paid in cents
+             * @example 15000
+             */
+            paidAmountCents: number;
+            /**
+             * @description Tip amount in cents
+             * @example 500
+             */
+            tipAmountCents?: number;
+            /**
+             * @description Discount amount in cents
+             * @example 1000
+             */
+            discountCents?: number;
+            /** @description Products sold during the visit (upselling) */
+            products?: components["schemas"]["ProductSaleItemDto"][];
+            /** @description Internal note about the finalization */
+            note?: string;
+        };
+        Service: Record<string, never>;
         CreateServiceDto: {
+            /** @description Service name */
             name: string;
-            description: string;
+            /** @description Service description */
+            description?: string;
+            /** @description Duration in minutes */
             duration: number;
+            /** @description Price in PLN */
             price: number;
+            /**
+             * @description Price type: fixed or from (minimum)
+             * @default fixed
+             * @enum {string}
+             */
+            priceType: "fixed" | "from";
+            /** @description VAT rate (%) */
+            vatRate?: number;
+            /** @default false */
+            isFeatured: boolean;
+            /** @description Public description */
+            publicDescription?: string;
+            /** @description Private description */
+            privateDescription?: string;
+            /** @description Legacy string category (deprecated) */
             category?: string;
+            /** @description Category ID (new hierarchical system) */
+            categoryId?: number;
+            /** @description Commission percentage (0-100) */
             commissionPercent?: number;
+            /**
+             * @description Is service active
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @description Available for online booking
+             * @default true
+             */
+            onlineBooking: boolean;
+            /**
+             * @description Sort order
+             * @default 0
+             */
+            sortOrder: number;
         };
         UpdateServiceDto: {
             name?: string;
             description?: string;
             duration?: number;
             price?: number;
+            /** @enum {string} */
+            priceType?: "fixed" | "from";
             category?: string;
+            categoryId?: number;
             commissionPercent?: number;
+            isActive?: boolean;
+            onlineBooking?: boolean;
+            sortOrder?: number;
+            /** @description VAT rate (%) */
+            vatRate?: number;
+            isFeatured?: boolean;
+            publicDescription?: string;
+            privateDescription?: string;
         };
-        Product: {
-            id: number;
-            name: string;
-            brand: string;
-            unitPrice: number;
-            stock: number;
+        Product: Record<string, never>;
+        ProductCommissionRuleDto: {
+            employeeId: number;
+            commissionPercent: number;
+        };
+        UpdateProductCommissionsDto: {
+            rules: components["schemas"]["ProductCommissionRuleDto"][];
         };
         CreateProductDto: {
             name: string;
-            brand: string;
+            brand?: string;
             unitPrice: number;
+            /** @default 23 */
+            vatRate: number;
             stock: number;
+            purchasePrice?: number;
+            description?: string;
+            sku?: string;
+            barcode?: string;
+            /** @enum {string} */
+            productType?: "product" | "supply" | "universal";
+            minQuantity?: number;
+            unit?: string;
+            packageSize?: number;
+            packageUnit?: string;
+            manufacturer?: string;
+            defaultSupplierId?: number;
+            categoryId?: number;
+            /** @default true */
+            isActive: boolean;
+            /** @default true */
+            trackStock: boolean;
         };
         UpdateProductDto: {
             name?: string;
             brand?: string;
             unitPrice?: number;
+            vatRate?: number;
             stock?: number;
+            purchasePrice?: number;
+            description?: string;
+            sku?: string;
+            barcode?: string;
+            /** @enum {string} */
+            productType?: "product" | "supply" | "universal";
+            minQuantity?: number;
+            unit?: string;
+            packageSize?: number;
+            packageUnit?: string;
+            manufacturer?: string;
+            defaultSupplierId?: number;
+            categoryId?: number;
+            isActive?: boolean;
+            trackStock?: boolean;
+        };
+        ProductCategory: Record<string, never>;
+        CreateProductCategoryDto: {
+            name: string;
+            parentId?: number;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+        };
+        UpdateProductCategoryDto: {
+            name?: string;
+            parentId?: number;
+            sortOrder?: number;
+            isActive?: boolean;
         };
         CreateFormulaDto: {
             description: string;
             date: string;
         };
-        Formula: {
-            id: number;
-            description: string;
-            date: string;
-            client: components["schemas"]["UserDto"];
-        };
-        Commission: {
-            id: number;
-            employee: components["schemas"]["UserDto"];
-            appointment?: components["schemas"]["Appointment"];
-            product?: components["schemas"]["Product"];
+        Formula: Record<string, never>;
+        Commission: Record<string, never>;
+        GetSummaryDto: {
+            /**
+             * @description Total commission amount for the period
+             * @example 0
+             */
             amount: number;
-            percent: number;
-            createdAt: string;
         };
         DashboardSummaryDto: {
             /**
@@ -614,7 +1642,222 @@ export interface components {
              * @example 5
              */
             todayAppointments: number;
-            upcomingAppointments: components["schemas"]["Appointment"][];
+            upcomingAppointments: string[];
+        };
+        UpcomingAppointmentDto: {
+            /** @description Appointment ID */
+            id: number;
+            /** @description Service name */
+            serviceName: string;
+            /**
+             * Format: date-time
+             * @description Start time
+             */
+            startTime: string;
+            /** @description Employee name */
+            employeeName: string;
+        };
+        ServiceHistoryItemDto: {
+            /** @description Service ID */
+            id: number;
+            /** @description Service name */
+            name: string;
+            /** @description Number of times used */
+            count: number;
+        };
+        RecentAppointmentDto: {
+            /** @description Appointment ID */
+            id: number;
+            /** @description Service name */
+            serviceName: string;
+            /**
+             * Format: date-time
+             * @description Start time
+             */
+            startTime: string;
+            /** @description Appointment status */
+            status: string;
+        };
+        ClientDashboardDto: {
+            /** @description Next upcoming appointment */
+            upcomingAppointment: components["schemas"]["UpcomingAppointmentDto"] | null;
+            /** @description Total completed appointments */
+            completedCount: number;
+            /** @description Services used with frequency */
+            serviceHistory: components["schemas"]["ServiceHistoryItemDto"][];
+            /** @description Recent appointments */
+            recentAppointments: components["schemas"]["RecentAppointmentDto"][];
+        };
+        CreateSaleItemDto: {
+            /** @description The ID of the product being sold */
+            productId: number;
+            /** @description Quantity of items sold */
+            quantity: number;
+            /** @description Unit price in cents (preferred over unitPrice) */
+            unitPriceCents?: number;
+            /** @description Total discount in cents for this line */
+            discountCents?: number;
+            /** @description Unit price in standard currency units (deprecated, use unitPriceCents) */
+            unitPrice?: number;
+            /** @description Line discount in standard currency units (deprecated, use discountCents) */
+            discount?: number;
+            /** @description Product unit label */
+            unit?: string;
+        };
+        CreateSaleDto: {
+            /** @description The ID of the product being sold (legacy single-item payload) */
+            productId?: number;
+            /** @description Quantity of items sold (legacy single-item payload) */
+            quantity?: number;
+            /** @description Unit price in cents (preferred over unitPrice) */
+            unitPriceCents?: number;
+            /** @description Total discount in cents (preferred over discount) */
+            discountCents?: number;
+            /** @description Unit price in standard currency units (deprecated, use unitPriceCents) */
+            unitPrice?: number;
+            /** @description Discount in standard currency units (deprecated, use discountCents) */
+            discount?: number;
+            /** @description ID of the employee credited with the sale */
+            employeeId?: number;
+            /** @description ID of the associated appointment */
+            appointmentId?: number;
+            /** @description Optional note for the sale */
+            note?: string;
+            /** @description Optional sale date (ISO string) */
+            soldAt?: string;
+            /** @description Optional client display name */
+            clientName?: string;
+            /** @description Optional payment method */
+            paymentMethod?: string;
+            /** @description Sale items (preferred over legacy single-item payload) */
+            items?: components["schemas"]["CreateSaleItemDto"][];
+        };
+        CreateUsageItemDto: {
+            productId: number;
+            quantity: number;
+            /** @default op. */
+            unit: string;
+        };
+        CreateUsageDto: {
+            items: components["schemas"]["CreateUsageItemDto"][];
+            employeeId?: number;
+            appointmentId?: number;
+            clientName?: string;
+            note?: string;
+        };
+        AdjustInventoryDto: {
+            /** @description ID of the product to adjust */
+            productId: number;
+            /** @description Change in quantity (positive or negative) */
+            delta: number;
+            /** @description Reason for the adjustment */
+            reason: string;
+            /** @description Optional note */
+            note?: string;
+        };
+        CreateStocktakingDto: {
+            stocktakingDate?: string;
+            notes?: string;
+        };
+        UpdateStocktakingDto: {
+            stocktakingDate?: string;
+            notes?: string;
+        };
+        StocktakingItemDto: {
+            productId: number;
+            countedQuantity: number;
+            notes?: string;
+        };
+        AddStocktakingItemsDto: {
+            items: components["schemas"]["StocktakingItemDto"][];
+        };
+        UpdateStocktakingItemDto: {
+            countedQuantity?: number;
+            notes?: string;
+        };
+        CompleteStocktakingDto: {
+            /** @default true */
+            applyDifferences: boolean;
+            notes?: string;
+        };
+        WarehouseOrderItemDto: {
+            productId?: number;
+            productName?: string;
+            quantity: number;
+            /** @default op. */
+            unit: string;
+        };
+        CreateWarehouseOrderDto: {
+            supplierId?: number;
+            notes?: string;
+            items: components["schemas"]["WarehouseOrderItemDto"][];
+        };
+        UpdateWarehouseOrderDto: {
+            supplierId?: number;
+            notes?: string;
+            items?: components["schemas"]["WarehouseOrderItemDto"][];
+        };
+        ReceiveWarehouseOrderDto: {
+            notes?: string;
+        };
+        DeliveryItemDto: {
+            productId: number;
+            quantity: number;
+            unitCost: number;
+            batchNumber?: string;
+            expiryDate?: string;
+        };
+        CreateDeliveryDto: {
+            supplierId?: number;
+            deliveryDate?: string;
+            invoiceNumber?: string;
+            notes?: string;
+            items?: components["schemas"]["DeliveryItemDto"][];
+        };
+        UpdateDeliveryDto: {
+            supplierId?: number;
+            deliveryDate?: string;
+            invoiceNumber?: string;
+            notes?: string;
+            /** @enum {string} */
+            status?: "draft" | "pending" | "received" | "cancelled";
+        };
+        AddDeliveryItemDto: {
+            productId: number;
+            quantity: number;
+            unitCost: number;
+            batchNumber?: string;
+            expiryDate?: string;
+        };
+        UpdateDeliveryItemDto: {
+            quantity?: number;
+            unitCost?: number;
+            batchNumber?: string;
+            expiryDate?: string;
+        };
+        ReceiveDeliveryDto: {
+            notes?: string;
+        };
+        CreateSupplierDto: {
+            name: string;
+            contactPerson?: string;
+            email?: string;
+            phone?: string;
+            address?: string;
+            nip?: string;
+            notes?: string;
+            /** @default true */
+            isActive: boolean;
+        };
+        UpdateSupplierDto: {
+            name?: string;
+            contactPerson?: string;
+            email?: string;
+            phone?: string;
+            address?: string;
+            nip?: string;
+            notes?: string;
+            isActive?: boolean;
         };
     };
     responses: never;
@@ -643,6 +1886,23 @@ export interface operations {
             };
         };
     };
+    AppController_getLogs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     HealthController_getHealth: {
         parameters: {
             query?: never;
@@ -653,6 +1913,24 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Service is up */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HealthController_getDeepHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service and dependencies are up */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -784,9 +2062,34 @@ export interface operations {
             };
         };
     };
-    AppointmentsController_findAll: {
+    AuthController_logout: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User successfully logged out */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_findAll: {
+        parameters: {
+            query?: {
+                /** @description Start date for filtering appointments (ISO 8601) */
+                from?: string;
+                /** @description End date for filtering appointments (ISO 8601) */
+                to?: string;
+                /** @description Employee ID for filtering appointments */
+                employeeId?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -949,9 +2252,152 @@ export interface operations {
             };
         };
     };
-    ServicesController_findAll: {
+    AppointmentsController_reschedule: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleAppointmentDto"];
+            };
+        };
+        responses: {
+            /** @description Appointment rescheduled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict - employee already booked for this time */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_checkConflicts: {
+        parameters: {
+            query: {
+                startTime: string;
+                endTime: string;
+                employeeId: string;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conflict check result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_finalize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FinalizeAppointmentDto"];
+            };
+        };
+        responses: {
+            /** @description Appointment finalized successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Invalid payment data or appointment state */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ServicesController_findPublic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"][];
+                };
+            };
+        };
+    };
+    ServicesController_findAll: {
+        parameters: {
+            query?: {
+                categoryId?: number;
+                isActive?: boolean;
+                onlineBooking?: boolean;
+                includeVariants?: boolean;
+                includeCategory?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -987,6 +2433,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Service"];
+                };
+            };
+        };
+    };
+    ServicesController_findAllWithRelations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"][];
+                };
+            };
+        };
+    };
+    ServicesController_findActiveForOnlineBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"][];
+                };
+            };
+        };
+    };
+    ServicesController_findByCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Service"][];
                 };
             };
         };
@@ -1057,9 +2562,35 @@ export interface operations {
             };
         };
     };
-    ProductsController_findAll: {
+    ServicesController_reorder: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Services reordered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductsController_findAll: {
+        parameters: {
+            query?: {
+                /** @description Search by name, SKU, barcode, brand */
+                search?: string;
+                categoryId?: number;
+                productType?: "product" | "supply" | "universal";
+                includeInactive?: boolean;
+                sortBy?: "name" | "stock" | "unitPrice" | "createdAt" | "updatedAt";
+                sortOrder?: "ASC" | "DESC";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1161,6 +2692,237 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Product"];
+                };
+            };
+        };
+    };
+    ProductsController_findCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product card */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductsController_findHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product history feed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductsController_findFormulas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Formulas linked to product */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductsController_findCommissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product commission rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductsController_updateCommissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductCommissionsDto"];
+            };
+        };
+        responses: {
+            /** @description Product commission rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductCategoriesController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCategory"][];
+                };
+            };
+        };
+    };
+    ProductCategoriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCategory"];
+                };
+            };
+        };
+    };
+    ProductCategoriesController_findTree: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCategory"][];
+                };
+            };
+        };
+    };
+    ProductCategoriesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCategory"];
+                };
+            };
+        };
+    };
+    ProductCategoriesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product category removed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProductCategoriesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCategory"];
                 };
             };
         };
@@ -1273,7 +3035,9 @@ export interface operations {
     CommissionsController_getSummaryForEmployee: {
         parameters: {
             query: {
+                /** @description Start date for the summary period */
                 from: string;
+                /** @description End date for the summary period */
                 to: string;
             };
             header?: never;
@@ -1290,7 +3054,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["GetSummaryDto"];
                 };
             };
         };
@@ -1330,6 +3094,928 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DashboardSummaryDto"];
                 };
+            };
+        };
+    };
+    DashboardController_getClientSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDashboardDto"];
+                };
+            };
+        };
+    };
+    SalesController_findSales: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse sales list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalesController_createSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSaleDto"];
+            };
+        };
+        responses: {
+            /** @description Sale recorded (or stock adjusted) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalesController_getSummary: {
+        parameters: {
+            query?: {
+                /** @description ISO date */
+                from?: string;
+                /** @description ISO date */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aggregated units and revenue if available */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalesController_findSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse sale details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsageController_findUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsageController_createUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUsageDto"];
+            };
+        };
+        responses: {
+            /** @description Usage recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsageController_findOneUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InventoryController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current stock by product */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InventoryController_adjust: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustInventoryDto"];
+            };
+        };
+        responses: {
+            /** @description Stock adjusted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_findAll: {
+        parameters: {
+            query?: {
+                status?: "draft" | "in_progress" | "completed" | "cancelled";
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStocktakingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_findHistorySummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStocktakingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_addItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddStocktakingItemsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_updateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                itemId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStocktakingItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StocktakingController_complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteStocktakingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse orders */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWarehouseOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Warehouse order created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse order details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWarehouseOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Warehouse order updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse order sent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse order cancelled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveWarehouseOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Warehouse order received */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_findAll: {
+        parameters: {
+            query?: {
+                supplierId?: number;
+                status?: "draft" | "pending" | "received" | "cancelled";
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDeliveryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDeliveryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_addItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddDeliveryItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_removeItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                itemId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_updateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                itemId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDeliveryItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveDeliveryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DeliveriesController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuppliersController_findAll: {
+        parameters: {
+            query?: {
+                includeInactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuppliersController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSupplierDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuppliersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuppliersController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuppliersController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSupplierDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockAlertsController_getStockAlerts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockAlertsController_getLowStockProducts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockAlertsController_getCriticalStockProducts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockAlertsController_getStockSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockAlertsController_getReorderSuggestionsBySupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                supplierId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

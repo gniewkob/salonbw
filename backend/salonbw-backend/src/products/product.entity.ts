@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { Supplier } from '../warehouse/entities/supplier.entity';
+import { ProductCategory } from './entities/product-category.entity';
 
 export enum ProductType {
     Product = 'product',
@@ -51,6 +52,14 @@ export class Product {
     unitPrice: number;
 
     @Column('decimal', {
+        precision: 5,
+        scale: 2,
+        transformer: new ColumnNumericTransformer(),
+        default: 23,
+    })
+    vatRate: number;
+
+    @Column('decimal', {
         precision: 10,
         scale: 2,
         nullable: true,
@@ -60,6 +69,20 @@ export class Product {
 
     @Column('int', { default: 0 })
     stock: number;
+
+    @Column('decimal', {
+        precision: 10,
+        scale: 3,
+        nullable: true,
+        transformer: new ColumnNumericTransformer(),
+    })
+    packageSize: number | null;
+
+    @Column({ type: 'varchar', length: 20, nullable: true })
+    packageUnit: string | null;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    manufacturer: string | null;
 
     @Column('int', { nullable: true })
     minQuantity: number | null;
@@ -73,6 +96,16 @@ export class Product {
 
     @Column({ type: 'int', nullable: true })
     defaultSupplierId: number | null;
+
+    @ManyToOne(() => ProductCategory, (category) => category.products, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
+    @JoinColumn({ name: 'categoryId' })
+    category: ProductCategory | null;
+
+    @Column({ type: 'int', nullable: true })
+    categoryId: number | null;
 
     @Column({ default: true })
     isActive: boolean;
