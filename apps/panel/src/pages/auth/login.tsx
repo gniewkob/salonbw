@@ -2,6 +2,8 @@ import { FormEvent, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,7 +49,7 @@ export const loginValidationSchema = {
 };
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, apiFetch } = useAuth();
     const router = useRouter();
     const [form, setForm] = useState<LoginFormValues>({
         email: '',
@@ -84,7 +86,13 @@ export default function LoginPage() {
         setSubmitting(true);
         try {
             await login(trimmedEmail, form.password);
-            void router.push('/dashboard');
+            const profile = await apiFetch<User>('/users/profile');
+            const fallback = getPostLoginRoute(profile?.role);
+            const redirectTo =
+                typeof router.query.redirectTo === 'string'
+                    ? router.query.redirectTo
+                    : '';
+            void router.push(redirectTo || fallback);
         } catch (err: unknown) {
             setStatus(err instanceof Error ? err.message : 'Login failed');
             setForm((prev) => ({ ...prev, password: '' }));

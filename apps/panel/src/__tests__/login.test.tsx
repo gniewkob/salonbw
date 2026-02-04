@@ -6,7 +6,7 @@ import { createAuthValue } from '../testUtils';
 
 const push = jest.fn();
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push, replace: jest.fn() }),
+    useRouter: () => ({ push, replace: jest.fn(), query: {} }),
 }));
 jest.mock('@/contexts/AuthContext');
 
@@ -19,7 +19,8 @@ describe('LoginPage', () => {
 
     it('submits valid form', async () => {
         const login = jest.fn().mockResolvedValue(undefined);
-        mockedUseAuth.mockReturnValue(createAuthValue({ login }));
+        const apiFetch = jest.fn().mockResolvedValue({ role: 'admin' });
+        mockedUseAuth.mockReturnValue(createAuthValue({ login, apiFetch }));
         render(<LoginPage />);
         fireEvent.change(screen.getByLabelText(/email/i), {
             target: { value: 'a@b.com' },
@@ -29,7 +30,8 @@ describe('LoginPage', () => {
         });
         fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
         await waitFor(() => expect(login).toHaveBeenCalled());
-        expect(push).toHaveBeenCalledWith('/dashboard');
+        await waitFor(() => expect(apiFetch).toHaveBeenCalled());
+        expect(push).toHaveBeenCalledWith('/calendar');
     });
 
     it('shows validation error', async () => {

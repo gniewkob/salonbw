@@ -1,66 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import { CustomerSidebar, CustomerCard } from '@/components/customers';
-import {
-    useCustomers,
-    useCustomer,
-    useCustomerGroups,
-    useCustomerTags,
-    useTagsForCustomer,
-    useUpdateCustomer,
-    useCreateCustomer,
-} from '@/hooks/useCustomers';
-import { Customer, CustomerFilterParams } from '@/types';
+import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
+
+type CustomerDraft = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+};
+
+function formatDate(value: string) {
+    try {
+        return new Date(value).toLocaleString('pl-PL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    } catch {
+        return '-';
+    }
+}
 
 export default function ClientsPage() {
-    const [filters, setFilters] = useState<CustomerFilterParams>({
-        page: 1,
-        limit: 20,
-    });
-    const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
-        null,
-    );
+    return <ClientsPageContent />;
+}
+
+function ClientsPageContent() {
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
-
-    const { data: customersData, isLoading: customersLoading } =
-        useCustomers(filters);
-    const { data: groups } = useCustomerGroups();
-    const { data: tags } = useCustomerTags();
-    const { data: selectedCustomer } = useCustomer(selectedCustomerId);
-    const { data: customerTags } = useTagsForCustomer(selectedCustomerId);
-
-    const updateCustomer = useUpdateCustomer();
     const createCustomer = useCreateCustomer();
 
-    const handleFilterChange = (newFilters: CustomerFilterParams) => {
-        setFilters(newFilters);
-    };
+    const { data, isLoading } = useCustomers({
+        page,
+        limit: 20,
+        search: search || undefined,
+        sortBy: 'name',
+        sortOrder: 'ASC',
+    });
 
-    const handleSelectCustomer = (customer: Customer) => {
-        setSelectedCustomerId(customer.id);
-    };
+    const customerRows = useMemo(() => data?.items ?? [], [data?.items]);
 
-    const handleCloseCard = () => {
-        setSelectedCustomerId(null);
-    };
-
-    const handleUpdateCustomer = async (data: Partial<Customer>) => {
-        if (selectedCustomerId) {
-            await updateCustomer.mutateAsync({ id: selectedCustomerId, data });
-        }
-    };
-
-    const handleCreateCustomer = async (data: Partial<Customer>) => {
-        await createCustomer.mutateAsync(data);
-        setShowCreateModal(false);
-    };
-
-    const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleDateString('pl-PL');
-    };
+    const totalPages = data?.totalPages ?? 1;
 
     return (
         <RouteGuard
@@ -68,184 +54,146 @@ export default function ClientsPage() {
             permission="nav:clients"
         >
             <DashboardLayout>
-                <div className="flex h-[calc(100vh-4rem)]">
-                    {/* Sidebar */}
-                    <CustomerSidebar
-                        groups={groups || []}
-                        tags={tags || []}
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                    />
+                <div className="versum-page" data-testid="clients-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">
+                            Klienci / Lista klientów
+                        </h1>
+                    </header>
 
-                    {/* Main Content */}
-                    <div className="flex flex-1 overflow-hidden">
-                        {/* Customer List */}
-                        <div
-                            className={`flex-1 overflow-y-auto bg-gray-50 p-4 ${
-                                selectedCustomerId
-                                    ? 'hidden md:block md:w-1/2'
-                                    : ''
-                            }`}
+                    <div className="versum-page__toolbar">
+                        <input
+                            className="versum-input w-[240px]"
+                            value={search}
+                            onChange={(event) => {
+                                setSearch(event.target.value);
+                                setPage(1);
+                            }}
+                            placeholder="wyszukaj klienta"
+                        />
+                        <select className="versum-select" defaultValue="asc">
+                            <option value="asc">nazwisko: od A do Z</option>
+                            <option value="desc">nazwisko: od Z do A</option>
+                        </select>
+                        <button
+                            type="button"
+                            className="versum-button ml-auto"
+                            onClick={() => setShowCreateModal(true)}
                         >
-                            {/* Header */}
-                            <div className="mb-4 flex items-center justify-between">
-                                <h1 className="text-xl font-semibold text-gray-800">
-                                    Klienci
-                                    {customersData && (
-                                        <span className="ml-2 text-sm font-normal text-gray-500">
-                                            ({customersData.total})
-                                        </span>
-                                    )}
-                                </h1>
-                                <button
-                                    onClick={() => setShowCreateModal(true)}
-                                    className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
-                                >
-                                    + Dodaj klienta
-                                </button>
-                            </div>
-
-                            {/* Customer List */}
-                            {customersLoading ? (
-                                <div className="flex items-center justify-center py-12">
-                                    <div className="text-gray-500">
-                                        Ładowanie klientów...
-                                    </div>
-                                </div>
-                            ) : customersData?.items.length === 0 ? (
-                                <div className="rounded-lg border bg-white p-8 text-center text-gray-500">
-                                    Nie znaleziono klientów
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="space-y-2">
-                                        {customersData?.items.map(
-                                            (customer) => (
-                                                <button
-                                                    type="button"
-                                                    key={customer.id}
-                                                    onClick={() =>
-                                                        handleSelectCustomer(
-                                                            customer,
-                                                        )
-                                                    }
-                                                    className={`w-full rounded-lg border bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md ${
-                                                        selectedCustomerId ===
-                                                        customer.id
-                                                            ? 'ring-2 ring-cyan-500'
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100 text-sm font-semibold text-cyan-700">
-                                                            {customer.name
-                                                                .split(' ')
-                                                                .map(
-                                                                    (n) => n[0],
-                                                                )
-                                                                .join('')
-                                                                .toUpperCase()
-                                                                .slice(0, 2)}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium text-gray-900">
-                                                                {customer.name}
-                                                            </div>
-                                                            <div className="text-sm text-gray-500">
-                                                                {customer.phone ||
-                                                                    customer.email ||
-                                                                    '-'}
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right text-xs text-gray-400">
-                                                            {customer.createdAt &&
-                                                                formatDate(
-                                                                    customer.createdAt,
-                                                                )}
-                                                        </div>
-                                                    </div>
-                                                </button>
-                                            ),
-                                        )}
-                                    </div>
-
-                                    {/* Pagination */}
-                                    {customersData &&
-                                        customersData.totalPages > 1 && (
-                                            <div className="mt-4 flex items-center justify-between border-t pt-4">
-                                                <div className="text-sm text-gray-500">
-                                                    Strona {customersData.page}{' '}
-                                                    z {customersData.totalPages}
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setFilters((f) => ({
-                                                                ...f,
-                                                                page: Math.max(
-                                                                    1,
-                                                                    (f.page ||
-                                                                        1) - 1,
-                                                                ),
-                                                            }))
-                                                        }
-                                                        disabled={
-                                                            filters.page === 1
-                                                        }
-                                                        className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        Poprzednia
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setFilters((f) => ({
-                                                                ...f,
-                                                                page: Math.min(
-                                                                    customersData.totalPages,
-                                                                    (f.page ||
-                                                                        1) + 1,
-                                                                ),
-                                                            }))
-                                                        }
-                                                        disabled={
-                                                            filters.page ===
-                                                            customersData.totalPages
-                                                        }
-                                                        className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                                                    >
-                                                        Następna
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                </>
-                            )}
-                        </div>
-
-                        {/* Customer Detail Card */}
-                        {selectedCustomer && (
-                            <div className="w-full border-l md:w-1/2">
-                                <CustomerCard
-                                    customer={selectedCustomer}
-                                    tags={customerTags || []}
-                                    onClose={handleCloseCard}
-                                    onUpdate={handleUpdateCustomer}
-                                />
-                            </div>
-                        )}
+                            Dodaj klienta
+                        </button>
                     </div>
 
-                    {/* Create Customer Modal */}
-                    {showCreateModal && (
-                        <CreateCustomerModal
-                            onClose={() => setShowCreateModal(false)}
-                            onCreate={handleCreateCustomer}
-                            isLoading={createCustomer.isPending}
-                        />
+                    {isLoading ? (
+                        <div className="p-4 text-sm versum-muted">
+                            Ładowanie klientów...
+                        </div>
+                    ) : (
+                        <>
+                            <div className="versum-table-wrap">
+                                <table className="versum-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Klient</th>
+                                            <th>Telefon</th>
+                                            <th>Email</th>
+                                            <th>Data dodania</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {customerRows.map((customer) => (
+                                            <tr key={customer.id}>
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        aria-label={`Wybierz ${customer.name}`}
+                                                    />
+                                                </td>
+                                                <td>{customer.name}</td>
+                                                <td>{customer.phone || '-'}</td>
+                                                <td>{customer.email || '-'}</td>
+                                                <td>
+                                                    {formatDate(
+                                                        customer.createdAt,
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600">
+                                <span>
+                                    Pozycje od{' '}
+                                    {Math.min(
+                                        (page - 1) * 20 + 1,
+                                        data?.total ?? 0,
+                                    )}{' '}
+                                    do {Math.min(page * 20, data?.total ?? 0)}{' '}
+                                    na stronie
+                                    <select
+                                        className="ml-1 rounded border border-gray-300 p-1"
+                                        defaultValue="20"
+                                    >
+                                        <option value="20">20</option>
+                                    </select>
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        className="versum-button versum-button--light"
+                                        disabled={page <= 1}
+                                        onClick={() =>
+                                            setPage((current) =>
+                                                Math.max(current - 1, 1),
+                                            )
+                                        }
+                                    >
+                                        poprzednia
+                                    </button>
+                                    <span>
+                                        {page} z {totalPages}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="versum-button versum-button--light"
+                                        disabled={page >= totalPages}
+                                        onClick={() =>
+                                            setPage((current) =>
+                                                Math.min(
+                                                    current + 1,
+                                                    totalPages,
+                                                ),
+                                            )
+                                        }
+                                    >
+                                        następna
+                                    </button>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
+
+                {showCreateModal ? (
+                    <CreateCustomerModal
+                        onClose={() => setShowCreateModal(false)}
+                        onCreate={async (payload) => {
+                            const name =
+                                `${payload.firstName} ${payload.lastName}`.trim();
+                            await createCustomer.mutateAsync({
+                                ...payload,
+                                name,
+                                smsConsent: true,
+                                emailConsent: true,
+                                gdprConsent: true,
+                            });
+                            setShowCreateModal(false);
+                        }}
+                        submitting={createCustomer.isPending}
+                    />
+                ) : null}
             </DashboardLayout>
         </RouteGuard>
     );
@@ -254,149 +202,102 @@ export default function ClientsPage() {
 function CreateCustomerModal({
     onClose,
     onCreate,
-    isLoading,
+    submitting,
 }: {
     onClose: () => void;
-    onCreate: (data: Partial<Customer>) => Promise<void> | void;
-    isLoading: boolean;
+    onCreate: (payload: CustomerDraft) => Promise<void>;
+    submitting: boolean;
 }) {
-    const [formData, setFormData] = useState({
+    const [form, setForm] = useState<CustomerDraft>({
         firstName: '',
         lastName: '',
-        phone: '',
         email: '',
+        phone: '',
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        void onCreate(formData);
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        await onCreate(form);
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                        Nowy klient
-                    </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <form
+                className="w-full max-w-md rounded border border-gray-300 bg-white p-4"
+                onSubmit={(event) => {
+                    void handleSubmit(event);
+                }}
+            >
+                <h2 className="mb-3 text-lg font-semibold text-gray-800">
+                    Dodaj klienta
+                </h2>
+                <div className="grid gap-3">
+                    <input
+                        className="versum-input"
+                        placeholder="Imię"
+                        value={form.firstName}
+                        onChange={(event) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                firstName: event.target.value,
+                            }))
+                        }
+                        required
+                    />
+                    <input
+                        className="versum-input"
+                        placeholder="Nazwisko"
+                        value={form.lastName}
+                        onChange={(event) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                lastName: event.target.value,
+                            }))
+                        }
+                        required
+                    />
+                    <input
+                        className="versum-input"
+                        placeholder="Email"
+                        type="email"
+                        value={form.email}
+                        onChange={(event) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                email: event.target.value,
+                            }))
+                        }
+                        required
+                    />
+                    <input
+                        className="versum-input"
+                        placeholder="Telefon"
+                        value={form.phone}
+                        onChange={(event) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                phone: event.target.value,
+                            }))
+                        }
+                    />
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
                     <button
                         type="button"
+                        className="versum-button versum-button--light"
                         onClick={onClose}
-                        aria-label="Zamknij"
-                        className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                     >
-                        <svg
-                            className="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
+                        anuluj
+                    </button>
+                    <button
+                        type="submit"
+                        className="versum-button"
+                        disabled={submitting}
+                    >
+                        {submitting ? 'zapisywanie...' : 'zapisz'}
                     </button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label
-                                htmlFor="firstName"
-                                className="mb-1 block text-sm font-medium text-gray-700"
-                            >
-                                Imię
-                            </label>
-                            <input
-                                id="firstName"
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                required
-                                placeholder="Wprowadź imię"
-                                className="w-full rounded border px-3 py-2"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="lastName"
-                                className="mb-1 block text-sm font-medium text-gray-700"
-                            >
-                                Nazwisko
-                            </label>
-                            <input
-                                id="lastName"
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                placeholder="Wprowadź nazwisko"
-                                className="w-full rounded border px-3 py-2"
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label
-                            htmlFor="phone"
-                            className="mb-1 block text-sm font-medium text-gray-700"
-                        >
-                            Telefon
-                        </label>
-                        <input
-                            id="phone"
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            placeholder="Wprowadź numer telefonu"
-                            className="w-full rounded border px-3 py-2"
-                        />
-                    </div>
-                    <div>
-                        <label
-                            htmlFor="email"
-                            className="mb-1 block text-sm font-medium text-gray-700"
-                        >
-                            E-mail
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Wprowadź adres e-mail"
-                            className="w-full rounded border px-3 py-2"
-                        />
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded border px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                            Anuluj
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={!formData.firstName || isLoading}
-                            className="rounded bg-cyan-600 px-4 py-2 text-sm text-white hover:bg-cyan-700 disabled:opacity-50"
-                        >
-                            {isLoading ? 'Zapisywanie...' : 'Dodaj klienta'}
-                        </button>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     );
 }

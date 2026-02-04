@@ -7,7 +7,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
+import '@/styles/versum-shell.css';
 import RouteProgress from '@/components/RouteProgress';
+import VersumSvgSprites from '@/components/versum/VersumSvgSprites';
 import { initSentry } from '@/sentry.client';
 import {
     isAnalyticsEnabled,
@@ -100,6 +102,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <ToastProvider>
+                    <VersumSvgSprites />
                     {isAnalyticsEnabled() && (
                         <>
                             {/* GA4 loader */}

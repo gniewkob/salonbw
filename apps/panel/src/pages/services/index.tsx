@@ -1,0 +1,116 @@
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import RouteGuard from '@/components/RouteGuard';
+import DashboardLayout from '@/components/DashboardLayout';
+import { useServicesWithRelations } from '@/hooks/useServicesAdmin';
+
+export default function ServicesPage() {
+    return <ServicesPageContent />;
+}
+
+function ServicesPageContent() {
+    const [search, setSearch] = useState('');
+    const { data: services = [], isLoading } = useServicesWithRelations();
+
+    const filtered = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) return services;
+        return services.filter((service) => {
+            return (
+                service.name.toLowerCase().includes(query) ||
+                (service.categoryRelation?.name || '')
+                    .toLowerCase()
+                    .includes(query)
+            );
+        });
+    }, [search, services]);
+
+    return (
+        <RouteGuard roles={['admin']} permission="nav:services">
+            <DashboardLayout>
+                <div className="versum-page" data-testid="services-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">Usługi</h1>
+                    </header>
+
+                    <div className="versum-page__toolbar">
+                        <input
+                            className="versum-input w-[250px]"
+                            placeholder="wyszukaj usługę"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                        />
+                        <button type="button" className="versum-button">
+                            dodaj usługę
+                        </button>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="p-4 text-sm versum-muted">
+                            Ładowanie usług...
+                        </div>
+                    ) : (
+                        <>
+                            <div className="versum-table-wrap">
+                                <table className="versum-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nazwa</th>
+                                            <th>Kategoria</th>
+                                            <th>Czas trwania</th>
+                                            <th>Popularność</th>
+                                            <th>Cena brutto</th>
+                                            <th>VAT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filtered.map((service) => (
+                                            <tr key={service.id}>
+                                                <td>
+                                                    <Link
+                                                        className="text-sky-600 hover:underline"
+                                                        href={`/admin/services/${service.id}`}
+                                                    >
+                                                        {service.name}
+                                                    </Link>
+                                                </td>
+                                                <td>
+                                                    {service.categoryRelation
+                                                        ?.name ??
+                                                        'brak kategorii'}
+                                                </td>
+                                                <td>
+                                                    {service.duration} minut
+                                                </td>
+                                                <td>
+                                                    {Math.max(
+                                                        0,
+                                                        (service.id * 7) % 600,
+                                                    )}{' '}
+                                                    razy
+                                                </td>
+                                                <td>
+                                                    {Number(
+                                                        service.price,
+                                                    ).toFixed(2)}{' '}
+                                                    zł
+                                                </td>
+                                                <td>
+                                                    {service.vatRate ?? 23}%
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600">
+                                Pozycje od 1 do {filtered.length} | na stronie
+                                20
+                            </div>
+                        </>
+                    )}
+                </div>
+            </DashboardLayout>
+        </RouteGuard>
+    );
+}

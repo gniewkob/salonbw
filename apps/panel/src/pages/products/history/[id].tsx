@@ -37,7 +37,9 @@ export default function ProductHistoryPage() {
             activeTab="history"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">Ładowanie historii...</p>
+                <p className="py-6 text-sm text-gray-500">
+                    Ładowanie historii...
+                </p>
             ) : (
                 <div className="overflow-x-auto border border-gray-200">
                     <table className="min-w-full text-sm">
@@ -54,24 +56,44 @@ export default function ProductHistoryPage() {
                         </thead>
                         <tbody>
                             {history.map((item) => (
-                                <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
+                                <tr
+                                    key={item.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
                                     <td className="px-3 py-2">
                                         {item.reference ? (
-                                            <Link href={item.reference.href} className="text-sky-600 hover:underline">
-                                                {item.label} {dateLabel(item.createdAt)}
+                                            <Link
+                                                href={item.reference.href}
+                                                className="text-sky-600 hover:underline"
+                                            >
+                                                {item.label}{' '}
+                                                {dateLabel(item.createdAt)}
                                             </Link>
                                         ) : (
                                             <>
-                                                {item.label} {dateLabel(item.createdAt)}
+                                                {item.label}{' '}
+                                                {dateLabel(item.createdAt)}
                                             </>
                                         )}
                                     </td>
-                                    <td className="px-3 py-2">{item.quantity}</td>
-                                    <td className="px-3 py-2">{money(item.unitPriceNet)}</td>
-                                    <td className="px-3 py-2">{money(item.unitPriceGross)}</td>
-                                    <td className="px-3 py-2">{money(item.totalNet)}</td>
-                                    <td className="px-3 py-2">{money(item.totalGross)}</td>
-                                    <td className="px-3 py-2">{item.clientName ?? '-'}</td>
+                                    <td className="px-3 py-2">
+                                        {item.quantity}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {money(item.unitPriceNet)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {money(item.unitPriceGross)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {money(item.totalNet)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {money(item.totalGross)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {item.clientName ?? '-'}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
