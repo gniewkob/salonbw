@@ -30,7 +30,9 @@ export default function WarehouseOrdersHistoryPage() {
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie zamówień...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie zamówień...
+                </p>
             ) : (
                 <div className="overflow-x-auto border border-gray-200">
                     <table className="min-w-full text-sm">
@@ -45,11 +47,22 @@ export default function WarehouseOrdersHistoryPage() {
                         </thead>
                         <tbody>
                             {orders.map((order) => (
-                                <tr key={order.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                    <td className="px-3 py-2">{order.orderNumber}</td>
-                                    <td className="px-3 py-2">{order.supplier?.name ?? '-'}</td>
-                                    <td className="px-3 py-2">{order.status}</td>
-                                    <td className="px-3 py-2">{order.items?.length ?? 0}</td>
+                                <tr
+                                    key={order.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
+                                    <td className="px-3 py-2">
+                                        {order.orderNumber}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {order.supplier?.name ?? '-'}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {order.status}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {order.items?.length ?? 0}
+                                    </td>
                                     <td className="px-3 py-2 text-xs">
                                         {order.status === 'draft' ? (
                                             <>
@@ -57,7 +70,9 @@ export default function WarehouseOrdersHistoryPage() {
                                                     type="button"
                                                     className="text-sky-600 hover:underline"
                                                     onClick={() =>
-                                                        void sendMutation.mutateAsync(order.id)
+                                                        void sendMutation.mutateAsync(
+                                                            order.id,
+                                                        )
                                                     }
                                                 >
                                                     wyślij
@@ -67,7 +82,9 @@ export default function WarehouseOrdersHistoryPage() {
                                                     type="button"
                                                     className="text-red-600 hover:underline"
                                                     onClick={() =>
-                                                        void cancelMutation.mutateAsync(order.id)
+                                                        void cancelMutation.mutateAsync(
+                                                            order.id,
+                                                        )
                                                     }
                                                 >
                                                     anuluj
@@ -79,7 +96,9 @@ export default function WarehouseOrdersHistoryPage() {
                                                     type="button"
                                                     className="text-sky-600 hover:underline"
                                                     onClick={() =>
-                                                        void receiveMutation.mutateAsync(order.id)
+                                                        void receiveMutation.mutateAsync(
+                                                            order.id,
+                                                        )
                                                     }
                                                 >
                                                     przyjmij
@@ -89,7 +108,9 @@ export default function WarehouseOrdersHistoryPage() {
                                                     type="button"
                                                     className="text-red-600 hover:underline"
                                                     onClick={() =>
-                                                        void cancelMutation.mutateAsync(order.id)
+                                                        void cancelMutation.mutateAsync(
+                                                            order.id,
+                                                        )
                                                     }
                                                 >
                                                     anuluj

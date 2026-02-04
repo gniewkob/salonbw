@@ -30,10 +30,14 @@ export default function WarehouseUsageDetailsPage() {
             }
         >
             {isLoading || !data ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie szczegółów zużycia...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie szczegółów zużycia...
+                </p>
             ) : (
                 <div className="space-y-4">
-                    <h2 className="text-[38px] leading-none text-gray-800">Szczegóły zużycia</h2>
+                    <h2 className="text-[38px] leading-none text-gray-800">
+                        Szczegóły zużycia
+                    </h2>
                     <div className="overflow-x-auto border border-gray-200">
                         <table className="min-w-full text-sm">
                             <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
@@ -46,13 +50,22 @@ export default function WarehouseUsageDetailsPage() {
                             </thead>
                             <tbody>
                                 {data.items.map((item) => (
-                                    <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                        <td className="px-3 py-2">{item.productName}</td>
+                                    <tr
+                                        key={item.id}
+                                        className="border-t border-gray-200 hover:bg-gray-50"
+                                    >
+                                        <td className="px-3 py-2">
+                                            {item.productName}
+                                        </td>
                                         <td className="px-3 py-2">
                                             {item.quantity} {item.unit}
                                         </td>
-                                        <td className="px-3 py-2">{item.stockBefore}</td>
-                                        <td className="px-3 py-2">{item.stockAfter}</td>
+                                        <td className="px-3 py-2">
+                                            {item.stockBefore}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {item.stockAfter}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

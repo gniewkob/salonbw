@@ -24,7 +24,9 @@ export default function ProductFormulasPage() {
             activeTab="formulas"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">Ładowanie receptur...</p>
+                <p className="py-6 text-sm text-gray-500">
+                    Ładowanie receptur...
+                </p>
             ) : formulas.length === 0 ? (
                 <p className="py-6 text-[38px] leading-none text-gray-700">
                     Brak receptur dla tego produktu
@@ -43,19 +45,31 @@ export default function ProductFormulasPage() {
                         </thead>
                         <tbody>
                             {formulas.map((formula) => (
-                                <tr key={formula.id} className="border-t border-gray-200 hover:bg-gray-50">
+                                <tr
+                                    key={formula.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
                                     <td className="px-3 py-2">
                                         <Link
                                             href={`/admin/services/${formula.serviceId}`}
                                             className="text-sky-600 hover:underline"
                                         >
-                                            {formula.serviceName ?? `Usługa #${formula.serviceId}`}
+                                            {formula.serviceName ??
+                                                `Usługa #${formula.serviceId}`}
                                         </Link>
                                     </td>
-                                    <td className="px-3 py-2">{formula.serviceVariantName ?? '-'}</td>
-                                    <td className="px-3 py-2">{formula.quantity}</td>
-                                    <td className="px-3 py-2">{formula.unit ?? '-'}</td>
-                                    <td className="px-3 py-2">{formula.notes ?? '-'}</td>
+                                    <td className="px-3 py-2">
+                                        {formula.serviceVariantName ?? '-'}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {formula.quantity}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {formula.unit ?? '-'}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {formula.notes ?? '-'}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

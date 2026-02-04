@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-03 (CI: Frontend E2E removed; Lighthouse targets dev root)_
+_Last updated: 2026-02-04 (panel canonical admin routes + Versum shell)_
 
 ## Platform Architecture
 
@@ -81,6 +81,7 @@ Verification:
 
 ## What's Working
 
+- **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/admin/*` entry routes now redirect to canonical equivalents.
 - **2026-02-03** – Frontend E2E workflow removed; Lighthouse CI now targets only `https://dev.salon-bw.pl/` due to `/services` returning 500.
 - **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
   - ✅ API health endpoints operational (database, SMTP, Prometheus metrics)

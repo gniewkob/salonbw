@@ -18,7 +18,7 @@ describe('Layout', () => {
     });
 
     it('renders Navbar on public routes', () => {
-        mockedUseRouter.mockReturnValue({ pathname: '/services' });
+        mockedUseRouter.mockReturnValue({ pathname: '/contact' });
         mockedUseAuth.mockReturnValue(createAuthValue());
         render(<Layout>content</Layout>);
         expect(screen.getByText('Login')).toBeInTheDocument();
@@ -30,6 +30,6 @@ describe('Layout', () => {
             createAuthValue({ isAuthenticated: true, role: 'admin' }),
         );
         render(<Layout>content</Layout>);
-        expect(screen.getByText('Pulpit')).toBeInTheDocument();
+        expect(screen.getByText('magazyn')).toBeInTheDocument();
     });
 });

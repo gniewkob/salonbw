@@ -36,7 +36,9 @@ export default function WarehouseDeliveriesHistoryPage() {
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie historii dostaw...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie historii dostaw...
+                </p>
             ) : (
                 <div className="overflow-x-auto border border-gray-200">
                     <table className="min-w-full text-sm">
@@ -52,25 +54,44 @@ export default function WarehouseDeliveriesHistoryPage() {
                         </thead>
                         <tbody>
                             {deliveries.map((delivery) => (
-                                <tr key={delivery.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                    <td className="px-3 py-2">{delivery.deliveryNumber}</td>
-                                    <td className="px-3 py-2">{delivery.supplier?.name ?? '-'}</td>
+                                <tr
+                                    key={delivery.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
+                                    <td className="px-3 py-2">
+                                        {delivery.deliveryNumber}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {delivery.supplier?.name ?? '-'}
+                                    </td>
                                     <td className="px-3 py-2">
                                         {delivery.deliveryDate
-                                            ? new Date(delivery.deliveryDate).toLocaleDateString('pl-PL')
+                                            ? new Date(
+                                                  delivery.deliveryDate,
+                                              ).toLocaleDateString('pl-PL')
                                             : '-'}
                                     </td>
-                                    <td className="px-3 py-2">{delivery.status}</td>
                                     <td className="px-3 py-2">
-                                        {Number(delivery.totalCost ?? 0).toFixed(2)} zł
+                                        {delivery.status}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {Number(
+                                            delivery.totalCost ?? 0,
+                                        ).toFixed(2)}{' '}
+                                        zł
                                     </td>
                                     <td className="px-3 py-2 text-xs">
-                                        {delivery.status === 'draft' || delivery.status === 'pending' ? (
+                                        {delivery.status === 'draft' ||
+                                        delivery.status === 'pending' ? (
                                             <>
                                                 <button
                                                     type="button"
                                                     className="text-sky-600 hover:underline"
-                                                    onClick={() => void receive(delivery.id)}
+                                                    onClick={() =>
+                                                        void receive(
+                                                            delivery.id,
+                                                        )
+                                                    }
                                                 >
                                                     przyjmij
                                                 </button>
@@ -78,7 +99,9 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                 <button
                                                     type="button"
                                                     className="text-red-600 hover:underline"
-                                                    onClick={() => void cancel(delivery.id)}
+                                                    onClick={() =>
+                                                        void cancel(delivery.id)
+                                                    }
                                                 >
                                                     anuluj
                                                 </button>

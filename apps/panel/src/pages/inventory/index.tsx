@@ -45,31 +45,55 @@ export default function InventoryHistoryPage() {
                 HISTORIA INWENTARYZACJI
             </h2>
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie historii inwentaryzacji...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie historii inwentaryzacji...
+                </p>
             ) : (
                 <div className="overflow-x-auto border border-gray-200">
                     <table className="min-w-full text-sm">
                         <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
                             <tr>
-                                <th className="px-3 py-2">data i nazwa inwentaryzacji</th>
+                                <th className="px-3 py-2">
+                                    data i nazwa inwentaryzacji
+                                </th>
                                 <th className="px-3 py-2">liczba produktów</th>
-                                <th className="px-3 py-2">liczba produktów z niedoborem w magazynie</th>
-                                <th className="px-3 py-2">liczba produktów z nadwyżką w magazynie</th>
-                                <th className="px-3 py-2">liczba produktów ze stanem zgodnym</th>
+                                <th className="px-3 py-2">
+                                    liczba produktów z niedoborem w magazynie
+                                </th>
+                                <th className="px-3 py-2">
+                                    liczba produktów z nadwyżką w magazynie
+                                </th>
+                                <th className="px-3 py-2">
+                                    liczba produktów ze stanem zgodnym
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {rows.map((row) => (
-                                <tr key={row.id} className="border-t border-gray-200 hover:bg-gray-50">
+                                <tr
+                                    key={row.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
                                     <td className="px-3 py-2 text-sky-600">
                                         <Link href={`/inventory/${row.id}`}>
-                                            {new Date(row.stocktakingDate).toLocaleDateString('pl-PL')} {row.stocktakingNumber}
+                                            {new Date(
+                                                row.stocktakingDate,
+                                            ).toLocaleDateString('pl-PL')}{' '}
+                                            {row.stocktakingNumber}
                                         </Link>
                                     </td>
-                                    <td className="px-3 py-2">{row.productsCount}</td>
-                                    <td className="px-3 py-2">{row.shortageCount}</td>
-                                    <td className="px-3 py-2">{row.overageCount}</td>
-                                    <td className="px-3 py-2">{row.matchedCount}</td>
+                                    <td className="px-3 py-2">
+                                        {row.productsCount}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {row.shortageCount}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {row.overageCount}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {row.matchedCount}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -84,13 +108,19 @@ export default function InventoryHistoryPage() {
             {isCreateOpen ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45">
                     <div className="w-full max-w-xl rounded border border-gray-300 bg-white p-4 shadow-lg">
-                        <h3 className="mb-3 text-lg font-semibold">Nowa inwentaryzacja</h3>
+                        <h3 className="mb-3 text-lg font-semibold">
+                            Nowa inwentaryzacja
+                        </h3>
                         <label className="mb-3 block text-sm">
-                            <span className="mb-1 block">Data inwentaryzacji</span>
+                            <span className="mb-1 block">
+                                Data inwentaryzacji
+                            </span>
                             <input
                                 type="date"
                                 value={stocktakingDate}
-                                onChange={(event) => setStocktakingDate(event.target.value)}
+                                onChange={(event) =>
+                                    setStocktakingDate(event.target.value)
+                                }
                                 className="w-full rounded border border-gray-300 px-2 py-1.5"
                             />
                         </label>
@@ -98,7 +128,9 @@ export default function InventoryHistoryPage() {
                             <span className="mb-1 block">Notatki</span>
                             <textarea
                                 value={notes}
-                                onChange={(event) => setNotes(event.target.value)}
+                                onChange={(event) =>
+                                    setNotes(event.target.value)
+                                }
                                 className="h-24 w-full rounded border border-gray-300 px-2 py-1.5"
                             />
                         </label>

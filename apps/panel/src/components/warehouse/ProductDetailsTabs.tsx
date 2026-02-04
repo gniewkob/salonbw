@@ -10,7 +10,11 @@ interface ProductDetailsTabsProps {
 }
 
 const tabList = (productId: number) => [
-    { id: 'card' as const, href: `/products/${productId}`, label: 'karta produktu' },
+    {
+        id: 'card' as const,
+        href: `/products/${productId}`,
+        label: 'karta produktu',
+    },
     {
         id: 'history' as const,
         href: `/products/history/${productId}`,

@@ -27,7 +27,9 @@ interface StocktakingHistoryRow {
     matchedCount: number;
 }
 
-function toQueryString(params: Record<string, string | number | boolean | undefined>) {
+function toQueryString(
+    params: Record<string, string | number | boolean | undefined>,
+) {
     const query = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
         if (value === undefined || value === null || value === '') return;
@@ -97,17 +99,19 @@ export function useProductFormulas(productId?: number) {
         queryKey: ['product-formulas', productId],
         enabled: Boolean(productId),
         queryFn: () =>
-            apiFetch<Array<{
-                id: number;
-                serviceId: number;
-                serviceName: string | null;
-                serviceVariantId: number | null;
-                serviceVariantName: string | null;
-                quantity: number;
-                unit: string | null;
-                notes: string | null;
-                createdAt: string;
-            }>>(`/products/${productId}/formulas`),
+            apiFetch<
+                Array<{
+                    id: number;
+                    serviceId: number;
+                    serviceName: string | null;
+                    serviceVariantId: number | null;
+                    serviceVariantName: string | null;
+                    quantity: number;
+                    unit: string | null;
+                    notes: string | null;
+                    createdAt: string;
+                }>
+            >(`/products/${productId}/formulas`),
     });
 }
 
@@ -129,16 +133,21 @@ export function useUpdateProductCommissions(productId?: number) {
 
     return useMutation({
         mutationFn: (rules: ProductCommissionRule[]) =>
-            apiFetch<ProductCommissionRule[]>(`/products/${productId}/commissions`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rules: rules.map((rule) => ({
-                        employeeId: rule.employeeId,
-                        commissionPercent: Number(rule.commissionPercent ?? 0),
-                    })),
-                }),
-            }),
+            apiFetch<ProductCommissionRule[]>(
+                `/products/${productId}/commissions`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        rules: rules.map((rule) => ({
+                            employeeId: rule.employeeId,
+                            commissionPercent: Number(
+                                rule.commissionPercent ?? 0,
+                            ),
+                        })),
+                    }),
+                },
+            ),
         onSuccess: () => {
             if (!productId) return;
             void queryClient.invalidateQueries({
@@ -189,8 +198,12 @@ export function useCreateWarehouseSale() {
                 body: JSON.stringify(payload),
             }),
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-sales'] });
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-sales'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
         },
     });
 }
@@ -221,7 +234,11 @@ export function useCreateWarehouseUsage() {
             employeeId?: number;
             appointmentId?: number;
             note?: string;
-            items: Array<{ productId: number; quantity: number; unit?: string }>;
+            items: Array<{
+                productId: number;
+                quantity: number;
+                unit?: string;
+            }>;
         }) =>
             apiFetch<WarehouseUsage>('/usage', {
                 method: 'POST',
@@ -229,8 +246,12 @@ export function useCreateWarehouseUsage() {
                 body: JSON.stringify(payload),
             }),
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-usage'] });
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-usage'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
         },
     });
 }
@@ -272,7 +293,9 @@ export function useCreateWarehouseOrder() {
                 body: JSON.stringify(payload),
             }),
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-orders'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-orders'],
+            });
         },
     });
 }
@@ -292,11 +315,15 @@ function useOrderAction(
                 body: JSON.stringify(payload ?? {}),
             }),
         onSuccess: (_, orderId) => {
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-orders'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-orders'],
+            });
             void queryClient.invalidateQueries({
                 queryKey: ['warehouse-order', orderId],
             });
-            void queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
         },
     });
 }
@@ -317,6 +344,7 @@ export function useStocktakingHistory() {
     const { apiFetch } = useAuth();
     return useQuery<StocktakingHistoryRow[]>({
         queryKey: ['stocktaking-history'],
-        queryFn: () => apiFetch<StocktakingHistoryRow[]>('/stocktaking/history'),
+        queryFn: () =>
+            apiFetch<StocktakingHistoryRow[]>('/stocktaking/history'),
     });
 }

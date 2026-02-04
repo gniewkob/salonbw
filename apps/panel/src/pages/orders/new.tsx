@@ -19,7 +19,9 @@ interface OrderLineForm {
 export default function WarehouseOrderCreatePage() {
     const router = useRouter();
     const { data: suppliers = [] } = useSuppliers();
-    const { data: products = [] } = useWarehouseProducts({ includeInactive: false });
+    const { data: products = [] } = useWarehouseProducts({
+        includeInactive: false,
+    });
     const createMutation = useCreateWarehouseOrder();
 
     const [supplierId, setSupplierId] = useState('');
@@ -50,7 +52,10 @@ export default function WarehouseOrderCreatePage() {
                 productName: line.productName || undefined,
                 quantity: Number(line.quantity || 0),
             }))
-            .filter((line) => line.quantity > 0 && (line.productId || line.productName));
+            .filter(
+                (line) =>
+                    line.quantity > 0 && (line.productId || line.productName),
+            );
 
         if (items.length === 0) return;
 
@@ -85,7 +90,9 @@ export default function WarehouseOrderCreatePage() {
                         onChange={(event) => setSupplierId(event.target.value)}
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     >
-                        <option value="">wpisz nazwę lub wybierz z listy</option>
+                        <option value="">
+                            wpisz nazwę lub wybierz z listy
+                        </option>
                         {suppliers.map((supplier) => (
                             <option key={supplier.id} value={supplier.id}>
                                 {supplier.name}
@@ -95,7 +102,9 @@ export default function WarehouseOrderCreatePage() {
                 </label>
             </div>
 
-            <h2 className="mb-3 mt-5 text-[34px] leading-none text-gray-800">Pozycje zamówienia</h2>
+            <h2 className="mb-3 mt-5 text-[34px] leading-none text-gray-800">
+                Pozycje zamówienia
+            </h2>
             <div className="overflow-x-auto border border-gray-200">
                 <table className="min-w-full text-sm">
                     <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
@@ -107,25 +116,35 @@ export default function WarehouseOrderCreatePage() {
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr key={`${index}-${line.productId}`} className="border-t border-gray-200">
+                            <tr
+                                key={`${index}-${line.productId}`}
+                                className="border-t border-gray-200"
+                            >
                                 <td className="px-2 py-2">
                                     <select
                                         value={line.productId}
                                         onChange={(event) => {
                                             const value = event.target.value;
                                             const product = products.find(
-                                                (item) => String(item.id) === value,
+                                                (item) =>
+                                                    String(item.id) === value,
                                             );
                                             updateLine(index, {
                                                 productId: value,
-                                                productName: product?.name ?? '',
+                                                productName:
+                                                    product?.name ?? '',
                                             });
                                         }}
                                         className="mb-2 w-full rounded border border-gray-300 px-2 py-1.5"
                                     >
-                                        <option value="">wybierz produkt</option>
+                                        <option value="">
+                                            wybierz produkt
+                                        </option>
                                         {products.map((product) => (
-                                            <option key={product.id} value={product.id}>
+                                            <option
+                                                key={product.id}
+                                                value={product.id}
+                                            >
                                                 {product.name}
                                             </option>
                                         ))}
@@ -134,7 +153,9 @@ export default function WarehouseOrderCreatePage() {
                                         type="text"
                                         value={line.productName}
                                         onChange={(event) =>
-                                            updateLine(index, { productName: event.target.value })
+                                            updateLine(index, {
+                                                productName: event.target.value,
+                                            })
                                         }
                                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                                         placeholder="nazwa alternatywna"
@@ -146,7 +167,9 @@ export default function WarehouseOrderCreatePage() {
                                         min={1}
                                         value={line.quantity}
                                         onChange={(event) =>
-                                            updateLine(index, { quantity: event.target.value })
+                                            updateLine(index, {
+                                                quantity: event.target.value,
+                                            })
                                         }
                                         className="w-24 rounded border border-gray-300 px-2 py-1.5"
                                     />
@@ -158,7 +181,8 @@ export default function WarehouseOrderCreatePage() {
                                         onClick={() =>
                                             setLines((current) =>
                                                 current.filter(
-                                                    (_, lineIndex) => lineIndex !== index,
+                                                    (_, lineIndex) =>
+                                                        lineIndex !== index,
                                                 ),
                                             )
                                         }
@@ -198,7 +222,9 @@ export default function WarehouseOrderCreatePage() {
                     onClick={() => void submit()}
                     disabled={createMutation.isPending}
                 >
-                    {createMutation.isPending ? 'zapisywanie...' : 'wyślij zamówienie'}
+                    {createMutation.isPending
+                        ? 'zapisywanie...'
+                        : 'wyślij zamówienie'}
                 </button>
             </div>
         </WarehouseLayout>

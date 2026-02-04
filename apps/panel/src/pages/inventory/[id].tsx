@@ -73,51 +73,79 @@ export default function InventoryDetailsPage() {
             }
         >
             {isLoading || !data ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie inwentaryzacji...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie inwentaryzacji...
+                </p>
             ) : (
                 <div className="space-y-4">
                     <div className="text-sm text-gray-700">
                         status: <strong>{data.status}</strong> | data:{' '}
-                        {new Date(data.stocktakingDate).toLocaleDateString('pl-PL')}
+                        {new Date(data.stocktakingDate).toLocaleDateString(
+                            'pl-PL',
+                        )}
                     </div>
                     <div className="overflow-x-auto border border-gray-200">
                         <table className="min-w-full text-sm">
                             <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
                                 <tr>
                                     <th className="px-3 py-2">produkt</th>
-                                    <th className="px-3 py-2">stan systemowy</th>
-                                    <th className="px-3 py-2">stan policzony</th>
+                                    <th className="px-3 py-2">
+                                        stan systemowy
+                                    </th>
+                                    <th className="px-3 py-2">
+                                        stan policzony
+                                    </th>
                                     <th className="px-3 py-2">różnica</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {data.items.map((item) => (
-                                    <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                        <td className="px-3 py-2">{item.product?.name ?? `#${item.productId}`}</td>
-                                        <td className="px-3 py-2">{item.systemQuantity}</td>
+                                    <tr
+                                        key={item.id}
+                                        className="border-t border-gray-200 hover:bg-gray-50"
+                                    >
+                                        <td className="px-3 py-2">
+                                            {item.product?.name ??
+                                                `#${item.productId}`}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {item.systemQuantity}
+                                        </td>
                                         <td className="px-3 py-2">
                                             {data.status === 'in_progress' ? (
                                                 <input
                                                     type="number"
-                                                    value={item.countedQuantity ?? ''}
+                                                    value={
+                                                        item.countedQuantity ??
+                                                        ''
+                                                    }
                                                     onChange={(event) =>
-                                                        void updateItemMutation.mutateAsync({
-                                                            stocktakingId: data.id,
-                                                            itemId: item.id,
-                                                            data: {
-                                                                countedQuantity: Number(
-                                                                    event.target.value || 0,
-                                                                ),
+                                                        void updateItemMutation.mutateAsync(
+                                                            {
+                                                                stocktakingId:
+                                                                    data.id,
+                                                                itemId: item.id,
+                                                                data: {
+                                                                    countedQuantity:
+                                                                        Number(
+                                                                            event
+                                                                                .target
+                                                                                .value ||
+                                                                                0,
+                                                                        ),
+                                                                },
                                                             },
-                                                        })
+                                                        )
                                                     }
                                                     className="w-24 rounded border border-gray-300 px-2 py-1.5"
                                                 />
                                             ) : (
-                                                item.countedQuantity ?? '-'
+                                                (item.countedQuantity ?? '-')
                                             )}
                                         </td>
-                                        <td className="px-3 py-2">{item.difference ?? '-'}</td>
+                                        <td className="px-3 py-2">
+                                            {item.difference ?? '-'}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

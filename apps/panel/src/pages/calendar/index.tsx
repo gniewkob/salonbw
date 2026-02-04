@@ -38,6 +38,10 @@ interface AppointmentFormPayload {
 }
 
 export default function CalendarPage() {
+    return <CalendarPageContent />;
+}
+
+function CalendarPageContent() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<CalendarViewType>('day');
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(

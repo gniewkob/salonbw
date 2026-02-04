@@ -239,7 +239,9 @@ export default function WarehouseSaleCreatePage() {
                         onChange={(event) => setEmployeeId(event.target.value)}
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     >
-                        <option value="">wpisz nazwę lub wybierz z listy</option>
+                        <option value="">
+                            wpisz nazwę lub wybierz z listy
+                        </option>
                         {employees?.map((employee) => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name}
@@ -260,7 +262,9 @@ export default function WarehouseSaleCreatePage() {
                     <span className="mb-1 block">Płatność</span>
                     <select
                         value={paymentMethod}
-                        onChange={(event) => setPaymentMethod(event.target.value)}
+                        onChange={(event) =>
+                            setPaymentMethod(event.target.value)
+                        }
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     >
                         <option value="cash">gotówka</option>

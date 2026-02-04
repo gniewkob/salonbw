@@ -22,7 +22,9 @@ export default function WarehouseUsageHistoryPage() {
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie historii zużycia...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie historii zużycia...
+                </p>
             ) : (
                 <div className="overflow-x-auto border border-gray-200">
                     <table className="min-w-full text-sm">
@@ -38,17 +40,30 @@ export default function WarehouseUsageHistoryPage() {
                         </thead>
                         <tbody>
                             {usage.map((entry) => (
-                                <tr key={entry.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                    <td className="px-3 py-2">{entry.usageNumber}</td>
+                                <tr
+                                    key={entry.id}
+                                    className="border-t border-gray-200 hover:bg-gray-50"
+                                >
                                     <td className="px-3 py-2">
-                                        {new Date(entry.usedAt).toLocaleDateString('pl-PL')}
+                                        {entry.usageNumber}
                                     </td>
-                                    <td className="px-3 py-2">{entry.clientName ?? '-'}</td>
-                                    <td className="px-3 py-2">{entry.employee?.name ?? '-'}</td>
+                                    <td className="px-3 py-2">
+                                        {new Date(
+                                            entry.usedAt,
+                                        ).toLocaleDateString('pl-PL')}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {entry.clientName ?? '-'}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {entry.employee?.name ?? '-'}
+                                    </td>
                                     <td className="px-3 py-2">
                                         {entry.summary?.totalItems ??
                                             entry.items?.reduce(
-                                                (sum, item) => sum + Number(item.quantity ?? 0),
+                                                (sum, item) =>
+                                                    sum +
+                                                    Number(item.quantity ?? 0),
                                                 0,
                                             ) ??
                                             0}

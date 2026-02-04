@@ -11,7 +11,9 @@ export default function AdminWarehouseRedirectPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
-            <div className="p-6 text-sm text-gray-500">Przekierowanie do magazynu...</div>
+            <div className="p-6 text-sm text-gray-500">
+                Przekierowanie do magazynu...
+            </div>
         </RouteGuard>
     );
 }
