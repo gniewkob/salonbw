@@ -153,6 +153,10 @@ devil www restart dev.salon-bw.pl
 devil www restart salon-bw.pl
 ```
 
+Node version note:
+- `devil www options <domain> nodejs_version ...` is not supported on this MyDevil profile; do not use it in automation.
+- Keep Node runtime selection in app/startup scripts (for example `node22` fallback), not in `devil www options`.
+
 If Passenger restart is not picked up:
 ```bash
 ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs/tmp/restart.txt"
