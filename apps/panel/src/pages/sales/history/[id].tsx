@@ -38,7 +38,9 @@ export default function WarehouseSaleDetailsPage() {
             }
         >
             {isLoading || !sale ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie szczegółów sprzedaży...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie szczegółów sprzedaży...
+                </p>
             ) : (
                 <div className="space-y-4">
                     <h2 className="text-[40px] leading-none text-gray-800">
@@ -54,13 +56,20 @@ export default function WarehouseSaleDetailsPage() {
                                     <th className="px-3 py-2">cena brutto</th>
                                     <th className="px-3 py-2">ilość</th>
                                     <th className="px-3 py-2">VAT</th>
-                                    <th className="px-3 py-2">wartość brutto</th>
+                                    <th className="px-3 py-2">
+                                        wartość brutto
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sale.items.map((item, index) => (
-                                    <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
-                                        <td className="px-3 py-2">{index + 1}</td>
+                                    <tr
+                                        key={item.id}
+                                        className="border-t border-gray-200 hover:bg-gray-50"
+                                    >
+                                        <td className="px-3 py-2">
+                                            {index + 1}
+                                        </td>
                                         <td className="px-3 py-2">
                                             <Link
                                                 href={`/products/${item.productId ?? ''}`}
@@ -70,17 +79,26 @@ export default function WarehouseSaleDetailsPage() {
                                             </Link>
                                         </td>
                                         <td className="px-3 py-2">
-                                            {Number(item.unitPriceNet).toFixed(2)} zł
+                                            {Number(item.unitPriceNet).toFixed(
+                                                2,
+                                            )}{' '}
+                                            zł
                                         </td>
                                         <td className="px-3 py-2">
-                                            {Number(item.unitPriceGross).toFixed(2)} zł
+                                            {Number(
+                                                item.unitPriceGross,
+                                            ).toFixed(2)}{' '}
+                                            zł
                                         </td>
                                         <td className="px-3 py-2">
                                             {item.quantity} {item.unit}
                                         </td>
-                                        <td className="px-3 py-2">{item.vatRate}%</td>
                                         <td className="px-3 py-2">
-                                            {Number(item.totalGross).toFixed(2)} zł
+                                            {item.vatRate}%
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {Number(item.totalGross).toFixed(2)}{' '}
+                                            zł
                                         </td>
                                     </tr>
                                 ))}
@@ -91,10 +109,19 @@ export default function WarehouseSaleDetailsPage() {
                     <div className="grid gap-2 text-sm text-gray-700 md:grid-cols-2">
                         <div>klient: {sale.clientName ?? '-'}</div>
                         <div>pracownik: {sale.employee?.name ?? '-'}</div>
-                        <div>data sprzedaży: {new Date(sale.soldAt).toLocaleDateString('pl-PL')}</div>
+                        <div>
+                            data sprzedaży:{' '}
+                            {new Date(sale.soldAt).toLocaleDateString('pl-PL')}
+                        </div>
                         <div>płatność: {sale.paymentMethod ?? '-'}</div>
-                        <div>wartość netto: {Number(sale.totalNet ?? 0).toFixed(2)} zł</div>
-                        <div>wartość brutto: {Number(sale.totalGross ?? 0).toFixed(2)} zł</div>
+                        <div>
+                            wartość netto:{' '}
+                            {Number(sale.totalNet ?? 0).toFixed(2)} zł
+                        </div>
+                        <div>
+                            wartość brutto:{' '}
+                            {Number(sale.totalGross ?? 0).toFixed(2)} zł
+                        </div>
                     </div>
                 </div>
             )}

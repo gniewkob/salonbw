@@ -2,6 +2,8 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import type { User } from '@/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,7 +36,7 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
 };
 
 export default function RegisterPage() {
-    const { register } = useAuth();
+    const { register, apiFetch } = useAuth();
     const router = useRouter();
     const [form, setForm] = useState<RegisterFormValues>({
         name: '',
@@ -85,7 +87,8 @@ export default function RegisterPage() {
         setSubmitting(true);
         try {
             await register(form);
-            void router.push('/dashboard');
+            const profile = await apiFetch<User>('/users/profile');
+            void router.push(getPostLoginRoute(profile?.role));
         } catch (err: unknown) {
             setError(
                 err instanceof Error ? err.message : 'Registration failed',

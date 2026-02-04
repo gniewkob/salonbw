@@ -1,6 +1,5 @@
 export const publicRoutes = [
     '/',
-    '/services',
     '/gallery',
     '/contact',
     '/faq',

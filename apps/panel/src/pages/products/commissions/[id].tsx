@@ -41,7 +41,9 @@ export default function ProductCommissionsPage() {
             activeTab="commissions"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">Ładowanie prowizji...</p>
+                <p className="py-6 text-sm text-gray-500">
+                    Ładowanie prowizji...
+                </p>
             ) : (
                 <div>
                     <h2 className="mb-3 text-[44px] leading-none text-gray-800">
@@ -54,11 +56,15 @@ export default function ProductCommissionsPage() {
                                 <input
                                     type="number"
                                     className="mx-1 w-20 rounded border border-gray-300 px-1 py-0.5 text-sm"
-                                    value={edited[rule.employeeId] ?? rule.commissionPercent}
+                                    value={
+                                        edited[rule.employeeId] ??
+                                        rule.commissionPercent
+                                    }
                                     onChange={(event) =>
                                         setEdited((prev) => ({
                                             ...prev,
-                                            [rule.employeeId]: event.target.value,
+                                            [rule.employeeId]:
+                                                event.target.value,
                                         }))
                                     }
                                 />
@@ -73,7 +79,9 @@ export default function ProductCommissionsPage() {
                             onClick={() => void save()}
                             disabled={updateMutation.isPending}
                         >
-                            {updateMutation.isPending ? 'zapisywanie...' : 'zapisz prowizje'}
+                            {updateMutation.isPending
+                                ? 'zapisywanie...'
+                                : 'zapisz prowizje'}
                         </button>
                     </div>
                 </div>

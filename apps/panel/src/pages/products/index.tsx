@@ -5,18 +5,34 @@ import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import WarehouseCategoriesPanel from '@/components/warehouse/WarehouseCategoriesPanel';
-import { useWarehouseProducts, useProductCategories } from '@/hooks/useWarehouseViews';
+import {
+    useWarehouseProducts,
+    useProductCategories,
+} from '@/hooks/useWarehouseViews';
 import { useProductApi } from '@/api/products';
 
 function flattenCategoryIds(
-    nodes: Array<{ id: number; children?: Array<{ id: number; children?: unknown[] }> }>,
+    nodes: Array<{
+        id: number;
+        children?: Array<{ id: number; children?: unknown[] }>;
+    }>,
 ): number[] {
     const out: number[] = [];
-    const walk = (arr: Array<{ id: number; children?: Array<{ id: number; children?: unknown[] }> }>) => {
+    const walk = (
+        arr: Array<{
+            id: number;
+            children?: Array<{ id: number; children?: unknown[] }>;
+        }>,
+    ) => {
         for (const node of arr) {
             out.push(node.id);
             if (node.children && node.children.length > 0) {
-                walk(node.children as Array<{ id: number; children?: Array<{ id: number; children?: unknown[] }> }>);
+                walk(
+                    node.children as Array<{
+                        id: number;
+                        children?: Array<{ id: number; children?: unknown[] }>;
+                    }>,
+                );
             }
         }
     };
@@ -25,11 +41,17 @@ function flattenCategoryIds(
 }
 
 export default function WarehouseProductsPage() {
+    return <WarehouseProductsPageContent />;
+}
+
+function WarehouseProductsPageContent() {
     const queryClient = useQueryClient();
     const productApi = useProductApi();
 
     const [search, setSearch] = useState('');
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<
+        number | undefined
+    >(undefined);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
@@ -47,13 +69,19 @@ export default function WarehouseProductsPage() {
         includeInactive: true,
     });
 
-    const flatCategoryIds = useMemo(() => flattenCategoryIds(categories), [categories]);
+    const flatCategoryIds = useMemo(
+        () => flattenCategoryIds(categories),
+        [categories],
+    );
 
     const filteredProducts = useMemo(() => {
         if (!selectedCategoryId) return products;
         return products.filter((product) => {
             if (!product.categoryId) return false;
-            return product.categoryId === selectedCategoryId || flatCategoryIds.includes(product.categoryId);
+            return (
+                product.categoryId === selectedCategoryId ||
+                flatCategoryIds.includes(product.categoryId)
+            );
         });
     }, [flatCategoryIds, products, selectedCategoryId]);
 
@@ -77,7 +105,11 @@ export default function WarehouseProductsPage() {
             `${Number(product.vatRate ?? 23)}%`,
         ]);
         const csv = [header, ...rows]
-            .map((line) => line.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(','))
+            .map((line) =>
+                line
+                    .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+                    .join(','),
+            )
             .join('\n');
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -108,15 +140,23 @@ export default function WarehouseProductsPage() {
             vatRate: '23',
             minQuantity: '0',
         });
-        await queryClient.invalidateQueries({ queryKey: ['warehouse-products'] });
+        await queryClient.invalidateQueries({
+            queryKey: ['warehouse-products'],
+        });
     };
 
     const actions = (
         <div className="flex flex-wrap justify-end gap-2">
-            <Link href="/sales/new" className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600">
+            <Link
+                href="/sales/new"
+                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
+            >
                 dodaj sprzedaż
             </Link>
-            <Link href="/use/new" className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600">
+            <Link
+                href="/use/new"
+                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
+            >
                 dodaj zużycie
             </Link>
             <button
@@ -161,7 +201,9 @@ export default function WarehouseProductsPage() {
             </div>
 
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">Ładowanie produktów...</p>
+                <p className="py-8 text-sm text-gray-500">
+                    Ładowanie produktów...
+                </p>
             ) : (
                 <>
                     <div className="overflow-x-auto border border-gray-200">
@@ -170,32 +212,66 @@ export default function WarehouseProductsPage() {
                                 <tr>
                                     <th className="px-3 py-2">Nazwa</th>
                                     <th className="px-3 py-2">Kategoria</th>
-                                    <th className="px-3 py-2">Rodzaj produktu</th>
-                                    <th className="px-3 py-2">Kod wewnętrzny (SKU)</th>
-                                    <th className="px-3 py-2">Stan magazynowy</th>
-                                    <th className="px-3 py-2">Cena sprzedaży</th>
+                                    <th className="px-3 py-2">
+                                        Rodzaj produktu
+                                    </th>
+                                    <th className="px-3 py-2">
+                                        Kod wewnętrzny (SKU)
+                                    </th>
+                                    <th className="px-3 py-2">
+                                        Stan magazynowy
+                                    </th>
+                                    <th className="px-3 py-2">
+                                        Cena sprzedaży
+                                    </th>
                                     <th className="px-3 py-2">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredProducts.map((product) => (
-                                    <tr key={product.id} className="border-t border-gray-200 hover:bg-gray-50">
+                                    <tr
+                                        key={product.id}
+                                        className="border-t border-gray-200 hover:bg-gray-50"
+                                    >
                                         <td className="px-3 py-2 font-semibold text-sky-600">
-                                            <Link href={`/products/${product.id}`}>{product.name}</Link>
+                                            <Link
+                                                href={`/products/${product.id}`}
+                                            >
+                                                {product.name}
+                                            </Link>
                                         </td>
-                                        <td className="px-3 py-2">{product.category?.name ?? 'brak kategorii'}</td>
-                                        <td className="px-3 py-2">{product.productType ?? 'towar'}</td>
-                                        <td className="px-3 py-2">{product.sku ?? '-'}</td>
                                         <td className="px-3 py-2">
-                                            {product.stock} {product.unit ?? 'op.'}
+                                            {product.category?.name ??
+                                                'brak kategorii'}
                                         </td>
-                                        <td className="px-3 py-2">{Number(product.unitPrice ?? 0).toFixed(2)} zł</td>
+                                        <td className="px-3 py-2">
+                                            {product.productType ?? 'towar'}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {product.sku ?? '-'}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {product.stock}{' '}
+                                            {product.unit ?? 'op.'}
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            {Number(
+                                                product.unitPrice ?? 0,
+                                            ).toFixed(2)}{' '}
+                                            zł
+                                        </td>
                                         <td className="px-3 py-2 text-xs">
-                                            <Link href="/sales/new" className="text-sky-500 hover:text-sky-700">
+                                            <Link
+                                                href="/sales/new"
+                                                className="text-sky-500 hover:text-sky-700"
+                                            >
                                                 sprzedaj
                                             </Link>
                                             {' · '}
-                                            <Link href="/use/new" className="text-sky-500 hover:text-sky-700">
+                                            <Link
+                                                href="/use/new"
+                                                className="text-sky-500 hover:text-sky-700"
+                                            >
                                                 zużyj
                                             </Link>
                                         </td>
@@ -205,7 +281,8 @@ export default function WarehouseProductsPage() {
                         </table>
                     </div>
                     <div className="mt-3 text-sm text-gray-500">
-                        Pozycje od 1 do {filteredProducts.length} | na stronie 20
+                        Pozycje od 1 do {filteredProducts.length} | na stronie
+                        20
                     </div>
                 </>
             )}
@@ -213,7 +290,9 @@ export default function WarehouseProductsPage() {
             {isCreateOpen ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45">
                     <div className="w-full max-w-xl rounded border border-gray-300 bg-white p-4 shadow-lg">
-                        <h2 className="mb-3 text-lg font-semibold">Dodaj produkt</h2>
+                        <h2 className="mb-3 text-lg font-semibold">
+                            Dodaj produkt
+                        </h2>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                             <label className="col-span-2">
                                 <span className="mb-1 block">Nazwa</span>
@@ -221,7 +300,10 @@ export default function WarehouseProductsPage() {
                                     type="text"
                                     value={newProduct.name}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, name: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            name: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />
@@ -232,7 +314,10 @@ export default function WarehouseProductsPage() {
                                     type="text"
                                     value={newProduct.brand}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, brand: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            brand: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />
@@ -243,7 +328,10 @@ export default function WarehouseProductsPage() {
                                     type="number"
                                     value={newProduct.unitPrice}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, unitPrice: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            unitPrice: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />
@@ -254,7 +342,10 @@ export default function WarehouseProductsPage() {
                                     type="number"
                                     value={newProduct.stock}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, stock: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            stock: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />
@@ -265,18 +356,26 @@ export default function WarehouseProductsPage() {
                                     type="number"
                                     value={newProduct.vatRate}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, vatRate: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            vatRate: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />
                             </label>
                             <label>
-                                <span className="mb-1 block">Minimalny stan</span>
+                                <span className="mb-1 block">
+                                    Minimalny stan
+                                </span>
                                 <input
                                     type="number"
                                     value={newProduct.minQuantity}
                                     onChange={(event) =>
-                                        setNewProduct((prev) => ({ ...prev, minQuantity: event.target.value }))
+                                        setNewProduct((prev) => ({
+                                            ...prev,
+                                            minQuantity: event.target.value,
+                                        }))
                                     }
                                     className="w-full rounded border border-gray-300 px-2 py-1.5"
                                 />

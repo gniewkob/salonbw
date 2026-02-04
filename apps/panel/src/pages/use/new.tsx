@@ -17,7 +17,9 @@ interface UsageLineForm {
 
 export default function WarehouseUsageCreatePage() {
     const router = useRouter();
-    const { data: products = [] } = useWarehouseProducts({ includeInactive: false });
+    const { data: products = [] } = useWarehouseProducts({
+        includeInactive: false,
+    });
     const { data: employees = [] } = useEmployees();
     const createMutation = useCreateWarehouseUsage();
 
@@ -90,18 +92,28 @@ export default function WarehouseUsageCreatePage() {
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr key={`${index}-${line.productId}`} className="border-t border-gray-200">
+                            <tr
+                                key={`${index}-${line.productId}`}
+                                className="border-t border-gray-200"
+                            >
                                 <td className="px-2 py-2">
                                     <select
                                         value={line.productId}
                                         onChange={(event) =>
-                                            updateLine(index, { productId: event.target.value })
+                                            updateLine(index, {
+                                                productId: event.target.value,
+                                            })
                                         }
                                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                                     >
-                                        <option value="">wpisz nazwę, kod kreskowy itp.</option>
+                                        <option value="">
+                                            wpisz nazwę, kod kreskowy itp.
+                                        </option>
                                         {products.map((product) => (
-                                            <option key={product.id} value={product.id}>
+                                            <option
+                                                key={product.id}
+                                                value={product.id}
+                                            >
                                                 {product.name}
                                             </option>
                                         ))}
@@ -113,7 +125,9 @@ export default function WarehouseUsageCreatePage() {
                                         min={1}
                                         value={line.quantity}
                                         onChange={(event) =>
-                                            updateLine(index, { quantity: event.target.value })
+                                            updateLine(index, {
+                                                quantity: event.target.value,
+                                            })
                                         }
                                         className="w-24 rounded border border-gray-300 px-2 py-1.5"
                                     />
@@ -155,13 +169,17 @@ export default function WarehouseUsageCreatePage() {
                     />
                 </label>
                 <label className="text-sm">
-                    <span className="mb-1 block">Pracownik, który zużył materiał</span>
+                    <span className="mb-1 block">
+                        Pracownik, który zużył materiał
+                    </span>
                     <select
                         value={employeeId}
                         onChange={(event) => setEmployeeId(event.target.value)}
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     >
-                        <option value="">wpisz nazwę lub wybierz z listy</option>
+                        <option value="">
+                            wpisz nazwę lub wybierz z listy
+                        </option>
                         {employees?.map((employee) => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name}
@@ -178,7 +196,9 @@ export default function WarehouseUsageCreatePage() {
                     onClick={() => void submit()}
                     disabled={createMutation.isPending}
                 >
-                    {createMutation.isPending ? 'zapisywanie...' : 'wprowadź zużycie'}
+                    {createMutation.isPending
+                        ? 'zapisywanie...'
+                        : 'wprowadź zużycie'}
                 </button>
             </div>
         </WarehouseLayout>

@@ -1,10 +1,11 @@
 'use client';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import type { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 import Topbar from './Topbar';
+import VersumShell from '@/components/versum/VersumShell';
 
 interface Props {
     children: ReactNode;
@@ -46,23 +47,18 @@ export default function DashboardLayout({ children }: Props) {
     const [menuOpen, setMenuOpen] = useState(false);
     const { role } = useAuth();
 
-    const SidebarComponent = useMemo(() => {
-        const map: Record<Role, ComponentType<SidebarProps>> = {
-            client: ClientSidebar,
-            employee: EmployeeSidebar,
-            receptionist: ReceptionistSidebar,
-            admin: AdminSidebar,
-        };
-        if (
-            role === 'client' ||
-            role === 'employee' ||
-            role === 'receptionist' ||
-            role === 'admin'
-        ) {
-            return map[role];
-        }
-        return ClientSidebar;
-    }, [role]);
+    if (role === 'admin' || role === 'employee' || role === 'receptionist') {
+        return <VersumShell role={role}>{children}</VersumShell>;
+    }
+
+    const map: Record<Role, ComponentType<SidebarProps>> = {
+        client: ClientSidebar,
+        employee: EmployeeSidebar,
+        receptionist: ReceptionistSidebar,
+        admin: AdminSidebar,
+    };
+    const SidebarComponent =
+        role && role in map ? map[role as Role] : ClientSidebar;
 
     return (
         <div className="flex min-h-screen bg-gray-100">

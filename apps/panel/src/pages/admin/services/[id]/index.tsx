@@ -212,7 +212,7 @@ export default function AdminServiceDetailsPage() {
             map.set(key, list);
         }
         return map;
-    }, [employees.data]);
+    }, [employees]);
 
     if (!user || user.role !== 'admin') {
         return (

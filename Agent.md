@@ -9,6 +9,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Dashboard (staff/admin/client): `https://panel.salon-bw.pl`
 - Backend API: `https://api.salon-bw.pl`
 - All frontends talk to the same API; auth happens on panel, customer-facing stays on dev/public.
+- Panel admin canonical modules: `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/admin/*` routes are aliases/redirects).
 
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).

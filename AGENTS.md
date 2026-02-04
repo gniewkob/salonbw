@@ -43,6 +43,10 @@ It defines how agents should operate in this repository: what is â€œproductionâ€
 - Panel: apps/panel
 - Admin: apps/admin (exists in workflows; treat as separate deployable)
 
+Panel canonical admin routes:
+- `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`
+- legacy `/admin/*` entry routes should be treated as compatibility aliases/redirects
+
 ### Backend
 - API: backend/ (Node.js app; deployed separately from frontends)
 

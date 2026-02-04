@@ -15,13 +15,17 @@ interface DeliveryLineForm {
 
 export default function WarehouseDeliveryCreatePage() {
     const router = useRouter();
-    const { data: products = [] } = useWarehouseProducts({ includeInactive: false });
+    const { data: products = [] } = useWarehouseProducts({
+        includeInactive: false,
+    });
     const { data: suppliers = [] } = useSuppliers();
     const createDelivery = useCreateDelivery();
 
     const [supplierId, setSupplierId] = useState('');
     const [invoiceNumber, setInvoiceNumber] = useState('');
-    const [deliveryDate, setDeliveryDate] = useState(new Date().toISOString().slice(0, 10));
+    const [deliveryDate, setDeliveryDate] = useState(
+        new Date().toISOString().slice(0, 10),
+    );
     const [notes, setNotes] = useState('');
     const [lines, setLines] = useState<DeliveryLineForm[]>([
         { productId: '', quantity: '1', unitCost: '0' },
@@ -96,18 +100,28 @@ export default function WarehouseDeliveryCreatePage() {
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr key={`${index}-${line.productId}`} className="border-t border-gray-200">
+                            <tr
+                                key={`${index}-${line.productId}`}
+                                className="border-t border-gray-200"
+                            >
                                 <td className="px-2 py-2">
                                     <select
                                         value={line.productId}
                                         onChange={(event) =>
-                                            updateLine(index, { productId: event.target.value })
+                                            updateLine(index, {
+                                                productId: event.target.value,
+                                            })
                                         }
                                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                                     >
-                                        <option value="">wpisz nazwę, kod kreskowy itp.</option>
+                                        <option value="">
+                                            wpisz nazwę, kod kreskowy itp.
+                                        </option>
                                         {products.map((product) => (
-                                            <option key={product.id} value={product.id}>
+                                            <option
+                                                key={product.id}
+                                                value={product.id}
+                                            >
                                                 {product.name}
                                             </option>
                                         ))}
@@ -119,7 +133,9 @@ export default function WarehouseDeliveryCreatePage() {
                                         min={1}
                                         value={line.quantity}
                                         onChange={(event) =>
-                                            updateLine(index, { quantity: event.target.value })
+                                            updateLine(index, {
+                                                quantity: event.target.value,
+                                            })
                                         }
                                         className="w-24 rounded border border-gray-300 px-2 py-1.5"
                                     />
@@ -131,7 +147,9 @@ export default function WarehouseDeliveryCreatePage() {
                                         step="0.01"
                                         value={line.unitCost}
                                         onChange={(event) =>
-                                            updateLine(index, { unitCost: event.target.value })
+                                            updateLine(index, {
+                                                unitCost: event.target.value,
+                                            })
                                         }
                                         className="w-28 rounded border border-gray-300 px-2 py-1.5"
                                     />
@@ -169,7 +187,9 @@ export default function WarehouseDeliveryCreatePage() {
                         onChange={(event) => setSupplierId(event.target.value)}
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     >
-                        <option value="">wpisz nazwę lub wybierz z listy</option>
+                        <option value="">
+                            wpisz nazwę lub wybierz z listy
+                        </option>
                         {suppliers.map((supplier) => (
                             <option key={supplier.id} value={supplier.id}>
                                 {supplier.name}
@@ -182,7 +202,9 @@ export default function WarehouseDeliveryCreatePage() {
                     <input
                         type="text"
                         value={invoiceNumber}
-                        onChange={(event) => setInvoiceNumber(event.target.value)}
+                        onChange={(event) =>
+                            setInvoiceNumber(event.target.value)
+                        }
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     />
                 </label>
@@ -191,7 +213,9 @@ export default function WarehouseDeliveryCreatePage() {
                     <input
                         type="date"
                         value={deliveryDate}
-                        onChange={(event) => setDeliveryDate(event.target.value)}
+                        onChange={(event) =>
+                            setDeliveryDate(event.target.value)
+                        }
                         className="w-full rounded border border-gray-300 px-2 py-1.5"
                     />
                 </label>
@@ -212,7 +236,9 @@ export default function WarehouseDeliveryCreatePage() {
                     onClick={() => void submit()}
                     disabled={createDelivery.isPending}
                 >
-                    {createDelivery.isPending ? 'zapisywanie...' : 'wprowadź dostawę'}
+                    {createDelivery.isPending
+                        ? 'zapisywanie...'
+                        : 'wprowadź dostawę'}
                 </button>
             </div>
         </WarehouseLayout>

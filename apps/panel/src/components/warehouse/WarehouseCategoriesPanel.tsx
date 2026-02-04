@@ -20,14 +20,18 @@ export default function WarehouseCategoriesPanel({
                 <button
                     type="button"
                     className={`w-full text-left text-sm ${
-                        isSelected ? 'font-semibold text-sky-600' : 'text-gray-700'
+                        isSelected
+                            ? 'font-semibold text-sky-600'
+                            : 'text-gray-700'
                     }`}
                     style={{ paddingLeft: `${depth * 16 + 8}px` }}
                     onClick={() => onSelect(category.id)}
                 >
                     {category.name}
                 </button>
-                {category.children?.map((child) => renderNode(child, depth + 1))}
+                {category.children?.map((child) =>
+                    renderNode(child, depth + 1),
+                )}
             </div>
         );
     };
@@ -45,7 +49,9 @@ export default function WarehouseCategoriesPanel({
             >
                 Wszystkie produkty
             </button>
-            <div className="space-y-1">{categories.map((category) => renderNode(category))}</div>
+            <div className="space-y-1">
+                {categories.map((category) => renderNode(category))}
+            </div>
         </div>
     );
 }

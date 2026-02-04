@@ -54,7 +54,28 @@ const nextConfig = {
         ];
     },
     async redirects() {
-        return [];
+        return [
+            {
+                source: '/admin/statistics',
+                destination: '/statistics',
+                permanent: false,
+            },
+            {
+                source: '/admin/communications',
+                destination: '/communication',
+                permanent: false,
+            },
+            {
+                source: '/admin/services',
+                destination: '/services',
+                permanent: false,
+            },
+            {
+                source: '/admin/settings',
+                destination: '/settings',
+                permanent: false,
+            },
+        ];
     },
     async headers() {
         const rules = [

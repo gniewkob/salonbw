@@ -53,7 +53,9 @@ export default function WarehouseLayout({
                             {heading}
                         </h1>
                         {breadcrumb ? (
-                            <p className="mt-2 text-sm text-gray-500">{breadcrumb}</p>
+                            <p className="mt-2 text-sm text-gray-500">
+                                {breadcrumb}
+                            </p>
                         ) : null}
                         <div className="mt-5 flex items-center justify-between">
                             <nav className="flex items-center gap-5">
