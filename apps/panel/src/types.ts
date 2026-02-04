@@ -166,10 +166,28 @@ export interface Employee {
 export interface Product {
     id: number;
     name: string;
-    brand?: string;
+    brand?: string | null;
+    description?: string | null;
+    sku?: string | null;
+    barcode?: string | null;
+    productType?: ProductType;
     unitPrice: number;
+    vatRate?: number;
+    purchasePrice?: number | null;
     stock: number;
     lowStockThreshold: number;
+    minQuantity?: number | null;
+    unit?: string | null;
+    packageSize?: number | null;
+    packageUnit?: string | null;
+    manufacturer?: string | null;
+    categoryId?: number | null;
+    category?: ProductCategory | null;
+    defaultSupplierId?: number | null;
+    isActive?: boolean;
+    trackStock?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Review {
@@ -429,6 +447,18 @@ export interface Supplier {
     updatedAt: string;
 }
 
+export interface ProductCategory {
+    id: number;
+    name: string;
+    parentId?: number | null;
+    parent?: ProductCategory | null;
+    children?: ProductCategory[];
+    sortOrder: number;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface ProductExtended extends Product {
     description?: string;
     sku?: string;
@@ -441,6 +471,176 @@ export interface ProductExtended extends Product {
     defaultSupplier?: Supplier;
     isActive: boolean;
     trackStock: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ProductCardView {
+    product: ProductExtended;
+    pricing: {
+        saleGross: number;
+        saleNet: number;
+        purchaseNet: number;
+        purchaseGross: number;
+        vatRate: number;
+    };
+    stock: {
+        quantity: number;
+        unit: string;
+        minQuantity: number | null;
+        stockValueNet: number;
+        stockValueGross: number;
+    };
+    metadata: {
+        category: string | null;
+        manufacturer: string | null;
+        packageSize: number | null;
+        packageUnit: string | null;
+        sku: string | null;
+        barcode: string | null;
+        createdAt: string;
+        updatedAt: string;
+    };
+}
+
+export interface ProductHistoryItem {
+    id: string;
+    source: 'sale' | 'usage' | 'delivery' | 'stocktaking' | 'adjustment';
+    label: string;
+    createdAt: string;
+    quantity: number;
+    quantityBefore: number | null;
+    quantityAfter: number | null;
+    unitPriceNet: number | null;
+    unitPriceGross: number | null;
+    totalNet: number | null;
+    totalGross: number | null;
+    vatRate: number | null;
+    clientName: string | null;
+    reference: {
+        type: 'sale' | 'usage' | 'delivery' | 'stocktaking' | 'inventory';
+        id: number;
+        label: string;
+        href: string;
+    } | null;
+    notes: string | null;
+}
+
+export interface ProductCommissionRule {
+    id: number | null;
+    employeeId: number;
+    employeeName: string;
+    commissionPercent: number;
+}
+
+export interface WarehouseSaleItem {
+    id: number;
+    saleId: number;
+    productId: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    unitPriceNet: number;
+    unitPriceGross: number;
+    vatRate: number;
+    discountGross: number;
+    totalNet: number;
+    totalGross: number;
+    createdAt: string;
+    product?: ProductExtended | null;
+}
+
+export interface WarehouseSale {
+    id: number;
+    saleNumber: string;
+    soldAt: string;
+    clientName?: string | null;
+    clientId?: number | null;
+    employeeId?: number | null;
+    appointmentId?: number | null;
+    discountGross: number;
+    totalNet: number;
+    totalGross: number;
+    paymentMethod?: string | null;
+    notes?: string | null;
+    createdById?: number | null;
+    items: WarehouseSaleItem[];
+    employee?: { id: number; name: string } | null;
+    createdBy?: { id: number; name: string } | null;
+    summary?: {
+        totalItems: number;
+        totalNet: number;
+        totalGross: number;
+        discountGross: number;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface WarehouseUsageItem {
+    id: number;
+    usageId: number;
+    productId: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    stockBefore: number;
+    stockAfter: number;
+    createdAt: string;
+    product?: ProductExtended | null;
+}
+
+export interface WarehouseUsage {
+    id: number;
+    usageNumber: string;
+    usedAt: string;
+    clientName?: string | null;
+    clientId?: number | null;
+    employeeId?: number | null;
+    appointmentId?: number | null;
+    notes?: string | null;
+    createdById?: number | null;
+    items: WarehouseUsageItem[];
+    employee?: { id: number; name: string } | null;
+    createdBy?: { id: number; name: string } | null;
+    summary?: {
+        totalItems: number;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type WarehouseOrderStatus =
+    | 'draft'
+    | 'sent'
+    | 'partially_received'
+    | 'received'
+    | 'cancelled';
+
+export interface WarehouseOrderItem {
+    id: number;
+    orderId: number;
+    productId: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    receivedQuantity: number;
+    createdAt: string;
+    product?: ProductExtended | null;
+}
+
+export interface WarehouseOrder {
+    id: number;
+    orderNumber: string;
+    supplierId: number | null;
+    supplier?: Supplier | null;
+    status: WarehouseOrderStatus;
+    sentAt: string | null;
+    receivedAt: string | null;
+    notes?: string | null;
+    createdById: number | null;
+    createdBy?: { id: number; name: string } | null;
+    items: WarehouseOrderItem[];
     createdAt: string;
     updatedAt: string;
 }

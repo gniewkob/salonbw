@@ -1,39 +1,45 @@
 import {
     BadRequestException,
     Injectable,
-    NotImplementedException,
     Logger,
+    NotFoundException,
+    NotImplementedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import {
+    DataSource,
+    EntityManager,
+    In,
+    Repository,
+} from 'typeorm';
 import { Product } from '../products/product.entity';
 import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
-import { CreateSaleDto } from './dto/create-sale.dto';
+import { CreateSaleDto, CreateSaleItemDto } from './dto/create-sale.dto';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
+import { CreateUsageDto } from './dto/create-usage.dto';
 import { CommissionsService } from '../commissions/commissions.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
-import { ConfigService } from '@nestjs/config';
+import { WarehouseSale } from '../warehouse/entities/warehouse-sale.entity';
+import { WarehouseSaleItem } from '../warehouse/entities/warehouse-sale-item.entity';
+import { WarehouseUsage } from '../warehouse/entities/warehouse-usage.entity';
+import { WarehouseUsageItem } from '../warehouse/entities/warehouse-usage-item.entity';
+
+interface NormalizedSaleItem {
+    product: Product;
+    quantity: number;
+    unit: string;
+    unitPriceGross: number;
+    discountGross: number;
+}
 
 @Injectable()
 export class RetailService {
     private readonly logger = new Logger(RetailService.name);
-    // transient context used to avoid anonymous transaction callbacks
-    private _txSaleContext?: {
-        dto: CreateSaleDto;
-        product: Product;
-        unitPriceCents: number;
-        discountCents: number;
-        actor: User;
-        createCommission: (m: import('typeorm').EntityManager) => Promise<void>;
-    };
-    private _txAdjustContext?: {
-        dto: AdjustInventoryDto;
-        product: Product;
-        actor: User;
-    };
     private readonly requireCommission: boolean;
+
     constructor(
         @InjectRepository(Product)
         private readonly products: Repository<Product>,
@@ -41,6 +47,14 @@ export class RetailService {
         private readonly users: Repository<User>,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
+        @InjectRepository(WarehouseSale)
+        private readonly warehouseSales: Repository<WarehouseSale>,
+        @InjectRepository(WarehouseSaleItem)
+        private readonly warehouseSaleItems: Repository<WarehouseSaleItem>,
+        @InjectRepository(WarehouseUsage)
+        private readonly warehouseUsages: Repository<WarehouseUsage>,
+        @InjectRepository(WarehouseUsageItem)
+        private readonly warehouseUsageItems: Repository<WarehouseUsageItem>,
         private readonly commissions: CommissionsService,
         private readonly logs: LogService,
         private readonly config: ConfigService,
@@ -51,18 +65,35 @@ export class RetailService {
             'true';
     }
 
+    private isEnabled(): boolean {
+        return this.config.get<string>('POS_ENABLED', 'false') === 'true';
+    }
+
+    private roundMoney(value: number): number {
+        return Number(value.toFixed(2));
+    }
+
     private async q<T>(sql: string, params: unknown[]): Promise<T[]> {
-        // Central raw query helper
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const rows = await this.dataSource.query(sql, params);
         return rows as T[];
     }
 
+    private async hasTable(name: string): Promise<boolean> {
+        try {
+            const result = await this.q<{ exists: string | null }>(
+                'SELECT to_regclass($1) AS exists',
+                [name],
+            );
+            return Boolean(result?.[0]?.exists);
+        } catch {
+            return false;
+        }
+    }
+
     /**
-     * Calculate commission amount in cents.
      * priceCents: unit price in cents
      * quantity: number of units
-     * discountCents: total discount in cents for the sale
+     * discountCents: total discount in cents for line
      * percent: commission percent (e.g., 10 for 10%)
      */
     calculateCommissionCents(
@@ -73,12 +104,107 @@ export class RetailService {
     ): number {
         const totalPriceCents = priceCents * quantity;
         const taxableCents = Math.max(0, totalPriceCents - discountCents);
-        // floor to avoid rounding up commission
         return Math.floor((taxableCents * percent) / 100);
     }
 
+    private async normalizeSaleItems(
+        dto: CreateSaleDto,
+    ): Promise<NormalizedSaleItem[]> {
+        const rawItems: CreateSaleItemDto[] =
+            dto.items && dto.items.length > 0
+                ? dto.items
+                : dto.productId
+                  ? [
+                        {
+                            productId: dto.productId,
+                            quantity: dto.quantity ?? 1,
+                            unitPrice: dto.unitPrice,
+                            unitPriceCents: dto.unitPriceCents,
+                            discount: dto.discount,
+                            discountCents: dto.discountCents,
+                        },
+                    ]
+                  : [];
+
+        if (rawItems.length === 0) {
+            throw new BadRequestException('Sale requires at least one item');
+        }
+
+        const productIds = Array.from(
+            new Set(rawItems.map((item) => item.productId)),
+        );
+        const products = await this.products.find({
+            where: {
+                id: In(productIds),
+            },
+        });
+
+        const productsById = new Map(products.map((product) => [product.id, product]));
+
+        return rawItems.map((item) => {
+            if (!item.productId || item.productId <= 0) {
+                throw new BadRequestException('Invalid productId');
+            }
+            const product = productsById.get(item.productId);
+            if (!product) {
+                throw new NotFoundException(
+                    `Product ${item.productId} not found`,
+                );
+            }
+            if (!Number.isFinite(item.quantity) || item.quantity < 1) {
+                throw new BadRequestException('quantity must be >= 1');
+            }
+
+            const unitPriceGross =
+                item.unitPriceCents !== undefined
+                    ? Number(item.unitPriceCents) / 100
+                    : item.unitPrice !== undefined
+                      ? Number(item.unitPrice)
+                      : Number(product.unitPrice ?? 0);
+
+            const discountGross =
+                item.discountCents !== undefined
+                    ? Number(item.discountCents) / 100
+                    : item.discount !== undefined
+                      ? Number(item.discount)
+                      : 0;
+
+            if (unitPriceGross < 0 || discountGross < 0) {
+                throw new BadRequestException('unitPrice/discount must be >= 0');
+            }
+
+            return {
+                product,
+                quantity: Number(item.quantity),
+                unit: item.unit ?? product.unit ?? 'op.',
+                unitPriceGross,
+                discountGross,
+            };
+        });
+    }
+
+    private async generateSaleNumber(manager: EntityManager): Promise<string> {
+        const now = new Date();
+        const prefix = `S${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const rows = await manager.query(
+            'SELECT id FROM warehouse_sales ORDER BY id DESC LIMIT 1',
+        );
+        const next = Number(rows?.[0]?.id ?? 0) + 1;
+        return `${prefix}${String(next).padStart(5, '0')}`;
+    }
+
+    private async generateUsageNumber(manager: EntityManager): Promise<string> {
+        const now = new Date();
+        const prefix = `U${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const rows = await manager.query(
+            'SELECT id FROM warehouse_usages ORDER BY id DESC LIMIT 1',
+        );
+        const next = Number(rows?.[0]?.id ?? 0) + 1;
+        return `${prefix}${String(next).padStart(5, '0')}`;
+    }
+
     async insertProductSale(
-        manager: import('typeorm').EntityManager,
+        manager: EntityManager,
         productId: number,
         quantity: number,
         unitPriceCents: number,
@@ -91,7 +217,7 @@ export class RetailService {
         const discountDecimal = (discountCents / 100).toFixed(2);
         await manager.query(
             `INSERT INTO product_sales (productId, soldAt, quantity, unitPrice, discount, employeeId, appointmentId, note)
-                     VALUES ($1, now(), $2, $3, $4, $5, $6, $7)`,
+             VALUES ($1, now(), $2, $3, $4, $5, $6, $7)`,
             [
                 productId,
                 quantity,
@@ -105,7 +231,7 @@ export class RetailService {
     }
 
     async insertInventoryMovement(
-        manager: import('typeorm').EntityManager,
+        manager: EntityManager,
         productId: number,
         delta: number,
         reason: string,
@@ -116,7 +242,7 @@ export class RetailService {
     ) {
         await manager.query(
             `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
-                     VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
+             VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
             [
                 productId,
                 delta,
@@ -129,251 +255,408 @@ export class RetailService {
         );
     }
 
-    private isEnabled(): boolean {
-        return this.config.get<string>('POS_ENABLED', 'false') === 'true';
-    }
-
-    private async hasTable(name: string): Promise<boolean> {
-        try {
-            const result = await this.q<{ exists: string | null }>(
-                'SELECT to_regclass($1) AS exists',
-                [name],
-            );
-            const value = result?.[0]?.exists;
-            return Boolean(value);
-        } catch {
-            return false;
-        }
-    }
-
     async createSale(dto: CreateSaleDto, actor: User) {
         if (!this.isEnabled()) {
             throw new NotImplementedException('POS is disabled');
         }
-        if (dto.quantity <= 0) {
-            throw new BadRequestException('quantity must be >= 1');
-        }
-        const product = await this.products.findOne({
-            where: { id: dto.productId },
-        });
-        if (!product) {
-            throw new BadRequestException('Invalid productId');
-        }
-        // Support cents-based fields for exact currency math. Backwards compatible with float fields.
-        const unitPriceCentsFromDto =
-            'unitPriceCents' in dto && typeof dto.unitPriceCents === 'number'
-                ? Number(dto.unitPriceCents)
-                : undefined;
-        const discountCentsFromDto =
-            'discountCents' in dto && typeof dto.discountCents === 'number'
-                ? Number(dto.discountCents)
-                : undefined;
 
-        const unitPriceCents =
-            unitPriceCentsFromDto !== undefined
-                ? unitPriceCentsFromDto
-                : Math.round(
-                      (dto.unitPrice != null
-                          ? Number(dto.unitPrice)
-                          : Number(product.unitPrice)) * 100,
-                  );
-        const discountCents =
-            discountCentsFromDto !== undefined
-                ? discountCentsFromDto
-                : Math.round(
-                      (dto.discount != null ? Number(dto.discount) : 0) * 100,
-                  );
-        if (unitPriceCents < 0 || discountCents < 0) {
-            throw new BadRequestException('unitPrice/discount must be >= 0');
-        }
-        if (product.stock < dto.quantity) {
-            throw new BadRequestException('Insufficient stock');
-        }
-
-        // commission creation extracted to helper to reduce transaction complexity
-        const createCommission = (manager: import('typeorm').EntityManager) =>
-            this.createCommissionForSale(
-                manager,
-                dto,
-                product,
-                unitPriceCents,
-                discountCents,
-                actor,
-            );
-
-        // store context and call named method to avoid anonymous function complexity
-        this._txSaleContext = {
-            dto,
-            product,
-            unitPriceCents,
-            discountCents,
-            actor,
-            createCommission,
-        };
-
-        return this.dataSource.transaction(this.runSaleTransaction.bind(this));
-    }
-
-    private async runSaleTransaction(manager: import('typeorm').EntityManager) {
-        const ctx = this._txSaleContext;
-        if (!ctx) {
-            throw new Error('missing transaction context');
-        }
-        try {
-            return await this.updateStockAndSalesAndMovements(
-                manager,
-                ctx.dto,
-                ctx.product,
-                ctx.unitPriceCents,
-                ctx.discountCents,
-                ctx.actor,
-                ctx.createCommission,
-            );
-        } finally {
-            // clear transient context
-            this._txSaleContext = undefined;
-        }
-    }
-
-    private async updateStockAndSalesAndMovements(
-        manager: import('typeorm').EntityManager,
-        dto: CreateSaleDto,
-        product: Product,
-        unitPriceCents: number,
-        discountCents: number,
-        actor: User,
-        createCommissionFn: (
-            m: import('typeorm').EntityManager,
-        ) => Promise<void>,
-    ) {
-        // Adjust stock
-        await manager.update(Product, product.id, {
-            stock: product.stock - dto.quantity,
-        });
-
-        // Optional write to product_sales if table exists
-        if (await this.hasTable('public.product_sales')) {
-            await this.insertProductSale(
-                manager,
-                product.id,
-                dto.quantity,
-                unitPriceCents,
-                discountCents,
-                dto.employeeId ?? null,
-                dto.appointmentId ?? null,
-                dto.note ?? null,
-            );
-        }
-
-        // Optional inventory movement
-        if (await this.hasTable('public.inventory_movements')) {
-            await this.insertInventoryMovement(
-                manager,
-                product.id,
-                -dto.quantity,
-                'sale',
-                dto.appointmentId ? 'appointment' : null,
-                dto.appointmentId ?? null,
-                dto.note ?? null,
-                actor.id ?? null,
-            );
-        }
-
-        // Commission (best-effort)
-        try {
-            await createCommissionFn(manager);
-        } catch (error) {
-            const contextDetails = `product=${product.id} employee=${
-                dto.employeeId ?? 'n/a'
-            } appointment=${dto.appointmentId ?? 'n/a'}`;
-            this.logger.error(
-                `Failed to create POS commission (${contextDetails})`,
-                error instanceof Error ? error.stack : undefined,
-            );
-            if (this.requireCommission) {
-                throw error instanceof Error
-                    ? error
-                    : new Error('Failed to create POS commission');
+        const items = await this.normalizeSaleItems(dto);
+        for (const item of items) {
+            if (item.product.stock < item.quantity) {
+                throw new BadRequestException(
+                    `Insufficient stock for product ${item.product.id}`,
+                );
             }
         }
 
+        const writeProductSales = await this.hasTable('public.product_sales');
+        const writeInventoryMovements = await this.hasTable(
+            'public.inventory_movements',
+        );
+
+        const sale = await this.dataSource.transaction(async (manager) => {
+            const created = manager.create(WarehouseSale, {
+                saleNumber: await this.generateSaleNumber(manager),
+                soldAt: dto.soldAt ? new Date(dto.soldAt) : new Date(),
+                clientName: dto.clientName ?? null,
+                clientId: null,
+                employeeId: dto.employeeId ?? null,
+                appointmentId: dto.appointmentId ?? null,
+                discountGross: 0,
+                totalNet: 0,
+                totalGross: 0,
+                paymentMethod: dto.paymentMethod ?? null,
+                notes: dto.note ?? null,
+                createdById: actor.id ?? null,
+            });
+            await manager.save(created);
+
+            let totalDiscount = 0;
+            let totalNet = 0;
+            let totalGross = 0;
+
+            for (const item of items) {
+                const product = await manager.findOne(Product, {
+                    where: { id: item.product.id },
+                });
+                if (!product) {
+                    throw new NotFoundException(
+                        `Product ${item.product.id} not found`,
+                    );
+                }
+                if (product.stock < item.quantity) {
+                    throw new BadRequestException(
+                        `Insufficient stock for product ${product.id}`,
+                    );
+                }
+
+                const vatRate = Number(product.vatRate ?? 23);
+                const grossBeforeDiscount = item.unitPriceGross * item.quantity;
+                const discountGross = Math.min(
+                    grossBeforeDiscount,
+                    Math.max(0, item.discountGross),
+                );
+                const lineGross = grossBeforeDiscount - discountGross;
+                const divider = 1 + vatRate / 100;
+                const lineNet = lineGross / divider;
+                const unitNet = item.unitPriceGross / divider;
+
+                const stockBefore = product.stock;
+                product.stock -= item.quantity;
+                await manager.save(product);
+
+                const saleItem = manager.create(WarehouseSaleItem, {
+                    saleId: created.id,
+                    productId: product.id,
+                    productName: product.name,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    unitPriceNet: this.roundMoney(unitNet),
+                    unitPriceGross: this.roundMoney(item.unitPriceGross),
+                    vatRate: this.roundMoney(vatRate),
+                    discountGross: this.roundMoney(discountGross),
+                    totalNet: this.roundMoney(lineNet),
+                    totalGross: this.roundMoney(lineGross),
+                });
+                await manager.save(saleItem);
+
+                if (writeProductSales) {
+                    await this.insertProductSale(
+                        manager,
+                        product.id,
+                        item.quantity,
+                        Math.round(item.unitPriceGross * 100),
+                        Math.round(discountGross * 100),
+                        dto.employeeId ?? null,
+                        dto.appointmentId ?? null,
+                        dto.note ?? null,
+                    );
+                }
+
+                if (writeInventoryMovements) {
+                    await this.insertInventoryMovement(
+                        manager,
+                        product.id,
+                        -item.quantity,
+                        'sale',
+                        'warehouse_sale',
+                        created.id,
+                        dto.note ?? null,
+                        actor.id ?? null,
+                    );
+                }
+
+                try {
+                    await this.createCommissionForSaleItem(
+                        manager,
+                        dto,
+                        product,
+                        Math.round(item.unitPriceGross * 100),
+                        item.quantity,
+                        Math.round(discountGross * 100),
+                        actor,
+                    );
+                } catch (error) {
+                    const context = `product=${product.id} employee=${dto.employeeId ?? 'n/a'} appointment=${dto.appointmentId ?? 'n/a'}`;
+                    this.logger.error(
+                        `Failed to create POS commission (${context})`,
+                        error instanceof Error ? error.stack : undefined,
+                    );
+                    if (this.requireCommission) {
+                        throw error;
+                    }
+                }
+
+                totalDiscount += discountGross;
+                totalNet += lineNet;
+                totalGross += lineGross;
+
+                this.logger.debug(
+                    `Recorded sale item product=${product.id} quantity=${item.quantity} stockBefore=${stockBefore} stockAfter=${product.stock}`,
+                );
+            }
+
+            created.discountGross = this.roundMoney(totalDiscount);
+            created.totalNet = this.roundMoney(totalNet);
+            created.totalGross = this.roundMoney(totalGross);
+            await manager.save(created);
+
+            return created;
+        });
+
         try {
             await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
-                entity: 'product',
-                productId: product.id,
-                change: 'sale',
-                quantity: dto.quantity,
+                entity: 'warehouse_sale',
+                saleId: sale.id,
+                saleNumber: sale.saleNumber,
+                itemsCount: items.length,
             });
         } catch {
-            /* non-fatal log error */
-            void 0;
+            // non-fatal log error
         }
 
-        return { status: 'ok' } as const;
+        return this.getSaleDetails(sale.id);
+    }
+
+    async listSales() {
+        if (!(await this.hasTable('public.warehouse_sales'))) {
+            return [];
+        }
+
+        return this.warehouseSales.find({
+            relations: ['items', 'items.product', 'employee', 'createdBy'],
+            order: { soldAt: 'DESC', id: 'DESC' },
+        });
+    }
+
+    async getSaleDetails(id: number) {
+        if (!(await this.hasTable('public.warehouse_sales'))) {
+            throw new NotFoundException(`Sale ${id} not found`);
+        }
+
+        const sale = await this.warehouseSales.findOne({
+            where: { id },
+            relations: ['items', 'items.product', 'employee', 'createdBy'],
+        });
+        if (!sale) {
+            throw new NotFoundException(`Sale ${id} not found`);
+        }
+
+        const totalItems = sale.items.reduce(
+            (sum, item) => sum + Number(item.quantity ?? 0),
+            0,
+        );
+
+        return {
+            ...sale,
+            summary: {
+                totalItems,
+                totalNet: Number(sale.totalNet ?? 0),
+                totalGross: Number(sale.totalGross ?? 0),
+                discountGross: Number(sale.discountGross ?? 0),
+            },
+        };
+    }
+
+    async createUsage(dto: CreateUsageDto, actor: User) {
+        if (!this.isEnabled()) {
+            throw new NotImplementedException('POS is disabled');
+        }
+
+        if (!dto.items || dto.items.length === 0) {
+            throw new BadRequestException('Usage requires at least one item');
+        }
+
+        const ids = Array.from(new Set(dto.items.map((item) => item.productId)));
+        const products = await this.products.find({
+            where: {
+                id: In(ids),
+            },
+        });
+        const productsById = new Map(products.map((product) => [product.id, product]));
+
+        for (const item of dto.items) {
+            const product = productsById.get(item.productId);
+            if (!product) {
+                throw new NotFoundException(
+                    `Product ${item.productId} not found`,
+                );
+            }
+            if (item.quantity < 1) {
+                throw new BadRequestException('quantity must be >= 1');
+            }
+            if (product.stock < item.quantity) {
+                throw new BadRequestException(
+                    `Insufficient stock for product ${item.productId}`,
+                );
+            }
+        }
+
+        const writeInventoryMovements = await this.hasTable(
+            'public.inventory_movements',
+        );
+
+        const usage = await this.dataSource.transaction(async (manager) => {
+            const created = manager.create(WarehouseUsage, {
+                usageNumber: await this.generateUsageNumber(manager),
+                usedAt: new Date(),
+                clientName: dto.clientName ?? null,
+                clientId: null,
+                employeeId: dto.employeeId ?? null,
+                appointmentId: dto.appointmentId ?? null,
+                notes: dto.note ?? null,
+                createdById: actor.id ?? null,
+            });
+            await manager.save(created);
+
+            for (const item of dto.items) {
+                const product = await manager.findOne(Product, {
+                    where: { id: item.productId },
+                });
+                if (!product) {
+                    throw new NotFoundException(
+                        `Product ${item.productId} not found`,
+                    );
+                }
+
+                const stockBefore = product.stock;
+                if (stockBefore < item.quantity) {
+                    throw new BadRequestException(
+                        `Insufficient stock for product ${item.productId}`,
+                    );
+                }
+
+                product.stock -= item.quantity;
+                await manager.save(product);
+
+                const usageItem = manager.create(WarehouseUsageItem, {
+                    usageId: created.id,
+                    productId: product.id,
+                    productName: product.name,
+                    quantity: item.quantity,
+                    unit: item.unit ?? product.unit ?? 'op.',
+                    stockBefore,
+                    stockAfter: product.stock,
+                });
+                await manager.save(usageItem);
+
+                if (writeInventoryMovements) {
+                    await this.insertInventoryMovement(
+                        manager,
+                        product.id,
+                        -item.quantity,
+                        'usage',
+                        'warehouse_usage',
+                        created.id,
+                        dto.note ?? null,
+                        actor.id ?? null,
+                    );
+                }
+            }
+
+            return created;
+        });
+
+        try {
+            await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
+                entity: 'warehouse_usage',
+                usageId: usage.id,
+                usageNumber: usage.usageNumber,
+                itemsCount: dto.items.length,
+            });
+        } catch {
+            // non-fatal log error
+        }
+
+        return this.getUsageDetails(usage.id);
+    }
+
+    async listUsage() {
+        if (!(await this.hasTable('public.warehouse_usages'))) {
+            return [];
+        }
+
+        return this.warehouseUsages.find({
+            relations: ['items', 'items.product', 'employee', 'createdBy'],
+            order: { usedAt: 'DESC', id: 'DESC' },
+        });
+    }
+
+    async getUsageDetails(id: number) {
+        if (!(await this.hasTable('public.warehouse_usages'))) {
+            throw new NotFoundException(`Usage ${id} not found`);
+        }
+
+        const usage = await this.warehouseUsages.findOne({
+            where: { id },
+            relations: ['items', 'items.product', 'employee', 'createdBy'],
+        });
+        if (!usage) {
+            throw new NotFoundException(`Usage ${id} not found`);
+        }
+
+        const totalItems = usage.items.reduce(
+            (sum, item) => sum + Number(item.quantity ?? 0),
+            0,
+        );
+
+        return {
+            ...usage,
+            summary: {
+                totalItems,
+            },
+        };
     }
 
     async adjustInventory(dto: AdjustInventoryDto, actor: User) {
         if (!this.isEnabled()) {
             throw new NotImplementedException('POS is disabled');
         }
+
         const product = await this.products.findOne({
             where: { id: dto.productId },
         });
         if (!product) {
             throw new BadRequestException('Invalid productId');
         }
-        this._txAdjustContext = { dto, product, actor };
-        return this.dataSource.transaction(
-            this.runAdjustTransaction.bind(this),
-        );
-    }
 
-    private async runAdjustTransaction(
-        manager: import('typeorm').EntityManager,
-    ) {
-        const ctx = this._txAdjustContext;
-        if (!ctx) throw new Error('missing adjust transaction context');
-        try {
-            await manager.update(Product, ctx.product.id, {
-                stock: ctx.product.stock + ctx.dto.delta,
+        const writeInventoryMovements = await this.hasTable(
+            'public.inventory_movements',
+        );
+
+        await this.dataSource.transaction(async (manager) => {
+            const nextStock = product.stock + dto.delta;
+            await manager.update(Product, product.id, {
+                stock: nextStock,
             });
 
-            if (await this.hasTable('public.inventory_movements')) {
-                await manager.query(
-                    `INSERT INTO inventory_movements (productId, delta, reason, referenceType, referenceId, note, createdAt, actorId)
-                     VALUES ($1, $2, $3, $4, $5, $6, now(), $7)`,
-                    [
-                        ctx.product.id,
-                        ctx.dto.delta,
-                        ctx.dto.reason,
-                        null,
-                        null,
-                        ctx.dto.note ?? null,
-                        ctx.actor.id ?? null,
-                    ],
+            if (writeInventoryMovements) {
+                await this.insertInventoryMovement(
+                    manager,
+                    product.id,
+                    dto.delta,
+                    dto.reason,
+                    null,
+                    null,
+                    dto.note ?? null,
+                    actor.id ?? null,
                 );
             }
+        });
 
-            try {
-                await this.logs.logAction(
-                    ctx.actor,
-                    LogAction.PRODUCT_UPDATED,
-                    {
-                        entity: 'product',
-                        productId: ctx.product.id,
-                        change: 'adjust',
-                        delta: ctx.dto.delta,
-                        reason: ctx.dto.reason,
-                    },
-                );
-            } catch {
-                void 0;
-            }
-
-            return { status: 'ok' } as const;
-        } finally {
-            this._txAdjustContext = undefined;
+        try {
+            await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
+                entity: 'product',
+                productId: product.id,
+                change: 'adjust',
+                delta: dto.delta,
+                reason: dto.reason,
+            });
+        } catch {
+            // non-fatal log error
         }
+
+        return { status: 'ok' } as const;
     }
 
     async getInventoryLevels() {
@@ -434,7 +717,6 @@ export class RetailService {
             };
         }
 
-        // Neither table exists yet – only schema groundwork present
         return {
             source: 'none' as const,
             from,
@@ -444,19 +726,22 @@ export class RetailService {
         };
     }
 
-    private async createCommissionForSale(
-        manager: import('typeorm').EntityManager,
+    private async createCommissionForSaleItem(
+        manager: EntityManager,
         dto: CreateSaleDto,
         product: Product,
         unitPriceCents: number,
+        quantity: number,
         discountCents: number,
         actor: User,
     ) {
         if (!dto.employeeId) return;
+
         const employee = await this.users.findOne({
             where: { id: dto.employeeId },
         });
         if (!employee) return;
+
         const rawPercent = this.config.get<string | number>(
             'PRODUCT_COMMISSION_PERCENT',
         );
@@ -470,7 +755,7 @@ export class RetailService {
 
         const amountCents = this.calculateCommissionCents(
             unitPriceCents,
-            dto.quantity,
+            quantity,
             discountCents,
             percent,
         );
