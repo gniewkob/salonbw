@@ -42,6 +42,7 @@ import { SettingsModule } from './settings/settings.module';
 import { BranchesModule } from './branches/branches.module';
 import { GiftCardsModule } from './gift-cards/gift-cards.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { VersumCompatModule } from './versum-compat/versum-compat.module';
 
 @Module({
     imports: [
@@ -123,6 +124,7 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
         BranchesModule,
         GiftCardsModule,
         LoyaltyModule,
+        VersumCompatModule,
     ],
     controllers: [AppController, HealthController],
     providers: [
