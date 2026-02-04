@@ -30,6 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local calendar parity artifacts
+.tmp-*.js
+/test-results/
+/public/versum-calendar/fixtures/
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
