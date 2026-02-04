@@ -126,10 +126,8 @@ const nextConfig = {
                 source: '/graphql',
                 destination: '/api/graphql',
             },
-            {
-                source: '/api/:path*',
-                destination: `${target.replace(/\/$/, '')}/:path*`,
-            },
+            // API requests now go through /pages/api/[...path].ts
+            // which injects Authorization header from accessToken cookie
         ];
     },
     async redirects() {
