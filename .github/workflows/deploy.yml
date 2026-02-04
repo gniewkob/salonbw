@@ -109,16 +109,25 @@ jobs:
           api=false
           shared=false
 
-          if echo "$files" | rg -q "^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|turbo.json|packages/api/)"; then
+          has_match() {
+            local pattern="$1"
+            if command -v rg >/dev/null 2>&1; then
+              echo "$files" | rg -q "$pattern"
+            else
+              echo "$files" | grep -Eq "$pattern"
+            fi
+          }
+
+          if has_match "^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|turbo.json|packages/api/)"; then
             shared=true
           fi
-          if echo "$files" | rg -q "^apps/panel/"; then
+          if has_match "^apps/panel/"; then
             panel=true
           fi
-          if echo "$files" | rg -q "^apps/landing/"; then
+          if has_match "^apps/landing/"; then
             landing=true
           fi
-          if echo "$files" | rg -q "^backend/"; then
+          if has_match "^backend/"; then
             api=true
           fi
 
