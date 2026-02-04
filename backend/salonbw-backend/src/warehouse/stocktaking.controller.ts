@@ -56,6 +56,13 @@ export class StocktakingController {
         });
     }
 
+    @Get('history')
+    @Roles(Role.Admin, Role.Employee)
+    @ApiOperation({ summary: 'Historia inwentaryzacji (agregaty)' })
+    findHistorySummary() {
+        return this.stocktakingService.findHistorySummary();
+    }
+
     @Get(':id')
     @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Pobierz inwentaryzację po ID' })

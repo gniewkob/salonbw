@@ -1,21 +1,83 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+    IsArray,
     IsString,
     IsNumber,
     IsOptional,
-    IsNotEmpty,
+    IsInt,
     Min,
+    ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateSaleDto {
+export class CreateSaleItemDto {
     @ApiProperty({ description: 'The ID of the product being sold' })
-    @IsNumber()
-    @IsNotEmpty()
+    @IsInt()
     productId: number;
 
     @ApiProperty({ description: 'Quantity of items sold', minimum: 1 })
+    @IsInt()
+    @Min(1)
+    quantity: number;
+
+    @ApiProperty({
+        description: 'Unit price in cents (preferred over unitPrice)',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    unitPriceCents?: number;
+
+    @ApiProperty({
+        description: 'Total discount in cents for this line',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    discountCents?: number;
+
+    @ApiProperty({
+        description:
+            'Unit price in standard currency units (deprecated, use unitPriceCents)',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    unitPrice?: number;
+
+    @ApiProperty({
+        description:
+            'Line discount in standard currency units (deprecated, use discountCents)',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    discount?: number;
+
+    @ApiProperty({ description: 'Product unit label', required: false })
+    @IsString()
+    @IsOptional()
+    unit?: string;
+}
+
+export class CreateSaleDto {
+    @ApiProperty({
+        description:
+            'The ID of the product being sold (legacy single-item payload)',
+        required: false,
+    })
+    @IsNumber()
+    @IsOptional()
+    productId: number;
+
+    @ApiProperty({
+        description: 'Quantity of items sold (legacy single-item payload)',
+        minimum: 1,
+        required: false,
+    })
     @IsNumber()
     @Min(1)
+    @IsOptional()
     quantity: number;
 
     @ApiProperty({ description: 'Unit price in cents (preferred over unitPrice)', required: false })
@@ -52,4 +114,39 @@ export class CreateSaleDto {
     @IsString()
     @IsOptional()
     note?: string;
+
+    @ApiProperty({
+        description: 'Optional sale date (ISO string)',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    soldAt?: string;
+
+    @ApiProperty({
+        description: 'Optional client display name',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    clientName?: string;
+
+    @ApiProperty({
+        description: 'Optional payment method',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    paymentMethod?: string;
+
+    @ApiProperty({
+        description: 'Sale items (preferred over legacy single-item payload)',
+        type: [CreateSaleItemDto],
+        required: false,
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateSaleItemDto)
+    @IsOptional()
+    items?: CreateSaleItemDto[];
 }

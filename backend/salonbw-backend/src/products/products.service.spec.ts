@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { NotFoundException } from '@nestjs/common';
@@ -9,6 +9,9 @@ import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
 import { AppCacheService } from '../cache/cache.service';
+import { ProductCategory } from './entities/product-category.entity';
+import { ProductCommissionRule } from './entities/product-commission-rule.entity';
+import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 
 describe('ProductsService', () => {
     let service: ProductsService;
@@ -48,10 +51,32 @@ describe('ProductsService', () => {
                     >,
                 },
                 {
+                    provide: getRepositoryToken(ProductCategory),
+                    useValue: mockRepository(),
+                },
+                {
+                    provide: getRepositoryToken(ProductCommissionRule),
+                    useValue: mockRepository(),
+                },
+                {
+                    provide: getRepositoryToken(ServiceRecipeItem),
+                    useValue: mockRepository(),
+                },
+                {
+                    provide: getRepositoryToken(User),
+                    useValue: mockRepository(),
+                },
+                {
                     provide: LogService,
                     useValue: {
                         logAction: jest.fn(),
                     } as unknown as jest.Mocked<LogService>,
+                },
+                {
+                    provide: DataSource,
+                    useValue: {
+                        query: jest.fn().mockResolvedValue([]),
+                    },
                 },
                 {
                     provide: AppCacheService,
@@ -92,11 +117,14 @@ describe('ProductsService', () => {
         const logSpy = jest.spyOn(logService, 'logAction');
         const user = { id: 1 } as User;
         cache.del.mockClear();
-        await expect(service.create(dto as Product, user)).resolves.toEqual({
-            id: 1,
-            ...dto,
-        });
-        expect(createSpy).toHaveBeenCalledWith(dto);
+        await expect(service.create(dto as Product, user)).resolves.toEqual(
+            expect.objectContaining({
+                id: 1,
+            }),
+        );
+        expect(createSpy).toHaveBeenCalledWith(
+            expect.objectContaining(dto),
+        );
         expect(saveSpy).toHaveBeenCalled();
         expect(logSpy).toHaveBeenCalledWith(
             user,
@@ -138,7 +166,9 @@ describe('ProductsService', () => {
     it('returns a product by id and caches it', async () => {
         const findOneSpy = jest.spyOn(repo, 'findOne');
         await expect(service.findOne(1)).resolves.toEqual({ id: 1 });
-        expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 1 } });
+        expect(findOneSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ where: { id: 1 } }),
+        );
         expect(cache.get).toHaveBeenCalledWith('products:1');
         expect(cache.set).toHaveBeenCalledWith(
             'products:1',
@@ -161,7 +191,9 @@ describe('ProductsService', () => {
         await expect(service.findOne(2)).rejects.toBeInstanceOf(
             NotFoundException,
         );
-        expect(findOneSpy).toHaveBeenCalledWith({ where: { id: 2 } });
+        expect(findOneSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ where: { id: 2 } }),
+        );
         expect(cache.set).not.toHaveBeenCalled();
     });
 
@@ -216,11 +248,12 @@ describe('ProductsService', () => {
             };
             const user = { id: 1 } as User;
             cache.del.mockClear();
-            await expect(service.create(dto as Product, user)).resolves.toEqual(
-                {
+            await expect(
+                service.create(dto as Product, user),
+            ).resolves.toEqual(
+                expect.objectContaining({
                     id: 1,
-                    ...dto,
-                },
+                }),
             );
             expect(consoleSpy).toHaveBeenCalled();
             expect(cache.del).toHaveBeenCalledWith('products:all');

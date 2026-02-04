@@ -16,6 +16,20 @@
         ]
       }
     },
+    "/debug-logs": {
+      "get": {
+        "operationId": "AppController_getLogs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "app"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "HealthController_getHealth",
@@ -26,6 +40,21 @@
           }
         },
         "summary": "Health check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "HealthController_getDeepHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service and dependencies are up"
+          }
+        },
+        "summary": "Health check with dependencies",
         "tags": [
           "health"
         ]
@@ -181,10 +210,53 @@
         ]
       }
     },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User successfully logged out"
+          }
+        },
+        "summary": "Log out user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/appointments": {
       "get": {
         "operationId": "AppointmentsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date for filtering appointments (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date for filtering appointments (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "description": "Employee ID for filtering appointments",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -403,10 +475,242 @@
         ]
       }
     },
+    "/appointments/{id}/reschedule": {
+      "patch": {
+        "description": "Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.",
+        "operationId": "AppointmentsController_reschedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment rescheduled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          },
+          "409": {
+            "description": "Conflict - employee already booked for this time"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reschedule appointment (drag & drop support)",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/conflicts": {
+      "get": {
+        "description": "Check if rescheduling an appointment would cause conflicts",
+        "operationId": "AppointmentsController_checkConflicts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startTime",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conflict check result"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Check for scheduling conflicts",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/finalize": {
+      "post": {
+        "description": "Complete the visit checkout with payment method, amounts, tips, discounts, and optional product sales (upselling). Creates commission records.",
+        "operationId": "AppointmentsController_finalize",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment finalized successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payment data or appointment state"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Finalize appointment with payment details",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/services/public": {
+      "get": {
+        "operationId": "ServicesController_findPublic",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get public services for landing",
+        "tags": [
+          "services"
+        ]
+      }
+    },
     "/services": {
       "get": {
         "operationId": "ServicesController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "onlineBooking",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeVariants",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeCategory",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -427,7 +731,7 @@
             "bearer": []
           }
         ],
-        "summary": "Get all services",
+        "summary": "Get all services with optional filters",
         "tags": [
           "services"
         ]
@@ -463,6 +767,105 @@
           }
         ],
         "summary": "Create service",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/with-relations": {
+      "get": {
+        "operationId": "ServicesController_findAllWithRelations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all services with categories and variants",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/online-booking": {
+      "get": {
+        "operationId": "ServicesController_findActiveForOnlineBooking",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get services available for online booking",
+        "tags": [
+          "services"
+        ]
+      }
+    },
+    "/services/by-category/{categoryId}": {
+      "get": {
+        "operationId": "ServicesController_findByCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get services by category",
         "tags": [
           "services"
         ]
@@ -575,10 +978,97 @@
         ]
       }
     },
+    "/services/reorder": {
+      "patch": {
+        "operationId": "ServicesController_reorder",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Services reordered"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reorder services (drag & drop)",
+        "tags": [
+          "services"
+        ]
+      }
+    },
     "/products": {
       "get": {
         "operationId": "ProductsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by name, SKU, barcode, brand",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "productType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product",
+                "supply",
+                "universal"
+              ]
+            }
+          },
+          {
+            "name": "includeInactive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "stock",
+                "unitPrice",
+                "createdAt",
+                "updatedAt"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -744,6 +1234,361 @@
         "summary": "Remove product",
         "tags": [
           "products"
+        ]
+      }
+    },
+    "/products/{id}/card": {
+      "get": {
+        "operationId": "ProductsController_findCard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product card"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product card details for warehouse view",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/products/{id}/history": {
+      "get": {
+        "operationId": "ProductsController_findHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product history feed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product stock and sales history",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/products/{id}/formulas": {
+      "get": {
+        "operationId": "ProductsController_findFormulas",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Formulas linked to product"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get formulas using this product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/products/{id}/commissions": {
+      "get": {
+        "operationId": "ProductsController_findCommissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product commission rules"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product commissions by employee",
+        "tags": [
+          "products"
+        ]
+      },
+      "put": {
+        "operationId": "ProductsController_updateCommissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductCommissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product commission rules"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace product commissions by employee",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/product-categories": {
+      "get": {
+        "operationId": "ProductCategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductCategory"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List product categories",
+        "tags": [
+          "product-categories"
+        ]
+      },
+      "post": {
+        "operationId": "ProductCategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategory"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create product category",
+        "tags": [
+          "product-categories"
+        ]
+      }
+    },
+    "/product-categories/tree": {
+      "get": {
+        "operationId": "ProductCategoriesController_findTree",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductCategory"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product categories as tree",
+        "tags": [
+          "product-categories"
+        ]
+      }
+    },
+    "/product-categories/{id}": {
+      "get": {
+        "operationId": "ProductCategoriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategory"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product category by id",
+        "tags": [
+          "product-categories"
+        ]
+      },
+      "patch": {
+        "operationId": "ProductCategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategory"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update product category",
+        "tags": [
+          "product-categories"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductCategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product category removed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete product category",
+        "tags": [
+          "product-categories"
         ]
       }
     },
@@ -947,8 +1792,9 @@
             "name": "from",
             "required": true,
             "in": "query",
+            "description": "Start date for the summary period",
             "schema": {
-              "format": "date-time",
+              "example": "2023-01-01T00:00:00Z",
               "type": "string"
             }
           },
@@ -956,8 +1802,9 @@
             "name": "to",
             "required": true,
             "in": "query",
+            "description": "End date for the summary period",
             "schema": {
-              "format": "date-time",
+              "example": "2023-01-31T23:59:59Z",
               "type": "string"
             }
           }
@@ -968,9 +1815,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example": {
-                    "amount": 0
-                  }
+                  "$ref": "#/components/schemas/GetSummaryDto"
                 }
               }
             }
@@ -1043,6 +1888,1377 @@
           "dashboard"
         ]
       }
+    },
+    "/dashboard/client": {
+      "get": {
+        "operationId": "DashboardController_getClientSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDashboardDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get client dashboard summary",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/sales": {
+      "post": {
+        "operationId": "SalesController_createSale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sale recorded (or stock adjusted)"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product sale",
+        "tags": [
+          "retail"
+        ]
+      },
+      "get": {
+        "operationId": "SalesController_findSales",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Warehouse sales list"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List warehouse sales",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/sales/summary": {
+      "get": {
+        "operationId": "SalesController_getSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO date",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated units and revenue if available"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sales summary for a period",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/sales/{id}": {
+      "get": {
+        "operationId": "SalesController_findSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Warehouse sale details"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get warehouse sale details",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/usage": {
+      "post": {
+        "operationId": "UsageController_createUsage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUsageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usage recorded"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create product usage (material consumption)",
+        "tags": [
+          "retail"
+        ]
+      },
+      "get": {
+        "operationId": "UsageController_findUsage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Usage records"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List product usage records",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/usage/{id}": {
+      "get": {
+        "operationId": "UsageController_findOneUsage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage details"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get usage details",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/inventory": {
+      "get": {
+        "operationId": "InventoryController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current stock by product"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List inventory levels",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/inventory/adjust": {
+      "post": {
+        "operationId": "InventoryController_adjust",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustInventoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock adjusted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adjust inventory (manual adjustment)",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/stocktaking": {
+      "get": {
+        "operationId": "StocktakingController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "draft",
+                "in_progress",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lista wszystkich inwentaryzacji",
+        "tags": [
+          "stocktaking"
+        ]
+      },
+      "post": {
+        "operationId": "StocktakingController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStocktakingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Utwórz nową inwentaryzację",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/history": {
+      "get": {
+        "operationId": "StocktakingController_findHistorySummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historia inwentaryzacji (agregaty)",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/{id}": {
+      "get": {
+        "operationId": "StocktakingController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pobierz inwentaryzację po ID",
+        "tags": [
+          "stocktaking"
+        ]
+      },
+      "patch": {
+        "operationId": "StocktakingController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStocktakingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aktualizuj inwentaryzację",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/{id}/start": {
+      "post": {
+        "operationId": "StocktakingController_start",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rozpocznij inwentaryzację (załaduj produkty)",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/{id}/items": {
+      "post": {
+        "operationId": "StocktakingController_addItems",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddStocktakingItemsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dodaj/aktualizuj pozycje inwentaryzacji",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/{id}/items/{itemId}": {
+      "patch": {
+        "operationId": "StocktakingController_updateItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStocktakingItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aktualizuj pozycję inwentaryzacji",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/stocktaking/{id}/complete": {
+      "post": {
+        "operationId": "StocktakingController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteStocktakingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Zakończ inwentaryzację (opcjonalnie zastosuj różnice)",
+        "tags": [
+          "stocktaking"
+        ]
+      }
+    },
+    "/orders": {
+      "get": {
+        "operationId": "OrdersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Warehouse orders"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get warehouse orders",
+        "tags": [
+          "orders"
+        ]
+      },
+      "post": {
+        "operationId": "OrdersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWarehouseOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Warehouse order created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create warehouse order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Warehouse order details"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get warehouse order details",
+        "tags": [
+          "orders"
+        ]
+      },
+      "patch": {
+        "operationId": "OrdersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWarehouseOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Warehouse order updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update warehouse order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}/send": {
+      "patch": {
+        "operationId": "OrdersController_send",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Warehouse order sent"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send warehouse order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}/cancel": {
+      "patch": {
+        "operationId": "OrdersController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Warehouse order cancelled"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel warehouse order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}/receive": {
+      "patch": {
+        "operationId": "OrdersController_receive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveWarehouseOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Warehouse order received"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Receive warehouse order",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/deliveries": {
+      "get": {
+        "operationId": "DeliveriesController_findAll",
+        "parameters": [
+          {
+            "name": "supplierId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "draft",
+                "pending",
+                "received",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lista wszystkich dostaw",
+        "tags": [
+          "deliveries"
+        ]
+      },
+      "post": {
+        "operationId": "DeliveriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Utwórz nową dostawę",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/deliveries/{id}": {
+      "get": {
+        "operationId": "DeliveriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pobierz dostawę po ID",
+        "tags": [
+          "deliveries"
+        ]
+      },
+      "patch": {
+        "operationId": "DeliveriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aktualizuj dostawę",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/deliveries/{id}/items": {
+      "post": {
+        "operationId": "DeliveriesController_addItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dodaj pozycję do dostawy",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/deliveries/{id}/items/{itemId}": {
+      "patch": {
+        "operationId": "DeliveriesController_updateItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aktualizuj pozycję w dostawie",
+        "tags": [
+          "deliveries"
+        ]
+      },
+      "delete": {
+        "operationId": "DeliveriesController_removeItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Usuń pozycję z dostawy",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/deliveries/{id}/receive": {
+      "post": {
+        "operationId": "DeliveriesController_receive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Przyjmij dostawę (zaktualizuj stany magazynowe)",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/deliveries/{id}/cancel": {
+      "post": {
+        "operationId": "DeliveriesController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Anuluj dostawę",
+        "tags": [
+          "deliveries"
+        ]
+      }
+    },
+    "/suppliers": {
+      "get": {
+        "operationId": "SuppliersController_findAll",
+        "parameters": [
+          {
+            "name": "includeInactive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lista wszystkich dostawców",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "post": {
+        "operationId": "SuppliersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupplierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Utwórz nowego dostawcę",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    },
+    "/suppliers/{id}": {
+      "get": {
+        "operationId": "SuppliersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pobierz dostawcę po ID",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "patch": {
+        "operationId": "SuppliersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSupplierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aktualizuj dostawcę",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "delete": {
+        "operationId": "SuppliersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Usuń dostawcę",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    },
+    "/stock-alerts": {
+      "get": {
+        "operationId": "StockAlertsController_getStockAlerts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "StockAlerts"
+        ]
+      }
+    },
+    "/stock-alerts/low-stock": {
+      "get": {
+        "operationId": "StockAlertsController_getLowStockProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "StockAlerts"
+        ]
+      }
+    },
+    "/stock-alerts/critical": {
+      "get": {
+        "operationId": "StockAlertsController_getCriticalStockProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "StockAlerts"
+        ]
+      }
+    },
+    "/stock-alerts/summary": {
+      "get": {
+        "operationId": "StockAlertsController_getStockSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "StockAlerts"
+        ]
+      }
+    },
+    "/stock-alerts/suppliers/{supplierId}/reorder": {
+      "get": {
+        "operationId": "StockAlertsController_getReorderSuggestionsBySupplier",
+        "parameters": [
+          {
+            "name": "supplierId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "StockAlerts"
+        ]
+      }
     }
   },
   "info": {
@@ -1083,18 +3299,12 @@
           "role": {
             "type": "string",
             "description": "User role",
-            "enum": [
-              "client",
-              "employee",
-              "admin"
-            ],
             "example": "client"
           },
           "phone": {
             "type": "object",
             "description": "International phone number",
-            "example": "+123456789",
-            "nullable": true
+            "example": "+123456789"
           },
           "commissionBase": {
             "type": "number",
@@ -1144,6 +3354,11 @@
             "type": "boolean",
             "description": "Whether the user receives notifications",
             "example": true
+          },
+          "password": {
+            "type": "string",
+            "description": "Password",
+            "example": "password123"
           }
         },
         "required": [
@@ -1163,11 +3378,22 @@
             "type": "string",
             "description": "User full name",
             "example": "John Doe"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "example": "SecurePassword123!"
+          },
+          "phone": {
+            "type": "string",
+            "description": "International phone number",
+            "example": "+123456789"
           }
         },
         "required": [
           "email",
-          "name"
+          "name",
+          "password"
         ]
       },
       "RefreshTokenDto": {
@@ -1175,65 +3401,14 @@
         "properties": {
           "refreshToken": {
             "type": "string",
-            "description": "JWT refresh token",
+            "description": "JWT refresh token (optional when sent via cookie)",
             "example": "eyJhbGci..."
           }
-        },
-        "required": [
-          "refreshToken"
-        ]
+        }
       },
       "Appointment": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "client": {
-            "$ref": "#/components/schemas/UserDto"
-          },
-          "employee": {
-            "$ref": "#/components/schemas/UserDto"
-          },
-          "service": {
-            "$ref": "#/components/schemas/Service"
-          },
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "scheduled",
-              "cancelled",
-              "completed"
-            ]
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "formulas": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Formula"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "client",
-          "employee",
-          "service",
-          "startTime",
-          "endTime",
-          "status"
-        ]
+        "properties": {}
       },
       "CreateAppointmentDto": {
         "type": "object",
@@ -1242,6 +3417,9 @@
             "type": "number"
           },
           "serviceId": {
+            "type": "number"
+          },
+          "serviceVariantId": {
             "type": "number"
           },
           "startTime": {
@@ -1268,74 +3446,195 @@
           "endTime": {
             "type": "string",
             "description": "New end time ISO string"
+          },
+          "serviceVariantId": {
+            "type": "number",
+            "description": "Service variant ID"
           }
         },
         "required": [
           "startTime"
         ]
       },
-      "Service": {
+      "RescheduleAppointmentDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "integer"
-          },
-          "price": {
-            "type": "number"
-          },
-          "category": {
+          "startTime": {
             "type": "string",
-            "nullable": true
+            "description": "New start time ISO string"
           },
-          "commissionPercent": {
+          "endTime": {
+            "type": "string",
+            "description": "New end time ISO string"
+          },
+          "employeeId": {
             "type": "number",
-            "nullable": true
+            "description": "New employee ID (optional)"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Force reschedule even if there are conflicts",
+            "default": false
           }
         },
         "required": [
-          "id",
-          "name",
-          "description",
-          "duration",
-          "price"
+          "startTime"
         ]
+      },
+      "ProductSaleItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "Product ID"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity sold",
+            "minimum": 1
+          },
+          "unitPriceCents": {
+            "type": "number",
+            "description": "Unit price in cents (optional, uses product price if not specified)"
+          },
+          "discountCents": {
+            "type": "number",
+            "description": "Discount in cents for this item"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "FinalizeAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "description": "Payment method used",
+            "enum": [
+              "cash",
+              "card",
+              "transfer",
+              "online",
+              "voucher"
+            ],
+            "example": "card"
+          },
+          "paidAmountCents": {
+            "type": "number",
+            "description": "Amount paid in cents",
+            "example": 15000
+          },
+          "tipAmountCents": {
+            "type": "number",
+            "description": "Tip amount in cents",
+            "example": 500
+          },
+          "discountCents": {
+            "type": "number",
+            "description": "Discount amount in cents",
+            "example": 1000
+          },
+          "products": {
+            "description": "Products sold during the visit (upselling)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSaleItemDto"
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "Internal note about the finalization"
+          }
+        },
+        "required": [
+          "paymentMethod",
+          "paidAmountCents"
+        ]
+      },
+      "Service": {
+        "type": "object",
+        "properties": {}
       },
       "CreateServiceDto": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Service name"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Service description"
           },
           "duration": {
-            "type": "number"
+            "type": "number",
+            "description": "Duration in minutes"
           },
           "price": {
-            "type": "number"
+            "type": "number",
+            "description": "Price in PLN"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ],
+            "default": "fixed",
+            "description": "Price type: fixed or from (minimum)"
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT rate (%)"
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "default": false
+          },
+          "publicDescription": {
+            "type": "string",
+            "description": "Public description"
+          },
+          "privateDescription": {
+            "type": "string",
+            "description": "Private description"
           },
           "category": {
-            "type": "string"
+            "type": "string",
+            "description": "Legacy string category (deprecated)"
+          },
+          "categoryId": {
+            "type": "number",
+            "description": "Category ID (new hierarchical system)"
           },
           "commissionPercent": {
-            "type": "number"
+            "type": "number",
+            "description": "Commission percentage (0-100)"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true,
+            "description": "Is service active"
+          },
+          "onlineBooking": {
+            "type": "boolean",
+            "default": true,
+            "description": "Available for online booking"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0,
+            "description": "Sort order"
           }
         },
         "required": [
           "name",
-          "description",
           "duration",
-          "price"
+          "price",
+          "priceType"
         ]
       },
       "UpdateServiceDto": {
@@ -1353,39 +3652,79 @@
           "price": {
             "type": "number"
           },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
           "category": {
             "type": "string"
           },
+          "categoryId": {
+            "type": "number"
+          },
           "commissionPercent": {
             "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "onlineBooking": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT rate (%)"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "publicDescription": {
+            "type": "string"
+          },
+          "privateDescription": {
+            "type": "string"
           }
         }
       },
       "Product": {
         "type": "object",
+        "properties": {}
+      },
+      "ProductCommissionRuleDto": {
+        "type": "object",
         "properties": {
-          "id": {
+          "employeeId": {
             "type": "number"
           },
-          "name": {
-            "type": "string"
-          },
-          "brand": {
-            "type": "string"
-          },
-          "unitPrice": {
-            "type": "number"
-          },
-          "stock": {
-            "type": "integer"
+          "commissionPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
           }
         },
         "required": [
-          "id",
-          "name",
-          "brand",
-          "unitPrice",
-          "stock"
+          "employeeId",
+          "commissionPercent"
+        ]
+      },
+      "UpdateProductCommissionsDto": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCommissionRuleDto"
+            }
+          }
+        },
+        "required": [
+          "rules"
         ]
       },
       "CreateProductDto": {
@@ -1400,13 +3739,65 @@
           "unitPrice": {
             "type": "number"
           },
+          "vatRate": {
+            "type": "number",
+            "default": 23
+          },
           "stock": {
-            "type": "integer"
+            "type": "number"
+          },
+          "purchasePrice": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "productType": {
+            "type": "string",
+            "enum": [
+              "product",
+              "supply",
+              "universal"
+            ]
+          },
+          "minQuantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "packageSize": {
+            "type": "number"
+          },
+          "packageUnit": {
+            "type": "string"
+          },
+          "manufacturer": {
+            "type": "string"
+          },
+          "defaultSupplierId": {
+            "type": "number"
+          },
+          "categoryId": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "trackStock": {
+            "type": "boolean",
+            "default": true
           }
         },
         "required": [
           "name",
-          "brand",
           "unitPrice",
           "stock"
         ]
@@ -1423,8 +3814,101 @@
           "unitPrice": {
             "type": "number"
           },
+          "vatRate": {
+            "type": "number"
+          },
           "stock": {
-            "type": "integer"
+            "type": "number"
+          },
+          "purchasePrice": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "productType": {
+            "type": "string",
+            "enum": [
+              "product",
+              "supply",
+              "universal"
+            ]
+          },
+          "minQuantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "packageSize": {
+            "type": "number"
+          },
+          "packageUnit": {
+            "type": "string"
+          },
+          "manufacturer": {
+            "type": "string"
+          },
+          "defaultSupplierId": {
+            "type": "number"
+          },
+          "categoryId": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "trackStock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductCategory": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "number"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "number"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         }
       },
@@ -1445,62 +3929,23 @@
       },
       "Formula": {
         "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "description": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "client": {
-            "$ref": "#/components/schemas/UserDto"
-          }
-        },
-        "required": [
-          "id",
-          "description",
-          "date",
-          "client"
-        ]
+        "properties": {}
       },
       "Commission": {
         "type": "object",
+        "properties": {}
+      },
+      "GetSummaryDto": {
+        "type": "object",
         "properties": {
-          "id": {
-            "type": "number"
-          },
-          "employee": {
-            "$ref": "#/components/schemas/UserDto"
-          },
-          "appointment": {
-            "$ref": "#/components/schemas/Appointment",
-            "nullable": true
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product",
-            "nullable": true
-          },
           "amount": {
-            "type": "number"
-          },
-          "percent": {
-            "type": "number"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "type": "number",
+            "description": "Total commission amount for the period",
+            "example": 0
           }
         },
         "required": [
-          "id",
-          "employee",
-          "amount",
-          "percent",
-          "createdAt"
+          "amount"
         ]
       },
       "DashboardSummaryDto": {
@@ -1524,7 +3969,7 @@
           "upcomingAppointments": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Appointment"
+              "type": "string"
             }
           }
         },
@@ -1534,6 +3979,623 @@
           "todayAppointments",
           "upcomingAppointments"
         ]
+      },
+      "UpcomingAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Appointment ID"
+          },
+          "serviceName": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Start time"
+          },
+          "employeeName": {
+            "type": "string",
+            "description": "Employee name"
+          }
+        },
+        "required": [
+          "id",
+          "serviceName",
+          "startTime",
+          "employeeName"
+        ]
+      },
+      "ServiceHistoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Service ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of times used"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "count"
+        ]
+      },
+      "RecentAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Appointment ID"
+          },
+          "serviceName": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Start time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Appointment status"
+          }
+        },
+        "required": [
+          "id",
+          "serviceName",
+          "startTime",
+          "status"
+        ]
+      },
+      "ClientDashboardDto": {
+        "type": "object",
+        "properties": {
+          "upcomingAppointment": {
+            "description": "Next upcoming appointment",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpcomingAppointmentDto"
+              }
+            ]
+          },
+          "completedCount": {
+            "type": "number",
+            "description": "Total completed appointments"
+          },
+          "serviceHistory": {
+            "description": "Services used with frequency",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceHistoryItemDto"
+            }
+          },
+          "recentAppointments": {
+            "description": "Recent appointments",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecentAppointmentDto"
+            }
+          }
+        },
+        "required": [
+          "upcomingAppointment",
+          "completedCount",
+          "serviceHistory",
+          "recentAppointments"
+        ]
+      },
+      "CreateSaleItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "The ID of the product being sold"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity of items sold",
+            "minimum": 1
+          },
+          "unitPriceCents": {
+            "type": "number",
+            "description": "Unit price in cents (preferred over unitPrice)"
+          },
+          "discountCents": {
+            "type": "number",
+            "description": "Total discount in cents for this line"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price in standard currency units (deprecated, use unitPriceCents)"
+          },
+          "discount": {
+            "type": "number",
+            "description": "Line discount in standard currency units (deprecated, use discountCents)"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Product unit label"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateSaleDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "The ID of the product being sold (legacy single-item payload)"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity of items sold (legacy single-item payload)",
+            "minimum": 1
+          },
+          "unitPriceCents": {
+            "type": "number",
+            "description": "Unit price in cents (preferred over unitPrice)"
+          },
+          "discountCents": {
+            "type": "number",
+            "description": "Total discount in cents (preferred over discount)"
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price in standard currency units (deprecated, use unitPriceCents)"
+          },
+          "discount": {
+            "type": "number",
+            "description": "Discount in standard currency units (deprecated, use discountCents)"
+          },
+          "employeeId": {
+            "type": "number",
+            "description": "ID of the employee credited with the sale"
+          },
+          "appointmentId": {
+            "type": "number",
+            "description": "ID of the associated appointment"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note for the sale"
+          },
+          "soldAt": {
+            "type": "string",
+            "description": "Optional sale date (ISO string)"
+          },
+          "clientName": {
+            "type": "string",
+            "description": "Optional client display name"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Optional payment method"
+          },
+          "items": {
+            "description": "Sale items (preferred over legacy single-item payload)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateSaleItemDto"
+            }
+          }
+        }
+      },
+      "CreateUsageItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "default": "op."
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateUsageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateUsageItemDto"
+            }
+          },
+          "employeeId": {
+            "type": "number"
+          },
+          "appointmentId": {
+            "type": "number"
+          },
+          "clientName": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AdjustInventoryDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "ID of the product to adjust"
+          },
+          "delta": {
+            "type": "number",
+            "description": "Change in quantity (positive or negative)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for the adjustment"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note"
+          }
+        },
+        "required": [
+          "productId",
+          "delta",
+          "reason"
+        ]
+      },
+      "CreateStocktakingDto": {
+        "type": "object",
+        "properties": {
+          "stocktakingDate": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateStocktakingDto": {
+        "type": "object",
+        "properties": {
+          "stocktakingDate": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "StocktakingItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "countedQuantity": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "productId",
+          "countedQuantity"
+        ]
+      },
+      "AddStocktakingItemsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StocktakingItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdateStocktakingItemDto": {
+        "type": "object",
+        "properties": {
+          "countedQuantity": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "CompleteStocktakingDto": {
+        "type": "object",
+        "properties": {
+          "applyDifferences": {
+            "type": "boolean",
+            "default": true
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "WarehouseOrderItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "default": "op."
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "CreateWarehouseOrderDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WarehouseOrderItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdateWarehouseOrderDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WarehouseOrderItemDto"
+            }
+          }
+        }
+      },
+      "ReceiveWarehouseOrderDto": {
+        "type": "object",
+        "properties": {
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "DeliveryItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitCost": {
+            "type": "number"
+          },
+          "batchNumber": {
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unitCost"
+        ]
+      },
+      "CreateDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "number"
+          },
+          "deliveryDate": {
+            "type": "string"
+          },
+          "invoiceNumber": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryItemDto"
+            }
+          }
+        }
+      },
+      "UpdateDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "number"
+          },
+          "deliveryDate": {
+            "type": "string"
+          },
+          "invoiceNumber": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "received",
+              "cancelled"
+            ]
+          }
+        }
+      },
+      "AddDeliveryItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitCost": {
+            "type": "number"
+          },
+          "batchNumber": {
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unitCost"
+        ]
+      },
+      "UpdateDeliveryItemDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "number"
+          },
+          "unitCost": {
+            "type": "number"
+          },
+          "batchNumber": {
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string"
+          }
+        }
+      },
+      "ReceiveDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateSupplierDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contactPerson": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "nip": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSupplierDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contactPerson": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "nip": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

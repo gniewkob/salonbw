@@ -59,6 +59,45 @@ export class StocktakingService {
         return qb.getMany();
     }
 
+    async findHistorySummary(): Promise<
+        Array<{
+            id: number;
+            stocktakingNumber: string;
+            stocktakingDate: string;
+            productsCount: number;
+            shortageCount: number;
+            overageCount: number;
+            matchedCount: number;
+        }>
+    > {
+        const rows = await this.dataSource.query(
+            `
+            SELECT
+                st.id,
+                st."stocktakingNumber",
+                st."stocktakingDate",
+                COUNT(si.id)::int AS "productsCount",
+                SUM(CASE WHEN COALESCE(si.difference, 0) < 0 THEN 1 ELSE 0 END)::int AS "shortageCount",
+                SUM(CASE WHEN COALESCE(si.difference, 0) > 0 THEN 1 ELSE 0 END)::int AS "overageCount",
+                SUM(CASE WHEN COALESCE(si.difference, 0) = 0 THEN 1 ELSE 0 END)::int AS "matchedCount"
+            FROM stocktakings st
+            LEFT JOIN stocktaking_items si ON si."stocktakingId" = st.id
+            GROUP BY st.id
+            ORDER BY st."stocktakingDate" DESC, st.id DESC
+            `,
+        );
+
+        return rows.map((row: Record<string, unknown>) => ({
+            id: Number(row.id),
+            stocktakingNumber: String(row.stocktakingNumber ?? ''),
+            stocktakingDate: String(row.stocktakingDate ?? ''),
+            productsCount: Number(row.productsCount ?? 0),
+            shortageCount: Number(row.shortageCount ?? 0),
+            overageCount: Number(row.overageCount ?? 0),
+            matchedCount: Number(row.matchedCount ?? 0),
+        }));
+    }
+
     async findOne(id: number): Promise<Stocktaking> {
         const stocktaking = await this.stocktakingRepository.findOne({
             where: { id },

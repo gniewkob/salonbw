@@ -6,18 +6,32 @@ export function useProductApi() {
     const { apiFetch } = useAuth();
     const toast = useToast();
 
+    const mapPayload = <T extends Record<string, unknown>>(data: T) => {
+        const minQuantity =
+            data.minQuantity ??
+            (typeof data.lowStockThreshold === 'number'
+                ? data.lowStockThreshold
+                : undefined);
+        return {
+            ...data,
+            minQuantity,
+        };
+    };
+
     const create = async (data: {
         name: string;
         unitPrice: number;
         stock: number;
-        lowStockThreshold: number;
+        lowStockThreshold?: number;
+        minQuantity?: number;
+        vatRate?: number;
         brand?: string;
     }) => {
         try {
             const res = await apiFetch<Product>('/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify(mapPayload(data)),
             });
             toast.success('Product created');
             return res;
@@ -34,6 +48,8 @@ export function useProductApi() {
             unitPrice?: number;
             stock?: number;
             lowStockThreshold?: number;
+            minQuantity?: number;
+            vatRate?: number;
             brand?: string;
         },
     ) => {
@@ -41,7 +57,7 @@ export function useProductApi() {
             const res = await apiFetch<Product>(`/products/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify(mapPayload(data)),
             });
             toast.success('Product updated');
             return res;

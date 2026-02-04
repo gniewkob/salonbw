@@ -214,7 +214,9 @@ async function run() {
     const dataSource = new DataSource({
         type: 'postgres',
         ...dbConfig,
-        entities: [Service, ServiceCategory, ServiceVariant],
+        entities: [
+            path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}'),
+        ],
         ssl: process.env.PGSSL === '1' ? true : undefined,
     });
 
@@ -253,7 +255,8 @@ async function run() {
 
         if (existing) {
             await serviceRepo.update(existing.id, {
-                description: service.description ?? undefined,
+                description:
+                    service.description ?? existing.description ?? service.name,
                 publicDescription: service.publicDescription ?? undefined,
                 privateDescription: undefined,
                 duration: service.duration,
@@ -287,7 +290,7 @@ async function run() {
         } else {
             const createdService = serviceRepo.create({
                 name: service.name,
-                description: service.description ?? undefined,
+                description: service.description ?? service.name,
                 publicDescription: service.publicDescription ?? undefined,
                 privateDescription: undefined,
                 duration: service.duration,

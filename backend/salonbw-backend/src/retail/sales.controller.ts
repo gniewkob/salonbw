@@ -4,6 +4,8 @@ import {
     Get,
     HttpCode,
     HttpStatus,
+    Param,
+    ParseIntPipe,
     Post,
     Query,
     UseGuards,
@@ -40,6 +42,16 @@ export class SalesController {
         return this.retail.createSale(dto, { id: user.userId } as User);
     }
 
+    @Get()
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List warehouse sales' })
+    @ApiResponse({ status: 200, description: 'Warehouse sales list' })
+    findSales() {
+        return this.retail.listSales();
+    }
+
     @Get('summary')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
@@ -55,5 +67,15 @@ export class SalesController {
         const fromDate = from ? new Date(from) : undefined;
         const toDate = to ? new Date(to) : undefined;
         return this.retail.getSalesSummary({ from: fromDate, to: toDate });
+    }
+
+    @Get(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get warehouse sale details' })
+    @ApiResponse({ status: 200, description: 'Warehouse sale details' })
+    findSale(@Param('id', ParseIntPipe) id: number) {
+        return this.retail.getSaleDetails(id);
     }
 }
