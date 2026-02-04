@@ -1,0 +1,959 @@
+{
+  "generatedAt": "2026-02-04T20:45:39.590Z",
+  "sourceTemplate": "static_preview/templates/calendar_template.html",
+  "assets": [
+    {
+      "source": "https://app-cdn.versum.net/assets/ajax-loader-e7b44c86b050fca766a96ddac2d0932af0126da6f2305280342d909168dcce6b.gif",
+      "localPath": "/versum-calendar/assets/ajax-loader-e7b44c86b050fca766a96ddac2d0932af0126da6f2305280342d909168dcce6b.gif",
+      "file": "assets/ajax-loader-e7b44c86b050fca766a96ddac2d0932af0126da6f2305280342d909168dcce6b.gif",
+      "sha256": "e7b44c86b050fca766a96ddac2d0932af0126da6f2305280342d909168dcce6b",
+      "bytes": 4178
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/apple-touch-icon-120x120-c0350d37e7bbfa08835e4b3dea3a3591545717e1b65ab32e5f1434825f6bc8ef.png",
+      "localPath": "/versum-calendar/assets/apple-touch-icon-120x120-c0350d37e7bbfa08835e4b3dea3a3591545717e1b65ab32e5f1434825f6bc8ef.png",
+      "file": "assets/apple-touch-icon-120x120-c0350d37e7bbfa08835e4b3dea3a3591545717e1b65ab32e5f1434825f6bc8ef.png",
+      "sha256": "c0350d37e7bbfa08835e4b3dea3a3591545717e1b65ab32e5f1434825f6bc8ef",
+      "bytes": 4267
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/apple-touch-icon-152x152-0986423b97959c51b86dbb4b3beea28151faa33240482241d405f79c1d2dee51.png",
+      "localPath": "/versum-calendar/assets/apple-touch-icon-152x152-0986423b97959c51b86dbb4b3beea28151faa33240482241d405f79c1d2dee51.png",
+      "file": "assets/apple-touch-icon-152x152-0986423b97959c51b86dbb4b3beea28151faa33240482241d405f79c1d2dee51.png",
+      "sha256": "0986423b97959c51b86dbb4b3beea28151faa33240482241d405f79c1d2dee51",
+      "bytes": 5719
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/apple-touch-icon-76x76-f7fd54ed10a17487c2ca473860ac2d75361083c5403137150fe64f567de0d0c5.png",
+      "localPath": "/versum-calendar/assets/apple-touch-icon-76x76-f7fd54ed10a17487c2ca473860ac2d75361083c5403137150fe64f567de0d0c5.png",
+      "file": "assets/apple-touch-icon-76x76-f7fd54ed10a17487c2ca473860ac2d75361083c5403137150fe64f567de0d0c5.png",
+      "sha256": "f7fd54ed10a17487c2ca473860ac2d75361083c5403137150fe64f567de0d0c5",
+      "bytes": 2525
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/apple-touch-icon-f2c0e1a07b743436f0c7d6a32a504c06d08c45fcd6819812dbab2a535c022070.png",
+      "localPath": "/versum-calendar/assets/apple-touch-icon-f2c0e1a07b743436f0c7d6a32a504c06d08c45fcd6819812dbab2a535c022070.png",
+      "file": "assets/apple-touch-icon-f2c0e1a07b743436f0c7d6a32a504c06d08c45fcd6819812dbab2a535c022070.png",
+      "sha256": "f2c0e1a07b743436f0c7d6a32a504c06d08c45fcd6819812dbab2a535c022070",
+      "bytes": 1965
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/arrow_for_inputs-6ed83d6d074878dade2aa26ae01dd856b9bd0c8b852551a91b36e19dc294d037.png",
+      "localPath": "/versum-calendar/assets/arrow_for_inputs-6ed83d6d074878dade2aa26ae01dd856b9bd0c8b852551a91b36e19dc294d037.png",
+      "file": "assets/arrow_for_inputs-6ed83d6d074878dade2aa26ae01dd856b9bd0c8b852551a91b36e19dc294d037.png",
+      "sha256": "6ed83d6d074878dade2aa26ae01dd856b9bd0c8b852551a91b36e19dc294d037",
+      "bytes": 300
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/authentication/facebook_16-bfc81df5e41b3a44fbdbf0d629f04249413162550a4baa5194a87101cc6568a2.png",
+      "localPath": "/versum-calendar/assets/authentication/facebook_16-bfc81df5e41b3a44fbdbf0d629f04249413162550a4baa5194a87101cc6568a2.png",
+      "file": "assets/authentication/facebook_16-bfc81df5e41b3a44fbdbf0d629f04249413162550a4baa5194a87101cc6568a2.png",
+      "sha256": "bfc81df5e41b3a44fbdbf0d629f04249413162550a4baa5194a87101cc6568a2",
+      "bytes": 1810
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/authentication/twitter_16-3e20c1812d40712753bfafa78f532799fcd66fa03fe545c6559f66ab598f055d.png",
+      "localPath": "/versum-calendar/assets/authentication/twitter_16-3e20c1812d40712753bfafa78f532799fcd66fa03fe545c6559f66ab598f055d.png",
+      "file": "assets/authentication/twitter_16-3e20c1812d40712753bfafa78f532799fcd66fa03fe545c6559f66ab598f055d.png",
+      "sha256": "3e20c1812d40712753bfafa78f532799fcd66fa03fe545c6559f66ab598f055d",
+      "bytes": 1813
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/booksy_invitations/banner-6ded185d1b75cd0861d06258052b6a0f3ff6c1496ee7fc0738629a567d748f68.png",
+      "localPath": "/versum-calendar/assets/booksy_invitations/banner-6ded185d1b75cd0861d06258052b6a0f3ff6c1496ee7fc0738629a567d748f68.png",
+      "file": "assets/booksy_invitations/banner-6ded185d1b75cd0861d06258052b6a0f3ff6c1496ee7fc0738629a567d748f68.png",
+      "sha256": "6ded185d1b75cd0861d06258052b6a0f3ff6c1496ee7fc0738629a567d748f68",
+      "bytes": 95673
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/calendar2-023e20c292e0693fe6319a6185d0b8684b4873839c078ec3ee968f07d3b72d08.js",
+      "localPath": "/versum-calendar/assets/calendar2-023e20c292e0693fe6319a6185d0b8684b4873839c078ec3ee968f07d3b72d08.js",
+      "file": "assets/calendar2-023e20c292e0693fe6319a6185d0b8684b4873839c078ec3ee968f07d3b72d08.js",
+      "sha256": "023e20c292e0693fe6319a6185d0b8684b4873839c078ec3ee968f07d3b72d08",
+      "bytes": 449578
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard_to_do_move-cf1a0c036d34ec911468cf2c60e9c577e07d6e99c7664c22d520f6c99666077c.png",
+      "localPath": "/versum-calendar/assets/dashboard_to_do_move-cf1a0c036d34ec911468cf2c60e9c577e07d6e99c7664c22d520f6c99666077c.png",
+      "file": "assets/dashboard_to_do_move-cf1a0c036d34ec911468cf2c60e9c577e07d6e99c7664c22d520f6c99666077c.png",
+      "sha256": "cf1a0c036d34ec911468cf2c60e9c577e07d6e99c7664c22d520f6c99666077c",
+      "bytes": 169
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/auto-marketing-1dc761eefe0376e4f7a77492e8b04c9403011afeb3deab476ecd9628fab323bc.png",
+      "localPath": "/versum-calendar/assets/dashboard/auto-marketing-1dc761eefe0376e4f7a77492e8b04c9403011afeb3deab476ecd9628fab323bc.png",
+      "file": "assets/dashboard/auto-marketing-1dc761eefe0376e4f7a77492e8b04c9403011afeb3deab476ecd9628fab323bc.png",
+      "sha256": "1dc761eefe0376e4f7a77492e8b04c9403011afeb3deab476ecd9628fab323bc",
+      "bytes": 1748
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/black-week-cd77968a16c2e4392b33fcca960366f826da6b0fd979dfa9c3d0201a8df9b08f.jpg",
+      "localPath": "/versum-calendar/assets/dashboard/black-week-cd77968a16c2e4392b33fcca960366f826da6b0fd979dfa9c3d0201a8df9b08f.jpg",
+      "file": "assets/dashboard/black-week-cd77968a16c2e4392b33fcca960366f826da6b0fd979dfa9c3d0201a8df9b08f.jpg",
+      "sha256": "cd77968a16c2e4392b33fcca960366f826da6b0fd979dfa9c3d0201a8df9b08f",
+      "bytes": 20744
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/black-week2020-1248dd6549c4793268c89616a01274f5cda867ac9376e4b2bb2b49841717217d.png",
+      "localPath": "/versum-calendar/assets/dashboard/black-week2020-1248dd6549c4793268c89616a01274f5cda867ac9376e4b2bb2b49841717217d.png",
+      "file": "assets/dashboard/black-week2020-1248dd6549c4793268c89616a01274f5cda867ac9376e4b2bb2b49841717217d.png",
+      "sha256": "1248dd6549c4793268c89616a01274f5cda867ac9376e4b2bb2b49841717217d",
+      "bytes": 5549
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/booksy-online-reservation-ee022c492e29c3fb2ef69f34e9f9bd19ac98959fc7a051c36bd114105aad9f0a.png",
+      "localPath": "/versum-calendar/assets/dashboard/booksy-online-reservation-ee022c492e29c3fb2ef69f34e9f9bd19ac98959fc7a051c36bd114105aad9f0a.png",
+      "file": "assets/dashboard/booksy-online-reservation-ee022c492e29c3fb2ef69f34e9f9bd19ac98959fc7a051c36bd114105aad9f0a.png",
+      "sha256": "ee022c492e29c3fb2ef69f34e9f9bd19ac98959fc7a051c36bd114105aad9f0a",
+      "bytes": 28548
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/booksy-x-moment-8b2782b9635e1ff37f944d5007e8a6edd840fb1a1a043a5a64d104f1fd4249df.png",
+      "localPath": "/versum-calendar/assets/dashboard/booksy-x-moment-8b2782b9635e1ff37f944d5007e8a6edd840fb1a1a043a5a64d104f1fd4249df.png",
+      "file": "assets/dashboard/booksy-x-moment-8b2782b9635e1ff37f944d5007e8a6edd840fb1a1a043a5a64d104f1fd4249df.png",
+      "sha256": "8b2782b9635e1ff37f944d5007e8a6edd840fb1a1a043a5a64d104f1fd4249df",
+      "bytes": 2085
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/buen-fin-ce2600951abd0a530a4ccbc7edaf2bf267c0b71e4072eb40fa7d0bfb7e767516.png",
+      "localPath": "/versum-calendar/assets/dashboard/buen-fin-ce2600951abd0a530a4ccbc7edaf2bf267c0b71e4072eb40fa7d0bfb7e767516.png",
+      "file": "assets/dashboard/buen-fin-ce2600951abd0a530a4ccbc7edaf2bf267c0b71e4072eb40fa7d0bfb7e767516.png",
+      "sha256": "ce2600951abd0a530a4ccbc7edaf2bf267c0b71e4072eb40fa7d0bfb7e767516",
+      "bytes": 20172
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/card_payment-3b8b8c2ddb2ce5ef2846ee5014012073b47189c9588e9c31a1d54e11ab5bf155.png",
+      "localPath": "/versum-calendar/assets/dashboard/card_payment-3b8b8c2ddb2ce5ef2846ee5014012073b47189c9588e9c31a1d54e11ab5bf155.png",
+      "file": "assets/dashboard/card_payment-3b8b8c2ddb2ce5ef2846ee5014012073b47189c9588e9c31a1d54e11ab5bf155.png",
+      "sha256": "3b8b8c2ddb2ce5ef2846ee5014012073b47189c9588e9c31a1d54e11ab5bf155",
+      "bytes": 2829
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/dominika-3ca947df164c8133f957b2c9fcf33c0e4d79bdd9ae22e1bd23d430cd6fbd186b.png",
+      "localPath": "/versum-calendar/assets/dashboard/dominika-3ca947df164c8133f957b2c9fcf33c0e4d79bdd9ae22e1bd23d430cd6fbd186b.png",
+      "file": "assets/dashboard/dominika-3ca947df164c8133f957b2c9fcf33c0e4d79bdd9ae22e1bd23d430cd6fbd186b.png",
+      "sha256": "3ca947df164c8133f957b2c9fcf33c0e4d79bdd9ae22e1bd23d430cd6fbd186b",
+      "bytes": 37836
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/fiscalization-a485e44f7e7f79beae8634c3edbfc702c9e1d01926b8bae4776009220a1d5ddf.svg",
+      "localPath": "/versum-calendar/assets/dashboard/fiscalization-a485e44f7e7f79beae8634c3edbfc702c9e1d01926b8bae4776009220a1d5ddf.svg",
+      "file": "assets/dashboard/fiscalization-a485e44f7e7f79beae8634c3edbfc702c9e1d01926b8bae4776009220a1d5ddf.svg",
+      "sha256": "a485e44f7e7f79beae8634c3edbfc702c9e1d01926b8bae4776009220a1d5ddf",
+      "bytes": 1092
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/ilustracje-tresc-06-866bcd1f33cfa89756401bc5cb05179cb623e6dceb2f3523a3252e3eb8a43e75.svg",
+      "localPath": "/versum-calendar/assets/dashboard/ilustracje-tresc-06-866bcd1f33cfa89756401bc5cb05179cb623e6dceb2f3523a3252e3eb8a43e75.svg",
+      "file": "assets/dashboard/ilustracje-tresc-06-866bcd1f33cfa89756401bc5cb05179cb623e6dceb2f3523a3252e3eb8a43e75.svg",
+      "sha256": "866bcd1f33cfa89756401bc5cb05179cb623e6dceb2f3523a3252e3eb8a43e75",
+      "bytes": 17315
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/mail-icon-6fc78739b2c2da5bce93ef9741ed102a392c5611430894025877d6a80a49667a.png",
+      "localPath": "/versum-calendar/assets/dashboard/mail-icon-6fc78739b2c2da5bce93ef9741ed102a392c5611430894025877d6a80a49667a.png",
+      "file": "assets/dashboard/mail-icon-6fc78739b2c2da5bce93ef9741ed102a392c5611430894025877d6a80a49667a.png",
+      "sha256": "6fc78739b2c2da5bce93ef9741ed102a392c5611430894025877d6a80a49667a",
+      "bytes": 8366
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/moment-gift-cards-ES-6d47dd306272be62d44326b851287f96eeb19a69c8539e92dd453fb3cb353edd.png",
+      "localPath": "/versum-calendar/assets/dashboard/moment-gift-cards-ES-6d47dd306272be62d44326b851287f96eeb19a69c8539e92dd453fb3cb353edd.png",
+      "file": "assets/dashboard/moment-gift-cards-ES-6d47dd306272be62d44326b851287f96eeb19a69c8539e92dd453fb3cb353edd.png",
+      "sha256": "6d47dd306272be62d44326b851287f96eeb19a69c8539e92dd453fb3cb353edd",
+      "bytes": 11107
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/moment-gift-cards-f6468417acec009e7be81108475f1b83375fa37ba34169c720869e899c244eda.png",
+      "localPath": "/versum-calendar/assets/dashboard/moment-gift-cards-f6468417acec009e7be81108475f1b83375fa37ba34169c720869e899c244eda.png",
+      "file": "assets/dashboard/moment-gift-cards-f6468417acec009e7be81108475f1b83375fa37ba34169c720869e899c244eda.png",
+      "sha256": "f6468417acec009e7be81108475f1b83375fa37ba34169c720869e899c244eda",
+      "bytes": 11377
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/moment-gift-cards-PL-d1f1192e5bda4e03416728907c00da84762a0ab978deebfa0a93e6febb3d1bf9.png",
+      "localPath": "/versum-calendar/assets/dashboard/moment-gift-cards-PL-d1f1192e5bda4e03416728907c00da84762a0ab978deebfa0a93e6febb3d1bf9.png",
+      "file": "assets/dashboard/moment-gift-cards-PL-d1f1192e5bda4e03416728907c00da84762a0ab978deebfa0a93e6febb3d1bf9.png",
+      "sha256": "d1f1192e5bda4e03416728907c00da84762a0ab978deebfa0a93e6febb3d1bf9",
+      "bytes": 10870
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/moment-gift-cards-PT-e78754bebf3b1ebd976c512887126b9c7990a53f811150171f0a3758bbd887f0.png",
+      "localPath": "/versum-calendar/assets/dashboard/moment-gift-cards-PT-e78754bebf3b1ebd976c512887126b9c7990a53f811150171f0a3758bbd887f0.png",
+      "file": "assets/dashboard/moment-gift-cards-PT-e78754bebf3b1ebd976c512887126b9c7990a53f811150171f0a3758bbd887f0.png",
+      "sha256": "e78754bebf3b1ebd976c512887126b9c7990a53f811150171f0a3758bbd887f0",
+      "bytes": 11202
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/moment-online-products-65e99f3ff2ef36d0ac20dfd0be128e34bfdfd5994163b7b58b8ef07395472f54.png",
+      "localPath": "/versum-calendar/assets/dashboard/moment-online-products-65e99f3ff2ef36d0ac20dfd0be128e34bfdfd5994163b7b58b8ef07395472f54.png",
+      "file": "assets/dashboard/moment-online-products-65e99f3ff2ef36d0ac20dfd0be128e34bfdfd5994163b7b58b8ef07395472f54.png",
+      "sha256": "65e99f3ff2ef36d0ac20dfd0be128e34bfdfd5994163b7b58b8ef07395472f54",
+      "bytes": 18693
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/monika-74d76b7102f9b6e319a723063ccca2f85c80cdfac4123b1fe000045cb2349378.png",
+      "localPath": "/versum-calendar/assets/dashboard/monika-74d76b7102f9b6e319a723063ccca2f85c80cdfac4123b1fe000045cb2349378.png",
+      "file": "assets/dashboard/monika-74d76b7102f9b6e319a723063ccca2f85c80cdfac4123b1fe000045cb2349378.png",
+      "sha256": "74d76b7102f9b6e319a723063ccca2f85c80cdfac4123b1fe000045cb2349378",
+      "bytes": 10456
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/online-sales-f52b45ce78e3adff082b2c93f201a7f3dc32efaff98588e01a678f383d617ed7.png",
+      "localPath": "/versum-calendar/assets/dashboard/online-sales-f52b45ce78e3adff082b2c93f201a7f3dc32efaff98588e01a678f383d617ed7.png",
+      "file": "assets/dashboard/online-sales-f52b45ce78e3adff082b2c93f201a7f3dc32efaff98588e01a678f383d617ed7.png",
+      "sha256": "f52b45ce78e3adff082b2c93f201a7f3dc32efaff98588e01a678f383d617ed7",
+      "bytes": 16027
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/payout-account-58eb3bcb5f9b7e361335e23d5b97ade1c14847108024eeb8c435f1cd37ae7eb9.png",
+      "localPath": "/versum-calendar/assets/dashboard/payout-account-58eb3bcb5f9b7e361335e23d5b97ade1c14847108024eeb8c435f1cd37ae7eb9.png",
+      "file": "assets/dashboard/payout-account-58eb3bcb5f9b7e361335e23d5b97ade1c14847108024eeb8c435f1cd37ae7eb9.png",
+      "sha256": "58eb3bcb5f9b7e361335e23d5b97ade1c14847108024eeb8c435f1cd37ae7eb9",
+      "bytes": 20484
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/reception-809ec82e5fe84967eedef52ed692b0241401f99bd241e58873e396c961696812.png",
+      "localPath": "/versum-calendar/assets/dashboard/reception-809ec82e5fe84967eedef52ed692b0241401f99bd241e58873e396c961696812.png",
+      "file": "assets/dashboard/reception-809ec82e5fe84967eedef52ed692b0241401f99bd241e58873e396c961696812.png",
+      "sha256": "809ec82e5fe84967eedef52ed692b0241401f99bd241e58873e396c961696812",
+      "bytes": 13286
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/ro-b2e129a911f4e865b0674789b227366ee91307aef521aabd9cc1ac6dd8752015.png",
+      "localPath": "/versum-calendar/assets/dashboard/ro-b2e129a911f4e865b0674789b227366ee91307aef521aabd9cc1ac6dd8752015.png",
+      "file": "assets/dashboard/ro-b2e129a911f4e865b0674789b227366ee91307aef521aabd9cc1ac6dd8752015.png",
+      "sha256": "b2e129a911f4e865b0674789b227366ee91307aef521aabd9cc1ac6dd8752015",
+      "bytes": 1669
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/safe-branch-609dbba0960d7d3d51dfd3ec224bfb09edd1167967b93cca602dae1bee366df4.png",
+      "localPath": "/versum-calendar/assets/dashboard/safe-branch-609dbba0960d7d3d51dfd3ec224bfb09edd1167967b93cca602dae1bee366df4.png",
+      "file": "assets/dashboard/safe-branch-609dbba0960d7d3d51dfd3ec224bfb09edd1167967b93cca602dae1bee366df4.png",
+      "sha256": "609dbba0960d7d3d51dfd3ec224bfb09edd1167967b93cca602dae1bee366df4",
+      "bytes": 17047
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/xmas-promo2020-v1-da4c84cdd85f7bed5911e974def3ef4f7850309e56b7501bca08e4b39eea8b55.png",
+      "localPath": "/versum-calendar/assets/dashboard/xmas-promo2020-v1-da4c84cdd85f7bed5911e974def3ef4f7850309e56b7501bca08e4b39eea8b55.png",
+      "file": "assets/dashboard/xmas-promo2020-v1-da4c84cdd85f7bed5911e974def3ef4f7850309e56b7501bca08e4b39eea8b55.png",
+      "sha256": "da4c84cdd85f7bed5911e974def3ef4f7850309e56b7501bca08e4b39eea8b55",
+      "bytes": 8241
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/xmas-promo2020-v2-662cbd4f63862fd08b59e3a6df50ae550b35ec51ffb492a782f8d0840cf8bfb9.png",
+      "localPath": "/versum-calendar/assets/dashboard/xmas-promo2020-v2-662cbd4f63862fd08b59e3a6df50ae550b35ec51ffb492a782f8d0840cf8bfb9.png",
+      "file": "assets/dashboard/xmas-promo2020-v2-662cbd4f63862fd08b59e3a6df50ae550b35ec51ffb492a782f8d0840cf8bfb9.png",
+      "sha256": "662cbd4f63862fd08b59e3a6df50ae550b35ec51ffb492a782f8d0840cf8bfb9",
+      "bytes": 5688
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/dashboard/xmas-promo2020-v3-658f65100eb658cf686d89c5a881b192aa818a0eaea4b2c0411059c1accfc4a2.png",
+      "localPath": "/versum-calendar/assets/dashboard/xmas-promo2020-v3-658f65100eb658cf686d89c5a881b192aa818a0eaea4b2c0411059c1accfc4a2.png",
+      "file": "assets/dashboard/xmas-promo2020-v3-658f65100eb658cf686d89c5a881b192aa818a0eaea4b2c0411059c1accfc4a2.png",
+      "sha256": "658f65100eb658cf686d89c5a881b192aa818a0eaea4b2c0411059c1accfc4a2",
+      "bytes": 5023
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/emails-promo-banner-en-a9ebe1b0a7466eca6c3e897e8223277353d97152d0955b942f7aecf0f1b30982.png",
+      "localPath": "/versum-calendar/assets/emails-promo-banner-en-a9ebe1b0a7466eca6c3e897e8223277353d97152d0955b942f7aecf0f1b30982.png",
+      "file": "assets/emails-promo-banner-en-a9ebe1b0a7466eca6c3e897e8223277353d97152d0955b942f7aecf0f1b30982.png",
+      "sha256": "a9ebe1b0a7466eca6c3e897e8223277353d97152d0955b942f7aecf0f1b30982",
+      "bytes": 159463
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/emails-promo-banner-pl-87d4ff9df910182979f74d17f75ced40b1c21937a9ae1ea1a983755ef8ab8a60.png",
+      "localPath": "/versum-calendar/assets/emails-promo-banner-pl-87d4ff9df910182979f74d17f75ced40b1c21937a9ae1ea1a983755ef8ab8a60.png",
+      "file": "assets/emails-promo-banner-pl-87d4ff9df910182979f74d17f75ced40b1c21937a9ae1ea1a983755ef8ab8a60.png",
+      "sha256": "87d4ff9df910182979f74d17f75ced40b1c21937a9ae1ea1a983755ef8ab8a60",
+      "bytes": 168251
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/embed/ajax-loader-f0d658bd2705b0e4e167e6f1a61f8d9fb59fc061dbd447d9ac1ad643f6f76b46.gif",
+      "localPath": "/versum-calendar/assets/embed/ajax-loader-f0d658bd2705b0e4e167e6f1a61f8d9fb59fc061dbd447d9ac1ad643f6f76b46.gif",
+      "file": "assets/embed/ajax-loader-f0d658bd2705b0e4e167e6f1a61f8d9fb59fc061dbd447d9ac1ad643f6f76b46.gif",
+      "sha256": "f0d658bd2705b0e4e167e6f1a61f8d9fb59fc061dbd447d9ac1ad643f6f76b46",
+      "bytes": 723
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/embed/hr_bg-fb71aeaae0b78ef45ff492a0b2e5c19c92a18b61cc28132efcf71e7a626edd54.png",
+      "localPath": "/versum-calendar/assets/embed/hr_bg-fb71aeaae0b78ef45ff492a0b2e5c19c92a18b61cc28132efcf71e7a626edd54.png",
+      "file": "assets/embed/hr_bg-fb71aeaae0b78ef45ff492a0b2e5c19c92a18b61cc28132efcf71e7a626edd54.png",
+      "sha256": "fb71aeaae0b78ef45ff492a0b2e5c19c92a18b61cc28132efcf71e7a626edd54",
+      "bytes": 184
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/embed/kl_bg_gray_1_asc-5cb4808dc78221bb042bcd6424cb33d5ac8faf5290dda39db49cd1e55cbb51d2.png",
+      "localPath": "/versum-calendar/assets/embed/kl_bg_gray_1_asc-5cb4808dc78221bb042bcd6424cb33d5ac8faf5290dda39db49cd1e55cbb51d2.png",
+      "file": "assets/embed/kl_bg_gray_1_asc-5cb4808dc78221bb042bcd6424cb33d5ac8faf5290dda39db49cd1e55cbb51d2.png",
+      "sha256": "5cb4808dc78221bb042bcd6424cb33d5ac8faf5290dda39db49cd1e55cbb51d2",
+      "bytes": 245
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/embed/kl_bg_gray_1_both-7d7dcfe1eac731d11d8527b1ba92f4244aa4049fb78fafc6deab4a182dd0eb98.png",
+      "localPath": "/versum-calendar/assets/embed/kl_bg_gray_1_both-7d7dcfe1eac731d11d8527b1ba92f4244aa4049fb78fafc6deab4a182dd0eb98.png",
+      "file": "assets/embed/kl_bg_gray_1_both-7d7dcfe1eac731d11d8527b1ba92f4244aa4049fb78fafc6deab4a182dd0eb98.png",
+      "sha256": "7d7dcfe1eac731d11d8527b1ba92f4244aa4049fb78fafc6deab4a182dd0eb98",
+      "bytes": 266
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/embed/kl_bg_gray_1_desc-5b594c179a20870257a794384eada03949fad6b99fe0f620b48a09d5de1e9dbf.png",
+      "localPath": "/versum-calendar/assets/embed/kl_bg_gray_1_desc-5b594c179a20870257a794384eada03949fad6b99fe0f620b48a09d5de1e9dbf.png",
+      "file": "assets/embed/kl_bg_gray_1_desc-5b594c179a20870257a794384eada03949fad6b99fe0f620b48a09d5de1e9dbf.png",
+      "sha256": "5b594c179a20870257a794384eada03949fad6b99fe0f620b48a09d5de1e9dbf",
+      "bytes": 234
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-accessible-c44afc374fb3955efb27dc284ffb4b73c03d09a203b1d5a85bbfa288cb339221.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-accessible-c44afc374fb3955efb27dc284ffb4b73c03d09a203b1d5a85bbfa288cb339221.png",
+      "file": "assets/facilities/facilities-accessible-c44afc374fb3955efb27dc284ffb4b73c03d09a203b1d5a85bbfa288cb339221.png",
+      "sha256": "c44afc374fb3955efb27dc284ffb4b73c03d09a203b1d5a85bbfa288cb339221",
+      "bytes": 291
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-animals-e8df404d5fe8536421ca18ce021fcd9d9dd2893201f82599c805e54a4fd06ba7.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-animals-e8df404d5fe8536421ca18ce021fcd9d9dd2893201f82599c805e54a4fd06ba7.png",
+      "file": "assets/facilities/facilities-animals-e8df404d5fe8536421ca18ce021fcd9d9dd2893201f82599c805e54a4fd06ba7.png",
+      "sha256": "e8df404d5fe8536421ca18ce021fcd9d9dd2893201f82599c805e54a4fd06ba7",
+      "bytes": 483
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-credit_card-228bf24280edc10a8e7bf46a44b433870f3e406910721e35ddc457a5a3bab57b.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-credit_card-228bf24280edc10a8e7bf46a44b433870f3e406910721e35ddc457a5a3bab57b.png",
+      "file": "assets/facilities/facilities-credit_card-228bf24280edc10a8e7bf46a44b433870f3e406910721e35ddc457a5a3bab57b.png",
+      "sha256": "228bf24280edc10a8e7bf46a44b433870f3e406910721e35ddc457a5a3bab57b",
+      "bytes": 102
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-kids-9b1c8b242561cab54cb227893c9de937a5450cfb3ded491c9eab461bc8fc3452.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-kids-9b1c8b242561cab54cb227893c9de937a5450cfb3ded491c9eab461bc8fc3452.png",
+      "file": "assets/facilities/facilities-kids-9b1c8b242561cab54cb227893c9de937a5450cfb3ded491c9eab461bc8fc3452.png",
+      "sha256": "9b1c8b242561cab54cb227893c9de937a5450cfb3ded491c9eab461bc8fc3452",
+      "bytes": 527
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-live-a34e28093dfe362a5be6c9f4a2a601c10953d21f1c4e456f4d3af1bc61a74d2c.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-live-a34e28093dfe362a5be6c9f4a2a601c10953d21f1c4e456f4d3af1bc61a74d2c.png",
+      "file": "assets/facilities/facilities-live-a34e28093dfe362a5be6c9f4a2a601c10953d21f1c4e456f4d3af1bc61a74d2c.png",
+      "sha256": "a34e28093dfe362a5be6c9f4a2a601c10953d21f1c4e456f4d3af1bc61a74d2c",
+      "bytes": 308
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-loyalty-5bfba11da65963d443101095fca60e95b59c71b55d8f7c1d2661bc74941dc00e.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-loyalty-5bfba11da65963d443101095fca60e95b59c71b55d8f7c1d2661bc74941dc00e.png",
+      "file": "assets/facilities/facilities-loyalty-5bfba11da65963d443101095fca60e95b59c71b55d8f7c1d2661bc74941dc00e.png",
+      "sha256": "5bfba11da65963d443101095fca60e95b59c71b55d8f7c1d2661bc74941dc00e",
+      "bytes": 368
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-opinion-9bd7894bef0f7e5ddc10e9be825e051572c176d30b3307432a369cc2a94a7520.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-opinion-9bd7894bef0f7e5ddc10e9be825e051572c176d30b3307432a369cc2a94a7520.png",
+      "file": "assets/facilities/facilities-opinion-9bd7894bef0f7e5ddc10e9be825e051572c176d30b3307432a369cc2a94a7520.png",
+      "sha256": "9bd7894bef0f7e5ddc10e9be825e051572c176d30b3307432a369cc2a94a7520",
+      "bytes": 212
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-parking-02fa2d4de5443567fc32658a40ff7f8b8dc1c52dd75ee198f1a61abe62b97dc8.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-parking-02fa2d4de5443567fc32658a40ff7f8b8dc1c52dd75ee198f1a61abe62b97dc8.png",
+      "file": "assets/facilities/facilities-parking-02fa2d4de5443567fc32658a40ff7f8b8dc1c52dd75ee198f1a61abe62b97dc8.png",
+      "sha256": "02fa2d4de5443567fc32658a40ff7f8b8dc1c52dd75ee198f1a61abe62b97dc8",
+      "bytes": 338
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-tokens-9d1c458f52caa069f6d13a7581b7966c3f292384bab170d05fac43fc9d1c7259.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-tokens-9d1c458f52caa069f6d13a7581b7966c3f292384bab170d05fac43fc9d1c7259.png",
+      "file": "assets/facilities/facilities-tokens-9d1c458f52caa069f6d13a7581b7966c3f292384bab170d05fac43fc9d1c7259.png",
+      "sha256": "9d1c458f52caa069f6d13a7581b7966c3f292384bab170d05fac43fc9d1c7259",
+      "bytes": 177
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/facilities/facilities-wifi-ae119c400b4c7c60cb6848ff5e695ae3069c312d1666e9ca1fbd02cdc97a9985.png",
+      "localPath": "/versum-calendar/assets/facilities/facilities-wifi-ae119c400b4c7c60cb6848ff5e695ae3069c312d1666e9ca1fbd02cdc97a9985.png",
+      "file": "assets/facilities/facilities-wifi-ae119c400b4c7c60cb6848ff5e695ae3069c312d1666e9ca1fbd02cdc97a9985.png",
+      "sha256": "ae119c400b4c7c60cb6848ff5e695ae3069c312d1666e9ca1fbd02cdc97a9985",
+      "bytes": 328
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/fancytree/icons-7176ef9ac12ce68d2a60c7f010be6d3f719558e595ae9179cd46feadb21e8686.gif",
+      "localPath": "/versum-calendar/assets/fancytree/icons-7176ef9ac12ce68d2a60c7f010be6d3f719558e595ae9179cd46feadb21e8686.gif",
+      "file": "assets/fancytree/icons-7176ef9ac12ce68d2a60c7f010be6d3f719558e595ae9179cd46feadb21e8686.gif",
+      "sha256": "7176ef9ac12ce68d2a60c7f010be6d3f719558e595ae9179cd46feadb21e8686",
+      "bytes": 7702
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/fancytree/loading-95969a71f5f3347e3f73a15cb58a46e9e8341117c49014c1699d5a9b5c75a95a.gif",
+      "localPath": "/versum-calendar/assets/fancytree/loading-95969a71f5f3347e3f73a15cb58a46e9e8341117c49014c1699d5a9b5c75a95a.gif",
+      "file": "assets/fancytree/loading-95969a71f5f3347e3f73a15cb58a46e9e8341117c49014c1699d5a9b5c75a95a.gif",
+      "sha256": "95969a71f5f3347e3f73a15cb58a46e9e8341117c49014c1699d5a9b5c75a95a",
+      "bytes": 3234
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/favicon-9cf56aff74cfa451f92bfd8201e87a2c59723a88e9bf1ab2b53281ecf04dd1ad.ico",
+      "localPath": "/versum-calendar/assets/favicon-9cf56aff74cfa451f92bfd8201e87a2c59723a88e9bf1ab2b53281ecf04dd1ad.ico",
+      "file": "assets/favicon-9cf56aff74cfa451f92bfd8201e87a2c59723a88e9bf1ab2b53281ecf04dd1ad.ico",
+      "sha256": "9cf56aff74cfa451f92bfd8201e87a2c59723a88e9bf1ab2b53281ecf04dd1ad",
+      "bytes": 4286
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot",
+      "file": "assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot",
+      "sha256": "13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407",
+      "bytes": 20127
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot?#iefix",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot",
+      "file": "assets/glyphicons-halflings-regular-13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407.eot",
+      "sha256": "13634da87d9e23f8c3ed9108ce1724d183a39ad072e73e1b3d8cbf646d2d0407",
+      "bytes": 20127
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg#glyphicons_halflingsregular",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg",
+      "file": "assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg",
+      "sha256": "42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5",
+      "bytes": 108738
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg#glyphicons-halflingsregular",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg",
+      "file": "assets/glyphicons-halflings-regular-42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5.svg",
+      "sha256": "42f60659d265c1a3c30f9fa42abcbb56bd4a53af4d83d316d6dd7a36903c43e5",
+      "bytes": 108738
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-a26394f7ede100ca118eff2eda08596275a9839b959c226e15439557a5a80742.woff",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-a26394f7ede100ca118eff2eda08596275a9839b959c226e15439557a5a80742.woff",
+      "file": "assets/glyphicons-halflings-regular-a26394f7ede100ca118eff2eda08596275a9839b959c226e15439557a5a80742.woff",
+      "sha256": "a26394f7ede100ca118eff2eda08596275a9839b959c226e15439557a5a80742",
+      "bytes": 23424
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-e395044093757d82afcb138957d06a1ea9361bdcf0b442d06a18a8051af57456.ttf",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-e395044093757d82afcb138957d06a1ea9361bdcf0b442d06a18a8051af57456.ttf",
+      "file": "assets/glyphicons-halflings-regular-e395044093757d82afcb138957d06a1ea9361bdcf0b442d06a18a8051af57456.ttf",
+      "sha256": "e395044093757d82afcb138957d06a1ea9361bdcf0b442d06a18a8051af57456",
+      "bytes": 45404
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/glyphicons-halflings-regular-fe185d11a49676890d47bb783312a0cda5a44c4039214094e7957b4c040ef11c.woff2",
+      "localPath": "/versum-calendar/assets/glyphicons-halflings-regular-fe185d11a49676890d47bb783312a0cda5a44c4039214094e7957b4c040ef11c.woff2",
+      "file": "assets/glyphicons-halflings-regular-fe185d11a49676890d47bb783312a0cda5a44c4039214094e7957b4c040ef11c.woff2",
+      "sha256": "fe185d11a49676890d47bb783312a0cda5a44c4039214094e7957b4c040ef11c",
+      "bytes": 18028
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot?1494175599998",
+      "localPath": "/versum-calendar/assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot",
+      "file": "assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot",
+      "sha256": "036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d",
+      "bytes": 4872
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot?#iefix-1494175599998",
+      "localPath": "/versum-calendar/assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot",
+      "file": "assets/iconfont/iconfont-036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d.eot",
+      "sha256": "036cd9406c2f147b57bcea40267e41e8bd06aa1b20851a03ab33f1fafd220b6d",
+      "bytes": 4872
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/iconfont/iconfont-0b2abdcc062860dfbdee23162feabb4c7c271d75cb78599cbfe606fbd395e9a7.ttf?1494175599998",
+      "localPath": "/versum-calendar/assets/iconfont/iconfont-0b2abdcc062860dfbdee23162feabb4c7c271d75cb78599cbfe606fbd395e9a7.ttf",
+      "file": "assets/iconfont/iconfont-0b2abdcc062860dfbdee23162feabb4c7c271d75cb78599cbfe606fbd395e9a7.ttf",
+      "sha256": "0b2abdcc062860dfbdee23162feabb4c7c271d75cb78599cbfe606fbd395e9a7",
+      "bytes": 4704
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/iconfont/iconfont-1ebff145d4ad1bed52f30385f31ab0930eed33939dec2170c78f71ca26590c5d.svg?#meatfont-1494175599998",
+      "localPath": "/versum-calendar/assets/iconfont/iconfont-1ebff145d4ad1bed52f30385f31ab0930eed33939dec2170c78f71ca26590c5d.svg",
+      "file": "assets/iconfont/iconfont-1ebff145d4ad1bed52f30385f31ab0930eed33939dec2170c78f71ca26590c5d.svg",
+      "sha256": "1ebff145d4ad1bed52f30385f31ab0930eed33939dec2170c78f71ca26590c5d",
+      "bytes": 37827
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/iconfont/iconfont-28a33dd08db03c25d91061a855e9f88b09a9fc4ce5f1d4bf2377eace81be73f2.woff?1494175599998",
+      "localPath": "/versum-calendar/assets/iconfont/iconfont-28a33dd08db03c25d91061a855e9f88b09a9fc4ce5f1d4bf2377eace81be73f2.woff",
+      "file": "assets/iconfont/iconfont-28a33dd08db03c25d91061a855e9f88b09a9fc4ce5f1d4bf2377eace81be73f2.woff",
+      "sha256": "28a33dd08db03c25d91061a855e9f88b09a9fc4ce5f1d4bf2377eace81be73f2",
+      "bytes": 3204
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/date_change-a1de3c48a99b868670e42e0ebb1b07aef61d0858cfe7d8a17b522499687f221e.png",
+      "localPath": "/versum-calendar/assets/icons/date_change-a1de3c48a99b868670e42e0ebb1b07aef61d0858cfe7d8a17b522499687f221e.png",
+      "file": "assets/icons/date_change-a1de3c48a99b868670e42e0ebb1b07aef61d0858cfe7d8a17b522499687f221e.png",
+      "sha256": "a1de3c48a99b868670e42e0ebb1b07aef61d0858cfe7d8a17b522499687f221e",
+      "bytes": 236
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/first_page-4e131b46932606ab2e64860eb586af0da993edbba28a6d47ab472e2537968261.png",
+      "localPath": "/versum-calendar/assets/icons/first_page-4e131b46932606ab2e64860eb586af0da993edbba28a6d47ab472e2537968261.png",
+      "file": "assets/icons/first_page-4e131b46932606ab2e64860eb586af0da993edbba28a6d47ab472e2537968261.png",
+      "sha256": "4e131b46932606ab2e64860eb586af0da993edbba28a6d47ab472e2537968261",
+      "bytes": 394
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/last_page-23802e65e6c7897df43507f5855220ea1d086f535991391c45a2a8b921044478.png",
+      "localPath": "/versum-calendar/assets/icons/last_page-23802e65e6c7897df43507f5855220ea1d086f535991391c45a2a8b921044478.png",
+      "file": "assets/icons/last_page-23802e65e6c7897df43507f5855220ea1d086f535991391c45a2a8b921044478.png",
+      "sha256": "23802e65e6c7897df43507f5855220ea1d086f535991391c45a2a8b921044478",
+      "bytes": 384
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/sort_both-01eef8e41e33a2a8242c698faac0001ae246d0e360843c782b93eb40de8f4415.png",
+      "localPath": "/versum-calendar/assets/icons/sort_both-01eef8e41e33a2a8242c698faac0001ae246d0e360843c782b93eb40de8f4415.png",
+      "file": "assets/icons/sort_both-01eef8e41e33a2a8242c698faac0001ae246d0e360843c782b93eb40de8f4415.png",
+      "sha256": "01eef8e41e33a2a8242c698faac0001ae246d0e360843c782b93eb40de8f4415",
+      "bytes": 293
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/sort_down-849b47e8f25e0044790ccdaac673f374aa7300e7bee3d63402a56434f938e8cd.png",
+      "localPath": "/versum-calendar/assets/icons/sort_down-849b47e8f25e0044790ccdaac673f374aa7300e7bee3d63402a56434f938e8cd.png",
+      "file": "assets/icons/sort_down-849b47e8f25e0044790ccdaac673f374aa7300e7bee3d63402a56434f938e8cd.png",
+      "sha256": "849b47e8f25e0044790ccdaac673f374aa7300e7bee3d63402a56434f938e8cd",
+      "bytes": 287
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/icons/sort_up-6fdd11b82a4602df0fcd662440088f5e66b1893df5435eb7e960521892cc7737.png",
+      "localPath": "/versum-calendar/assets/icons/sort_up-6fdd11b82a4602df0fcd662440088f5e66b1893df5435eb7e960521892cc7737.png",
+      "file": "assets/icons/sort_up-6fdd11b82a4602df0fcd662440088f5e66b1893df5435eb7e960521892cc7737.png",
+      "sha256": "6fdd11b82a4602df0fcd662440088f5e66b1893df5435eb7e960521892cc7737",
+      "bytes": 287
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/intlTelInput/flags-ea345ff7863ddb3bf9e2d80c066db29f9e5ffbb5ed4321430b799bef1e2b18ba.png",
+      "localPath": "/versum-calendar/assets/intlTelInput/flags-ea345ff7863ddb3bf9e2d80c066db29f9e5ffbb5ed4321430b799bef1e2b18ba.png",
+      "file": "assets/intlTelInput/flags-ea345ff7863ddb3bf9e2d80c066db29f9e5ffbb5ed4321430b799bef1e2b18ba.png",
+      "sha256": "ea345ff7863ddb3bf9e2d80c066db29f9e5ffbb5ed4321430b799bef1e2b18ba",
+      "bytes": 66171
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/intlTelInput/flags@2x-ef7fd2e7513f6dfae06ee71ab2877331a2a2cebbb06e16453f012e94ac97bba0.png",
+      "localPath": "/versum-calendar/assets/intlTelInput/flags@2x-ef7fd2e7513f6dfae06ee71ab2877331a2a2cebbb06e16453f012e94ac97bba0.png",
+      "file": "assets/intlTelInput/flags@2x-ef7fd2e7513f6dfae06ee71ab2877331a2a2cebbb06e16453f012e94ac97bba0.png",
+      "sha256": "ef7fd2e7513f6dfae06ee71ab2877331a2a2cebbb06e16453f012e94ac97bba0",
+      "bytes": 188814
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui-bundle-e3c6a6e3515f1204f9e5ada986767783b0c2dfac9980f9f4dc1bc50759480a60.css",
+      "localPath": "/versum-calendar/assets/jquery-ui-bundle-e3c6a6e3515f1204f9e5ada986767783b0c2dfac9980f9f4dc1bc50759480a60.css",
+      "file": "assets/jquery-ui-bundle-e3c6a6e3515f1204f9e5ada986767783b0c2dfac9980f9f4dc1bc50759480a60.css",
+      "sha256": "e3c6a6e3515f1204f9e5ada986767783b0c2dfac9980f9f4dc1bc50759480a60",
+      "bytes": 34281
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_flat_0_aaaaaa_40x100-9a8492a580bf85d3e98ae8861fbd45567e5a1f83eeafcf9574da0399d5f602ab.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_flat_0_aaaaaa_40x100-9a8492a580bf85d3e98ae8861fbd45567e5a1f83eeafcf9574da0399d5f602ab.png",
+      "file": "assets/jquery-ui/ui-bg_flat_0_aaaaaa_40x100-9a8492a580bf85d3e98ae8861fbd45567e5a1f83eeafcf9574da0399d5f602ab.png",
+      "sha256": "9a8492a580bf85d3e98ae8861fbd45567e5a1f83eeafcf9574da0399d5f602ab",
+      "bytes": 180
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_flat_75_ffffff_40x100-39ab7ccd9f4e82579da78a9241265df288d8eb65dbbd7cf48aed2d0129887df5.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_flat_75_ffffff_40x100-39ab7ccd9f4e82579da78a9241265df288d8eb65dbbd7cf48aed2d0129887df5.png",
+      "file": "assets/jquery-ui/ui-bg_flat_75_ffffff_40x100-39ab7ccd9f4e82579da78a9241265df288d8eb65dbbd7cf48aed2d0129887df5.png",
+      "sha256": "39ab7ccd9f4e82579da78a9241265df288d8eb65dbbd7cf48aed2d0129887df5",
+      "bytes": 178
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_glass_55_fbf9ee_1x400-691597e8a40a891ea94d3589976ecfc33e6145c49422443b00ac2b5a0022964c.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_glass_55_fbf9ee_1x400-691597e8a40a891ea94d3589976ecfc33e6145c49422443b00ac2b5a0022964c.png",
+      "file": "assets/jquery-ui/ui-bg_glass_55_fbf9ee_1x400-691597e8a40a891ea94d3589976ecfc33e6145c49422443b00ac2b5a0022964c.png",
+      "sha256": "691597e8a40a891ea94d3589976ecfc33e6145c49422443b00ac2b5a0022964c",
+      "bytes": 120
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_glass_65_ffffff_1x400-f0e6cd91b837d5c5644d026e5ffeccd907953317cd5c0f689901733afda260b2.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_glass_65_ffffff_1x400-f0e6cd91b837d5c5644d026e5ffeccd907953317cd5c0f689901733afda260b2.png",
+      "file": "assets/jquery-ui/ui-bg_glass_65_ffffff_1x400-f0e6cd91b837d5c5644d026e5ffeccd907953317cd5c0f689901733afda260b2.png",
+      "sha256": "f0e6cd91b837d5c5644d026e5ffeccd907953317cd5c0f689901733afda260b2",
+      "bytes": 105
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_glass_75_dadada_1x400-c108f5cbf2dd9ec07a26530695ddd95e1664597ce6c056ae44c162cc2e28cec4.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_glass_75_dadada_1x400-c108f5cbf2dd9ec07a26530695ddd95e1664597ce6c056ae44c162cc2e28cec4.png",
+      "file": "assets/jquery-ui/ui-bg_glass_75_dadada_1x400-c108f5cbf2dd9ec07a26530695ddd95e1664597ce6c056ae44c162cc2e28cec4.png",
+      "sha256": "c108f5cbf2dd9ec07a26530695ddd95e1664597ce6c056ae44c162cc2e28cec4",
+      "bytes": 111
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_glass_75_e6e6e6_1x400-ddf5dd4e0ef2b185e8bb0af7b6e90ebe74a84384cb4700658e76e754c8bfe550.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_glass_75_e6e6e6_1x400-ddf5dd4e0ef2b185e8bb0af7b6e90ebe74a84384cb4700658e76e754c8bfe550.png",
+      "file": "assets/jquery-ui/ui-bg_glass_75_e6e6e6_1x400-ddf5dd4e0ef2b185e8bb0af7b6e90ebe74a84384cb4700658e76e754c8bfe550.png",
+      "sha256": "ddf5dd4e0ef2b185e8bb0af7b6e90ebe74a84384cb4700658e76e754c8bfe550",
+      "bytes": 110
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_glass_95_fef1ec_1x400-f6f1c1bedf1a0f37cfef81d12f5f012869d1ee7c984775a569827a1784d34f5c.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_glass_95_fef1ec_1x400-f6f1c1bedf1a0f37cfef81d12f5f012869d1ee7c984775a569827a1784d34f5c.png",
+      "file": "assets/jquery-ui/ui-bg_glass_95_fef1ec_1x400-f6f1c1bedf1a0f37cfef81d12f5f012869d1ee7c984775a569827a1784d34f5c.png",
+      "sha256": "f6f1c1bedf1a0f37cfef81d12f5f012869d1ee7c984775a569827a1784d34f5c",
+      "bytes": 119
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-bg_highlight-soft_75_cccccc_1x100-54270656df079c4da5182629a080fc633b6f84b87985eb016d25a560e2c38d4a.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-bg_highlight-soft_75_cccccc_1x100-54270656df079c4da5182629a080fc633b6f84b87985eb016d25a560e2c38d4a.png",
+      "file": "assets/jquery-ui/ui-bg_highlight-soft_75_cccccc_1x100-54270656df079c4da5182629a080fc633b6f84b87985eb016d25a560e2c38d4a.png",
+      "sha256": "54270656df079c4da5182629a080fc633b6f84b87985eb016d25a560e2c38d4a",
+      "bytes": 101
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-icons_222222_256x240-57adb0d65f4e91dacfee975d9574422bee7486c8a182d60133728c672f2cdbbc.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-icons_222222_256x240-57adb0d65f4e91dacfee975d9574422bee7486c8a182d60133728c672f2cdbbc.png",
+      "file": "assets/jquery-ui/ui-icons_222222_256x240-57adb0d65f4e91dacfee975d9574422bee7486c8a182d60133728c672f2cdbbc.png",
+      "sha256": "57adb0d65f4e91dacfee975d9574422bee7486c8a182d60133728c672f2cdbbc",
+      "bytes": 4369
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-icons_2e83ff_256x240-20f8c6667afc48aa433ee9eb6d8a0584bdbd6b4a4a9091ff1e6b3adb31e63bd9.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-icons_2e83ff_256x240-20f8c6667afc48aa433ee9eb6d8a0584bdbd6b4a4a9091ff1e6b3adb31e63bd9.png",
+      "file": "assets/jquery-ui/ui-icons_2e83ff_256x240-20f8c6667afc48aa433ee9eb6d8a0584bdbd6b4a4a9091ff1e6b3adb31e63bd9.png",
+      "sha256": "20f8c6667afc48aa433ee9eb6d8a0584bdbd6b4a4a9091ff1e6b3adb31e63bd9",
+      "bytes": 4369
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-icons_454545_256x240-07460e843c3e59aaadbb34231e699e856a2980753c7a47b66447da5d9f93fb7f.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-icons_454545_256x240-07460e843c3e59aaadbb34231e699e856a2980753c7a47b66447da5d9f93fb7f.png",
+      "file": "assets/jquery-ui/ui-icons_454545_256x240-07460e843c3e59aaadbb34231e699e856a2980753c7a47b66447da5d9f93fb7f.png",
+      "sha256": "07460e843c3e59aaadbb34231e699e856a2980753c7a47b66447da5d9f93fb7f",
+      "bytes": 4369
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-icons_888888_256x240-ea2e29625de3463465e93b002b065f5833e05b97f7a052b1c141e754d62e1a8b.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-icons_888888_256x240-ea2e29625de3463465e93b002b065f5833e05b97f7a052b1c141e754d62e1a8b.png",
+      "file": "assets/jquery-ui/ui-icons_888888_256x240-ea2e29625de3463465e93b002b065f5833e05b97f7a052b1c141e754d62e1a8b.png",
+      "sha256": "ea2e29625de3463465e93b002b065f5833e05b97f7a052b1c141e754d62e1a8b",
+      "bytes": 4369
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/jquery-ui/ui-icons_cd0a0a_256x240-1e32c6dbf5d3fd342f27a78aa881550d6412aa207f48468724a6a15402b6041b.png",
+      "localPath": "/versum-calendar/assets/jquery-ui/ui-icons_cd0a0a_256x240-1e32c6dbf5d3fd342f27a78aa881550d6412aa207f48468724a6a15402b6041b.png",
+      "file": "assets/jquery-ui/ui-icons_cd0a0a_256x240-1e32c6dbf5d3fd342f27a78aa881550d6412aa207f48468724a6a15402b6041b.png",
+      "sha256": "1e32c6dbf5d3fd342f27a78aa881550d6412aa207f48468724a6a15402b6041b",
+      "bytes": 4369
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/libphonenumber-556af29858c1016d2dfaafef0c2bada81b3535278345c228e54f576a9b7f268f.js",
+      "localPath": "/versum-calendar/assets/libphonenumber-556af29858c1016d2dfaafef0c2bada81b3535278345c228e54f576a9b7f268f.js",
+      "file": "assets/libphonenumber-556af29858c1016d2dfaafef0c2bada81b3535278345c228e54f576a9b7f268f.js",
+      "sha256": "556af29858c1016d2dfaafef0c2bada81b3535278345c228e54f576a9b7f268f",
+      "bytes": 214073
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/loading-b84750cc5a395288fcfd0cf42e3a60d6135e2f14db83fce05e97e5abacc2f9b4.gif",
+      "localPath": "/versum-calendar/assets/loading-b84750cc5a395288fcfd0cf42e3a60d6135e2f14db83fce05e97e5abacc2f9b4.gif",
+      "file": "assets/loading-b84750cc5a395288fcfd0cf42e3a60d6135e2f14db83fce05e97e5abacc2f9b4.gif",
+      "sha256": "b84750cc5a395288fcfd0cf42e3a60d6135e2f14db83fce05e97e5abacc2f9b4",
+      "bytes": 3897
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/lumo_business/icons-5cb0ddbbb8e8a21e5da4ef30e4b3c173ac87171293482fcc0b2a49e8da7db249.png",
+      "localPath": "/versum-calendar/assets/lumo_business/icons-5cb0ddbbb8e8a21e5da4ef30e4b3c173ac87171293482fcc0b2a49e8da7db249.png",
+      "file": "assets/lumo_business/icons-5cb0ddbbb8e8a21e5da4ef30e4b3c173ac87171293482fcc0b2a49e8da7db249.png",
+      "sha256": "5cb0ddbbb8e8a21e5da4ef30e4b3c173ac87171293482fcc0b2a49e8da7db249",
+      "bytes": 26498
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/lumo_business/settings_icons-ee40d7bb318d270b14fd1f2ad51790f73948fb8789956e1f29ef2cdfc5107b46.png",
+      "localPath": "/versum-calendar/assets/lumo_business/settings_icons-ee40d7bb318d270b14fd1f2ad51790f73948fb8789956e1f29ef2cdfc5107b46.png",
+      "file": "assets/lumo_business/settings_icons-ee40d7bb318d270b14fd1f2ad51790f73948fb8789956e1f29ef2cdfc5107b46.png",
+      "sha256": "ee40d7bb318d270b14fd1f2ad51790f73948fb8789956e1f29ef2cdfc5107b46",
+      "bytes": 20908
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/moment-power/booksy-boost-f3ce21e9bbfef5805d09ae0a076e0c4e9a0b5134bef7c5ae99a967290c1b8c92.png",
+      "localPath": "/versum-calendar/assets/moment-power/booksy-boost-f3ce21e9bbfef5805d09ae0a076e0c4e9a0b5134bef7c5ae99a967290c1b8c92.png",
+      "file": "assets/moment-power/booksy-boost-f3ce21e9bbfef5805d09ae0a076e0c4e9a0b5134bef7c5ae99a967290c1b8c92.png",
+      "sha256": "f3ce21e9bbfef5805d09ae0a076e0c4e9a0b5134bef7c5ae99a967290c1b8c92",
+      "bytes": 2707
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/moment-power/crown-1474bfd79c6058677a0f0253e018f2534dd993681849a080fb2bb1694ca0e5bf.png",
+      "localPath": "/versum-calendar/assets/moment-power/crown-1474bfd79c6058677a0f0253e018f2534dd993681849a080fb2bb1694ca0e5bf.png",
+      "file": "assets/moment-power/crown-1474bfd79c6058677a0f0253e018f2534dd993681849a080fb2bb1694ca0e5bf.png",
+      "sha256": "1474bfd79c6058677a0f0253e018f2534dd993681849a080fb2bb1694ca0e5bf",
+      "bytes": 5194
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/new-ui-9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07.css",
+      "localPath": "/versum-calendar/assets/new-ui-9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07.css",
+      "file": "assets/new-ui-9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07.css",
+      "sha256": "9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07",
+      "bytes": 140929
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/progressbar-a45ab53b619988cefd45f49cfacc604dd499b93f53a96927cf7b2d965f421f48.gif",
+      "localPath": "/versum-calendar/assets/progressbar-a45ab53b619988cefd45f49cfacc604dd499b93f53a96927cf7b2d965f421f48.gif",
+      "file": "assets/progressbar-a45ab53b619988cefd45f49cfacc604dd499b93f53a96927cf7b2d965f421f48.gif",
+      "sha256": "a45ab53b619988cefd45f49cfacc604dd499b93f53a96927cf7b2d965f421f48",
+      "bytes": 3323
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/responsive-23f10aad8f9446267251982b6e17dedaeedab8c49eca90c96c0e5c94252a7b4b.js",
+      "localPath": "/versum-calendar/assets/responsive-23f10aad8f9446267251982b6e17dedaeedab8c49eca90c96c0e5c94252a7b4b.js",
+      "file": "assets/responsive-23f10aad8f9446267251982b6e17dedaeedab8c49eca90c96c0e5c94252a7b4b.js",
+      "sha256": "23f10aad8f9446267251982b6e17dedaeedab8c49eca90c96c0e5c94252a7b4b",
+      "bytes": 2907199
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/responsive-ec4501ea7ba0421e40ca22e099525b7ddbc330343d420855acd8ee8b1d632b99.css",
+      "localPath": "/versum-calendar/assets/responsive-ec4501ea7ba0421e40ca22e099525b7ddbc330343d420855acd8ee8b1d632b99.css",
+      "file": "assets/responsive-ec4501ea7ba0421e40ca22e099525b7ddbc330343d420855acd8ee8b1d632b99.css",
+      "sha256": "ec4501ea7ba0421e40ca22e099525b7ddbc330343d420855acd8ee8b1d632b99",
+      "bytes": 821551
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/select2-d6b5d8d83dbc18fb8d77c8761d331cd9e5123c9684950bab0406e98a24ac5ae8.png",
+      "localPath": "/versum-calendar/assets/select2-d6b5d8d83dbc18fb8d77c8761d331cd9e5123c9684950bab0406e98a24ac5ae8.png",
+      "file": "assets/select2-d6b5d8d83dbc18fb8d77c8761d331cd9e5123c9684950bab0406e98a24ac5ae8.png",
+      "sha256": "d6b5d8d83dbc18fb8d77c8761d331cd9e5123c9684950bab0406e98a24ac5ae8",
+      "bytes": 613
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/select2-spinner-f6ecff617ec2ba7f559e6f535cad9b70a3f91120737535dab4d4548a6c83576c.gif",
+      "localPath": "/versum-calendar/assets/select2-spinner-f6ecff617ec2ba7f559e6f535cad9b70a3f91120737535dab4d4548a6c83576c.gif",
+      "file": "assets/select2-spinner-f6ecff617ec2ba7f559e6f535cad9b70a3f91120737535dab4d4548a6c83576c.gif",
+      "sha256": "f6ecff617ec2ba7f559e6f535cad9b70a3f91120737535dab4d4548a6c83576c",
+      "bytes": 1849
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/select2x2-6fe28d687dc0ed4d96016238c608ba1e7198c9c9accfa0b360b78018b9fb9bc2.png",
+      "localPath": "/versum-calendar/assets/select2x2-6fe28d687dc0ed4d96016238c608ba1e7198c9c9accfa0b360b78018b9fb9bc2.png",
+      "file": "assets/select2x2-6fe28d687dc0ed4d96016238c608ba1e7198c9c9accfa0b360b78018b9fb9bc2.png",
+      "sha256": "6fe28d687dc0ed4d96016238c608ba1e7198c9c9accfa0b360b78018b9fb9bc2",
+      "bytes": 845
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot",
+      "localPath": "/versum-calendar/assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot",
+      "file": "assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot",
+      "sha256": "06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb",
+      "bytes": 2048
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot?#iefix",
+      "localPath": "/versum-calendar/assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot",
+      "file": "assets/slick-06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb.eot",
+      "sha256": "06d80cf01250132fd1068701108453feee68854b750d22c344ffc0de395e1dcb",
+      "bytes": 2048
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/slick-12459f221a0b787bf1eaebf2e4c48fca2bd9f8493f71256c3043e7a0c7e932f6.svg#slick",
+      "localPath": "/versum-calendar/assets/slick-12459f221a0b787bf1eaebf2e4c48fca2bd9f8493f71256c3043e7a0c7e932f6.svg",
+      "file": "assets/slick-12459f221a0b787bf1eaebf2e4c48fca2bd9f8493f71256c3043e7a0c7e932f6.svg",
+      "sha256": "12459f221a0b787bf1eaebf2e4c48fca2bd9f8493f71256c3043e7a0c7e932f6",
+      "bytes": 2152
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/slick-26726bac4060abb1226e6ceebc1336e84930fe7a7af1b3895a109d067f5b5dcc.woff",
+      "localPath": "/versum-calendar/assets/slick-26726bac4060abb1226e6ceebc1336e84930fe7a7af1b3895a109d067f5b5dcc.woff",
+      "file": "assets/slick-26726bac4060abb1226e6ceebc1336e84930fe7a7af1b3895a109d067f5b5dcc.woff",
+      "sha256": "26726bac4060abb1226e6ceebc1336e84930fe7a7af1b3895a109d067f5b5dcc",
+      "bytes": 1380
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/slick-37bc99cfdbbc046193a26396787374d00e7b10d3a758a36045c07bd8886360d2.ttf",
+      "localPath": "/versum-calendar/assets/slick-37bc99cfdbbc046193a26396787374d00e7b10d3a758a36045c07bd8886360d2.ttf",
+      "file": "assets/slick-37bc99cfdbbc046193a26396787374d00e7b10d3a758a36045c07bd8886360d2.ttf",
+      "sha256": "37bc99cfdbbc046193a26396787374d00e7b10d3a758a36045c07bd8886360d2",
+      "bytes": 1892
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/sortable-d77f279cb136da1984eaded199f0b040d0a7643327d6da27b39145143c2f3cc0.png",
+      "localPath": "/versum-calendar/assets/sortable-d77f279cb136da1984eaded199f0b040d0a7643327d6da27b39145143c2f3cc0.png",
+      "file": "assets/sortable-d77f279cb136da1984eaded199f0b040d0a7643327d6da27b39145143c2f3cc0.png",
+      "sha256": "d77f279cb136da1984eaded199f0b040d0a7643327d6da27b39145143c2f3cc0",
+      "bytes": 335
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png",
+      "localPath": "/versum-calendar/assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png",
+      "file": "assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png",
+      "sha256": "0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d",
+      "bytes": 277860
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/sprite-settings-188f758600c4fb6bf4344d65b359a93e0dc889e68fb674b5d705df44584bc2ba.png",
+      "localPath": "/versum-calendar/assets/sprite-settings-188f758600c4fb6bf4344d65b359a93e0dc889e68fb674b5d705df44584bc2ba.png",
+      "file": "assets/sprite-settings-188f758600c4fb6bf4344d65b359a93e0dc889e68fb674b5d705df44584bc2ba.png",
+      "sha256": "188f758600c4fb6bf4344d65b359a93e0dc889e68fb674b5d705df44584bc2ba",
+      "bytes": 53844
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/subscription/check-7e7309c2d063953539d4989b067c6917fdc4382dde524c3bc205facebdee0cec.png",
+      "localPath": "/versum-calendar/assets/subscription/check-7e7309c2d063953539d4989b067c6917fdc4382dde524c3bc205facebdee0cec.png",
+      "file": "assets/subscription/check-7e7309c2d063953539d4989b067c6917fdc4382dde524c3bc205facebdee0cec.png",
+      "sha256": "7e7309c2d063953539d4989b067c6917fdc4382dde524c3bc205facebdee0cec",
+      "bytes": 335
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tasks/no_tasks-6dd8b968916645c1d6af787ff129f9527c27001cfbeea4dcf31d7067ba792a6b.png",
+      "localPath": "/versum-calendar/assets/tasks/no_tasks-6dd8b968916645c1d6af787ff129f9527c27001cfbeea4dcf31d7067ba792a6b.png",
+      "file": "assets/tasks/no_tasks-6dd8b968916645c1d6af787ff129f9527c27001cfbeea4dcf31d7067ba792a6b.png",
+      "sha256": "6dd8b968916645c1d6af787ff129f9527c27001cfbeea4dcf31d7067ba792a6b",
+      "bytes": 670
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tick-6fa27ab53b74ba4bbe57fff4262f4777dc925bc0d55a664605d4cdd8cc862c6e.png",
+      "localPath": "/versum-calendar/assets/tick-6fa27ab53b74ba4bbe57fff4262f4777dc925bc0d55a664605d4cdd8cc862c6e.png",
+      "file": "assets/tick-6fa27ab53b74ba4bbe57fff4262f4777dc925bc0d55a664605d4cdd8cc862c6e.png",
+      "sha256": "6fa27ab53b74ba4bbe57fff4262f4777dc925bc0d55a664605d4cdd8cc862c6e",
+      "bytes": 736
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/toggle-ce81f79f274c774f38fd8cea9347fcd03a7f425960bc3166981e3b87179cb3db.png",
+      "localPath": "/versum-calendar/assets/toggle-ce81f79f274c774f38fd8cea9347fcd03a7f425960bc3166981e3b87179cb3db.png",
+      "file": "assets/toggle-ce81f79f274c774f38fd8cea9347fcd03a7f425960bc3166981e3b87179cb3db.png",
+      "sha256": "ce81f79f274c774f38fd8cea9347fcd03a7f425960bc3166981e3b87179cb3db",
+      "bytes": 205
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/first-tree-item-bg-193e397574cd6ed9a92d6d2ff305654f6a29eb1af7e9bb9914ab79d5f023217a.png",
+      "localPath": "/versum-calendar/assets/tree_lists/first-tree-item-bg-193e397574cd6ed9a92d6d2ff305654f6a29eb1af7e9bb9914ab79d5f023217a.png",
+      "file": "assets/tree_lists/first-tree-item-bg-193e397574cd6ed9a92d6d2ff305654f6a29eb1af7e9bb9914ab79d5f023217a.png",
+      "sha256": "193e397574cd6ed9a92d6d2ff305654f6a29eb1af7e9bb9914ab79d5f023217a",
+      "bytes": 206
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/first-tree-item-bg@2x-b47ef4e43ba5cb8508280703f07542908bf9f5f0079ed48573cdada98ab96c30.png",
+      "localPath": "/versum-calendar/assets/tree_lists/first-tree-item-bg@2x-b47ef4e43ba5cb8508280703f07542908bf9f5f0079ed48573cdada98ab96c30.png",
+      "file": "assets/tree_lists/first-tree-item-bg@2x-b47ef4e43ba5cb8508280703f07542908bf9f5f0079ed48573cdada98ab96c30.png",
+      "sha256": "b47ef4e43ba5cb8508280703f07542908bf9f5f0079ed48573cdada98ab96c30",
+      "bytes": 1461
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/last-tree-item-bg-bcbb3b3b0c52e7b300092eb7f07c6b56e617e22cc257579670ef2caecd647928.png",
+      "localPath": "/versum-calendar/assets/tree_lists/last-tree-item-bg-bcbb3b3b0c52e7b300092eb7f07c6b56e617e22cc257579670ef2caecd647928.png",
+      "file": "assets/tree_lists/last-tree-item-bg-bcbb3b3b0c52e7b300092eb7f07c6b56e617e22cc257579670ef2caecd647928.png",
+      "sha256": "bcbb3b3b0c52e7b300092eb7f07c6b56e617e22cc257579670ef2caecd647928",
+      "bytes": 210
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/last-tree-item-bg@2x-1488efba5245b12b6a5ffd004196695bc8931a0a62eabe383dd5796f3b349962.png",
+      "localPath": "/versum-calendar/assets/tree_lists/last-tree-item-bg@2x-1488efba5245b12b6a5ffd004196695bc8931a0a62eabe383dd5796f3b349962.png",
+      "file": "assets/tree_lists/last-tree-item-bg@2x-1488efba5245b12b6a5ffd004196695bc8931a0a62eabe383dd5796f3b349962.png",
+      "sha256": "1488efba5245b12b6a5ffd004196695bc8931a0a62eabe383dd5796f3b349962",
+      "bytes": 1465
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/top-tree-item-bg-6173c89f7603c470d58b17b7a76e4f60a0b9367cab5ecdf243a7b74ece99fb12.png",
+      "localPath": "/versum-calendar/assets/tree_lists/top-tree-item-bg-6173c89f7603c470d58b17b7a76e4f60a0b9367cab5ecdf243a7b74ece99fb12.png",
+      "file": "assets/tree_lists/top-tree-item-bg-6173c89f7603c470d58b17b7a76e4f60a0b9367cab5ecdf243a7b74ece99fb12.png",
+      "sha256": "6173c89f7603c470d58b17b7a76e4f60a0b9367cab5ecdf243a7b74ece99fb12",
+      "bytes": 188
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/top-tree-item-bg@2x-d9bf71eb6b9dde943e70b8b8e3886e09ebd9cb98dc134a48979d34a7ee015945.png",
+      "localPath": "/versum-calendar/assets/tree_lists/top-tree-item-bg@2x-d9bf71eb6b9dde943e70b8b8e3886e09ebd9cb98dc134a48979d34a7ee015945.png",
+      "file": "assets/tree_lists/top-tree-item-bg@2x-d9bf71eb6b9dde943e70b8b8e3886e09ebd9cb98dc134a48979d34a7ee015945.png",
+      "sha256": "d9bf71eb6b9dde943e70b8b8e3886e09ebd9cb98dc134a48979d34a7ee015945",
+      "bytes": 1423
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/tree-item-bg-ce83efc51ed122582559f62aef385d1a4e8bc46ebf65554ab6c92d0400574c49.png",
+      "localPath": "/versum-calendar/assets/tree_lists/tree-item-bg-ce83efc51ed122582559f62aef385d1a4e8bc46ebf65554ab6c92d0400574c49.png",
+      "file": "assets/tree_lists/tree-item-bg-ce83efc51ed122582559f62aef385d1a4e8bc46ebf65554ab6c92d0400574c49.png",
+      "sha256": "ce83efc51ed122582559f62aef385d1a4e8bc46ebf65554ab6c92d0400574c49",
+      "bytes": 222
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/tree_lists/tree-item-bg@2x-a68f5581e9570229f23482b7ba01cf562d5aba632a2319721395f2051b7a9b07.png",
+      "localPath": "/versum-calendar/assets/tree_lists/tree-item-bg@2x-a68f5581e9570229f23482b7ba01cf562d5aba632a2319721395f2051b7a9b07.png",
+      "file": "assets/tree_lists/tree-item-bg@2x-a68f5581e9570229f23482b7ba01cf562d5aba632a2319721395f2051b7a9b07.png",
+      "sha256": "a68f5581e9570229f23482b7ba01cf562d5aba632a2319721395f2051b7a9b07",
+      "bytes": 1690
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/ui-icons_222222_256x240-febd8dc1cf86857fe92ee4b6b715ac5d5663b9b1e43978fb977b832bd97f00ec.png",
+      "localPath": "/versum-calendar/assets/ui-icons_222222_256x240-febd8dc1cf86857fe92ee4b6b715ac5d5663b9b1e43978fb977b832bd97f00ec.png",
+      "file": "assets/ui-icons_222222_256x240-febd8dc1cf86857fe92ee4b6b715ac5d5663b9b1e43978fb977b832bd97f00ec.png",
+      "sha256": "febd8dc1cf86857fe92ee4b6b715ac5d5663b9b1e43978fb977b832bd97f00ec",
+      "bytes": 6918
+    },
+    {
+      "source": "https://app-cdn.versum.net/assets/versum_charts-77705aac853535e34b3f36f961534c3cd490bba413a410eb21f34c0a95223ce5.js",
+      "localPath": "/versum-calendar/assets/versum_charts-77705aac853535e34b3f36f961534c3cd490bba413a410eb21f34c0a95223ce5.js",
+      "file": "assets/versum_charts-77705aac853535e34b3f36f961534c3cd490bba413a410eb21f34c0a95223ce5.js",
+      "sha256": "77705aac853535e34b3f36f961534c3cd490bba413a410eb21f34c0a95223ce5",
+      "bytes": 500241
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/1f73c31fc5c9cbe5874f24c5b870b1de.svg",
+      "localPath": "/versum-calendar/javascripts/new/1f73c31fc5c9cbe5874f24c5b870b1de.svg",
+      "file": "javascripts/new/1f73c31fc5c9cbe5874f24c5b870b1de.svg",
+      "sha256": "efa967bee05215e35400b4f5b100e8cb4d051fa29dcaf61cf95437cee6545a25",
+      "bytes": 1497
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/8a422611d0bd4451914900a50d4237d5.svg",
+      "localPath": "/versum-calendar/javascripts/new/8a422611d0bd4451914900a50d4237d5.svg",
+      "file": "javascripts/new/8a422611d0bd4451914900a50d4237d5.svg",
+      "sha256": "eddb428cd56d89ced39fe32a054e6bc85be81dc000ee6552ae793bc2ea61082f",
+      "bytes": 884
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/calendar-ed2e936167e9306b3c90.js",
+      "localPath": "/versum-calendar/javascripts/new/calendar-ed2e936167e9306b3c90.js",
+      "file": "javascripts/new/calendar-ed2e936167e9306b3c90.js",
+      "sha256": "23f09591c91d925aee91c505d7642b9bd78e93fdba9e8eb6dfaabea6882f8329",
+      "bytes": 528004
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/default-51c7a0b55a22f2c6e6d3402e1cc0060b.css",
+      "localPath": "/versum-calendar/javascripts/new/default-51c7a0b55a22f2c6e6d3402e1cc0060b.css",
+      "file": "javascripts/new/default-51c7a0b55a22f2c6e6d3402e1cc0060b.css",
+      "sha256": "b671ff5fd928398be023b5091a988dbd82b3d7f288a90d09b089001dc24dcae9",
+      "bytes": 121213
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/Icon-b1a3fe797f23f246d93b4b6e830770f3.css",
+      "localPath": "/versum-calendar/javascripts/new/Icon-b1a3fe797f23f246d93b4b6e830770f3.css",
+      "file": "javascripts/new/Icon-b1a3fe797f23f246d93b4b6e830770f3.css",
+      "sha256": "0d54da92b7a5dc9dd14d87668081337983db3887dd8c2fc169105e93c44ae98f",
+      "bytes": 477
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/main-211b653d1580436a20a0.js",
+      "localPath": "/versum-calendar/javascripts/new/main-211b653d1580436a20a0.js",
+      "file": "javascripts/new/main-211b653d1580436a20a0.js",
+      "sha256": "d05c53818cd4fcb2eed5920ef9d59b4d8c1ce6468b1b0a0b14da27bf14604348",
+      "bytes": 1365709
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/Nestable-87d0542167954809c9296941553eeab4.css",
+      "localPath": "/versum-calendar/javascripts/new/Nestable-87d0542167954809c9296941553eeab4.css",
+      "file": "javascripts/new/Nestable-87d0542167954809c9296941553eeab4.css",
+      "sha256": "160d60142813c6dfc384bc288753ed4430904ba27efa07bc65f7a4064d36b4ae",
+      "bytes": 956
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/runtime-1309d31f68b52514d61c.js",
+      "localPath": "/versum-calendar/javascripts/new/runtime-1309d31f68b52514d61c.js",
+      "file": "javascripts/new/runtime-1309d31f68b52514d61c.js",
+      "sha256": "f63a5ba15404548f089370702e5124906ccbb1392cc08217cd3ab9f48d30cf2d",
+      "bytes": 3305
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/style-d5194205877fdbcc0f7b046384512047.css",
+      "localPath": "/versum-calendar/javascripts/new/style-d5194205877fdbcc0f7b046384512047.css",
+      "file": "javascripts/new/style-d5194205877fdbcc0f7b046384512047.css",
+      "sha256": "3c7f31f484848cb50e404749314ea1996ac740364b62a70b85513cc8cec70dc3",
+      "bytes": 2405
+    },
+    {
+      "source": "https://app-cdn.versum.net/javascripts/new/vendors-41339c2f7022acad0720.js",
+      "localPath": "/versum-calendar/javascripts/new/vendors-41339c2f7022acad0720.js",
+      "file": "javascripts/new/vendors-41339c2f7022acad0720.js",
+      "sha256": "8020d4570cfffa3fd3e122be4a57850d1085c9a2cbb5da8779cf64bf1dc76e2e",
+      "bytes": 2090712
+    }
+  ],
+  "missing": [
+    "https://app-cdn.versum.net/assets/Jcrop.gif",
+    "https://app-cdn.versum.net/img/flags.png",
+    "https://app-cdn.versum.net/img/flags@2x.png",
+    "https://app-cdn.versum.net/assets/embed/ui-bg_flat_75_ffffff_40x100.png",
+    "https://app-cdn.versum.net/images/embed/sort_asc_disabled.png",
+    "https://app-cdn.versum.net/images/embed/sort_desc_disabled.png"
+  ]
+}

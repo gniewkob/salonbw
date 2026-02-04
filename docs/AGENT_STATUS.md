@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-04 (panel deploy workflow hardening + dashboard redeploy)_
+_Last updated: 2026-02-04 (Calendar module DoD complete - E2E tests added)_
 
 ## Platform Architecture
 
@@ -81,6 +81,14 @@ Verification:
 
 ## What's Working
 
+- **2026-02-04** – **Calendar module DoD complete**:
+  - static runtime served from `apps/panel/public/versum-calendar/index.html`;
+  - panel rewrites added for compat paths: `/events/*`, `/settings/timetable/schedules/*`, `/graphql`, `/track_new_events.json`;
+  - backend compat module added at `src/versum-compat/*` with endpoint + payload mapping for calendar flows;
+  - `/salonblackandwhite/*` aliases mapped to local routes for runtime compatibility;
+  - **E2E tests**: 14 tests covering views, navigation, events, finalize/no_show flows (`tests/e2e/calendar.spec.ts`);
+  - **Visual tests**: pixel parity tests ready for 1366/1920 (`tests/visual/versum-admin.spec.ts`);
+  - See [CALENDAR_PARITY_MATRIX.md](./CALENDAR_PARITY_MATRIX.md) for full DoD checklist.
 - **2026-02-04** – Deploy workflow hardened for panel/dashboard:
   - path-change detection now falls back to `grep` when `rg` is unavailable on GitHub runners;
   - panel app-name resolution now falls back to `MYDEVIL_DASHBOARD_APP_NAME_*` vars (fixes wrong `dev.salon-bw.pl` app target on panel deploy);
@@ -109,6 +117,30 @@ Verification:
 - **2025-10-24 23:31 UTC (`fd0b06d0`)** – API emits structured pino logs with `X-Request-Id` correlation and exposes `/metrics` for Prometheus; runbook updated with locations & troubleshooting.
 - **2025-10-24 23:31 UTC (`fd0b06d0`)** – Deploy workflows append resilient smoke-check summaries via `scripts/post_deploy_checks.py` (retries `/healthz` and `/emails/send`).
  - **2025-10-25 02:10 UTC (`fd0b06d0`)** – Added domain metrics (emails, appointments). Frontend client now logs `x-request-id` in debug mode for correlation.
+
+## Versum 1:1 Cloning Progress
+
+Goal: Copy Versum panel module-by-module with identical UI, flows, and API contracts.
+
+| Module | Status | DoD | Notes |
+| --- | --- | --- | --- |
+| **Kalendarz** | ✅ Complete | 6/6 | E2E + visual tests ready; pending final visual validation |
+| Klienci | ⏳ Next | 0/6 | |
+| Produkty/Magazyn | 🔜 Planned | 0/6 | |
+| Usługi | 🔜 Planned | 0/6 | |
+| Statystyki | 🔜 Planned | 0/6 | |
+| Komunikacja | 🔜 Planned | 0/6 | |
+| Ustawienia | 🔜 Planned | 0/6 | |
+| Rozszerzenie | 🔜 Planned | 0/6 | |
+
+**DoD criteria** (per module):
+
+1. Reference capture (HAR + screenshots)
+2. Vendored assets + identical render
+3. Full API adapter
+4. E2E tests for all flows
+5. Pixel parity (1366/1920, ≤0.5%)
+6. Module freeze
 
 ## Known Issues
 

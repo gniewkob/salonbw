@@ -43,6 +43,13 @@ It defines how agents should operate in this repository: what is â€œproductionâ€
 - Panel: apps/panel
 - Admin: apps/admin (exists in workflows; treat as separate deployable)
 
+Panel calendar runtime note:
+- `/calendar` is served from vendored Versum assets (`apps/panel/public/versum-calendar/index.html`) and uses panel rewrites for compat paths:
+  - `/events/*`
+  - `/settings/timetable/schedules/*`
+  - `/graphql`
+  - `/track_new_events.json`
+
 Panel canonical admin routes:
 - `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`
 - legacy `/admin/*` entry routes should be treated as compatibility aliases/redirects
