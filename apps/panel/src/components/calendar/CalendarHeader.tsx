@@ -9,6 +9,7 @@ import {
     subMonths,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { useState, useEffect } from 'react';
 
 interface CalendarHeaderProps {
     date: Date;
@@ -25,6 +26,14 @@ export default function CalendarHeader({
     onViewChange,
     onTodayClick,
 }: CalendarHeaderProps) {
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000 * 60);
+        return () => clearInterval(timer);
+    }, []);
+
     const handlePrev = () => {
         switch (view) {
             case 'day':
@@ -113,9 +122,16 @@ export default function CalendarHeader({
                         </svg>
                     </button>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900 capitalize">
-                    {formatDateLabel()}
-                </h2>
+                <div className="flex items-baseline gap-3">
+                    <h2 className="text-lg font-semibold text-gray-900 capitalize">
+                        {formatDateLabel()}
+                    </h2>
+                    {currentTime && (
+                        <span className="text-xl font-light text-primary">
+                            {format(currentTime, 'HH:mm')}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-center gap-2">

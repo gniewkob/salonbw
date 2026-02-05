@@ -11,7 +11,8 @@ import type { PluginDef } from '@fullcalendar/core';
 import type { DateClickArg } from '@fullcalendar/interaction';
 import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import type { paths } from '@salonbw/api';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 
 const isTestEnv = process.env.NODE_ENV === 'test';
@@ -70,6 +71,10 @@ export default function AppointmentsPage() {
 
     const { data: services } = useServices();
     const api = useAppointmentsApi();
+    const router = useRouter();
+    const calendarRef = useRef<any>(null); // FullCalendar ref
+    const { date: dateParam, employeeId: employeeIdParam } = router.query;
+
     const [formOpen, setFormOpen] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [startTime, setStartTime] = useState('');
@@ -77,6 +82,14 @@ export default function AppointmentsPage() {
         isTestEnv ? [] : null,
     );
     const [pluginLoadError, setPluginLoadError] = useState<string | null>(null);
+
+    // Sync calendar date with URL
+    useEffect(() => {
+        if (dateParam && calendarRef.current) {
+            const calendarApi = calendarRef.current.getApi();
+            calendarApi.gotoDate(dateParam as string);
+        }
+    }, [dateParam, calendarPlugins]);
 
     useEffect(() => {
         if (isTestEnv) {
@@ -105,15 +118,21 @@ export default function AppointmentsPage() {
         };
     }, []);
 
-    const events = useMemo(
-        () =>
-            appointments?.map((a) => ({
-                id: String(a.id),
-                title: a.client?.name ?? String(a.id),
-                start: a.startTime,
-            })) ?? [],
-        [appointments],
-    );
+    const events = useMemo(() => {
+        if (!appointments) return [];
+        let filtered = appointments;
+
+        if (employeeIdParam) {
+            const empId = Number(employeeIdParam);
+            filtered = filtered.filter((a) => a.employee?.id === empId);
+        }
+
+        return filtered.map((a) => ({
+            id: String(a.id),
+            title: a.client?.name ?? String(a.id),
+            start: a.startTime,
+        }));
+    }, [appointments, employeeIdParam]);
 
     if (loading || !services) return <div>Loading...</div>;
     if (error) return <div>Error</div>;
@@ -173,9 +192,12 @@ export default function AppointmentsPage() {
                         {pluginLoadError}
                     </div>
                 ) : calendarPlugins ? (
+                    // @ts-expect-error Dynamic component ref typing issue
                     <FullCalendar
+                        ref={calendarRef}
                         plugins={calendarPlugins}
                         initialView="timeGridWeek"
+                        initialDate={dateParam as string | undefined}
                         events={events}
                         dateClick={handleDateClick}
                         eventClick={handleEventClick}

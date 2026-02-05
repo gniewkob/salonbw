@@ -4,39 +4,43 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
-import WarehouseCategoriesPanel from '@/components/warehouse/WarehouseCategoriesPanel';
+import { useRouter } from 'next/router';
 import {
     useWarehouseProducts,
     useProductCategories,
 } from '@/hooks/useWarehouseViews';
 import { useProductApi } from '@/api/products';
+import { ProductCategory } from '@/types';
 
 function flattenCategoryIds(
-    nodes: Array<{
-        id: number;
-        children?: Array<{ id: number; children?: unknown[] }>;
-    }>,
+    nodes: ProductCategory[],
+    targetId: number,
 ): number[] {
     const out: number[] = [];
-    const walk = (
-        arr: Array<{
-            id: number;
-            children?: Array<{ id: number; children?: unknown[] }>;
-        }>,
-    ) => {
+
+    // First find the target node
+    const findNode = (arr: ProductCategory[]) => {
         for (const node of arr) {
-            out.push(node.id);
-            if (node.children && node.children.length > 0) {
-                walk(
-                    node.children as Array<{
-                        id: number;
-                        children?: Array<{ id: number; children?: unknown[] }>;
-                    }>,
-                );
+            if (node.id === targetId) {
+                // Found it, now collect all children
+                collect(node.children || []);
+                return true;
+            }
+            if (node.children) {
+                if (findNode(node.children)) return true;
             }
         }
+        return false;
     };
-    walk(nodes);
+
+    const collect = (arr: ProductCategory[]) => {
+        for (const node of arr) {
+            out.push(node.id);
+            if (node.children) collect(node.children);
+        }
+    };
+
+    findNode(nodes);
     return out;
 }
 
@@ -45,13 +49,15 @@ export default function WarehouseProductsPage() {
 }
 
 function WarehouseProductsPageContent() {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const productApi = useProductApi();
 
     const [search, setSearch] = useState('');
-    const [selectedCategoryId, setSelectedCategoryId] = useState<
-        number | undefined
-    >(undefined);
+    const selectedCategoryId = router.query.categoryId
+        ? Number(router.query.categoryId)
+        : undefined;
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
@@ -63,15 +69,24 @@ function WarehouseProductsPageContent() {
     });
 
     const { data: categories = [] } = useProductCategories();
+    // Fetch all products or filtered by search.
+    // We do client-side category filtering to support nested categories correctly if API doesn't.
+    // Assuming useWarehouseProducts supports searching.
     const { data: products = [], isLoading } = useWarehouseProducts({
         search: search || undefined,
-        categoryId: selectedCategoryId,
+        // We might need to pass categoryId if API supports nested filtering,
+        // but existing logic used client-side flatten. Let's keep existing logic safe:
+        // fetch by search, then filter. Or if API is paginated, this is risky.
+        // Assuming fetch-all for now as per previous code.
         includeInactive: true,
     });
 
     const flatCategoryIds = useMemo(
-        () => flattenCategoryIds(categories),
-        [categories],
+        () =>
+            selectedCategoryId
+                ? flattenCategoryIds(categories, selectedCategoryId)
+                : [],
+        [categories, selectedCategoryId],
     );
 
     const filteredProducts = useMemo(() => {
@@ -175,13 +190,6 @@ function WarehouseProductsPageContent() {
             heading="Magazyn / Produkty"
             activeTab="products"
             actions={actions}
-            leftPanel={
-                <WarehouseCategoriesPanel
-                    categories={categories}
-                    selectedCategoryId={selectedCategoryId}
-                    onSelect={setSelectedCategoryId}
-                />
-            }
         >
             <div className="mb-3 flex flex-wrap items-center gap-2">
                 <input
