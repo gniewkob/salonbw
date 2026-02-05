@@ -10,13 +10,18 @@ import { resolveVersumModule, visibleVersumModules } from './navigation';
 interface VersumShellProps {
     role: Role;
     children: ReactNode;
+    secondaryNav?: ReactNode;
 }
 
-export default function VersumShell({ role, children }: VersumShellProps) {
+export default function VersumShell({
+    role,
+    children,
+    secondaryNav,
+}: VersumShellProps) {
     const router = useRouter();
     const activeModule = resolveVersumModule(router.pathname);
     const modules = visibleVersumModules(role);
-    const showSecondary = activeModule.secondaryNav;
+    const showSecondary = activeModule.secondaryNav || !!secondaryNav;
 
     return (
         <div className="versum-shell">
@@ -27,7 +32,11 @@ export default function VersumShell({ role, children }: VersumShellProps) {
                     modules={modules}
                     activeModule={activeModule}
                 />
-                {showSecondary ? (
+                {secondaryNav ? (
+                    <aside className="versum-secondarynav">
+                        {secondaryNav}
+                    </aside>
+                ) : showSecondary ? (
                     <VersumSecondaryNav module={activeModule} />
                 ) : null}
                 <main
