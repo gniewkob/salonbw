@@ -27,7 +27,7 @@ interface WarehouseLayoutProps {
     activeTab: WarehouseMainTab;
     inventoryActive?: boolean;
     actions?: ReactNode;
-    leftPanel?: ReactNode;
+
     children: ReactNode;
 }
 
@@ -38,7 +38,7 @@ export default function WarehouseLayout({
     activeTab,
     inventoryActive = false,
     actions,
-    leftPanel,
+
     children,
 }: WarehouseLayoutProps) {
     return (
@@ -88,14 +88,7 @@ export default function WarehouseLayout({
                     {actions ? (
                         <div className="px-4 py-3 text-right">{actions}</div>
                     ) : null}
-                    <div className="flex gap-4 px-4 pb-4">
-                        {leftPanel ? (
-                            <aside className="w-[230px] shrink-0 border-r border-gray-200 pr-3">
-                                {leftPanel}
-                            </aside>
-                        ) : null}
-                        <div className="min-w-0 flex-1">{children}</div>
-                    </div>
+                    <div className="p-4">{children}</div>
                 </div>
             </DashboardLayout>
         </RouteGuard>
