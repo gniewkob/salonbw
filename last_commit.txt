@@ -1,8 +1,0 @@
-commit ab28dfa134e02b35d9d2e0173f05e0b8bee3de43
-Author: Gniewko <gniewko@bodora.pl>
-Date:   Tue Dec 16 14:35:02 2025 +0100
-
-    Fix(ci): Resolve lint warnings by extracting optional vars to environment
-
- .github/workflows/deploy.yml | 29 ++++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)

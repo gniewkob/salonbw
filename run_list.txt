@@ -1,5 +1,0 @@
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20193923342	32s	2025-12-13T15:12:50Z
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20183251926	42s	2025-12-12T23:55:41Z
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20183191072	16s	2025-12-12T23:51:29Z
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20183013328	13s	2025-12-12T23:40:29Z
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20180643152	13s	2025-12-12T21:39:48Z

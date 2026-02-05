@@ -1,5 +1,0 @@
- WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
- WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
- WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
- WARN  Issue while reading "/Users/gniewkob/Repos/salonbw/.npmrc". Failed to replace env in config: ${NPM_TOKEN}
- ERR_PNPM_JSON_PARSE  Expected double-quoted property name in JSON at position 3318 (line 109 column 1) while parsing '{  "name": "salonbw-backend",  "versio' in /Users/gniewkob/Repos/salonbw/backend/salonbw-backend/package.json

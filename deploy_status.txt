@@ -1,1 +1,0 @@
-completed	failure	Deploy (MyDevil)	Deploy (MyDevil)	master	workflow_dispatch	20214254981	1m7s	2025-12-14T21:15:09Z
