@@ -1,6 +1,11 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    keepPreviousData,
+} from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     Customer,
@@ -32,6 +37,7 @@ export function useCustomers(filters: CustomerFilterParams = {}) {
             apiFetch<PaginatedCustomers>(
                 `/customers?${queryString.toString()}`,
             ),
+        placeholderData: keepPreviousData,
     });
 }
 

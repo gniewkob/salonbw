@@ -1,55 +1,18 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
-import {
-    useCreateCustomer,
-    useCreateCustomerGroup,
-    useCustomers,
-    useCustomerGroups,
-    useCustomerTags,
-} from '@/hooks/useCustomers';
-import { useServices } from '@/hooks/useServices';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import type { CustomerFilterParams, Customer } from '@/types';
-
-type CustomerDraft = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-};
-
-type GroupDraft = {
-    name: string;
-    description: string;
-    color: string;
-};
+import CreateCustomerModal, {
+    type CustomerDraft,
+} from '@/components/versum/modals/CreateCustomerModal';
 
 type SortOption = 'name_asc' | 'name_desc' | 'created_desc' | 'created_asc';
-
-const QUICK_GROUPS = [
-    { id: 'all', label: 'wszyscy klienci', icon: '👥' },
-    { id: 'today', label: 'Umówieni na dzisiaj', icon: '📅' },
-    { id: 'recent', label: 'Ostatnio dodani', icon: '🆕' },
-    { id: 'no_online', label: 'Nie rezerwują online', icon: '🚫' },
-] as const;
-
-type FilterCriteriaId = 'used_services' | 'has_visit' | 'by_employee';
-
-const FILTER_CRITERIA: Array<{
-    id: FilterCriteriaId;
-    label: string;
-    icon: string;
-}> = [
-    { id: 'used_services', label: 'skorzystali z usług', icon: '✂️' },
-    { id: 'has_visit', label: 'mają wizytę w salonie', icon: '📋' },
-    { id: 'by_employee', label: 'obsługiwani przez pracowników', icon: '👤' },
-];
 
 function formatShortDate(value: string | undefined) {
     if (!value) return '-';
@@ -80,21 +43,55 @@ function ClientsPageContent() {
     const [sortOption, setSortOption] = useState<SortOption>('name_asc');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-    const [activeQuickGroup, setActiveQuickGroup] = useState<string>('all');
-    const [showMoreGroups, setShowMoreGroups] = useState(false);
-    const [showMoreCriteria, setShowMoreCriteria] = useState(false);
-    const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
-    const [activeCriteria, setActiveCriteria] =
-        useState<FilterCriteriaId | null>(null);
-    const [showServiceSelector, setShowServiceSelector] = useState(false);
-    const [showEmployeeSelector, setShowEmployeeSelector] = useState(false);
 
     const createCustomer = useCreateCustomer();
-    const createGroup = useCreateCustomerGroup();
-    const { data: groups } = useCustomerGroups();
-    const { data: tags } = useCustomerTags();
-    const { data: services } = useServices();
-    const { data: employees } = useEmployees();
+
+    // Sync filters from URL from ClientsNav
+    useEffect(() => {
+        if (!router.isReady) return;
+
+        setFilters((prev) => {
+            const newGroupId = router.query.groupId
+                ? Number(router.query.groupId)
+                : undefined;
+            const newTagId = router.query.tagId
+                ? Number(router.query.tagId)
+                : undefined;
+            const newServiceId = router.query.serviceId
+                ? Number(router.query.serviceId)
+                : undefined;
+            const newEmployeeId = router.query.employeeId
+                ? Number(router.query.employeeId)
+                : undefined;
+            const newHasVisit = router.query.hasUpcomingVisit === 'true';
+
+            if (
+                prev.groupId === newGroupId &&
+                prev.tagId === newTagId &&
+                prev.serviceId === newServiceId &&
+                prev.employeeId === newEmployeeId &&
+                prev.hasUpcomingVisit === newHasVisit
+            )
+                return prev;
+
+            return {
+                ...prev,
+                groupId: newGroupId,
+                tagId: newTagId,
+                serviceId: newServiceId,
+                employeeId: newEmployeeId,
+                hasUpcomingVisit: newHasVisit || undefined,
+                page: 1, // Reset page on filter change
+            };
+        });
+    }, [
+        router.isReady,
+        router.query.groupId,
+        router.query.tagId,
+        router.query.serviceId,
+        router.query.employeeId,
+        router.query.hasUpcomingVisit,
+    ]);
 
     const queryFilters = useMemo(() => {
         const [sortBy, sortOrder] = {
@@ -142,77 +139,6 @@ function ClientsPageContent() {
         void router.push(`/clients/${customer.id}` as Route);
     };
 
-    const handleQuickGroupClick = (groupId: string) => {
-        setActiveQuickGroup(groupId);
-        // Reset filters based on group
-        if (groupId === 'all') {
-            setFilters((prev) => ({ ...prev, groupId: undefined, page: 1 }));
-        }
-        // Other quick groups would need backend support
-    };
-
-    const handleGroupClick = (groupId: number) => {
-        setFilters((prev) => ({ ...prev, groupId, page: 1 }));
-        setActiveQuickGroup('');
-    };
-
-    const handleCriteriaClick = (criteriaId: FilterCriteriaId) => {
-        // If clicking the same criteria, toggle it off
-        if (activeCriteria === criteriaId) {
-            setActiveCriteria(null);
-            // Clear the associated filter
-            if (criteriaId === 'has_visit') {
-                setFilters((prev) => ({
-                    ...prev,
-                    hasUpcomingVisit: undefined,
-                    page: 1,
-                }));
-            } else if (criteriaId === 'used_services') {
-                setFilters((prev) => ({
-                    ...prev,
-                    serviceId: undefined,
-                    page: 1,
-                }));
-                setShowServiceSelector(false);
-            } else if (criteriaId === 'by_employee') {
-                setFilters((prev) => ({
-                    ...prev,
-                    employeeId: undefined,
-                    page: 1,
-                }));
-                setShowEmployeeSelector(false);
-            }
-            return;
-        }
-
-        setActiveCriteria(criteriaId);
-
-        if (criteriaId === 'has_visit') {
-            // Directly apply the filter
-            setFilters((prev) => ({
-                ...prev,
-                hasUpcomingVisit: true,
-                page: 1,
-            }));
-        } else if (criteriaId === 'used_services') {
-            // Show service selector
-            setShowServiceSelector(true);
-        } else if (criteriaId === 'by_employee') {
-            // Show employee selector
-            setShowEmployeeSelector(true);
-        }
-    };
-
-    const handleServiceSelect = (serviceId: number) => {
-        setFilters((prev) => ({ ...prev, serviceId, page: 1 }));
-        setShowServiceSelector(false);
-    };
-
-    const handleEmployeeSelect = (employeeId: number) => {
-        setFilters((prev) => ({ ...prev, employeeId, page: 1 }));
-        setShowEmployeeSelector(false);
-    };
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
@@ -220,205 +146,10 @@ function ClientsPageContent() {
         >
             <DashboardLayout>
                 <div className="flex h-full" data-testid="clients-page">
-                    {/* Left Sidebar - Versum style */}
-                    <aside className="versum-secondarynav">
-                        {/* Customer Groups */}
-                        <section className="versum-secondarynav__section">
-                            <h4>
-                                GRUPY KLIENTÓW
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowCreateGroupModal(true)
-                                    }
-                                    className="versum-secondarynav__add-btn"
-                                    title="Dodaj grupę"
-                                >
-                                    + dodaj
-                                </button>
-                            </h4>
-                            <ul>
-                                {QUICK_GROUPS.map((group) => (
-                                    <li
-                                        key={group.id}
-                                        className={
-                                            activeQuickGroup === group.id
-                                                ? 'is-active'
-                                                : undefined
-                                        }
-                                    >
-                                        <button
-                                            onClick={() =>
-                                                handleQuickGroupClick(group.id)
-                                            }
-                                            className="versum-secondarynav__item-btn"
-                                        >
-                                            {group.label}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            {/* Custom Groups */}
-                            {groups && groups.length > 0 && (
-                                <ul className="versum-secondarynav__sublist">
-                                    {(showMoreGroups
-                                        ? groups
-                                        : groups.slice(0, 3)
-                                    ).map((group) => (
-                                        <li
-                                            key={group.id}
-                                            className={
-                                                filters.groupId === group.id
-                                                    ? 'is-active'
-                                                    : undefined
-                                            }
-                                        >
-                                            <button
-                                                onClick={() =>
-                                                    handleGroupClick(group.id)
-                                                }
-                                                className="versum-secondarynav__item-btn"
-                                            >
-                                                {group.color && (
-                                                    <span
-                                                        className="versum-chip"
-                                                        style={{
-                                                            backgroundColor:
-                                                                group.color,
-                                                        }}
-                                                    />
-                                                )}
-                                                {group.name}
-                                                {group.memberCount !==
-                                                    undefined && (
-                                                    <span className="versum-muted ml-auto">
-                                                        {group.memberCount}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        </li>
-                                    ))}
-                                    {groups.length > 3 && (
-                                        <li>
-                                            <button
-                                                onClick={() =>
-                                                    setShowMoreGroups(
-                                                        !showMoreGroups,
-                                                    )
-                                                }
-                                                className="versum-secondarynav__more-btn"
-                                            >
-                                                +{' '}
-                                                {showMoreGroups
-                                                    ? 'mniej'
-                                                    : 'więcej'}
-                                            </button>
-                                        </li>
-                                    )}
-                                </ul>
-                            )}
-                        </section>
-
-                        {/* Filter Criteria */}
-                        <section className="versum-secondarynav__section">
-                            <h4>WYBIERZ KRYTERIA</h4>
-                            <ul>
-                                {(showMoreCriteria
-                                    ? FILTER_CRITERIA
-                                    : FILTER_CRITERIA.slice(0, 3)
-                                ).map((criterion) => {
-                                    const isActive =
-                                        activeCriteria === criterion.id ||
-                                        (criterion.id === 'has_visit' &&
-                                            filters.hasUpcomingVisit) ||
-                                        (criterion.id === 'used_services' &&
-                                            filters.serviceId !== undefined) ||
-                                        (criterion.id === 'by_employee' &&
-                                            filters.employeeId !== undefined);
-                                    return (
-                                        <li
-                                            key={criterion.id}
-                                            className={
-                                                isActive
-                                                    ? 'is-active'
-                                                    : undefined
-                                            }
-                                        >
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleCriteriaClick(
-                                                        criterion.id,
-                                                    )
-                                                }
-                                                className="versum-secondarynav__item-btn"
-                                            >
-                                                {criterion.label}
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                                <li>
-                                    <button
-                                        onClick={() =>
-                                            setShowMoreCriteria(
-                                                !showMoreCriteria,
-                                            )
-                                        }
-                                        className="versum-secondarynav__more-btn"
-                                    >
-                                        +{' '}
-                                        {showMoreCriteria ? 'mniej' : 'więcej'}
-                                    </button>
-                                </li>
-                            </ul>
-                        </section>
-
-                        {/* Tags */}
-                        {tags && tags.length > 0 && (
-                            <section className="versum-secondarynav__section">
-                                <h4>TAGI</h4>
-                                <div className="versum-secondarynav__tags">
-                                    {tags.slice(0, 10).map((tag) => (
-                                        <button
-                                            key={tag.id}
-                                            onClick={() =>
-                                                setFilters((prev) => ({
-                                                    ...prev,
-                                                    tagId:
-                                                        prev.tagId === tag.id
-                                                            ? undefined
-                                                            : tag.id,
-                                                    page: 1,
-                                                }))
-                                            }
-                                            className={`versum-tag ${
-                                                filters.tagId === tag.id
-                                                    ? 'is-active'
-                                                    : ''
-                                            }`}
-                                            style={
-                                                tag.color &&
-                                                filters.tagId !== tag.id
-                                                    ? {
-                                                          backgroundColor:
-                                                              tag.color,
-                                                          color: '#fff',
-                                                      }
-                                                    : undefined
-                                            }
-                                        >
-                                            {tag.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-                    </aside>
+                    {/* Left Sidebar logic moved to ClientsNav via DashboardLayout */}
 
                     {/* Main Content */}
-                    <main className="flex flex-1 flex-col overflow-hidden">
+                    <main className="flex-1 overflow-auto bg-gray-50 p-6">
                         {/* Header */}
                         <header className="border-b border-gray-200 bg-white px-6 py-4">
                             <nav className="mb-3 flex items-center gap-2 text-sm text-gray-500">
@@ -443,6 +174,7 @@ function ClientsPageContent() {
                                         }));
                                     }}
                                     placeholder="wyszukaj klienta"
+                                    aria-label="Wyszukaj klienta"
                                 />
                                 <select
                                     className="rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -452,6 +184,7 @@ function ClientsPageContent() {
                                             e.target.value as SortOption,
                                         )
                                     }
+                                    aria-label="Sortowanie klientów"
                                 >
                                     <option value="name_asc">
                                         nazwisko: od A do Z
@@ -500,6 +233,7 @@ function ClientsPageContent() {
                                                     )
                                                 }
                                                 className="rounded border-gray-300"
+                                                aria-label="Zaznacz wszystkich klientów"
                                             />
                                             zaznacz wszystkich (
                                             {selectedIds.size})
@@ -507,18 +241,46 @@ function ClientsPageContent() {
                                     </div>
 
                                     {/* Customer List */}
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <tbody className="divide-y divide-gray-200 bg-white">
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th className="w-10">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            customerRows.length >
+                                                                0 &&
+                                                            selectedIds.size ===
+                                                                customerRows.length
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleSelectAll(
+                                                                e.target
+                                                                    .checked,
+                                                            )
+                                                        }
+                                                        className="rounded border-gray-300"
+                                                        aria-label="Zaznacz wszystkich klientów na stronie"
+                                                    />
+                                                </th>
+                                                <th>Klient</th>
+                                                <th>Email</th>
+                                                <th>Telefon</th>
+                                                <th>W systemie od</th>
+                                                <th className="w-10"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
                                             {customerRows.map((customer) => (
                                                 <tr
                                                     key={customer.id}
-                                                    className="cursor-pointer hover:bg-gray-50"
+                                                    className="cursor-pointer hover:bg-cyan-50"
                                                     onClick={() =>
                                                         handleRowClick(customer)
                                                     }
                                                 >
                                                     <td
-                                                        className="w-10 px-4 py-3"
+                                                        className="w-10"
                                                         onClick={(e) =>
                                                             e.stopPropagation()
                                                         }
@@ -536,37 +298,32 @@ function ClientsPageContent() {
                                                                 )
                                                             }
                                                             className="rounded border-gray-300"
+                                                            aria-label={`Zaznacz klienta ${customer.name}`}
                                                         />
                                                     </td>
-                                                    <td className="px-4 py-3">
-                                                        <span className="font-medium text-cyan-600 hover:text-cyan-700">
+                                                    <td>
+                                                        <span className="font-semibold text-cyan-600 hover:underline">
                                                             {customer.name}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-3 text-gray-500">
+                                                    <td>
                                                         {customer.email ? (
                                                             <a
                                                                 href={`mailto:${customer.email}`}
                                                                 onClick={(e) =>
                                                                     e.stopPropagation()
                                                                 }
-                                                                className="text-gray-400 hover:text-cyan-600"
-                                                                title={
-                                                                    customer.email
-                                                                }
+                                                                className="text-gray-600 hover:text-cyan-600"
                                                             >
-                                                                ✉️
+                                                                {customer.email}
                                                             </a>
                                                         ) : (
-                                                            <span
-                                                                className="text-gray-300"
-                                                                title="brak email"
-                                                            >
-                                                                ✉️
+                                                            <span className="text-gray-300">
+                                                                -
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 py-3">
+                                                    <td>
                                                         {customer.phone ? (
                                                             <a
                                                                 href={`tel:${customer.phone}`}
@@ -575,23 +332,21 @@ function ClientsPageContent() {
                                                                 }
                                                                 className="text-gray-600 hover:text-cyan-600"
                                                             >
-                                                                📞{' '}
                                                                 {customer.phone}
                                                             </a>
                                                         ) : (
-                                                            <span className="text-gray-400">
-                                                                📞 nie podano
+                                                            <span className="text-gray-300">
+                                                                -
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm text-gray-500">
-                                                        📅{' '}
+                                                    <td>
                                                         {formatShortDate(
                                                             customer.createdAt,
                                                         )}
                                                     </td>
                                                     <td
-                                                        className="w-10 px-4 py-3"
+                                                        className="w-10"
                                                         onClick={(e) =>
                                                             e.stopPropagation()
                                                         }
@@ -602,6 +357,7 @@ function ClientsPageContent() {
                                                             }
                                                             className="text-gray-400 hover:text-cyan-600"
                                                             prefetch={false}
+                                                            aria-label={`Edytuj klienta ${customer.name}`}
                                                         >
                                                             ✏️
                                                         </Link>
@@ -631,6 +387,7 @@ function ClientsPageContent() {
                                             page: 1,
                                         }))
                                     }
+                                    aria-label="Liczba pozycji na stronę"
                                 >
                                     <option value="10">10</option>
                                     <option value="20">20</option>
@@ -683,7 +440,7 @@ function ClientsPageContent() {
                 {showCreateModal && (
                     <CreateCustomerModal
                         onClose={() => setShowCreateModal(false)}
-                        onCreate={async (payload) => {
+                        onCreate={async (payload: CustomerDraft) => {
                             const name =
                                 `${payload.firstName} ${payload.lastName}`.trim();
                             await createCustomer.mutateAsync({
@@ -698,366 +455,7 @@ function ClientsPageContent() {
                         submitting={createCustomer.isPending}
                     />
                 )}
-
-                {/* Create Group Modal */}
-                {showCreateGroupModal && (
-                    <CreateGroupModal
-                        onClose={() => setShowCreateGroupModal(false)}
-                        onCreate={async (payload) => {
-                            await createGroup.mutateAsync(payload);
-                            setShowCreateGroupModal(false);
-                        }}
-                        submitting={createGroup.isPending}
-                    />
-                )}
-
-                {/* Service Selector Modal */}
-                {showServiceSelector && (
-                    <SelectorModal
-                        title="Wybierz usługę"
-                        items={
-                            services?.map((s) => ({
-                                id: s.id,
-                                name: s.name,
-                            })) ?? []
-                        }
-                        onSelect={handleServiceSelect}
-                        onClose={() => {
-                            setShowServiceSelector(false);
-                            if (!filters.serviceId) {
-                                setActiveCriteria(null);
-                            }
-                        }}
-                    />
-                )}
-
-                {/* Employee Selector Modal */}
-                {showEmployeeSelector && (
-                    <SelectorModal
-                        title="Wybierz pracownika"
-                        items={
-                            employees?.map((e) => ({
-                                id: e.id,
-                                name: e.name,
-                            })) ?? []
-                        }
-                        onSelect={handleEmployeeSelect}
-                        onClose={() => {
-                            setShowEmployeeSelector(false);
-                            if (!filters.employeeId) {
-                                setActiveCriteria(null);
-                            }
-                        }}
-                    />
-                )}
             </DashboardLayout>
         </RouteGuard>
-    );
-}
-
-function CreateCustomerModal({
-    onClose,
-    onCreate,
-    submitting,
-}: {
-    onClose: () => void;
-    onCreate: (payload: CustomerDraft) => Promise<void>;
-    submitting: boolean;
-}) {
-    const [form, setForm] = useState<CustomerDraft>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-    });
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        await onCreate(form);
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <form
-                className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl"
-                onSubmit={(event) => {
-                    void handleSubmit(event);
-                }}
-            >
-                <h2 className="mb-4 text-lg font-semibold text-gray-800">
-                    👤 Dodaj klienta
-                </h2>
-                <div className="grid gap-4">
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Imię
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.firstName}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    firstName: event.target.value,
-                                }))
-                            }
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Nazwisko
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.lastName}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    lastName: event.target.value,
-                                }))
-                            }
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Email
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            type="email"
-                            value={form.email}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    email: event.target.value,
-                                }))
-                            }
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Telefon
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.phone}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    phone: event.target.value,
-                                }))
-                            }
-                        />
-                    </div>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        onClick={onClose}
-                    >
-                        Anuluj
-                    </button>
-                    <button
-                        type="submit"
-                        className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
-                        disabled={submitting}
-                    >
-                        {submitting ? 'Zapisywanie...' : 'Zapisz'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-}
-
-function CreateGroupModal({
-    onClose,
-    onCreate,
-    submitting,
-}: {
-    onClose: () => void;
-    onCreate: (payload: GroupDraft) => Promise<void>;
-    submitting: boolean;
-}) {
-    const [form, setForm] = useState<GroupDraft>({
-        name: '',
-        description: '',
-        color: '#06b6d4',
-    });
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        await onCreate(form);
-    };
-
-    const colorOptions = [
-        '#06b6d4', // cyan
-        '#10b981', // green
-        '#f59e0b', // amber
-        '#ef4444', // red
-        '#8b5cf6', // purple
-        '#ec4899', // pink
-        '#6366f1', // indigo
-        '#64748b', // slate
-    ];
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <form
-                className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl"
-                onSubmit={(event) => {
-                    void handleSubmit(event);
-                }}
-            >
-                <h2 className="mb-4 text-lg font-semibold text-gray-800">
-                    Nowa grupa klientów
-                </h2>
-                <div className="grid gap-4">
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Nazwa grupy
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.name}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    name: event.target.value,
-                                }))
-                            }
-                            placeholder="np. VIP, Stali klienci"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Opis (opcjonalnie)
-                        </label>
-                        <textarea
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.description}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    description: event.target.value,
-                                }))
-                            }
-                            placeholder="Krótki opis grupy"
-                            rows={2}
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Kolor
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {colorOptions.map((color) => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() =>
-                                        setForm((prev) => ({ ...prev, color }))
-                                    }
-                                    className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                                        form.color === color
-                                            ? 'border-gray-800 ring-2 ring-gray-300'
-                                            : 'border-transparent'
-                                    }`}
-                                    style={{ backgroundColor: color }}
-                                    title={color}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        onClick={onClose}
-                    >
-                        Anuluj
-                    </button>
-                    <button
-                        type="submit"
-                        className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
-                        disabled={submitting || !form.name.trim()}
-                    >
-                        {submitting ? 'Zapisywanie...' : 'Utwórz grupę'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-}
-
-function SelectorModal({
-    title,
-    items,
-    onSelect,
-    onClose,
-}: {
-    title: string;
-    items: Array<{ id: number; name: string }>;
-    onSelect: (id: number) => void;
-    onClose: () => void;
-}) {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredItems = items.filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl">
-                <div className="border-b border-gray-200 p-4">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                        {title}
-                    </h2>
-                    <input
-                        type="text"
-                        className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                        placeholder="Szukaj..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="max-h-64 overflow-y-auto p-2">
-                    {filteredItems.length === 0 ? (
-                        <p className="p-4 text-center text-sm text-gray-500">
-                            Brak wyników
-                        </p>
-                    ) : (
-                        <ul className="space-y-1">
-                            {filteredItems.map((item) => (
-                                <li key={item.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => onSelect(item.id)}
-                                        className="w-full rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                    >
-                                        {item.name}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-                <div className="border-t border-gray-200 p-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                        Anuluj
-                    </button>
-                </div>
-            </div>
-        </div>
     );
 }
