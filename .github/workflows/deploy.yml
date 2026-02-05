@@ -474,8 +474,9 @@ jobs:
           # Copy app.js (Passenger Entry Point)
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
-             
-          # NOTE: app.js already handles Passenger/host binding in-repo.
+          fi
+          if [ -f "$TARGET_APP/app.cjs" ]; then
+             cp "$TARGET_APP/app.cjs" deploy_bundle/
           fi
 
           # FIX STATIC ASSETS (Passenger 404s)
@@ -556,6 +557,9 @@ jobs:
           # Copy app.js (Passenger Entry Point)
           if [ -f "$TARGET_APP/app.js" ]; then
              cp "$TARGET_APP/app.js" deploy_bundle/
+          fi
+          if [ -f "$TARGET_APP/app.cjs" ]; then
+             cp "$TARGET_APP/app.cjs" deploy_bundle/
           fi
 
           # FIX STATIC ASSETS (Passenger 404s)
