@@ -62,7 +62,7 @@ function ServicesPageContent() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:services">
-            <DashboardLayout>
+            <DashboardLayout pageTitle="Usługi" secondaryNav={<ServicesNav />}>
                 <div className="versum-page" data-testid="services-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">Usługi</h1>

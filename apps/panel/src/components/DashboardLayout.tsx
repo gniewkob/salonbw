@@ -9,6 +9,8 @@ import VersumShell from '@/components/versum/VersumShell';
 
 interface Props {
     children: ReactNode;
+    pageTitle?: string;
+    secondaryNav?: ReactNode;
 }
 
 interface SidebarProps {
@@ -43,12 +45,20 @@ const AdminSidebar: ComponentType<SidebarProps> =
               .default as ComponentType<SidebarProps>)
         : dynamic<SidebarProps>(() => import('./sidebars/AdminSidebarMenu'));
 
-export default function DashboardLayout({ children }: Props) {
+export default function DashboardLayout({
+    children,
+    pageTitle,
+    secondaryNav,
+}: Props) {
     const [menuOpen, setMenuOpen] = useState(false);
     const { role } = useAuth();
 
     if (role === 'admin' || role === 'employee' || role === 'receptionist') {
-        return <VersumShell role={role}>{children}</VersumShell>;
+        return (
+            <VersumShell role={role} secondaryNav={secondaryNav}>
+                {children}
+            </VersumShell>
+        );
     }
 
     const map: Record<Role, ComponentType<SidebarProps>> = {
