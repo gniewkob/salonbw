@@ -228,6 +228,7 @@ export default function LoginPage() {
                         Don&apos;t have an account?{' '}
                         <Link
                             href="/auth/register"
+                            prefetch={false}
                             className="font-semibold text-indigo-600 hover:text-indigo-500"
                         >
                             Register
