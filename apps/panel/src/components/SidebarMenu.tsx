@@ -29,6 +29,7 @@ export default function SidebarMenu({ open, onClose, links, onLogout }: Props) {
                     <Link
                         key={link.href}
                         href={link.href}
+                        prefetch={false}
                         className="block rounded px-2 py-1 hover:bg-gray-700"
                         data-testid={link.testId}
                     >
