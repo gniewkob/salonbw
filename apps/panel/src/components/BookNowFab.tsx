@@ -18,6 +18,7 @@ export default function BookNowFab() {
         <div className="fixed bottom-4 right-4 z-50 md:hidden">
             <Link
                 href={'/appointments' as Route}
+                prefetch={false}
                 onClick={() => trackEvent('begin_checkout', { cta: 'fab' })}
                 className="px-4 py-3 rounded-full shadow-lg bg-blue-600 text-white font-semibold"
                 aria-label="Book an appointment"
