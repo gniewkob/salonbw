@@ -144,143 +144,103 @@ function ClientsPageContent() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:clients"
         >
-            <DashboardLayout>
-                <div className="flex h-full" data-testid="clients-page">
-                    {/* Left Sidebar logic moved to ClientsNav via DashboardLayout */}
+            <DashboardLayout pageTitle="Klienci">
+                <div className="versum-page" data-testid="clients-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">Klienci</h1>
+                    </header>
 
-                    {/* Main Content */}
-                    <main className="flex-1 overflow-auto bg-gray-50 p-6">
-                        {/* Header */}
-                        <header className="border-b border-gray-200 bg-white px-6 py-4">
-                            <nav className="mb-3 flex items-center gap-2 text-sm text-gray-500">
-                                <span className="font-medium text-gray-700">
-                                    👥 Klienci
-                                </span>
-                                <span>/</span>
-                                <span>Lista klientów</span>
-                            </nav>
+                    <div className="versum-page__toolbar">
+                        <input
+                            className="versum-input w-[250px]"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    page: 1,
+                                }));
+                            }}
+                            placeholder="wyszukaj klienta"
+                            aria-label="Wyszukaj klienta"
+                        />
+                        <select
+                            className="versum-select"
+                            value={sortOption}
+                            onChange={(e) =>
+                                setSortOption(e.target.value as SortOption)
+                            }
+                            aria-label="Sortowanie klientów"
+                        >
+                            <option value="name_asc">
+                                nazwisko: od A do Z
+                            </option>
+                            <option value="name_desc">
+                                nazwisko: od Z do A
+                            </option>
+                            <option value="created_desc">
+                                data dodania: najnowsi
+                            </option>
+                            <option value="created_asc">
+                                data dodania: najstarsi
+                            </option>
+                        </select>
+                        <button
+                            type="button"
+                            className="versum-button"
+                            onClick={() => setShowCreateModal(true)}
+                        >
+                            dodaj klienta
+                        </button>
+                    </div>
 
-                            {/* Toolbar */}
-                            <div className="flex items-center gap-4">
-                                <input
-                                    type="text"
-                                    className="w-64 rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value);
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            page: 1,
-                                        }));
-                                    }}
-                                    placeholder="wyszukaj klienta"
-                                    aria-label="Wyszukaj klienta"
-                                />
-                                <select
-                                    className="rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                                    value={sortOption}
-                                    onChange={(e) =>
-                                        setSortOption(
-                                            e.target.value as SortOption,
-                                        )
-                                    }
-                                    aria-label="Sortowanie klientów"
-                                >
-                                    <option value="name_asc">
-                                        nazwisko: od A do Z
-                                    </option>
-                                    <option value="name_desc">
-                                        nazwisko: od Z do A
-                                    </option>
-                                    <option value="created_desc">
-                                        data dodania: najnowsi
-                                    </option>
-                                    <option value="created_asc">
-                                        data dodania: najstarsi
-                                    </option>
-                                </select>
-                                <button
-                                    type="button"
-                                    className="ml-auto rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
-                                    onClick={() => setShowCreateModal(true)}
-                                >
-                                    👤 Dodaj klienta
-                                </button>
-                            </div>
-                        </header>
-
-                        {/* Table */}
-                        <div className="flex-1 overflow-auto">
-                            {isLoading ? (
-                                <div className="flex h-full items-center justify-center text-gray-500">
-                                    Ładowanie klientów...
+                    {isLoading ? (
+                        <div className="p-4 text-sm versum-muted">
+                            Ładowanie klientów...
+                        </div>
+                    ) : (
+                        <>
+                            <div className="versum-table-wrap">
+                                <div className="px-2 py-1.5 bg-gray-50 border-b border-gray-200">
+                                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                customerRows.length > 0 &&
+                                                selectedIds.size ===
+                                                    customerRows.length
+                                            }
+                                            onChange={(e) =>
+                                                handleSelectAll(
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            className="rounded border-gray-300"
+                                        />
+                                        zaznacz wszystkich ({selectedIds.size})
+                                    </label>
                                 </div>
-                            ) : (
-                                <div className="min-w-full">
-                                    {/* Select All */}
-                                    <div className="border-b border-gray-200 bg-gray-50 px-6 py-2">
-                                        <label className="flex items-center gap-2 text-sm text-gray-600">
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    customerRows.length > 0 &&
-                                                    selectedIds.size ===
-                                                        customerRows.length
-                                                }
-                                                onChange={(e) =>
-                                                    handleSelectAll(
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                                className="rounded border-gray-300"
-                                                aria-label="Zaznacz wszystkich klientów"
-                                            />
-                                            zaznacz wszystkich (
-                                            {selectedIds.size})
-                                        </label>
-                                    </div>
-
-                                    {/* Customer List */}
-                                    <table className="versum-table">
-                                        <thead>
-                                            <tr>
-                                                <th className="w-10">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={
-                                                            customerRows.length >
-                                                                0 &&
-                                                            selectedIds.size ===
-                                                                customerRows.length
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleSelectAll(
-                                                                e.target
-                                                                    .checked,
-                                                            )
-                                                        }
-                                                        className="rounded border-gray-300"
-                                                        aria-label="Zaznacz wszystkich klientów na stronie"
-                                                    />
-                                                </th>
-                                                <th>Klient</th>
-                                                <th>Email</th>
-                                                <th>Telefon</th>
-                                                <th>W systemie od</th>
-                                                <th className="w-10"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {customerRows.map((customer) => (
+                                <table className="versum-table">
+                                    <thead>
+                                        <tr>
+                                            <th className="w-8"></th>
+                                            <th>Klient</th>
+                                            <th>Telefon</th>
+                                            <th>Ostatnia wizyta</th>
+                                            <th className="w-8"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {customerRows.length > 0 ? (
+                                            customerRows.map((customer) => (
                                                 <tr
                                                     key={customer.id}
-                                                    className="cursor-pointer hover:bg-cyan-50"
+                                                    className="cursor-pointer"
                                                     onClick={() =>
                                                         handleRowClick(customer)
                                                     }
                                                 >
                                                     <td
-                                                        className="w-10"
                                                         onClick={(e) =>
                                                             e.stopPropagation()
                                                         }
@@ -298,30 +258,20 @@ function ClientsPageContent() {
                                                                 )
                                                             }
                                                             className="rounded border-gray-300"
-                                                            aria-label={`Zaznacz klienta ${customer.name}`}
                                                         />
                                                     </td>
                                                     <td>
-                                                        <span className="font-semibold text-cyan-600 hover:underline">
+                                                        <Link
+                                                            href={
+                                                                `/clients/${customer.id}` as Route
+                                                            }
+                                                            className="text-sky-600 hover:underline font-medium"
+                                                            onClick={(e) =>
+                                                                e.stopPropagation()
+                                                            }
+                                                        >
                                                             {customer.name}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        {customer.email ? (
-                                                            <a
-                                                                href={`mailto:${customer.email}`}
-                                                                onClick={(e) =>
-                                                                    e.stopPropagation()
-                                                                }
-                                                                className="text-gray-600 hover:text-cyan-600"
-                                                            >
-                                                                {customer.email}
-                                                            </a>
-                                                        ) : (
-                                                            <span className="text-gray-300">
-                                                                -
-                                                            </span>
-                                                        )}
+                                                        </Link>
                                                     </td>
                                                     <td>
                                                         {customer.phone ? (
@@ -330,13 +280,13 @@ function ClientsPageContent() {
                                                                 onClick={(e) =>
                                                                     e.stopPropagation()
                                                                 }
-                                                                className="text-gray-600 hover:text-cyan-600"
+                                                                className="hover:text-sky-600"
                                                             >
                                                                 {customer.phone}
                                                             </a>
                                                         ) : (
-                                                            <span className="text-gray-300">
-                                                                -
+                                                            <span className="versum-muted">
+                                                                nie podano
                                                             </span>
                                                         )}
                                                     </td>
@@ -346,7 +296,6 @@ function ClientsPageContent() {
                                                         )}
                                                     </td>
                                                     <td
-                                                        className="w-10"
                                                         onClick={(e) =>
                                                             e.stopPropagation()
                                                         }
@@ -355,88 +304,93 @@ function ClientsPageContent() {
                                                             href={
                                                                 `/clients/${customer.id}/edit` as Route
                                                             }
-                                                            className="text-gray-400 hover:text-cyan-600"
+                                                            className="versum-muted hover:text-sky-600"
                                                             prefetch={false}
-                                                            aria-label={`Edytuj klienta ${customer.name}`}
                                                         >
                                                             ✏️
                                                         </Link>
                                                     </td>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Pagination */}
-                        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 text-sm">
-                            <span className="text-gray-600">
-                                Pozycje od{' '}
-                                {Math.min((page - 1) * limit + 1, total)} do{' '}
-                                {Math.min(page * limit, total)} z {total} | na
-                                stronie{' '}
-                                <select
-                                    className="ml-1 rounded border border-gray-300 px-2 py-1 text-sm"
-                                    value={limit}
-                                    onChange={(e) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            limit: Number(e.target.value),
-                                            page: 1,
-                                        }))
-                                    }
-                                    aria-label="Liczba pozycji na stronę"
-                                >
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    className="rounded border border-gray-300 px-3 py-1 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                    disabled={page <= 1}
-                                    onClick={() =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            page: Math.max(
-                                                (prev.page ?? 1) - 1,
-                                                1,
-                                            ),
-                                        }))
-                                    }
-                                >
-                                    ‹
-                                </button>
-                                <span className="px-2">
-                                    {page} z {totalPages}
-                                </span>
-                                <button
-                                    type="button"
-                                    className="rounded border border-gray-300 px-3 py-1 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                    disabled={page >= totalPages}
-                                    onClick={() =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            page: Math.min(
-                                                (prev.page ?? 1) + 1,
-                                                totalPages,
-                                            ),
-                                        }))
-                                    }
-                                >
-                                    ›
-                                </button>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan={5}
+                                                    className="p-4 text-center versum-muted"
+                                                >
+                                                    Brak klientów spełniających
+                                                    kryteria
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                    </main>
+                            <div className="border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600 flex items-center justify-between">
+                                <span>
+                                    Pozycje od{' '}
+                                    {Math.min((page - 1) * limit + 1, total)} do{' '}
+                                    {Math.min(page * limit, total)} z {total} |
+                                    na stronie{' '}
+                                    <select
+                                        className="versum-select ml-1"
+                                        value={limit}
+                                        onChange={(e) =>
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                limit: Number(e.target.value),
+                                                page: 1,
+                                            }))
+                                        }
+                                    >
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        className="versum-button versum-button--light px-2"
+                                        disabled={page <= 1}
+                                        onClick={() =>
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                page: Math.max(
+                                                    (prev.page ?? 1) - 1,
+                                                    1,
+                                                ),
+                                            }))
+                                        }
+                                    >
+                                        ‹
+                                    </button>
+                                    <span className="px-2">
+                                        {page} z {totalPages}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="versum-button versum-button--light px-2"
+                                        disabled={page >= totalPages}
+                                        onClick={() =>
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                page: Math.min(
+                                                    (prev.page ?? 1) + 1,
+                                                    totalPages,
+                                                ),
+                                            }))
+                                        }
+                                    >
+                                        ›
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {/* Create Customer Modal */}
                 {showCreateModal && (
                     <CreateCustomerModal
                         onClose={() => setShowCreateModal(false)}

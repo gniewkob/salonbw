@@ -46,7 +46,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'magazyn',
         iconId: 'svg-stock-nav',
         permission: 'nav:products',
-        secondaryNav: false, // Page has its own sidebar with dynamic categories
+        secondaryNav: true,
         wideContent: true,
     },
     {
