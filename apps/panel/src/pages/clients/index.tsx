@@ -220,41 +220,39 @@ function ClientsPageContent() {
         >
             <DashboardLayout>
                 <div className="flex h-full" data-testid="clients-page">
-                    {/* Left Sidebar */}
-                    <aside className="w-56 flex-shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50">
+                    {/* Left Sidebar - Versum style */}
+                    <aside className="versum-secondarynav">
                         {/* Customer Groups */}
-                        <div className="p-4">
-                            <div className="mb-3 flex items-center justify-between">
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                    Grupy klientów
-                                </h4>
+                        <section className="versum-secondarynav__section">
+                            <h4>
+                                GRUPY KLIENTÓW
                                 <button
                                     type="button"
                                     onClick={() =>
                                         setShowCreateGroupModal(true)
                                     }
-                                    className="text-xs text-cyan-600 hover:text-cyan-700"
+                                    className="versum-secondarynav__add-btn"
                                     title="Dodaj grupę"
                                 >
                                     + dodaj
                                 </button>
-                            </div>
-                            <ul className="space-y-1">
+                            </h4>
+                            <ul>
                                 {QUICK_GROUPS.map((group) => (
-                                    <li key={group.id}>
+                                    <li
+                                        key={group.id}
+                                        className={
+                                            activeQuickGroup === group.id
+                                                ? 'is-active'
+                                                : undefined
+                                        }
+                                    >
                                         <button
                                             onClick={() =>
                                                 handleQuickGroupClick(group.id)
                                             }
-                                            className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
-                                                activeQuickGroup === group.id
-                                                    ? 'bg-cyan-100 font-medium text-cyan-700'
-                                                    : 'text-gray-700 hover:bg-gray-100'
-                                            }`}
+                                            className="versum-secondarynav__item-btn"
                                         >
-                                            <span className="text-base">
-                                                {group.icon}
-                                            </span>
                                             {group.label}
                                         </button>
                                     </li>
@@ -263,37 +261,38 @@ function ClientsPageContent() {
 
                             {/* Custom Groups */}
                             {groups && groups.length > 0 && (
-                                <ul className="mt-2 space-y-1 border-t border-gray-200 pt-2">
+                                <ul className="versum-secondarynav__sublist">
                                     {(showMoreGroups
                                         ? groups
                                         : groups.slice(0, 3)
                                     ).map((group) => (
-                                        <li key={group.id}>
+                                        <li
+                                            key={group.id}
+                                            className={
+                                                filters.groupId === group.id
+                                                    ? 'is-active'
+                                                    : undefined
+                                            }
+                                        >
                                             <button
                                                 onClick={() =>
                                                     handleGroupClick(group.id)
                                                 }
-                                                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
-                                                    filters.groupId === group.id
-                                                        ? 'bg-cyan-100 font-medium text-cyan-700'
-                                                        : 'text-gray-700 hover:bg-gray-100'
-                                                }`}
+                                                className="versum-secondarynav__item-btn"
                                             >
                                                 {group.color && (
                                                     <span
-                                                        className="h-2 w-2 rounded-full"
+                                                        className="versum-chip"
                                                         style={{
                                                             backgroundColor:
                                                                 group.color,
                                                         }}
                                                     />
                                                 )}
-                                                <span className="flex-1 truncate">
-                                                    {group.name}
-                                                </span>
+                                                {group.name}
                                                 {group.memberCount !==
                                                     undefined && (
-                                                    <span className="text-xs text-gray-400">
+                                                    <span className="versum-muted ml-auto">
                                                         {group.memberCount}
                                                     </span>
                                                 )}
@@ -308,9 +307,9 @@ function ClientsPageContent() {
                                                         !showMoreGroups,
                                                     )
                                                 }
-                                                className="flex items-center gap-1 px-2 py-1 text-sm text-cyan-600 hover:text-cyan-700"
+                                                className="versum-secondarynav__more-btn"
                                             >
-                                                <span>+</span>
+                                                +{' '}
                                                 {showMoreGroups
                                                     ? 'mniej'
                                                     : 'więcej'}
@@ -319,14 +318,12 @@ function ClientsPageContent() {
                                     )}
                                 </ul>
                             )}
-                        </div>
+                        </section>
 
                         {/* Filter Criteria */}
-                        <div className="border-t border-gray-200 p-4">
-                            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                Wybierz kryteria
-                            </h4>
-                            <ul className="space-y-1">
+                        <section className="versum-secondarynav__section">
+                            <h4>WYBIERZ KRYTERIA</h4>
+                            <ul>
                                 {(showMoreCriteria
                                     ? FILTER_CRITERIA
                                     : FILTER_CRITERIA.slice(0, 3)
@@ -340,7 +337,14 @@ function ClientsPageContent() {
                                         (criterion.id === 'by_employee' &&
                                             filters.employeeId !== undefined);
                                     return (
-                                        <li key={criterion.id}>
+                                        <li
+                                            key={criterion.id}
+                                            className={
+                                                isActive
+                                                    ? 'is-active'
+                                                    : undefined
+                                            }
+                                        >
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -348,15 +352,8 @@ function ClientsPageContent() {
                                                         criterion.id,
                                                     )
                                                 }
-                                                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
-                                                    isActive
-                                                        ? 'bg-cyan-100 font-medium text-cyan-700'
-                                                        : 'text-gray-700 hover:bg-gray-100'
-                                                }`}
+                                                className="versum-secondarynav__item-btn"
                                             >
-                                                <span className="text-base">
-                                                    {criterion.icon}
-                                                </span>
                                                 {criterion.label}
                                             </button>
                                         </li>
@@ -369,22 +366,20 @@ function ClientsPageContent() {
                                                 !showMoreCriteria,
                                             )
                                         }
-                                        className="flex items-center gap-1 px-2 py-1 text-sm text-cyan-600 hover:text-cyan-700"
+                                        className="versum-secondarynav__more-btn"
                                     >
-                                        <span>+</span>
+                                        +{' '}
                                         {showMoreCriteria ? 'mniej' : 'więcej'}
                                     </button>
                                 </li>
                             </ul>
-                        </div>
+                        </section>
 
                         {/* Tags */}
                         {tags && tags.length > 0 && (
-                            <div className="border-t border-gray-200 p-4">
-                                <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                    Tagi
-                                </h4>
-                                <div className="flex flex-wrap gap-1">
+                            <section className="versum-secondarynav__section">
+                                <h4>TAGI</h4>
+                                <div className="versum-secondarynav__tags">
                                     {tags.slice(0, 10).map((tag) => (
                                         <button
                                             key={tag.id}
@@ -398,10 +393,10 @@ function ClientsPageContent() {
                                                     page: 1,
                                                 }))
                                             }
-                                            className={`rounded px-2 py-0.5 text-xs transition-colors ${
+                                            className={`versum-tag ${
                                                 filters.tagId === tag.id
-                                                    ? 'bg-cyan-600 text-white'
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                    ? 'is-active'
+                                                    : ''
                                             }`}
                                             style={
                                                 tag.color &&
@@ -418,7 +413,7 @@ function ClientsPageContent() {
                                         </button>
                                     ))}
                                 </div>
-                            </div>
+                            </section>
                         )}
                     </aside>
 

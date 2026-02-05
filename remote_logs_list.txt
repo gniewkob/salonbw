@@ -1,5 +1,0 @@
-total 3852
-drwxr-xr-x  2 vetternkraft 1000        4 Oct 23 09:39 .
-drwx--x--x  3 vetternkraft 1000        4 Oct 21 15:16 ..
-lrwxr-xr-x  1 vetternkraft 1000       62 Oct 21 15:13 access -> /usr/local/devil/logs/httpd/users/vetternkraft/api.salon-bw.pl
--rw-r--r--  1 vetternkraft 1000 22109304 Dec 16 13:04 error.log
