@@ -27,18 +27,15 @@ interface WarehouseLayoutProps {
     activeTab: WarehouseMainTab;
     inventoryActive?: boolean;
     actions?: ReactNode;
-
     children: ReactNode;
 }
 
 export default function WarehouseLayout({
     pageTitle,
     heading,
-    breadcrumb,
     activeTab,
     inventoryActive = false,
     actions,
-
     children,
 }: WarehouseLayoutProps) {
     return (
@@ -46,49 +43,46 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
-            <DashboardLayout>
-                <div className="rounded border border-gray-200 bg-white">
-                    <div className="border-b border-gray-200 px-4 py-4">
-                        <h1 className="text-[34px] leading-none font-semibold text-gray-500">
-                            {heading}
-                        </h1>
-                        {breadcrumb ? (
-                            <p className="mt-2 text-sm text-gray-500">
-                                {breadcrumb}
-                            </p>
-                        ) : null}
-                        <div className="mt-5 flex items-center justify-between">
-                            <nav className="flex items-center gap-5">
-                                {tabConfig.map((tab) => (
-                                    <Link
-                                        key={tab.id}
-                                        href={tab.href}
-                                        className={`border-b-2 pb-2 text-[12px] font-semibold uppercase tracking-wide ${
-                                            activeTab === tab.id
-                                                ? 'border-sky-500 text-sky-500'
-                                                : 'border-transparent text-gray-700 hover:text-sky-500'
-                                        }`}
-                                    >
-                                        {tab.label}
-                                    </Link>
-                                ))}
-                            </nav>
+            <DashboardLayout pageTitle={heading}>
+                <div className="versum-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">{heading}</h1>
+                    </header>
+
+                    <div className="versum-page__toolbar">
+                        <nav className="flex items-center gap-4">
+                            {tabConfig.map((tab) => (
+                                <Link
+                                    key={tab.id}
+                                    href={tab.href}
+                                    className={`border-b-2 pb-1 text-[11px] font-semibold uppercase tracking-wide ${
+                                        activeTab === tab.id
+                                            ? 'border-sky-500 text-sky-500'
+                                            : 'border-transparent text-gray-600 hover:text-sky-500'
+                                    }`}
+                                >
+                                    {tab.label}
+                                </Link>
+                            ))}
                             <Link
                                 href="/inventory"
-                                className={`border-b-2 pb-2 text-[12px] font-semibold uppercase tracking-wide ${
+                                className={`border-b-2 pb-1 text-[11px] font-semibold uppercase tracking-wide ml-auto ${
                                     inventoryActive
                                         ? 'border-sky-500 text-sky-500'
-                                        : 'border-transparent text-gray-700 hover:text-sky-500'
+                                        : 'border-transparent text-gray-600 hover:text-sky-500'
                                 }`}
                             >
                                 Inwentaryzacja
                             </Link>
-                        </div>
+                        </nav>
+                        {actions ? (
+                            <div className="ml-auto flex items-center gap-2">
+                                {actions}
+                            </div>
+                        ) : null}
                     </div>
-                    {actions ? (
-                        <div className="px-4 py-3 text-right">{actions}</div>
-                    ) : null}
-                    <div className="p-4">{children}</div>
+
+                    {children}
                 </div>
             </DashboardLayout>
         </RouteGuard>
