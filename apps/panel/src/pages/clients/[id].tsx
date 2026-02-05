@@ -55,7 +55,7 @@ export default function CustomerDetailPage() {
                             <span className="font-medium text-gray-700">
                                 {isLoading
                                     ? 'Ładowanie...'
-                                    : customer?.name ?? 'Szczegóły klienta'}
+                                    : (customer?.name ?? 'Szczegóły klienta')}
                             </span>
                         </nav>
                     </header>
