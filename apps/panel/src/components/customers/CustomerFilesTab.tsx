@@ -60,6 +60,7 @@ function formatFileSize(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerFilesTab({ customerId }: Props) {
     const [files] = useState<CustomerFile[]>([]);
     const [filterCategory, setFilterCategory] = useState<FileCategory | 'all'>(
@@ -67,7 +68,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
     );
     const isLoading = false;
 
-    // Placeholder for future API integration
+    // TODO: Integrate with API when backend supports customer files
     // const { data: files, isLoading } = useCustomerFiles(customerId);
     // const uploadFile = useUploadCustomerFile();
     // const deleteFile = useDeleteCustomerFile();

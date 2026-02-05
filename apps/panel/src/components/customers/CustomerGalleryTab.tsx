@@ -16,6 +16,7 @@ interface GalleryImage {
     serviceName?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerGalleryTab({ customerId }: Props) {
     const [images] = useState<GalleryImage[]>([]);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(
@@ -23,7 +24,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
     );
     const isLoading = false;
 
-    // Placeholder for future API integration
+    // TODO: Integrate with API when backend supports customer gallery
     // const { data: images, isLoading } = useCustomerGallery(customerId);
     // const uploadImage = useUploadCustomerImage();
     // const deleteImage = useDeleteCustomerImage();
@@ -109,8 +110,8 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                         Brak zdjęć w galerii klienta.
                     </p>
                     <p className="mt-1 text-sm text-gray-400">
-                        Dodaj zdjęcia efektów zabiegów, aby dokumentować historię
-                        klienta.
+                        Dodaj zdjęcia efektów zabiegów, aby dokumentować
+                        historię klienta.
                     </p>
                     <button
                         onClick={handleUpload}

@@ -36,21 +36,6 @@ const FILTER_CRITERIA = [
     { id: 'by_employee', label: 'obsługiwani przez pracowników', icon: '👤' },
 ] as const;
 
-function formatDate(value: string | undefined) {
-    if (!value) return '-';
-    try {
-        return new Date(value).toLocaleDateString('pl-PL', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch {
-        return '-';
-    }
-}
-
 function formatShortDate(value: string | undefined) {
     if (!value) return '-';
     try {
@@ -266,7 +251,9 @@ function ClientsPageContent() {
                                 <li>
                                     <button
                                         onClick={() =>
-                                            setShowMoreCriteria(!showMoreCriteria)
+                                            setShowMoreCriteria(
+                                                !showMoreCriteria,
+                                            )
                                         }
                                         className="flex items-center gap-1 px-2 py-1 text-sm text-cyan-600 hover:text-cyan-700"
                                     >

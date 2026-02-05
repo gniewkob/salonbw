@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const BACKEND_URL =
-    process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
+const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
+
+// Local API routes that should NOT be proxied to backend
+const LOCAL_ROUTES = new Set(['calendar-embed', 'runtime', 'gallery', '_diag']);
 
 /**
  * Catch-all API proxy that forwards requests to the backend
@@ -13,6 +15,17 @@ export default async function handler(
 ) {
     const { path } = req.query;
     const pathSegments = Array.isArray(path) ? path : [path];
+
+    // Don't proxy local routes - let Next.js handle them
+    const firstSegment = pathSegments[0];
+    if (
+        pathSegments.length === 1 &&
+        firstSegment &&
+        LOCAL_ROUTES.has(firstSegment)
+    ) {
+        res.status(404).json({ error: 'Not found - use direct route' });
+        return;
+    }
     const targetPath = '/' + pathSegments.join('/');
 
     // Read access token from cookie

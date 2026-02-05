@@ -68,6 +68,7 @@ function StarRating({ rating }: { rating: number }) {
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerReviewsTab({ customerId }: Props) {
     const [reviews] = useState<CustomerReview[]>([]);
     const [filterSource, setFilterSource] = useState<ReviewSource | 'all'>(
@@ -75,7 +76,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
     );
     const isLoading = false;
 
-    // Placeholder for future API integration
+    // TODO: Integrate with API when backend supports customer reviews
     // const { data: reviews, isLoading } = useCustomerReviews(customerId);
 
     const filteredReviews =
@@ -156,7 +157,8 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                 <div className="space-y-4">
                     {filteredReviews.map((review) => {
                         const config =
-                            sourceConfig[review.source] || sourceConfig.internal;
+                            sourceConfig[review.source] ||
+                            sourceConfig.internal;
                         return (
                             <div
                                 key={review.id}
@@ -166,7 +168,9 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                 <div className="mb-3 flex items-start justify-between">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <StarRating rating={review.rating} />
+                                            <StarRating
+                                                rating={review.rating}
+                                            />
                                             <span
                                                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${config.color}`}
                                             >
