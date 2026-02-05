@@ -78,6 +78,24 @@ export class CustomerFilterDto {
     @IsDateString()
     noVisitSince?: string;
 
+    @ApiPropertyOptional({ description: 'Filter by service ID (customers who used this service)' })
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    serviceId?: number;
+
+    @ApiPropertyOptional({ description: 'Filter by employee ID (customers served by this employee)' })
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    employeeId?: number;
+
+    @ApiPropertyOptional({ description: 'Has upcoming scheduled visit' })
+    @IsOptional()
+    @IsBoolean()
+    @Type(() => Boolean)
+    hasUpcomingVisit?: boolean;
+
     @ApiPropertyOptional({ description: 'Has SMS consent' })
     @IsOptional()
     @IsBoolean()

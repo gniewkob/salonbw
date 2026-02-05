@@ -13,6 +13,8 @@ import {
     useCustomerGroups,
     useCustomerTags,
 } from '@/hooks/useCustomers';
+import { useServices } from '@/hooks/useServices';
+import { useEmployees } from '@/hooks/useEmployees';
 import type { CustomerFilterParams, Customer } from '@/types';
 
 type CustomerDraft = {
@@ -37,11 +39,17 @@ const QUICK_GROUPS = [
     { id: 'no_online', label: 'Nie rezerwują online', icon: '🚫' },
 ] as const;
 
-const FILTER_CRITERIA = [
+type FilterCriteriaId = 'used_services' | 'has_visit' | 'by_employee';
+
+const FILTER_CRITERIA: Array<{
+    id: FilterCriteriaId;
+    label: string;
+    icon: string;
+}> = [
     { id: 'used_services', label: 'skorzystali z usług', icon: '✂️' },
     { id: 'has_visit', label: 'mają wizytę w salonie', icon: '📋' },
     { id: 'by_employee', label: 'obsługiwani przez pracowników', icon: '👤' },
-] as const;
+];
 
 function formatShortDate(value: string | undefined) {
     if (!value) return '-';
@@ -76,11 +84,18 @@ function ClientsPageContent() {
     const [showMoreGroups, setShowMoreGroups] = useState(false);
     const [showMoreCriteria, setShowMoreCriteria] = useState(false);
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+    const [activeCriteria, setActiveCriteria] = useState<FilterCriteriaId | null>(
+        null,
+    );
+    const [showServiceSelector, setShowServiceSelector] = useState(false);
+    const [showEmployeeSelector, setShowEmployeeSelector] = useState(false);
 
     const createCustomer = useCreateCustomer();
     const createGroup = useCreateCustomerGroup();
     const { data: groups } = useCustomerGroups();
     const { data: tags } = useCustomerTags();
+    const { data: services } = useServices();
+    const { data: employees } = useEmployees();
 
     const queryFilters = useMemo(() => {
         const [sortBy, sortOrder] = {
@@ -140,6 +155,63 @@ function ClientsPageContent() {
     const handleGroupClick = (groupId: number) => {
         setFilters((prev) => ({ ...prev, groupId, page: 1 }));
         setActiveQuickGroup('');
+    };
+
+    const handleCriteriaClick = (criteriaId: FilterCriteriaId) => {
+        // If clicking the same criteria, toggle it off
+        if (activeCriteria === criteriaId) {
+            setActiveCriteria(null);
+            // Clear the associated filter
+            if (criteriaId === 'has_visit') {
+                setFilters((prev) => ({
+                    ...prev,
+                    hasUpcomingVisit: undefined,
+                    page: 1,
+                }));
+            } else if (criteriaId === 'used_services') {
+                setFilters((prev) => ({
+                    ...prev,
+                    serviceId: undefined,
+                    page: 1,
+                }));
+                setShowServiceSelector(false);
+            } else if (criteriaId === 'by_employee') {
+                setFilters((prev) => ({
+                    ...prev,
+                    employeeId: undefined,
+                    page: 1,
+                }));
+                setShowEmployeeSelector(false);
+            }
+            return;
+        }
+
+        setActiveCriteria(criteriaId);
+
+        if (criteriaId === 'has_visit') {
+            // Directly apply the filter
+            setFilters((prev) => ({
+                ...prev,
+                hasUpcomingVisit: true,
+                page: 1,
+            }));
+        } else if (criteriaId === 'used_services') {
+            // Show service selector
+            setShowServiceSelector(true);
+        } else if (criteriaId === 'by_employee') {
+            // Show employee selector
+            setShowEmployeeSelector(true);
+        }
+    };
+
+    const handleServiceSelect = (serviceId: number) => {
+        setFilters((prev) => ({ ...prev, serviceId, page: 1 }));
+        setShowServiceSelector(false);
+    };
+
+    const handleEmployeeSelect = (employeeId: number) => {
+        setFilters((prev) => ({ ...prev, employeeId, page: 1 }));
+        setShowEmployeeSelector(false);
     };
 
     return (
@@ -259,16 +331,38 @@ function ClientsPageContent() {
                                 {(showMoreCriteria
                                     ? FILTER_CRITERIA
                                     : FILTER_CRITERIA.slice(0, 3)
-                                ).map((criterion) => (
-                                    <li key={criterion.id}>
-                                        <button className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100">
-                                            <span className="text-base">
-                                                {criterion.icon}
-                                            </span>
-                                            {criterion.label}
-                                        </button>
-                                    </li>
-                                ))}
+                                ).map((criterion) => {
+                                    const isActive =
+                                        activeCriteria === criterion.id ||
+                                        (criterion.id === 'has_visit' &&
+                                            filters.hasUpcomingVisit) ||
+                                        (criterion.id === 'used_services' &&
+                                            filters.serviceId !== undefined) ||
+                                        (criterion.id === 'by_employee' &&
+                                            filters.employeeId !== undefined);
+                                    return (
+                                        <li key={criterion.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleCriteriaClick(
+                                                        criterion.id,
+                                                    )
+                                                }
+                                                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
+                                                    isActive
+                                                        ? 'bg-cyan-100 font-medium text-cyan-700'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                }`}
+                                            >
+                                                <span className="text-base">
+                                                    {criterion.icon}
+                                                </span>
+                                                {criterion.label}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
                                 <li>
                                     <button
                                         onClick={() =>
@@ -622,6 +716,46 @@ function ClientsPageContent() {
                         submitting={createGroup.isPending}
                     />
                 )}
+
+                {/* Service Selector Modal */}
+                {showServiceSelector && (
+                    <SelectorModal
+                        title="Wybierz usługę"
+                        items={
+                            services?.map((s) => ({
+                                id: s.id,
+                                name: s.name,
+                            })) ?? []
+                        }
+                        onSelect={handleServiceSelect}
+                        onClose={() => {
+                            setShowServiceSelector(false);
+                            if (!filters.serviceId) {
+                                setActiveCriteria(null);
+                            }
+                        }}
+                    />
+                )}
+
+                {/* Employee Selector Modal */}
+                {showEmployeeSelector && (
+                    <SelectorModal
+                        title="Wybierz pracownika"
+                        items={
+                            employees?.map((e) => ({
+                                id: e.id,
+                                name: e.name,
+                            })) ?? []
+                        }
+                        onSelect={handleEmployeeSelect}
+                        onClose={() => {
+                            setShowEmployeeSelector(false);
+                            if (!filters.employeeId) {
+                                setActiveCriteria(null);
+                            }
+                        }}
+                    />
+                )}
             </DashboardLayout>
         </RouteGuard>
     );
@@ -863,6 +997,73 @@ function CreateGroupModal({
                     </button>
                 </div>
             </form>
+        </div>
+    );
+}
+
+function SelectorModal({
+    title,
+    items,
+    onSelect,
+    onClose,
+}: {
+    title: string;
+    items: Array<{ id: number; name: string }>;
+    onSelect: (id: number) => void;
+    onClose: () => void;
+}) {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredItems = items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl">
+                <div className="border-b border-gray-200 p-4">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                        {title}
+                    </h2>
+                    <input
+                        type="text"
+                        className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        placeholder="Szukaj..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="max-h-64 overflow-y-auto p-2">
+                    {filteredItems.length === 0 ? (
+                        <p className="p-4 text-center text-sm text-gray-500">
+                            Brak wyników
+                        </p>
+                    ) : (
+                        <ul className="space-y-1">
+                            {filteredItems.map((item) => (
+                                <li key={item.id}>
+                                    <button
+                                        type="button"
+                                        onClick={() => onSelect(item.id)}
+                                        className="w-full rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        {item.name}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                <div className="border-t border-gray-200 p-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                        Anuluj
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
