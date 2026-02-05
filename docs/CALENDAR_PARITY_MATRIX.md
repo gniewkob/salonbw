@@ -1,8 +1,9 @@
 # Calendar Parity Matrix (Versum -> Panel)
 
-Last updated: 2026-02-04
+Last updated: 2026-02-05
 
 Reference capture source:
+
 - Local parity run captures (kept outside git in `output/playwright/versum-calendar/`)
 
 ## Functional Parity

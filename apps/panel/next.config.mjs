@@ -47,6 +47,11 @@ const nextConfig = {
     async rewrites() {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         return [
+            // Calendar embed - serve directly from API to avoid Next.js hydration conflicts
+            {
+                source: '/calendar',
+                destination: '/api/calendar-embed',
+            },
             // Versum-prefixed calendar/runtime paths
             {
                 source: '/salonblackandwhite/events/:path*',
