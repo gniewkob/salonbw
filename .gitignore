@@ -99,6 +99,10 @@ archive/
 dump/
 static_preview/
 
+# Versum reference screenshots and data exports
+versum-*.png
+data/
+
 # Allow vendored Next env dist for panel fallback
 !apps/panel/vendor/@next/env/dist/
 !apps/panel/vendor/@next/env/dist/**
