@@ -17,6 +17,13 @@ const EXCLUDED_PATHS = new Set([
     '/api/auth/login',
     '/api/auth/register',
     '/logs/client',
+    // Calendar endpoints - authenticated via JWT, vendored JS doesn't send CSRF
+    '/graphql',
+    '/events',
+    '/settings/timetable',
+    '/track_new_events',
+    '/fresh_chat_user',
+    '/todo/alerts',
 ]);
 
 @Injectable()
