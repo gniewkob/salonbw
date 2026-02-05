@@ -84,9 +84,8 @@ function ClientsPageContent() {
     const [showMoreGroups, setShowMoreGroups] = useState(false);
     const [showMoreCriteria, setShowMoreCriteria] = useState(false);
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
-    const [activeCriteria, setActiveCriteria] = useState<FilterCriteriaId | null>(
-        null,
-    );
+    const [activeCriteria, setActiveCriteria] =
+        useState<FilterCriteriaId | null>(null);
     const [showServiceSelector, setShowServiceSelector] = useState(false);
     const [showEmployeeSelector, setShowEmployeeSelector] = useState(false);
 
