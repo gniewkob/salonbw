@@ -38,7 +38,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'klienci',
         iconId: 'svg-customers-nav',
         permission: 'nav:clients',
-        secondaryNav: true,
+        secondaryNav: false, // Page has its own sidebar with dynamic content
     },
     {
         key: 'products',
