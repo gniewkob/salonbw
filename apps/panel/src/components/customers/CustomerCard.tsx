@@ -8,6 +8,9 @@ import CustomerStatisticsTab from './CustomerStatisticsTab';
 import CustomerHistoryTab from './CustomerHistoryTab';
 import CustomerNotesTab from './CustomerNotesTab';
 import CustomerConsentsTab from './CustomerConsentsTab';
+import CustomerGalleryTab from './CustomerGalleryTab';
+import CustomerFilesTab from './CustomerFilesTab';
+import CustomerReviewsTab from './CustomerReviewsTab';
 
 type TabId =
     | 'summary'
@@ -15,6 +18,9 @@ type TabId =
     | 'statistics'
     | 'history'
     | 'notes'
+    | 'gallery'
+    | 'files'
+    | 'reviews'
     | 'consents';
 
 const tabs: { id: TabId; label: string }[] = [
@@ -23,6 +29,9 @@ const tabs: { id: TabId; label: string }[] = [
     { id: 'statistics', label: 'Statystyki' },
     { id: 'history', label: 'Historia' },
     { id: 'notes', label: 'Notatki' },
+    { id: 'gallery', label: 'Galeria' },
+    { id: 'files', label: 'Pliki' },
+    { id: 'reviews', label: 'Opinie' },
     { id: 'consents', label: 'Zgody' },
 ];
 
@@ -176,6 +185,15 @@ export default function CustomerCard({
                 )}
                 {activeTab === 'notes' && (
                     <CustomerNotesTab customerId={customer.id} />
+                )}
+                {activeTab === 'gallery' && (
+                    <CustomerGalleryTab customerId={customer.id} />
+                )}
+                {activeTab === 'files' && (
+                    <CustomerFilesTab customerId={customer.id} />
+                )}
+                {activeTab === 'reviews' && (
+                    <CustomerReviewsTab customerId={customer.id} />
                 )}
                 {activeTab === 'consents' && (
                     <CustomerConsentsTab
