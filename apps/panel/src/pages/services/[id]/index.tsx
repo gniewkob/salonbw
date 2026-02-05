@@ -18,7 +18,6 @@ import {
     useServiceCategories,
     useUpdateService,
 } from '@/hooks/useServicesAdmin';
-import type { ServiceReviewSource } from '@/types';
 import ServiceFormModal, {
     ServiceFormData,
 } from '@/components/services/ServiceFormModal';
@@ -250,7 +249,10 @@ export default function ServiceDetailsPage() {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout
+            pageTitle={summaryData?.name ?? 'Usługa'}
+            secondaryNav={<ServicesNav />}
+        >
             <div className="versum-page">
                 <div className="text-sm text-gray-500 mb-3 flex items-center gap-2">
                     {/* Breadcrumbs fallback if needed, currently header handled by Layout but we can keep inline nav */}
