@@ -16,6 +16,7 @@ const EXCLUDED_PATHS = new Set([
     '/auth/register',
     '/api/auth/login',
     '/api/auth/register',
+    '/logs/client',
 ]);
 
 @Injectable()
