@@ -402,6 +402,9 @@ export interface CustomerFilterParams {
     spentMax?: number;
     hasVisitSince?: string;
     noVisitSince?: string;
+    serviceId?: number;
+    employeeId?: number;
+    hasUpcomingVisit?: boolean;
     smsConsent?: boolean;
     emailConsent?: boolean;
     page?: number;

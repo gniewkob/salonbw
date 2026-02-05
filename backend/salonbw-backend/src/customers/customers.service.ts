@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
@@ -48,6 +48,9 @@ export class CustomersService {
             spentMax,
             hasVisitSince,
             noVisitSince,
+            serviceId,
+            employeeId,
+            hasUpcomingVisit,
             smsConsent,
             emailConsent,
             page = 1,
@@ -177,6 +180,51 @@ export class CustomersService {
 
             query = query.andWhere(`user.id NOT IN (${noVisitSubquery.getQuery()})`);
             query.setParameters(noVisitSubquery.getParameters());
+        }
+
+        // Service filter - customers who used this service
+        if (serviceId) {
+            const serviceSubquery = this.appointmentsRepo
+                .createQueryBuilder('apt')
+                .select('apt.clientId')
+                .where('apt.serviceId = :serviceId', { serviceId })
+                .andWhere('apt.status = :completedStatus', {
+                    completedStatus: AppointmentStatus.Completed,
+                });
+
+            query = query.andWhere(`user.id IN (${serviceSubquery.getQuery()})`);
+            query.setParameters(serviceSubquery.getParameters());
+        }
+
+        // Employee filter - customers served by this employee
+        if (employeeId) {
+            const employeeSubquery = this.appointmentsRepo
+                .createQueryBuilder('apt')
+                .select('apt.clientId')
+                .where('apt.employeeId = :employeeId', { employeeId })
+                .andWhere('apt.status = :completedStatus', {
+                    completedStatus: AppointmentStatus.Completed,
+                });
+
+            query = query.andWhere(`user.id IN (${employeeSubquery.getQuery()})`);
+            query.setParameters(employeeSubquery.getParameters());
+        }
+
+        // Upcoming visit filter - customers with future scheduled appointments
+        if (hasUpcomingVisit) {
+            const upcomingSubquery = this.appointmentsRepo
+                .createQueryBuilder('apt')
+                .select('apt.clientId')
+                .where('apt.startTime > :now', { now: new Date() })
+                .andWhere('apt.status IN (:...scheduledStatuses)', {
+                    scheduledStatuses: [
+                        AppointmentStatus.Scheduled,
+                        AppointmentStatus.Confirmed,
+                    ],
+                });
+
+            query = query.andWhere(`user.id IN (${upcomingSubquery.getQuery()})`);
+            query.setParameters(upcomingSubquery.getParameters());
         }
 
         // Sorting
