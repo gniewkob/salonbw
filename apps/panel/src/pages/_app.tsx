@@ -7,10 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
-// Versum UI CSS (from vendored calendar)
-import '../../public/versum-calendar/assets/new-ui-9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07.css';
-import '../../public/versum-calendar/javascripts/new/style-d5194205877fdbcc0f7b046384512047.css';
-// Keep custom overrides
 import '@/styles/versum-shell.css';
 import RouteProgress from '@/components/RouteProgress';
 import VersumSvgSprites from '@/components/versum/VersumSvgSprites';
