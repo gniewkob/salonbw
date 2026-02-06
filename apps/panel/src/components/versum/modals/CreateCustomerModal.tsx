@@ -31,102 +31,105 @@ export default function CreateCustomerModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <form
-                className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl"
-                onSubmit={(event) => {
-                    void handleSubmit(event);
-                }}
-            >
-                <h2 className="mb-4 text-lg font-semibold text-gray-800">
-                    👤 Dodaj klienta
-                </h2>
-                <div className="grid gap-4">
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Imię
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.firstName}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    firstName: event.target.value,
-                                }))
-                            }
-                            required
-                            aria-label="Imię"
-                        />
+        <div className="modal-backdrop fade in">
+            <div className="modal-dialog">
+                <form
+                    className="modal-content"
+                    onSubmit={(event) => {
+                        void handleSubmit(event);
+                    }}
+                >
+                    <div className="modal-header">
+                        <button
+                            type="button"
+                            className="close"
+                            onClick={onClose}
+                            aria-label="Zamknij"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 className="modal-title">Dodaj klienta</h4>
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Nazwisko
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.lastName}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    lastName: event.target.value,
-                                }))
-                            }
-                            required
-                            aria-label="Nazwisko"
-                        />
+                    <div className="modal-body">
+                        <div className="form-group">
+                            <label className="control-label">Imię</label>
+                            <input
+                                className="form-control"
+                                value={form.firstName}
+                                onChange={(event) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        firstName: event.target.value,
+                                    }))
+                                }
+                                required
+                                aria-label="Imię"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="control-label">Nazwisko</label>
+                            <input
+                                className="form-control"
+                                value={form.lastName}
+                                onChange={(event) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        lastName: event.target.value,
+                                    }))
+                                }
+                                required
+                                aria-label="Nazwisko"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="control-label">Email</label>
+                            <input
+                                className="form-control"
+                                type="email"
+                                value={form.email}
+                                onChange={(event) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        email: event.target.value,
+                                    }))
+                                }
+                                aria-label="Email"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="control-label">Telefon</label>
+                            <input
+                                className="form-control"
+                                value={form.phone}
+                                onChange={(event) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        phone: event.target.value,
+                                    }))
+                                }
+                                aria-label="Telefon"
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Email
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            type="email"
-                            value={form.email}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    email: event.target.value,
-                                }))
-                            }
-                            aria-label="Email"
-                        />
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={onClose}
+                        >
+                            Anuluj
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={submitting}
+                        >
+                            {submitting ? 'Zapisywanie...' : 'Zapisz'}
+                        </button>
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Telefon
-                        </label>
-                        <input
-                            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                            value={form.phone}
-                            onChange={(event) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    phone: event.target.value,
-                                }))
-                            }
-                            aria-label="Telefon"
-                        />
-                    </div>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        type="button"
-                        className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        onClick={onClose}
-                    >
-                        Anuluj
-                    </button>
-                    <button
-                        type="submit"
-                        className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
-                        disabled={submitting}
-                    >
-                        {submitting ? 'Zapisywanie...' : 'Zapisz'}
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }

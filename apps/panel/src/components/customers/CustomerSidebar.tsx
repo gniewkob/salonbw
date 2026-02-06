@@ -33,83 +33,90 @@ export default function CustomerSidebar({
     };
 
     return (
-        <div className="flex h-full w-64 flex-col border-r bg-gray-50">
+        <div className="versum-sidebar">
             {/* Search */}
-            <div className="border-b p-4">
-                <input
-                    type="text"
-                    placeholder="Szukaj klientów..."
-                    value={filters.search || ''}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="w-full rounded border px-3 py-2 text-sm"
-                />
+            <div className="versum-sidebar__item" style={{ padding: '15px' }}>
+                <div className="form-group mb-0">
+                    <input
+                        type="text"
+                        placeholder="Szukaj klientów..."
+                        value={filters.search || ''}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="form-control input-sm"
+                    />
+                </div>
             </div>
 
-            {/* Groups */}
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="mb-4">
-                    <div className="mb-2 flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-gray-700">
-                            Grupy
-                        </h3>
+            <div className="versum-sidebar__content">
+                {/* Groups */}
+                <div className="versum-sidebar__section">
+                    <div className="versum-sidebar__header flex-between">
+                        <span>GRUPY</span>
                         {onCreateGroup && (
                             <button
                                 onClick={onCreateGroup}
-                                className="text-xs text-cyan-600 hover:text-cyan-700"
+                                className="btn btn-link btn-xs p-0"
+                                style={{ color: '#008bb4' }}
                             >
-                                + Dodaj
+                                + dodaj
                             </button>
                         )}
                     </div>
-                    <ul className="space-y-1">
-                        <li>
-                            <button
-                                onClick={() => handleGroupSelect(undefined)}
-                                className={`w-full rounded px-2 py-1 text-left text-sm ${
-                                    !filters.groupId
-                                        ? 'bg-cyan-100 text-cyan-800'
-                                        : 'text-gray-600 hover:bg-gray-100'
-                                }`}
-                            >
-                                Wszyscy klienci
-                            </button>
+                    <ul className="versum-sidebar__nav">
+                        <li className={!filters.groupId ? 'active' : ''}>
+                            <a onClick={() => handleGroupSelect(undefined)}>
+                                <span className="flex-1">Wszyscy klienci</span>
+                            </a>
                         </li>
                         {groups.map((group) => (
-                            <li key={group.id}>
-                                <button
-                                    onClick={() => handleGroupSelect(group.id)}
-                                    className={`flex w-full items-center rounded px-2 py-1 text-left text-sm ${
-                                        filters.groupId === group.id
-                                            ? 'bg-cyan-100 text-cyan-800'
-                                            : 'text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    {group.color && (
-                                        <span
-                                            className="mr-2 h-2 w-2 rounded-full"
-                                            style={{
-                                                backgroundColor: group.color,
-                                            }}
-                                        />
-                                    )}
-                                    <span className="flex-1">{group.name}</span>
-                                    {group.memberCount !== undefined && (
-                                        <span className="text-xs text-gray-400">
-                                            {group.memberCount}
+                            <li
+                                key={group.id}
+                                className={
+                                    filters.groupId === group.id ? 'active' : ''
+                                }
+                            >
+                                <a onClick={() => handleGroupSelect(group.id)}>
+                                    <div
+                                        className="flex-center"
+                                        style={{ gap: '8px', width: '100%' }}
+                                    >
+                                        {group.color && (
+                                            <span
+                                                className="status-dot"
+                                                style={{
+                                                    backgroundColor:
+                                                        group.color,
+                                                    width: '8px',
+                                                    height: '8px',
+                                                }}
+                                            />
+                                        )}
+                                        <span className="flex-1 text-truncate">
+                                            {group.name}
                                         </span>
-                                    )}
-                                </button>
+                                        {group.memberCount !== undefined && (
+                                            <span className="badge badge-default">
+                                                {group.memberCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                </a>
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                {/* Tags */}
-                <div className="mb-4">
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                        Tagi
-                    </h3>
-                    <div className="flex flex-wrap gap-1">
+                {/* Tagi */}
+                <div className="versum-sidebar__section">
+                    <div className="versum-sidebar__header">TAGI</div>
+                    <div
+                        style={{
+                            padding: '0 15px',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '4px',
+                        }}
+                    >
                         {tags.map((tag) => (
                             <button
                                 key={tag.id}
@@ -120,19 +127,16 @@ export default function CustomerSidebar({
                                             : tag.id,
                                     )
                                 }
-                                className={`rounded px-2 py-0.5 text-xs ${
-                                    filters.tagId === tag.id
-                                        ? 'bg-cyan-600 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                }`}
-                                style={
-                                    tag.color && filters.tagId !== tag.id
-                                        ? {
-                                              backgroundColor: tag.color,
-                                              color: '#fff',
-                                          }
-                                        : undefined
-                                }
+                                className={`label ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
+                                style={{
+                                    cursor: 'pointer',
+                                    backgroundColor:
+                                        filters.tagId === tag.id
+                                            ? '#008bb4'
+                                            : tag.color || '#999',
+                                    borderColor: 'transparent',
+                                    fontWeight: 400,
+                                }}
                             >
                                 {tag.name}
                             </button>
@@ -140,180 +144,221 @@ export default function CustomerSidebar({
                     </div>
                 </div>
 
-                {/* Advanced Filters Toggle */}
-                <button
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
-                >
-                    {showAdvancedFilters ? '▼' : '▶'} Filtry zaawansowane
-                </button>
+                {/* Filtry zaawansowane */}
+                <div className="versum-sidebar__section">
+                    <div
+                        className="versum-sidebar__header flex-between"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() =>
+                            setShowAdvancedFilters(!showAdvancedFilters)
+                        }
+                    >
+                        <span>FILTRY ZAAWANSOWANE</span>
+                        <i
+                            className={`fa ${showAdvancedFilters ? 'fa-angle-down' : 'fa-angle-right'}`}
+                        ></i>
+                    </div>
 
-                {showAdvancedFilters && (
-                    <div className="mt-2 space-y-3 rounded border bg-white p-3">
-                        {/* Gender */}
-                        <div>
-                            <label className="mb-1 block text-xs text-gray-500">
-                                Płeć
-                            </label>
-                            <select
-                                value={filters.gender || ''}
-                                onChange={(e) =>
+                    {showAdvancedFilters && (
+                        <div
+                            style={{
+                                padding: '10px 15px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '12px',
+                            }}
+                        >
+                            <div className="form-group mb-0">
+                                <label
+                                    className="control-label"
+                                    style={{
+                                        fontSize: '11px',
+                                        marginBottom: '4px',
+                                    }}
+                                >
+                                    Płeć
+                                </label>
+                                <select
+                                    value={filters.gender || ''}
+                                    onChange={(e) =>
+                                        onFilterChange({
+                                            ...filters,
+                                            gender: (e.target.value ||
+                                                undefined) as CustomerFilterParams['gender'],
+                                            page: 1,
+                                        })
+                                    }
+                                    className="form-control input-sm"
+                                >
+                                    <option value="">Wszystkie</option>
+                                    <option value="female">Kobieta</option>
+                                    <option value="male">Mężczyzna</option>
+                                    <option value="other">Inna</option>
+                                </select>
+                            </div>
+
+                            <div className="row row-tight">
+                                <div className="col-xs-6">
+                                    <label
+                                        className="control-label"
+                                        style={{
+                                            fontSize: '11px',
+                                            marginBottom: '4px',
+                                        }}
+                                    >
+                                        Wiek od
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={filters.ageMin || ''}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                ageMin: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                        className="form-control input-sm"
+                                    />
+                                </div>
+                                <div className="col-xs-6">
+                                    <label
+                                        className="control-label"
+                                        style={{
+                                            fontSize: '11px',
+                                            marginBottom: '4px',
+                                        }}
+                                    >
+                                        do
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={filters.ageMax || ''}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                ageMax: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                        className="form-control input-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="row row-tight">
+                                <div className="col-xs-6">
+                                    <label
+                                        className="control-label"
+                                        style={{
+                                            fontSize: '11px',
+                                            marginBottom: '4px',
+                                        }}
+                                    >
+                                        Wydane od
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={filters.spentMin || ''}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                spentMin: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                        className="form-control input-sm"
+                                    />
+                                </div>
+                                <div className="col-xs-6">
+                                    <label
+                                        className="control-label"
+                                        style={{
+                                            fontSize: '11px',
+                                            marginBottom: '4px',
+                                        }}
+                                    >
+                                        do
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={filters.spentMax || ''}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                spentMax: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                        className="form-control input-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="checkbox" style={{ margin: 0 }}>
+                                <label style={{ fontSize: '12px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.smsConsent === true}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                smsConsent: e.target.checked
+                                                    ? true
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                    />
+                                    Zgoda SMS
+                                </label>
+                            </div>
+                            <div className="checkbox" style={{ margin: 0 }}>
+                                <label style={{ fontSize: '12px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.emailConsent === true}
+                                        onChange={(e) =>
+                                            onFilterChange({
+                                                ...filters,
+                                                emailConsent: e.target.checked
+                                                    ? true
+                                                    : undefined,
+                                                page: 1,
+                                            })
+                                        }
+                                    />
+                                    Zgoda e-mail
+                                </label>
+                            </div>
+
+                            <button
+                                onClick={() =>
                                     onFilterChange({
-                                        ...filters,
-                                        gender: (e.target.value ||
-                                            undefined) as CustomerFilterParams['gender'],
                                         page: 1,
+                                        limit: filters.limit,
                                     })
                                 }
-                                className="w-full rounded border px-2 py-1 text-sm"
+                                className="btn btn-default btn-xs btn-block"
+                                style={{ marginTop: '5px' }}
                             >
-                                <option value="">Wszystkie</option>
-                                <option value="female">Kobieta</option>
-                                <option value="male">Mężczyzna</option>
-                                <option value="other">Inna</option>
-                            </select>
+                                Wyczyść filtry
+                            </button>
                         </div>
-
-                        {/* Age Range */}
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <label className="mb-1 block text-xs text-gray-500">
-                                    Wiek od
-                                </label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={150}
-                                    value={filters.ageMin || ''}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            ageMin: e.target.value
-                                                ? Number(e.target.value)
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                    className="w-full rounded border px-2 py-1 text-sm"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="mb-1 block text-xs text-gray-500">
-                                    do
-                                </label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={150}
-                                    value={filters.ageMax || ''}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            ageMax: e.target.value
-                                                ? Number(e.target.value)
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                    className="w-full rounded border px-2 py-1 text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Spending Range */}
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <label className="mb-1 block text-xs text-gray-500">
-                                    Wydane od
-                                </label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    value={filters.spentMin || ''}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            spentMin: e.target.value
-                                                ? Number(e.target.value)
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                    className="w-full rounded border px-2 py-1 text-sm"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="mb-1 block text-xs text-gray-500">
-                                    do
-                                </label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    value={filters.spentMax || ''}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            spentMax: e.target.value
-                                                ? Number(e.target.value)
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                    className="w-full rounded border px-2 py-1 text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Consent Filters */}
-                        <div className="space-y-1">
-                            <label className="flex items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={filters.smsConsent === true}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            smsConsent: e.target.checked
-                                                ? true
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                />
-                                Zgoda SMS
-                            </label>
-                            <label className="flex items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={filters.emailConsent === true}
-                                    onChange={(e) =>
-                                        onFilterChange({
-                                            ...filters,
-                                            emailConsent: e.target.checked
-                                                ? true
-                                                : undefined,
-                                            page: 1,
-                                        })
-                                    }
-                                />
-                                Zgoda e-mail
-                            </label>
-                        </div>
-
-                        {/* Clear Filters */}
-                        <button
-                            onClick={() =>
-                                onFilterChange({
-                                    page: 1,
-                                    limit: filters.limit,
-                                })
-                            }
-                            className="w-full rounded border px-2 py-1 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                            Wyczyść filtry
-                        </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

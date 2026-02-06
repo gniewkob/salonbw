@@ -29,46 +29,44 @@ export default function WarehouseNav() {
 
     return (
         <>
-            <section className="versum-secondarynav__section">
-                <h4>KATEGORIE PRODUKTÓW</h4>
-                <ul>
-                    <li
-                        className={!currentCategoryId ? 'is-active' : undefined}
+            <div className="nav-header">KATEGORIE PRODUKTÓW</div>
+            <ul className="nav nav-list">
+                <li className={!currentCategoryId ? 'active' : undefined}>
+                    <a
+                        href="javascript:;"
+                        onClick={() => updateFilters(undefined)}
                     >
-                        <button
-                            onClick={() => updateFilters(undefined)}
-                            className="versum-secondarynav__item-btn"
+                        Wszystkie produkty
+                    </a>
+                </li>
+                {categories?.map((category) => (
+                    <li
+                        key={category.id}
+                        className={
+                            currentCategoryId === category.id
+                                ? 'active'
+                                : undefined
+                        }
+                    >
+                        <a
+                            href="javascript:;"
+                            onClick={() => updateFilters(category.id)}
                         >
-                            Wszystkie produkty
-                        </button>
+                            {category.name}
+                        </a>
                     </li>
-                    {categories?.map((category) => (
-                        <li
-                            key={category.id}
-                            className={
-                                currentCategoryId === category.id
-                                    ? 'is-active'
-                                    : undefined
-                            }
-                        >
-                            <button
-                                onClick={() => updateFilters(category.id)}
-                                className="versum-secondarynav__item-btn"
-                            >
-                                {category.name}
-                            </button>
-                        </li>
-                    ))}
-                    <li>
-                        <button
-                            onClick={() => setIsManageModalOpen(true)}
-                            className="versum-secondarynav__item-btn text-blue-600"
-                        >
-                            dodaj/edytuj/usuń
-                        </button>
-                    </li>
-                </ul>
-            </section>
+                ))}
+                <li className="divider"></li>
+                <li>
+                    <a
+                        href="javascript:;"
+                        onClick={() => setIsManageModalOpen(true)}
+                        className="text-blue-600"
+                    >
+                        dodaj/edytuj/usuń
+                    </a>
+                </li>
+            </ul>
 
             {isManageModalOpen && (
                 <ManageCategoriesModal

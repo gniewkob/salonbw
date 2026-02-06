@@ -7,25 +7,40 @@ interface Props {
 
 export default function ManageCategoriesModal({ type, onClose }: Props) {
     return (
-        <Modal open onClose={onClose}>
-            <div className="p-4">
-                <h2 className="text-lg font-semibold mb-4">
-                    Zarządzaj kategoriami (
-                    {type === 'product' ? 'Produkty' : 'Usługi'})
-                </h2>
-                <p>
-                    Funkcja zarządzania kategoriami jest w trakcie
-                    implementacji.
-                </p>
-                <div className="mt-4 flex justify-end">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                    >
-                        Zamknij
-                    </button>
+        <div className="modal-backdrop fade in">
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <button
+                            type="button"
+                            className="close"
+                            onClick={onClose}
+                            aria-label="Zamknij"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 className="modal-title">
+                            Zarządzaj kategoriami (
+                            {type === 'product' ? 'Produkty' : 'Usługi'})
+                        </h4>
+                    </div>
+                    <div className="modal-body">
+                        <p>
+                            Funkcja zarządzania kategoriami jest w trakcie
+                            implementacji.
+                        </p>
+                    </div>
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={onClose}
+                        >
+                            Zamknij
+                        </button>
+                    </div>
                 </div>
             </div>
-        </Modal>
+        </div>
     );
 }

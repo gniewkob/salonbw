@@ -11,6 +11,7 @@ import CustomerConsentsTab from './CustomerConsentsTab';
 import CustomerGalleryTab from './CustomerGalleryTab';
 import CustomerFilesTab from './CustomerFilesTab';
 import CustomerReviewsTab from './CustomerReviewsTab';
+import Link from 'next/link';
 
 type TabId =
     | 'summary'
@@ -67,140 +68,147 @@ export default function CustomerCard({
                 : null;
 
     return (
-        <div className="flex h-full flex-col bg-white">
-            {/* Header */}
-            <div className="border-b bg-gradient-to-r from-cyan-600 to-cyan-700 p-6 text-white">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-2xl font-semibold">
-                            {initials}
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-semibold">
-                                {customer.name}
-                            </h2>
-                            {customer.phone && (
-                                <p className="text-cyan-100">
-                                    {customer.phone}
-                                </p>
-                            )}
-                            {customer.email && (
-                                <p className="text-sm text-cyan-200">
-                                    {customer.email}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    {onClose && (
-                        <button
-                            onClick={onClose}
-                            className="rounded p-1 hover:bg-white/10"
-                            aria-label="Zamknij"
-                        >
-                            <svg
-                                className="h-6 w-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+        <div className="inner">
+            {/* Breadcrumbs */}
+            <div className="row">
+                <div className="col-sm-12">
+                    <ul className="versum-breadcrumb">
+                        <li>
+                            <Link href="/clients">KLIENCI</Link>
+                        </li>
+                        <li className="active">
+                            {customer.firstName} {customer.lastName}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-sm-12">
+                    <div
+                        className="versum-widget"
+                        style={{ padding: 0, overflow: 'hidden' }}
+                    >
+                        {/* Header */}
+                        <div className="customer-header">
+                            <div className="customer-header__avatar">
+                                {initials}
+                            </div>
+                            <div className="customer-header__info">
+                                <h2>
+                                    {customer.firstName} {customer.lastName}
+                                </h2>
+                                <div className="customer-header__meta">
+                                    <span>#{customer.id}</span>
+                                    {customer.phone && (
+                                        <>
+                                            <span style={{ margin: '0 8px' }}>
+                                                |
+                                            </span>
+                                            <span>{customer.phone}</span>
+                                        </>
+                                    )}
+                                    {customer.email && (
+                                        <>
+                                            <span style={{ margin: '0 8px' }}>
+                                                |
+                                            </span>
+                                            <span>{customer.email}</span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div
+                                className="text-right"
+                                style={{ marginLeft: 'auto' }}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
+                                <div className="btn-group">
+                                    <button
+                                        className="btn btn-default btn-sm"
+                                        onClick={onClose}
+                                    >
+                                        <i
+                                            className="fa fa-arrow-left"
+                                            style={{ marginRight: '6px' }}
+                                        ></i>
+                                        Wróć
+                                    </button>
+                                    <button
+                                        className="btn btn-default btn-sm"
+                                        style={{ marginLeft: '8px' }}
+                                    >
+                                        <i
+                                            className="fa fa-pencil"
+                                            style={{ marginRight: '6px' }}
+                                        ></i>
+                                        Edytuj
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tabs Navigation */}
+                        <div style={{ padding: '0 20px' }}>
+                            <ul
+                                className="nav nav-tabs"
+                                style={{ marginTop: '20px' }}
+                            >
+                                {tabs.map((tab) => (
+                                    <li
+                                        key={tab.id}
+                                        className={
+                                            activeTab === tab.id ? 'active' : ''
+                                        }
+                                    >
+                                        <a onClick={() => setActiveTab(tab.id)}>
+                                            {tab.label}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Tab Content */}
+                        <div style={{ padding: '0 20px 20px' }}>
+                            {activeTab === 'summary' && (
+                                <CustomerSummaryTab customer={customer} />
+                            )}
+                            {activeTab === 'personal' && (
+                                <CustomerPersonalDataTab
+                                    customer={customer}
+                                    onUpdate={onUpdate}
                                 />
-                            </svg>
-                        </button>
-                    )}
-                </div>
-
-                {/* Quick info */}
-                <div className="mt-4 flex gap-4 text-sm text-cyan-100">
-                    {genderDisplay && <span>{genderDisplay}</span>}
-                    {customer.city && <span>📍 {customer.city}</span>}
-                    {customer.birthDate && (
-                        <span>
-                            🎂{' '}
-                            {new Date(customer.birthDate).toLocaleDateString(
-                                'pl-PL',
                             )}
-                        </span>
-                    )}
-                </div>
-
-                {/* Tags */}
-                {tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                        {tags.map((tag) => (
-                            <span
-                                key={tag.id}
-                                className="rounded px-2 py-0.5 text-xs"
-                                style={{
-                                    backgroundColor: tag.color || '#e5e7eb',
-                                    color: tag.color ? '#fff' : '#374151',
-                                }}
-                            >
-                                {tag.name}
-                            </span>
-                        ))}
+                            {activeTab === 'statistics' && (
+                                <CustomerStatisticsTab
+                                    customerId={customer.id}
+                                />
+                            )}
+                            {activeTab === 'history' && (
+                                <CustomerHistoryTab customerId={customer.id} />
+                            )}
+                            {activeTab === 'notes' && (
+                                <CustomerNotesTab customerId={customer.id} />
+                            )}
+                            {activeTab === 'gallery' && (
+                                <CustomerGalleryTab customerId={customer.id} />
+                            )}
+                            {activeTab === 'files' && (
+                                <CustomerFilesTab customerId={customer.id} />
+                            )}
+                            {activeTab === 'reviews' && (
+                                <CustomerReviewsTab customerId={customer.id} />
+                            )}
+                            {activeTab === 'consents' && (
+                                <CustomerConsentsTab
+                                    customer={customer}
+                                    onUpdate={onUpdate}
+                                />
+                            )}
+                        </div>
                     </div>
-                )}
-            </div>
-
-            {/* Tabs */}
-            <div className="border-b">
-                <nav className="flex overflow-x-auto">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
-                                activeTab === tab.id
-                                    ? 'border-cyan-600 text-cyan-600'
-                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                            }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </nav>
-            </div>
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-                {activeTab === 'summary' && (
-                    <CustomerSummaryTab customer={customer} />
-                )}
-                {activeTab === 'personal' && (
-                    <CustomerPersonalDataTab
-                        customer={customer}
-                        onUpdate={onUpdate}
-                    />
-                )}
-                {activeTab === 'statistics' && (
-                    <CustomerStatisticsTab customerId={customer.id} />
-                )}
-                {activeTab === 'history' && (
-                    <CustomerHistoryTab customerId={customer.id} />
-                )}
-                {activeTab === 'notes' && (
-                    <CustomerNotesTab customerId={customer.id} />
-                )}
-                {activeTab === 'gallery' && (
-                    <CustomerGalleryTab customerId={customer.id} />
-                )}
-                {activeTab === 'files' && (
-                    <CustomerFilesTab customerId={customer.id} />
-                )}
-                {activeTab === 'reviews' && (
-                    <CustomerReviewsTab customerId={customer.id} />
-                )}
-                {activeTab === 'consents' && (
-                    <CustomerConsentsTab
-                        customer={customer}
-                        onUpdate={onUpdate}
-                    />
-                )}
+                </div>
             </div>
         </div>
     );

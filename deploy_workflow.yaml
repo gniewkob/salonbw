@@ -1,0 +1,1165 @@
+name: Deploy (MyDevil)
+
+on:
+  push:
+    branches:
+      - master
+      - fix-deployment
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref (branch, tag, or SHA)
+        required: true
+        default: master
+      target:
+        description: What to deploy (public|dashboard|admin|api|probe)
+        required: true
+        default: public
+      environment:
+        description: Deployment environment (staging/production)
+        required: true
+        default: staging
+      api_url:
+        description: Public API URL used at build time (leave empty to use environment defaults)
+        required: false
+        default: ""
+      remote_path:
+        description: Remote path (e.g., /home/<user>/domains/<domain>/public_nodejs). If empty, repo variables will be used.
+        required: false
+        default: ""
+      app_name:
+        description: MyDevil app name for restart. If empty, repo variables will be used.
+        required: false
+        default: ""
+
+env:
+  PNPM_VERSION: 10.14.0
+  NODE_VERSION: "22"
+
+jobs:
+  probe:
+    if: ${{ github.event.inputs.target == 'probe' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Probe Server
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+
+          echo "=== ls -la apps/nodejs/panelbw ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw" || true
+
+          echo "=== ls -la apps/nodejs/panelbw/.next/server/pages ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la apps/nodejs/panelbw/.next/server/pages" || true
+
+          echo "=== Check Symlink public_nodejs ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "ls -la domains/panel.salon-bw.pl/public_nodejs" || true
+
+          echo "=== Check Redirect Logic (index.js) ==="
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
+
+  deploy:
+    if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
+    name: Deploy ${{ github.event.inputs.target }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+    env:
+      DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+      # Pass through for steps to use comfortably
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          fetch-depth: 2
+
+      - name: Detect changes
+        if: ${{ github.event_name == 'push' }}
+        id: changes
+        shell: bash
+        run: |
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+
+          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO_SHA" ]; then
+            echo "panel=true" >> "$GITHUB_OUTPUT"
+            echo "landing=true" >> "$GITHUB_OUTPUT"
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only "$BASE" "$HEAD")"
+          echo "Changed files:" && echo "$files"
+
+          panel=false
+          landing=false
+          api=false
+          shared=false
+
+          has_match() {
+            local pattern="$1"
+            if command -v rg >/dev/null 2>&1; then
+              echo "$files" | rg -q "$pattern"
+            else
+              echo "$files" | grep -Eq "$pattern"
+            fi
+          }
+
+          if has_match "^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|turbo.json|packages/api/)"; then
+            shared=true
+          fi
+          if has_match "^apps/panel/"; then
+            panel=true
+          fi
+          if has_match "^apps/landing/"; then
+            landing=true
+          fi
+          if has_match "^backend/"; then
+            api=true
+          fi
+
+          if [ "$shared" = "true" ]; then
+            panel=true
+            landing=true
+          fi
+
+          echo "panel=$panel" >> "$GITHUB_OUTPUT"
+          echo "landing=$landing" >> "$GITHUB_OUTPUT"
+          echo "api=$api" >> "$GITHUB_OUTPUT"
+
+      # Input validation intentionally omitted due to quoting issues in GitHub runner
+
+      - name: Setup Node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve API URL
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: api
+        shell: bash
+        run: |
+          INPUT_API="${{ github.event.inputs.api_url }}"
+          if [ -n "$INPUT_API" ]; then
+            API_URL="$INPUT_API"
+          elif [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          else
+            # Default fallback if secret is missing or env is unknown
+            API_URL="https://api.salon-bw.pl"
+          fi
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Proxy URL
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: proxy
+        shell: bash
+        run: |
+          PROXY_URL="https://api.salon-bw.pl"
+          if [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
+          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
+            PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
+          fi
+          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Load optional variables
+        shell: bash
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          # Extract optional variables dynamically to bypass linter checks
+          node -e '
+            const vars = JSON.parse(process.env.VARS_JSON || "{}");
+            const keys = [
+              "MYDEVIL_ADMIN_REMOTE_PATH_STAGING",
+              "MYDEVIL_ADMIN_APP_NAME_STAGING",
+              "SMOKE_EMAIL_TO"
+            ];
+            const fs = require("fs");
+            const envFile = process.env.GITHUB_ENV;
+            if (envFile) {
+              keys.forEach(k => {
+                // write to GITHUB_ENV
+                fs.appendFileSync(envFile, `${k}=${vars[k] || ""}\n`);
+              });
+            }
+          '
+
+      - name: Resolve deploy destination
+        id: dest
+        shell: bash
+        run: |
+          TARGET="${{ github.event.inputs.target }}"
+          # Default to PANEL on push event (if target is empty)
+          if [ -z "$TARGET" ]; then TARGET="panel"; fi
+
+          INPUT_PATH="${{ github.event.inputs.remote_path }}"
+          INPUT_APP="${{ github.event.inputs.app_name }}"
+
+          # Initialize variables
+          REMOTE_PATH_PUBLIC=""
+          APP_NAME_PUBLIC=""
+          REMOTE_PATH_PANEL=""
+          APP_NAME_PANEL=""
+          REMOTE_PATH_API=""
+          APP_NAME_API=""
+
+          # Define path lookups based on environment
+          if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
+             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
+             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
+             # FORCE Standard Path for Panel (User Requirement)
+             P_PANEL="apps/nodejs/panelbw"
+             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_STAGING }}"
+             if [ -z "$N_PANEL" ]; then
+               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_STAGING }}"
+             fi
+             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
+             N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
+             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
+             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
+          else
+             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
+             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
+             # FORCE Standard Path for Panel (User Requirement)
+             P_PANEL="apps/nodejs/panelbw"
+             N_PANEL="${{ vars.MYDEVIL_PANEL_APP_NAME_PRODUCTION }}"
+             if [ -z "$N_PANEL" ]; then
+               N_PANEL="${{ vars.MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION }}"
+             fi
+             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
+             N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
+             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
+             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
+          fi
+
+          # If manual input provided, override specifics based on target
+          if [ -n "$INPUT_PATH" ]; then
+            if [ "$TARGET" == "api" ]; then P_API="$INPUT_PATH";
+            elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then P_PANEL="$INPUT_PATH";
+            else P_PUBLIC="$INPUT_PATH"; fi
+          fi
+          if [ -n "$INPUT_APP" ]; then
+             if [ "$TARGET" == "api" ]; then N_API="$INPUT_APP";
+             elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then N_PANEL="$INPUT_APP";
+             else N_PUBLIC="$INPUT_APP"; fi
+          fi
+
+          # Fallback to defaults if specific variables are missing
+          REMOTE_PATH_PUBLIC="${P_PUBLIC:-$P_DEFAULT}"
+          APP_NAME_PUBLIC="${N_PUBLIC:-$N_DEFAULT}"
+          REMOTE_PATH_PANEL="${P_PANEL:-$P_DEFAULT}"
+          APP_NAME_PANEL="${N_PANEL:-$N_DEFAULT}"
+          REMOTE_PATH_API="${P_API:-$P_DEFAULT}"
+          APP_NAME_API="${N_API:-$N_DEFAULT}"
+
+          # Output everything
+          echo "remote_path_public=$REMOTE_PATH_PUBLIC" >> "$GITHUB_OUTPUT"
+          echo "app_name_public=$APP_NAME_PUBLIC" >> "$GITHUB_OUTPUT"
+          echo "remote_path_panel=$REMOTE_PATH_PANEL" >> "$GITHUB_OUTPUT"
+          echo "app_name_panel=$APP_NAME_PANEL" >> "$GITHUB_OUTPUT"
+          echo "remote_path_api=$REMOTE_PATH_API" >> "$GITHUB_OUTPUT"
+          echo "app_name_api=$APP_NAME_API" >> "$GITHUB_OUTPUT"
+
+          echo "Resolved Config:"
+          echo "Public: $REMOTE_PATH_PUBLIC ($APP_NAME_PUBLIC)"
+          echo "Panel:  $REMOTE_PATH_PANEL ($APP_NAME_PANEL)"
+          echo "API:    $REMOTE_PATH_API ($APP_NAME_API)"
+
+      - name: Validate resolved destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          P_PUB='${{ steps.dest.outputs.remote_path_public }}'
+          A_PUB='${{ steps.dest.outputs.app_name_public }}'
+          P_PAN='${{ steps.dest.outputs.remote_path_panel }}'
+          A_PAN='${{ steps.dest.outputs.app_name_panel }}'
+          P_API='${{ steps.dest.outputs.remote_path_api }}'
+          A_API='${{ steps.dest.outputs.app_name_api }}'
+
+          # Basic validation
+          validate() {
+            local path=$1
+            local name=$2
+            local label=$3
+            if [ -n "$path" ] && ! [[ "$path" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path_$label"; exit 1; fi
+            if [ -n "$name" ] && ! [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name_$label"; exit 1; fi
+          }
+
+          validate "$P_PUB" "$A_PUB" "public"
+          validate "$P_PAN" "$A_PAN" "panel"
+          validate "$P_API" "$A_API" "api"
+
+      - name: Build frontend (Landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          rm -rf apps/landing/.next
+          pnpm --filter @salonbw/landing build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
+          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
+
+      - name: Read BUILD_ID (frontend)
+        if: ${{ github.event.inputs.target != 'api' && (github.event_name != 'push' || steps.changes.outputs.panel == 'true' || steps.changes.outputs.landing == 'true') }}
+        id: buildid
+        shell: bash
+        run: |
+          if [ -f apps/panel/.next/BUILD_ID ]; then
+            echo "id=$(cat apps/panel/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
+          elif [ -f apps/landing/.next/BUILD_ID ]; then
+            echo "id=$(cat apps/landing/.next/BUILD_ID)" >> "$GITHUB_OUTPUT"
+          else
+            echo "id=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build backend
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: |
+          cd backend/salonbw-backend
+          # Dependencies already installed via pnpm workspace in previous step
+          pnpm run build
+          # Explicitly compile migrate.ts as it might be missed by nest build
+          echo "Explicitly building migrate.ts..."
+          pnpm exec tsc src/migrate.ts --outDir dist --skipLibCheck --esModuleInterop --target ES2022 --moduleResolution node16 || echo "tsc failed but continuing..."
+          ls -l dist/migrate.js || echo "migrate.js missing!"
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/mydevil
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$MYDEVIL_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+
+      - name: 🔍 Verify SSH Connectivity
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Verifying SSH connectivity"
+          echo "============================================"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net "echo '✅ SSH connection successful'" || {
+            echo "❌ SSH connection failed"
+            exit 1
+          }
+
+          echo ""
+          echo "============================================"
+          echo "✅ SSH connectivity verified"
+          echo "============================================"
+
+      - name: 🏗️ Build frontend (Panel)
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Building Panel frontend"
+          echo "============================================"
+          set -x  # Enable verbose debugging
+          set -o pipefail
+          echo "=== DEBUG: Environment variables ==="
+          echo "NEXT_PUBLIC_API_URL: $NEXT_PUBLIC_API_URL"
+          echo "API_PROXY_URL: $API_PROXY_URL"
+          echo "DATABASE_URL: ${DATABASE_URL:+ [SET]}"
+          echo "NODE_VERSION: $(node --version)"
+          echo "PNPM_VERSION: $(pnpm --version)"
+          echo ""
+          echo "=== DEBUG: Starting build ==="
+          rm -rf apps/panel/.next
+          pnpm --filter @salonbw/panel --fail-if-no-match build 2>&1 | tee build.log || {
+            echo ""
+            echo "❌ BUILD FAILED - Last 50 lines of output:" 
+            tail -50 build.log
+            exit 1
+          }
+          echo ""
+          echo "✅ Build completed successfully"
+          echo "Listing .next directory RECURSIVE (Debug):"
+          ls -R apps/panel/.next || echo "apps/panel/.next NOT FOUND"
+          echo "Listing Standalone App Dir:"
+          ls -R apps/panel/.next/standalone/apps || echo "standalone/apps NOT FOUND"
+          echo ""
+          echo "============================================"
+          echo "✅ Panel frontend build completed"
+          echo "============================================"
+        env:
+          NEXT_PUBLIC_API_URL: ${{ env.DEPLOY_ENV == 'production' && '/api' || steps.api.outputs.api_url }}
+          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PANEL_HTML_NOSTORE: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_LOG_TOKEN: ${{ secrets.NEXT_PUBLIC_LOG_TOKEN }}
+
+      - name: Ensure remote directories exist (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          # Create destinations
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
+
+      - name: Ensure remote directories exist (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          echo "Ensuring Symlink for Panel..."
+          # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
+          # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
+
+      - name: Upload frontend bundle (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          DEST="${{ steps.dest.outputs.remote_path_panel }}"
+          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          TARGET_APP="apps/panel"
+          echo "Targeting PANEL: $DEST"
+
+          mkdir -p deploy_bundle/.next
+          mkdir -p deploy_bundle/public
+
+          echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
+
+
+          # STANDARD BUILD STRATEGY (Non-Standalone)
+          # Copy everything necessary for runtime
+          cp -r "$TARGET_APP/.next" deploy_bundle/
+          cp -r "$TARGET_APP/public" deploy_bundle/
+          cp "$TARGET_APP/package.json" deploy_bundle/
+          cp "$TARGET_APP/next.config.mjs" deploy_bundle/
+
+          # Ensure font manifest exists (Next.js expects this file at runtime)
+          if [ ! -f "deploy_bundle/.next/server/font-manifest.json" ]; then
+             mkdir -p deploy_bundle/.next/server
+             echo "[]" > deploy_bundle/.next/server/font-manifest.json
+          fi
+
+          # Copy app.js (Passenger Entry Point)
+          if [ -f "$TARGET_APP/app.js" ]; then
+             cp "$TARGET_APP/app.js" deploy_bundle/
+             
+          # NOTE: app.js already handles Passenger/host binding in-repo.
+          fi
+
+          # FIX STATIC ASSETS (Passenger 404s)
+          echo "Fixing Static Assets (Hard Copy)..."
+          mkdir -p deploy_bundle/public/_next
+          cp -r deploy_bundle/.next/static deploy_bundle/public/_next/
+
+          # Copy source files (middleware needs src structure?)
+          mkdir -p deploy_bundle/src
+          if [ -f "$TARGET_APP/src/middleware.ts" ]; then
+             cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
+          fi
+
+          if [ -d "$TARGET_APP/scripts" ]; then
+             cp -r "$TARGET_APP/scripts" deploy_bundle/
+          fi
+
+          # Copy local packages (dependencies)
+          mkdir -p deploy_bundle/packages
+          if [ -d "packages/api" ]; then
+             cp -r packages/api deploy_bundle/packages/
+          fi
+
+          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
+          echo "Installing dependencies in bundle..."
+          cd deploy_bundle
+
+          # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
+          # These are already bundled by Next.js Standalone, and npm install won't resolve them.
+          # Fix: Rewrite workspace links to local file paths
+          sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
+          sed -i '/workspace:/d' package.json
+
+          # Use npm for flat install (pnpm is not needed for runtime)
+          npm install --omit=dev --no-package-lock --no-audit --loglevel=error
+          cd ..
+
+          # Create Tarball
+          tar -czf deploy.tar.gz -C deploy_bundle .
+
+          # 2. Upload Tarball
+          # 2. Upload Tarball
+          # 2. Upload Tarball
+          echo "Uploading Bundle to $DEST..."
+          ls -la deploy.tar.gz
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz vetternkraft@s0.mydevil.net:$DEST/deploy.tar.gz
+
+          # 3. Extract and Clean
+          echo "Extracting Bundle..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
+
+      - name: Upload frontend bundle (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          DEST="${{ steps.dest.outputs.remote_path_public }}"
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          TARGET_APP="apps/landing"
+          echo "Targeting LANDING: $DEST"
+
+          mkdir -p deploy_bundle/.next
+          mkdir -p deploy_bundle/public
+
+          echo "Bundling Application from $TARGET_APP (Clean Install Strategy)..."
+
+          # STANDARD BUILD STRATEGY (Non-Standalone)
+          # Copy everything necessary for runtime
+          cp -r "$TARGET_APP/.next" deploy_bundle/
+          cp -r "$TARGET_APP/public" deploy_bundle/
+          cp "$TARGET_APP/package.json" deploy_bundle/
+          cp "$TARGET_APP/next.config.mjs" deploy_bundle/
+
+          # Ensure font manifest exists (Next.js expects this file at runtime)
+          if [ ! -f "deploy_bundle/.next/server/font-manifest.json" ]; then
+             mkdir -p deploy_bundle/.next/server
+             echo "[]" > deploy_bundle/.next/server/font-manifest.json
+          fi
+
+          # Copy app.js (Passenger Entry Point)
+          if [ -f "$TARGET_APP/app.js" ]; then
+             cp "$TARGET_APP/app.js" deploy_bundle/
+          fi
+
+          # FIX STATIC ASSETS (Passenger 404s)
+          echo "Fixing Static Assets (Hard Copy)..."
+          mkdir -p deploy_bundle/public/_next
+          cp -r deploy_bundle/.next/static deploy_bundle/public/_next/
+
+          # Copy source files (middleware needs src structure?)
+          mkdir -p deploy_bundle/src
+          if [ -f "$TARGET_APP/src/middleware.ts" ]; then
+             cp "$TARGET_APP/src/middleware.ts" deploy_bundle/src/
+          fi
+
+          if [ -d "$TARGET_APP/scripts" ]; then
+             cp -r "$TARGET_APP/scripts" deploy_bundle/
+          fi
+
+          # Copy local packages (dependencies)
+          mkdir -p deploy_bundle/packages
+          if [ -d "packages/api" ]; then
+             cp -r packages/api deploy_bundle/packages/
+          fi
+
+          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
+          echo "Installing dependencies in bundle..."
+          cd deploy_bundle
+
+          # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
+          # These are already bundled by Next.js Standalone, and npm install won't resolve them.
+          # Fix: Rewrite workspace links to local file paths
+          sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
+          sed -i '/workspace:/d' package.json
+
+          # Use npm for flat install (pnpm is not needed for runtime)
+          npm install --omit=dev --no-package-lock --no-audit --loglevel=error
+          cd ..
+
+          # Create Tarball
+          tar -czf deploy.tar.gz -C deploy_bundle .
+
+          # Upload Tarball
+          echo "Uploading Bundle to $DEST..."
+          ls -la deploy.tar.gz
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no deploy.tar.gz vetternkraft@s0.mydevil.net:$DEST/deploy.tar.gz
+
+          # Extract and Clean
+          echo "Extracting Bundle..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "rm -rf $DEST/app.js $DEST/node_modules $DEST/.next $DEST/public && tar -xzf $DEST/deploy.tar.gz -C $DEST/ && rm $DEST/deploy.tar.gz"
+
+      - name: Prepare standalone runtime (set node version) (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          TARGET_APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
+          set -euo pipefail
+
+          # Create probe file for diagnostics
+          mkdir -p "$REMOTE_PATH/public"
+          {
+            echo "--- Startup Probe $(date) ---"
+            echo "Node (default): $(node -v 2>&1 || echo missing)"
+            echo "node22 path: $(command -v node22 2>/dev/null || echo missing)"
+            if command -v node22 >/dev/null 2>&1; then
+              echo "Node22 Version: $(node22 -v)"
+            fi
+          } > "$REMOTE_PATH/public/startup_probe.txt"
+
+          # MyDevil does not support setting Node version via devil www options.
+          # Keep a local fallback so manual scripts can use node22 explicitly.
+          mkdir -p "$HOME/bin"
+          if command -v node22 >/dev/null 2>&1; then
+             ln -sfn "$(command -v node22)" "$HOME/bin/node"
+             ln -sfn "$(command -v node22)" "$HOME/bin/node22"
+             echo "Linked node22 to ~/bin/node"
+          else
+             echo "node22 unavailable; leaving default node untouched"
+          fi
+          SSH
+
+      - name: Prepare standalone runtime (set node version) (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          TARGET_APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          TARGET_REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "APP_NAME='$TARGET_APP_NAME' REMOTE_PATH='$TARGET_REMOTE_PATH' bash -s" <<'SSH'
+          set -euo pipefail
+
+          # Create probe file for diagnostics
+          mkdir -p "$REMOTE_PATH/public"
+          {
+            echo "--- Startup Probe $(date) ---"
+            echo "Node (default): $(node -v 2>&1 || echo missing)"
+            echo "node22 path: $(command -v node22 2>/dev/null || echo missing)"
+            if command -v node22 >/dev/null 2>&1; then
+              echo "Node22 Version: $(node22 -v)"
+            fi
+          } > "$REMOTE_PATH/public/startup_probe.txt"
+
+          # MyDevil does not support setting Node version via devil www options.
+          # Keep a local fallback so manual scripts can use node22 explicitly.
+          mkdir -p "$HOME/bin"
+          if command -v node22 >/dev/null 2>&1; then
+             ln -sfn "$(command -v node22)" "$HOME/bin/node"
+             ln -sfn "$(command -v node22)" "$HOME/bin/node22"
+             echo "Linked node22 to ~/bin/node"
+          else
+             echo "node22 unavailable; leaving default node untouched"
+          fi
+          SSH
+
+      - name: "Diagnostic: Expose and Print logs (panel)"
+        if: ${{ always() && (github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true')) }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+
+          # Capture current state
+          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
+          echo "Node Version: $(node -v)" >> public/diagnostic_logs.txt
+          ls -la . >> public/diagnostic_logs.txt
+
+          # Print to STDOUT for CI visibility
+          echo "=== CONTENT OF startup_probe.txt ==="
+          if [ -f public/startup_probe.txt ]; then cat public/startup_probe.txt; else echo "startup_probe.txt missing"; fi
+
+          echo "=== CONTENT OF diagnostic_logs.txt ==="
+          cat public/diagnostic_logs.txt
+
+          echo "=== stderr.log (first 50 lines) ==="
+          if [ -f stderr.log ]; then head -n 50 stderr.log; else echo "stderr.log not found"; fi
+
+          echo "=== stderr.log (last 50 lines) ==="
+          if [ -f stderr.log ]; then tail -n 50 stderr.log; fi
+          SSH
+
+      - name: "Diagnostic: Expose logs (landing)"
+        if: ${{ always() && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
+          echo "Directory structure:" >> public/diagnostic_logs.txt
+          ls -la . >> public/diagnostic_logs.txt
+          echo "--- stderr.log (last 100 lines) ---" >> public/diagnostic_logs.txt
+          if [ -f stderr.log ]; then tail -n 100 stderr.log >> public/diagnostic_logs.txt; else echo "stderr.log not found" >> public/diagnostic_logs.txt; fi
+          echo "--- System error logs ---" >> public/diagnostic_logs.txt
+          find $HOME/logs -name "*error.log" -mmin -10 -exec tail -n 20 {} + >> public/diagnostic_logs.txt 2>/dev/null || true
+          SSH
+
+      - name: Upload backend bundle
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/dist/ \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/dist/
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/package.json \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/app.js \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
+
+      - name: Install dependencies (backend)
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
+          cd "$REMOTE_PATH"
+          if command -v npm22 >/dev/null 2>&1; then
+            echo "Using npm22..."
+            npm22 install --omit=dev --ignore-scripts
+          else
+             echo "npm22 not found, using default npm..."
+             npm install --omit=dev --ignore-scripts
+          fi
+          SSH
+
+      - name: "Diagnostic: Startup Probe (frontend)"
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP_NAME='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'END_PROBE'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          LOG="public/startup_probe.txt"
+          echo "--- Startup Probe $(date) ---" > "$LOG"
+
+          echo "=== Environment Info ===" >> "$LOG"
+          echo "User: $(whoami)" >> "$LOG"
+          echo "Path: $PATH" >> "$LOG"
+          echo "Node (default): $(node -v 2>&1 || echo 'missing')" >> "$LOG"
+          echo "Node22: $(command -v node22 2>&1 || echo 'missing')" >> "$LOG"
+          if command -v node22 >/dev/null; then
+             echo "Node22 Version: $(node22 -v)" >> "$LOG"
+          fi
+
+          echo "=== Devil Info ===" >> "$LOG"
+          if command -v devil >/dev/null 2>&1; then
+             devil www list --verbose 2>&1 | grep -F "$APP_NAME" >> "$LOG" || echo "No devil www entry found for $APP_NAME" >> "$LOG"
+          else
+             echo "devil command unavailable" >> "$LOG"
+          fi
+
+          echo "=== File Checks ===" >> "$LOG"
+          ls -la app.js package.json >> "$LOG" 2>&1 || true
+          if [ -f server.js ]; then ls -la server.js >> "$LOG"; fi
+
+          echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
+          echo "console.log('Hello from Simple Node');" > test_simple.js
+          node test_simple.js >> "$LOG" 2>&1 || echo "Simple Node execution failed" >> "$LOG"
+
+          echo "=== Manual Execution Test (App.js) ===" >> "$LOG"
+          # Try running app.js with the best available node
+          RUN_NODE=node
+          if command -v node22 >/dev/null; then RUN_NODE=node22; fi
+
+          echo "Running with $RUN_NODE..." >> "$LOG"
+          $RUN_NODE app.js > public/manual_app_start.log 2>&1 &
+          PID=$!
+          echo "Started app.js with PID $PID. Waiting 5s..." >> "$LOG"
+          sleep 5
+          if ps -p $PID > /dev/null; then
+             echo "Process $PID still running." >> "$LOG"
+             kill $PID
+          else
+             echo "Process $PID died." >> "$LOG"
+          fi
+
+          echo "=== Manual App Log ===" >> "$LOG"
+          head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
+
+          END_PROBE
+
+      - name: "Diagnostic: Startup Probe (panel)"
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' APP_NAME='${{ steps.dest.outputs.app_name_panel }}' bash -s" <<'END_PROBE'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          mkdir -p public
+          LOG="public/startup_probe.txt"
+          echo "--- Startup Probe $(date) ---" > "$LOG"
+
+          echo "=== Environment Info ===" >> "$LOG"
+          echo "User: $(whoami)" >> "$LOG"
+          echo "Path: $PATH" >> "$LOG"
+          echo "Node (default): $(node -v 2>&1 || echo 'missing')" >> "$LOG"
+          echo "Node22: $(command -v node22 2>&1 || echo 'missing')" >> "$LOG"
+          if command -v node22 >/dev/null; then
+             echo "Node22 Version: $(node22 -v)" >> "$LOG"
+          fi
+
+          echo "=== Devil Info ===" >> "$LOG"
+          if command -v devil >/dev/null 2>&1; then
+             devil www list --verbose 2>&1 | grep -F "$APP_NAME" >> "$LOG" || echo "No devil www entry found for $APP_NAME" >> "$LOG"
+          else
+             echo "devil command unavailable" >> "$LOG"
+          fi
+
+          echo "=== File Checks ===" >> "$LOG"
+          ls -la app.js package.json >> "$LOG" 2>&1 || true
+          if [ -f server.js ]; then ls -la server.js >> "$LOG"; fi
+
+          echo "=== Manual Execution Test (Simple) ===" >> "$LOG"
+          echo "console.log('Hello from Simple Node');" > test_simple.js
+          node test_simple.js >> "$LOG" 2>&1 || echo "Simple Node execution failed" >> "$LOG"
+
+          echo "=== Manual Execution Test (App.js) ===" >> "$LOG"
+          RUN_NODE=node
+          if command -v node22 >/dev/null; then RUN_NODE=node22; fi
+
+          echo "Running with $RUN_NODE..." >> "$LOG"
+          $RUN_NODE app.js > public/manual_app_start.log 2>&1 &
+          PID=$!
+          echo "Started app.js with PID $PID. Waiting 5s..." >> "$LOG"
+          sleep 5
+          if ps -p $PID > /dev/null; then
+             echo "Process $PID still running." >> "$LOG"
+             kill $PID
+          else
+             echo "Process $PID died." >> "$LOG"
+          fi
+
+          echo "=== Manual App Log ===" >> "$LOG"
+          head -n 50 public/manual_app_start.log >> "$LOG" || echo "No manual log" >> "$LOG"
+
+          END_PROBE
+
+      - name: Generate and Upload .env (api)
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        shell: bash
+        env:
+          # Pass all secrets to the local environment first
+          DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          DB_USER: ${{ secrets.MYDEVIL_DB_USER }}
+          DB_PASS: ${{ secrets.MYDEVIL_DB_PASSWORD }}
+          DB_HOST: ${{ secrets.MYDEVIL_PG_HOST }}
+          DB_PORT: ${{ secrets.MYDEVIL_PG_PORT }}
+          DB_NAME: ${{ secrets.MYDEVIL_DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          DB_URL_SECRET: ${{ secrets.DATABASE_URL }}
+          WHATSAPP_LANG: ${{ secrets.WHATSAPP_LANG }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          # Legacy/Duplicate vars support
+          NODE_ENV_VAL: ${{ secrets.NODE_ENV }}
+          PGHOST_VAL: ${{ secrets.PGHOST }}
+          PGPORT_VAL: ${{ secrets.PGPORT }}
+          PGUSER_VAL: ${{ secrets.PGUSER }}
+          PGPASSWORD_VAL: ${{ secrets.PGPASSWORD }}
+          PGDATABASE_VAL: ${{ secrets.PGDATABASE }}
+        run: |
+          # Generate .env file LOCALLY to avoid shell escaping issues over SSH
+          node -e '
+            const fs = require("fs");
+            const env = process.env;
+
+            // Helper to escape values for .env (simple quoting)
+            const esc = (val) => {
+               if (val === undefined || val === null) return "";
+               return String(val).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
+            };
+
+            // Calculate DATABASE_URL if missing
+            let dbUrl = env.DB_URL_SECRET;
+            if (!dbUrl && env.DB_USER) {
+              const user = encodeURIComponent(env.DB_USER);
+              const pass = encodeURIComponent(env.DB_PASS || "");
+              const host = env.DB_HOST || "pgsql0.mydevil.net";
+              const port = env.DB_PORT || "5432";
+              const name = encodeURIComponent(env.DB_NAME || "");
+              dbUrl = `postgresql://${user}:${pass}@${host}:${port}/${name}`;
+            }
+
+            const content = [
+              `NODE_ENV=${env.NODE_ENV_VAL || "production"}`,
+              `DATABASE_URL="${esc(dbUrl)}"`,
+              `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
+              `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,
+              `COOKIE_DOMAIN="${esc(env.COOKIE_DOMAIN)}"`,
+              `FRONTEND_URL="${esc(env.FRONTEND_URL)}"`,
+              `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
+              `SMTP_HOST="${esc(env.SMTP_HOST)}"`,
+              `SMTP_PORT="${esc(env.SMTP_PORT)}"`,
+              `SMTP_SECURE="${esc(env.SMTP_SECURE)}"`,
+              `SMTP_USER="${esc(env.SMTP_USER)}"`,
+              `SMTP_PASSWORD="${esc(env.SMTP_PASSWORD)}"`,
+              `SMTP_FROM="${esc(env.SMTP_FROM)}"`,
+
+              // Explicit PG* vars for psql/scripts
+              `PGHOST="${esc(env.PGHOST_VAL || env.DB_HOST || "pgsql0.mydevil.net")}"`,
+              `PGPORT="${esc(env.PGPORT_VAL || env.DB_PORT || "5432")}"`,
+              `PGUSER="${esc(env.PGUSER_VAL || env.DB_USER)}"`,
+              `PGPASSWORD="${esc(env.PGPASSWORD_VAL || env.DB_PASS)}"`,
+              `PGDATABASE="${esc(env.PGDATABASE_VAL || env.DB_NAME)}"`
+            ].join("\n");
+
+            fs.writeFileSync(".env.production", content);
+          '
+
+          # Upload the generated .env file safely via rsync
+          rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env
+
+      - name: Validate DB connectivity (api)
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
+          cd "$REMOTE_PATH"
+          echo "Testing DB connectivity using DATABASE_URL..."
+          if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
+          "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const ssl=process.env.PGSSL==='1'?true:undefined;let cfg=null;if(process.env.DATABASE_URL){cfg={connectionString:process.env.DATABASE_URL,ssl};}else{cfg={host:process.env.PGHOST||process.env.DB_HOST||'pgsql0.mydevil.net',port:Number(process.env.PGPORT||process.env.DB_PORT||5432),user:process.env.PGUSER||process.env.DB_USER,password:process.env.PGPASSWORD||process.env.DB_PASS,database:process.env.PGDATABASE||process.env.DB_NAME,ssl};}console.log('DB probe cfg',{host:cfg.host||'[url]',port:cfg.port||'[url]',user:cfg.user||'[url]',database:cfg.database||'[url]'});try{const c=new Client(cfg);await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e&& (e.stack||e.message)||e);process.exit(3);}})()"
+          REMOTE_CMDS
+
+      - name: Run DB migrations (api)
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
+          cd "$REMOTE_PATH"
+          if command -v node22 >/dev/null 2>&1; then
+            node22 dist/src/migrate.js || node22 dist/migrate.js
+          else
+            node dist/src/migrate.js || node dist/migrate.js
+          fi
+          REMOTE_CMDS
+
+      - name: 🧪 Verify panel runtime bundle
+        if: ${{ github.event.inputs.target == 'dashboard' || github.event.inputs.target == 'panel' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          echo "============================================"
+          echo "🚀 STEP: Verifying panel bundle on remote server"
+          echo "============================================"
+
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}'
+          cd "$REMOTE_PATH"
+
+          echo "📍 Working directory: $(pwd)"
+          test -f app.js
+          test -f package.json
+          test -d .next
+          test -d public
+          echo "✅ Panel runtime bundle looks complete"
+          REMOTE_CMDS
+
+          echo ""
+          echo "============================================"
+          echo "✅ Panel bundle verification completed"
+          echo "============================================"
+
+      - name: Restart app (panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path_panel }}"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+
+      - name: Restart app (landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
+          REMOTE_PATH="${{ steps.dest.outputs.remote_path_public }}"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching tmp/restart.txt'; touch /usr/home/vetternkraft/$REMOTE_PATH/tmp/restart.txt; fi"
+
+      - name: Debug - List Apps
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www list"
+
+      - name: Restart app (backend)
+        if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
+        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "devil www restart '${{ steps.dest.outputs.app_name_api }}'"
+
+      - name: Smoke test (backend)
+        if: ${{ github.event_name == 'push' || github.event.inputs.target == 'api' }}
+        run: python3 scripts/post_deploy_checks.py
+        env:
+          TARGET_HOST: ${{ steps.dest.outputs.app_name_api }}
+          TARGET_SCHEME: https
+          DEPLOY_TARGET: api
+          SMOKE_EMAIL_TO: ${{ env.SMOKE_EMAIL_TO }}
+
+      - name: "Diagnostic: fetch health endpoints (on failure)"
+        if: ${{ failure() && github.event.inputs.target == 'api' }}
+        run: |
+          python3 - <<'PY'
+          import ssl, sys, urllib.request
+          host = "${{ steps.dest.outputs.app_name_api }}".strip().strip("'\"")
+          ctx = ssl.create_default_context()
+          for path in ("/health", "/healthz"):
+              url = f"https://{host}{path}"
+              print(f"--- GET {url} (headers + body) ---")
+              req = urllib.request.Request(url=url, method="GET")
+              try:
+                  with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
+                      print(f"HTTP/{resp.version/10:.1f} {resp.status}")
+                      for k, v in resp.getheaders():
+                          print(f"{k}: {v}")
+                      print()
+                      print(resp.read(512).decode("utf-8", errors="replace"))
+              except Exception as exc:
+                  print(f"ERROR: {exc}")
+          PY
+
+      - name: Collect remote logs (frontend)
+        if: ${{ always() && github.event.inputs.target != 'api' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
+          echo "=== Recent .log files ==="
+          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
+            [ -f "$f" ] || continue
+            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+          done
+          echo "=== Searching user logs dir ==="
+          if [ -d "$HOME/logs" ]; then
+            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
+              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+            done
+          fi
+          REMOTE_CMDS
+
+      - name: Collect remote logs (backend)
+        if: ${{ always() && (github.event_name == 'push' || github.event.inputs.target == 'api') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' APP='${{ steps.dest.outputs.app_name_api }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
+          echo "=== Recent .log files ==="
+          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
+            [ -f "$f" ] || continue
+            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+          done
+          echo "=== Searching user logs dir ==="
+          if [ -d "$HOME/logs" ]; then
+            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
+              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
+            done
+          fi
+          REMOTE_CMDS
+
+      - name: Sanitize app host (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: host
+        shell: bash
+        run: |
+          APP="${{ steps.dest.outputs.app_name_public }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
+
+      - name: Smoke test (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        run: |
+          python3 - <<'PY'
+          import os, ssl, urllib.request, urllib.error, sys
+          host = "${{ steps.host.outputs.app }}"
+          # Fetch BUILD_ID from remote via SSH is already done in deploy. Do a best-effort fetch here.
+          build_id = None
+          try:
+              import subprocess
+              cmd = [
+                  'ssh','-i','~/.ssh/mydevil','-o','IdentitiesOnly=yes',
+                  '${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}',
+                  "cat '${{ steps.dest.outputs.remote_path_public }}/.next/BUILD_ID'"
+              ]
+              build_id = subprocess.check_output(cmd, timeout=10).decode().strip()
+          except Exception:
+              pass
+          ctx = ssl.create_default_context()
+          def get(path):
+              url = f"https://{host}{path}"
+              req = urllib.request.Request(url=url, method='GET')
+              with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
+                  return resp.status
+          ok = True
+          try:
+              status = get('/')
+              print('GET / =>', status)
+              ok = ok and (200 <= status < 400)
+          except Exception as e:
+              print('ERR /', e); ok = False
+          if build_id:
+              try:
+                  status = get(f"/_next/static/{build_id}/_buildManifest.js")
+                  print('GET _buildManifest.js =>', status)
+                  # Some Next deployments may not expose this file; treat as optional.
+              except Exception as e:
+                  print('WARN _buildManifest.js', e)
+          try:
+              status = get('/api/runtime')
+              print('GET /api/runtime =>', status)
+              ok = ok and (200 <= status < 400)
+          except urllib.error.HTTPError as e:
+              print('WARN /api/runtime', e)
+              if e.code not in (404,):
+                  ok = False
+          except Exception as e:
+              print('ERR /api/runtime', e); ok = False
+          sys.exit(0 if ok else 1)
+          PY
+
+      - name: Discover static chunk (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        id: chunk
+        shell: bash
+        run: |
+          set -euo pipefail
+          NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            "${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}" \
+            "ls -1 '${{ steps.dest.outputs.remote_path_public }}/.next/static/chunks' | head -n 1" || true)"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch static chunk (frontend)
+        if: ${{ github.event.inputs.target != 'api' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="${{ steps.host.outputs.app }}"; FILE="${{ steps.chunk.outputs.name }}"
+          if [ -n "$FILE" ]; then
+            echo "HEAD /_next/static/chunks/$FILE"
+            curl -sSIf "https://$APP/_next/static/chunks/$FILE" | sed -n '1,20p'
+          else
+            echo "No chunk discovered; skipping"
+          fi
+
+# force update

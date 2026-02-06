@@ -20,50 +20,60 @@ export default function SelectorModal({
     );
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl">
-                <div className="border-b border-gray-200 p-4">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                        {title}
-                    </h2>
-                    <input
-                        type="text"
-                        className="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                        placeholder="Szukaj..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        aria-label="Szukaj"
-                    />
-                </div>
-                <div className="max-h-64 overflow-y-auto p-2">
-                    {filteredItems.length === 0 ? (
-                        <p className="p-4 text-center text-sm text-gray-500">
-                            Brak wyników
-                        </p>
-                    ) : (
-                        <ul className="space-y-1">
-                            {filteredItems.map((item) => (
-                                <li key={item.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => onSelect(item.id)}
-                                        className="w-full rounded px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                    >
-                                        {item.name}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-                <div className="border-t border-gray-200 p-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="w-full rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                        Anuluj
-                    </button>
+        <div className="modal-backdrop fade in">
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <button
+                            type="button"
+                            className="close"
+                            onClick={onClose}
+                            aria-label="Zamknij"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 className="modal-title">{title}</h4>
+                        <div className="mt-2">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Szukaj..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                aria-label="Szukaj"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    <div className="modal-body modal-body-scroll">
+                        {filteredItems.length === 0 ? (
+                            <div className="text-center p-3 versum-muted">
+                                Brak wyników
+                            </div>
+                        ) : (
+                            <ul className="nav nav-list">
+                                {filteredItems.map((item) => (
+                                    <li key={item.id}>
+                                        <a
+                                            href="javascript:;"
+                                            onClick={() => onSelect(item.id)}
+                                        >
+                                            {item.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={onClose}
+                        >
+                            Anuluj
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

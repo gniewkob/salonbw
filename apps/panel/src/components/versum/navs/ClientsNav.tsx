@@ -91,143 +91,131 @@ export default function ClientsNav() {
     };
 
     return (
-        <>
-            <section className="versum-secondarynav__section">
-                <h4>
-                    GRUPY KLIENTÓW
-                    <button
-                        className="versum-secondarynav__add-btn"
-                        title="Dodaj grupę"
-                        onClick={() => setShowCreateGroupModal(true)}
+        <div className="sidebar-inner nav-scroll-container">
+            <div className="nav-header">
+                GRUPY KLIENTÓW
+                <a
+                    className="pull-right"
+                    href="javascript:;"
+                    title="Dodaj grupę"
+                    onClick={() => setShowCreateGroupModal(true)}
+                >
+                    + dodaj
+                </a>
+            </div>
+            <ul className="nav nav-list">
+                {QUICK_GROUPS.map((group) => (
+                    <li
+                        key={group.id}
+                        className={
+                            activeQuickGroup === group.id ? 'active' : undefined
+                        }
                     >
-                        + dodaj
-                    </button>
-                </h4>
-                <ul>
-                    {QUICK_GROUPS.map((group) => (
-                        <li
-                            key={group.id}
-                            className={
-                                activeQuickGroup === group.id
-                                    ? 'is-active'
-                                    : undefined
+                        <a
+                            href="javascript:;"
+                            onClick={() =>
+                                updateFilters({
+                                    groupId: undefined,
+                                    tagId: undefined,
+                                })
                             }
                         >
+                            {group.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+
+            {groups && groups.length > 0 && (
+                <ul className="nav nav-list">
+                    {(showMoreGroups ? groups : groups.slice(0, 3)).map(
+                        (group) => (
+                            <li
+                                key={group.id}
+                                className={
+                                    currentGroupId === group.id
+                                        ? 'active'
+                                        : undefined
+                                }
+                            >
+                                <a
+                                    href="javascript:;"
+                                    onClick={() =>
+                                        updateFilters({ groupId: group.id })
+                                    }
+                                >
+                                    {group.color && (
+                                        <span
+                                            className="versum-chip"
+                                            style={{
+                                                backgroundColor: group.color,
+                                            }}
+                                        />
+                                    )}
+                                    {group.name}
+                                    {group.memberCount !== undefined && (
+                                        <span className="versum-muted ml-auto">
+                                            {group.memberCount}
+                                        </span>
+                                    )}
+                                </a>
+                            </li>
+                        ),
+                    )}
+                    {groups.length > 3 && (
+                        <li>
                             <button
                                 onClick={() =>
-                                    updateFilters({
-                                        groupId: undefined,
-                                        tagId: undefined,
-                                    })
+                                    setShowMoreGroups(!showMoreGroups)
                                 }
-                                className="versum-secondarynav__item-btn"
+                                className="versum-secondarynav__more-btn"
                             >
-                                {group.label}
+                                + {showMoreGroups ? 'mniej' : 'więcej'}
                             </button>
                         </li>
-                    ))}
+                    )}
                 </ul>
+            )}
 
-                {groups && groups.length > 0 && (
-                    <ul className="versum-secondarynav__sublist">
-                        {(showMoreGroups ? groups : groups.slice(0, 3)).map(
-                            (group) => (
-                                <li
-                                    key={group.id}
-                                    className={
-                                        currentGroupId === group.id
-                                            ? 'is-active'
-                                            : undefined
-                                    }
-                                >
-                                    <button
-                                        onClick={() =>
-                                            updateFilters({ groupId: group.id })
-                                        }
-                                        className="versum-secondarynav__item-btn"
-                                    >
-                                        {group.color && (
-                                            <span
-                                                className="versum-chip"
-                                                style={{
-                                                    backgroundColor:
-                                                        group.color,
-                                                }}
-                                            />
-                                        )}
-                                        {group.name}
-                                        {group.memberCount !== undefined && (
-                                            <span className="versum-muted ml-auto">
-                                                {group.memberCount}
-                                            </span>
-                                        )}
-                                    </button>
-                                </li>
-                            ),
-                        )}
-                        {groups.length > 3 && (
-                            <li>
-                                <button
-                                    onClick={() =>
-                                        setShowMoreGroups(!showMoreGroups)
-                                    }
-                                    className="versum-secondarynav__more-btn"
-                                >
-                                    + {showMoreGroups ? 'mniej' : 'więcej'}
-                                </button>
-                            </li>
-                        )}
-                    </ul>
-                )}
-            </section>
+            <div className="nav-header">WYBIERZ KRYTERIA</div>
+            <ul className="nav nav-list">
+                {(showMoreCriteria
+                    ? FILTER_CRITERIA
+                    : FILTER_CRITERIA.slice(0, 3)
+                ).map((criterion) => {
+                    const isActive =
+                        (criterion.id === 'has_visit' &&
+                            router.query.hasUpcomingVisit === 'true') ||
+                        (criterion.id === 'used_services' &&
+                            router.query.serviceId !== undefined) ||
+                        (criterion.id === 'by_employee' &&
+                            router.query.employeeId !== undefined);
 
-            <section className="versum-secondarynav__section">
-                <h4>WYBIERZ KRYTERIA</h4>
-                <ul>
-                    {(showMoreCriteria
-                        ? FILTER_CRITERIA
-                        : FILTER_CRITERIA.slice(0, 3)
-                    ).map((criterion) => {
-                        const isActive =
-                            (criterion.id === 'has_visit' &&
-                                router.query.hasUpcomingVisit === 'true') ||
-                            (criterion.id === 'used_services' &&
-                                router.query.serviceId !== undefined) ||
-                            (criterion.id === 'by_employee' &&
-                                router.query.employeeId !== undefined);
-
-                        return (
-                            <li
-                                key={criterion.id}
-                                className={isActive ? 'is-active' : undefined}
-                            >
-                                <button
-                                    className={
-                                        isActive
-                                            ? 'versum-secondarynav__item-btn is-active'
-                                            : 'versum-secondarynav__item-btn'
-                                    }
-                                    onClick={() =>
-                                        handleCriteriaClick(criterion.id)
-                                    }
-                                >
-                                    {criterion.label}
-                                </button>
-                            </li>
-                        );
-                    })}
-                    <li>
-                        <button
-                            onClick={() =>
-                                setShowMoreCriteria(!showMoreCriteria)
-                            }
-                            className="versum-secondarynav__more-btn"
+                    return (
+                        <li
+                            key={criterion.id}
+                            className={isActive ? 'active' : undefined}
                         >
-                            + {showMoreCriteria ? 'mniej' : 'więcej'}
-                        </button>
-                    </li>
-                </ul>
-            </section>
+                            <a
+                                href="javascript:;"
+                                onClick={() =>
+                                    handleCriteriaClick(criterion.id)
+                                }
+                            >
+                                {criterion.label}
+                            </a>
+                        </li>
+                    );
+                })}
+                <li>
+                    <button
+                        onClick={() => setShowMoreCriteria(!showMoreCriteria)}
+                        className="versum-secondarynav__more-btn"
+                    >
+                        + {showMoreCriteria ? 'mniej' : 'więcej'}
+                    </button>
+                </li>
+            </ul>
 
             {tags && tags.length > 0 && (
                 <section className="versum-secondarynav__section">
@@ -290,6 +278,6 @@ export default function ClientsNav() {
                     onClose={() => setShowEmployeeSelector(false)}
                 />
             )}
-        </>
+        </div>
     );
 }

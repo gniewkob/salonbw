@@ -102,141 +102,195 @@ export default function CustomerFilesTab({ customerId }: Props) {
     }
 
     return (
-        <div className="space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">
-                    Dokumenty klienta
-                </h3>
-                <button
-                    onClick={handleUpload}
-                    className="rounded bg-cyan-600 px-3 py-1.5 text-sm text-white hover:bg-cyan-700"
-                >
-                    + Dodaj plik
-                </button>
-            </div>
+        <div className="row">
+            <div className="col-sm-12">
+                <div className="versum-widget">
+                    <div className="versum-widget__header flex-between">
+                        <span>Dokumenty klienta</span>
+                        <button
+                            onClick={handleUpload}
+                            className="btn btn-primary btn-xs"
+                        >
+                            + Dodaj plik
+                        </button>
+                    </div>
 
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-                <button
-                    onClick={() => setFilterCategory('all')}
-                    className={`rounded-full px-3 py-1 text-sm transition-colors ${
-                        filterCategory === 'all'
-                            ? 'bg-cyan-600 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                >
-                    Wszystkie
-                </button>
-                {Object.entries(categoryConfig).map(([key, config]) => (
-                    <button
-                        key={key}
-                        onClick={() => setFilterCategory(key as FileCategory)}
-                        className={`rounded-full px-3 py-1 text-sm transition-colors ${
-                            filterCategory === key
-                                ? 'bg-cyan-600 text-white'
-                                : `${config.color} hover:opacity-80`
-                        }`}
-                    >
-                        {config.icon} {config.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* File List */}
-            {filteredFiles.length > 0 ? (
-                <div className="divide-y rounded-lg border bg-white">
-                    {filteredFiles.map((file) => {
-                        const config =
-                            categoryConfig[file.category] ||
-                            categoryConfig.other;
-                        return (
-                            <div
-                                key={file.id}
-                                className="flex items-center gap-4 p-4 hover:bg-gray-50"
-                            >
-                                {/* Icon */}
-                                <div
-                                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${config.color}`}
+                    <div className="versum-widget__content">
+                        {/* Category Filter */}
+                        <div
+                            style={{
+                                marginBottom: '20px',
+                                borderBottom: '1px solid #eee',
+                                paddingBottom: '10px',
+                            }}
+                        >
+                            <div className="btn-group">
+                                <button
+                                    onClick={() => setFilterCategory('all')}
+                                    className={`btn btn-xs ${filterCategory === 'all' ? 'btn-primary' : 'btn-default'}`}
                                 >
-                                    <span className="text-lg">
-                                        {config.icon}
-                                    </span>
-                                </div>
-
-                                {/* File Info */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-medium text-gray-800 truncate">
-                                            {file.name}
-                                        </span>
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${config.color}`}
+                                    Wszystkie
+                                </button>
+                                {Object.entries(categoryConfig).map(
+                                    ([key, config]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() =>
+                                                setFilterCategory(
+                                                    key as FileCategory,
+                                                )
+                                            }
+                                            className={`btn btn-xs ${filterCategory === key ? 'btn-primary' : 'btn-default'}`}
                                         >
                                             {config.label}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                                        <span>{formatFileSize(file.size)}</span>
-                                        <span>
-                                            {new Date(
-                                                file.createdAt,
-                                            ).toLocaleDateString('pl-PL')}
-                                        </span>
-                                        {file.uploadedBy && (
-                                            <span>
-                                                Dodał: {file.uploadedBy.name}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {file.description && (
-                                        <p className="mt-1 text-sm text-gray-500 truncate">
-                                            {file.description}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleDownload(file)}
-                                        className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-cyan-600"
-                                        title="Pobierz"
-                                    >
-                                        ⬇️
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(file.id)}
-                                        className="rounded p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                                        title="Usuń"
-                                    >
-                                        🗑️
-                                    </button>
-                                </div>
+                                        </button>
+                                    ),
+                                )}
                             </div>
-                        );
-                    })}
+                        </div>
+
+                        {/* File Table */}
+                        {filteredFiles.length > 0 ? (
+                            <table
+                                className="versum-table"
+                                style={{ fontSize: '13px' }}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '40px' }}></th>
+                                        <th>Nazwa pliku</th>
+                                        <th>Kategoria</th>
+                                        <th>Rozmiar</th>
+                                        <th>Data dodania</th>
+                                        <th style={{ width: '80px' }}>Opcje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredFiles.map((file) => (
+                                        <tr key={file.id}>
+                                            <td
+                                                className="text-center"
+                                                style={{ fontSize: '18px' }}
+                                            >
+                                                {categoryConfig[file.category]
+                                                    ?.icon || '📎'}
+                                            </td>
+                                            <td>
+                                                <div
+                                                    style={{ fontWeight: 600 }}
+                                                >
+                                                    {file.name}
+                                                </div>
+                                                {file.description && (
+                                                    <div
+                                                        className="text-muted"
+                                                        style={{
+                                                            fontSize: '11px',
+                                                        }}
+                                                    >
+                                                        {file.description}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span
+                                                    className="label label-default"
+                                                    style={{ fontWeight: 400 }}
+                                                >
+                                                    {
+                                                        categoryConfig[
+                                                            file.category
+                                                        ]?.label
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td className="text-muted">
+                                                {formatFileSize(file.size)}
+                                            </td>
+                                            <td className="text-muted">
+                                                {new Date(
+                                                    file.createdAt,
+                                                ).toLocaleDateString('pl-PL')}
+                                                {file.uploadedBy && (
+                                                    <div
+                                                        style={{
+                                                            fontSize: '10px',
+                                                        }}
+                                                    >
+                                                        przez:{' '}
+                                                        {file.uploadedBy.name}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div className="btn-group">
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDownload(file)
+                                                        }
+                                                        className="btn btn-default btn-xs"
+                                                        title="Pobierz"
+                                                    >
+                                                        <i className="fa fa-download"></i>{' '}
+                                                        ↓
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                file.id,
+                                                            )
+                                                        }
+                                                        className="btn btn-danger btn-xs"
+                                                        title="Usuń"
+                                                    >
+                                                        <i className="fa fa-trash"></i>{' '}
+                                                        🗑
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div
+                                className="text-center text-muted"
+                                style={{ padding: '60px 0' }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: '32px',
+                                        marginBottom: '10px',
+                                    }}
+                                >
+                                    📁
+                                </div>
+                                <p
+                                    style={{
+                                        fontSize: '14px',
+                                        marginBottom: '5px',
+                                    }}
+                                >
+                                    {filterCategory === 'all'
+                                        ? 'Brak dokumentów klienta.'
+                                        : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as FileCategory].label}".`}
+                                </p>
+                                <p style={{ fontSize: '11px' }}>
+                                    Dodaj zgody, umowy lub inne dokumenty
+                                    związane z klientem.
+                                </p>
+                                <button
+                                    onClick={handleUpload}
+                                    className="btn btn-default btn-xs"
+                                    style={{ marginTop: '15px' }}
+                                >
+                                    Dodaj pierwszy dokument
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            ) : (
-                <div className="rounded-lg border bg-gray-50 p-8 text-center">
-                    <div className="mb-2 text-4xl">📁</div>
-                    <p className="text-gray-500">
-                        {filterCategory === 'all'
-                            ? 'Brak dokumentów klienta.'
-                            : `Brak dokumentów w kategorii "${categoryConfig[filterCategory].label}".`}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-400">
-                        Dodaj zgody, umowy lub inne dokumenty związane z
-                        klientem.
-                    </p>
-                    <button
-                        onClick={handleUpload}
-                        className="mt-4 rounded bg-cyan-600 px-4 py-2 text-sm text-white hover:bg-cyan-700"
-                    >
-                        Dodaj pierwszy dokument
-                    </button>
-                </div>
-            )}
+            </div>
         </div>
     );
 }

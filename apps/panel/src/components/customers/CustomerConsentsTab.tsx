@@ -33,174 +33,250 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
     };
 
     return (
-        <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">
-                Zgody i preferencje
-            </h3>
-
-            {/* GDPR Consent */}
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <h4 className="mb-4 text-sm font-semibold text-gray-700">
-                    Zgoda RODO
-                </h4>
-                <div className="space-y-4">
-                    <label className="flex cursor-pointer items-start gap-3">
-                        <input
-                            type="checkbox"
-                            checked={customer.gdprConsent}
-                            onChange={(e) =>
-                                handleConsentChange(
-                                    'gdprConsent',
-                                    e.target.checked,
-                                )
-                            }
-                            className="mt-1 h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-                        />
-                        <div>
-                            <span className="font-medium text-gray-700">
-                                Wyrażam zgodę na przetwarzanie danych osobowych
-                            </span>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Zgoda na przetwarzanie danych osobowych w celach
-                                związanych z realizacją usług salonu zgodnie z
-                                RODO.
-                            </p>
-                        </div>
-                    </label>
-                    {customer.gdprConsentDate && (
-                        <div className="ml-7 text-sm text-gray-500">
-                            Data wyrażenia zgody:{' '}
-                            {formatDate(customer.gdprConsentDate)}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Marketing Consents */}
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <h4 className="mb-4 text-sm font-semibold text-gray-700">
-                    Zgody marketingowe
-                </h4>
-                <div className="space-y-4">
-                    <label className="flex cursor-pointer items-start gap-3">
-                        <input
-                            type="checkbox"
-                            checked={customer.smsConsent}
-                            onChange={(e) =>
-                                handleConsentChange(
-                                    'smsConsent',
-                                    e.target.checked,
-                                )
-                            }
-                            className="mt-1 h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-                        />
-                        <div>
-                            <span className="font-medium text-gray-700">
-                                Zgoda na SMS
-                            </span>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Wyrażam zgodę na otrzymywanie wiadomości SMS z
-                                przypomnieniami o wizytach oraz ofertami
-                                promocyjnymi.
-                            </p>
-                        </div>
-                    </label>
-
-                    <label className="flex cursor-pointer items-start gap-3">
-                        <input
-                            type="checkbox"
-                            checked={customer.emailConsent}
-                            onChange={(e) =>
-                                handleConsentChange(
-                                    'emailConsent',
-                                    e.target.checked,
-                                )
-                            }
-                            className="mt-1 h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-                        />
-                        <div>
-                            <span className="font-medium text-gray-700">
-                                Zgoda na e-mail
-                            </span>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Wyrażam zgodę na otrzymywanie wiadomości e-mail
-                                z informacjami o nowościach, promocjach i
-                                newsletterach.
-                            </p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            {/* Privacy Information */}
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-                <h4 className="mb-2 text-sm font-semibold text-blue-800">
-                    ℹ️ Informacja o przetwarzaniu danych
-                </h4>
-                <div className="space-y-2 text-sm text-blue-700">
-                    <p>
-                        Administratorem danych osobowych jest właściciel salonu.
-                        Dane przetwarzane są w celu realizacji usług oraz, za
-                        zgodą, w celach marketingowych.
-                    </p>
-                    <p>
-                        Klient ma prawo do: dostępu do swoich danych, ich
-                        sprostowania, usunięcia, ograniczenia przetwarzania,
-                        przenoszenia oraz wniesienia sprzeciwu wobec
-                        przetwarzania.
-                    </p>
-                    <p>
-                        W każdej chwili można wycofać zgodę kontaktując się z
-                        recepcją salonu lub poprzez panel klienta.
-                    </p>
-                </div>
-            </div>
-
-            {/* Consent History (placeholder) */}
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <h4 className="mb-4 text-sm font-semibold text-gray-700">
-                    Historia zmian zgód
-                </h4>
-                <div className="text-sm text-gray-500">
-                    <table className="w-full">
-                        <thead className="border-b">
-                            <tr>
-                                <th className="py-2 text-left font-medium">
-                                    Data
-                                </th>
-                                <th className="py-2 text-left font-medium">
-                                    Zgoda
-                                </th>
-                                <th className="py-2 text-left font-medium">
-                                    Zmiana
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {customer.gdprConsentDate && (
-                                <tr className="border-b">
-                                    <td className="py-2">
-                                        {formatDate(customer.gdprConsentDate)}
-                                    </td>
-                                    <td className="py-2">RODO</td>
-                                    <td className="py-2">
-                                        <span className="text-green-600">
-                                            Wyrażono zgodę
-                                        </span>
-                                    </td>
-                                </tr>
-                            )}
-                            <tr>
-                                <td className="py-2" colSpan={3}>
-                                    {!customer.gdprConsentDate && (
-                                        <span className="text-gray-400">
-                                            Brak zapisanej historii
-                                        </span>
+        <div className="row">
+            <div className="col-sm-12">
+                <div className="versum-widget">
+                    <div className="versum-widget__header">
+                        <span>Zgody i preferencje</span>
+                    </div>
+                    <div className="versum-widget__content">
+                        {/* GDPR Consent */}
+                        <div
+                            className="versum-panel-sub"
+                            style={{ marginBottom: '20px', padding: '15px' }}
+                        >
+                            <div className="row">
+                                <div className="col-sm-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={customer.gdprConsent}
+                                        onChange={(e) =>
+                                            handleConsentChange(
+                                                'gdprConsent',
+                                                e.target.checked,
+                                            )
+                                        }
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                        }}
+                                    />
+                                </div>
+                                <div className="col-sm-11">
+                                    <div
+                                        style={{
+                                            fontWeight: 600,
+                                            fontSize: '13px',
+                                            color: '#333',
+                                        }}
+                                    >
+                                        Ochrona danych osobowych (RODO)
+                                    </div>
+                                    <p
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '12px',
+                                            margin: '5px 0',
+                                        }}
+                                    >
+                                        Wyrażam zgodę na przetwarzanie danych
+                                        osobowych w celach związanych z
+                                        realizacją usług salonu zgodnie z RODO.
+                                    </p>
+                                    {customer.gdprConsentDate && (
+                                        <div
+                                            style={{
+                                                fontSize: '11px',
+                                                color: '#999',
+                                            }}
+                                        >
+                                            Data wyrażenia zgody:{' '}
+                                            {formatDate(
+                                                customer.gdprConsentDate,
+                                            )}
+                                        </div>
                                     )}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Marketing Consents */}
+                        <div
+                            className="versum-panel-sub"
+                            style={{ marginBottom: '20px', padding: '15px' }}
+                        >
+                            <div
+                                className="row"
+                                style={{ marginBottom: '15px' }}
+                            >
+                                <div className="col-sm-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={customer.smsConsent}
+                                        onChange={(e) =>
+                                            handleConsentChange(
+                                                'smsConsent',
+                                                e.target.checked,
+                                            )
+                                        }
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                        }}
+                                    />
+                                </div>
+                                <div className="col-sm-11">
+                                    <div
+                                        style={{
+                                            fontWeight: 600,
+                                            fontSize: '13px',
+                                            color: '#333',
+                                        }}
+                                    >
+                                        Zgoda na powiadomienia SMS
+                                    </div>
+                                    <p
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '12px',
+                                            margin: '5px 0',
+                                        }}
+                                    >
+                                        Wyrażam zgodę na otrzymywanie wiadomości
+                                        SMS z przypomnieniami o wizytach oraz
+                                        ofertami promocyjnymi.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col-sm-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={customer.emailConsent}
+                                        onChange={(e) =>
+                                            handleConsentChange(
+                                                'emailConsent',
+                                                e.target.checked,
+                                            )
+                                        }
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                        }}
+                                    />
+                                </div>
+                                <div className="col-sm-11">
+                                    <div
+                                        style={{
+                                            fontWeight: 600,
+                                            fontSize: '13px',
+                                            color: '#333',
+                                        }}
+                                    >
+                                        Zgoda na newsletter e-mail
+                                    </div>
+                                    <p
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '12px',
+                                            margin: '5px 0',
+                                        }}
+                                    >
+                                        Wyrażam zgodę na otrzymywanie wiadomości
+                                        e-mail z informacjami o nowościach,
+                                        promocjach i newsletterach.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Privacy Information Alert */}
+                        <div
+                            className="alert alert-info"
+                            style={{
+                                fontSize: '12px',
+                                border: '1px solid #bce8f1',
+                                background: '#d9edf7',
+                                color: '#31708f',
+                                borderRadius: '4px',
+                                padding: '15px',
+                            }}
+                        >
+                            <div
+                                style={{ fontWeight: 600, marginBottom: '5px' }}
+                            >
+                                Informacja o przetwarzaniu danych
+                            </div>
+                            <p style={{ margin: 0 }}>
+                                Administratorem danych osobowych jest właściciel
+                                salonu. Dane przetwarzane są w celu realizacji
+                                usług oraz, za zgodą, w celach marketingowych.
+                                Klient ma prawo do: dostępu do swoich danych,
+                                ich sprostowania, usunięcia, ograniczenia
+                                przetwarzania, przenoszenia oraz wniesienia
+                                sprzeciwu wobec przetwarzania.
+                            </p>
+                        </div>
+
+                        {/* History Table */}
+                        <div style={{ marginTop: '30px' }}>
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    color: '#999',
+                                    marginBottom: '10px',
+                                }}
+                            >
+                                Historia zmian zgód
+                            </div>
+                            <table
+                                className="versum-table"
+                                style={{ fontSize: '12px' }}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Zgoda</th>
+                                        <th>Zmiana</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customer.gdprConsentDate ? (
+                                        <tr>
+                                            <td>
+                                                {formatDate(
+                                                    customer.gdprConsentDate,
+                                                )}
+                                            </td>
+                                            <td>RODO</td>
+                                            <td>
+                                                <span
+                                                    style={{
+                                                        color: '#5cb85c',
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    Wyrażono zgodę
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan={3}
+                                                className="text-center text-muted"
+                                            >
+                                                Brak zapisanej historii
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

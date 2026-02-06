@@ -67,29 +67,27 @@ export default function CalendarNav() {
 
     return (
         <>
-            <section className="versum-secondarynav__section versum-secondarynav__calendar">
-                <div className="flex items-center justify-between mb-2">
-                    <h4 className="mb-0">
-                        {format(selectedDate, 'LLLL yyyy', {
-                            locale: pl,
-                        }).toUpperCase()}
-                    </h4>
-                    <div className="flex gap-1">
-                        <button
-                            onClick={() => changeMonth(-1)}
-                            className="px-1 hover:bg-gray-200 rounded"
-                        >
-                            &lt;
-                        </button>
-                        <button
-                            onClick={() => changeMonth(1)}
-                            className="px-1 hover:bg-gray-200 rounded"
-                        >
-                            &gt;
-                        </button>
-                    </div>
+            <div className="nav-header">
+                {format(selectedDate, 'LLLL yyyy', {
+                    locale: pl,
+                }).toUpperCase()}
+                <div className="pull-right">
+                    <button
+                        onClick={() => changeMonth(-1)}
+                        className="btn btn-xs btn-link"
+                    >
+                        <i className="icon-chevron-left">&lt;</i>
+                    </button>
+                    <button
+                        onClick={() => changeMonth(1)}
+                        className="btn btn-xs btn-link"
+                    >
+                        <i className="icon-chevron-right">&gt;</i>
+                    </button>
                 </div>
+            </div>
 
+            <div className="versum-mini-cal">
                 <div className="versum-mini-cal__weekdays">
                     <span>pn</span>
                     <span>wt</span>
@@ -119,47 +117,41 @@ export default function CalendarNav() {
                         );
                     })}
                 </div>
-            </section>
+            </div>
 
-            <section className="versum-secondarynav__section">
-                <h4>PRACOWNICY</h4>
-                <ul>
+            <div className="nav-header">PRACOWNICY</div>
+            <ul className="nav nav-list">
+                <li className={!selectedEmployeeId ? 'active' : undefined}>
+                    <a
+                        href="javascript:;"
+                        onClick={() => handleEmployeeClick(undefined)}
+                    >
+                        Wszyscy pracownicy
+                    </a>
+                </li>
+                {employees?.map((employee) => (
                     <li
+                        key={employee.id}
                         className={
-                            !selectedEmployeeId ? 'is-active' : undefined
+                            selectedEmployeeId === employee.id
+                                ? 'active'
+                                : undefined
                         }
                     >
-                        <button
-                            onClick={() => handleEmployeeClick(undefined)}
-                            className="versum-secondarynav__item-btn"
+                        <a
+                            href="javascript:;"
+                            onClick={() => handleEmployeeClick(employee.id)}
                         >
-                            Wszyscy pracownicy
-                        </button>
+                            <span className="versum-avatar-xs mr-2">
+                                <div className="h-4 w-4 rounded-full bg-gray-300 flex items-center justify-center text-[10px] text-white font-bold">
+                                    {employee.name.charAt(0)}
+                                </div>
+                            </span>
+                            {employee.name}
+                        </a>
                     </li>
-                    {employees?.map((employee) => (
-                        <li
-                            key={employee.id}
-                            className={
-                                selectedEmployeeId === employee.id
-                                    ? 'is-active'
-                                    : undefined
-                            }
-                        >
-                            <button
-                                onClick={() => handleEmployeeClick(employee.id)}
-                                className="versum-secondarynav__item-btn"
-                            >
-                                <span className="versum-avatar-xs mr-2">
-                                    <div className="h-4 w-4 rounded-full bg-gray-300 flex items-center justify-center text-[10px] text-white font-bold">
-                                        {employee.name.charAt(0)}
-                                    </div>
-                                </span>
-                                {employee.firstName} {employee.lastName}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                ))}
+            </ul>
         </>
     );
 }

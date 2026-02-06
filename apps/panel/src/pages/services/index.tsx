@@ -70,14 +70,14 @@ function ServicesPageContent() {
 
                     <div className="versum-page__toolbar">
                         <input
-                            className="versum-input w-[250px]"
+                            className="form-control versum-toolbar-search"
                             placeholder="wyszukaj usługę"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                         />
                         <button
                             type="button"
-                            className="versum-button"
+                            className="btn btn-primary versum-toolbar-btn"
                             onClick={() => setIsCreateModalOpen(true)}
                         >
                             dodaj usługę
@@ -108,7 +108,7 @@ function ServicesPageContent() {
                                                 <tr key={service.id}>
                                                     <td>
                                                         <Link
-                                                            className="text-sky-600 hover:underline"
+                                                            className="versum-link"
                                                             href={`/services/${service.id}`}
                                                         >
                                                             {service.name}
@@ -156,7 +156,7 @@ function ServicesPageContent() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600">
+                            <div className="versum-pagination-footer">
                                 Pozycje od 1 do {filtered.length} | na stronie{' '}
                                 {filtered.length}
                             </div>

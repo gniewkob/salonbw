@@ -54,14 +54,16 @@ interface VersumSecondaryNavProps {
 
 function renderSections(sections: SecondaryItem[]) {
     return sections.map((section) => (
-        <section key={section.label} className="versum-secondarynav__section">
-            <h4>{section.label}</h4>
-            <ul>
+        <div key={section.label}>
+            <div className="nav-header">{section.label}</div>
+            <ul className="nav nav-list">
                 {section.children?.map((child) => (
-                    <li key={child}>{child}</li>
+                    <li key={child}>
+                        <a href="javascript:;">{child}</a>
+                    </li>
                 ))}
             </ul>
-        </section>
+        </div>
     ));
 }
 
@@ -88,5 +90,9 @@ export default function VersumSecondaryNav({
         content = <ServicesNav />;
     }
 
-    return <aside className="versum-secondarynav">{content}</aside>;
+    return (
+        <div className="sidenav" id="sidenav">
+            {content}
+        </div>
+    );
 }
