@@ -76,19 +76,14 @@ const hasAuthHint = () => {
     if (typeof window === 'undefined') {
         return false;
     }
-    const cookieToken = Cookies.get('accessToken');
-    const cookieRefresh = Cookies.get('refreshToken');
+    // Note: accessToken and refreshToken are httpOnly, so Cookies.get() won't work
+    // We check sbw_auth (set by backend) and XSRF-TOKEN (also set by backend, not httpOnly)
     const cookieAuth = Cookies.get('sbw_auth');
+    const csrfToken = Cookies.get('XSRF-TOKEN');
     const storageToken = readLocalStorageValue(ACCESS_TOKEN_KEY);
     const storageRefresh = readLocalStorageValue(REFRESH_TOKEN_KEY);
 
-    return Boolean(
-        cookieToken ||
-            cookieRefresh ||
-            cookieAuth ||
-            storageToken ||
-            storageRefresh,
-    );
+    return Boolean(cookieAuth || csrfToken || storageToken || storageRefresh);
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
