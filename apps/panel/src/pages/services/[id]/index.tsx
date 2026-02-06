@@ -276,8 +276,7 @@ export default function ServiceDetailsPage() {
                             <button
                                 type="button"
                                 onClick={() => setIsVariantsModalOpen(true)}
-                                className="btn btn-default"
-                                style={{ marginLeft: '8px' }}
+                                className="btn btn-default ml-8"
                             >
                                 zarządzaj wariantami
                             </button>
@@ -303,10 +302,7 @@ export default function ServiceDetailsPage() {
                     </ul>
                 </header>
 
-                <div
-                    className="versum-page-content"
-                    style={{ marginTop: '20px' }}
-                >
+                <div className="versum-page-content mt-20">
                     <section className="versum-widget">
                         {activeTab === 'summary' && (
                             <div>
@@ -319,10 +315,7 @@ export default function ServiceDetailsPage() {
                                     </div>
                                 </div>
 
-                                <div
-                                    className="versum-table-wrap"
-                                    style={{ marginBottom: '20px' }}
-                                >
+                                <div className="versum-table-wrap mb-20">
                                     <table className="versum-table">
                                         <thead>
                                             <tr>
@@ -622,7 +615,7 @@ export default function ServiceDetailsPage() {
                                     <table className="versum-table">
                                         <thead>
                                             <tr>
-                                                <th style={{ width: '300px' }}>
+                                                <th className="w-300">
                                                     Nazwa wariantu
                                                 </th>
                                                 <th>
@@ -643,13 +636,7 @@ export default function ServiceDetailsPage() {
                                                             <div className="font-semibold">
                                                                 {variant.name}
                                                             </div>
-                                                            <div
-                                                                className="versum-muted"
-                                                                style={{
-                                                                    fontSize:
-                                                                        '11px',
-                                                                }}
-                                                            >
+                                                            <div className="versum-muted fz-11">
                                                                 {formatDuration(
                                                                     variant.duration,
                                                                 )}
@@ -667,13 +654,7 @@ export default function ServiceDetailsPage() {
                                                                     przypisań
                                                                 </div>
                                                             ) : (
-                                                                <ul
-                                                                    className="list-unstyled"
-                                                                    style={{
-                                                                        margin: 0,
-                                                                        padding: 0,
-                                                                    }}
-                                                                >
+                                                                <ul className="list-unstyled m-0 p-0">
                                                                     {assigned.map(
                                                                         (
                                                                             assignment,
@@ -682,11 +663,7 @@ export default function ServiceDetailsPage() {
                                                                                 key={
                                                                                     assignment.id
                                                                                 }
-                                                                                className="flex-between"
-                                                                                style={{
-                                                                                    padding:
-                                                                                        '4px 0',
-                                                                                }}
+                                                                                className="flex-between py-4"
                                                                             >
                                                                                 <span>
                                                                                     {

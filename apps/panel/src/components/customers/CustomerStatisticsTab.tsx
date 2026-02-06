@@ -31,7 +31,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
 
     if (error || !stats) {
         return (
-            <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
+            <div className="tab-pane active py-20 p-4 text-red-700">
                 Błąd ładowania statystyk
             </div>
         );
@@ -92,61 +92,26 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                         <div className="versum-widget__content">
                             <div className="row">
                                 <div className="col-sm-4">
-                                    <div
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '11px',
-                                            textTransform: 'uppercase',
-                                        }}
-                                    >
+                                    <div className="text-muted fz-11 uppercase">
                                         Łączne wydatki
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: '24px',
-                                            fontWeight: 600,
-                                            color: '#4b94ce',
-                                        }}
-                                    >
+                                    <div className="fz-24 bold text-cyan">
                                         {formatCurrency(stats.totalSpent)}
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '11px',
-                                            textTransform: 'uppercase',
-                                        }}
-                                    >
+                                    <div className="text-muted fz-11 uppercase">
                                         Średnia wartość
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: '24px',
-                                            fontWeight: 600,
-                                        }}
-                                    >
+                                    <div className="fz-24 bold">
                                         {formatCurrency(stats.averageSpent)}
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '11px',
-                                            textTransform: 'uppercase',
-                                        }}
-                                    >
+                                    <div className="text-muted fz-11 uppercase">
                                         Wskaźnik realizacji
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: '24px',
-                                            fontWeight: 600,
-                                            color: '#5cb85c',
-                                        }}
-                                    >
+                                    <div className="fz-24 bold text-green">
                                         {visitCompletionRate}%
                                     </div>
                                 </div>
@@ -155,44 +120,25 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     </div>
 
                     {/* Timeline Widget */}
-                    <div
-                        className="versum-widget"
-                        style={{ marginTop: '20px' }}
-                    >
+                    <div className="versum-widget mt-20">
                         <div className="versum-widget__header">
                             <span>Historia współpracy</span>
                         </div>
                         <div className="versum-widget__content">
                             <div className="row">
                                 <div className="col-sm-6">
-                                    <div
-                                        className="text-muted"
-                                        style={{ fontSize: '11px' }}
-                                    >
+                                    <div className="text-muted fz-11">
                                         Pierwsza wizyta
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: '16px',
-                                            fontWeight: 600,
-                                        }}
-                                    >
+                                    <div className="fz-16 bold">
                                         {formatDate(stats.firstVisitDate)}
                                     </div>
                                 </div>
                                 <div className="col-sm-6">
-                                    <div
-                                        className="text-muted"
-                                        style={{ fontSize: '11px' }}
-                                    >
+                                    <div className="text-muted fz-11">
                                         Ostatnia wizyta
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: '16px',
-                                            fontWeight: 600,
-                                        }}
-                                    >
+                                    <div className="fz-16 bold">
                                         {formatDate(stats.lastVisitDate)}
                                     </div>
                                 </div>
@@ -202,10 +148,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
 
                     {/* Monthly Chart Widget */}
                     {stats.visitsByMonth.length > 0 && (
-                        <div
-                            className="versum-widget"
-                            style={{ marginTop: '20px' }}
-                        >
+                        <div className="versum-widget mt-20">
                             <div className="versum-widget__header">
                                 <span>Wizyty według miesięcy</span>
                             </div>
@@ -225,54 +168,21 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                         return (
                                             <div
                                                 key={month.month}
-                                                className="flex items-center gap-3"
-                                                style={{ marginBottom: '8px' }}
+                                                className="flex items-center gap-3 mb-10"
                                             >
-                                                <div
-                                                    className="text-muted"
-                                                    style={{
-                                                        width: '80px',
-                                                        fontSize: '12px',
-                                                    }}
-                                                >
+                                                <div className="text-muted fz-12 w-80">
                                                     {month.month}
                                                 </div>
                                                 <div
+                                                    className="h-full bg-cyan"
                                                     style={{
-                                                        flex: 1,
-                                                        background: '#f5f5f5',
-                                                        height: '12px',
-                                                        borderRadius: '6px',
-                                                        overflow: 'hidden',
+                                                        width: `${widthPercent}%`,
                                                     }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            height: '100%',
-                                                            background:
-                                                                '#4b94ce',
-                                                            width: `${widthPercent}%`,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        width: '60px',
-                                                        textAlign: 'right',
-                                                        fontSize: '12px',
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
+                                                />
+                                                <div className="text-right fz-12 bold w-60">
                                                     {month.count}
                                                 </div>
-                                                <div
-                                                    className="text-muted"
-                                                    style={{
-                                                        width: '90px',
-                                                        textAlign: 'right',
-                                                        fontSize: '12px',
-                                                    }}
-                                                >
+                                                <div className="text-muted text-right fz-12 w-90">
                                                     {formatCurrency(
                                                         month.spent,
                                                     )}
@@ -299,31 +209,17 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                         (service, index) => (
                                             <div
                                                 key={service.serviceId}
-                                                className="flex-between"
-                                                style={{ marginBottom: '10px' }}
+                                                className="flex-between mb-10"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <span
-                                                        style={{
-                                                            color: '#999',
-                                                            fontSize: '11px',
-                                                            width: '15px',
-                                                        }}
-                                                    >
+                                                    <span className="text-999 fz-11 w-15">
                                                         {index + 1}.
                                                     </span>
-                                                    <span
-                                                        style={{
-                                                            fontSize: '13px',
-                                                        }}
-                                                    >
+                                                    <span className="fz-13">
                                                         {service.serviceName}
                                                     </span>
                                                 </div>
-                                                <span
-                                                    className="text-muted"
-                                                    style={{ fontSize: '12px' }}
-                                                >
+                                                <span className="text-muted fz-12">
                                                     {service.count}x
                                                 </span>
                                             </div>
@@ -336,10 +232,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
 
                     {/* Favorite Employees */}
                     {stats.favoriteEmployees.length > 0 && (
-                        <div
-                            className="versum-widget"
-                            style={{ marginTop: '20px' }}
-                        >
+                        <div className="versum-widget mt-20">
                             <div className="versum-widget__header">
                                 <span>Ulubieni pracownicy</span>
                             </div>
@@ -349,31 +242,17 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                         (employee, index) => (
                                             <div
                                                 key={employee.employeeId}
-                                                className="flex-between"
-                                                style={{ marginBottom: '10px' }}
+                                                className="flex-between mb-10"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <span
-                                                        style={{
-                                                            color: '#999',
-                                                            fontSize: '11px',
-                                                            width: '15px',
-                                                        }}
-                                                    >
+                                                    <span className="text-999 fz-11 w-15">
                                                         {index + 1}.
                                                     </span>
-                                                    <span
-                                                        style={{
-                                                            fontSize: '13px',
-                                                        }}
-                                                    >
+                                                    <span className="fz-13">
                                                         {employee.employeeName}
                                                     </span>
                                                 </div>
-                                                <span
-                                                    className="text-muted"
-                                                    style={{ fontSize: '12px' }}
-                                                >
+                                                <span className="text-muted fz-12">
                                                     {employee.count}x
                                                 </span>
                                             </div>
