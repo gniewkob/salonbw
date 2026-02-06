@@ -68,27 +68,15 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                 {images.map((image) => (
                                     <div
                                         key={image.id}
-                                        className="col-sm-3"
-                                        style={{ marginBottom: '15px' }}
+                                        className="col-sm-3 mb-15"
                                     >
                                         <div
-                                            className="versum-panel-sub"
-                                            style={{
-                                                padding: '0',
-                                                overflow: 'hidden',
-                                                cursor: 'pointer',
-                                                border: '1px solid #ddd',
-                                            }}
+                                            className="versum-panel-sub p-0 overflow-hidden cursor-pointer border"
                                             onClick={() =>
                                                 setSelectedImage(image)
                                             }
                                         >
-                                            <div
-                                                style={{
-                                                    position: 'relative',
-                                                    paddingTop: '100%',
-                                                }}
-                                            >
+                                            <div className="aspect-square">
                                                 <img
                                                     src={
                                                         image.thumbnailUrl ||
@@ -98,26 +86,11 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                                         image.description ||
                                                         'Zdjęcie klienta'
                                                     }
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: 0,
-                                                        left: 0,
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover',
-                                                    }}
+                                                    className="absolute-fill object-cover"
                                                 />
                                             </div>
                                             {image.serviceName && (
-                                                <div
-                                                    style={{
-                                                        padding: '5px',
-                                                        fontSize: '11px',
-                                                        borderTop:
-                                                            '1px solid #eee',
-                                                        background: '#f9f9f9',
-                                                    }}
-                                                >
+                                                <div className="p-5 fz-11 border-top-eee bg-f9">
                                                     {image.serviceName}
                                                 </div>
                                             )}
@@ -126,34 +99,18 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                 ))}
                             </div>
                         ) : (
-                            <div
-                                className="text-center text-muted"
-                                style={{ padding: '60px 0' }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: '32px',
-                                        marginBottom: '10px',
-                                    }}
-                                >
-                                    📷
-                                </div>
-                                <p
-                                    style={{
-                                        fontSize: '14px',
-                                        marginBottom: '5px',
-                                    }}
-                                >
+                            <div className="text-center p-60-0">
+                                <div className="fz-32 mb-10">📷</div>
+                                <p className="fz-14 mb-5">
                                     Brak zdjęć w galerii klienta.
                                 </p>
-                                <p style={{ fontSize: '11px' }}>
+                                <p className="fz-11">
                                     Dodaj zdjęcia efektów zabiegów, aby
                                     dokumentować historię klienta.
                                 </p>
                                 <button
                                     onClick={handleUpload}
-                                    className="btn btn-default btn-xs"
-                                    style={{ marginTop: '15px' }}
+                                    className="btn btn-default btn-xs mt-15"
                                 >
                                     Dodaj pierwsze zdjęcie
                                 </button>
@@ -163,87 +120,41 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                 </div>
             </div>
 
-            {/* Lightbox Modal (Simplified) */}
             {selectedImage && (
                 <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        zIndex: 1050,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'rgba(0,0,0,0.8)',
-                    }}
+                    className="modal fade in block bg-modal-overlay flex-center"
                     onClick={() => setSelectedImage(null)}
                 >
                     <div
-                        style={{
-                            position: 'relative',
-                            maxWidth: '90%',
-                            maxHeight: '90%',
-                        }}
+                        className="relative max-w-90 max-h-90"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={() => setSelectedImage(null)}
-                            style={{
-                                position: 'absolute',
-                                right: '-15px',
-                                top: '-15px',
-                                background: '#fff',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '30px',
-                                height: '30px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                            }}
+                            className="abs-tr--15 bg-white br-full w-30 h-30 cursor-pointer fw-bold border-none"
+                            title="Zamknij"
                         >
                             ✕
                         </button>
                         <img
                             src={selectedImage.url}
                             alt={selectedImage.description || 'Zdjęcie klienta'}
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '85vh',
-                                borderRadius: '2px',
-                                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
-                            }}
+                            className="max-w-full max-h-85vh br-2 shadow-modal"
                         />
                         {(selectedImage.description ||
                             selectedImage.serviceName) && (
-                            <div
-                                style={{
-                                    background: '#fff',
-                                    padding: '15px',
-                                    marginTop: '5px',
-                                    borderRadius: '2px',
-                                }}
-                            >
+                            <div className="bg-white p-15 mt-5 br-2">
                                 {selectedImage.serviceName && (
-                                    <div style={{ fontWeight: 600 }}>
+                                    <div className="fw-600">
                                         {selectedImage.serviceName}
                                     </div>
                                 )}
                                 {selectedImage.description && (
-                                    <div
-                                        style={{
-                                            fontSize: '12px',
-                                            color: '#666',
-                                        }}
-                                    >
+                                    <div className="fz-12 text-666">
                                         {selectedImage.description}
                                     </div>
                                 )}
-                                <div
-                                    style={{
-                                        fontSize: '11px',
-                                        color: '#999',
-                                        marginTop: '5px',
-                                    }}
-                                >
+                                <div className="fz-11 text-999 mt-5">
                                     {new Date(
                                         selectedImage.createdAt,
                                     ).toLocaleDateString('pl-PL')}

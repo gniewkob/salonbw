@@ -23,7 +23,9 @@ export class CreateBranchDto {
     @IsOptional()
     @IsString()
     @Length(1, 100)
-    @Matches(/^[a-z0-9-]+$/, { message: 'Slug must contain only lowercase letters, numbers and dashes' })
+    @Matches(/^[a-z0-9-]+$/, {
+        message: 'Slug must contain only lowercase letters, numbers and dashes',
+    })
     slug?: string;
 
     @IsOptional()
@@ -56,7 +58,9 @@ export class CreateBranchDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^\d{2}-\d{3}$/, { message: 'Postal code must be in format XX-XXX' })
+    @Matches(/^\d{2}-\d{3}$/, {
+        message: 'Postal code must be in format XX-XXX',
+    })
     postalCode?: string;
 
     @IsOptional()
@@ -91,7 +95,9 @@ export class CreateBranchDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'Color must be a valid hex color' })
+    @Matches(/^#[0-9A-Fa-f]{6}$/, {
+        message: 'Color must be a valid hex color',
+    })
     primaryColor?: string;
 
     @IsOptional()
@@ -130,7 +136,9 @@ export class UpdateBranchDto {
     @IsOptional()
     @IsString()
     @Length(1, 100)
-    @Matches(/^[a-z0-9-]+$/, { message: 'Slug must contain only lowercase letters, numbers and dashes' })
+    @Matches(/^[a-z0-9-]+$/, {
+        message: 'Slug must contain only lowercase letters, numbers and dashes',
+    })
     slug?: string;
 
     @IsOptional()
@@ -197,7 +205,9 @@ export class UpdateBranchDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'Color must be a valid hex color' })
+    @Matches(/^#[0-9A-Fa-f]{6}$/, {
+        message: 'Color must be a valid hex color',
+    })
     primaryColor?: string;
 
     @IsOptional()

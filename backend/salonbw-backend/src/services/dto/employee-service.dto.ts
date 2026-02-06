@@ -24,7 +24,8 @@ export class CreateEmployeeServiceDto {
 
     @ApiProperty({
         required: false,
-        description: 'Custom duration for this employee (overrides service default)',
+        description:
+            'Custom duration for this employee (overrides service default)',
     })
     @IsNumber()
     @IsOptional()
@@ -33,7 +34,8 @@ export class CreateEmployeeServiceDto {
 
     @ApiProperty({
         required: false,
-        description: 'Custom price for this employee (overrides service default)',
+        description:
+            'Custom price for this employee (overrides service default)',
     })
     @IsNumber()
     @IsOptional()
@@ -56,7 +58,9 @@ export class CreateEmployeeServiceDto {
     isActive?: boolean;
 }
 
-export class UpdateEmployeeServiceDto extends PartialType(CreateEmployeeServiceDto) {}
+export class UpdateEmployeeServiceDto extends PartialType(
+    CreateEmployeeServiceDto,
+) {}
 
 export class AssignEmployeesToServiceDto {
     @ApiProperty({

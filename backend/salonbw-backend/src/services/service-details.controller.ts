@@ -11,7 +11,12 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiQuery,
+    ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
@@ -49,7 +54,12 @@ export class ServiceDetailsController {
         @Param('id', ParseIntPipe) id: number,
         @Query() query: ServiceStatsQueryDto,
     ) {
-        return this.detailsService.getStats(id, query.from, query.to, query.groupBy as 'day' | 'week' | 'month');
+        return this.detailsService.getStats(
+            id,
+            query.from,
+            query.to,
+            query.groupBy as 'day' | 'week' | 'month',
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -74,7 +84,9 @@ export class ServiceDetailsController {
     @Roles(Role.Admin, Role.Receptionist)
     @Get(':id/employees')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get employees assigned to service (incl. variants)' })
+    @ApiOperation({
+        summary: 'Get employees assigned to service (incl. variants)',
+    })
     employees(@Param('id', ParseIntPipe) id: number) {
         return this.detailsService.getEmployees(id);
     }

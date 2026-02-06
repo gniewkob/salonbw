@@ -10,7 +10,10 @@ import {
     Max,
     Length,
 } from 'class-validator';
-import { GiftCardStatus, GiftCardTransactionType } from '../entities/gift-card.entity';
+import {
+    GiftCardStatus,
+    GiftCardTransactionType,
+} from '../entities/gift-card.entity';
 
 export class CreateGiftCardDto {
     @IsNumber()

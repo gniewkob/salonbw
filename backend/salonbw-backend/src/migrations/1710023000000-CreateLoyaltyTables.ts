@@ -121,16 +121,36 @@ export class CreateLoyaltyTables1710023000000 implements MigrationInterface {
         `);
 
         // Create indexes
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_balances_user" ON "loyalty_balances"("user_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_balances_tier" ON "loyalty_balances"("current_tier")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_transactions_user" ON "loyalty_transactions"("user_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_transactions_type" ON "loyalty_transactions"("type")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_transactions_source" ON "loyalty_transactions"("source")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_transactions_expires" ON "loyalty_transactions"("expires_at") WHERE "is_expired" = false`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_rewards_active" ON "loyalty_rewards"("is_active", "points_cost")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_redemptions_user" ON "loyalty_reward_redemptions"("user_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_redemptions_code" ON "loyalty_reward_redemptions"("redemption_code")`);
-        await queryRunner.query(`CREATE INDEX "idx_loyalty_redemptions_status" ON "loyalty_reward_redemptions"("status")`);
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_balances_user" ON "loyalty_balances"("user_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_balances_tier" ON "loyalty_balances"("current_tier")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_transactions_user" ON "loyalty_transactions"("user_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_transactions_type" ON "loyalty_transactions"("type")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_transactions_source" ON "loyalty_transactions"("source")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_transactions_expires" ON "loyalty_transactions"("expires_at") WHERE "is_expired" = false`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_rewards_active" ON "loyalty_rewards"("is_active", "points_cost")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_redemptions_user" ON "loyalty_reward_redemptions"("user_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_redemptions_code" ON "loyalty_reward_redemptions"("redemption_code")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_loyalty_redemptions_status" ON "loyalty_reward_redemptions"("status")`,
+        );
 
         // Insert default loyalty program
         await queryRunner.query(`
@@ -144,7 +164,9 @@ export class CreateLoyaltyTables1710023000000 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "idx_loyalty_redemptions_code"`);
         await queryRunner.query(`DROP INDEX "idx_loyalty_redemptions_user"`);
         await queryRunner.query(`DROP INDEX "idx_loyalty_rewards_active"`);
-        await queryRunner.query(`DROP INDEX "idx_loyalty_transactions_expires"`);
+        await queryRunner.query(
+            `DROP INDEX "idx_loyalty_transactions_expires"`,
+        );
         await queryRunner.query(`DROP INDEX "idx_loyalty_transactions_source"`);
         await queryRunner.query(`DROP INDEX "idx_loyalty_transactions_type"`);
         await queryRunner.query(`DROP INDEX "idx_loyalty_transactions_user"`);

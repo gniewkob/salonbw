@@ -111,10 +111,7 @@ export default function ServiceVariantsModal({
     if (!isOpen || !service) return null;
 
     return (
-        <div
-            className={`modal fade ${isOpen ? 'in' : ''}`}
-            style={{ display: isOpen ? 'block' : 'none' }}
-        >
+        <div className={`modal fade ${isOpen ? 'in block' : ''}`}>
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -142,10 +139,7 @@ export default function ServiceVariantsModal({
                                 {/* Variants list */}
                                 {!isFormVisible && (
                                     <>
-                                        <div
-                                            className="flex-between"
-                                            style={{ marginBottom: '15px' }}
-                                        >
+                                        <div className="flex-between mb-15">
                                             <span className="versum-muted">
                                                 {variants.length} wariant
                                                 {variants.length !== 1 && 'ów'}
@@ -166,11 +160,7 @@ export default function ServiceVariantsModal({
                                                         <th>Nazwa</th>
                                                         <th>Czas</th>
                                                         <th>Cena</th>
-                                                        <th
-                                                            style={{
-                                                                width: '100px',
-                                                            }}
-                                                        >
+                                                        <th className="w-100">
                                                             Akcje
                                                         </th>
                                                     </tr>
@@ -203,13 +193,7 @@ export default function ServiceVariantsModal({
                                                                             }
                                                                         </strong>
                                                                         {variant.description && (
-                                                                            <div
-                                                                                className="versum-muted"
-                                                                                style={{
-                                                                                    fontSize:
-                                                                                        '11px',
-                                                                                }}
-                                                                            >
+                                                                            <div className="versum-muted fz-11">
                                                                                 {
                                                                                     variant.description
                                                                                 }
@@ -240,11 +224,7 @@ export default function ServiceVariantsModal({
                                                                                     variant,
                                                                                 )
                                                                             }
-                                                                            className="btn btn-default btn-xs"
-                                                                            style={{
-                                                                                marginRight:
-                                                                                    '4px',
-                                                                            }}
+                                                                            className="btn btn-default btn-xs mr-4"
                                                                         >
                                                                             edytuj
                                                                         </button>
@@ -273,13 +253,7 @@ export default function ServiceVariantsModal({
                                 {/* Variant form */}
                                 {isFormVisible && (
                                     <div className="form-horizontal">
-                                        <h5
-                                            style={{
-                                                borderBottom: '1px solid #eee',
-                                                paddingBottom: '10px',
-                                                marginBottom: '20px',
-                                            }}
-                                        >
+                                        <h5 className="border-bottom pb-10 mb-20">
                                             {editingVariant
                                                 ? 'Edycja wariantu'
                                                 : 'Nowy wariant'}
@@ -292,6 +266,8 @@ export default function ServiceVariantsModal({
                                             <div className="controls">
                                                 <input
                                                     type="text"
+                                                    id="variant-name"
+                                                    aria-label="Nazwa wariantu"
                                                     value={formData.name}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -313,6 +289,8 @@ export default function ServiceVariantsModal({
                                             <div className="controls">
                                                 <input
                                                     type="text"
+                                                    id="variant-description"
+                                                    aria-label="Opis wariantu"
                                                     value={
                                                         formData.description ||
                                                         ''
@@ -336,6 +314,8 @@ export default function ServiceVariantsModal({
                                             <div className="controls">
                                                 <input
                                                     type="number"
+                                                    id="variant-duration"
+                                                    aria-label="Czas trwania w minutach"
                                                     value={formData.duration}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -349,8 +329,7 @@ export default function ServiceVariantsModal({
                                                     }
                                                     min={5}
                                                     step={5}
-                                                    className="form-control"
-                                                    style={{ width: '100px' }}
+                                                    className="form-control w-100"
                                                 />
                                             </div>
                                         </div>
@@ -363,6 +342,8 @@ export default function ServiceVariantsModal({
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="number"
+                                                        id="variant-price"
+                                                        aria-label="Cena wariantu"
                                                         value={formData.price}
                                                         onChange={(e) =>
                                                             setFormData({
@@ -376,12 +357,11 @@ export default function ServiceVariantsModal({
                                                         }
                                                         min={0}
                                                         step={0.01}
-                                                        className="form-control"
-                                                        style={{
-                                                            width: '100px',
-                                                        }}
+                                                        className="form-control w-100"
                                                     />
                                                     <select
+                                                        id="variant-price-type"
+                                                        aria-label="Typ ceny"
                                                         value={
                                                             formData.priceType
                                                         }
@@ -393,10 +373,7 @@ export default function ServiceVariantsModal({
                                                                     .value as PriceType,
                                                             })
                                                         }
-                                                        className="form-control"
-                                                        style={{
-                                                            width: '150px',
-                                                        }}
+                                                        className="form-control w-150"
                                                     >
                                                         <option value="fixed">
                                                             Stała cena
@@ -412,19 +389,10 @@ export default function ServiceVariantsModal({
                                             </div>
                                         </div>
 
-                                        <div
-                                            className="form-actions"
-                                            style={{
-                                                background: 'none',
-                                                borderTop: '1px solid #eee',
-                                                padding: '20px 0 0',
-                                            }}
-                                        >
+                                        <div className="form-actions bg-none border-top p-20-0">
                                             <button
                                                 type="button"
-                                                onClick={handleCancelForm}
-                                                className="btn btn-default"
-                                                style={{ marginRight: '10px' }}
+                                                className="btn btn-default mr-10"
                                             >
                                                 anuluj
                                             </button>

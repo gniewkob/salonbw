@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import {
@@ -16,11 +20,17 @@ import {
 import { pl } from 'date-fns/locale';
 import { Service } from './service.entity';
 import { ServiceMedia } from './entities/service-media.entity';
-import { ServiceReview, ServiceReviewSource } from './entities/service-review.entity';
+import {
+    ServiceReview,
+    ServiceReviewSource,
+} from './entities/service-review.entity';
 import { ServiceRecipeItem } from './entities/service-recipe-item.entity';
 import { ServiceVariant } from './entities/service-variant.entity';
 import { EmployeeService } from './entities/employee-service.entity';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { CommissionRule } from '../commissions/commission-rule.entity';
 import { User } from '../users/user.entity';
 import { Product } from '../products/product.entity';
@@ -74,7 +84,12 @@ export class ServiceDetailsService {
         return service;
     }
 
-    async getStats(serviceId: number, from?: string, to?: string, groupBy: GroupBy = 'day') {
+    async getStats(
+        serviceId: number,
+        from?: string,
+        to?: string,
+        groupBy: GroupBy = 'day',
+    ) {
         const group: GroupBy =
             groupBy === 'week' || groupBy === 'month' ? groupBy : 'day';
         const { fromDate, toDate } = this.resolveDateRange(from, to);
@@ -91,11 +106,18 @@ export class ServiceDetailsService {
             group === 'month'
                 ? eachMonthOfInterval({ start: fromDate, end: toDate })
                 : group === 'week'
-                  ? eachWeekOfInterval({ start: fromDate, end: toDate }, { weekStartsOn: 1 })
+                  ? eachWeekOfInterval(
+                        { start: fromDate, end: toDate },
+                        { weekStartsOn: 1 },
+                    )
                   : eachDayOfInterval({ start: fromDate, end: toDate });
 
         const formatStr =
-            group === 'month' ? 'LLLL yyyy' : group === 'week' ? "'Tydz.' w" : 'd MMM';
+            group === 'month'
+                ? 'LLLL yyyy'
+                : group === 'week'
+                  ? "'Tydz.' w"
+                  : 'd MMM';
 
         const data = intervals.map((date) => {
             const rangeStart =
@@ -145,7 +167,13 @@ export class ServiceDetailsService {
         };
     }
 
-    async getHistory(serviceId: number, page = 1, limit = 20, from?: string, to?: string) {
+    async getHistory(
+        serviceId: number,
+        page = 1,
+        limit = 20,
+        from?: string,
+        to?: string,
+    ) {
         const qb = this.appointmentRepository
             .createQueryBuilder('appointment')
             .leftJoinAndSelect('appointment.client', 'client')
@@ -154,7 +182,9 @@ export class ServiceDetailsService {
             .where('appointment.serviceId = :serviceId', { serviceId });
 
         if (from) {
-            qb.andWhere('appointment.startTime >= :from', { from: new Date(from) });
+            qb.andWhere('appointment.startTime >= :from', {
+                from: new Date(from),
+            });
         }
         if (to) {
             qb.andWhere('appointment.startTime <= :to', { to: new Date(to) });
@@ -248,7 +278,10 @@ export class ServiceDetailsService {
         });
     }
 
-    async replaceRecipe(serviceId: number, items: Array<Partial<ServiceRecipeItem>>) {
+    async replaceRecipe(
+        serviceId: number,
+        items: Array<Partial<ServiceRecipeItem>>,
+    ) {
         const service = await this.serviceRepository.findOne({
             where: { id: serviceId },
         });
@@ -294,7 +327,10 @@ export class ServiceDetailsService {
         });
     }
 
-    async replaceCommissions(serviceId: number, rules: Array<{ employeeId: number; commissionPercent: number }>) {
+    async replaceCommissions(
+        serviceId: number,
+        rules: Array<{ employeeId: number; commissionPercent: number }>,
+    ) {
         const service = await this.serviceRepository.findOne({
             where: { id: serviceId },
         });
@@ -309,7 +345,9 @@ export class ServiceDetailsService {
             }
         }
 
-        await this.commissionRuleRepository.delete({ service: { id: serviceId } });
+        await this.commissionRuleRepository.delete({
+            service: { id: serviceId },
+        });
 
         if (rules.length === 0) return [];
         const toSave = rules.map((rule) =>

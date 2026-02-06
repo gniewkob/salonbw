@@ -57,7 +57,10 @@ export class AutomaticMessagesController {
         @Body() dto: CreateAutomaticMessageRuleDto,
         @Request() req: AuthenticatedRequest,
     ): Promise<AutomaticMessageRuleResponseDto> {
-        const rule = await this.automaticMessagesService.create(dto, req.user.userId);
+        const rule = await this.automaticMessagesService.create(
+            dto,
+            req.user.userId,
+        );
         return this.mapToResponse(rule);
     }
 
@@ -102,7 +105,9 @@ export class AutomaticMessagesController {
         return this.automaticMessagesService.processRule(rule);
     }
 
-    private mapToResponse(rule: AutomaticMessageRule): AutomaticMessageRuleResponseDto {
+    private mapToResponse(
+        rule: AutomaticMessageRule,
+    ): AutomaticMessageRuleResponseDto {
         return {
             id: rule.id,
             name: rule.name,

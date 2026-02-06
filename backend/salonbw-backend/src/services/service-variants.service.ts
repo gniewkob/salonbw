@@ -56,7 +56,9 @@ export class ServiceVariantsService {
     }
 
     async findOne(id: number): Promise<ServiceVariant> {
-        const cached = await this.cache.get<ServiceVariant>(variantCacheKey(id));
+        const cached = await this.cache.get<ServiceVariant>(
+            variantCacheKey(id),
+        );
         if (cached) {
             return cached;
         }

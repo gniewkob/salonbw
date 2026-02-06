@@ -5,7 +5,9 @@ import {
     TableForeignKey,
 } from 'typeorm';
 
-export class CreateCustomerCRMTables1710013000000 implements MigrationInterface {
+export class CreateCustomerCRMTables1710013000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Create customer_groups table
         await queryRunner.createTable(

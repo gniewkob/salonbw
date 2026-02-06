@@ -186,9 +186,10 @@ function createServicesRepo(services: SalonService[]) {
 
 function createServiceVariantsRepo() {
     return {
-        findOne: jest.fn<Promise<null>, [{ where: { id: number } } | undefined]>(
-            () => Promise.resolve(null),
-        ),
+        findOne: jest.fn<
+            Promise<null>,
+            [{ where: { id: number } } | undefined]
+        >(() => Promise.resolve(null)),
     } as unknown as jest.Mocked<Repository<ServiceVariant>>;
 }
 

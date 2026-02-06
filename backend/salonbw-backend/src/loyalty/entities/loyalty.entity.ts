@@ -22,7 +22,13 @@ export class LoyaltyProgram {
     description: string;
 
     // Points earning rules
-    @Column({ name: 'points_per_currency', type: 'decimal', precision: 10, scale: 2, default: 1 })
+    @Column({
+        name: 'points_per_currency',
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        default: 1,
+    })
     pointsPerCurrency: number; // e.g., 1 point per 1 PLN spent
 
     @Column({ name: 'min_points_per_visit', default: 0 })
@@ -41,7 +47,13 @@ export class LoyaltyProgram {
     signupBonusPoints: number;
 
     // Points spending rules
-    @Column({ name: 'points_value_currency', type: 'decimal', precision: 10, scale: 4, default: 0.01 })
+    @Column({
+        name: 'points_value_currency',
+        type: 'decimal',
+        precision: 10,
+        scale: 4,
+        default: 0.01,
+    })
     pointsValueCurrency: number; // e.g., 1 point = 0.01 PLN
 
     @Column({ name: 'min_points_redemption', default: 100 })
@@ -56,7 +68,11 @@ export class LoyaltyProgram {
     enableTiers: boolean;
 
     @Column({ name: 'tier_thresholds', type: 'jsonb', default: () => `'[]'` })
-    tierThresholds: Array<{ name: string; minPoints: number; multiplier: number }>;
+    tierThresholds: Array<{
+        name: string;
+        minPoints: number;
+        multiplier: number;
+    }>;
 
     // Status
     @Column({ name: 'is_active', default: true })
@@ -97,7 +113,13 @@ export class LoyaltyBalance {
     @Column({ name: 'current_tier', length: 50, nullable: true })
     currentTier: string;
 
-    @Column({ name: 'tier_multiplier', type: 'decimal', precision: 3, scale: 2, default: 1.0 })
+    @Column({
+        name: 'tier_multiplier',
+        type: 'decimal',
+        precision: 3,
+        scale: 2,
+        default: 1.0,
+    })
     tierMultiplier: number;
 
     @CreateDateColumn({ name: 'created_at' })
@@ -223,7 +245,13 @@ export class LoyaltyReward {
     @Column({ name: 'discount_percent', nullable: true })
     discountPercent: number;
 
-    @Column({ name: 'discount_amount', type: 'decimal', precision: 10, scale: 2, nullable: true })
+    @Column({
+        name: 'discount_amount',
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+    })
     discountAmount: number;
 
     // For free service/product rewards
@@ -234,7 +262,13 @@ export class LoyaltyReward {
     productId: number;
 
     // For gift card rewards
-    @Column({ name: 'gift_card_value', type: 'decimal', precision: 10, scale: 2, nullable: true })
+    @Column({
+        name: 'gift_card_value',
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+    })
     giftCardValue: number;
 
     // Availability

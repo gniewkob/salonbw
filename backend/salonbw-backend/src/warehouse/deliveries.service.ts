@@ -7,7 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Delivery, DeliveryStatus } from './entities/delivery.entity';
 import { DeliveryItem } from './entities/delivery-item.entity';
-import { ProductMovement, MovementType } from './entities/product-movement.entity';
+import {
+    ProductMovement,
+    MovementType,
+} from './entities/product-movement.entity';
 import { Product } from '../products/product.entity';
 import {
     CreateDeliveryDto,
@@ -54,7 +57,9 @@ export class DeliveriesService {
             });
         }
         if (options?.status) {
-            qb.andWhere('delivery.status = :status', { status: options.status });
+            qb.andWhere('delivery.status = :status', {
+                status: options.status,
+            });
         }
         if (options?.from) {
             qb.andWhere('delivery.createdAt >= :from', { from: options.from });
@@ -72,7 +77,9 @@ export class DeliveriesService {
             relations: ['supplier', 'items', 'items.product', 'receivedBy'],
         });
         if (!delivery) {
-            throw new NotFoundException(`Dostawa o ID ${id} nie została znaleziona`);
+            throw new NotFoundException(
+                `Dostawa o ID ${id} nie została znaleziona`,
+            );
         }
         return delivery;
     }
@@ -141,7 +148,10 @@ export class DeliveriesService {
         return this.findOne(id);
     }
 
-    async addItem(deliveryId: number, dto: AddDeliveryItemDto): Promise<DeliveryItem> {
+    async addItem(
+        deliveryId: number,
+        dto: AddDeliveryItemDto,
+    ): Promise<DeliveryItem> {
         const delivery = await this.findOne(deliveryId);
 
         if (delivery.status === DeliveryStatus.Received) {
@@ -154,7 +164,9 @@ export class DeliveriesService {
             where: { id: dto.productId },
         });
         if (!product) {
-            throw new NotFoundException(`Produkt o ID ${dto.productId} nie istnieje`);
+            throw new NotFoundException(
+                `Produkt o ID ${dto.productId} nie istnieje`,
+            );
         }
 
         const totalCost = dto.quantity * dto.unitCost;

@@ -119,7 +119,9 @@ export class StocktakingController {
 
     @Post(':id/complete')
     @Roles(Role.Admin)
-    @ApiOperation({ summary: 'Zakończ inwentaryzację (opcjonalnie zastosuj różnice)' })
+    @ApiOperation({
+        summary: 'Zakończ inwentaryzację (opcjonalnie zastosuj różnice)',
+    })
     complete(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CompleteStocktakingDto,

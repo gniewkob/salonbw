@@ -147,9 +147,7 @@ export default function ClientsNav() {
                                     {group.color && (
                                         <span
                                             className="versum-chip"
-                                            style={{
-                                                backgroundColor: group.color,
-                                            }}
+                                            data-color={group.color}
                                         />
                                     )}
                                     {group.name}

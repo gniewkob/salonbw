@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddReceiveNotificationsToUsers1738400000000 implements MigrationInterface {
+export class AddReceiveNotificationsToUsers1738400000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         const hasColumn = await queryRunner.hasColumn(
             'users',

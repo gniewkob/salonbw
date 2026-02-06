@@ -132,7 +132,9 @@ export class NewslettersController {
         @Body() dto: SendNewsletterDto,
         @CurrentUser() user: User,
     ): Promise<NewsletterResponseDto> {
-        const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : undefined;
+        const scheduledAt = dto.scheduledAt
+            ? new Date(dto.scheduledAt)
+            : undefined;
         return this.newslettersService.send(id, user, scheduledAt);
     }
 

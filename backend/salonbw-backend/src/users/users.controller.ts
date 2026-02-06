@@ -27,7 +27,7 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
     @Get('profile')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user profile' })

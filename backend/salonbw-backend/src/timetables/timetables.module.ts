@@ -9,7 +9,11 @@ import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Timetable, TimetableSlot, TimetableException]),
+        TypeOrmModule.forFeature([
+            Timetable,
+            TimetableSlot,
+            TimetableException,
+        ]),
         LogsModule,
     ],
     providers: [TimetablesService],

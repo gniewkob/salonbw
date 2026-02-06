@@ -1,8 +1,19 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Newsletter, NewsletterStatus, NewsletterChannel } from './entities/newsletter.entity';
-import { NewsletterRecipient, RecipientStatus } from './entities/newsletter-recipient.entity';
+import {
+    Newsletter,
+    NewsletterStatus,
+    NewsletterChannel,
+} from './entities/newsletter.entity';
+import {
+    NewsletterRecipient,
+    RecipientStatus,
+} from './entities/newsletter-recipient.entity';
 import { User } from '../users/user.entity';
 import {
     CreateNewsletterDto,
@@ -47,7 +58,10 @@ export class NewslettersService {
         return this.mapToResponseDto(newsletter);
     }
 
-    async create(dto: CreateNewsletterDto, actor: User): Promise<NewsletterResponseDto> {
+    async create(
+        dto: CreateNewsletterDto,
+        actor: User,
+    ): Promise<NewsletterResponseDto> {
         const newsletter = this.newsletterRepository.create({
             name: dto.name,
             subject: dto.subject,
@@ -58,7 +72,9 @@ export class NewslettersService {
             recipientFilter: dto.recipientFilter
                 ? JSON.stringify(dto.recipientFilter)
                 : null,
-            recipientIds: dto.recipientIds ? JSON.stringify(dto.recipientIds) : null,
+            recipientIds: dto.recipientIds
+                ? JSON.stringify(dto.recipientIds)
+                : null,
             scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
             createdBy: { id: actor.id },
         });
@@ -80,7 +96,9 @@ export class NewslettersService {
         }
 
         if (newsletter.status !== NewsletterStatus.Draft) {
-            throw new BadRequestException('Only draft newsletters can be edited');
+            throw new BadRequestException(
+                'Only draft newsletters can be edited',
+            );
         }
 
         if (dto.name !== undefined) newsletter.name = dto.name;
@@ -94,7 +112,9 @@ export class NewslettersService {
         if (dto.recipientIds !== undefined)
             newsletter.recipientIds = JSON.stringify(dto.recipientIds);
         if (dto.scheduledAt !== undefined)
-            newsletter.scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : null;
+            newsletter.scheduledAt = dto.scheduledAt
+                ? new Date(dto.scheduledAt)
+                : null;
 
         await this.newsletterRepository.save(newsletter);
         return this.findOne(id);
@@ -113,7 +133,9 @@ export class NewslettersService {
             newsletter.status === NewsletterStatus.Sending ||
             newsletter.status === NewsletterStatus.Sent
         ) {
-            throw new BadRequestException('Cannot delete a sent or sending newsletter');
+            throw new BadRequestException(
+                'Cannot delete a sent or sending newsletter',
+            );
         }
 
         await this.newsletterRepository.remove(newsletter);
@@ -160,7 +182,11 @@ export class NewslettersService {
         };
     }
 
-    async send(id: number, actor: User, scheduledAt?: Date): Promise<NewsletterResponseDto> {
+    async send(
+        id: number,
+        actor: User,
+        scheduledAt?: Date,
+    ): Promise<NewsletterResponseDto> {
         const newsletter = await this.newsletterRepository.findOne({
             where: { id },
         });
@@ -185,7 +211,9 @@ export class NewslettersService {
         const recipients = await this.findRecipients(filter, recipientIds);
 
         if (recipients.length === 0) {
-            throw new BadRequestException('No recipients found for this newsletter');
+            throw new BadRequestException(
+                'No recipients found for this newsletter',
+            );
         }
 
         // Update newsletter status
@@ -298,7 +326,10 @@ export class NewslettersService {
             .addSelect('SUM(n.openedCount)', 'totalOpened')
             .addSelect('SUM(n.clickedCount)', 'totalClicked')
             .where('n.status IN (:...statuses)', {
-                statuses: [NewsletterStatus.Sent, NewsletterStatus.PartialFailure],
+                statuses: [
+                    NewsletterStatus.Sent,
+                    NewsletterStatus.PartialFailure,
+                ],
             })
             .getRawOne();
 
@@ -357,7 +388,9 @@ export class NewslettersService {
             }
 
             if (filter.gender) {
-                query.andWhere('user.gender = :gender', { gender: filter.gender });
+                query.andWhere('user.gender = :gender', {
+                    gender: filter.gender,
+                });
             }
 
             if (filter.groupIds && filter.groupIds.length > 0) {
@@ -369,7 +402,9 @@ export class NewslettersService {
 
             if (filter.tagIds && filter.tagIds.length > 0) {
                 query.innerJoin('user.tags', 'tag');
-                query.andWhere('tag.id IN (:...tagIds)', { tagIds: filter.tagIds });
+                query.andWhere('tag.id IN (:...tagIds)', {
+                    tagIds: filter.tagIds,
+                });
             }
         }
 
@@ -448,7 +483,10 @@ export class NewslettersService {
                 ? JSON.parse(newsletter.recipientIds)
                 : null,
             createdBy: newsletter.createdBy
-                ? { id: newsletter.createdBy.id, name: newsletter.createdBy.name }
+                ? {
+                      id: newsletter.createdBy.id,
+                      name: newsletter.createdBy.name,
+                  }
                 : null,
             sentBy: newsletter.sentBy
                 ? { id: newsletter.sentBy.id, name: newsletter.sentBy.name }

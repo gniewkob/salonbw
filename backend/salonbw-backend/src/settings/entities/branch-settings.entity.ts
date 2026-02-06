@@ -84,7 +84,13 @@ export class BranchSettings {
     timezone: string;
 
     // Tax settings
-    @Column({ name: 'default_vat_rate', type: 'decimal', precision: 5, scale: 2, default: 23 })
+    @Column({
+        name: 'default_vat_rate',
+        type: 'decimal',
+        precision: 5,
+        scale: 2,
+        default: 23,
+    })
     defaultVatRate: number;
 
     @Column({ name: 'is_vat_payer', default: true })

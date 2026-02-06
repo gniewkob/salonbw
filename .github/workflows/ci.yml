@@ -124,12 +124,12 @@ jobs:
           cache: pnpm
 
       - name: Configure npm registry
-        run: |
-          if [ -n "${NPM_TOKEN:-}" ]; then
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
-          fi
         env:
-          NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+          NPM_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
+        run: |
+          if [ -n "$NPM_AUTH_TOKEN" ]; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" >> ~/.npmrc
+          fi
 
       - name: Install dependencies
         if: steps.should_run.outputs.run == 'true'
@@ -172,10 +172,10 @@ jobs:
 
       - name: Configure npm registry
         env:
-          NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+          NPM_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
         run: |
-          if [ -n "${NPM_TOKEN:-}" ]; then
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          if [ -n "$NPM_AUTH_TOKEN" ]; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" >> ~/.npmrc
           fi
 
       - name: Install dependencies

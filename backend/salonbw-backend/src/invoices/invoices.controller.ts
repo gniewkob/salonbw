@@ -42,9 +42,7 @@ export class InvoicesController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get invoices for current user' })
     @ApiResponse({ status: 200, type: Invoice, isArray: true })
-    findMine(
-        @CurrentUser() user: { userId: number },
-    ): Promise<Invoice[]> {
+    findMine(@CurrentUser() user: { userId: number }): Promise<Invoice[]> {
         return this.invoicesService.findForClient(user.userId);
     }
 
@@ -76,9 +74,7 @@ export class InvoicesController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Mark invoice as paid' })
     @ApiResponse({ status: 200, type: Invoice })
-    async markAsPaid(
-        @Param('id', ParseIntPipe) id: number,
-    ): Promise<Invoice> {
+    async markAsPaid(@Param('id', ParseIntPipe) id: number): Promise<Invoice> {
         const invoice = await this.invoicesService.markAsPaid(id);
         if (!invoice) {
             throw new NotFoundException();

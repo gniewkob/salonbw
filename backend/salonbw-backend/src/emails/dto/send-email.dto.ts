@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsString,
-    IsNotEmpty,
-    IsOptional,
-    IsObject,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
 
 export class SendEmailDto {
     @ApiProperty({ description: 'Recipient email address' })
@@ -17,12 +12,17 @@ export class SendEmailDto {
     @IsNotEmpty()
     subject: string;
 
-    @ApiProperty({ description: 'Email template content with {{placeholders}}' })
+    @ApiProperty({
+        description: 'Email template content with {{placeholders}}',
+    })
     @IsString()
     @IsNotEmpty()
     template: string;
 
-    @ApiProperty({ description: 'Data for template placeholders', required: false })
+    @ApiProperty({
+        description: 'Data for template placeholders',
+        required: false,
+    })
     @IsOptional()
     @IsObject()
     data?: Record<string, string>;

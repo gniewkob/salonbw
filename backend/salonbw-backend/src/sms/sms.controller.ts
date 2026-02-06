@@ -17,7 +17,10 @@ import { Role } from '../users/role.enum';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/user.entity';
 import { SmsService } from './sms.service';
-import { TemplateType, MessageChannel } from './entities/message-template.entity';
+import {
+    TemplateType,
+    MessageChannel,
+} from './entities/message-template.entity';
 import {
     CreateTemplateDto,
     UpdateTemplateDto,
@@ -110,9 +113,15 @@ export class SmsController {
         @Param('id', ParseIntPipe) appointmentId: number,
         @CurrentUser() user: User,
     ) {
-        const result = await this.smsService.sendAppointmentReminder(appointmentId, user);
+        const result = await this.smsService.sendAppointmentReminder(
+            appointmentId,
+            user,
+        );
         if (!result) {
-            return { success: false, message: 'Nie można wysłać przypomnienia' };
+            return {
+                success: false,
+                message: 'Nie można wysłać przypomnienia',
+            };
         }
         return { success: true, log: result };
     }
@@ -126,11 +135,10 @@ export class SmsController {
 
     @Get('stats')
     @Roles(Role.Admin)
-    async getStats(
-        @Query('from') from: string,
-        @Query('to') to: string,
-    ) {
-        const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    async getStats(@Query('from') from: string, @Query('to') to: string) {
+        const fromDate = from
+            ? new Date(from)
+            : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const toDate = to ? new Date(to) : new Date();
         return this.smsService.getStats(fromDate, toDate);
     }

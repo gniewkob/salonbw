@@ -53,7 +53,10 @@ export class OrdersService {
         return order;
     }
 
-    async create(dto: CreateWarehouseOrderDto, actor: User): Promise<WarehouseOrder> {
+    async create(
+        dto: CreateWarehouseOrderDto,
+        actor: User,
+    ): Promise<WarehouseOrder> {
         if (!dto.items || dto.items.length === 0) {
             throw new BadRequestException('Order requires at least one item');
         }
@@ -197,10 +200,14 @@ export class OrdersService {
         await this.ordersRepository.save(order);
 
         try {
-            await this.logService.logAction(actor, LogAction.DELIVERY_CANCELLED, {
-                entity: 'warehouse_order',
-                orderId: id,
-            });
+            await this.logService.logAction(
+                actor,
+                LogAction.DELIVERY_CANCELLED,
+                {
+                    entity: 'warehouse_order',
+                    orderId: id,
+                },
+            );
         } catch {
             // non-fatal
         }
@@ -245,10 +252,14 @@ export class OrdersService {
         });
 
         try {
-            await this.logService.logAction(actor, LogAction.DELIVERY_RECEIVED, {
-                entity: 'warehouse_order',
-                orderId: id,
-            });
+            await this.logService.logAction(
+                actor,
+                LogAction.DELIVERY_RECEIVED,
+                {
+                    entity: 'warehouse_order',
+                    orderId: id,
+                },
+            );
         } catch {
             // non-fatal
         }

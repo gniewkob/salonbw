@@ -118,7 +118,9 @@ export class DeliveriesController {
 
     @Post(':id/receive')
     @Roles(Role.Admin)
-    @ApiOperation({ summary: 'Przyjmij dostawę (zaktualizuj stany magazynowe)' })
+    @ApiOperation({
+        summary: 'Przyjmij dostawę (zaktualizuj stany magazynowe)',
+    })
     receive(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: ReceiveDeliveryDto,

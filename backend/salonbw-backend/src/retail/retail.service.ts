@@ -7,12 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import {
-    DataSource,
-    EntityManager,
-    In,
-    Repository,
-} from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { Product } from '../products/product.entity';
 import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
@@ -139,7 +134,9 @@ export class RetailService {
             },
         });
 
-        const productsById = new Map(products.map((product) => [product.id, product]));
+        const productsById = new Map(
+            products.map((product) => [product.id, product]),
+        );
 
         return rawItems.map((item) => {
             if (!item.productId || item.productId <= 0) {
@@ -170,7 +167,9 @@ export class RetailService {
                       : 0;
 
             if (unitPriceGross < 0 || discountGross < 0) {
-                throw new BadRequestException('unitPrice/discount must be >= 0');
+                throw new BadRequestException(
+                    'unitPrice/discount must be >= 0',
+                );
             }
 
             return {
@@ -467,13 +466,17 @@ export class RetailService {
             throw new BadRequestException('Usage requires at least one item');
         }
 
-        const ids = Array.from(new Set(dto.items.map((item) => item.productId)));
+        const ids = Array.from(
+            new Set(dto.items.map((item) => item.productId)),
+        );
         const products = await this.products.find({
             where: {
                 id: In(ids),
             },
         });
-        const productsById = new Map(products.map((product) => [product.id, product]));
+        const productsById = new Map(
+            products.map((product) => [product.id, product]),
+        );
 
         for (const item of dto.items) {
             const product = productsById.get(item.productId);

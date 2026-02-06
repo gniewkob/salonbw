@@ -78,7 +78,8 @@ export class Branch {
     @Column({
         name: 'working_hours',
         type: 'jsonb',
-        default: () => `'{"mon": {"open": "09:00", "close": "18:00"}, "tue": {"open": "09:00", "close": "18:00"}, "wed": {"open": "09:00", "close": "18:00"}, "thu": {"open": "09:00", "close": "18:00"}, "fri": {"open": "09:00", "close": "18:00"}, "sat": {"open": "10:00", "close": "14:00"}, "sun": null}'`,
+        default: () =>
+            `'{"mon": {"open": "09:00", "close": "18:00"}, "tue": {"open": "09:00", "close": "18:00"}, "wed": {"open": "09:00", "close": "18:00"}, "thu": {"open": "09:00", "close": "18:00"}, "fri": {"open": "09:00", "close": "18:00"}, "sat": {"open": "10:00", "close": "14:00"}, "sun": null}'`,
     })
     workingHours: Record<string, { open: string; close: string } | null>;
 
@@ -137,7 +138,9 @@ export class BranchMember {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Branch, (branch) => branch.members, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Branch, (branch) => branch.members, {
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'branch_id' })
     branch: Branch;
 
