@@ -68,10 +68,7 @@ function StatisticsPageContent() {
                         </div>
                     ) : (
                         <div className="inner">
-                            <h2
-                                className="nav-header"
-                                style={{ margin: '20px 0 10px' }}
-                            >
+                            <h2 className="nav-header mt-20 mb-10">
                                 SALON OGÓŁEM
                             </h2>
                             <div className="row">
@@ -153,22 +150,8 @@ function StatisticsPageContent() {
                                                     Metody płatności
                                                 </div>
                                                 <div className="text-center">
-                                                    <div
-                                                        className="color-circle"
-                                                        style={{
-                                                            width: '80px',
-                                                            height: '80px',
-                                                            margin: '0 auto 10px',
-                                                            background:
-                                                                '#86be3f',
-                                                        }}
-                                                    />
-                                                    <div
-                                                        className="versum-muted"
-                                                        style={{
-                                                            fontSize: '11px',
-                                                        }}
-                                                    >
+                                                    <div className="color-circle w-80 h-80 mx-auto mb-10 bg-green" />
+                                                    <div className="versum-muted fz-11">
                                                         gotówka:{' '}
                                                         {totals.totalRevenue.toFixed(
                                                             2,
@@ -184,22 +167,8 @@ function StatisticsPageContent() {
                                                     Wizyty
                                                 </div>
                                                 <div className="text-center">
-                                                    <div
-                                                        className="color-circle"
-                                                        style={{
-                                                            width: '80px',
-                                                            height: '80px',
-                                                            margin: '0 auto 10px',
-                                                            background:
-                                                                '#c95334',
-                                                        }}
-                                                    />
-                                                    <p
-                                                        className="versum-muted"
-                                                        style={{
-                                                            fontSize: '11px',
-                                                        }}
-                                                    >
+                                                    <div className="color-circle w-80 h-80 mx-auto mb-10 bg-red" />
+                                                    <p className="versum-muted fz-11">
                                                         na podstawie wizyt
                                                         zakończonych
                                                     </p>
@@ -210,13 +179,7 @@ function StatisticsPageContent() {
                                 </div>
                             </div>
 
-                            <div
-                                className="nav-header"
-                                style={{
-                                    marginTop: '20px',
-                                    marginBottom: '10px',
-                                }}
-                            >
+                            <div className="nav-header mt-20 mb-10">
                                 DANE W PODZIALE NA PRACOWNIKÓW
                             </div>
                             {employeesLoading ? (

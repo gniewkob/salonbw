@@ -66,21 +66,18 @@ export default function ManageCategoriesModal({
                     className="versum-list-item flex-between"
                     style={{
                         paddingLeft: `${20 + level * 20}px`,
-                        borderBottom: '1px solid #eee',
                     }}
                 >
-                    <div className="flex-center" style={{ gap: '10px' }}>
+                    <div className="flex-center gap-10">
                         {category.color && (
                             <span
-                                className="status-dot"
+                                className="status-dot w-10 h-10"
                                 style={{
                                     backgroundColor: category.color,
-                                    width: '10px',
-                                    height: '10px',
                                 }}
                             />
                         )}
-                        <span style={{ fontWeight: level === 0 ? 600 : 400 }}>
+                        <span className={level === 0 ? 'fw-600' : ''}>
                             {category.name}
                         </span>
                     </div>
@@ -88,6 +85,8 @@ export default function ManageCategoriesModal({
                         <button
                             className="btn btn-default btn-xs"
                             onClick={() => handleEdit(category)}
+                            title="Edytuj kategorię"
+                            aria-label="Edytuj kategorię"
                         >
                             <i className="fa fa-pencil"></i>
                         </button>
@@ -95,6 +94,7 @@ export default function ManageCategoriesModal({
                             className="btn btn-default btn-xs"
                             onClick={() => handleAdd(category.id)}
                             title="Dodaj podkategorię"
+                            aria-label="Dodaj podkategorię"
                         >
                             <i className="fa fa-plus"></i>
                         </button>
@@ -103,6 +103,8 @@ export default function ManageCategoriesModal({
                             onClick={() =>
                                 handleDelete(category.id, category.name)
                             }
+                            title="Usuń kategorię"
+                            aria-label="Usuń kategorię"
                         >
                             <i className="fa fa-trash text-danger"></i>
                         </button>
@@ -119,10 +121,7 @@ export default function ManageCategoriesModal({
     if (!isOpen) return null;
 
     return (
-        <div
-            className="modal fade in"
-            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-        >
+        <div className="modal fade in block bg-modal-overlay">
             <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -135,24 +134,13 @@ export default function ManageCategoriesModal({
                         </button>
                         <h4 className="modal-title">Zarządzaj kategoriami</h4>
                     </div>
-                    <div className="modal-body" style={{ padding: 0 }}>
+                    <div className="modal-body p-0">
                         <div className="versum-list">
-                            <div
-                                className="versum-list-item flex-between"
-                                style={{
-                                    backgroundColor: '#f9f9f9',
-                                    fontWeight: 600,
-                                }}
-                            >
+                            <div className="versum-list-item flex-between bg-f9 fw-600">
                                 <span>Nazwa kategorii</span>
                                 <span>Akcje</span>
                             </div>
-                            <div
-                                style={{
-                                    maxHeight: '400px',
-                                    overflowY: 'auto',
-                                }}
-                            >
+                            <div className="h-400 overflow-y-auto">
                                 {categories.length > 0 ? (
                                     categories.map((cat) =>
                                         renderCategoryRow(cat),
@@ -170,10 +158,7 @@ export default function ManageCategoriesModal({
                             className="btn btn-default pull-left"
                             onClick={() => handleAdd(null)}
                         >
-                            <i
-                                className="fa fa-plus"
-                                style={{ marginRight: '6px' }}
-                            ></i>
+                            <i className="fa fa-plus mr-6"></i>
                             Dodaj kategorię główną
                         </button>
                         <button className="btn btn-primary" onClick={onClose}>

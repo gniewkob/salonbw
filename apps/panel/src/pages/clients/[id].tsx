@@ -39,17 +39,11 @@ export default function CustomerDetailPage() {
             <DashboardLayout>
                 <div className="inner">
                     {isLoading ? (
-                        <div
-                            className="flex h-full items-center justify-center text-gray-500"
-                            style={{ padding: '20px' }}
-                        >
+                        <div className="flex h-full items-center justify-center text-gray-500 p-20">
                             Ładowanie danych klienta...
                         </div>
                     ) : error ? (
-                        <div
-                            className="flex h-full flex-col items-center justify-center text-gray-500"
-                            style={{ padding: '20px' }}
-                        >
+                        <div className="flex h-full flex-col items-center justify-center text-gray-500 p-20">
                             <p className="mb-4">
                                 Nie udało się załadować danych klienta
                             </p>
@@ -68,10 +62,7 @@ export default function CustomerDetailPage() {
                             onUpdate={handleUpdate}
                         />
                     ) : (
-                        <div
-                            className="flex h-full flex-col items-center justify-center text-gray-500"
-                            style={{ padding: '20px' }}
-                        >
+                        <div className="flex h-full flex-col items-center justify-center text-gray-500 p-20">
                             <p className="mb-4">Nie znaleziono klienta</p>
                             <Link
                                 href={'/clients' as Route}
