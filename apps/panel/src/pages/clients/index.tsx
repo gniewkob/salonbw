@@ -202,14 +202,7 @@ function ClientsPageContent() {
                         <>
                             <div className="versum-table-wrap">
                                 <div className="versum-table-header-alt">
-                                    <label
-                                        className="checkbox-inline"
-                                        style={{
-                                            fontSize: '11px',
-                                            margin: 0,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
+                                    <label className="checkbox-inline fz-11 m-0 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={
@@ -254,6 +247,8 @@ function ClientsPageContent() {
                                                     >
                                                         <input
                                                             type="checkbox"
+                                                            title="Zaznacz klienta"
+                                                            aria-label={`Zaznacz klienta ${customer.firstName} ${customer.lastName}`}
                                                             checked={selectedIds.has(
                                                                 customer.id,
                                                             )}
@@ -341,6 +336,7 @@ function ClientsPageContent() {
                                     na stronie{' '}
                                     <select
                                         className="form-control"
+                                        title="Liczba pozycji na stronie"
                                         value={limit}
                                         onChange={(e) =>
                                             setFilters((prev) => ({
