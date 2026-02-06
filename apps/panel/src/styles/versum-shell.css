@@ -1906,3 +1906,19 @@
     flex: 1;
     padding-left: 15px;
 }
+
+/* ========================================
+   Dynamic Style Utilities (for Hygiene)
+   ======================================== */
+
+.bg-dynamic {
+    background-color: var(--dynamic-color, #999) !important;
+}
+
+.pl-dynamic {
+    padding-left: var(--dynamic-padding, 0) !important;
+}
+
+.w-dynamic {
+    width: var(--dynamic-width, auto) !important;
+}
