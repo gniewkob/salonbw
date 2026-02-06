@@ -135,6 +135,35 @@ window.VersumConfig = ${JSON.stringify(ourConfig)};
     };
 })();
 </script>
+
+// Fix for session loss on navigation:
+// Intercept clicks on sidebar links to prevent vendored scripts from handling them
+// and potentially messing up the session. Force standard navigation.
+document.addEventListener('DOMContentLoaded', function() {
+    // We need to wait a tick to ensure vendored scripts have attached their listeners
+    // so we can strip them or attach ours after/replace them.
+    setTimeout(function() {
+        // Select all links in the main navigation and secondary navigation
+        const navLinks = document.querySelectorAll('#mainnav a, .mainnav a, #sidebar a');
+        
+        navLinks.forEach(function(link) {
+            // Skip links that are javascript:; or #
+            const href = link.getAttribute('href');
+            if (!href || href.indexOf('javascript') === 0 || href === '#') return;
+
+            // Clone the node to strip all event listeners (including JQuery ones)
+            const newLink = link.cloneNode(true);
+            link.parentNode.replaceChild(newLink, link);
+            
+            // Add clean click handler
+            newLink.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                window.location.href = href;
+            });
+        });
+    }, 500); // 500ms delay to be safe vs vendored scripts
+});
 `;
         html = html.replace('</head>', `${configScript}</head>`);
 
