@@ -84,9 +84,10 @@ export default function CustomerSidebar({
                                                         group.color || '#999',
                                                 } as React.CSSProperties;
                                                 return (
+                                                    // eslint-disable-next-line
                                                     <span
                                                         className="status-dot w-8 h-8 bg-dynamic"
-                                                        style={dotStyle} // eslint-disable-line
+                                                        style={dotStyle}
                                                     />
                                                 );
                                             })()}
@@ -117,6 +118,7 @@ export default function CustomerSidebar({
                                         : tag.color || '#999',
                             } as React.CSSProperties;
                             return (
+                                // eslint-disable-next-line
                                 <button
                                     key={tag.id}
                                     onClick={() =>
@@ -127,7 +129,7 @@ export default function CustomerSidebar({
                                         )
                                     }
                                     className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
-                                    style={tagStyle} // eslint-disable-line
+                                    style={tagStyle}
                                 >
                                     {tag.name}
                                 </button>
