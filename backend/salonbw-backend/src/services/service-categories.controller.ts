@@ -30,9 +30,7 @@ import {
 @ApiTags('service-categories')
 @Controller('service-categories')
 export class ServiceCategoriesController {
-    constructor(
-        private readonly categoriesService: ServiceCategoriesService,
-    ) {}
+    constructor(private readonly categoriesService: ServiceCategoriesService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin, Role.Receptionist)

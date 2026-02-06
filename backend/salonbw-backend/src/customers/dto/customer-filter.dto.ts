@@ -78,13 +78,18 @@ export class CustomerFilterDto {
     @IsDateString()
     noVisitSince?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by service ID (customers who used this service)' })
+    @ApiPropertyOptional({
+        description: 'Filter by service ID (customers who used this service)',
+    })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
     serviceId?: number;
 
-    @ApiPropertyOptional({ description: 'Filter by employee ID (customers served by this employee)' })
+    @ApiPropertyOptional({
+        description:
+            'Filter by employee ID (customers served by this employee)',
+    })
     @IsOptional()
     @IsNumber()
     @Type(() => Number)

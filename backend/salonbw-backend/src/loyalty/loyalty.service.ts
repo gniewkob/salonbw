@@ -6,7 +6,13 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
+import {
+    Repository,
+    FindOptionsWhere,
+    MoreThanOrEqual,
+    LessThanOrEqual,
+    Between,
+} from 'typeorm';
 import {
     LoyaltyProgram,
     LoyaltyBalance,
@@ -54,12 +60,15 @@ export class LoyaltyService {
 
     // Program Management
     async getProgram(): Promise<LoyaltyProgram> {
-        let program = await this.programRepo.findOne({ where: { isActive: true } });
+        let program = await this.programRepo.findOne({
+            where: { isActive: true },
+        });
         if (!program) {
             // Create default program
             program = this.programRepo.create({
                 name: 'Program Lojalnościowy',
-                description: 'Zbieraj punkty za każdą wizytę i wymieniaj na nagrody!',
+                description:
+                    'Zbieraj punkty za każdą wizytę i wymieniaj na nagrody!',
                 pointsPerCurrency: 1,
                 pointsValueCurrency: 0.01,
                 minPointsRedemption: 100,
@@ -69,7 +78,10 @@ export class LoyaltyService {
         return program;
     }
 
-    async updateProgram(dto: UpdateLoyaltyProgramDto, actorId: number): Promise<LoyaltyProgram> {
+    async updateProgram(
+        dto: UpdateLoyaltyProgramDto,
+        actorId: number,
+    ): Promise<LoyaltyProgram> {
         const program = await this.getProgram();
         Object.assign(program, dto);
         const updated = await this.programRepo.save(program);
@@ -118,12 +130,16 @@ export class LoyaltyService {
             lifetimeTierPoints: balance.lifetimeTierPoints,
             currentTier: balance.currentTier,
             tierMultiplier: Number(balance.tierMultiplier),
-            pointsValue: balance.currentBalance * Number(program.pointsValueCurrency),
+            pointsValue:
+                balance.currentBalance * Number(program.pointsValueCurrency),
         };
     }
 
     // Points Operations
-    async awardPoints(dto: AwardPointsDto, actorId: number): Promise<LoyaltyTransaction> {
+    async awardPoints(
+        dto: AwardPointsDto,
+        actorId: number,
+    ): Promise<LoyaltyTransaction> {
         const program = await this.getProgram();
         const balance = await this.getBalance(dto.userId);
 
@@ -153,7 +169,10 @@ export class LoyaltyService {
 
         // Create transaction
         const expiresAt = program.pointsExpireMonths
-            ? new Date(Date.now() + program.pointsExpireMonths * 30 * 24 * 60 * 60 * 1000)
+            ? new Date(
+                  Date.now() +
+                      program.pointsExpireMonths * 30 * 24 * 60 * 60 * 1000,
+              )
             : null;
 
         const transaction = this.transactionRepo.create({
@@ -164,7 +183,8 @@ export class LoyaltyService {
             balanceAfter: balance.currentBalance,
             appointmentId: dto.appointmentId,
             referralUserId: dto.referralUserId,
-            description: dto.description ?? this.getDefaultDescription(dto.source),
+            description:
+                dto.description ?? this.getDefaultDescription(dto.source),
             performedById: actorId,
             expiresAt,
         });
@@ -188,7 +208,9 @@ export class LoyaltyService {
         actorId: number,
     ): Promise<LoyaltyTransaction | null> {
         const program = await this.getProgram();
-        const points = Math.floor(amountSpent * Number(program.pointsPerCurrency));
+        const points = Math.floor(
+            amountSpent * Number(program.pointsPerCurrency),
+        );
 
         if (points <= 0) {
             return null;
@@ -206,7 +228,11 @@ export class LoyaltyService {
         );
     }
 
-    async adjustPoints(userId: number, dto: AdjustPointsDto, actorId: number): Promise<LoyaltyTransaction> {
+    async adjustPoints(
+        userId: number,
+        dto: AdjustPointsDto,
+        actorId: number,
+    ): Promise<LoyaltyTransaction> {
         const balance = await this.getBalance(userId);
 
         const newBalance = balance.currentBalance + dto.points;
@@ -245,7 +271,9 @@ export class LoyaltyService {
     }
 
     // Reward Management
-    async getRewards(query: RewardQueryDto): Promise<{ data: LoyaltyReward[]; total: number }> {
+    async getRewards(
+        query: RewardQueryDto,
+    ): Promise<{ data: LoyaltyReward[]; total: number }> {
         const where: FindOptionsWhere<LoyaltyReward> = {};
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
@@ -274,10 +302,19 @@ export class LoyaltyService {
         const rewards = await this.rewardRepo
             .createQueryBuilder('r')
             .where('r.isActive = true')
-            .andWhere('r.pointsCost <= :points', { points: balance.currentBalance })
-            .andWhere('(r.availableFrom IS NULL OR r.availableFrom <= :now)', { now })
-            .andWhere('(r.availableUntil IS NULL OR r.availableUntil >= :now)', { now })
-            .andWhere('(r.maxRedemptions IS NULL OR r.currentRedemptions < r.maxRedemptions)')
+            .andWhere('r.pointsCost <= :points', {
+                points: balance.currentBalance,
+            })
+            .andWhere('(r.availableFrom IS NULL OR r.availableFrom <= :now)', {
+                now,
+            })
+            .andWhere(
+                '(r.availableUntil IS NULL OR r.availableUntil >= :now)',
+                { now },
+            )
+            .andWhere(
+                '(r.maxRedemptions IS NULL OR r.currentRedemptions < r.maxRedemptions)',
+            )
             .orderBy('r.sortOrder', 'ASC')
             .addOrderBy('r.pointsCost', 'ASC')
             .getMany();
@@ -293,7 +330,10 @@ export class LoyaltyService {
         return reward;
     }
 
-    async createReward(dto: CreateRewardDto, actorId: number): Promise<LoyaltyReward> {
+    async createReward(
+        dto: CreateRewardDto,
+        actorId: number,
+    ): Promise<LoyaltyReward> {
         const reward = this.rewardRepo.create(dto);
         if (dto.availableFrom) {
             reward.availableFrom = new Date(dto.availableFrom);
@@ -313,7 +353,11 @@ export class LoyaltyService {
         return saved;
     }
 
-    async updateReward(id: number, dto: UpdateRewardDto, actorId: number): Promise<LoyaltyReward> {
+    async updateReward(
+        id: number,
+        dto: UpdateRewardDto,
+        actorId: number,
+    ): Promise<LoyaltyReward> {
         const reward = await this.getReward(id);
 
         Object.assign(reward, dto);
@@ -348,7 +392,11 @@ export class LoyaltyService {
     }
 
     // Redemption
-    async redeemReward(userId: number, dto: RedeemRewardDto, actorId: number): Promise<LoyaltyRewardRedemption> {
+    async redeemReward(
+        userId: number,
+        dto: RedeemRewardDto,
+        actorId: number,
+    ): Promise<LoyaltyRewardRedemption> {
         const reward = await this.getReward(dto.rewardId);
         const balance = await this.getBalance(userId);
         const program = await this.getProgram();
@@ -372,13 +420,20 @@ export class LoyaltyService {
 
         const now = new Date();
         if (reward.availableFrom && reward.availableFrom > now) {
-            throw new BadRequestException('Ta nagroda nie jest jeszcze dostępna');
+            throw new BadRequestException(
+                'Ta nagroda nie jest jeszcze dostępna',
+            );
         }
         if (reward.availableUntil && reward.availableUntil < now) {
             throw new BadRequestException('Ta nagroda już wygasła');
         }
-        if (reward.maxRedemptions && reward.currentRedemptions >= reward.maxRedemptions) {
-            throw new BadRequestException('Ta nagroda została już wykorzystana maksymalną liczbę razy');
+        if (
+            reward.maxRedemptions &&
+            reward.currentRedemptions >= reward.maxRedemptions
+        ) {
+            throw new BadRequestException(
+                'Ta nagroda została już wykorzystana maksymalną liczbę razy',
+            );
         }
 
         // Deduct points
@@ -422,14 +477,24 @@ export class LoyaltyService {
         await this.logService.logAction(
             { id: actorId } as any,
             LogAction.LOYALTY_REWARD_REDEEMED,
-            { userId, rewardId: reward.id, rewardName: reward.name, pointsSpent: reward.pointsCost },
+            {
+                userId,
+                rewardId: reward.id,
+                rewardName: reward.name,
+                pointsSpent: reward.pointsCost,
+            },
         );
 
-        this.logger.log(`User ${userId} redeemed reward ${reward.name} for ${reward.pointsCost} points`);
+        this.logger.log(
+            `User ${userId} redeemed reward ${reward.name} for ${reward.pointsCost} points`,
+        );
         return savedRedemption;
     }
 
-    async useRedemption(dto: UseRedemptionDto, actorId: number): Promise<LoyaltyRewardRedemption> {
+    async useRedemption(
+        dto: UseRedemptionDto,
+        actorId: number,
+    ): Promise<LoyaltyRewardRedemption> {
         const redemption = await this.redemptionRepo.findOne({
             where: { redemptionCode: dto.redemptionCode.toUpperCase() },
             relations: ['reward', 'user'],
@@ -440,7 +505,9 @@ export class LoyaltyService {
         }
 
         if (redemption.status !== 'active') {
-            throw new BadRequestException(`Kupon jest już ${redemption.status === 'used' ? 'wykorzystany' : redemption.status}`);
+            throw new BadRequestException(
+                `Kupon jest już ${redemption.status === 'used' ? 'wykorzystany' : redemption.status}`,
+            );
         }
 
         if (redemption.expiresAt && redemption.expiresAt < new Date()) {
@@ -467,7 +534,9 @@ export class LoyaltyService {
         return updated;
     }
 
-    async getUserRedemptions(userId: number): Promise<LoyaltyRewardRedemption[]> {
+    async getUserRedemptions(
+        userId: number,
+    ): Promise<LoyaltyRewardRedemption[]> {
         return this.redemptionRepo.find({
             where: { userId },
             relations: ['reward'],
@@ -476,7 +545,9 @@ export class LoyaltyService {
     }
 
     // Transactions
-    async getTransactions(query: LoyaltyTransactionQueryDto): Promise<{ data: LoyaltyTransaction[]; total: number }> {
+    async getTransactions(
+        query: LoyaltyTransactionQueryDto,
+    ): Promise<{ data: LoyaltyTransaction[]; total: number }> {
         const where: FindOptionsWhere<LoyaltyTransaction> = {};
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
@@ -502,7 +573,10 @@ export class LoyaltyService {
         return { data, total };
     }
 
-    async getUserTransactions(userId: number, limit = 50): Promise<LoyaltyTransaction[]> {
+    async getUserTransactions(
+        userId: number,
+        limit = 50,
+    ): Promise<LoyaltyTransaction[]> {
         return this.transactionRepo.find({
             where: { userId },
             relations: ['performedBy'],
@@ -515,7 +589,12 @@ export class LoyaltyService {
     async getStats(): Promise<LoyaltyStatsResponse> {
         const program = await this.getProgram();
 
-        const [totalMembers, totalPointsIssued, totalPointsRedeemed, totalRewardsRedeemed] = await Promise.all([
+        const [
+            totalMembers,
+            totalPointsIssued,
+            totalPointsRedeemed,
+            totalRewardsRedeemed,
+        ] = await Promise.all([
             this.balanceRepo.count(),
             this.balanceRepo
                 .createQueryBuilder('b')
@@ -532,7 +611,9 @@ export class LoyaltyService {
             where: { currentBalance: MoreThanOrEqual(1) },
         });
 
-        const outstandingPoints = Number(totalPointsIssued?.sum || 0) - Number(totalPointsRedeemed?.sum || 0);
+        const outstandingPoints =
+            Number(totalPointsIssued?.sum || 0) -
+            Number(totalPointsRedeemed?.sum || 0);
 
         return {
             totalMembers,
@@ -541,17 +622,23 @@ export class LoyaltyService {
             totalPointsRedeemed: Number(totalPointsRedeemed?.sum || 0),
             totalRewardsRedeemed,
             outstandingPoints,
-            outstandingValue: outstandingPoints * Number(program.pointsValueCurrency),
+            outstandingValue:
+                outstandingPoints * Number(program.pointsValueCurrency),
         };
     }
 
     // Helpers
-    private async updateTier(balance: LoyaltyBalance, program: LoyaltyProgram): Promise<void> {
+    private async updateTier(
+        balance: LoyaltyBalance,
+        program: LoyaltyProgram,
+    ): Promise<void> {
         if (!program.enableTiers || !program.tierThresholds?.length) {
             return;
         }
 
-        const sortedTiers = [...program.tierThresholds].sort((a, b) => b.minPoints - a.minPoints);
+        const sortedTiers = [...program.tierThresholds].sort(
+            (a, b) => b.minPoints - a.minPoints,
+        );
 
         for (const tier of sortedTiers) {
             if (balance.lifetimeTierPoints >= tier.minPoints) {
@@ -565,7 +652,8 @@ export class LoyaltyService {
     private getDefaultDescription(source: LoyaltyTransactionSource): string {
         const descriptions: Record<LoyaltyTransactionSource, string> = {
             [LoyaltyTransactionSource.Appointment]: 'Punkty za wizytę',
-            [LoyaltyTransactionSource.ProductPurchase]: 'Punkty za zakup produktu',
+            [LoyaltyTransactionSource.ProductPurchase]:
+                'Punkty za zakup produktu',
             [LoyaltyTransactionSource.Reward]: 'Wymiana na nagrodę',
             [LoyaltyTransactionSource.Birthday]: 'Bonus urodzinowy',
             [LoyaltyTransactionSource.Referral]: 'Bonus za polecenie',
@@ -588,13 +676,17 @@ export class LoyaltyService {
             }
             attempts++;
 
-            const existing = await this.redemptionRepo.findOne({ where: { redemptionCode: code } });
+            const existing = await this.redemptionRepo.findOne({
+                where: { redemptionCode: code },
+            });
             if (!existing) {
                 return code;
             }
         } while (attempts < 10);
 
-        throw new ConflictException('Nie udało się wygenerować unikalnego kodu');
+        throw new ConflictException(
+            'Nie udało się wygenerować unikalnego kodu',
+        );
     }
 
     // Cron job for expiring points

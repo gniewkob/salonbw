@@ -10,9 +10,7 @@ import { User } from '../users/user.entity';
 import { AppCacheService } from '../cache/cache.service';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { ProductCategory } from './entities/product-category.entity';
-import {
-    ProductCommissionRule,
-} from './entities/product-commission-rule.entity';
+import { ProductCommissionRule } from './entities/product-commission-rule.entity';
 import { ServiceRecipeItem } from '../services/entities/service-recipe-item.entity';
 import { Role } from '../users/role.enum';
 
@@ -467,15 +465,21 @@ export class ProductsService {
     ) {
         await this.findOne(id);
 
-        const employeeIds = Array.from(new Set(rules.map((rule) => rule.employeeId)));
+        const employeeIds = Array.from(
+            new Set(rules.map((rule) => rule.employeeId)),
+        );
         if (employeeIds.length > 0) {
             const employees = await this.usersRepository.find({
                 where: {
                     id: In(employeeIds),
                 },
             });
-            const existingIds = new Set(employees.map((employee) => employee.id));
-            const invalidId = employeeIds.find((employeeId) => !existingIds.has(employeeId));
+            const existingIds = new Set(
+                employees.map((employee) => employee.id),
+            );
+            const invalidId = employeeIds.find(
+                (employeeId) => !existingIds.has(employeeId),
+            );
             if (invalidId) {
                 throw new NotFoundException(`Employee ${invalidId} not found`);
             }

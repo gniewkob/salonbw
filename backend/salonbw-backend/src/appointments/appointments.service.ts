@@ -14,7 +14,11 @@ import {
     Between,
     FindOptionsWhere,
 } from 'typeorm';
-import { Appointment, AppointmentStatus, PaymentMethod } from './appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+    PaymentMethod,
+} from './appointment.entity';
 import { CommissionsService } from '../commissions/commissions.service';
 import { Role } from '../users/role.enum';
 import { Service as SalonService } from '../services/service.entity';
@@ -43,7 +47,8 @@ export class AppointmentsService {
         private readonly logService: LogService,
         private readonly whatsappService: WhatsappService,
         @Optional() private readonly metrics?: MetricsService,
-        @Optional() @Inject(forwardRef(() => RetailService))
+        @Optional()
+        @Inject(forwardRef(() => RetailService))
         private readonly retailService?: RetailService,
     ) {}
 
@@ -234,7 +239,13 @@ export class AppointmentsService {
     async findOne(id: number): Promise<Appointment | null> {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
-            relations: ['formulas', 'service', 'serviceVariant', 'client', 'employee'],
+            relations: [
+                'formulas',
+                'service',
+                'serviceVariant',
+                'client',
+                'employee',
+            ],
         });
         return appointment ?? null;
     }
@@ -354,7 +365,9 @@ export class AppointmentsService {
         if (!startTime || isNaN(startTime.getTime())) {
             throw new BadRequestException('startTime must be a valid date');
         }
-        let duration = appointment.serviceVariant?.duration ?? appointment.service.duration;
+        let duration =
+            appointment.serviceVariant?.duration ??
+            appointment.service.duration;
         if (serviceVariantId !== undefined) {
             if (serviceVariantId === null || serviceVariantId === 0) {
                 appointment.serviceVariant = null;
@@ -430,13 +443,19 @@ export class AppointmentsService {
         }
 
         const duration =
-            appointment.serviceVariant?.duration ?? appointment.service.duration;
+            appointment.serviceVariant?.duration ??
+            appointment.service.duration;
         const newEnd = endTime
             ? endTime
             : new Date(startTime.getTime() + duration * 60 * 1000);
 
         if (!force) {
-            await this.assertNoConflict(targetEmployeeId, startTime, newEnd, id);
+            await this.assertNoConflict(
+                targetEmployeeId,
+                startTime,
+                newEnd,
+                id,
+            );
         }
 
         const updateData: Partial<Appointment> = {
@@ -486,7 +505,10 @@ export class AppointmentsService {
         startTime: Date,
         endTime: Date,
         excludeId?: number,
-    ): Promise<{ hasConflict: boolean; conflictingAppointments: Appointment[] }> {
+    ): Promise<{
+        hasConflict: boolean;
+        conflictingAppointments: Appointment[];
+    }> {
         const where: FindOptionsWhere<Appointment> = {
             employee: { id: employeeId },
             status: Not(AppointmentStatus.Cancelled),
@@ -545,9 +567,9 @@ export class AppointmentsService {
                     finalizedAt: new Date(),
                     finalizedBy: user,
                     internalNote: dto.note
-                        ? (appointment.internalNote
-                              ? `${appointment.internalNote}\n${dto.note}`
-                              : dto.note)
+                        ? appointment.internalNote
+                            ? `${appointment.internalNote}\n${dto.note}`
+                            : dto.note
                         : appointment.internalNote,
                 });
 
@@ -559,7 +581,11 @@ export class AppointmentsService {
                 );
 
                 // Process product sales (upselling) if any
-                if (dto.products && dto.products.length > 0 && this.retailService) {
+                if (
+                    dto.products &&
+                    dto.products.length > 0 &&
+                    this.retailService
+                ) {
                     for (const productSale of dto.products) {
                         await this.retailService.createSale(
                             {

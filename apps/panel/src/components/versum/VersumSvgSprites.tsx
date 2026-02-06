@@ -1,6 +1,6 @@
 export default function VersumSvgSprites() {
     return (
-        <div aria-hidden="true" style={{ display: 'none' }}>
+        <div aria-hidden="true" className="hidden">
             <svg xmlns="http://www.w3.org/2000/svg">
                 <symbol id="svg-calendar-nav" viewBox="0 0 24 24">
                     <g fill="currentColor">

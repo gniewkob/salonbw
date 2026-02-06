@@ -77,19 +77,19 @@ export default function CustomerSidebar({
                             >
                                 <a onClick={() => handleGroupSelect(group.id)}>
                                     <div className="flex-center w-full gap-8">
-                                        {group.color && (
-                                            // eslint-disable-next-line
-                                            <span
-                                                className="status-dot w-8 h-8 bg-dynamic"
-                                                style={
-                                                    {
-                                                        '--dynamic-color':
-                                                            group.color ||
-                                                            '#999',
-                                                    } as React.CSSProperties
-                                                }
-                                            />
-                                        )}
+                                        {group.color &&
+                                            (() => {
+                                                const dotStyle = {
+                                                    '--dynamic-color':
+                                                        group.color || '#999',
+                                                } as React.CSSProperties;
+                                                return (
+                                                    <span
+                                                        className="status-dot w-8 h-8 bg-dynamic"
+                                                        style={dotStyle} // eslint-disable-line
+                                                    />
+                                                );
+                                            })()}
                                         <span className="flex-1 text-truncate">
                                             {group.name}
                                         </span>
@@ -109,30 +109,30 @@ export default function CustomerSidebar({
                 <div className="versum-sidebar__section">
                     <div className="versum-sidebar__header">TAGI</div>
                     <div className="versum-sidebar__tag-list">
-                        {tags.map((tag) => (
-                            <button
-                                key={tag.id}
-                                onClick={() =>
-                                    handleTagSelect(
-                                        filters.tagId === tag.id
-                                            ? undefined
-                                            : tag.id,
-                                    )
-                                }
-                                // eslint-disable-next-line
-                                className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
-                                style={
-                                    {
-                                        '--dynamic-color':
+                        {tags.map((tag) => {
+                            const tagStyle = {
+                                '--dynamic-color':
+                                    filters.tagId === tag.id
+                                        ? '#008bb4'
+                                        : tag.color || '#999',
+                            } as React.CSSProperties;
+                            return (
+                                <button
+                                    key={tag.id}
+                                    onClick={() =>
+                                        handleTagSelect(
                                             filters.tagId === tag.id
-                                                ? '#008bb4'
-                                                : tag.color || '#999',
-                                    } as React.CSSProperties
-                                }
-                            >
-                                {tag.name}
-                            </button>
-                        ))}
+                                                ? undefined
+                                                : tag.id,
+                                        )
+                                    }
+                                    className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
+                                    style={tagStyle} // eslint-disable-line
+                                >
+                                    {tag.name}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 

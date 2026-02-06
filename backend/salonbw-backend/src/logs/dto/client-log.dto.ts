@@ -1,10 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-    IsString,
-    IsOptional,
-    IsNotEmpty,
-    IsObject,
-} from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsObject } from 'class-validator';
 
 export class ClientLogDto {
     @ApiProperty({ description: 'The error message' })

@@ -56,13 +56,18 @@ export default function VersumTopbar() {
                     className="menu-toggler navbar-toggle"
                     id="menu-toggler"
                     href="javascript:;"
+                    title="Otwórz menu"
                 >
                     <span className="icon-bar"></span>
                     <span className="icon-bar"></span>
                     <span className="icon-bar"></span>
                 </a>
                 <div className="brand brand-text-sbw">
-                    <Link href="/dashboard" title="przejdź do pulpitu">
+                    <Link
+                        href="/dashboard"
+                        title="przejdź do pulpitu"
+                        aria-label="Black and White - Przejdź do pulpitu"
+                    >
                         Black&amp;White
                     </Link>
                 </div>
@@ -119,6 +124,7 @@ export default function VersumTopbar() {
                             className="ai-center d-flex dropdown-toggle"
                             data-toggle="dropdown"
                             href="javascript:;"
+                            title="Pomoc"
                             onClick={() => setHelpMenuOpen(!helpMenuOpen)}
                         >
                             <div className="d-inline-block jQ_nav_chat_notification">

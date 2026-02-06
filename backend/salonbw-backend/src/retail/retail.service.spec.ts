@@ -13,10 +13,18 @@ describe('RetailService.calculateCommissionCents', () => {
         null as unknown as Repository<Product>,
         null as unknown as Repository<User>,
         null as unknown as Repository<Appointment>,
-        null as unknown as Repository<import('../warehouse/entities/warehouse-sale.entity').WarehouseSale>,
-        null as unknown as Repository<import('../warehouse/entities/warehouse-sale-item.entity').WarehouseSaleItem>,
-        null as unknown as Repository<import('../warehouse/entities/warehouse-usage.entity').WarehouseUsage>,
-        null as unknown as Repository<import('../warehouse/entities/warehouse-usage-item.entity').WarehouseUsageItem>,
+        null as unknown as Repository<
+            import('../warehouse/entities/warehouse-sale.entity').WarehouseSale
+        >,
+        null as unknown as Repository<
+            import('../warehouse/entities/warehouse-sale-item.entity').WarehouseSaleItem
+        >,
+        null as unknown as Repository<
+            import('../warehouse/entities/warehouse-usage.entity').WarehouseUsage
+        >,
+        null as unknown as Repository<
+            import('../warehouse/entities/warehouse-usage-item.entity').WarehouseUsageItem
+        >,
         null as unknown as CommissionsService,
         null as unknown as LogService,
         { get: () => 'false' } as unknown as ConfigService,

@@ -121,23 +121,18 @@ export default function CustomerNotesTab({ customerId }: Props) {
                     <div className="versum-widget__content">
                         {/* Add Note Form */}
                         {showAddForm && (
-                            <div
-                                className="versum-panel-sub"
-                                style={{
-                                    marginBottom: '20px',
-                                    padding: '15px',
-                                }}
-                            >
+                            <div className="versum-panel-sub mb-20 p-15">
                                 <div className="row">
                                     <div className="col-sm-4">
                                         <div className="form-group">
                                             <label
-                                                className="control-label"
-                                                style={{ fontSize: '11px' }}
+                                                htmlFor="new-note-type"
+                                                className="control-label fz-11"
                                             >
                                                 Typ notatki
                                             </label>
                                             <select
+                                                id="new-note-type"
                                                 value={newNoteType}
                                                 onChange={(e) =>
                                                     setNewNoteType(
@@ -145,11 +140,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
                                                             .value as NoteType,
                                                     )
                                                 }
-                                                className="form-control"
-                                                style={{
-                                                    height: '30px',
-                                                    fontSize: '12px',
-                                                }}
+                                                className="form-control h-30 fz-12"
                                             >
                                                 {Object.entries(
                                                     noteTypeConfig,
@@ -168,12 +159,13 @@ export default function CustomerNotesTab({ customerId }: Props) {
                                     <div className="col-sm-8 flex items-end">
                                         <div className="form-group w-full">
                                             <label
-                                                className="control-label"
-                                                style={{ fontSize: '11px' }}
+                                                htmlFor="new-note-content"
+                                                className="control-label fz-11"
                                             >
                                                 Treść
                                             </label>
                                             <textarea
+                                                id="new-note-content"
                                                 value={newNoteContent}
                                                 onChange={(e) =>
                                                     setNewNoteContent(
@@ -182,16 +174,12 @@ export default function CustomerNotesTab({ customerId }: Props) {
                                                 }
                                                 rows={2}
                                                 placeholder="Wpisz treść notatki..."
-                                                className="form-control"
-                                                style={{ fontSize: '12px' }}
+                                                className="form-control fz-12"
                                             />
                                         </div>
                                     </div>
                                 </div>
-                                <div
-                                    className="flex justify-end gap-2"
-                                    style={{ marginTop: '10px' }}
-                                >
+                                <div className="flex justify-end gap-2 mt-10">
                                     <button
                                         onClick={() => {
                                             setShowAddForm(false);
@@ -223,17 +211,8 @@ export default function CustomerNotesTab({ customerId }: Props) {
                         <div className="versum-notes-list">
                             {/* Pinned Notes */}
                             {pinnedNotes.length > 0 && (
-                                <div style={{ marginBottom: '20px' }}>
-                                    <div
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '11px',
-                                            textTransform: 'uppercase',
-                                            marginBottom: '10px',
-                                            borderBottom: '1px solid #eee',
-                                            paddingBottom: '3px',
-                                        }}
-                                    >
+                                <div className="mb-20">
+                                    <div className="text-muted fz-11 uppercase mb-10 border-bottom pb-3">
                                         📌 Przypięte ({pinnedNotes.length})
                                     </div>
                                     {pinnedNotes.map((note) => (
@@ -252,16 +231,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
                             {unpinnedNotes.length > 0 && (
                                 <div>
                                     {pinnedNotes.length > 0 && (
-                                        <div
-                                            className="text-muted"
-                                            style={{
-                                                fontSize: '11px',
-                                                textTransform: 'uppercase',
-                                                marginBottom: '10px',
-                                                borderBottom: '1px solid #eee',
-                                                paddingBottom: '3px',
-                                            }}
-                                        >
+                                        <div className="text-muted fz-11 uppercase mb-10 border-bottom pb-3">
                                             Pozostałe ({unpinnedNotes.length})
                                         </div>
                                     )}
@@ -279,10 +249,7 @@ export default function CustomerNotesTab({ customerId }: Props) {
 
                             {/* Empty State */}
                             {notes?.length === 0 && !showAddForm && (
-                                <div
-                                    className="text-center text-muted"
-                                    style={{ padding: '40px 0' }}
-                                >
+                                <div className="text-center text-muted p-40-0">
                                     Brak notatek. Kliknij &quot;Dodaj
                                     notatkę&quot; aby dodać pierwszą.
                                 </div>
@@ -309,57 +276,28 @@ function NoteItem({
     const config = noteTypeConfig[note.type] || noteTypeConfig.general;
 
     return (
-        <div style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+        <div className="py-12 border-bottom-f0">
             <div className="flex items-start justify-between">
-                <div style={{ flex: 1 }}>
-                    <div
-                        className="flex items-center gap-2"
-                        style={{ marginBottom: '5px' }}
-                    >
-                        <span
-                            style={{
-                                display: 'inline-block',
-                                padding: '1px 8px',
-                                borderRadius: '10px',
-                                fontSize: '10px',
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                background: '#eee',
-                                color: '#666',
-                            }}
-                        >
+                <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-5">
+                        <span className="inline-block px-8 py-1 rounded-10 fz-10 bold uppercase bg-eee text-666">
                             {config.label}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#999' }}>
+                        <span className="fz-11 text-999">
                             {formatDate(note.createdAt)}
                             {note.createdBy && ` • ${note.createdBy.name}`}
                         </span>
                     </div>
-                    <p
-                        style={{
-                            margin: 0,
-                            fontSize: '13px',
-                            lineHeight: '1.5',
-                            whiteSpace: 'pre-wrap',
-                            color: '#333',
-                        }}
-                    >
+                    <p className="m-0 fz-13 lh-15 pre-wrap text-333">
                         {note.content}
                     </p>
                 </div>
-                <div className="flex gap-1" style={{ marginLeft: '10px' }}>
+                <div className="flex gap-1 ml-10">
                     <button
                         onClick={() => {
                             void onTogglePin(note);
                         }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '3px',
-                            opacity: note.isPinned ? 1 : 0.3,
-                            filter: note.isPinned ? 'none' : 'grayscale(100%)',
-                        }}
+                        className={`btn-pin ${note.isPinned ? 'active' : 'inactive'}`}
                         title={note.isPinned ? 'Odepnij' : 'Przypnij'}
                     >
                         📌
@@ -368,14 +306,7 @@ function NoteItem({
                         onClick={() => {
                             void onDelete(note.id);
                         }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '3px',
-                            opacity: 0.3,
-                        }}
-                        className="hover:opacity-100"
+                        className="btn-delete"
                         title="Usuń"
                     >
                         🗑️

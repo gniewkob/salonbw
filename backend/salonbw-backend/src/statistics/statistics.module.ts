@@ -7,9 +7,7 @@ import { User } from '../users/user.entity';
 import { Review } from '../reviews/review.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Appointment, User, Review]),
-    ],
+    imports: [TypeOrmModule.forFeature([Appointment, User, Review])],
     controllers: [StatisticsController],
     providers: [StatisticsService],
     exports: [StatisticsService],

@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsString,
-    IsOptional,
-    IsNotEmpty,
-    IsInt,
-} from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsInt } from 'class-validator';
 
 export class AdjustInventoryDto {
     @ApiProperty({ description: 'ID of the product to adjust' })

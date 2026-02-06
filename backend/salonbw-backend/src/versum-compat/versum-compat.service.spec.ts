@@ -103,13 +103,13 @@ describe('VersumCompatService', () => {
         };
 
         appointmentsRepository.findOne.mockResolvedValue(appointment);
-        appointmentsRepository.save.mockImplementation(async (entity) => entity);
-
-        const result = await service.finalizeEvent(
-            101,
-            { id: 999 } as never,
-            { not_an_appointment: true },
+        appointmentsRepository.save.mockImplementation(
+            async (entity) => entity,
         );
+
+        const result = await service.finalizeEvent(101, { id: 999 } as never, {
+            not_an_appointment: true,
+        });
 
         expect(appointment.status).toBe(AppointmentStatus.NoShow);
         expect(result).toMatchObject({ success: true });

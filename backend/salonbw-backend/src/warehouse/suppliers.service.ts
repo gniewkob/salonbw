@@ -28,7 +28,9 @@ export class SuppliersService {
             where: { id },
         });
         if (!supplier) {
-            throw new NotFoundException(`Dostawca o ID ${id} nie został znaleziony`);
+            throw new NotFoundException(
+                `Dostawca o ID ${id} nie został znaleziony`,
+            );
         }
         return supplier;
     }
@@ -46,7 +48,11 @@ export class SuppliersService {
         return saved;
     }
 
-    async update(id: number, dto: UpdateSupplierDto, actor: User): Promise<Supplier> {
+    async update(
+        id: number,
+        dto: UpdateSupplierDto,
+        actor: User,
+    ): Promise<Supplier> {
         const supplier = await this.findOne(id);
         Object.assign(supplier, dto);
         const saved = await this.supplierRepository.save(supplier);

@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { CustomerGroup } from './entities/customer-group.entity';
 import { CustomerNote } from './entities/customer-note.entity';
 import { CustomerTag } from './entities/customer-tag.entity';
@@ -16,8 +19,14 @@ import {
     CreateCustomerGroupDto,
     UpdateCustomerGroupDto,
 } from './dto/customer-group.dto';
-import { CreateCustomerNoteDto, UpdateCustomerNoteDto } from './dto/customer-note.dto';
-import { CreateCustomerTagDto, UpdateCustomerTagDto } from './dto/customer-tag.dto';
+import {
+    CreateCustomerNoteDto,
+    UpdateCustomerNoteDto,
+} from './dto/customer-note.dto';
+import {
+    CreateCustomerTagDto,
+    UpdateCustomerTagDto,
+} from './dto/customer-tag.dto';
 
 @Injectable()
 export class CustomersService {
@@ -103,7 +112,9 @@ export class CustomersService {
 
         // SMS consent
         if (smsConsent !== undefined) {
-            query = query.andWhere('user.smsConsent = :smsConsent', { smsConsent });
+            query = query.andWhere('user.smsConsent = :smsConsent', {
+                smsConsent,
+            });
         }
 
         // Email consent
@@ -116,14 +127,22 @@ export class CustomersService {
         // Group filter
         if (groupId) {
             query = query
-                .innerJoin('customer_group_members', 'cgm', 'cgm.userId = user.id')
+                .innerJoin(
+                    'customer_group_members',
+                    'cgm',
+                    'cgm.userId = user.id',
+                )
                 .andWhere('cgm.groupId = :groupId', { groupId });
         }
 
         // Tag filter
         if (tagId) {
             query = query
-                .innerJoin('customer_tag_assignments', 'cta', 'cta.userId = user.id')
+                .innerJoin(
+                    'customer_tag_assignments',
+                    'cta',
+                    'cta.userId = user.id',
+                )
                 .andWhere('cta.tagId = :tagId', { tagId });
         }
 
@@ -139,14 +158,20 @@ export class CustomersService {
                 .groupBy('apt.clientId');
 
             if (spentMin !== undefined) {
-                spendingSubquery.having('SUM(COALESCE(apt.paidAmount, 0)) >= :spentMin', {
-                    spentMin,
-                });
+                spendingSubquery.having(
+                    'SUM(COALESCE(apt.paidAmount, 0)) >= :spentMin',
+                    {
+                        spentMin,
+                    },
+                );
             }
             if (spentMax !== undefined) {
-                spendingSubquery.having('SUM(COALESCE(apt.paidAmount, 0)) <= :spentMax', {
-                    spentMax,
-                });
+                spendingSubquery.having(
+                    'SUM(COALESCE(apt.paidAmount, 0)) <= :spentMax',
+                    {
+                        spentMax,
+                    },
+                );
             }
 
             query = query.andWhere(
@@ -178,7 +203,9 @@ export class CustomersService {
                     completedStatus: AppointmentStatus.Completed,
                 });
 
-            query = query.andWhere(`user.id NOT IN (${noVisitSubquery.getQuery()})`);
+            query = query.andWhere(
+                `user.id NOT IN (${noVisitSubquery.getQuery()})`,
+            );
             query.setParameters(noVisitSubquery.getParameters());
         }
 
@@ -192,7 +219,9 @@ export class CustomersService {
                     completedStatus: AppointmentStatus.Completed,
                 });
 
-            query = query.andWhere(`user.id IN (${serviceSubquery.getQuery()})`);
+            query = query.andWhere(
+                `user.id IN (${serviceSubquery.getQuery()})`,
+            );
             query.setParameters(serviceSubquery.getParameters());
         }
 
@@ -206,7 +235,9 @@ export class CustomersService {
                     completedStatus: AppointmentStatus.Completed,
                 });
 
-            query = query.andWhere(`user.id IN (${employeeSubquery.getQuery()})`);
+            query = query.andWhere(
+                `user.id IN (${employeeSubquery.getQuery()})`,
+            );
             query.setParameters(employeeSubquery.getParameters());
         }
 
@@ -223,12 +254,20 @@ export class CustomersService {
                     ],
                 });
 
-            query = query.andWhere(`user.id IN (${upcomingSubquery.getQuery()})`);
+            query = query.andWhere(
+                `user.id IN (${upcomingSubquery.getQuery()})`,
+            );
             query.setParameters(upcomingSubquery.getParameters());
         }
 
         // Sorting
-        const allowedSortFields = ['name', 'email', 'createdAt', 'firstName', 'lastName'];
+        const allowedSortFields = [
+            'name',
+            'email',
+            'createdAt',
+            'firstName',
+            'lastName',
+        ];
         const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'name';
         query = query.orderBy(`user.${safeSortBy}`, sortOrder);
 
@@ -259,7 +298,8 @@ export class CustomersService {
     }
 
     async create(dto: CreateCustomerDto) {
-        const email = dto.email || this.generateEmail(dto.firstName, dto.lastName);
+        const email =
+            dto.email || this.generateEmail(dto.firstName, dto.lastName);
         const password = this.generatePassword();
         const name =
             dto.firstName && dto.lastName
@@ -383,7 +423,11 @@ export class CustomersService {
         });
     }
 
-    async createNote(customerId: number, dto: CreateCustomerNoteDto, createdById?: number) {
+    async createNote(
+        customerId: number,
+        dto: CreateCustomerNoteDto,
+        createdById?: number,
+    ) {
         await this.findOne(customerId); // Verify customer exists
 
         const note = this.notesRepo.create({
@@ -457,7 +501,9 @@ export class CustomersService {
                 relations: ['customers'],
             });
             if (tagWithCustomers) {
-                const existingIds = new Set(tagWithCustomers.customers.map((c) => c.id));
+                const existingIds = new Set(
+                    tagWithCustomers.customers.map((c) => c.id),
+                );
                 if (!existingIds.has(customerId)) {
                     tagWithCustomers.customers.push(customer);
                     await this.tagsRepo.save(tagWithCustomers);

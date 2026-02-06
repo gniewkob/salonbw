@@ -101,23 +101,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <div className="versum-widget__header flex-between">
                         <span>Historia wizyt</span>
                         {data && (
-                            <span
-                                className="text-muted"
-                                style={{
-                                    fontWeight: 'normal',
-                                    fontSize: '11px',
-                                }}
-                            >
+                            <span className="text-muted regular fz-11">
                                 {data.total} wizyt łącznie
                             </span>
                         )}
                     </div>
-                    <div className="versum-widget__content no-padding">
+                    <div className="tab-pane active py-20">
                         {data?.items.length === 0 ? (
-                            <div
-                                className="text-center"
-                                style={{ padding: '40px', color: '#999' }}
-                            >
+                            <div className="text-center p-40-0 text-muted">
                                 Brak historii wizyt
                             </div>
                         ) : (
@@ -126,24 +117,23 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                     <tr>
                                         <th>Data</th>
                                         <th>Usługa</th>
-                                        <th>Pracownik</th>
-                                        <th>Status</th>
-                                        <th className="text-right">Cena</th>
+                                        <th className="w-100">Pracownik</th>
+                                        <th className="w-120">
+                                            Ostatnia zmiana
+                                        </th>
+                                        <th className="w-100 text-right">
+                                            Cena
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {data?.items.map((visit) => (
                                         <tr key={visit.id}>
                                             <td>
-                                                <div
-                                                    style={{ fontWeight: 600 }}
-                                                >
+                                                <div className="bold">
                                                     {formatDate(visit.date)}
                                                 </div>
-                                                <div
-                                                    className="text-muted"
-                                                    style={{ fontSize: '11px' }}
-                                                >
+                                                <div className="text-muted fz-11">
                                                     {visit.time}
                                                 </div>
                                             </td>
@@ -156,10 +146,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                             <td>
                                                 {getStatusBadge(visit.status)}
                                             </td>
-                                            <td
-                                                className="text-right"
-                                                style={{ fontWeight: 600 }}
-                                            >
+                                            <td className="text-right bold">
                                                 {formatCurrency(visit.price)}
                                             </td>
                                         </tr>

@@ -7,7 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Timetable } from './entities/timetable.entity';
 import { TimetableSlot, DayOfWeek } from './entities/timetable-slot.entity';
-import { TimetableException, ExceptionType } from './entities/timetable-exception.entity';
+import {
+    TimetableException,
+    ExceptionType,
+} from './entities/timetable-exception.entity';
 import {
     CreateTimetableDto,
     UpdateTimetableDto,
@@ -56,12 +59,17 @@ export class TimetablesService {
             relations: ['employee', 'slots', 'exceptions'],
         });
         if (!timetable) {
-            throw new NotFoundException(`Grafik o ID ${id} nie został znaleziony`);
+            throw new NotFoundException(
+                `Grafik o ID ${id} nie został znaleziony`,
+            );
         }
         return timetable;
     }
 
-    async findActiveForEmployee(employeeId: number, date: Date): Promise<Timetable | null> {
+    async findActiveForEmployee(
+        employeeId: number,
+        date: Date,
+    ): Promise<Timetable | null> {
         return this.timetableRepository.findOne({
             where: {
                 employeeId,
@@ -81,7 +89,7 @@ export class TimetablesService {
                     employeeId: dto.employeeId,
                     isActive: true,
                 },
-                { isActive: false }
+                { isActive: false },
             );
         }
 
@@ -106,7 +114,7 @@ export class TimetablesService {
                     endTime: slotDto.endTime,
                     isBreak: slotDto.isBreak ?? false,
                     notes: slotDto.notes,
-                })
+                }),
             );
             await this.slotRepository.save(slots);
         }
@@ -121,11 +129,16 @@ export class TimetablesService {
         return this.findOne(saved.id);
     }
 
-    async update(id: number, dto: UpdateTimetableDto, actor: User): Promise<Timetable> {
+    async update(
+        id: number,
+        dto: UpdateTimetableDto,
+        actor: User,
+    ): Promise<Timetable> {
         const timetable = await this.findOne(id);
 
         if (dto.name !== undefined) timetable.name = dto.name;
-        if (dto.description !== undefined) timetable.description = dto.description;
+        if (dto.description !== undefined)
+            timetable.description = dto.description;
         if (dto.validFrom) timetable.validFrom = new Date(dto.validFrom);
         if (dto.validTo !== undefined) {
             timetable.validTo = dto.validTo ? new Date(dto.validTo) : undefined;
@@ -148,7 +161,7 @@ export class TimetablesService {
                     endTime: slotDto.endTime,
                     isBreak: slotDto.isBreak ?? false,
                     notes: slotDto.notes,
-                })
+                }),
             );
             await this.slotRepository.save(slots);
         }
@@ -174,11 +187,14 @@ export class TimetablesService {
     }
 
     // Exception management
-    async findExceptions(timetableId: number, options?: {
-        from?: Date;
-        to?: Date;
-        type?: ExceptionType;
-    }): Promise<TimetableException[]> {
+    async findExceptions(
+        timetableId: number,
+        options?: {
+            from?: Date;
+            to?: Date;
+            type?: ExceptionType;
+        },
+    ): Promise<TimetableException[]> {
         const qb = this.exceptionRepository
             .createQueryBuilder('exception')
             .where('exception.timetableId = :timetableId', { timetableId })
@@ -215,7 +231,7 @@ export class TimetablesService {
         });
         if (existing) {
             throw new BadRequestException(
-                `Wyjątek dla daty ${dto.date} już istnieje`
+                `Wyjątek dla daty ${dto.date} już istnieje`,
             );
         }
 
@@ -255,7 +271,7 @@ export class TimetablesService {
         });
         if (!exception) {
             throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`
+                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
             );
         }
 
@@ -287,7 +303,7 @@ export class TimetablesService {
         });
         if (!exception) {
             throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`
+                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
             );
         }
 
@@ -309,7 +325,7 @@ export class TimetablesService {
         });
         if (!exception) {
             throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`
+                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
             );
         }
 
@@ -355,7 +371,10 @@ export class TimetablesService {
 
             if (exception) {
                 // Exception overrides regular schedule
-                if (exception.type === ExceptionType.CustomHours && !exception.isAllDay) {
+                if (
+                    exception.type === ExceptionType.CustomHours &&
+                    !exception.isAllDay
+                ) {
                     slots.push({
                         date: dateStr,
                         dayOfWeek,
@@ -380,7 +399,7 @@ export class TimetablesService {
             } else if (timetable) {
                 // Use regular schedule
                 const daySlots = timetable.slots.filter(
-                    (s) => s.dayOfWeek === dayOfWeek && !s.isBreak
+                    (s) => s.dayOfWeek === dayOfWeek && !s.isBreak,
                 );
 
                 if (daySlots.length > 0) {

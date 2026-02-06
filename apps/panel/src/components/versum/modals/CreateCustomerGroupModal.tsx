@@ -59,10 +59,16 @@ export default function CreateCustomerGroupModal({
                         </button>
                         <h4 className="modal-title">Nowa grupa klientów</h4>
                     </div>
-                    <div className="modal-body modal-body-scroll">
+                    <div className="modal-body modal-body-scroll py-20">
                         <div className="form-group">
-                            <label className="control-label">Nazwa grupy</label>
+                            <label
+                                className="control-label"
+                                htmlFor="group_name"
+                            >
+                                Nazwa grupy
+                            </label>
                             <input
+                                id="group_name"
                                 className="form-control"
                                 value={form.name}
                                 onChange={(event) =>
@@ -78,10 +84,14 @@ export default function CreateCustomerGroupModal({
                             />
                         </div>
                         <div className="form-group">
-                            <label className="control-label">
+                            <label
+                                className="control-label"
+                                htmlFor="group_description"
+                            >
                                 Opis (opcjonalnie)
                             </label>
                             <textarea
+                                id="group_description"
                                 className="form-control"
                                 value={form.description}
                                 onChange={(event) =>
@@ -108,10 +118,7 @@ export default function CreateCustomerGroupModal({
                                                 color,
                                             }))
                                         }
-                                        className={`versum-color-option ${
-                                            form.color === color ? 'active' : ''
-                                        }`}
-                                        style={{ backgroundColor: color }}
+                                        data-color={color}
                                         title={color}
                                     />
                                 ))}

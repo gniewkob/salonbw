@@ -59,13 +59,27 @@ export class CreateGiftCardsTables1710022000000 implements MigrationInterface {
         `);
 
         // Create indexes
-        await queryRunner.query(`CREATE INDEX "idx_gift_cards_code" ON "gift_cards"("code")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_cards_status" ON "gift_cards"("status")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_cards_valid_until" ON "gift_cards"("valid_until")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_cards_recipient" ON "gift_cards"("recipient_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_cards_purchased_by" ON "gift_cards"("purchased_by_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_card_transactions_card" ON "gift_card_transactions"("gift_card_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_gift_card_transactions_type" ON "gift_card_transactions"("type")`);
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_cards_code" ON "gift_cards"("code")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_cards_status" ON "gift_cards"("status")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_cards_valid_until" ON "gift_cards"("valid_until")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_cards_recipient" ON "gift_cards"("recipient_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_cards_purchased_by" ON "gift_cards"("purchased_by_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_card_transactions_card" ON "gift_card_transactions"("gift_card_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_gift_card_transactions_type" ON "gift_card_transactions"("type")`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

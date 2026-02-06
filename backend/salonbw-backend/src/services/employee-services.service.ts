@@ -43,7 +43,8 @@ export class EmployeeServicesService {
                 employeeId: dto.employeeId,
                 serviceId: dto.serviceId,
                 serviceVariantId:
-                    dto.serviceVariantId === null || dto.serviceVariantId === undefined
+                    dto.serviceVariantId === null ||
+                    dto.serviceVariantId === undefined
                         ? IsNull()
                         : dto.serviceVariantId,
             },
@@ -91,7 +92,11 @@ export class EmployeeServicesService {
             () =>
                 this.employeeServiceRepository.find({
                     where: { employeeId },
-                    relations: ['service', 'service.categoryRelation', 'serviceVariant'],
+                    relations: [
+                        'service',
+                        'service.categoryRelation',
+                        'serviceVariant',
+                    ],
                 }),
         );
     }
@@ -118,9 +123,7 @@ export class EmployeeServicesService {
                     a.serviceVariant?.duration ??
                     a.service.duration,
                 price:
-                    a.customPrice ??
-                    a.serviceVariant?.price ??
-                    a.service.price,
+                    a.customPrice ?? a.serviceVariant?.price ?? a.service.price,
             })) as Service[];
     }
 
@@ -131,7 +134,9 @@ export class EmployeeServicesService {
         });
 
         if (!assignment) {
-            throw new NotFoundException('Employee-service assignment not found');
+            throw new NotFoundException(
+                'Employee-service assignment not found',
+            );
         }
 
         return assignment;
@@ -178,7 +183,8 @@ export class EmployeeServicesService {
             where: {
                 serviceId,
                 serviceVariantId:
-                    dto.serviceVariantId === null || dto.serviceVariantId === undefined
+                    dto.serviceVariantId === null ||
+                    dto.serviceVariantId === undefined
                         ? IsNull()
                         : dto.serviceVariantId,
             },
@@ -207,7 +213,9 @@ export class EmployeeServicesService {
             (e) => !dto.employeeIds.includes(e.employeeId),
         );
         if (toRemove.length > 0) {
-            await this.employeeServiceRepository.delete(toRemove.map((e) => e.id));
+            await this.employeeServiceRepository.delete(
+                toRemove.map((e) => e.id),
+            );
         }
 
         // Invalidate cache for all affected employees
@@ -263,7 +271,9 @@ export class EmployeeServicesService {
             (e) => !dto.serviceIds.includes(e.serviceId),
         );
         if (toRemove.length > 0) {
-            await this.employeeServiceRepository.delete(toRemove.map((e) => e.id));
+            await this.employeeServiceRepository.delete(
+                toRemove.map((e) => e.id),
+            );
         }
 
         // Invalidate cache

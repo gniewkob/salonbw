@@ -7,7 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Stocktaking, StocktakingStatus } from './entities/stocktaking.entity';
 import { StocktakingItem } from './entities/stocktaking-item.entity';
-import { ProductMovement, MovementType } from './entities/product-movement.entity';
+import {
+    ProductMovement,
+    MovementType,
+} from './entities/product-movement.entity';
 import { Product } from '../products/product.entity';
 import {
     CreateStocktakingDto,
@@ -47,13 +50,19 @@ export class StocktakingService {
             .orderBy('stocktaking.createdAt', 'DESC');
 
         if (options?.status) {
-            qb.andWhere('stocktaking.status = :status', { status: options.status });
+            qb.andWhere('stocktaking.status = :status', {
+                status: options.status,
+            });
         }
         if (options?.from) {
-            qb.andWhere('stocktaking.stocktakingDate >= :from', { from: options.from });
+            qb.andWhere('stocktaking.stocktakingDate >= :from', {
+                from: options.from,
+            });
         }
         if (options?.to) {
-            qb.andWhere('stocktaking.stocktakingDate <= :to', { to: options.to });
+            qb.andWhere('stocktaking.stocktakingDate <= :to', {
+                to: options.to,
+            });
         }
 
         return qb.getMany();
@@ -297,7 +306,9 @@ export class StocktakingService {
         const stocktaking = await this.findOne(id);
 
         if (stocktaking.status === StocktakingStatus.Completed) {
-            throw new BadRequestException('Inwentaryzacja została już zakończona');
+            throw new BadRequestException(
+                'Inwentaryzacja została już zakończona',
+            );
         }
 
         // Check if all items have counted quantities
@@ -315,7 +326,8 @@ export class StocktakingService {
         await this.dataSource.transaction(async (manager) => {
             if (applyDifferences) {
                 for (const item of stocktaking.items) {
-                    if (item.difference === null || item.difference === 0) continue;
+                    if (item.difference === null || item.difference === 0)
+                        continue;
 
                     const product = await manager.findOne(Product, {
                         where: { id: item.productId },
@@ -352,12 +364,16 @@ export class StocktakingService {
             await manager.save(stocktaking);
         });
 
-        await this.logService.logAction(actor, LogAction.STOCKTAKING_COMPLETED, {
-            entity: 'stocktaking',
-            stocktakingId: id,
-            stocktakingNumber: stocktaking.stocktakingNumber,
-            applyDifferences,
-        });
+        await this.logService.logAction(
+            actor,
+            LogAction.STOCKTAKING_COMPLETED,
+            {
+                entity: 'stocktaking',
+                stocktakingId: id,
+                stocktakingNumber: stocktaking.stocktakingNumber,
+                applyDifferences,
+            },
+        );
 
         return this.findOne(id);
     }
@@ -374,12 +390,16 @@ export class StocktakingService {
         stocktaking.status = StocktakingStatus.Cancelled;
         await this.stocktakingRepository.save(stocktaking);
 
-        await this.logService.logAction(actor, LogAction.STOCKTAKING_COMPLETED, {
-            entity: 'stocktaking',
-            stocktakingId: id,
-            action: 'cancel',
-            stocktakingNumber: stocktaking.stocktakingNumber,
-        });
+        await this.logService.logAction(
+            actor,
+            LogAction.STOCKTAKING_COMPLETED,
+            {
+                entity: 'stocktaking',
+                stocktakingId: id,
+                action: 'cancel',
+                stocktakingNumber: stocktaking.stocktakingNumber,
+            },
+        );
 
         return stocktaking;
     }
@@ -395,12 +415,16 @@ export class StocktakingService {
 
         await this.stocktakingRepository.remove(stocktaking);
 
-        await this.logService.logAction(actor, LogAction.STOCKTAKING_COMPLETED, {
-            entity: 'stocktaking',
-            stocktakingId: id,
-            action: 'delete',
-            stocktakingNumber: stocktaking.stocktakingNumber,
-        });
+        await this.logService.logAction(
+            actor,
+            LogAction.STOCKTAKING_COMPLETED,
+            {
+                entity: 'stocktaking',
+                stocktakingId: id,
+                action: 'delete',
+                stocktakingNumber: stocktaking.stocktakingNumber,
+            },
+        );
     }
 
     private async generateStocktakingNumber(): Promise<string> {

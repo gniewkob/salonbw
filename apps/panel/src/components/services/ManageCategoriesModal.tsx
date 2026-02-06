@@ -60,27 +60,24 @@ export default function ManageCategoriesModal({
     };
 
     const renderCategoryRow = (category: ServiceCategory, level = 0) => {
+        const rowStyle = {
+            '--dynamic-padding': `${20 + level * 20}px`,
+        } as React.CSSProperties;
+        const dotStyle = {
+            '--dynamic-color': category.color,
+        } as React.CSSProperties;
+
         return (
             <div key={category.id}>
                 <div
                     className="versum-list-item flex-between pl-dynamic"
-                    // eslint-disable-next-line
-                    style={
-                        {
-                            '--dynamic-padding': `${20 + level * 20}px`,
-                        } as React.CSSProperties
-                    }
+                    style={rowStyle} // eslint-disable-line
                 >
                     <div className="flex-center gap-10">
                         {category.color && (
                             <span
                                 className="status-dot w-10 h-10 bg-dynamic"
-                                // eslint-disable-next-line
-                                style={
-                                    {
-                                        '--dynamic-color': category.color,
-                                    } as React.CSSProperties
-                                }
+                                style={dotStyle} // eslint-disable-line
                             />
                         )}
                         <span className={level === 0 ? 'fw-600' : ''}>

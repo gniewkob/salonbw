@@ -164,10 +164,16 @@ export class CreateAutomaticMessageRulesTable1710018000000
         `);
 
         // Drop table
-        await queryRunner.query(`DROP TABLE IF EXISTS "automatic_message_rules"`);
+        await queryRunner.query(
+            `DROP TABLE IF EXISTS "automatic_message_rules"`,
+        );
 
         // Drop enum types
-        await queryRunner.query(`DROP TYPE IF EXISTS "automatic_message_channel_enum"`);
-        await queryRunner.query(`DROP TYPE IF EXISTS "automatic_message_trigger_enum"`);
+        await queryRunner.query(
+            `DROP TYPE IF EXISTS "automatic_message_channel_enum"`,
+        );
+        await queryRunner.query(
+            `DROP TYPE IF EXISTS "automatic_message_trigger_enum"`,
+        );
     }
 }

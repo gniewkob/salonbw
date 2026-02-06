@@ -297,9 +297,8 @@ export class AddServiceDetailsTables1760070000000
                 isUnique: true,
             }),
         );
-        const employeeServicesTable = await queryRunner.getTable(
-            'employee_services',
-        );
+        const employeeServicesTable =
+            await queryRunner.getTable('employee_services');
         const esVariantFk = employeeServicesTable?.foreignKeys.find((fk) =>
             fk.columnNames.includes('serviceVariantId'),
         );

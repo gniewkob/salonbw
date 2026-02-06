@@ -87,7 +87,9 @@ export class BranchesService {
         // Check for slug uniqueness
         const existing = await this.branchRepo.findOne({ where: { slug } });
         if (existing) {
-            throw new ConflictException(`Branch with slug "${slug}" already exists`);
+            throw new ConflictException(
+                `Branch with slug "${slug}" already exists`,
+            );
         }
 
         const branch = this.branchRepo.create({
@@ -116,14 +118,22 @@ export class BranchesService {
         return saved;
     }
 
-    async update(id: number, dto: UpdateBranchDto, actorId: number): Promise<Branch> {
+    async update(
+        id: number,
+        dto: UpdateBranchDto,
+        actorId: number,
+    ): Promise<Branch> {
         const branch = await this.findOne(id);
 
         // Check slug uniqueness if changing
         if (dto.slug && dto.slug !== branch.slug) {
-            const existing = await this.branchRepo.findOne({ where: { slug: dto.slug } });
+            const existing = await this.branchRepo.findOne({
+                where: { slug: dto.slug },
+            });
             if (existing) {
-                throw new ConflictException(`Branch with slug "${dto.slug}" already exists`);
+                throw new ConflictException(
+                    `Branch with slug "${dto.slug}" already exists`,
+                );
             }
         }
 
@@ -153,7 +163,9 @@ export class BranchesService {
             { branchId: id, name: branch.name },
         );
 
-        this.logger.log(`Branch ${id} deleted (deactivated) by user ${actorId}`);
+        this.logger.log(
+            `Branch ${id} deleted (deactivated) by user ${actorId}`,
+        );
     }
 
     // Branch Members
@@ -165,7 +177,10 @@ export class BranchesService {
         });
     }
 
-    async addMember(branchId: number, dto: AddBranchMemberDto): Promise<BranchMember> {
+    async addMember(
+        branchId: number,
+        dto: AddBranchMemberDto,
+    ): Promise<BranchMember> {
         // Verify branch exists
         await this.findOne(branchId);
 
@@ -176,7 +191,9 @@ export class BranchesService {
 
         if (existing) {
             if (existing.isActive) {
-                throw new ConflictException('User is already a member of this branch');
+                throw new ConflictException(
+                    'User is already a member of this branch',
+                );
             }
             // Reactivate existing membership
             existing.isActive = true;
@@ -251,7 +268,9 @@ export class BranchesService {
             order: { isPrimary: 'DESC', createdAt: 'ASC' },
         });
 
-        return members.map((m) => m.branch).filter((b) => b.status === BranchStatus.Active);
+        return members
+            .map((m) => m.branch)
+            .filter((b) => b.status === BranchStatus.Active);
     }
 
     async getUserPrimaryBranch(userId: number): Promise<Branch | null> {
@@ -263,14 +282,20 @@ export class BranchesService {
         return member?.branch ?? null;
     }
 
-    async canUserAccessBranch(userId: number, branchId: number): Promise<boolean> {
+    async canUserAccessBranch(
+        userId: number,
+        branchId: number,
+    ): Promise<boolean> {
         const member = await this.memberRepo.findOne({
             where: { userId, branchId, isActive: true },
         });
         return !!member;
     }
 
-    async canUserManageBranch(userId: number, branchId: number): Promise<boolean> {
+    async canUserManageBranch(
+        userId: number,
+        branchId: number,
+    ): Promise<boolean> {
         const member = await this.memberRepo.findOne({
             where: { userId, branchId, isActive: true, canManage: true },
         });
@@ -279,7 +304,10 @@ export class BranchesService {
 
     // Cross-branch statistics (for owners/admins)
     async getCrossBranchStats(ownerId: number) {
-        const branches = await this.findAll({ ownerId, status: BranchStatus.Active });
+        const branches = await this.findAll({
+            ownerId,
+            status: BranchStatus.Active,
+        });
 
         // Placeholder for cross-branch statistics
         // In a real implementation, this would aggregate data from appointments, revenue, etc.

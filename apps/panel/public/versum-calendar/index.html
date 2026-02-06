@@ -252,8 +252,8 @@ Aleksandra Ficek
 <div class="inner">
 <div id="calendar_content">
 <div class="e2e-calendar" e2e-calendar="" id="calendar_container"></div>
-<div id="print_form" style="display: none; height: 400px;">
-<div class="infoWindow print_popup_form" style="overflow: none;">
+<div id="print_form" class="hidden h-400">
+<div class="infoWindow print_popup_form overflow-hidden">
 <a class="icon sprite-close_X popup_close_link close" title="Zamknij (Esc)"></a>
 <form>
 <div class="bg1 row row-no-padding">
@@ -264,12 +264,12 @@ Wydruk rozkładu dnia
 </div>
 </div>
 <br/>
-<strong>Data:</strong> <input class="popup date_input" id="print_date" type="text"/><br/><br/>
+<strong>Data:</strong> <input class="popup date_input" id="print_date" type="text" title="Data do wydruku"/><br/><br/>
 <strong>Pracownicy:</strong>     <a href="javascript:;" id="select_all_users_for_printing">zaznacz wszystkich</a> | <a href="javascript:;" id="deselect_all_users_for_printing">usuń zaznaczenie</a><br/>
 <div class="overflow-auto max-h-260 mr-4 mt-6 ml-10">
 <div class="print_user_list_item">
 <label>
-<input class="printuser" name="print_users[]" type="checkbox" value="4272119"/>
+<input class="printuser" name="print_users[]" type="checkbox" value="4272119" title="Wybierz pracownika do wydruku"/>
 Aleksandra Ficek
 <div class="box color10"></div>
 </label>
@@ -277,16 +277,16 @@ Aleksandra Ficek
 </div>
 <div class="bg4 row row-no-padding">
 <div class="col-xs-8">
-<button class="print button button-blue" id="print_button">Drukuj rozkład dnia (PDF)</button>
+<button class="print button button-blue" id="print_button" type="button">Drukuj rozkład dnia (PDF)</button>
 </div>
 <div class="col-xs-4 text-right">
-<a class="close btn" href="javascript:void(0)" style="opacity: 1; font-weight: normal">anuluj</a>
+<a class="close btn opacity-1 text-normal" href="javascript:void(0)">anuluj</a>
 </div>
 </div>
 </form>
 </div>
 </div>
-<div data-event='{"value":"{\"id\":null,\"pretty_id\":null,\"branch_id\":19581,\"customer_id\":null,\"reminder_id\":null,\"beginning\":\"2025-07-18T00:23:51.512+02:00\",\"end\":\"2025-07-18T00:23:51.512+02:00\",\"finalized\":false,\"canceled\":false,\"not_an_appointment\":null,\"reserved_online\":false,\"info_from_customer\":null,\"description\":null,\"version\":null,\"finalized_at\":null,\"deleted_at\":null,\"created_at\":null,\"updated_at\":null,\"allday\":null,\"allday_beginning\":\"2025-07-18T00:00:00.000+02:00\",\"allday_end\":\"2025-07-19T00:00:00.000+02:00\",\"branch_category_path\":\"/settings/customer_panel/business_categories\",\"is_booksy_possible\":true,\"modified_by\":null,\"modified_by_type\":\"Physical::User\",\"status\":\"Oczekująca\",\"payment_method\":null,\"beginning_date\":\"2025-07-18\",\"end_date\":\"2025-07-18\",\"reserved_duration\":\"0 min\",\"services_duration\":\"0 min\",\"services_price\":\"0 zł\",\"customer_name\":\"\",\"unreversed_customer_name\":\"\",\"customer_url\":\"\",\"customer_phone_number\":null,\"customer_phone_number_formatted\":null,\"customer_sms_url\":\"\",\"customer_email_url\":\"\",\"customer_email\":null,\"customer_description\":\"\",\"customer_description_content_type\":\"text/markdown\",\"send_reminder\":true,\"send_reminder_edition_locked\":false,\"reminder_handled_by_booksy\":false,\"booksy_origin\":false,\"price\":null,\"price_pln\":\"\",\"services\":[],\"tags\":[],\"payments\":[],\"versions_url\":\"/events/0/versions\",\"has_sale\":false,\"sale_price\":null,\"sale_id\":null,\"supply_use_id\":null,\"editable\":true,\"finalizable\":true,\"can_access_price\":true,\"calendar_url\":\"/calendar?date=2025-07-18\",\"can_view_in_calendar\":false,\"can_restore_in_calendar\":false,\"tss_receipt_issuing_available\":false,\"tss_receipts\":[],\"sold_gift_cards\":[],\"sold_packages\":[],\"prepayment_id\":null,\"prepayment_amount\":0,\"prepayment_amount_paid\":0,\"prepayment_status\":null,\"prepayment_real_status\":null,\"prepayment_payment_method\":null,\"prepayment_expiration_date_time\":null,\"prepayment_paid_at\":null,\"prepayment_created_at\":null,\"prepayment_creator_type\":null,\"prepayment_created_by_customer\":false,\"prepayment_payments\":[],\"recurrence_params\":null,\"recurrence_group_id\":null}"}' id="new_event_data" style="display: none;"></div>
+<div data-event='{"value":"..."}' id="new_event_data" class="hidden"></div>
 <div data-prepayment-payment-methods='["cash","credit_card","transfer","certificate"]'></div>
 <div data-gift-cards-all-templates=""></div>
 <div data-packages-all-templates=""></div>
@@ -402,7 +402,7 @@ Aleksandra Ficek
 <script src="/versum-calendar/javascripts/new/vendors-41339c2f7022acad0720.js"></script>
 <script src="/versum-calendar/javascripts/new/main-211b653d1580436a20a0.js"></script>
 <div class="modals"></div>
-<svg style="height: 0; width: 0; position: absolute; visibility: hidden;" xmlns="http://www.w3.org/2000/svg">
+<svg class="hidden" xmlns="http://www.w3.org/2000/svg">
 <svg height="24" id="svg-calendar-nav" width="24">
 <g fill="currentColor">
 <path d="M20.4 4.9h-2.5V6c0 1.2-.7 2.1-2.5 2.1-1.2 0-2.6-.8-2.6-2 0-.4-.1-.9 0-1.2H11c.1.4 0 .8 0 1.2 0 1.5-1.1 2-2.6 2-1.2 0-2.6-.8-2.6-1.9 0-.5-.1-.9-.1-1.3H3.5c-.8 0-1.3.3-1.5 1v14.7c.2.7.8 1.2 1.5 1.2h16.6c1 0 1.7-.7 1.7-1.7V6.3c-.1-1-.4-1.4-1.4-1.4zM8.6 18.7H5v-2.8h3.7v2.8h-.1zm.1-5H5l-.1-2.9h3.8v2.9zm4.9 5H10v-2.8h3.7v2.8h-.1zm.1-4.9H10V11h3.7v2.8zm3.3 3.3l-2 1.6v-2.8h3.7L17 17.1zm1.7-3.3H15V11h3.7v2.8z"></path>
