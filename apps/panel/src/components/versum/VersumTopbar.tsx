@@ -1,9 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import VersumIcon from './VersumIcon';
 
 export default function VersumTopbar() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const router = useRouter();
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+    const userMenuRef = useRef<HTMLLIElement>(null);
+    const helpMenuRef = useRef<HTMLLIElement>(null);
 
     const initials = useMemo(() => {
         if (!user?.name) return 'SB';
@@ -11,56 +18,156 @@ export default function VersumTopbar() {
         return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase() || 'SB';
     }, [user?.name]);
 
+    // Close dropdowns on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                userMenuRef.current &&
+                !userMenuRef.current.contains(e.target as Node)
+            ) {
+                setUserMenuOpen(false);
+            }
+            if (
+                helpMenuRef.current &&
+                !helpMenuRef.current.contains(e.target as Node)
+            ) {
+                setHelpMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLogout = () => {
+        void logout().then(() => {
+            void router.push('/auth/login');
+        });
+    };
+
     return (
-        <header className="versum-topbar">
-            <div className="versum-topbar__brand">Black&amp;White</div>
-            <div className="versum-topbar__right">
-                <label
-                    className="versum-topbar__search-wrap"
-                    htmlFor="versum-search"
-                >
-                    <input
-                        id="versum-search"
-                        className="versum-topbar__search"
-                        type="search"
-                        placeholder="Szukaj..."
-                        aria-label="Szukaj"
-                    />
-                </label>
-                <button
-                    type="button"
-                    className="versum-topbar__icon-btn"
-                    aria-label="Zadania"
-                >
-                    <VersumIcon
-                        id="svg-todo"
-                        className="versum-icon versum-icon--sm"
-                    />
-                </button>
-                <button
-                    type="button"
-                    className="versum-topbar__icon-btn"
-                    aria-label="Wiadomości"
-                >
-                    <VersumIcon
-                        id="svg-message"
-                        className="versum-icon versum-icon--sm"
-                    />
-                </button>
-                <div className="versum-topbar__help">
-                    <VersumIcon
-                        id="svg-help"
-                        className="versum-icon versum-icon--sm"
-                    />
-                    <span>Pomoc</span>
-                </div>
-                <div
-                    className="versum-topbar__initials"
-                    aria-label="Użytkownik"
-                >
-                    {initials}
+        <div
+            className="navbar navbar-default navbar-static-top d-flex"
+            id="navbar"
+        >
+            <div className="notification-bar-container"></div>
+            <div>
+                <a className="menu-toggler navbar-toggle" id="menu-toggler">
+                    <span className="icon-bar"></span>
+                    <span className="icon-bar"></span>
+                    <span className="icon-bar"></span>
+                </a>
+                <div className="brand brand-text-sbw">
+                    <Link href="/dashboard" title="przejdź do pulpitu">
+                        Black&amp;White
+                    </Link>
                 </div>
             </div>
-        </header>
+            <div className="ml-auto">
+                <ul className="navbar-right simple-list d-flex">
+                    <li className="d-flex">
+                        <div className="omnibox-wrapper">
+                            <input
+                                className="omnibox"
+                                id="omnibox"
+                                placeholder="Szukaj..."
+                            />
+                            <div
+                                className="dropdown-menu"
+                                id="omnibox-results"
+                            ></div>
+                        </div>
+                    </li>
+                    <li className="all_complete tasks_tooltip">
+                        <a
+                            className="link"
+                            href="javascript:;"
+                            title="Twoje zadania"
+                        >
+                            <div
+                                className="assigned_tasks"
+                                data-assigned_tasks="0"
+                            >
+                                <VersumIcon
+                                    id="svg-todo"
+                                    className="svg-todo"
+                                />
+                            </div>
+                        </a>
+                    </li>
+                    <li
+                        ref={helpMenuRef}
+                        className={`dropdown help_tooltip right-menu ${helpMenuOpen ? 'open' : ''}`}
+                    >
+                        <a
+                            className="ai-center d-flex dropdown-toggle"
+                            href="javascript:;"
+                            onClick={() => setHelpMenuOpen(!helpMenuOpen)}
+                        >
+                            <div className="d-inline-block jQ_nav_chat_notification">
+                                <VersumIcon
+                                    id="svg-help"
+                                    className="svg-help mr-xs"
+                                />
+                            </div>
+                            <div className="d-none d-md-inline">
+                                <span>Pomoc</span>
+                                <b className="caret initials-arrow"></b>
+                            </div>
+                        </a>
+                        <ul className="dropdown-menu larger-dropdown-menu nav-help">
+                            <li className="divider"></li>
+                            <li className="main-menu-li">
+                                <a href="/helps/new">
+                                    <VersumIcon
+                                        id="svg-message"
+                                        className="svg-message"
+                                    />
+                                    <span>Formularz kontaktowy</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li
+                        ref={userMenuRef}
+                        className={`dropdown right-menu ${userMenuOpen ? 'open' : ''}`}
+                    >
+                        <a
+                            className="dropdown-toggle e2e-nav-user-dropdown"
+                            href="javascript:;"
+                            onClick={() => setUserMenuOpen(!userMenuOpen)}
+                        >
+                            <div className="border-color">
+                                <div className="color1">{initials}</div>
+                            </div>
+                            <b className="caret color1 hidden-xs initials-arrow"></b>
+                        </a>
+                        <ul className="dropdown-menu larger-dropdown-menu">
+                            <li className="main-menu-li">
+                                <a className="profil" href="/settings/profile">
+                                    <strong>
+                                        {user?.name || 'Użytkownik'}
+                                    </strong>
+                                    <br />
+                                    <span className="text-muted">
+                                        {user?.role || 'administrator'}
+                                    </span>
+                                </a>
+                            </li>
+                            <li className="divider"></li>
+                            <li className="main-menu-li">
+                                <a
+                                    className="e2e-user-logout"
+                                    href="javascript:;"
+                                    onClick={handleLogout}
+                                >
+                                    Wyloguj
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
     );
 }

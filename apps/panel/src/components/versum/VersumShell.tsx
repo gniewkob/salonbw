@@ -24,30 +24,28 @@ export default function VersumShell({
     const showSecondary = activeModule.secondaryNav || !!secondaryNav;
 
     return (
-        <div className="versum-shell">
+        <>
             <VersumTopbar />
-            <div className="versum-shell__body">
-                <VersumMainNav
-                    role={role}
-                    modules={modules}
-                    activeModule={activeModule}
-                />
-                {secondaryNav ? (
-                    <aside className="versum-secondarynav">
-                        {secondaryNav}
-                    </aside>
-                ) : showSecondary ? (
-                    <VersumSecondaryNav module={activeModule} />
-                ) : null}
-                <main
-                    className={`versum-shell__content ${activeModule.wideContent ? 'versum-shell__content--wide' : ''}`}
-                >
-                    <div className="versum-shell__content-inner">
-                        {children}
-                    </div>
-                </main>
+            <div className="main-container" id="main-container">
+                <div className="sidebar hidden-print" id="sidebar">
+                    <VersumMainNav
+                        role={role}
+                        modules={modules}
+                        activeModule={activeModule}
+                    />
+                    {(secondaryNav || showSecondary) && (
+                        <div className="sidenav" id="sidenav">
+                            {secondaryNav || (
+                                <VersumSecondaryNav module={activeModule} />
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className="main-content" id="main-content" role="main">
+                    <div className="inner">{children}</div>
+                </div>
             </div>
             <FloatingHelpButton />
-        </div>
+        </>
     );
 }
