@@ -91,7 +91,7 @@ export default function VersumSecondaryNav({
     }
 
     return (
-        <div className="sidenav" id="sidenav">
+        <div className="secondarynav" id="sidenav">
             {content}
         </div>
     );
