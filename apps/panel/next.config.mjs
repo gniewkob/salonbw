@@ -48,10 +48,11 @@ const nextConfig = {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         return [
             // Calendar embed - serve directly from API to avoid Next.js hydration conflicts
-            {
-                source: '/calendar',
-                destination: '/api/calendar-embed',
-            },
+            // Calendar embed - (removed, now handled by pages/calendar.tsx)
+            // {
+            //    source: '/calendar',
+            //    destination: '/api/calendar-embed',
+            // },
             // Exact paths (without trailing segments)
             {
                 source: '/customers',

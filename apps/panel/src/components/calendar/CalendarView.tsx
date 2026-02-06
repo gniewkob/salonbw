@@ -7,15 +7,15 @@ import type {
 } from '@fullcalendar/core';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
-import CalendarHeader from './CalendarHeader';
 import CalendarSidebar from './CalendarSidebar';
 import type { CalendarEvent, CalendarView as CalendarViewType } from '@/types';
 
+// Dynamic import with no SSR to avoid hydration mismatches
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false,
     loading: () => (
         <div className="flex h-96 items-center justify-center rounded border border-dashed text-sm text-gray-600">
-            Ładowanie kalendarza...
+            Initialising calendar engine...
         </div>
     ),
 });
@@ -39,19 +39,6 @@ interface CalendarViewProps {
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
 }
-
-const EMPLOYEE_COLORS = [
-    '#4A90D9',
-    '#7B68EE',
-    '#FF6B6B',
-    '#4ECDC4',
-    '#FFA07A',
-    '#98D8C8',
-    '#F7DC6F',
-    '#BB8FCE',
-    '#85C1E9',
-    '#F8B500',
-];
 
 const VIEW_MAP: Record<CalendarViewType, string> = {
     day: 'timeGridDay',
@@ -92,7 +79,7 @@ export default function CalendarView({
                 setPluginLoadError(
                     err instanceof Error
                         ? err.message
-                        : 'Nie udało się załadować kalendarza',
+                        : 'Failed to load calendar core',
                 );
                 setCalendarPlugins([]);
             });
@@ -100,17 +87,6 @@ export default function CalendarView({
             mounted = false;
         };
     }, []);
-
-    const getEmployeeColor = useCallback(
-        (employeeId: number) => {
-            const index = employees.findIndex((e) => e.id === employeeId);
-            return (
-                employees[index]?.color ??
-                EMPLOYEE_COLORS[index % EMPLOYEE_COLORS.length]
-            );
-        },
-        [employees],
-    );
 
     const fullCalendarEvents = useMemo(
         () =>
@@ -122,65 +98,35 @@ export default function CalendarView({
                 allDay: event.allDay ?? false,
                 backgroundColor:
                     event.type === 'time_block'
-                        ? getTimeBlockColor(event.blockType)
-                        : getEmployeeColor(event.employeeId),
+                        ? '#e5e7eb'
+                        : employees.find((e) => e.id === event.employeeId)
+                              ?.color || '#3b82f6',
                 borderColor:
                     event.type === 'time_block'
-                        ? getTimeBlockBorderColor(event.blockType)
-                        : getEmployeeColor(event.employeeId),
+                        ? '#9ca3af'
+                        : employees.find((e) => e.id === event.employeeId)
+                              ?.color || '#3b82f6',
                 extendedProps: {
                     originalEvent: event,
-                    type: event.type,
                     clientName: event.clientName,
                     employeeId: event.employeeId,
-                    employeeName: event.employeeName,
-                    status: event.status,
                 },
                 editable: event.type === 'appointment',
             })),
-        [events, getEmployeeColor],
-    );
-
-    const handleEventClick = useCallback(
-        (info: EventClickArg) => {
-            const originalEvent = info.event.extendedProps
-                .originalEvent as CalendarEvent;
-            onEventClick(originalEvent);
-        },
-        [onEventClick],
+        [events, employees],
     );
 
     const handleEventDrop = useCallback(
         (info: EventDropArg) => {
             const eventParts = info.event.id.split('-');
-            const eventType = eventParts[0];
             const eventId = parseInt(eventParts[1], 10);
-
-            if (eventType !== 'appointment') {
-                info.revert();
-                return;
-            }
-
-            const newStart = info.event.start;
-            const newEnd = info.event.end;
-
-            if (!newStart || !newEnd) {
-                info.revert();
-                return;
-            }
-
-            void onEventDrop(eventId, newStart, newEnd);
+            if (!info.event.start || !info.event.end) return;
+            void onEventDrop(eventId, info.event.start, info.event.end);
         },
         [onEventDrop],
     );
 
-    const handleDateSelect = useCallback(
-        (info: DateSelectArg) => {
-            onDateSelect(info.start, info.end);
-        },
-        [onDateSelect],
-    );
-
+    // Sidebar handlers
     const handleEmployeeToggle = useCallback(
         (employeeId: number) => {
             const newSelection = selectedEmployeeIds.includes(employeeId)
@@ -191,126 +137,69 @@ export default function CalendarView({
         [selectedEmployeeIds, onEmployeeFilterChange],
     );
 
-    const handleSelectAllEmployees = useCallback(() => {
-        onEmployeeFilterChange(employees.map((e) => e.id));
-    }, [employees, onEmployeeFilterChange]);
-
-    const handleClearEmployees = useCallback(() => {
-        onEmployeeFilterChange([]);
-    }, [onEmployeeFilterChange]);
-
-    const handleTodayClick = useCallback(() => {
-        onDateChange(new Date());
-    }, [onDateChange]);
-
     return (
-        <div className="flex h-full flex-col">
-            <CalendarHeader
-                date={currentDate}
-                view={currentView}
-                onDateChange={onDateChange}
-                onViewChange={onViewChange}
-                onTodayClick={handleTodayClick}
-            />
-            <div className="flex flex-1 overflow-hidden">
+        <div className="flex h-full flex-col md:flex-row">
+            {/* Sidebar matches Versum layout: Left side filters */}
+            <div className="w-full md:w-64 flex-shrink-0 border-r border-gray-200 bg-white">
                 <CalendarSidebar
                     employees={employees}
                     selectedEmployeeIds={selectedEmployeeIds}
                     onEmployeeToggle={handleEmployeeToggle}
-                    onSelectAll={handleSelectAllEmployees}
-                    onClearAll={handleClearEmployees}
+                    // Pass empty handlers for now if generic sidebar doesn't need them
+                    onSelectAll={() =>
+                        onEmployeeFilterChange(employees.map((e) => e.id))
+                    }
+                    onClearAll={() => onEmployeeFilterChange([])}
                     currentDate={currentDate}
                     onDateSelect={onDateChange}
                 />
-                <main className="flex-1 overflow-auto bg-white p-4">
-                    {loading ? (
-                        <div className="flex h-full items-center justify-center text-gray-500">
-                            Ładowanie...
-                        </div>
-                    ) : pluginLoadError ? (
-                        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                            {pluginLoadError}
-                        </div>
-                    ) : calendarPlugins ? (
-                        <FullCalendar
-                            plugins={calendarPlugins}
-                            initialView={VIEW_MAP[currentView]}
-                            initialDate={currentDate}
-                            events={fullCalendarEvents}
-                            eventClick={handleEventClick}
-                            eventDrop={handleEventDrop}
-                            select={handleDateSelect}
-                            selectable
-                            editable
-                            locale="pl"
-                            firstDay={1}
-                            slotMinTime="07:00:00"
-                            slotMaxTime="21:00:00"
-                            slotDuration="00:15:00"
-                            slotLabelInterval="01:00:00"
-                            slotLabelFormat={{
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false,
-                            }}
-                            eventTimeFormat={{
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false,
-                            }}
-                            headerToolbar={false}
-                            dayHeaderFormat={{
-                                weekday: 'short',
-                                day: 'numeric',
-                                month: 'short',
-                            }}
-                            nowIndicator
-                            height="100%"
-                            eventContent={(info) => (
-                                <div className="overflow-hidden">
-                                    <div className="truncate font-medium text-xs">
-                                        {info.event.title}
-                                    </div>
-                                    {info.event.extendedProps.clientName && (
-                                        <div className="truncate text-[10px] opacity-75">
-                                            {
-                                                info.event.extendedProps
-                                                    .clientName
-                                            }
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        />
-                    ) : (
-                        <div className="flex h-full items-center justify-center rounded border border-dashed text-sm text-gray-600">
-                            Przygotowywanie kalendarza...
-                        </div>
-                    )}
-                </main>
+            </div>
+
+            {/* Main Calendar Area */}
+            <div className="flex-1 overflow-auto bg-white p-2">
+                {/* Custom Header matching Versum's top bar usually goes here or in Layout */}
+
+                {loading ? (
+                    <div className="flex h-full items-center justify-center opacity-50">
+                        Loading appointments...
+                    </div>
+                ) : calendarPlugins ? (
+                    <FullCalendar
+                        plugins={calendarPlugins}
+                        initialView={VIEW_MAP[currentView]}
+                        initialDate={currentDate}
+                        events={fullCalendarEvents}
+                        eventClick={(info) =>
+                            onEventClick(
+                                info.event.extendedProps
+                                    .originalEvent as CalendarEvent,
+                            )
+                        }
+                        eventDrop={handleEventDrop}
+                        select={(info) => onDateSelect(info.start, info.end)}
+                        selectable
+                        editable
+                        locale="pl"
+                        firstDay={1}
+                        slotMinTime="07:00:00"
+                        slotMaxTime="21:00:00" // Versum usually ends late
+                        slotDuration="00:15:00"
+                        allDaySlot={false}
+                        headerToolbar={{
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'timeGridDay,timeGridWeek,dayGridMonth',
+                        }}
+                        height="auto"
+                        contentHeight="auto"
+                        nowIndicator
+                    />
+                ) : (
+                    <div className="p-4 text-center text-gray-500">
+                        Initializing...
+                    </div>
+                )}
             </div>
         </div>
     );
-}
-
-function getTimeBlockColor(type?: string): string {
-    const colors: Record<string, string> = {
-        break: '#e5e7eb',
-        vacation: '#d1fae5',
-        training: '#dbeafe',
-        sick: '#fee2e2',
-        other: '#fef3c7',
-    };
-    return colors[type ?? 'other'] ?? '#e5e7eb';
-}
-
-function getTimeBlockBorderColor(type?: string): string {
-    const colors: Record<string, string> = {
-        break: '#9ca3af',
-        vacation: '#34d399',
-        training: '#3b82f6',
-        sick: '#ef4444',
-        other: '#f59e0b',
-    };
-    return colors[type ?? 'other'] ?? '#9ca3af';
 }

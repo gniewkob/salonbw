@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import '@/styles/versum-shell.css';
 import RouteProgress from '@/components/RouteProgress';
 import VersumSvgSprites from '@/components/versum/VersumSvgSprites';

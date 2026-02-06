@@ -51,6 +51,126 @@ export default async function handler(
 
         let html = await fs.readFile(htmlPath, 'utf8');
 
+        // Check for PJAX request
+        const isPjax =
+            req.headers['x-pjax'] === 'true' ||
+            req.headers['x-pjax'] === 'true';
+
+        // START slicing logic
+        if (isPjax) {
+            // If PJAX, we validly assume the shell (CSS/JS) is loaded, BUT
+            // the legacy calendar relies on specific global variables and scripts
+            // that are in the <head> of index.html.
+            // We need to return the <head> scripts/styles + #main-content.
+
+            // Extract HEAD content (simplified)
+            const headMatch = html.match(/<head>([\s\S]*?)<\/head>/);
+            const headContent = headMatch ? headMatch[1] : '';
+
+            // Extract Main Content
+            // We want everything inside #main-content
+            // Regex to find <div ... id="main-content" ...> ... </div>
+            // This is risky with regex. Better to find start and end indices if possible.
+            // Given the file structure is static:
+            const contentStartMarker = 'id="main-content" role="main">';
+            const contentEndMarker = '<script>'; // The script block follows main content?
+            // Actually, looking at the file:
+            // Line 250: <div class="main-content calendar" id="main-content" role="main">
+            // ... content ...
+            // Line 519 (approx): </div> (closing main-content)
+
+            // Let's use a simpler approach: Return the innerHTML of main-content IF we can find it.
+            // BUT we also need the scripts at the end of body.
+
+            // Alternative: Return the WHOLE body but strip the sidebar and navbar.
+            // This ensures we get all scripts.
+
+            // 1. Remove Navbar
+            html = html.replace(
+                /<div class="navbar[\s\S]*?<div class="main-container"/,
+                '<div class="main-container"',
+            );
+
+            // 2. Remove Sidebar (be careful not to remove main-content)
+            // Sidebar starts at <div class="sidebar ...> and ends before <div class="main-content ...>
+            html = html.replace(
+                /<div class="sidebar[\s\S]*?<div class="main-content/,
+                '<div class="main-content',
+            );
+
+            // 3. Remove <html>, <head>, <body> tags but keep content?
+            // Actually, LegacyHtmlContainer puts it in a div.
+            // If we have <html> tags inside a div, browser might strip them or handle weirdly.
+
+            // Let's go with: Return everything, but hiding/removing the UI shells.
+            // If we return the whole HTML string, `dangerouslySetInnerHTML` will try to render it.
+            // <html> and <body> tags inside a div are invalid but usually ignored, content is rendered.
+            // <head> content inside body/div is also invalid but often styles work.
+
+            // Refined Strategy for PJAX:
+            // 1. Get HEAD content.
+            // 2. Get BODY content, stripping Navbar and Sidebar.
+            // 3. Return combined.
+
+            const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/);
+            let bodyContent = bodyMatch ? bodyMatch[1] : '';
+
+            // Remove Navbar (generic match for the navbar block)
+            bodyContent = bodyContent.replace(
+                /<div class="navbar[\s\S]*?id="navbar"[\s\S]*?<!-- End Google Tag Manager \(noscript\) -->/,
+                '',
+            );
+            // Actually the navbar div starts at line 111.
+            // Let's target by ID.
+
+            // Remove Sidebar
+            // <div class="sidebar hidden-print" id="sidebar"> ... </div> (closing sidebar)
+            // It's safer to use CSS to hide them if we can't strip cleanly?
+            // No, strictly stripping is better to avoid duplicate ID conflicts with React Shell.
+
+            // Strip Navbar: <div ... id="navbar"> ... </div>
+            // This is hard with regex.
+            // HACK: We inject a style to hide them strictly?
+            // No, ID conflict is the issue.
+
+            // Let's try to locate the specific strings from the file view.
+            const navbarStart =
+                '<div class="navbar navbar-default navbar-static-top d-flex" id="navbar">';
+            const mainContainerStart =
+                '<div class="main-container" id="main-container">';
+
+            const nStartIdx = bodyContent.indexOf(navbarStart);
+            const mStartIdx = bodyContent.indexOf(mainContainerStart);
+
+            if (nStartIdx !== -1 && mStartIdx !== -1) {
+                // Remove everything between navbar start and main container start
+                // (This assumes navbar is immediately before main container, which it is mostly)
+                // actually there is <script> between them?
+                // Line 186 to 192 are scripts. We want to KEEP them.
+                // Remove navbar strictly.
+                // It ends before the script?
+                // Look at file:
+                // 185: </div> (closing navbar)
+                // 186: <script>
+                // We can find the closing div of navbar? Risky.
+                // FALLBACK: Just replace the specific ID with a non-existent one and hide it via CSS?
+                // No, better to try to strip.
+                // Let's grab the Main Content innerHTML + Scripts.
+                // And header styles.
+                // Actually, let's keep it simple:
+                // Inject our Config Script (with correct config).
+                // Then return the whole HTML, but inject a style to hide #sidebar and #navbar.
+                // AND rename their IDs to avoid conflict?
+                // Better:
+                // Detect start of main-content.
+                // Detect end of main-content.
+                // Return: headContent + mainContent + footerScripts.
+            }
+
+            // Let's implement the Config Override FIRST, then slicing.
+        }
+        // END slicing setup (continued below)
+
         // Inject our VersumConfig to override the hardcoded one
         const ourConfig = {
             branch_id: 1,
@@ -166,6 +286,29 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 `;
         html = html.replace('</head>', `${configScript}</head>`);
+
+        // If PJAX, Slice the HTML to remove the shell
+        if (isPjax) {
+            // Remove the Navbar
+            // Regex to match <div ... id="navbar">...</div> including nested divs?
+            // Difficult.
+            // Alternative: Inject CSS to hide #navbar and #sidebar.
+            // AND Remove IDs to avoid conflict with React Shell.
+            html = html.replace(
+                'id="navbar"',
+                'id="legacy-navbar" style="display:none !important"',
+            );
+            html = html.replace(
+                'id="sidebar"',
+                'id="legacy-sidebar" style="display:none !important"',
+            );
+            html = html.replace('id="mainnav"', 'id="legacy-mainnav"');
+            // Also hide the noscript GTM
+            html = html.replace(
+                '<noscript>',
+                '<noscript style="display:none">',
+            );
+        }
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.status(200).send(html);
