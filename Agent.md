@@ -97,3 +97,47 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 
 ## 11. CI notes
 - `e2e-frontend-chrome.yml` runs panel E2E with a local backend via the MyDevil SSH tunnel and needs the same secrets as `e2e.yml`.
+
+## 12. MANDATORY Pre-Commit Checklist (Agent MUST follow)
+
+**CRITICAL**: Before ANY git commit, the agent MUST run these checks locally and fix all errors:
+
+```bash
+# 1. Panel (frontend) - REQUIRED before committing panel changes
+cd apps/panel
+pnpm eslint src --fix
+pnpm tsc --noEmit
+
+# 2. Backend - REQUIRED before committing backend changes
+cd backend/salonbw-backend
+pnpm lint --fix
+pnpm tsc --noEmit
+
+# 3. Landing (if changed)
+cd apps/landing
+pnpm eslint src --fix
+pnpm tsc --noEmit
+```
+
+**Rules**:
+- NEVER commit if lint or typecheck fails
+- NEVER skip these checks "to save time"
+- If lint --fix doesn't resolve all issues, manually fix remaining errors before commit
+- Run checks for ALL packages that have modified files
+
+## 13. Development Phase Testing Strategy
+
+**Local (before commit)**:
+- Lint + typecheck (mandatory, see above)
+- Manual smoke test of changed functionality
+
+**After deployment (production verification)**:
+- Verify API health: `curl https://api.salon-bw.pl/healthz`
+- Verify panel loads: open https://panel.salon-bw.pl
+- Test login flow if auth-related changes
+- Check browser console for errors
+
+**If deployment fails**:
+1. Check CI logs: `gh run view <run-id> --log-failed`
+2. Fix locally, run pre-commit checks again
+3. Commit fix and redeploy
