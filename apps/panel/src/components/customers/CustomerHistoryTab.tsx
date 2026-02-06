@@ -95,102 +95,114 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">
-                    Historia wizyt
-                </h3>
-                {data && (
-                    <span className="text-sm text-gray-500">
-                        {data.total} wizyt łącznie
-                    </span>
-                )}
+        <div className="row">
+            <div className="col-sm-12">
+                <div className="versum-widget">
+                    <div className="versum-widget__header flex-between">
+                        <span>Historia wizyt</span>
+                        {data && (
+                            <span
+                                className="text-muted"
+                                style={{
+                                    fontWeight: 'normal',
+                                    fontSize: '11px',
+                                }}
+                            >
+                                {data.total} wizyt łącznie
+                            </span>
+                        )}
+                    </div>
+                    <div className="versum-widget__content no-padding">
+                        {data?.items.length === 0 ? (
+                            <div
+                                className="text-center"
+                                style={{ padding: '40px', color: '#999' }}
+                            >
+                                Brak historii wizyt
+                            </div>
+                        ) : (
+                            <table className="versum-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Usługa</th>
+                                        <th>Pracownik</th>
+                                        <th>Status</th>
+                                        <th className="text-right">Cena</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data?.items.map((visit) => (
+                                        <tr key={visit.id}>
+                                            <td>
+                                                <div
+                                                    style={{ fontWeight: 600 }}
+                                                >
+                                                    {formatDate(visit.date)}
+                                                </div>
+                                                <div
+                                                    className="text-muted"
+                                                    style={{ fontSize: '11px' }}
+                                                >
+                                                    {visit.time}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {visit.service?.name || '-'}
+                                            </td>
+                                            <td>
+                                                {visit.employee?.name || '-'}
+                                            </td>
+                                            <td>
+                                                {getStatusBadge(visit.status)}
+                                            </td>
+                                            <td
+                                                className="text-right"
+                                                style={{ fontWeight: 600 }}
+                                            >
+                                                {formatCurrency(visit.price)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="versum-pagination-footer">
+                                <div>
+                                    Strona {page + 1} z {totalPages}
+                                </div>
+                                <div className="btn-group">
+                                    <button
+                                        onClick={() =>
+                                            setPage((p) => Math.max(0, p - 1))
+                                        }
+                                        disabled={page === 0}
+                                        className="btn btn-default btn-xs"
+                                    >
+                                        <i className="icon-chevron-left"></i>{' '}
+                                        Poprzednia
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setPage((p) =>
+                                                Math.min(totalPages - 1, p + 1),
+                                            )
+                                        }
+                                        disabled={page >= totalPages - 1}
+                                        className="btn btn-default btn-xs"
+                                    >
+                                        Następna{' '}
+                                        <i className="icon-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
-
-            {data?.items.length === 0 ? (
-                <div className="rounded-lg border bg-gray-50 p-8 text-center text-gray-500">
-                    Brak historii wizyt
-                </div>
-            ) : (
-                <div className="rounded-lg border bg-white shadow-sm">
-                    <table className="w-full">
-                        <thead className="border-b bg-gray-50">
-                            <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Data
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Usługa
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Pracownik
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Status
-                                </th>
-                                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                    Cena
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                            {data?.items.map((visit) => (
-                                <tr key={visit.id} className="hover:bg-gray-50">
-                                    <td className="whitespace-nowrap px-4 py-3">
-                                        <div className="font-medium text-gray-900">
-                                            {formatDate(visit.date)}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            {visit.time}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="text-gray-900">
-                                            {visit.service?.name || '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600">
-                                        {visit.employee?.name || '-'}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {getStatusBadge(visit.status)}
-                                    </td>
-                                    <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-gray-900">
-                                        {formatCurrency(visit.price)}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t pt-4">
-                    <div className="text-sm text-gray-500">
-                        Strona {page + 1} z {totalPages}
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setPage((p) => Math.max(0, p - 1))}
-                            disabled={page === 0}
-                            className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            Poprzednia
-                        </button>
-                        <button
-                            onClick={() =>
-                                setPage((p) => Math.min(totalPages - 1, p + 1))
-                            }
-                            disabled={page >= totalPages - 1}
-                            className="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            Następna
-                        </button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

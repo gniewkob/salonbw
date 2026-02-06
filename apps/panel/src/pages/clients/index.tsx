@@ -152,7 +152,7 @@ function ClientsPageContent() {
 
                     <div className="versum-page__toolbar">
                         <input
-                            className="versum-input w-[250px]"
+                            className="form-control versum-toolbar-search"
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
@@ -165,7 +165,7 @@ function ClientsPageContent() {
                             aria-label="Wyszukaj klienta"
                         />
                         <select
-                            className="versum-select"
+                            className="form-control versum-toolbar-select"
                             value={sortOption}
                             onChange={(e) =>
                                 setSortOption(e.target.value as SortOption)
@@ -187,7 +187,7 @@ function ClientsPageContent() {
                         </select>
                         <button
                             type="button"
-                            className="versum-button"
+                            className="btn btn-primary versum-toolbar-btn"
                             onClick={() => setShowCreateModal(true)}
                         >
                             dodaj klienta
@@ -201,8 +201,15 @@ function ClientsPageContent() {
                     ) : (
                         <>
                             <div className="versum-table-wrap">
-                                <div className="px-2 py-1.5 bg-gray-50 border-b border-gray-200">
-                                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                                <div className="versum-table-header-alt">
+                                    <label
+                                        className="checkbox-inline"
+                                        style={{
+                                            fontSize: '11px',
+                                            margin: 0,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
                                         <input
                                             type="checkbox"
                                             checked={
@@ -215,9 +222,9 @@ function ClientsPageContent() {
                                                     e.target.checked,
                                                 )
                                             }
-                                            className="rounded border-gray-300"
                                         />
-                                        zaznacz wszystkich ({selectedIds.size})
+                                        &nbsp; zaznacz wszystkich (
+                                        {selectedIds.size})
                                     </label>
                                 </div>
                                 <table className="versum-table">
@@ -265,7 +272,7 @@ function ClientsPageContent() {
                                                             href={
                                                                 `/clients/${customer.id}` as Route
                                                             }
-                                                            className="text-sky-600 hover:underline font-medium"
+                                                            className="versum-link"
                                                             onClick={(e) =>
                                                                 e.stopPropagation()
                                                             }
@@ -326,14 +333,14 @@ function ClientsPageContent() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600 flex items-center justify-between">
+                            <div className="versum-pagination-footer">
                                 <span>
                                     Pozycje od{' '}
                                     {Math.min((page - 1) * limit + 1, total)} do{' '}
                                     {Math.min(page * limit, total)} z {total} |
                                     na stronie{' '}
                                     <select
-                                        className="versum-select ml-1"
+                                        className="form-control"
                                         value={limit}
                                         onChange={(e) =>
                                             setFilters((prev) => ({
@@ -352,7 +359,7 @@ function ClientsPageContent() {
                                 <div className="flex items-center gap-1">
                                     <button
                                         type="button"
-                                        className="versum-button versum-button--light px-2"
+                                        className="btn btn-default btn-xs"
                                         disabled={page <= 1}
                                         onClick={() =>
                                             setFilters((prev) => ({
@@ -371,7 +378,7 @@ function ClientsPageContent() {
                                     </span>
                                     <button
                                         type="button"
-                                        className="versum-button versum-button--light px-2"
+                                        className="btn btn-default btn-xs"
                                         disabled={page >= totalPages}
                                         onClick={() =>
                                             setFilters((prev) => ({

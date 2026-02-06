@@ -37,68 +37,50 @@ export default function CustomerDetailPage() {
             permission="nav:clients"
         >
             <DashboardLayout>
-                <div
-                    className="flex h-full flex-col"
-                    data-testid="customer-detail-page"
-                >
-                    {/* Breadcrumb */}
-                    <header className="border-b border-gray-200 bg-white px-6 py-3">
-                        <nav className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="inner">
+                    {isLoading ? (
+                        <div
+                            className="flex h-full items-center justify-center text-gray-500"
+                            style={{ padding: '20px' }}
+                        >
+                            Ładowanie danych klienta...
+                        </div>
+                    ) : error ? (
+                        <div
+                            className="flex h-full flex-col items-center justify-center text-gray-500"
+                            style={{ padding: '20px' }}
+                        >
+                            <p className="mb-4">
+                                Nie udało się załadować danych klienta
+                            </p>
                             <Link
                                 href={'/clients' as Route}
-                                className="hover:text-cyan-600"
-                                prefetch={false}
+                                className="btn btn-default"
                             >
-                                👥 Klienci
+                                Wróć do listy klientów
                             </Link>
-                            <span>/</span>
-                            <span className="font-medium text-gray-700">
-                                {isLoading
-                                    ? 'Ładowanie...'
-                                    : (customer?.name ?? 'Szczegóły klienta')}
-                            </span>
-                        </nav>
-                    </header>
-
-                    {/* Content */}
-                    <div className="flex-1 overflow-hidden">
-                        {isLoading ? (
-                            <div className="flex h-full items-center justify-center text-gray-500">
-                                Ładowanie danych klienta...
-                            </div>
-                        ) : error ? (
-                            <div className="flex h-full flex-col items-center justify-center text-gray-500">
-                                <p className="mb-4">
-                                    Nie udało się załadować danych klienta
-                                </p>
-                                <Link
-                                    href={'/clients' as Route}
-                                    className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
-                                    prefetch={false}
-                                >
-                                    Wróć do listy klientów
-                                </Link>
-                            </div>
-                        ) : customer ? (
-                            <CustomerCard
-                                customer={customer}
-                                tags={tags ?? []}
-                                onClose={handleClose}
-                                onUpdate={handleUpdate}
-                            />
-                        ) : (
-                            <div className="flex h-full flex-col items-center justify-center text-gray-500">
-                                <p className="mb-4">Nie znaleziono klienta</p>
-                                <Link
-                                    href={'/clients' as Route}
-                                    className="rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
-                                    prefetch={false}
-                                >
-                                    Wróć do listy klientów
-                                </Link>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    ) : customer ? (
+                        <CustomerCard
+                            customer={customer}
+                            tags={tags ?? []}
+                            onClose={handleClose}
+                            onUpdate={handleUpdate}
+                        />
+                    ) : (
+                        <div
+                            className="flex h-full flex-col items-center justify-center text-gray-500"
+                            style={{ padding: '20px' }}
+                        >
+                            <p className="mb-4">Nie znaleziono klienta</p>
+                            <Link
+                                href={'/clients' as Route}
+                                className="btn btn-default"
+                            >
+                                Wróć do listy klientów
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </DashboardLayout>
         </RouteGuard>

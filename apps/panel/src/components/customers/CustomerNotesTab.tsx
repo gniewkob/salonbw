@@ -105,129 +105,197 @@ export default function CustomerNotesTab({ customerId }: Props) {
     const unpinnedNotes = notes?.filter((n) => !n.isPinned) || [];
 
     return (
-        <div className="space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Notatki</h3>
-                <button
-                    onClick={() => setShowAddForm(true)}
-                    className="rounded bg-cyan-600 px-3 py-1.5 text-sm text-white hover:bg-cyan-700"
-                >
-                    + Dodaj notatkę
-                </button>
-            </div>
-
-            {/* Add Note Form */}
-            {showAddForm && (
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="mb-3">
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Typ notatki
-                        </label>
-                        <select
-                            value={newNoteType}
-                            onChange={(e) =>
-                                setNewNoteType(e.target.value as NoteType)
-                            }
-                            className="w-full rounded border px-3 py-2"
+        <div className="row">
+            <div className="col-sm-12">
+                <div className="versum-widget">
+                    <div className="versum-widget__header flex-between">
+                        <span>Notatki</span>
+                        <button
+                            onClick={() => setShowAddForm(true)}
+                            className="btn btn-primary btn-xs"
                         >
-                            {Object.entries(noteTypeConfig).map(
-                                ([key, config]) => (
-                                    <option key={key} value={key}>
-                                        {config.icon} {config.label}
-                                    </option>
-                                ),
+                            + Dodaj notatkę
+                        </button>
+                    </div>
+
+                    <div className="versum-widget__content">
+                        {/* Add Note Form */}
+                        {showAddForm && (
+                            <div
+                                className="versum-panel-sub"
+                                style={{
+                                    marginBottom: '20px',
+                                    padding: '15px',
+                                }}
+                            >
+                                <div className="row">
+                                    <div className="col-sm-4">
+                                        <div className="form-group">
+                                            <label
+                                                className="control-label"
+                                                style={{ fontSize: '11px' }}
+                                            >
+                                                Typ notatki
+                                            </label>
+                                            <select
+                                                value={newNoteType}
+                                                onChange={(e) =>
+                                                    setNewNoteType(
+                                                        e.target
+                                                            .value as NoteType,
+                                                    )
+                                                }
+                                                className="form-control"
+                                                style={{
+                                                    height: '30px',
+                                                    fontSize: '12px',
+                                                }}
+                                            >
+                                                {Object.entries(
+                                                    noteTypeConfig,
+                                                ).map(([key, config]) => (
+                                                    <option
+                                                        key={key}
+                                                        value={key}
+                                                    >
+                                                        {config.icon}{' '}
+                                                        {config.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="col-sm-8 flex items-end">
+                                        <div className="form-group w-full">
+                                            <label
+                                                className="control-label"
+                                                style={{ fontSize: '11px' }}
+                                            >
+                                                Treść
+                                            </label>
+                                            <textarea
+                                                value={newNoteContent}
+                                                onChange={(e) =>
+                                                    setNewNoteContent(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                rows={2}
+                                                placeholder="Wpisz treść notatki..."
+                                                className="form-control"
+                                                style={{ fontSize: '12px' }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    className="flex justify-end gap-2"
+                                    style={{ marginTop: '10px' }}
+                                >
+                                    <button
+                                        onClick={() => {
+                                            setShowAddForm(false);
+                                            setNewNoteContent('');
+                                            setNewNoteType('general');
+                                        }}
+                                        className="btn btn-default btn-xs"
+                                    >
+                                        Anuluj
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            void handleAddNote();
+                                        }}
+                                        disabled={
+                                            !newNoteContent.trim() ||
+                                            createNote.isPending
+                                        }
+                                        className="btn btn-primary btn-xs"
+                                    >
+                                        {createNote.isPending
+                                            ? 'Zapisywanie...'
+                                            : 'Zapisz'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="versum-notes-list">
+                            {/* Pinned Notes */}
+                            {pinnedNotes.length > 0 && (
+                                <div style={{ marginBottom: '20px' }}>
+                                    <div
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '11px',
+                                            textTransform: 'uppercase',
+                                            marginBottom: '10px',
+                                            borderBottom: '1px solid #eee',
+                                            paddingBottom: '3px',
+                                        }}
+                                    >
+                                        📌 Przypięte ({pinnedNotes.length})
+                                    </div>
+                                    {pinnedNotes.map((note) => (
+                                        <NoteItem
+                                            key={note.id}
+                                            note={note}
+                                            onTogglePin={handleTogglePin}
+                                            onDelete={handleDelete}
+                                            formatDate={formatDate}
+                                        />
+                                    ))}
+                                </div>
                             )}
-                        </select>
-                    </div>
-                    <div className="mb-3">
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Treść
-                        </label>
-                        <textarea
-                            value={newNoteContent}
-                            onChange={(e) => setNewNoteContent(e.target.value)}
-                            rows={3}
-                            placeholder="Wpisz treść notatki..."
-                            className="w-full rounded border px-3 py-2"
-                        />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button
-                            onClick={() => {
-                                setShowAddForm(false);
-                                setNewNoteContent('');
-                                setNewNoteType('general');
-                            }}
-                            className="rounded border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
-                        >
-                            Anuluj
-                        </button>
-                        <button
-                            onClick={() => {
-                                void handleAddNote();
-                            }}
-                            disabled={
-                                !newNoteContent.trim() || createNote.isPending
-                            }
-                            className="rounded bg-cyan-600 px-3 py-1.5 text-sm text-white hover:bg-cyan-700 disabled:opacity-50"
-                        >
-                            {createNote.isPending ? 'Zapisywanie...' : 'Zapisz'}
-                        </button>
-                    </div>
-                </div>
-            )}
 
-            {/* Pinned Notes */}
-            {pinnedNotes.length > 0 && (
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-gray-500">
-                        📌 Przypięte ({pinnedNotes.length})
-                    </h4>
-                    {pinnedNotes.map((note) => (
-                        <NoteCard
-                            key={note.id}
-                            note={note}
-                            onTogglePin={handleTogglePin}
-                            onDelete={handleDelete}
-                            formatDate={formatDate}
-                        />
-                    ))}
-                </div>
-            )}
+                            {/* Other Notes */}
+                            {unpinnedNotes.length > 0 && (
+                                <div>
+                                    {pinnedNotes.length > 0 && (
+                                        <div
+                                            className="text-muted"
+                                            style={{
+                                                fontSize: '11px',
+                                                textTransform: 'uppercase',
+                                                marginBottom: '10px',
+                                                borderBottom: '1px solid #eee',
+                                                paddingBottom: '3px',
+                                            }}
+                                        >
+                                            Pozostałe ({unpinnedNotes.length})
+                                        </div>
+                                    )}
+                                    {unpinnedNotes.map((note) => (
+                                        <NoteItem
+                                            key={note.id}
+                                            note={note}
+                                            onTogglePin={handleTogglePin}
+                                            onDelete={handleDelete}
+                                            formatDate={formatDate}
+                                        />
+                                    ))}
+                                </div>
+                            )}
 
-            {/* Other Notes */}
-            {unpinnedNotes.length > 0 && (
-                <div className="space-y-3">
-                    {pinnedNotes.length > 0 && (
-                        <h4 className="text-sm font-medium text-gray-500">
-                            Pozostałe ({unpinnedNotes.length})
-                        </h4>
-                    )}
-                    {unpinnedNotes.map((note) => (
-                        <NoteCard
-                            key={note.id}
-                            note={note}
-                            onTogglePin={handleTogglePin}
-                            onDelete={handleDelete}
-                            formatDate={formatDate}
-                        />
-                    ))}
+                            {/* Empty State */}
+                            {notes?.length === 0 && !showAddForm && (
+                                <div
+                                    className="text-center text-muted"
+                                    style={{ padding: '40px 0' }}
+                                >
+                                    Brak notatek. Kliknij &quot;Dodaj
+                                    notatkę&quot; aby dodać pierwszą.
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            )}
-
-            {/* Empty State */}
-            {notes?.length === 0 && (
-                <div className="rounded-lg border bg-gray-50 p-8 text-center text-gray-500">
-                    Brak notatek. Kliknij &quot;Dodaj notatkę&quot; aby dodać
-                    pierwszą.
-                </div>
-            )}
+            </div>
         </div>
     );
 }
 
-function NoteCard({
+function NoteItem({
     note,
     onTogglePin,
     onDelete,
@@ -241,21 +309,57 @@ function NoteCard({
     const config = noteTypeConfig[note.type] || noteTypeConfig.general;
 
     return (
-        <div className="rounded-lg border bg-white p-4 shadow-sm">
-            <div className="mb-2 flex items-start justify-between">
-                <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${config.color}`}
-                >
-                    {config.icon} {config.label}
-                </span>
-                <div className="flex gap-1">
+        <div style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <div className="flex items-start justify-between">
+                <div style={{ flex: 1 }}>
+                    <div
+                        className="flex items-center gap-2"
+                        style={{ marginBottom: '5px' }}
+                    >
+                        <span
+                            style={{
+                                display: 'inline-block',
+                                padding: '1px 8px',
+                                borderRadius: '10px',
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                background: '#eee',
+                                color: '#666',
+                            }}
+                        >
+                            {config.label}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#999' }}>
+                            {formatDate(note.createdAt)}
+                            {note.createdBy && ` • ${note.createdBy.name}`}
+                        </span>
+                    </div>
+                    <p
+                        style={{
+                            margin: 0,
+                            fontSize: '13px',
+                            lineHeight: '1.5',
+                            whiteSpace: 'pre-wrap',
+                            color: '#333',
+                        }}
+                    >
+                        {note.content}
+                    </p>
+                </div>
+                <div className="flex gap-1" style={{ marginLeft: '10px' }}>
                     <button
                         onClick={() => {
                             void onTogglePin(note);
                         }}
-                        className={`rounded p-1 hover:bg-gray-100 ${
-                            note.isPinned ? 'text-cyan-600' : 'text-gray-400'
-                        }`}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '3px',
+                            opacity: note.isPinned ? 1 : 0.3,
+                            filter: note.isPinned ? 'none' : 'grayscale(100%)',
+                        }}
                         title={note.isPinned ? 'Odepnij' : 'Przypnij'}
                     >
                         📌
@@ -264,17 +368,19 @@ function NoteCard({
                         onClick={() => {
                             void onDelete(note.id);
                         }}
-                        className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '3px',
+                            opacity: 0.3,
+                        }}
+                        className="hover:opacity-100"
                         title="Usuń"
                     >
                         🗑️
                     </button>
                 </div>
-            </div>
-            <p className="whitespace-pre-wrap text-gray-700">{note.content}</p>
-            <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
-                <span>{formatDate(note.createdAt)}</span>
-                {note.createdBy && <span>Dodał: {note.createdBy.name}</span>}
             </div>
         </div>
     );
