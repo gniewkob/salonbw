@@ -97,12 +97,8 @@ export const VERSUM_MODULES: VersumModule[] = [
 ];
 
 export function resolveVersumModule(pathname: string): VersumModule {
-    // Normalize path: strip salon prefix if present
-    let path = pathname.toLowerCase();
-    if (path.startsWith('/salonblackandwhite')) {
-        path = path.slice('/salonblackandwhite'.length);
-    }
-    if (path === '') path = '/';
+    // Normalize path
+    const path = pathname.toLowerCase();
 
     if (
         path.startsWith('/calendar') ||

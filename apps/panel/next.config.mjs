@@ -52,99 +52,7 @@ const nextConfig = {
                 source: '/calendar',
                 destination: '/api/calendar-embed',
             },
-            // Versum-prefixed calendar/runtime paths
-            {
-                source: '/salonblackandwhite/events/:path*',
-                destination: '/events/:path*',
-            },
-            {
-                source: '/salonblackandwhite/settings/timetable/schedules/:path*',
-                destination: '/settings/timetable/schedules/:path*',
-            },
-            {
-                source: '/salonblackandwhite/track_new_events.json',
-                destination: '/track_new_events.json',
-            },
-            {
-                source: '/salonblackandwhite/graphql',
-                destination: '/graphql',
-            },
             // Exact paths (without trailing segments)
-            {
-                source: '/salonblackandwhite/customers',
-                destination: '/clients',
-            },
-            {
-                source: '/salonblackandwhite/calendar',
-                destination: '/calendar',
-            },
-            {
-                source: '/salonblackandwhite/products',
-                destination: '/products',
-            },
-            {
-                source: '/salonblackandwhite/statistics',
-                destination: '/statistics',
-            },
-            {
-                source: '/salonblackandwhite/communication',
-                destination: '/communication',
-            },
-            {
-                source: '/salonblackandwhite/services',
-                destination: '/services',
-            },
-            {
-                source: '/salonblackandwhite/settings',
-                destination: '/settings',
-            },
-            {
-                source: '/salonblackandwhite/extension',
-                destination: '/extension',
-            },
-            // Paths with trailing segments
-            {
-                source: '/salonblackandwhite/customers/:path*',
-                destination: '/clients/:path*',
-            },
-            {
-                source: '/salonblackandwhite/calendar/:path*',
-                destination: '/calendar/:path*',
-            },
-            {
-                source: '/salonblackandwhite/products/:path*',
-                destination: '/products/:path*',
-            },
-            {
-                source: '/salonblackandwhite/statistics/dashboard',
-                destination: '/statistics',
-            },
-            {
-                source: '/salonblackandwhite/statistics/:path*',
-                destination: '/statistics/:path*',
-            },
-            {
-                source: '/salonblackandwhite/communication/:path*',
-                destination: '/communication/:path*',
-            },
-            {
-                source: '/salonblackandwhite/services/:path*',
-                destination: '/services/:path*',
-            },
-            {
-                source: '/salonblackandwhite/settings/:path*',
-                destination: '/settings/:path*',
-            },
-            {
-                source: '/salonblackandwhite/extension/:path*',
-                destination: '/extension/:path*',
-            },
-            {
-                source: '/salonblackandwhite',
-                destination: '/dashboard',
-            },
-
-            // Compatibility alias used by Versum HTML nav
             {
                 source: '/customers',
                 destination: '/clients',
@@ -152,6 +60,12 @@ const nextConfig = {
             {
                 source: '/customers/:path*',
                 destination: '/clients/:path*',
+            },
+
+            // Other modules
+            {
+                source: '/statistics/dashboard',
+                destination: '/statistics',
             },
             {
                 source: '/events/:path*',
@@ -197,11 +111,6 @@ const nextConfig = {
             },
             {
                 source: '/signout',
-                destination: '/auth/login',
-                permanent: false,
-            },
-            {
-                source: '/salonblackandwhite/signout',
                 destination: '/auth/login',
                 permanent: false,
             },
