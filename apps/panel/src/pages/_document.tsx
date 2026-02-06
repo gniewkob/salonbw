@@ -21,6 +21,23 @@ export default function Document(props: CustomDocumentProps) {
                     href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
                     rel="stylesheet"
                 />
+                {/* Vendored Versum CSS - same as calendar HTML loads */}
+                <link
+                    href="/versum-calendar/assets/new-ui-9cfd3fdff9f46796405002ac31d294d5bf69241e972905313e73767abe10af07.css"
+                    rel="stylesheet"
+                />
+                <link
+                    href="/versum-calendar/assets/responsive-ec4501ea7ba0421e40ca22e099525b7ddbc330343d420855acd8ee8b1d632b99.css"
+                    rel="stylesheet"
+                />
+                <link
+                    href="/versum-calendar/javascripts/new/default-51c7a0b55a22f2c6e6d3402e1cc0060b.css"
+                    rel="stylesheet"
+                />
+                <link
+                    href="/versum-calendar/javascripts/new/style-d5194205877fdbcc0f7b046384512047.css"
+                    rel="stylesheet"
+                />
             </Head>
             <body>
                 <Main />
