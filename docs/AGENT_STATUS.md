@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:54 | production | Manual deploy; `/healthz` 200 |
-| Public site (`dev.salon-bw.pl`) | `742bb576` | `manual-ssh` | 2026-02-02 22:55 | production | Manual deploy for logout fix |
-| Dashboard (`panel.salon-bw.pl`) | `d7e2c0cc` | `21686405136` | 2026-02-04 20:06 | production | Dashboard redeployed via workflow_dispatch (`target=dashboard`) after workflow hardening |
+| API (`api.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy; `/healthz` 200 |
+| Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
+| Dashboard (`panel.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Fixed: added missing `react-datepicker` and `@heroicons/react` dependencies |
 
 Verification:
 
