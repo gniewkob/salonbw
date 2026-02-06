@@ -162,6 +162,7 @@ export interface Employee {
     firstName?: string;
     lastName?: string;
     fullName?: string;
+    color?: string;
 }
 
 export interface Product {
