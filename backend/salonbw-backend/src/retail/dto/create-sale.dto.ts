@@ -80,32 +80,52 @@ export class CreateSaleDto {
     @IsOptional()
     quantity: number;
 
-    @ApiProperty({ description: 'Unit price in cents (preferred over unitPrice)', required: false })
+    @ApiProperty({
+        description: 'Unit price in cents (preferred over unitPrice)',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     unitPriceCents?: number;
 
-    @ApiProperty({ description: 'Total discount in cents (preferred over discount)', required: false })
+    @ApiProperty({
+        description: 'Total discount in cents (preferred over discount)',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     discountCents?: number;
 
-    @ApiProperty({ description: 'Unit price in standard currency units (deprecated, use unitPriceCents)', required: false })
+    @ApiProperty({
+        description:
+            'Unit price in standard currency units (deprecated, use unitPriceCents)',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     unitPrice?: number;
 
-    @ApiProperty({ description: 'Discount in standard currency units (deprecated, use discountCents)', required: false })
+    @ApiProperty({
+        description:
+            'Discount in standard currency units (deprecated, use discountCents)',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     discount?: number;
 
-    @ApiProperty({ description: 'ID of the employee credited with the sale', required: false })
+    @ApiProperty({
+        description: 'ID of the employee credited with the sale',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     employeeId?: number;
 
-    @ApiProperty({ description: 'ID of the associated appointment', required: false })
+    @ApiProperty({
+        description: 'ID of the associated appointment',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     appointmentId?: number;

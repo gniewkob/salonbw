@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 
 export interface CustomerStatistics {
@@ -86,7 +89,10 @@ export class CustomerStatisticsService {
             .slice(0, 5);
 
         // Favorite employees
-        const employeeCount = new Map<number, { name: string; count: number }>();
+        const employeeCount = new Map<
+            number,
+            { name: string; count: number }
+        >();
         completed.forEach((a) => {
             if (a.employee) {
                 const existing = employeeCount.get(a.employee.id);
@@ -138,12 +144,14 @@ export class CustomerStatisticsService {
             cancelledVisits: cancelled.length,
             noShowVisits: noShow.length,
             totalSpent,
-            averageSpent: completed.length > 0 ? totalSpent / completed.length : 0,
+            averageSpent:
+                completed.length > 0 ? totalSpent / completed.length : 0,
             lastVisitDate:
                 completed.length > 0
                     ? new Date(completed[completed.length - 1].startTime)
                     : null,
-            firstVisitDate: completed.length > 0 ? new Date(completed[0].startTime) : null,
+            firstVisitDate:
+                completed.length > 0 ? new Date(completed[0].startTime) : null,
             favoriteServices,
             favoriteEmployees,
             visitsByMonth,
@@ -172,7 +180,9 @@ export class CustomerStatisticsService {
                     hour: '2-digit',
                     minute: '2-digit',
                 }),
-                service: a.service ? { id: a.service.id, name: a.service.name } : null,
+                service: a.service
+                    ? { id: a.service.id, name: a.service.name }
+                    : null,
                 employee: a.employee
                     ? { id: a.employee.id, name: a.employee.name }
                     : null,

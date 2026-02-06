@@ -173,15 +173,17 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                                 <div className="text-muted fz-12 w-80">
                                                     {month.month}
                                                 </div>
-                                                {/* eslint-disable-next-line */}
-                                                <div
-                                                    className="h-full bg-cyan w-dynamic"
-                                                    style={
-                                                        {
-                                                            '--dynamic-width': `${widthPercent}%`,
-                                                        } as React.CSSProperties
-                                                    }
-                                                />
+                                                {(() => {
+                                                    const barStyle = {
+                                                        '--dynamic-width': `${widthPercent}%`,
+                                                    } as React.CSSProperties;
+                                                    return (
+                                                        <div
+                                                            className="h-full bg-cyan w-dynamic"
+                                                            style={barStyle} // eslint-disable-line
+                                                        />
+                                                    );
+                                                })()}
                                                 <div className="text-right fz-12 bold w-60">
                                                     {month.count}
                                                 </div>

@@ -1,5 +1,17 @@
-import { IsString, IsEnum, IsOptional, IsNumber, IsBoolean, IsArray, MinLength, MaxLength } from 'class-validator';
-import { TemplateType, MessageChannel } from '../entities/message-template.entity';
+import {
+    IsString,
+    IsEnum,
+    IsOptional,
+    IsNumber,
+    IsBoolean,
+    IsArray,
+    MinLength,
+    MaxLength,
+} from 'class-validator';
+import {
+    TemplateType,
+    MessageChannel,
+} from '../entities/message-template.entity';
 
 export class CreateTemplateDto {
     @IsString()

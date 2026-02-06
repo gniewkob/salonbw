@@ -172,7 +172,8 @@ export class SettingsService {
             if (
                 key !== 'updatedAt' &&
                 key !== 'createdAt' &&
-                JSON.stringify(oldValues[key]) !== JSON.stringify(newValues[key])
+                JSON.stringify(oldValues[key]) !==
+                    JSON.stringify(newValues[key])
             ) {
                 changes[key] = {
                     from: oldValues[key],

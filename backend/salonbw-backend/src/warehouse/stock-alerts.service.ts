@@ -20,7 +20,9 @@ export class StockAlertsService {
         private readonly supplierRepository: Repository<Supplier>,
     ) {}
 
-    async getLowStockProducts(dto: GetLowStockDto): Promise<LowStockProductDto[]> {
+    async getLowStockProducts(
+        dto: GetLowStockDto,
+    ): Promise<LowStockProductDto[]> {
         const query = this.productRepository
             .createQueryBuilder('product')
             .leftJoinAndSelect('product.defaultSupplier', 'supplier')
@@ -29,7 +31,9 @@ export class StockAlertsService {
             .andWhere('product.isActive = :isActive', { isActive: true });
 
         if (dto.trackStockOnly !== false) {
-            query.andWhere('product.trackStock = :trackStock', { trackStock: true });
+            query.andWhere('product.trackStock = :trackStock', {
+                trackStock: true,
+            });
         }
 
         if (dto.productType) {
@@ -51,8 +55,12 @@ export class StockAlertsService {
 
     async getStockAlerts(dto: GetLowStockDto): Promise<StockAlertsResponseDto> {
         const lowStockProducts = await this.getLowStockProducts(dto);
-        const reorderSuggestions = this.generateReorderSuggestions(lowStockProducts);
-        const summary = this.calculateSummary(lowStockProducts, reorderSuggestions);
+        const reorderSuggestions =
+            this.generateReorderSuggestions(lowStockProducts);
+        const summary = this.calculateSummary(
+            lowStockProducts,
+            reorderSuggestions,
+        );
 
         return {
             summary,
@@ -130,7 +138,8 @@ export class StockAlertsService {
             },
         });
 
-        const healthyStockCount = trackedProducts - lowStockCount - outOfStockCount;
+        const healthyStockCount =
+            trackedProducts - lowStockCount - outOfStockCount;
 
         return {
             totalProducts,
@@ -246,7 +255,9 @@ export class StockAlertsService {
             mediumCount,
             lowCount,
             estimatedTotalReorderCost:
-                estimatedTotalReorderCost > 0 ? estimatedTotalReorderCost : null,
+                estimatedTotalReorderCost > 0
+                    ? estimatedTotalReorderCost
+                    : null,
             lastCheckedAt: new Date().toISOString(),
         };
     }

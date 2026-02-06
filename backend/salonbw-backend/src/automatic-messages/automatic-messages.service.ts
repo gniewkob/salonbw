@@ -22,7 +22,10 @@ import {
     ProcessAutomaticMessagesResultDto,
 } from './dto/automatic-message.dto';
 import { SmsService } from '../sms/sms.service';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 
@@ -121,7 +124,9 @@ export class AutomaticMessagesService {
         return results;
     }
 
-    async processRule(rule: AutomaticMessageRule): Promise<ProcessAutomaticMessagesResultDto> {
+    async processRule(
+        rule: AutomaticMessageRule,
+    ): Promise<ProcessAutomaticMessagesResultDto> {
         const now = new Date();
         const result: ProcessAutomaticMessagesResultDto = {
             trigger: rule.trigger,
@@ -133,7 +138,13 @@ export class AutomaticMessagesService {
         };
 
         // Check if within send window
-        if (!this.isWithinSendWindow(now, rule.sendWindowStart, rule.sendWindowEnd)) {
+        if (
+            !this.isWithinSendWindow(
+                now,
+                rule.sendWindowStart,
+                rule.sendWindowEnd,
+            )
+        ) {
             result.details?.push('Outside send window');
             return result;
         }
@@ -197,11 +208,19 @@ export class AutomaticMessagesService {
         for (const appointment of appointments) {
             try {
                 // Check filters
-                if (rule.serviceIds?.length && appointment.service && !rule.serviceIds.includes(appointment.service.id)) {
+                if (
+                    rule.serviceIds?.length &&
+                    appointment.service &&
+                    !rule.serviceIds.includes(appointment.service.id)
+                ) {
                     result.skipped++;
                     continue;
                 }
-                if (rule.employeeIds?.length && appointment.employee && !rule.employeeIds.includes(appointment.employee.id)) {
+                if (
+                    rule.employeeIds?.length &&
+                    appointment.employee &&
+                    !rule.employeeIds.includes(appointment.employee.id)
+                ) {
                     result.skipped++;
                     continue;
                 }
@@ -234,7 +253,9 @@ export class AutomaticMessagesService {
                 result.sent++;
             } catch (error) {
                 result.errors++;
-                result.details?.push(`Appointment ${appointment.id}: ${error.message}`);
+                result.details?.push(
+                    `Appointment ${appointment.id}: ${error.message}`,
+                );
             }
         }
 
@@ -300,7 +321,9 @@ export class AutomaticMessagesService {
                 result.sent++;
             } catch (error) {
                 result.errors++;
-                result.details?.push(`Appointment ${appointment.id}: ${error.message}`);
+                result.details?.push(
+                    `Appointment ${appointment.id}: ${error.message}`,
+                );
             }
         }
 
@@ -402,7 +425,9 @@ export class AutomaticMessagesService {
                     .select('MAX(a.startTime)')
                     .from(Appointment, 'a')
                     .where('a.clientId = user.id')
-                    .andWhere('a.status = :status', { status: AppointmentStatus.Completed })
+                    .andWhere('a.status = :status', {
+                        status: AppointmentStatus.Completed,
+                    })
                     .getQuery();
                 return `(${subQuery}) < :threshold AND (${subQuery}) IS NOT NULL`;
             })
@@ -502,7 +527,9 @@ export class AutomaticMessagesService {
                 result.sent++;
             } catch (error) {
                 result.errors++;
-                result.details?.push(`Appointment ${appointment.id}: ${error.message}`);
+                result.details?.push(
+                    `Appointment ${appointment.id}: ${error.message}`,
+                );
             }
         }
 
@@ -516,16 +543,31 @@ export class AutomaticMessagesService {
     }
 
     // Helper: Check if current time is within send window
-    private isWithinSendWindow(now: Date, startStr: string, endStr: string): boolean {
+    private isWithinSendWindow(
+        now: Date,
+        startStr: string,
+        endStr: string,
+    ): boolean {
         const today = format(now, 'yyyy-MM-dd');
-        const start = parse(`${today} ${startStr}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-        const end = parse(`${today} ${endStr}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+        const start = parse(
+            `${today} ${startStr}`,
+            'yyyy-MM-dd HH:mm:ss',
+            new Date(),
+        );
+        const end = parse(
+            `${today} ${endStr}`,
+            'yyyy-MM-dd HH:mm:ss',
+            new Date(),
+        );
 
         return isWithinInterval(now, { start, end });
     }
 
     // Helper: Build message content from rule and appointment
-    private buildContent(rule: AutomaticMessageRule, appointment: Appointment): string {
+    private buildContent(
+        rule: AutomaticMessageRule,
+        appointment: Appointment,
+    ): string {
         let content = rule.template?.content ?? rule.content ?? '';
 
         const client = appointment.client;
@@ -534,23 +576,47 @@ export class AutomaticMessagesService {
 
         // Replace placeholders
         content = content.replace(/\{\{client_name\}\}/g, client?.name ?? '');
-        content = content.replace(/\{\{client_first_name\}\}/g, client?.firstName ?? client?.name?.split(' ')[0] ?? '');
+        content = content.replace(
+            /\{\{client_first_name\}\}/g,
+            client?.firstName ?? client?.name?.split(' ')[0] ?? '',
+        );
         content = content.replace(/\{\{service_name\}\}/g, service?.name ?? '');
-        content = content.replace(/\{\{employee_name\}\}/g, employee?.name ?? '');
-        content = content.replace(/\{\{date\}\}/g, format(new Date(appointment.startTime), 'dd.MM.yyyy'));
-        content = content.replace(/\{\{time\}\}/g, format(new Date(appointment.startTime), 'HH:mm'));
-        content = content.replace(/\{\{salon_name\}\}/g, process.env.SALON_NAME ?? 'Salon');
+        content = content.replace(
+            /\{\{employee_name\}\}/g,
+            employee?.name ?? '',
+        );
+        content = content.replace(
+            /\{\{date\}\}/g,
+            format(new Date(appointment.startTime), 'dd.MM.yyyy'),
+        );
+        content = content.replace(
+            /\{\{time\}\}/g,
+            format(new Date(appointment.startTime), 'HH:mm'),
+        );
+        content = content.replace(
+            /\{\{salon_name\}\}/g,
+            process.env.SALON_NAME ?? 'Salon',
+        );
 
         return content;
     }
 
     // Helper: Build message content for client-only messages (birthday, inactive)
-    private buildContentForClient(rule: AutomaticMessageRule, client: User): string {
+    private buildContentForClient(
+        rule: AutomaticMessageRule,
+        client: User,
+    ): string {
         let content = rule.template?.content ?? rule.content ?? '';
 
         content = content.replace(/\{\{client_name\}\}/g, client.name ?? '');
-        content = content.replace(/\{\{client_first_name\}\}/g, client.firstName ?? client.name?.split(' ')[0] ?? '');
-        content = content.replace(/\{\{salon_name\}\}/g, process.env.SALON_NAME ?? 'Salon');
+        content = content.replace(
+            /\{\{client_first_name\}\}/g,
+            client.firstName ?? client.name?.split(' ')[0] ?? '',
+        );
+        content = content.replace(
+            /\{\{salon_name\}\}/g,
+            process.env.SALON_NAME ?? 'Salon',
+        );
 
         return content;
     }
@@ -598,7 +664,10 @@ export class AutomaticMessagesService {
 
             return true;
         } catch (error) {
-            this.logger.error(`Failed to send confirmation for appointment ${appointmentId}`, error);
+            this.logger.error(
+                `Failed to send confirmation for appointment ${appointmentId}`,
+                error,
+            );
             return false;
         }
     }

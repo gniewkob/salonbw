@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    Table,
+    TableForeignKey,
+} from 'typeorm';
 
 export class CreateSmsTables1710017000000 implements MigrationInterface {
     name = 'CreateSmsTables1710017000000';
@@ -123,7 +128,13 @@ export class CreateSmsTables1710017000000 implements MigrationInterface {
                     {
                         name: 'status',
                         type: 'enum',
-                        enum: ['pending', 'sent', 'delivered', 'failed', 'rejected'],
+                        enum: [
+                            'pending',
+                            'sent',
+                            'delivered',
+                            'failed',
+                            'rejected',
+                        ],
                         default: "'pending'",
                     },
                     {

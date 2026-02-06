@@ -309,12 +309,16 @@ export class AppointmentsController {
         description: 'Appointment finalized successfully',
         type: Appointment,
     })
-    @ApiResponse({ status: 400, description: 'Invalid payment data or appointment state' })
+    @ApiResponse({
+        status: 400,
+        description: 'Invalid payment data or appointment state',
+    })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async finalize(
         @Param('id', ParseIntPipe) id: number,
-        @Body(new ValidationPipe({ transform: true })) body: FinalizeAppointmentDto,
+        @Body(new ValidationPipe({ transform: true }))
+        body: FinalizeAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment | null> {
         const appointment = await this.appointmentsService.findOne(id);
@@ -332,10 +336,8 @@ export class AppointmentsController {
             );
         }
 
-        return this.appointmentsService.finalizeAppointment(
-            id,
-            body,
-            { id: user.userId } as User,
-        );
+        return this.appointmentsService.finalizeAppointment(id, body, {
+            id: user.userId,
+        } as User);
     }
 }

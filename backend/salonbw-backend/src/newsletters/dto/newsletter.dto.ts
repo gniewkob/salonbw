@@ -8,7 +8,10 @@ import {
     MaxLength,
     IsObject,
 } from 'class-validator';
-import { NewsletterChannel, NewsletterStatus } from '../entities/newsletter.entity';
+import {
+    NewsletterChannel,
+    NewsletterStatus,
+} from '../entities/newsletter.entity';
 import { RecipientStatus } from '../entities/newsletter-recipient.entity';
 
 // Recipient filter criteria

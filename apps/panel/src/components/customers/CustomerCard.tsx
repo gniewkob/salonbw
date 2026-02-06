@@ -85,10 +85,7 @@ export default function CustomerCard({
 
             <div className="row">
                 <div className="col-sm-12">
-                    <div
-                        className="versum-widget"
-                        style={{ padding: 0, overflow: 'hidden' }}
-                    >
+                    <div className="versum-widget p-0 overflow-hidden">
                         {/* Header */}
                         <div className="customer-header">
                             <div className="customer-header__avatar">
@@ -102,46 +99,30 @@ export default function CustomerCard({
                                     <span>#{customer.id}</span>
                                     {customer.phone && (
                                         <>
-                                            <span style={{ margin: '0 8px' }}>
-                                                |
-                                            </span>
+                                            <span className="mx-8">|</span>
                                             <span>{customer.phone}</span>
                                         </>
                                     )}
                                     {customer.email && (
                                         <>
-                                            <span style={{ margin: '0 8px' }}>
-                                                |
-                                            </span>
+                                            <span className="mx-8">|</span>
                                             <span>{customer.email}</span>
                                         </>
                                     )}
                                 </div>
                             </div>
 
-                            <div
-                                className="text-right"
-                                style={{ marginLeft: 'auto' }}
-                            >
+                            <div className="text-right ml-auto">
                                 <div className="btn-group">
                                     <button
                                         className="btn btn-default btn-sm"
                                         onClick={onClose}
                                     >
-                                        <i
-                                            className="fa fa-arrow-left"
-                                            style={{ marginRight: '6px' }}
-                                        ></i>
+                                        <i className="fa fa-arrow-left mr-6"></i>
                                         Wróć
                                     </button>
-                                    <button
-                                        className="btn btn-default btn-sm"
-                                        style={{ marginLeft: '8px' }}
-                                    >
-                                        <i
-                                            className="fa fa-pencil"
-                                            style={{ marginRight: '6px' }}
-                                        ></i>
+                                    <button className="btn btn-default btn-sm ml-8">
+                                        <i className="fa fa-pencil mr-6"></i>
                                         Edytuj
                                     </button>
                                 </div>
@@ -149,11 +130,8 @@ export default function CustomerCard({
                         </div>
 
                         {/* Tabs Navigation */}
-                        <div style={{ padding: '0 20px' }}>
-                            <ul
-                                className="nav nav-tabs"
-                                style={{ marginTop: '20px' }}
-                            >
+                        <div className="px-20">
+                            <ul className="nav nav-tabs mt-20">
                                 {tabs.map((tab) => (
                                     <li
                                         key={tab.id}
@@ -170,7 +148,7 @@ export default function CustomerCard({
                         </div>
 
                         {/* Tab Content */}
-                        <div style={{ padding: '0 20px 20px' }}>
+                        <div className="px-20 pb-20">
                             {activeTab === 'summary' && (
                                 <CustomerSummaryTab customer={customer} />
                             )}

@@ -33,18 +33,8 @@ export default function CustomerSummaryTab({ customer }: Props) {
         <div className="row">
             <div className="col-sm-12">
                 {/* KPI Tiles */}
-                <div
-                    className="row"
-                    style={{
-                        marginBottom: '20px',
-                        marginLeft: 0,
-                        marginRight: 0,
-                    }}
-                >
-                    <div
-                        className="col-xs-6 col-sm-3"
-                        style={{ padding: '0 5px' }}
-                    >
+                <div className="row mb-20 ml-0 mr-0">
+                    <div className="col-xs-6 col-sm-3 px-5">
                         <div className="versum-tile">
                             <div className="versum-tile__label">Wizyty</div>
                             <div className="versum-tile__value">
@@ -54,26 +44,17 @@ export default function CustomerSummaryTab({ customer }: Props) {
                             </div>
                         </div>
                     </div>
-                    <div
-                        className="col-xs-6 col-sm-3"
-                        style={{ padding: '0 5px' }}
-                    >
+                    <div className="col-xs-6 col-sm-3 px-5">
                         <div className="versum-tile">
                             <div className="versum-tile__label">Wydano</div>
-                            <div
-                                className="versum-tile__value"
-                                style={{ color: 'var(--versum-accent)' }}
-                            >
+                            <div className="versum-tile__value text-accent">
                                 {statsLoading
                                     ? '...'
                                     : formatCurrency(stats?.totalSpent ?? 0)}
                             </div>
                         </div>
                     </div>
-                    <div
-                        className="col-xs-6 col-sm-3"
-                        style={{ padding: '0 5px' }}
-                    >
+                    <div className="col-xs-6 col-sm-3 px-5">
                         <div className="versum-tile">
                             <div className="versum-tile__label">
                                 Średnia wartość
@@ -85,10 +66,7 @@ export default function CustomerSummaryTab({ customer }: Props) {
                             </div>
                         </div>
                     </div>
-                    <div
-                        className="col-xs-6 col-sm-3"
-                        style={{ padding: '0 5px' }}
-                    >
+                    <div className="col-xs-6 col-sm-3 px-5">
                         <div className="versum-tile">
                             <div className="versum-tile__label">
                                 Ostatnia wizyta
@@ -117,12 +95,7 @@ export default function CustomerSummaryTab({ customer }: Props) {
                                             (service) => (
                                                 <li
                                                     key={service.serviceId}
-                                                    className="flex-between"
-                                                    style={{
-                                                        borderBottom:
-                                                            '1px solid #f5f5f5',
-                                                        padding: '5px 0',
-                                                    }}
+                                                    className="flex-between border-bottom py-5"
                                                 >
                                                     <span>
                                                         {service.serviceName}
@@ -157,10 +130,7 @@ export default function CustomerSummaryTab({ customer }: Props) {
                                         Brak wizyt
                                     </p>
                                 ) : (
-                                    <table
-                                        className="versum-table"
-                                        style={{ fontSize: '12px' }}
-                                    >
+                                    <table className="versum-table fs-12">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
@@ -263,12 +233,7 @@ export default function CustomerSummaryTab({ customer }: Props) {
                                                         key={
                                                             employee.employeeId
                                                         }
-                                                        className="flex-between"
-                                                        style={{
-                                                            borderBottom:
-                                                                '1px solid #f5f5f5',
-                                                            padding: '5px 0',
-                                                        }}
+                                                        className="flex-between border-bottom py-5"
                                                     >
                                                         <span>
                                                             {

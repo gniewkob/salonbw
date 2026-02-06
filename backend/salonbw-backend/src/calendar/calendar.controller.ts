@@ -69,7 +69,8 @@ export class CalendarController {
     @ApiOperation({ summary: 'Get time blocks for date range' })
     @ApiResponse({ status: 200, type: TimeBlock, isArray: true })
     async getTimeBlocks(
-        @Query(new ValidationPipe({ transform: true })) query: TimeBlockQueryDto,
+        @Query(new ValidationPipe({ transform: true }))
+        query: TimeBlockQueryDto,
     ): Promise<TimeBlock[]> {
         return this.calendarService.getTimeBlocks(
             new Date(query.from),
@@ -93,7 +94,9 @@ export class CalendarController {
                 'Employees can only create time blocks for themselves',
             );
         }
-        return this.calendarService.createTimeBlock(dto, { id: user.userId } as User);
+        return this.calendarService.createTimeBlock(dto, {
+            id: user.userId,
+        } as User);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -174,7 +177,9 @@ export class CalendarController {
             employeeId,
             new Date(startTime),
             new Date(endTime),
-            excludeAppointmentId ? parseInt(excludeAppointmentId, 10) : undefined,
+            excludeAppointmentId
+                ? parseInt(excludeAppointmentId, 10)
+                : undefined,
         );
     }
 }

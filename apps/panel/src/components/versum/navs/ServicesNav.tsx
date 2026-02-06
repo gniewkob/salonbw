@@ -66,7 +66,7 @@ export default function ServicesNav() {
                             {category.color && (
                                 <span
                                     className="versum-chip"
-                                    style={{ backgroundColor: category.color }}
+                                    data-color={category.color}
                                 />
                             )}
                             {category.name}

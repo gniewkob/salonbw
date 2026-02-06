@@ -14,7 +14,10 @@ import { TimeBlock } from './entities/time-block.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { CalendarView } from './dto/calendar-query.dto';
-import { CreateTimeBlockDto, UpdateTimeBlockDto } from './dto/create-time-block.dto';
+import {
+    CreateTimeBlockDto,
+    UpdateTimeBlockDto,
+} from './dto/create-time-block.dto';
 
 export interface CalendarEvent {
     id: number;
@@ -127,7 +130,9 @@ export class CalendarService {
         });
 
         if (!employee) {
-            throw new NotFoundException(`Employee with ID ${dto.employeeId} not found`);
+            throw new NotFoundException(
+                `Employee with ID ${dto.employeeId} not found`,
+            );
         }
 
         const timeBlock = this.timeBlockRepository.create({
@@ -219,14 +224,16 @@ export class CalendarService {
             .createQueryBuilder('tb')
             .leftJoinAndSelect('tb.employee', 'employee')
             .where('employee.id = :employeeId', { employeeId })
-            .andWhere(
-                '(tb.startTime < :endTime AND tb.endTime > :startTime)',
-                { startTime, endTime },
-            )
+            .andWhere('(tb.startTime < :endTime AND tb.endTime > :startTime)', {
+                startTime,
+                endTime,
+            })
             .getMany();
 
         const conflictingEvents: CalendarEvent[] = [
-            ...filteredAppointments.map((apt) => this.mapAppointmentToEvent(apt)),
+            ...filteredAppointments.map((apt) =>
+                this.mapAppointmentToEvent(apt),
+            ),
             ...timeBlocks.map((block) => this.mapTimeBlockToEvent(block)),
         ];
 

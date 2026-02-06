@@ -23,7 +23,10 @@ export class TimetableSlotDto {
     @Max(6)
     dayOfWeek: DayOfWeek;
 
-    @ApiProperty({ example: '09:00', description: 'Start time in HH:mm format' })
+    @ApiProperty({
+        example: '09:00',
+        description: 'Start time in HH:mm format',
+    })
     @IsString()
     @Matches(/^\d{2}:\d{2}$/, { message: 'startTime must be in HH:mm format' })
     startTime: string;
@@ -129,13 +132,17 @@ export class CreateExceptionDto {
 
     @ApiProperty({ required: false, example: '10:00' })
     @IsString()
-    @Matches(/^\d{2}:\d{2}$/, { message: 'customStartTime must be in HH:mm format' })
+    @Matches(/^\d{2}:\d{2}$/, {
+        message: 'customStartTime must be in HH:mm format',
+    })
     @IsOptional()
     customStartTime?: string;
 
     @ApiProperty({ required: false, example: '14:00' })
     @IsString()
-    @Matches(/^\d{2}:\d{2}$/, { message: 'customEndTime must be in HH:mm format' })
+    @Matches(/^\d{2}:\d{2}$/, {
+        message: 'customEndTime must be in HH:mm format',
+    })
     @IsOptional()
     customEndTime?: string;
 
@@ -163,13 +170,17 @@ export class UpdateExceptionDto {
 
     @ApiProperty({ required: false })
     @IsString()
-    @Matches(/^\d{2}:\d{2}$/, { message: 'customStartTime must be in HH:mm format' })
+    @Matches(/^\d{2}:\d{2}$/, {
+        message: 'customStartTime must be in HH:mm format',
+    })
     @IsOptional()
     customStartTime?: string;
 
     @ApiProperty({ required: false })
     @IsString()
-    @Matches(/^\d{2}:\d{2}$/, { message: 'customEndTime must be in HH:mm format' })
+    @Matches(/^\d{2}:\d{2}$/, {
+        message: 'customEndTime must be in HH:mm format',
+    })
     @IsOptional()
     customEndTime?: string;
 

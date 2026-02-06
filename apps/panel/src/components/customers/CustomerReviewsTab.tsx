@@ -104,16 +104,11 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                     <div className="versum-widget__header flex-between">
                         <span>Opinie klienta</span>
                         {reviews.length > 0 && (
-                            <div
-                                className="flex-center"
-                                style={{ gap: '10px' }}
-                            >
+                            <div className="flex-center gap-10">
                                 <StarRating
                                     rating={Math.round(averageRating)}
                                 />
-                                <span
-                                    style={{ fontSize: '11px', color: '#666' }}
-                                >
+                                <span className="fz-11 text-666">
                                     {averageRating.toFixed(1)} / 5.0 (
                                     {reviews.length} opinii)
                                 </span>
@@ -124,13 +119,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                     <div className="versum-widget__content">
                         {/* Source Filter */}
                         {reviews.length > 0 && (
-                            <div
-                                style={{
-                                    marginBottom: '20px',
-                                    borderBottom: '1px solid #eee',
-                                    paddingBottom: '10px',
-                                }}
-                            >
+                            <div className="mb-20 border-bottom-eee pb-10">
                                 <div className="btn-group">
                                     <button
                                         onClick={() => setFilterSource('all')}
@@ -173,39 +162,18 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                     return (
                                         <div
                                             key={review.id}
-                                            style={{
-                                                padding: '15px 0',
-                                                borderBottom:
-                                                    '1px solid #f0f0f0',
-                                            }}
+                                            className="py-15 border-bottom-f0"
                                         >
-                                            <div
-                                                className="flex-between"
-                                                style={{ marginBottom: '8px' }}
-                                            >
-                                                <div
-                                                    className="flex-center"
-                                                    style={{ gap: '10px' }}
-                                                >
+                                            <div className="flex-between mb-8">
+                                                <div className="flex-center gap-10">
                                                     <StarRating
                                                         rating={review.rating}
                                                     />
-                                                    <span
-                                                        className="label label-default"
-                                                        style={{
-                                                            fontWeight: 400,
-                                                            fontSize: '10px',
-                                                        }}
-                                                    >
+                                                    <span className="label label-default fw-400 fz-10">
                                                         {config.label}
                                                     </span>
                                                 </div>
-                                                <span
-                                                    style={{
-                                                        fontSize: '11px',
-                                                        color: '#999',
-                                                    }}
-                                                >
+                                                <span className="fz-11 text-999">
                                                     {new Date(
                                                         review.createdAt,
                                                     ).toLocaleDateString(
@@ -216,25 +184,13 @@ export default function CustomerReviewsTab({ customerId }: Props) {
 
                                             {(review.serviceName ||
                                                 review.employeeName) && (
-                                                <div
-                                                    style={{
-                                                        fontSize: '12px',
-                                                        color: '#555',
-                                                        marginBottom: '8px',
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
+                                                <div className="fz-12 text-555 mb-8 fw-600">
                                                     {review.serviceName}
                                                     {review.serviceName &&
                                                         review.employeeName &&
                                                         ' - '}
                                                     {review.employeeName && (
-                                                        <span
-                                                            style={{
-                                                                fontWeight: 400,
-                                                                color: '#888',
-                                                            }}
-                                                        >
+                                                        <span className="fw-400 text-888">
                                                             {' '}
                                                             {
                                                                 review.employeeName
@@ -245,54 +201,22 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                             )}
 
                                             {review.content && (
-                                                <div
-                                                    style={{
-                                                        fontSize: '13px',
-                                                        color: '#333',
-                                                        lineHeight: '1.4',
-                                                        fontStyle: 'italic',
-                                                    }}
-                                                >
+                                                <div className="fz-13 text-333 lh-14 italic">
                                                     "{review.content}"
                                                 </div>
                                             )}
 
                                             {review.reply && (
-                                                <div
-                                                    className="versum-panel-sub"
-                                                    style={{
-                                                        marginTop: '12px',
-                                                        padding: '10px',
-                                                        background: '#fcfcfc',
-                                                    }}
-                                                >
-                                                    <div
-                                                        className="flex-between"
-                                                        style={{
-                                                            marginBottom: '5px',
-                                                        }}
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                fontSize:
-                                                                    '11px',
-                                                                fontWeight: 700,
-                                                                color: '#777',
-                                                            }}
-                                                        >
+                                                <div className="versum-panel-sub mt-12 p-10 bg-fcfc">
+                                                    <div className="flex-between mb-5">
+                                                        <span className="fz-11 fw-700 text-777">
                                                             Odpowiedź:{' '}
                                                             {
                                                                 review.reply
                                                                     .authorName
                                                             }
                                                         </span>
-                                                        <span
-                                                            style={{
-                                                                fontSize:
-                                                                    '10px',
-                                                                color: '#bbb',
-                                                            }}
-                                                        >
+                                                        <span className="fz-10 text-bbb">
                                                             {new Date(
                                                                 review.reply.createdAt,
                                                             ).toLocaleDateString(
@@ -300,12 +224,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                                             )}
                                                         </span>
                                                     </div>
-                                                    <div
-                                                        style={{
-                                                            fontSize: '12px',
-                                                            color: '#666',
-                                                        }}
-                                                    >
+                                                    <div className="fz-12 text-666">
                                                         {review.reply.content}
                                                     </div>
                                                 </div>
@@ -315,29 +234,14 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                 })}
                             </div>
                         ) : (
-                            <div
-                                className="text-center text-muted"
-                                style={{ padding: '60px 0' }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: '32px',
-                                        marginBottom: '10px',
-                                    }}
-                                >
-                                    💬
-                                </div>
-                                <p
-                                    style={{
-                                        fontSize: '14px',
-                                        marginBottom: '5px',
-                                    }}
-                                >
+                            <div className="text-center text-muted py-60-0">
+                                <div className="fz-32 mb-10">💬</div>
+                                <p className="fz-14 mb-5">
                                     {filterSource === 'all'
                                         ? 'Brak opinii od tego klienta.'
                                         : `Brak opinii z platformy "${sourceConfig[filterSource as ReviewSource].label}".`}
                                 </p>
-                                <p style={{ fontSize: '11px' }}>
+                                <p className="fz-11">
                                     Opinie są zbierane automatycznie z
                                     połączonych platform (Booksy, Google) oraz
                                     mogą być dodawane ręcznie.

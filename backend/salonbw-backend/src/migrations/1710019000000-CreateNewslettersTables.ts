@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateNewslettersTables1710019000000 implements MigrationInterface {
+export class CreateNewslettersTables1710019000000
+    implements MigrationInterface
+{
     name = 'CreateNewslettersTables1710019000000';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -145,11 +147,21 @@ export class CreateNewslettersTables1710019000000 implements MigrationInterface 
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // Drop indexes
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_newsletter_recipients_unique"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_newsletter_recipients_status"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_newsletter_recipients_newsletterId"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_newsletters_scheduledAt"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_newsletters_status"`);
+        await queryRunner.query(
+            `DROP INDEX IF EXISTS "IDX_newsletter_recipients_unique"`,
+        );
+        await queryRunner.query(
+            `DROP INDEX IF EXISTS "IDX_newsletter_recipients_status"`,
+        );
+        await queryRunner.query(
+            `DROP INDEX IF EXISTS "IDX_newsletter_recipients_newsletterId"`,
+        );
+        await queryRunner.query(
+            `DROP INDEX IF EXISTS "IDX_newsletters_scheduledAt"`,
+        );
+        await queryRunner.query(
+            `DROP INDEX IF EXISTS "IDX_newsletters_status"`,
+        );
 
         // Drop foreign keys
         await queryRunner.query(`
@@ -175,7 +187,9 @@ export class CreateNewslettersTables1710019000000 implements MigrationInterface 
 
         // Drop enums
         await queryRunner.query(`DROP TYPE IF EXISTS "recipient_status_enum"`);
-        await queryRunner.query(`DROP TYPE IF EXISTS "newsletter_channel_enum"`);
+        await queryRunner.query(
+            `DROP TYPE IF EXISTS "newsletter_channel_enum"`,
+        );
         await queryRunner.query(`DROP TYPE IF EXISTS "newsletter_status_enum"`);
     }
 }

@@ -64,7 +64,9 @@ export class VersumCompatService {
         }
 
         const appointments = await qb.getMany();
-        return appointments.map((appointment) => this.mapCalendarEvent(appointment));
+        return appointments.map((appointment) =>
+            this.mapCalendarEvent(appointment),
+        );
     }
 
     async getEventScreenData(id: number) {
@@ -85,7 +87,11 @@ export class VersumCompatService {
         };
     }
 
-    async finalizeEvent(id: number, user: User, payload: Record<string, unknown>) {
+    async finalizeEvent(
+        id: number,
+        user: User,
+        payload: Record<string, unknown>,
+    ) {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
             relations: ['client', 'employee', 'service', 'serviceVariant'],
@@ -125,20 +131,26 @@ export class VersumCompatService {
         const { date, period, employeeIds } = params;
 
         const ids =
-            employeeIds.length > 0 ? employeeIds : await this.getDefaultEmployeeIds();
+            employeeIds.length > 0
+                ? employeeIds
+                : await this.getDefaultEmployeeIds();
 
         const range = this.getScheduleRange(date, period);
-        const result: Record<string, { employee: Record<string, unknown>; resource: Record<string, never> }> = {};
+        const result: Record<
+            string,
+            {
+                employee: Record<string, unknown>;
+                resource: Record<string, never>;
+            }
+        > = {};
 
         for (const day of range.days) {
             const dateKey = this.toDateKey(day);
             const employee: Record<string, unknown> = {};
 
             for (const employeeId of ids) {
-                employee[String(employeeId)] = await this.getEmployeeDaySchedule(
-                    employeeId,
-                    day,
-                );
+                employee[String(employeeId)] =
+                    await this.getEmployeeDaySchedule(employeeId, day);
             }
 
             result[dateKey] = {
@@ -230,7 +242,8 @@ export class VersumCompatService {
             case 'GetServiceCategories':
                 return {
                     data: {
-                        serviceCategories: await this.getGraphqlServiceCategories(),
+                        serviceCategories:
+                            await this.getGraphqlServiceCategories(),
                     },
                 };
             case 'GetServices':
@@ -244,7 +257,9 @@ export class VersumCompatService {
             case 'GetAllServices':
                 return {
                     data: {
-                        services: await this.getGraphqlServices(payload.variables),
+                        services: await this.getGraphqlServices(
+                            payload.variables,
+                        ),
                     },
                 };
             default:
@@ -257,7 +272,8 @@ export class VersumCompatService {
     }
 
     private mapCalendarEvent(appointment: Appointment) {
-        const serviceRefId = appointment.serviceVariantId ?? appointment.serviceId;
+        const serviceRefId =
+            appointment.serviceVariantId ?? appointment.serviceId;
         const durationMinutes = this.diffMinutes(
             appointment.startTime,
             appointment.endTime,
@@ -285,7 +301,9 @@ export class VersumCompatService {
                     duration: durationMinutes,
                     duration_before: 0,
                     duration_after: 0,
-                    employee_started_at: this.toWarsawIso(appointment.startTime),
+                    employee_started_at: this.toWarsawIso(
+                        appointment.startTime,
+                    ),
                     employee_duration: durationMinutes,
                     break_started_at: null,
                     break_duration: 0,
@@ -328,9 +346,16 @@ export class VersumCompatService {
             description: appointment.notes ?? '',
             info_from_customer: null,
             display_events_services: true,
-            payment_method: this.toVersumPaymentMethod(appointment.paymentMethod),
-            payment_method_name: this.paymentMethodLabel(appointment.paymentMethod),
-            price: this.toNumber(appointment.paidAmount) || this.toNumber(appointment.service?.price) || 0,
+            payment_method: this.toVersumPaymentMethod(
+                appointment.paymentMethod,
+            ),
+            payment_method_name: this.paymentMethodLabel(
+                appointment.paymentMethod,
+            ),
+            price:
+                this.toNumber(appointment.paidAmount) ||
+                this.toNumber(appointment.service?.price) ||
+                0,
             services_price_sum: this.toNumber(appointment.service?.price) || 0,
             payments: appointment.paidAmount
                 ? [
@@ -351,13 +376,15 @@ export class VersumCompatService {
     }
 
     private mapScreenDataEvent(appointment: Appointment) {
-        const serviceRefId = appointment.serviceVariantId ?? appointment.serviceId;
+        const serviceRefId =
+            appointment.serviceVariantId ?? appointment.serviceId;
         const durationMinutes = this.diffMinutes(
             appointment.startTime,
             appointment.endTime,
         );
         const servicePrice = this.toNumber(appointment.service?.price) || 0;
-        const paidAmount = this.toNumber(appointment.paidAmount) || servicePrice;
+        const paidAmount =
+            this.toNumber(appointment.paidAmount) || servicePrice;
 
         return {
             id: appointment.id,
@@ -381,14 +408,21 @@ export class VersumCompatService {
             created_at: this.toWarsawIso(appointment.createdAt),
             updated_at: this.toWarsawIso(appointment.updatedAt),
             allday: false,
-            allday_beginning: this.toWarsawIso(this.startOfDay(appointment.startTime)),
-            allday_end: this.toWarsawIso(this.addDays(this.startOfDay(appointment.startTime), 1)),
-            branch_category_path: '/settings/customer_panel/business_categories',
+            allday_beginning: this.toWarsawIso(
+                this.startOfDay(appointment.startTime),
+            ),
+            allday_end: this.toWarsawIso(
+                this.addDays(this.startOfDay(appointment.startTime), 1),
+            ),
+            branch_category_path:
+                '/settings/customer_panel/business_categories',
             is_booksy_possible: false,
             modified_by: appointment.finalizedBy?.id ?? appointment.employeeId,
             modified_by_type: 'Physical::User',
             status: this.statusLabel(appointment.status),
-            payment_method: this.toVersumPaymentMethod(appointment.paymentMethod),
+            payment_method: this.toVersumPaymentMethod(
+                appointment.paymentMethod,
+            ),
             beginning_date: this.toDateKey(appointment.startTime),
             end_date: this.toDateKey(appointment.endTime),
             reserved_duration: this.formatMinutes(durationMinutes),
@@ -421,7 +455,9 @@ export class VersumCompatService {
                         {
                             id: appointment.employeeId,
                             name: appointment.employee?.name ?? 'Pracownik',
-                            initials: this.toInitials(appointment.employee?.name),
+                            initials: this.toInitials(
+                                appointment.employee?.name,
+                            ),
                             calendar_class_name: 'color10',
                         },
                     ],
@@ -451,7 +487,8 @@ export class VersumCompatService {
                     finished_at: this.toWarsawIso(appointment.endTime),
                     base_price: paidAmount,
                     discount: '',
-                    vat_value: this.toNumber(appointment.service?.vatRate) ?? 23,
+                    vat_value:
+                        this.toNumber(appointment.service?.vatRate) ?? 23,
                 },
             ],
             tags: [],
@@ -521,7 +558,9 @@ export class VersumCompatService {
 
     private async getGraphqlServiceCategories() {
         const [categories, employeeServices] = await Promise.all([
-            this.serviceCategoriesRepository.find({ order: { sortOrder: 'ASC' } }),
+            this.serviceCategoriesRepository.find({
+                order: { sortOrder: 'ASC' },
+            }),
             this.employeeServicesRepository.find({ where: { isActive: true } }),
         ]);
 
@@ -554,12 +593,12 @@ export class VersumCompatService {
             ancestry: category.parentId ? String(category.parentId) : null,
             position: category.sortOrder,
             vat: 23,
-            employees: [...(employeesByCategory.get(category.id) ?? new Set())].map(
-                (id) => ({
-                    id,
-                    __typename: 'Employee',
-                }),
-            ),
+            employees: [
+                ...(employeesByCategory.get(category.id) ?? new Set()),
+            ].map((id) => ({
+                id,
+                __typename: 'Employee',
+            })),
             __typename: 'ServiceCategory',
         }));
     }
@@ -586,7 +625,8 @@ export class VersumCompatService {
 
         return {
             items: employees.map((employee) => {
-                const { firstName, lastName } = this.splitEmployeeName(employee);
+                const { firstName, lastName } =
+                    this.splitEmployeeName(employee);
                 return {
                     id: employee.id,
                     firstName,
@@ -598,7 +638,9 @@ export class VersumCompatService {
         };
     }
 
-    private async getGraphqlServicesLegacy(variables?: Record<string, unknown>) {
+    private async getGraphqlServicesLegacy(
+        variables?: Record<string, unknown>,
+    ) {
         const services = await this.getGraphqlServices(variables);
 
         return {
@@ -674,7 +716,8 @@ export class VersumCompatService {
                 const assignments = (service.employeeServices ?? []).filter(
                     (entry) =>
                         !entry.serviceVariantId ||
-                        entry.serviceVariantId === (variant as { id: number }).id,
+                        entry.serviceVariantId ===
+                            (variant as { id: number }).id,
                 );
 
                 return {
@@ -901,8 +944,12 @@ export class VersumCompatService {
         const normalizedPeriod = (period || '').toLowerCase();
 
         if (normalizedPeriod === 'month') {
-            const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
-            const end = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0));
+            const start = new Date(
+                Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1),
+            );
+            const end = new Date(
+                Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
+            );
             return { days: this.eachDay(start, end) };
         }
 
@@ -982,7 +1029,10 @@ export class VersumCompatService {
     }
 
     private diffMinutes(start: Date, end: Date) {
-        return Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+        return Math.max(
+            0,
+            Math.round((end.getTime() - start.getTime()) / 60000),
+        );
     }
 
     private formatMinutes(minutes: number) {
@@ -1024,7 +1074,11 @@ export class VersumCompatService {
         if (typeof value === 'number') return value !== 0;
         if (typeof value === 'string') {
             const normalized = value.trim().toLowerCase();
-            return normalized === 'true' || normalized === '1' || normalized === 'yes';
+            return (
+                normalized === 'true' ||
+                normalized === '1' ||
+                normalized === 'yes'
+            );
         }
         return false;
     }
@@ -1041,7 +1095,13 @@ export class VersumCompatService {
     }
 
     private startOfDay(date: Date) {
-        return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+        return new Date(
+            Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+            ),
+        );
     }
 
     private addDays(date: Date, days: number) {
@@ -1088,7 +1148,9 @@ export class VersumCompatService {
             0,
         );
 
-        const offsetMinutes = Math.round((utcFromLocal - date.getTime()) / 60000);
+        const offsetMinutes = Math.round(
+            (utcFromLocal - date.getTime()) / 60000,
+        );
         const sign = offsetMinutes >= 0 ? '+' : '-';
         const abs = Math.abs(offsetMinutes);
         const offsetHours = String(Math.floor(abs / 60)).padStart(2, '0');

@@ -34,8 +34,15 @@ import {
     UpdateCustomerGroupDto,
     AddMembersDto,
 } from './dto/customer-group.dto';
-import { CreateCustomerNoteDto, UpdateCustomerNoteDto } from './dto/customer-note.dto';
-import { CreateCustomerTagDto, UpdateCustomerTagDto, AssignTagsDto } from './dto/customer-tag.dto';
+import {
+    CreateCustomerNoteDto,
+    UpdateCustomerNoteDto,
+} from './dto/customer-note.dto';
+import {
+    CreateCustomerTagDto,
+    UpdateCustomerTagDto,
+    AssignTagsDto,
+} from './dto/customer-tag.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -50,21 +57,21 @@ export class CustomersController {
     // ==================== CUSTOMERS ====================
 
     @Get()
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'List customers with filters' })
     list(@Query() filter: CustomerFilterDto) {
         return this.customersService.findAll(filter);
     }
 
     @Get(':id')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer by ID' })
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.findOne(id);
     }
 
     @Post()
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Create new customer' })
     @ApiResponse({ status: 201 })
     create(@Body() dto: CreateCustomerDto) {
@@ -72,7 +79,7 @@ export class CustomersController {
     }
 
     @Put(':id')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Update customer' })
     update(
         @Param('id', ParseIntPipe) id: number,
@@ -84,14 +91,14 @@ export class CustomersController {
     // ==================== STATISTICS ====================
 
     @Get(':id/statistics')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer statistics' })
     getStatistics(@Param('id', ParseIntPipe) id: number) {
         return this.statisticsService.getStatistics(id);
     }
 
     @Get(':id/events-history')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer event history' })
     getEventHistory(
         @Param('id', ParseIntPipe) id: number,
@@ -104,14 +111,14 @@ export class CustomersController {
     // ==================== NOTES ====================
 
     @Get(':id/notes')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer notes' })
     getNotes(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.findNotesForCustomer(id);
     }
 
     @Post(':id/notes')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Add note to customer' })
     @ApiResponse({ status: 201 })
     addNote(
@@ -123,7 +130,7 @@ export class CustomersController {
     }
 
     @Patch('notes/:noteId')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Update customer note' })
     updateNote(
         @Param('noteId', ParseIntPipe) noteId: number,
@@ -133,7 +140,7 @@ export class CustomersController {
     }
 
     @Delete('notes/:noteId')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Delete customer note' })
     deleteNote(@Param('noteId', ParseIntPipe) noteId: number) {
         return this.customersService.deleteNote(noteId);
@@ -142,14 +149,14 @@ export class CustomersController {
     // ==================== TAGS ====================
 
     @Get(':id/tags')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get tags for customer' })
     getCustomerTags(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.getTagsForCustomer(id);
     }
 
     @Post(':id/tags')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Assign tags to customer' })
     @ApiResponse({ status: 201 })
     assignTags(
@@ -160,7 +167,7 @@ export class CustomersController {
     }
 
     @Delete(':id/tags/:tagId')
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Remove tag from customer' })
     removeTag(
         @Param('id', ParseIntPipe) id: number,
@@ -246,7 +253,7 @@ export class CustomerTagsController {
     constructor(private readonly customersService: CustomersService) {}
 
     @Get()
-    @Roles(Role.Admin, Role.Employee)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'List all customer tags' })
     list() {
         return this.customersService.findAllTags();

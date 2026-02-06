@@ -122,7 +122,8 @@ export class CalendarSettings {
     @Column({
         name: 'status_colors',
         type: 'jsonb',
-        default: () => `'{"pending": "#FFC107", "confirmed": "#28A745", "in_progress": "#17A2B8", "completed": "#6C757D", "cancelled": "#DC3545", "no_show": "#343A40"}'`,
+        default: () =>
+            `'{"pending": "#FFC107", "confirmed": "#28A745", "in_progress": "#17A2B8", "completed": "#6C757D", "cancelled": "#DC3545", "no_show": "#343A40"}'`,
     })
     statusColors: Record<string, string>;
 

@@ -1,6 +1,13 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
+import {
+    MigrationInterface,
+    QueryRunner,
+    TableColumn,
+    TableForeignKey,
+} from 'typeorm';
 
-export class AddAppointmentCalendarFields1710011000000 implements MigrationInterface {
+export class AddAppointmentCalendarFields1710011000000
+    implements MigrationInterface
+{
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Add new status values to enum
         await queryRunner.query(`

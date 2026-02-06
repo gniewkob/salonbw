@@ -190,7 +190,10 @@ export class ServicesService {
     }
 
     private async invalidateCache(id?: number): Promise<void> {
-        const keys = [ALL_SERVICES_CACHE_KEY, SERVICES_WITH_RELATIONS_CACHE_KEY];
+        const keys = [
+            ALL_SERVICES_CACHE_KEY,
+            SERVICES_WITH_RELATIONS_CACHE_KEY,
+        ];
         if (id) {
             keys.push(serviceCacheKey(id));
         }

@@ -6,7 +6,12 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import {
+    Repository,
+    FindOptionsWhere,
+    LessThanOrEqual,
+    MoreThanOrEqual,
+} from 'typeorm';
 import {
     GiftCard,
     GiftCardStatus,
@@ -37,7 +42,9 @@ export class GiftCardsService {
     ) {}
 
     // Gift Card CRUD
-    async findAll(query: GiftCardQueryDto): Promise<{ data: GiftCard[]; total: number }> {
+    async findAll(
+        query: GiftCardQueryDto,
+    ): Promise<{ data: GiftCard[]; total: number }> {
         const where: FindOptionsWhere<GiftCard> = {};
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
@@ -86,7 +93,9 @@ export class GiftCardsService {
         });
 
         if (!card) {
-            throw new NotFoundException(`Gift card with code "${code}" not found`);
+            throw new NotFoundException(
+                `Gift card with code "${code}" not found`,
+            );
         }
 
         return card;
@@ -120,18 +129,31 @@ export class GiftCardsService {
         await this.logService.logAction(
             { id: actorId } as any,
             LogAction.GIFT_CARD_CREATED,
-            { giftCardId: saved.id, code: saved.code, value: saved.initialValue },
+            {
+                giftCardId: saved.id,
+                code: saved.code,
+                value: saved.initialValue,
+            },
         );
 
         this.logger.log(`Gift card ${code} created by user ${actorId}`);
         return saved;
     }
 
-    async update(id: number, dto: UpdateGiftCardDto, actorId: number): Promise<GiftCard> {
+    async update(
+        id: number,
+        dto: UpdateGiftCardDto,
+        actorId: number,
+    ): Promise<GiftCard> {
         const card = await this.findOne(id);
 
-        if (card.status === GiftCardStatus.Used || card.status === GiftCardStatus.Cancelled) {
-            throw new BadRequestException('Cannot update a used or cancelled gift card');
+        if (
+            card.status === GiftCardStatus.Used ||
+            card.status === GiftCardStatus.Cancelled
+        ) {
+            throw new BadRequestException(
+                'Cannot update a used or cancelled gift card',
+            );
         }
 
         Object.assign(card, dto);
@@ -150,11 +172,17 @@ export class GiftCardsService {
         return updated;
     }
 
-    async cancel(id: number, actorId: number, reason?: string): Promise<GiftCard> {
+    async cancel(
+        id: number,
+        actorId: number,
+        reason?: string,
+    ): Promise<GiftCard> {
         const card = await this.findOne(id);
 
         if (card.status === GiftCardStatus.Used) {
-            throw new BadRequestException('Cannot cancel a fully used gift card');
+            throw new BadRequestException(
+                'Cannot cancel a fully used gift card',
+            );
         }
 
         card.status = GiftCardStatus.Cancelled;
@@ -170,7 +198,11 @@ export class GiftCardsService {
     }
 
     // Validation and redemption
-    async validate(code: string, amount?: number, serviceId?: number): Promise<ValidateGiftCardResponse> {
+    async validate(
+        code: string,
+        amount?: number,
+        serviceId?: number,
+    ): Promise<ValidateGiftCardResponse> {
         const card = await this.giftCardRepo.findOne({
             where: { code: code.toUpperCase() },
         });
@@ -181,7 +213,10 @@ export class GiftCardsService {
 
         const now = new Date();
         if (card.status !== GiftCardStatus.Active) {
-            return { valid: false, reason: `Karta jest ${this.getStatusLabel(card.status)}` };
+            return {
+                valid: false,
+                reason: `Karta jest ${this.getStatusLabel(card.status)}`,
+            };
         }
 
         if (card.validFrom > now) {
@@ -199,8 +234,15 @@ export class GiftCardsService {
             };
         }
 
-        if (serviceId && card.allowedServices.length > 0 && !card.allowedServices.includes(serviceId)) {
-            return { valid: false, reason: 'Karta nie może być użyta do tej usługi' };
+        if (
+            serviceId &&
+            card.allowedServices.length > 0 &&
+            !card.allowedServices.includes(serviceId)
+        ) {
+            return {
+                valid: false,
+                reason: 'Karta nie może być użyta do tej usługi',
+            };
         }
 
         return {
@@ -255,21 +297,31 @@ export class GiftCardsService {
             },
         );
 
-        this.logger.log(`Gift card ${card.code} redeemed for ${dto.amount} by user ${actorId}`);
+        this.logger.log(
+            `Gift card ${card.code} redeemed for ${dto.amount} by user ${actorId}`,
+        );
         return updated;
     }
 
-    async adjustBalance(id: number, dto: AdjustBalanceDto, actorId: number): Promise<GiftCard> {
+    async adjustBalance(
+        id: number,
+        dto: AdjustBalanceDto,
+        actorId: number,
+    ): Promise<GiftCard> {
         const card = await this.findOne(id);
 
         if (card.status === GiftCardStatus.Cancelled) {
-            throw new BadRequestException('Cannot adjust balance of a cancelled card');
+            throw new BadRequestException(
+                'Cannot adjust balance of a cancelled card',
+            );
         }
 
         const newBalance = Number(card.currentBalance) + dto.amount;
 
         if (newBalance < 0) {
-            throw new BadRequestException('Resulting balance cannot be negative');
+            throw new BadRequestException(
+                'Resulting balance cannot be negative',
+            );
         }
 
         card.currentBalance = newBalance;
@@ -333,7 +385,8 @@ export class GiftCardsService {
             activeCards: active,
             totalValue: Number(totalValue?.sum || 0),
             usedValue: Number(usedValue?.sum || 0),
-            outstandingValue: Number(totalValue?.sum || 0) - Number(usedValue?.sum || 0),
+            outstandingValue:
+                Number(totalValue?.sum || 0) - Number(usedValue?.sum || 0),
         };
     }
 
@@ -372,7 +425,9 @@ export class GiftCardsService {
             }
             attempts++;
 
-            const existing = await this.giftCardRepo.findOne({ where: { code } });
+            const existing = await this.giftCardRepo.findOne({
+                where: { code },
+            });
             if (!existing) {
                 return code;
             }

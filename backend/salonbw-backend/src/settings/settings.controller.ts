@@ -1,11 +1,4 @@
-import {
-    Controller,
-    Get,
-    Put,
-    Body,
-    UseGuards,
-    Request,
-} from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -74,6 +67,9 @@ export class SettingsController {
         @Body() dto: UpdateOnlineBookingSettingsDto,
         @Request() req: { user: { id: number } },
     ) {
-        return this.settingsService.updateOnlineBookingSettings(dto, req.user.id);
+        return this.settingsService.updateOnlineBookingSettings(
+            dto,
+            req.user.id,
+        );
     }
 }

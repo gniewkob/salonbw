@@ -30,7 +30,12 @@ export class GiftCard {
     @Column({ name: 'initial_value', type: 'decimal', precision: 10, scale: 2 })
     initialValue: number;
 
-    @Column({ name: 'current_balance', type: 'decimal', precision: 10, scale: 2 })
+    @Column({
+        name: 'current_balance',
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+    })
     currentBalance: number;
 
     @Column({ length: 3, default: 'PLN' })
@@ -92,11 +97,18 @@ export class GiftCard {
         name: 'allowed_services',
         type: 'jsonb',
         default: () => `'[]'`,
-        comment: 'Service IDs that this card can be used for. Empty = all services',
+        comment:
+            'Service IDs that this card can be used for. Empty = all services',
     })
     allowedServices: number[];
 
-    @Column({ name: 'min_purchase_amount', type: 'decimal', precision: 10, scale: 2, nullable: true })
+    @Column({
+        name: 'min_purchase_amount',
+        type: 'decimal',
+        precision: 10,
+        scale: 2,
+        nullable: true,
+    })
     minPurchaseAmount: number;
 
     // Metadata

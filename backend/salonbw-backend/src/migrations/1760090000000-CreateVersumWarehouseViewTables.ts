@@ -430,7 +430,9 @@ export class CreateVersumWarehouseViewTables1760090000000
         await queryRunner.query(
             `ALTER TABLE "product_commission_rules" DROP CONSTRAINT IF EXISTS "FK_product_commission_rules_product"`,
         );
-        await queryRunner.query(`DROP TABLE IF EXISTS "product_commission_rules"`);
+        await queryRunner.query(
+            `DROP TABLE IF EXISTS "product_commission_rules"`,
+        );
 
         await queryRunner.query(
             `ALTER TABLE "products" DROP CONSTRAINT IF EXISTS "FK_products_category"`,

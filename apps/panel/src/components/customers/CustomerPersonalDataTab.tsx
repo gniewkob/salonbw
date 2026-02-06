@@ -88,10 +88,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                     <div className="versum-widget__content form-horizontal">
                         {/* First Name */}
                         <div className="form-group">
-                            <label className="control-label">Imię</label>
+                            <label
+                                htmlFor="customer-firstName"
+                                className="control-label"
+                            >
+                                Imię
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <input
+                                        id="customer-firstName"
                                         type="text"
                                         name="firstName"
                                         value={formData.firstName}
@@ -106,10 +112,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Last Name */}
                         <div className="form-group">
-                            <label className="control-label">Nazwisko</label>
+                            <label
+                                htmlFor="customer-lastName"
+                                className="control-label"
+                            >
+                                Nazwisko
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <input
+                                        id="customer-lastName"
                                         type="text"
                                         name="lastName"
                                         value={formData.lastName}
@@ -124,10 +136,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Phone */}
                         <div className="form-group">
-                            <label className="control-label">Telefon</label>
+                            <label
+                                htmlFor="customer-phone"
+                                className="control-label"
+                            >
+                                Telefon
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <input
+                                        id="customer-phone"
                                         type="tel"
                                         name="phone"
                                         value={formData.phone || ''}
@@ -142,10 +160,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Email */}
                         <div className="form-group">
-                            <label className="control-label">E-mail</label>
+                            <label
+                                htmlFor="customer-email"
+                                className="control-label"
+                            >
+                                E-mail
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <input
+                                        id="customer-email"
                                         type="email"
                                         name="email"
                                         value={formData.email}
@@ -160,12 +184,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Birth Date */}
                         <div className="form-group">
-                            <label className="control-label">
+                            <label
+                                htmlFor="customer-birthDate"
+                                className="control-label"
+                            >
                                 Data urodzenia
                             </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <input
+                                        id="customer-birthDate"
                                         type="date"
                                         name="birthDate"
                                         value={formData.birthDate || ''}
@@ -186,10 +214,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Gender */}
                         <div className="form-group">
-                            <label className="control-label">Płeć</label>
+                            <label
+                                htmlFor="customer-gender"
+                                className="control-label"
+                            >
+                                Płeć
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <select
+                                        id="customer-gender"
                                         name="gender"
                                         value={formData.gender || ''}
                                         onChange={handleChange}
@@ -215,22 +249,23 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* Address */}
-                        <div
-                            className="form-group"
-                            style={{ marginTop: '20px' }}
-                        >
-                            <label className="control-label">Adres</label>
+                        <div className="form-group mt-20">
+                            <label
+                                htmlFor="customer-address"
+                                className="control-label"
+                            >
+                                Adres
+                            </label>
                             <div className="control-content">
                                 {isEditing ? (
-                                    <div className="row" style={{ margin: 0 }}>
-                                        <div
-                                            className="col-sm-6"
-                                            style={{ paddingLeft: 0 }}
-                                        >
+                                    <div className="row m-0">
+                                        <div className="col-sm-6 pl-0">
                                             <input
+                                                id="customer-address"
                                                 type="text"
                                                 name="address"
                                                 placeholder="Ulica i numer"
+                                                aria-label="Ulica i numer"
                                                 value={formData.address}
                                                 onChange={handleChange}
                                                 className="form-control"
@@ -238,22 +273,23 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                                         </div>
                                         <div className="col-sm-3">
                                             <input
+                                                id="customer-postalCode"
                                                 type="text"
                                                 name="postalCode"
                                                 placeholder="Kod"
+                                                aria-label="Kod pocztowy"
                                                 value={formData.postalCode}
                                                 onChange={handleChange}
                                                 className="form-control"
                                             />
                                         </div>
-                                        <div
-                                            className="col-sm-3"
-                                            style={{ paddingRight: 0 }}
-                                        >
+                                        <div className="col-sm-3 pr-0">
                                             <input
+                                                id="customer-city"
                                                 type="text"
                                                 name="city"
                                                 placeholder="Miasto"
+                                                aria-label="Miasto"
                                                 value={formData.city}
                                                 onChange={handleChange}
                                                 className="form-control"
@@ -276,12 +312,16 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
 
                         {/* Description */}
                         <div className="form-group">
-                            <label className="control-label">
+                            <label
+                                htmlFor="customer-description"
+                                className="control-label"
+                            >
                                 Opis (notatka)
                             </label>
                             <div className="control-content">
                                 {isEditing ? (
                                     <textarea
+                                        id="customer-description"
                                         name="description"
                                         value={formData.description}
                                         onChange={handleChange}

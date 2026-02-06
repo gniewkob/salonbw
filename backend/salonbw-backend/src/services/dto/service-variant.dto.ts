@@ -12,7 +12,9 @@ import {
 import { PriceType } from '../entities/service-variant.entity';
 
 export class CreateServiceVariantDto {
-    @ApiProperty({ description: 'Variant name (e.g., "Krótkie włosy", "Długie włosy")' })
+    @ApiProperty({
+        description: 'Variant name (e.g., "Krótkie włosy", "Długie włosy")',
+    })
     @IsString()
     @IsNotEmpty()
     @MaxLength(100)
@@ -53,7 +55,9 @@ export class CreateServiceVariantDto {
     isActive?: boolean;
 }
 
-export class UpdateServiceVariantDto extends PartialType(CreateServiceVariantDto) {}
+export class UpdateServiceVariantDto extends PartialType(
+    CreateServiceVariantDto,
+) {}
 
 export class ReorderVariantsDto {
     @ApiProperty({

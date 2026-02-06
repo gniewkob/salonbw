@@ -28,7 +28,13 @@ export class CreateTimeBlocksTable1710010000000 implements MigrationInterface {
                     {
                         name: 'type',
                         type: 'enum',
-                        enum: ['break', 'vacation', 'training', 'sick', 'other'],
+                        enum: [
+                            'break',
+                            'vacation',
+                            'training',
+                            'sick',
+                            'other',
+                        ],
                         default: `'break'`,
                     },
                     {

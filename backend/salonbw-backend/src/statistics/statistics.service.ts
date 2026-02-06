@@ -18,7 +18,10 @@ import {
     eachMonthOfInterval,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Review } from '../reviews/review.entity';
 import {
@@ -160,7 +163,10 @@ export class StatisticsService {
 
         switch (groupBy) {
             case GroupBy.Week:
-                intervals = eachWeekOfInterval({ start: from, end: to }, { weekStartsOn: 1 });
+                intervals = eachWeekOfInterval(
+                    { start: from, end: to },
+                    { weekStartsOn: 1 },
+                );
                 formatStr = "'Tydz.' w";
                 break;
             case GroupBy.Month:
@@ -217,10 +223,7 @@ export class StatisticsService {
         return dataPoints;
     }
 
-    async getEmployeeRanking(
-        from: Date,
-        to: Date,
-    ): Promise<EmployeeStats[]> {
+    async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
         const employees = await this.userRepository.find({
             where: { role: Role.Employee },
         });
@@ -296,7 +299,9 @@ export class StatisticsService {
             .leftJoin('appointment.serviceVariant', 'serviceVariant')
             .leftJoin('service.categoryRelation', 'category')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
-            .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
             .select('service.id', 'serviceId')
             .addSelect('service.name', 'serviceName')
             .addSelect('category.name', 'categoryName')
@@ -309,7 +314,10 @@ export class StatisticsService {
                 'AVG(COALESCE(appointment.paidAmount, serviceVariant.price, service.price))',
                 'averagePrice',
             )
-            .addSelect('AVG(COALESCE(serviceVariant.duration, service.duration))', 'averageDuration')
+            .addSelect(
+                'AVG(COALESCE(serviceVariant.duration, service.duration))',
+                'averageDuration',
+            )
             .groupBy('service.id')
             .addGroupBy('service.name')
             .addGroupBy('category.name')
@@ -340,7 +348,9 @@ export class StatisticsService {
         const clientsWithAppointments = await this.appointmentRepository
             .createQueryBuilder('appointment')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
-            .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
             .select('DISTINCT appointment.clientId')
             .getRawMany();
 
@@ -358,7 +368,9 @@ export class StatisticsService {
             .leftJoin('appointment.service', 'service')
             .leftJoin('appointment.serviceVariant', 'serviceVariant')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
-            .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
             .select('client.id', 'clientId')
             .addSelect('client.name', 'clientName')
             .addSelect('COUNT(*)', 'visits')
@@ -445,7 +457,9 @@ export class StatisticsService {
             .createQueryBuilder('appointment')
             .innerJoin('appointment.employee', 'employee')
             .where('appointment.startTime BETWEEN :from AND :to', { from, to })
-            .andWhere('appointment.status = :status', { status: AppointmentStatus.Completed })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
             .andWhere('appointment.tipAmount > 0')
             .select('employee.id', 'employeeId')
             .addSelect('employee.name', 'employeeName')
@@ -478,7 +492,11 @@ export class StatisticsService {
     }
 
     // Helper method to resolve date range
-    resolveDateRange(range: DateRange, customFrom?: string, customTo?: string): { from: Date; to: Date } {
+    resolveDateRange(
+        range: DateRange,
+        customFrom?: string,
+        customTo?: string,
+    ): { from: Date; to: Date } {
         const now = new Date();
 
         switch (range) {

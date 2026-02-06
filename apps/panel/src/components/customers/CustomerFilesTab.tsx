@@ -117,13 +117,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
 
                     <div className="versum-widget__content">
                         {/* Category Filter */}
-                        <div
-                            style={{
-                                marginBottom: '20px',
-                                borderBottom: '1px solid #eee',
-                                paddingBottom: '10px',
-                            }}
-                        >
+                        <div className="mb-20 border-bottom pb-10">
                             <div className="btn-group">
                                 <button
                                     onClick={() => setFilterCategory('all')}
@@ -151,52 +145,36 @@ export default function CustomerFilesTab({ customerId }: Props) {
 
                         {/* File Table */}
                         {filteredFiles.length > 0 ? (
-                            <table
-                                className="versum-table"
-                                style={{ fontSize: '13px' }}
-                            >
+                            <table className="versum-table fz-13">
                                 <thead>
                                     <tr>
-                                        <th style={{ width: '40px' }}></th>
+                                        <th className="w-40"></th>
                                         <th>Nazwa pliku</th>
                                         <th>Kategoria</th>
                                         <th>Rozmiar</th>
                                         <th>Data dodania</th>
-                                        <th style={{ width: '80px' }}>Opcje</th>
+                                        <th className="w-80">Opcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredFiles.map((file) => (
                                         <tr key={file.id}>
-                                            <td
-                                                className="text-center"
-                                                style={{ fontSize: '18px' }}
-                                            >
+                                            <td className="text-center fz-18">
                                                 {categoryConfig[file.category]
                                                     ?.icon || '📎'}
                                             </td>
                                             <td>
-                                                <div
-                                                    style={{ fontWeight: 600 }}
-                                                >
+                                                <div className="bold">
                                                     {file.name}
                                                 </div>
                                                 {file.description && (
-                                                    <div
-                                                        className="text-muted"
-                                                        style={{
-                                                            fontSize: '11px',
-                                                        }}
-                                                    >
+                                                    <div className="text-muted fz-11">
                                                         {file.description}
                                                     </div>
                                                 )}
                                             </td>
                                             <td>
-                                                <span
-                                                    className="label label-default"
-                                                    style={{ fontWeight: 400 }}
-                                                >
+                                                <span className="label label-default regular">
                                                     {
                                                         categoryConfig[
                                                             file.category
@@ -212,11 +190,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                     file.createdAt,
                                                 ).toLocaleDateString('pl-PL')}
                                                 {file.uploadedBy && (
-                                                    <div
-                                                        style={{
-                                                            fontSize: '10px',
-                                                        }}
-                                                    >
+                                                    <div className="fz-10">
                                                         przez:{' '}
                                                         {file.uploadedBy.name}
                                                     </div>
@@ -229,7 +203,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             handleDownload(file)
                                                         }
                                                         className="btn btn-default btn-xs"
-                                                        title="Pobierz"
+                                                        title="Pobierz plik"
+                                                        aria-label="Pobierz plik"
                                                     >
                                                         <i className="fa fa-download"></i>{' '}
                                                         ↓
@@ -241,7 +216,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                             )
                                                         }
                                                         className="btn btn-danger btn-xs"
-                                                        title="Usuń"
+                                                        title="Usuń plik"
+                                                        aria-label="Usuń plik"
                                                     >
                                                         <i className="fa fa-trash"></i>{' '}
                                                         🗑
@@ -253,36 +229,20 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                 </tbody>
                             </table>
                         ) : (
-                            <div
-                                className="text-center text-muted"
-                                style={{ padding: '60px 0' }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize: '32px',
-                                        marginBottom: '10px',
-                                    }}
-                                >
-                                    📁
-                                </div>
-                                <p
-                                    style={{
-                                        fontSize: '14px',
-                                        marginBottom: '5px',
-                                    }}
-                                >
+                            <div className="text-center text-muted p-60-0">
+                                <div className="fz-32 mb-10">📁</div>
+                                <p className="fz-14 mb-5">
                                     {filterCategory === 'all'
                                         ? 'Brak dokumentów klienta.'
                                         : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as FileCategory].label}".`}
                                 </p>
-                                <p style={{ fontSize: '11px' }}>
+                                <p className="fz-11">
                                     Dodaj zgody, umowy lub inne dokumenty
                                     związane z klientem.
                                 </p>
                                 <button
                                     onClick={handleUpload}
-                                    className="btn btn-default btn-xs"
-                                    style={{ marginTop: '15px' }}
+                                    className="btn btn-default btn-xs mt-15"
                                 >
                                     Dodaj pierwszy dokument
                                 </button>

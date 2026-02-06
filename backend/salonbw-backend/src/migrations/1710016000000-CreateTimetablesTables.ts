@@ -93,7 +93,9 @@ export class CreateTimetablesTables1710016000000 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`DROP INDEX "IDX_timetable_exceptions_type"`);
         await queryRunner.query(`DROP INDEX "IDX_timetable_exceptions_date"`);
-        await queryRunner.query(`DROP INDEX "IDX_timetable_exceptions_timetableId"`);
+        await queryRunner.query(
+            `DROP INDEX "IDX_timetable_exceptions_timetableId"`,
+        );
         await queryRunner.query(`DROP INDEX "IDX_timetable_slots_dayOfWeek"`);
         await queryRunner.query(`DROP INDEX "IDX_timetable_slots_timetableId"`);
         await queryRunner.query(`DROP INDEX "IDX_timetables_isActive"`);

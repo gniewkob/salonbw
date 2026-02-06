@@ -21,12 +21,19 @@ export class ProductSaleItemDto {
     @Min(1)
     quantity: number;
 
-    @ApiProperty({ description: 'Unit price in cents (optional, uses product price if not specified)', required: false })
+    @ApiProperty({
+        description:
+            'Unit price in cents (optional, uses product price if not specified)',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     unitPriceCents?: number;
 
-    @ApiProperty({ description: 'Discount in cents for this item', required: false })
+    @ApiProperty({
+        description: 'Discount in cents for this item',
+        required: false,
+    })
     @IsNumber()
     @IsOptional()
     discountCents?: number;

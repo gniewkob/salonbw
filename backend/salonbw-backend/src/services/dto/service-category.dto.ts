@@ -20,13 +20,19 @@ export class CreateServiceCategoryDto {
     @IsOptional()
     description?: string;
 
-    @ApiProperty({ required: false, description: 'Color hex code (e.g., #25B4C1)' })
+    @ApiProperty({
+        required: false,
+        description: 'Color hex code (e.g., #25B4C1)',
+    })
     @IsString()
     @IsOptional()
     @MaxLength(7)
     color?: string;
 
-    @ApiProperty({ required: false, description: 'Parent category ID for hierarchy' })
+    @ApiProperty({
+        required: false,
+        description: 'Parent category ID for hierarchy',
+    })
     @IsNumber()
     @IsOptional()
     parentId?: number;
@@ -42,7 +48,9 @@ export class CreateServiceCategoryDto {
     isActive?: boolean;
 }
 
-export class UpdateServiceCategoryDto extends PartialType(CreateServiceCategoryDto) {}
+export class UpdateServiceCategoryDto extends PartialType(
+    CreateServiceCategoryDto,
+) {}
 
 export class ReorderCategoriesDto {
     @ApiProperty({

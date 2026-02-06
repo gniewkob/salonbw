@@ -1,9 +1,4 @@
-import {
-    Controller,
-    Get,
-    Query,
-    UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -31,11 +26,12 @@ export class StatisticsController {
         @Query('groupBy') groupBy?: GroupBy,
         @Query('employeeId') employeeId?: string,
     ) {
-        const { from: fromDate, to: toDate } = this.statisticsService.resolveDateRange(
-            range ?? DateRange.ThisMonth,
-            from,
-            to,
-        );
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
 
         return this.statisticsService.getRevenueChart(
             fromDate,
@@ -52,11 +48,12 @@ export class StatisticsController {
         @Query('from') from?: string,
         @Query('to') to?: string,
     ) {
-        const { from: fromDate, to: toDate } = this.statisticsService.resolveDateRange(
-            range ?? DateRange.ThisMonth,
-            from,
-            to,
-        );
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
 
         return this.statisticsService.getEmployeeRanking(fromDate, toDate);
     }
@@ -68,11 +65,12 @@ export class StatisticsController {
         @Query('from') from?: string,
         @Query('to') to?: string,
     ) {
-        const { from: fromDate, to: toDate } = this.statisticsService.resolveDateRange(
-            range ?? DateRange.ThisMonth,
-            from,
-            to,
-        );
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
 
         return this.statisticsService.getServiceRanking(fromDate, toDate);
     }
@@ -84,11 +82,12 @@ export class StatisticsController {
         @Query('from') from?: string,
         @Query('to') to?: string,
     ) {
-        const { from: fromDate, to: toDate } = this.statisticsService.resolveDateRange(
-            range ?? DateRange.ThisMonth,
-            from,
-            to,
-        );
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
 
         return this.statisticsService.getClientStats(fromDate, toDate);
     }
@@ -107,11 +106,12 @@ export class StatisticsController {
         @Query('from') from?: string,
         @Query('to') to?: string,
     ) {
-        const { from: fromDate, to: toDate } = this.statisticsService.resolveDateRange(
-            range ?? DateRange.ThisMonth,
-            from,
-            to,
-        );
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
 
         return this.statisticsService.getTipsSummary(fromDate, toDate);
     }

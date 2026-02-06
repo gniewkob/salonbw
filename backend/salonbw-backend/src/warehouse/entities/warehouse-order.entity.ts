@@ -35,7 +35,11 @@ export class WarehouseOrder {
     @Column({ type: 'int', nullable: true })
     supplierId: number | null;
 
-    @Column({ type: 'varchar', length: 40, default: WarehouseOrderStatus.Draft })
+    @Column({
+        type: 'varchar',
+        length: 40,
+        default: WarehouseOrderStatus.Draft,
+    })
     status: WarehouseOrderStatus;
 
     @Column({ type: 'timestamp', nullable: true })

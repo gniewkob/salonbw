@@ -61,7 +61,8 @@ export class TimetablesController {
     @ApiOperation({ summary: 'Pobierz dostępność pracownika w zakresie dat' })
     @ApiResponse({ status: 200, description: 'Availability slots' })
     async getAvailability(
-        @Query(new ValidationPipe({ transform: true })) query: GetAvailabilityDto,
+        @Query(new ValidationPipe({ transform: true }))
+        query: GetAvailabilityDto,
     ) {
         return this.timetablesService.getAvailability(
             query.employeeId,
@@ -101,10 +102,7 @@ export class TimetablesController {
     @Delete(':id')
     @Roles(Role.Admin)
     @ApiOperation({ summary: 'Usuń grafik' })
-    remove(
-        @Param('id', ParseIntPipe) id: number,
-        @CurrentUser() user: User,
-    ) {
+    remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
         return this.timetablesService.remove(id, user);
     }
 

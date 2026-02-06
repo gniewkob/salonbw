@@ -53,10 +53,7 @@ export class VersumCompatController {
         return this.versumCompatService.getEventScreenData(id);
     }
 
-    @Post([
-        'events/:id/finalize',
-        'salonblackandwhite/events/:id/finalize',
-    ])
+    @Post(['events/:id/finalize', 'salonblackandwhite/events/:id/finalize'])
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     finalizeEvent(
         @Param('id', ParseIntPipe) id: number,
@@ -88,10 +85,7 @@ export class VersumCompatController {
         });
     }
 
-    @Get([
-        'track_new_events.json',
-        'salonblackandwhite/track_new_events.json',
-    ])
+    @Get(['track_new_events.json', 'salonblackandwhite/track_new_events.json'])
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     trackNewEvents() {
         return this.versumCompatService.getTrackNewEvents();
@@ -121,7 +115,9 @@ export class VersumCompatController {
 
     private parseIdList(query: Record<string, unknown>, keyBase: string) {
         const raw =
-            query[`${keyBase}[]`] ?? query[keyBase] ?? query[`${keyBase}%5B%5D`];
+            query[`${keyBase}[]`] ??
+            query[keyBase] ??
+            query[`${keyBase}%5B%5D`];
 
         if (Array.isArray(raw)) {
             return raw

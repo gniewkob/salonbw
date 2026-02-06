@@ -42,11 +42,13 @@ export class ServiceCategoriesService {
     }
 
     async findAll(): Promise<ServiceCategory[]> {
-        return this.cache.wrap<ServiceCategory[]>(ALL_CATEGORIES_CACHE_KEY, () =>
-            this.categoryRepository.find({
-                relations: ['parent', 'children'],
-                order: { sortOrder: 'ASC', name: 'ASC' },
-            }),
+        return this.cache.wrap<ServiceCategory[]>(
+            ALL_CATEGORIES_CACHE_KEY,
+            () =>
+                this.categoryRepository.find({
+                    relations: ['parent', 'children'],
+                    order: { sortOrder: 'ASC', name: 'ASC' },
+                }),
         );
     }
 
@@ -66,7 +68,9 @@ export class ServiceCategoriesService {
     }
 
     async findOne(id: number): Promise<ServiceCategory> {
-        const cached = await this.cache.get<ServiceCategory>(categoryCacheKey(id));
+        const cached = await this.cache.get<ServiceCategory>(
+            categoryCacheKey(id),
+        );
         if (cached) {
             return cached;
         }

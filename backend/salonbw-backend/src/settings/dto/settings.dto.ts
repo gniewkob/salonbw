@@ -53,7 +53,9 @@ export class UpdateBranchSettingsDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^\d{2}-\d{3}$/, { message: 'Postal code must be in format XX-XXX' })
+    @Matches(/^\d{2}-\d{3}$/, {
+        message: 'Postal code must be in format XX-XXX',
+    })
     postalCode?: string;
 
     @IsOptional()
@@ -102,7 +104,9 @@ export class UpdateBranchSettingsDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'Color must be a valid hex color' })
+    @Matches(/^#[0-9A-Fa-f]{6}$/, {
+        message: 'Color must be a valid hex color',
+    })
     primaryColor?: string;
 
     @IsOptional()
@@ -410,7 +414,9 @@ export class UpdateOnlineBookingSettingsDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'Color must be a valid hex color' })
+    @Matches(/^#[0-9A-Fa-f]{6}$/, {
+        message: 'Color must be a valid hex color',
+    })
     widgetPrimaryColor?: string;
 
     @IsOptional()

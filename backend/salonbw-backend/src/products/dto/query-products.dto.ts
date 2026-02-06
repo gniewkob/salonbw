@@ -26,7 +26,9 @@ export class QueryProductsDto {
     @IsOptional()
     includeInactive?: boolean;
 
-    @ApiPropertyOptional({ enum: ['name', 'stock', 'unitPrice', 'createdAt', 'updatedAt'] })
+    @ApiPropertyOptional({
+        enum: ['name', 'stock', 'unitPrice', 'createdAt', 'updatedAt'],
+    })
     @IsOptional()
     @IsString()
     sortBy?: 'name' | 'stock' | 'unitPrice' | 'createdAt' | 'updatedAt';

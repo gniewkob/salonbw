@@ -41,14 +41,13 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                     </div>
                     <div className="versum-widget__content">
                         {/* GDPR Consent */}
-                        <div
-                            className="versum-panel-sub"
-                            style={{ marginBottom: '20px', padding: '15px' }}
-                        >
+                        <div className="versum-panel-sub">
                             <div className="row">
                                 <div className="col-sm-1">
                                     <input
+                                        id="consent-gdpr"
                                         type="checkbox"
+                                        className="versum-checkbox-large"
                                         checked={customer.gdprConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -56,40 +55,22 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                                 e.target.checked,
                                             )
                                         }
-                                        style={{
-                                            width: '18px',
-                                            height: '18px',
-                                        }}
                                     />
                                 </div>
                                 <div className="col-sm-11">
-                                    <div
-                                        style={{
-                                            fontWeight: 600,
-                                            fontSize: '13px',
-                                            color: '#333',
-                                        }}
+                                    <label
+                                        htmlFor="consent-gdpr"
+                                        className="versum-panel-sub__title block"
                                     >
                                         Ochrona danych osobowych (RODO)
-                                    </div>
-                                    <p
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '12px',
-                                            margin: '5px 0',
-                                        }}
-                                    >
+                                    </label>
+                                    <p className="versum-panel-sub__description">
                                         Wyrażam zgodę na przetwarzanie danych
                                         osobowych w celach związanych z
                                         realizacją usług salonu zgodnie z RODO.
                                     </p>
                                     {customer.gdprConsentDate && (
-                                        <div
-                                            style={{
-                                                fontSize: '11px',
-                                                color: '#999',
-                                            }}
-                                        >
+                                        <div className="versum-panel-sub__meta">
                                             Data wyrażenia zgody:{' '}
                                             {formatDate(
                                                 customer.gdprConsentDate,
@@ -101,17 +82,13 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* Marketing Consents */}
-                        <div
-                            className="versum-panel-sub"
-                            style={{ marginBottom: '20px', padding: '15px' }}
-                        >
-                            <div
-                                className="row"
-                                style={{ marginBottom: '15px' }}
-                            >
+                        <div className="versum-panel-sub">
+                            <div className="row mb-15">
                                 <div className="col-sm-1">
                                     <input
+                                        id="consent-sms"
                                         type="checkbox"
+                                        className="versum-checkbox-large"
                                         checked={customer.smsConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -119,29 +96,16 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                                 e.target.checked,
                                             )
                                         }
-                                        style={{
-                                            width: '18px',
-                                            height: '18px',
-                                        }}
                                     />
                                 </div>
                                 <div className="col-sm-11">
-                                    <div
-                                        style={{
-                                            fontWeight: 600,
-                                            fontSize: '13px',
-                                            color: '#333',
-                                        }}
+                                    <label
+                                        htmlFor="consent-sms"
+                                        className="versum-panel-sub__title block"
                                     >
                                         Zgoda na powiadomienia SMS
-                                    </div>
-                                    <p
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '12px',
-                                            margin: '5px 0',
-                                        }}
-                                    >
+                                    </label>
+                                    <p className="versum-panel-sub__description">
                                         Wyrażam zgodę na otrzymywanie wiadomości
                                         SMS z przypomnieniami o wizytach oraz
                                         ofertami promocyjnymi.
@@ -152,7 +116,9 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                             <div className="row">
                                 <div className="col-sm-1">
                                     <input
+                                        id="consent-email"
                                         type="checkbox"
+                                        className="versum-checkbox-large"
                                         checked={customer.emailConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -160,29 +126,16 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                                 e.target.checked,
                                             )
                                         }
-                                        style={{
-                                            width: '18px',
-                                            height: '18px',
-                                        }}
                                     />
                                 </div>
                                 <div className="col-sm-11">
-                                    <div
-                                        style={{
-                                            fontWeight: 600,
-                                            fontSize: '13px',
-                                            color: '#333',
-                                        }}
+                                    <label
+                                        htmlFor="consent-email"
+                                        className="versum-panel-sub__title block"
                                     >
                                         Zgoda na newsletter e-mail
-                                    </div>
-                                    <p
-                                        className="text-muted"
-                                        style={{
-                                            fontSize: '12px',
-                                            margin: '5px 0',
-                                        }}
-                                    >
+                                    </label>
+                                    <p className="versum-panel-sub__description">
                                         Wyrażam zgodę na otrzymywanie wiadomości
                                         e-mail z informacjami o nowościach,
                                         promocjach i newsletterach.
@@ -192,23 +145,11 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* Privacy Information Alert */}
-                        <div
-                            className="alert alert-info"
-                            style={{
-                                fontSize: '12px',
-                                border: '1px solid #bce8f1',
-                                background: '#d9edf7',
-                                color: '#31708f',
-                                borderRadius: '4px',
-                                padding: '15px',
-                            }}
-                        >
-                            <div
-                                style={{ fontWeight: 600, marginBottom: '5px' }}
-                            >
+                        <div className="versum-alert versum-alert-info">
+                            <div className="bold mb-5">
                                 Informacja o przetwarzaniu danych
                             </div>
-                            <p style={{ margin: 0 }}>
+                            <p className="m-0">
                                 Administratorem danych osobowych jest właściciel
                                 salonu. Dane przetwarzane są w celu realizacji
                                 usług oraz, za zgodą, w celach marketingowych.
@@ -220,22 +161,11 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* History Table */}
-                        <div style={{ marginTop: '30px' }}>
-                            <div
-                                style={{
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    textTransform: 'uppercase',
-                                    color: '#999',
-                                    marginBottom: '10px',
-                                }}
-                            >
+                        <div className="mt-30">
+                            <div className="versum-section-title">
                                 Historia zmian zgód
                             </div>
-                            <table
-                                className="versum-table"
-                                style={{ fontSize: '12px' }}
-                            >
+                            <table className="versum-table fz-12">
                                 <thead>
                                     <tr>
                                         <th>Data</th>
@@ -253,12 +183,7 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                             </td>
                                             <td>RODO</td>
                                             <td>
-                                                <span
-                                                    style={{
-                                                        color: '#5cb85c',
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
+                                                <span className="success bold">
                                                     Wyrażono zgodę
                                                 </span>
                                             </td>

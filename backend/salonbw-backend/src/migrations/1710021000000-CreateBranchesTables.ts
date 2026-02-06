@@ -60,13 +60,27 @@ export class CreateBranchesTables1710021000000 implements MigrationInterface {
         `);
 
         // Create indexes
-        await queryRunner.query(`CREATE INDEX "idx_branches_slug" ON "branches"("slug")`);
-        await queryRunner.query(`CREATE INDEX "idx_branches_status" ON "branches"("status")`);
-        await queryRunner.query(`CREATE INDEX "idx_branches_city" ON "branches"("city")`);
-        await queryRunner.query(`CREATE INDEX "idx_branches_owner" ON "branches"("owner_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_branch_members_user" ON "branch_members"("user_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_branch_members_branch" ON "branch_members"("branch_id")`);
-        await queryRunner.query(`CREATE INDEX "idx_branch_members_primary" ON "branch_members"("user_id", "is_primary") WHERE "is_primary" = true`);
+        await queryRunner.query(
+            `CREATE INDEX "idx_branches_slug" ON "branches"("slug")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branches_status" ON "branches"("status")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branches_city" ON "branches"("city")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branches_owner" ON "branches"("owner_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branch_members_user" ON "branch_members"("user_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branch_members_branch" ON "branch_members"("branch_id")`,
+        );
+        await queryRunner.query(
+            `CREATE INDEX "idx_branch_members_primary" ON "branch_members"("user_id", "is_primary") WHERE "is_primary" = true`,
+        );
 
         // Create default branch from existing branch_settings
         await queryRunner.query(`

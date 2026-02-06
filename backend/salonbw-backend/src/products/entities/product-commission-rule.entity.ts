@@ -13,7 +13,10 @@ import { Product } from '../product.entity';
 import { User } from '../../users/user.entity';
 
 @Entity('product_commission_rules')
-@Unique('UQ_product_commission_rules_product_employee', ['productId', 'employeeId'])
+@Unique('UQ_product_commission_rules_product_employee', [
+    'productId',
+    'employeeId',
+])
 export class ProductCommissionRule {
     @PrimaryGeneratedColumn()
     id: number;

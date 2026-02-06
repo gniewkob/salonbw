@@ -122,9 +122,7 @@ describe('ProductsService', () => {
                 id: 1,
             }),
         );
-        expect(createSpy).toHaveBeenCalledWith(
-            expect.objectContaining(dto),
-        );
+        expect(createSpy).toHaveBeenCalledWith(expect.objectContaining(dto));
         expect(saveSpy).toHaveBeenCalled();
         expect(logSpy).toHaveBeenCalledWith(
             user,
@@ -248,9 +246,7 @@ describe('ProductsService', () => {
             };
             const user = { id: 1 } as User;
             cache.del.mockClear();
-            await expect(
-                service.create(dto as Product, user),
-            ).resolves.toEqual(
+            await expect(service.create(dto as Product, user)).resolves.toEqual(
                 expect.objectContaining({
                     id: 1,
                 }),

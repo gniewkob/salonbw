@@ -207,51 +207,52 @@ export default function CategoryFormModal({
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="flex-center gap-6 flex-wrap mt-5">
-                                        {COLOR_OPTIONS.map((color) => (
-                                            <button
-                                                key={color}
-                                                type="button"
-                                                onClick={() =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        color,
-                                                    })
-                                                }
-                                                // eslint-disable-next-line
-                                                className="status-dot w-24 h-24 bg-dynamic"
-                                                style={
-                                                    {
-                                                        '--dynamic-color':
+                                        {COLOR_OPTIONS.map((color) => {
+                                            const dotStyle = {
+                                                '--dynamic-color': color,
+                                                border:
+                                                    formData.color === color
+                                                        ? '2px solid #000'
+                                                        : '1px solid #ddd',
+                                            } as React.CSSProperties;
+                                            return (
+                                                <button
+                                                    key={color}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setFormData({
+                                                            ...formData,
                                                             color,
-                                                        border:
-                                                            formData.color ===
-                                                            color
-                                                                ? '2px solid #000'
-                                                                : '1px solid #ddd',
-                                                    } as React.CSSProperties
-                                                }
-                                                aria-label={`Wybierz kolor ${color}`}
-                                            />
-                                        ))}
-                                        <input
-                                            type="color"
-                                            value={formData.color}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    color: e.target.value,
-                                                })
-                                            }
-                                            // eslint-disable-next-line
-                                            className="bg-dynamic"
-                                            style={
-                                                {
-                                                    '--dynamic-color':
-                                                        'transparent',
-                                                } as React.CSSProperties
-                                            }
-                                            title="Wybierz własny kolor"
-                                        />
+                                                        })
+                                                    }
+                                                    className="status-dot w-24 h-24 bg-dynamic"
+                                                    style={dotStyle} // eslint-disable-line
+                                                    aria-label={`Wybierz kolor ${color}`}
+                                                />
+                                            );
+                                        })}
+                                        {(() => {
+                                            const transparentStyle = {
+                                                '--dynamic-color':
+                                                    'transparent',
+                                            } as React.CSSProperties;
+                                            return (
+                                                <input
+                                                    type="color"
+                                                    value={formData.color}
+                                                    onChange={(e) =>
+                                                        setFormData({
+                                                            ...formData,
+                                                            color: e.target
+                                                                .value,
+                                                        })
+                                                    }
+                                                    className="bg-dynamic"
+                                                    style={transparentStyle} // eslint-disable-line
+                                                    title="Wybierz własny kolor"
+                                                />
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             </div>

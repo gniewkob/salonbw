@@ -14,7 +14,12 @@ import { RetailModule } from '../retail/retail.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Appointment, SalonService, ServiceVariant, User]),
+        TypeOrmModule.forFeature([
+            Appointment,
+            SalonService,
+            ServiceVariant,
+            User,
+        ]),
         CommissionsModule,
         LogsModule,
         NotificationsModule,

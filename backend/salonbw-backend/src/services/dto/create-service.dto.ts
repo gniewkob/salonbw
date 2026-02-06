@@ -63,29 +63,46 @@ export class CreateServiceDto {
     @IsOptional()
     privateDescription?: string;
 
-    @ApiProperty({ required: false, description: 'Legacy string category (deprecated)' })
+    @ApiProperty({
+        required: false,
+        description: 'Legacy string category (deprecated)',
+    })
     @IsString()
     @IsOptional()
     category?: string;
 
-    @ApiProperty({ required: false, description: 'Category ID (new hierarchical system)' })
+    @ApiProperty({
+        required: false,
+        description: 'Category ID (new hierarchical system)',
+    })
     @IsNumber()
     @IsOptional()
     categoryId?: number;
 
-    @ApiProperty({ required: false, description: 'Commission percentage (0-100)' })
+    @ApiProperty({
+        required: false,
+        description: 'Commission percentage (0-100)',
+    })
     @IsNumber()
     @IsOptional()
     @Min(0)
     @Max(100)
     commissionPercent?: number;
 
-    @ApiProperty({ required: false, default: true, description: 'Is service active' })
+    @ApiProperty({
+        required: false,
+        default: true,
+        description: 'Is service active',
+    })
     @IsBoolean()
     @IsOptional()
     isActive?: boolean;
 
-    @ApiProperty({ required: false, default: true, description: 'Available for online booking' })
+    @ApiProperty({
+        required: false,
+        default: true,
+        description: 'Available for online booking',
+    })
     @IsBoolean()
     @IsOptional()
     onlineBooking?: boolean;
