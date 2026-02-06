@@ -46,7 +46,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <script src="/versum-calendar/assets/versum_charts-77705aac853535e34b3f36f961534c3cd490bba413a410eb21f34c0a95223ce5.js"></script>
 <script>
 //<![CDATA[
-window.VersumConfig={}; VersumConfig = {"branch_id":19581,"user_id":4272118,"branch_subdomain":"salonblackandwhite","is_vat_payer":true,"payment_finish_url":"/salonblackandwhite/settings/payment_processing/versum_order_payments/new","physical_help_url":"/salonblackandwhite/helps/new","notification_center_notifications_path":"/salonblackandwhite/notification_center/notifications","lumo":false,"medical_office":false,"resources_activated":false,"gift_cards_activated":false,"gift_cards":{"max_inscription_length":70,"purpose_kind_pickable":true,"default_purpose_kind":"spv"},"tips":{"tips_activated":true,"tips_payment_methods":["cash","credit_card","cheque","transfer"],"tips_default_percents":"10"},"prepayments_enabled":false,"online_payments_enabled":false,"online_payments_available":true,"new_customer_modal_version":"v7","env":"production","application":{"api":{"deviceToken":null,"graphQL":{"url":"/graphql"},"auth":{"url":"/oauth/token","clientId":"82c84458b0da414e99fc58a9771cf321"}}},"t_net":"netto","t_gross":"brutto","current_branch_readonly":false};
+window.VersumConfig={}; VersumConfig = {"branch_id":1,"user_id":userId,"branch_subdomain":"salonblackandwhite","is_vat_payer":true,"payment_finish_url":"/settings/payment_processing/versum_order_payments/new","physical_help_url":"/helps/new","notification_center_notifications_path":"/notification_center/notifications","lumo":false,"medical_office":false,"resources_activated":false,"gift_cards_activated":false,"gift_cards":{"max_inscription_length":70,"purpose_kind_pickable":true,"default_purpose_kind":"spv"},"tips":{"tips_activated":true,"tips_payment_methods":["cash","credit_card","cheque","transfer"],"tips_default_percents":"10"},"prepayments_enabled":false,"online_payments_enabled":false,"online_payments_available":true,"new_customer_modal_version":"v7","env":"production","application":{"api":{"deviceToken":null,"graphQL":{"url":"/graphql"},"auth":{"url":"/oauth/token","clientId":"82c84458b0da414e99fc58a9771cf321"}}},"t_net":"netto","t_gross":"brutto","current_branch_readonly":false};
 //]]>
 </script>
 </meta></meta>
@@ -67,8 +67,8 @@ window.__VERSUM_CALENDAR_EMBED__ = true;
   
     var INTERVAL = 1000 * 60 * 1
   
-    var demoPath = '/salonblackandwhite/booksy_merchant_migration/demo'
-    var migrationPath = '/salonblackandwhite/booksy_merchant_migration/migration'
+    var demoPath = '/booksy_merchant_migration/demo'
+    var migrationPath = '/booksy_merchant_migration/migration'
   
     if (demoState == BooksyDemoStates.Running){
       var demoInterval = setInterval(function() {
@@ -125,7 +125,7 @@ window.__VERSUM_CALENDAR_EMBED__ = true;
 <ul class="navbar-right simple-list d-flex">
 <li class="d-flex">
 <div class="omnibox-wrapper">
-<input class="omnibox" data-search-url="/salonblackandwhite/global_searches" id="omnibox" placeholder="Szukaj..."/>
+<input class="omnibox" data-search-url="/global_searches" id="omnibox" placeholder="Szukaj..."/>
 <div class="dropdown-menu" id="omnibox-results"></div>
 </div>
 </li>
@@ -152,7 +152,7 @@ window.__VERSUM_CALENDAR_EMBED__ = true;
 <ul class="dropdown-menu larger-dropdown-menu nav-help">
 <li class="divider"></li>
 <li class="main-menu-li">
-<a href="/salonblackandwhite/helps/new">
+<a href="/helps/new">
 <svg class="svg-message"><use xlink:href="#svg-message"></use></svg>
 <span>Formularz kontaktowy</span>
 </a>
@@ -169,7 +169,7 @@ window.__VERSUM_CALENDAR_EMBED__ = true;
 </a>
 <ul class="dropdown-menu larger-dropdown-menu">
 <li class="main-menu-li">
-<a class="profil" href="/salonblackandwhite/settings/employees/4272118">
+<a class="profil" href="/settings/employees/4272118">
 <img alt="Data" class="avatar" src="https://cdn.versum.net/avatars/4272118/thumb/data"/>
 <strong>Gniewko Bodora</strong>
 administrator
@@ -178,7 +178,7 @@ administrator
 <!-- Versum recommendation link removed -->
 <li class="divider"></li>
 <li class="main-menu-li">
-<a class="e2e-user-logout" href="/salonblackandwhite/signout">Wyloguj
+<a class="e2e-user-logout" href="/signout">Wyloguj
 </a></li>
 </ul>
 </li>
@@ -196,14 +196,14 @@ administrator
 <div class="sidebar hidden-print" id="sidebar">
 <div class="mainnav" id="mainnav">
 <ul class="nav" e2e-main-nav="">
-<li class="calendar active" tooltip="kalendarz"><a e2e-main-nav-calendar="" href="/salonblackandwhite/calendar?reset=1"><div><svg class="svg-calendar-nav"><use xlink:href="#svg-calendar-nav"></use></svg></div><span>kalendarz</span></a></li>
-<li class="customers" tooltip="klienci"><a e2e-main-nav-cosmetics-customers="" href="/salonblackandwhite/customers"><div><svg class="svg-customers-nav"><use xlink:href="#svg-customers-nav"></use></svg></div><span>klienci</span></a></li>
-<li class="stock" tooltip="magazyn"><a e2e-main-nav-stock="" href="/salonblackandwhite/products"><div><svg class="svg-stock-nav"><use xlink:href="#svg-stock-nav"></use></svg></div><span>magazyn</span></a></li>
-<li class="statistics" tooltip="statystyki"><a e2e-main-nav-statistics="" href="/salonblackandwhite/statistics/dashboard"><div><svg class="svg-statistics-nav"><use xlink:href="#svg-statistics-nav"></use></svg></div><span>statystyki</span></a></li>
-<li class="communication" tooltip="łączność"><a e2e-main-nav-communication="" href="/salonblackandwhite/communication"><div class="nav-badge" data-unread="73"><svg class="svg-communication-nav"><use xlink:href="#svg-communication-nav"></use></svg></div><span>łączność</span></a></li>
-<li class="services" tooltip="usługi"><a e2e-main-nav-services="" href="/salonblackandwhite/services"><div><svg class="svg-services-nav"><use xlink:href="#svg-services-nav"></use></svg></div><span>usługi</span></a></li>
-<li class="settings" tooltip="ustawienia"><a e2e-main-nav-settings="" href="/salonblackandwhite/settings"><div><svg class="svg-settings-nav"><use xlink:href="#svg-settings-nav"></use></svg></div><span>ustawienia</span></a></li>
-<li class="extensions mt-auto" tooltip="dodatki"><a e2e-main-nav-extensions="" href="/salonblackandwhite/extension/"><div><svg class="svg-extensions-nav"><use xlink:href="#svg-extensions-nav"></use></svg></div><span>dodatki</span></a></li>
+<li class="calendar active" tooltip="kalendarz"><a e2e-main-nav-calendar="" href="/calendar?reset=1"><div><svg class="svg-calendar-nav"><use xlink:href="#svg-calendar-nav"></use></svg></div><span>kalendarz</span></a></li>
+<li class="customers" tooltip="klienci"><a e2e-main-nav-cosmetics-customers="" href="/clients"><div><svg class="svg-customers-nav"><use xlink:href="#svg-customers-nav"></use></svg></div><span>klienci</span></a></li>
+<li class="stock" tooltip="magazyn"><a e2e-main-nav-stock="" href="/products"><div><svg class="svg-stock-nav"><use xlink:href="#svg-stock-nav"></use></svg></div><span>magazyn</span></a></li>
+<li class="statistics" tooltip="statystyki"><a e2e-main-nav-statistics="" href="/statistics"><div><svg class="svg-statistics-nav"><use xlink:href="#svg-statistics-nav"></use></svg></div><span>statystyki</span></a></li>
+<li class="communication" tooltip="łączność"><a e2e-main-nav-communication="" href="/communication"><div class="nav-badge" data-unread="73"><svg class="svg-communication-nav"><use xlink:href="#svg-communication-nav"></use></svg></div><span>łączność</span></a></li>
+<li class="services" tooltip="usługi"><a e2e-main-nav-services="" href="/services"><div><svg class="svg-services-nav"><use xlink:href="#svg-services-nav"></use></svg></div><span>usługi</span></a></li>
+<li class="settings" tooltip="ustawienia"><a e2e-main-nav-settings="" href="/settings"><div><svg class="svg-settings-nav"><use xlink:href="#svg-settings-nav"></use></svg></div><span>ustawienia</span></a></li>
+<li class="extensions mt-auto" tooltip="dodatki"><a e2e-main-nav-extensions="" href="/extension/"><div><svg class="svg-extensions-nav"><use xlink:href="#svg-extensions-nav"></use></svg></div><span>dodatki</span></a></li>
 </ul>
 </div>
 <div class="sidenav" id="sidenav">
@@ -226,7 +226,7 @@ Aleksandra Ficek
 <div class="resources-pagination pull-left">
 <div class="button-group" data-calendar-pages-container=""></div>
 </div>
-<div class="pull-right" data-calendar-views-container="" data-new-view-url="/salonblackandwhite/calendar/views/new" data-url="/salonblackandwhite/calendar/views/list">
+<div class="pull-right" data-calendar-views-container="" data-new-view-url="/calendar/views/new" data-url="/calendar/views/list">
 <div class="calendar-views dropdown dropup">
 <button class="button button-sm" data-toggle="dropdown" name="button" type="button">widok
 <b class="caret caret-up"></b>
@@ -241,7 +241,7 @@ Aleksandra Ficek
 <li class="lbl">BRAK ZDEFINIOWANYCH WIDOKÓW</li>
 <li class="with-standard-link">
 <div class="icon_box"></div>
-<a class="bottom-link" data-calendar-views-index-link="" href="/salonblackandwhite/calendar/views" title="Zarządzaj widokami">dodaj/edytuj/usuń</a>
+<a class="bottom-link" data-calendar-views-index-link="" href="/calendar/views" title="Zarządzaj widokami">dodaj/edytuj/usuń</a>
 </li>
 </ul>
 </div>
@@ -288,7 +288,7 @@ Aleksandra Ficek
 </form>
 </div>
 </div>
-<div data-event='{"value":"{\"id\":null,\"pretty_id\":null,\"branch_id\":19581,\"customer_id\":null,\"reminder_id\":null,\"beginning\":\"2025-07-18T00:23:51.512+02:00\",\"end\":\"2025-07-18T00:23:51.512+02:00\",\"finalized\":false,\"canceled\":false,\"not_an_appointment\":null,\"reserved_online\":false,\"info_from_customer\":null,\"description\":null,\"version\":null,\"finalized_at\":null,\"deleted_at\":null,\"created_at\":null,\"updated_at\":null,\"allday\":null,\"allday_beginning\":\"2025-07-18T00:00:00.000+02:00\",\"allday_end\":\"2025-07-19T00:00:00.000+02:00\",\"branch_category_path\":\"/salonblackandwhite/settings/customer_panel/business_categories\",\"is_booksy_possible\":true,\"modified_by\":null,\"modified_by_type\":\"Physical::User\",\"status\":\"Oczekująca\",\"payment_method\":null,\"beginning_date\":\"2025-07-18\",\"end_date\":\"2025-07-18\",\"reserved_duration\":\"0 min\",\"services_duration\":\"0 min\",\"services_price\":\"0 zł\",\"customer_name\":\"\",\"unreversed_customer_name\":\"\",\"customer_url\":\"\",\"customer_phone_number\":null,\"customer_phone_number_formatted\":null,\"customer_sms_url\":\"\",\"customer_email_url\":\"\",\"customer_email\":null,\"customer_description\":\"\",\"customer_description_content_type\":\"text/markdown\",\"send_reminder\":true,\"send_reminder_edition_locked\":false,\"reminder_handled_by_booksy\":false,\"booksy_origin\":false,\"price\":null,\"price_pln\":\"\",\"services\":[],\"tags\":[],\"payments\":[],\"versions_url\":\"/events/0/versions\",\"has_sale\":false,\"sale_price\":null,\"sale_id\":null,\"supply_use_id\":null,\"editable\":true,\"finalizable\":true,\"can_access_price\":true,\"calendar_url\":\"/salonblackandwhite/calendar?date=2025-07-18\",\"can_view_in_calendar\":false,\"can_restore_in_calendar\":false,\"tss_receipt_issuing_available\":false,\"tss_receipts\":[],\"sold_gift_cards\":[],\"sold_packages\":[],\"prepayment_id\":null,\"prepayment_amount\":0,\"prepayment_amount_paid\":0,\"prepayment_status\":null,\"prepayment_real_status\":null,\"prepayment_payment_method\":null,\"prepayment_expiration_date_time\":null,\"prepayment_paid_at\":null,\"prepayment_created_at\":null,\"prepayment_creator_type\":null,\"prepayment_created_by_customer\":false,\"prepayment_payments\":[],\"recurrence_params\":null,\"recurrence_group_id\":null}"}' id="new_event_data" style="display: none;"></div>
+<div data-event='{"value":"{\"id\":null,\"pretty_id\":null,\"branch_id\":19581,\"customer_id\":null,\"reminder_id\":null,\"beginning\":\"2025-07-18T00:23:51.512+02:00\",\"end\":\"2025-07-18T00:23:51.512+02:00\",\"finalized\":false,\"canceled\":false,\"not_an_appointment\":null,\"reserved_online\":false,\"info_from_customer\":null,\"description\":null,\"version\":null,\"finalized_at\":null,\"deleted_at\":null,\"created_at\":null,\"updated_at\":null,\"allday\":null,\"allday_beginning\":\"2025-07-18T00:00:00.000+02:00\",\"allday_end\":\"2025-07-19T00:00:00.000+02:00\",\"branch_category_path\":\"/settings/customer_panel/business_categories\",\"is_booksy_possible\":true,\"modified_by\":null,\"modified_by_type\":\"Physical::User\",\"status\":\"Oczekująca\",\"payment_method\":null,\"beginning_date\":\"2025-07-18\",\"end_date\":\"2025-07-18\",\"reserved_duration\":\"0 min\",\"services_duration\":\"0 min\",\"services_price\":\"0 zł\",\"customer_name\":\"\",\"unreversed_customer_name\":\"\",\"customer_url\":\"\",\"customer_phone_number\":null,\"customer_phone_number_formatted\":null,\"customer_sms_url\":\"\",\"customer_email_url\":\"\",\"customer_email\":null,\"customer_description\":\"\",\"customer_description_content_type\":\"text/markdown\",\"send_reminder\":true,\"send_reminder_edition_locked\":false,\"reminder_handled_by_booksy\":false,\"booksy_origin\":false,\"price\":null,\"price_pln\":\"\",\"services\":[],\"tags\":[],\"payments\":[],\"versions_url\":\"/events/0/versions\",\"has_sale\":false,\"sale_price\":null,\"sale_id\":null,\"supply_use_id\":null,\"editable\":true,\"finalizable\":true,\"can_access_price\":true,\"calendar_url\":\"/calendar?date=2025-07-18\",\"can_view_in_calendar\":false,\"can_restore_in_calendar\":false,\"tss_receipt_issuing_available\":false,\"tss_receipts\":[],\"sold_gift_cards\":[],\"sold_packages\":[],\"prepayment_id\":null,\"prepayment_amount\":0,\"prepayment_amount_paid\":0,\"prepayment_status\":null,\"prepayment_real_status\":null,\"prepayment_payment_method\":null,\"prepayment_expiration_date_time\":null,\"prepayment_paid_at\":null,\"prepayment_created_at\":null,\"prepayment_creator_type\":null,\"prepayment_created_by_customer\":false,\"prepayment_payments\":[],\"recurrence_params\":null,\"recurrence_group_id\":null}"}' id="new_event_data" style="display: none;"></div>
 <div data-prepayment-payment-methods='["cash","credit_card","transfer","certificate"]'></div>
 <div data-gift-cards-all-templates=""></div>
 <div data-packages-all-templates=""></div>
@@ -764,14 +764,14 @@ Aleksandra Ficek
           label: 'Rozpocznij przenoszenie',
           cssClass: 'button-blue',
           action: function (dialog) {
-            window.location.href = '/salonblackandwhite/booksy_merchant_migration/dashboard';
+            window.location.href = '/booksy_merchant_migration/dashboard';
           },
         },
         {
           label: 'Sprawdź Booksy demo',
           cssClass: 'button',
           action: function (dialog) {
-            window.location.href = '/salonblackandwhite/booksy_merchant_migration/demo/new';
+            window.location.href = '/booksy_merchant_migration/demo/new';
           },
         },
         {
