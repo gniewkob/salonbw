@@ -178,9 +178,10 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                                         '--dynamic-width': `${widthPercent}%`,
                                                     } as React.CSSProperties;
                                                     return (
+                                                        // eslint-disable-next-line
                                                         <div
                                                             className="h-full bg-cyan w-dynamic"
-                                                            style={barStyle} // eslint-disable-line
+                                                            style={barStyle}
                                                         />
                                                     );
                                                 })()}

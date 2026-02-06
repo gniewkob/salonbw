@@ -216,6 +216,7 @@ export default function CategoryFormModal({
                                                         : '1px solid #ddd',
                                             } as React.CSSProperties;
                                             return (
+                                                // eslint-disable-next-line
                                                 <button
                                                     key={color}
                                                     type="button"
@@ -226,7 +227,7 @@ export default function CategoryFormModal({
                                                         })
                                                     }
                                                     className="status-dot w-24 h-24 bg-dynamic"
-                                                    style={dotStyle} // eslint-disable-line
+                                                    style={dotStyle}
                                                     aria-label={`Wybierz kolor ${color}`}
                                                 />
                                             );
@@ -237,6 +238,7 @@ export default function CategoryFormModal({
                                                     'transparent',
                                             } as React.CSSProperties;
                                             return (
+                                                // eslint-disable-next-line
                                                 <input
                                                     type="color"
                                                     value={formData.color}
@@ -248,7 +250,7 @@ export default function CategoryFormModal({
                                                         })
                                                     }
                                                     className="bg-dynamic"
-                                                    style={transparentStyle} // eslint-disable-line
+                                                    style={transparentStyle}
                                                     title="Wybierz własny kolor"
                                                 />
                                             );
