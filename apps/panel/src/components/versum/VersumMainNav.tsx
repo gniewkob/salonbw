@@ -12,36 +12,34 @@ interface VersumMainNavProps {
 export default function VersumMainNav({
     modules,
     activeModule,
-    role,
 }: VersumMainNavProps) {
     return (
-        <aside className="versum-mainnav" aria-label="Główna nawigacja">
-            <ul className="versum-mainnav__list" data-role={role}>
+        <div className="mainnav" id="mainnav">
+            <ul className="nav" e2e-main-nav="">
                 {modules.map((item) => {
                     const isActive = item.key === activeModule.key;
                     return (
                         <li
                             key={item.key}
-                            className={`versum-mainnav__item ${item.pinBottom ? 'versum-mainnav__item--bottom' : ''} ${isActive ? 'is-active' : ''}`}
+                            className={`${item.key} ${isActive ? 'active' : ''} ${item.pinBottom ? 'mt-auto' : ''}`}
+                            data-tooltip={item.label}
                         >
                             <Link
                                 href={item.href}
-                                className="versum-mainnav__link"
-                                aria-current={isActive ? 'page' : undefined}
                                 data-testid={`mainnav-${item.key}`}
                             >
-                                <VersumIcon
-                                    id={item.iconId}
-                                    className="versum-icon versum-mainnav__icon"
-                                />
-                                <span className="versum-mainnav__label">
-                                    {item.label}
-                                </span>
+                                <div>
+                                    <VersumIcon
+                                        id={item.iconId}
+                                        className={item.iconId}
+                                    />
+                                </div>
+                                <span>{item.label}</span>
                             </Link>
                         </li>
                     );
                 })}
             </ul>
-        </aside>
+        </div>
     );
 }

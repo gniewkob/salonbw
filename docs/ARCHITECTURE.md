@@ -27,6 +27,35 @@
 - Redis-backed caching (optional) wraps slow-changing catalog queries (services, products). When `REDIS_URL` isn’t defined the cache falls back to an in-memory store with a configurable TTL (`CACHE_TTL_SECONDS`).
 - PostgreSQL slow-query logging is enabled at startup (`DB_SLOW_QUERY_MS`), and connection pool metrics surface through the Prometheus `/metrics` endpoint.
 
+## Single-Client Architecture
+
+**Key Decision**: This project is a 1:1 clone of Versum for a single client (Salon Black&White).
+
+### Background
+
+- **Versum** was designed as a multi-tenant SaaS platform, using URL prefixes like `/salonblackandwhite/` to route requests to specific salon accounts.
+- **panel.salon-bw.pl** serves only one salon (Black&White), so the multi-tenant routing prefix is unnecessary.
+
+### Implications
+
+1. **No `/salonblackandwhite/` prefix needed** - All routes are direct (e.g., `/clients`, `/calendar`, `/products`).
+2. **Simplified routing** - `next.config.mjs` no longer contains `/salonblackandwhite/*` rewrites.
+3. **Vendored calendar compatibility** - The calendar HTML (`public/versum-calendar/`) has navigation links updated to use clean paths (`/clients`, `/calendar`, etc.).
+4. **Unified navbar** - Both vendored calendar and React modules use the same Versum CSS and HTML structure for consistent UI.
+
+### URL Structure
+
+| Route            | Description                          |
+| ---------------- | ------------------------------------ |
+| `/calendar`      | Calendar view (vendored Versum HTML) |
+| `/clients`       | Customer management                  |
+| `/products`      | Inventory/warehouse                  |
+| `/statistics`    | Reports and analytics                |
+| `/communication` | Messages and notifications           |
+| `/services`      | Service catalog                      |
+| `/settings`      | Configuration                        |
+| `/extension`     | Add-ons and integrations             |
+
 ## Cross-Cutting Concerns
 
 - Authentication flows between frontend dashboards and backend JWT-based endpoints.
