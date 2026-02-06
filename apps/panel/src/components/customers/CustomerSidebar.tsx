@@ -35,11 +35,12 @@ export default function CustomerSidebar({
     return (
         <div className="versum-sidebar">
             {/* Search */}
-            <div className="versum-sidebar__item" style={{ padding: '15px' }}>
+            <div className="versum-sidebar__search">
                 <div className="form-group mb-0">
                     <input
                         type="text"
                         placeholder="Szukaj klientów..."
+                        aria-label="Szukaj klientów"
                         value={filters.search || ''}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="form-control input-sm"
@@ -55,8 +56,7 @@ export default function CustomerSidebar({
                         {onCreateGroup && (
                             <button
                                 onClick={onCreateGroup}
-                                className="btn btn-link btn-xs p-0"
-                                style={{ color: '#008bb4' }}
+                                className="btn btn-link btn-xs p-0 text-versum-blue"
                             >
                                 + dodaj
                             </button>
@@ -76,18 +76,13 @@ export default function CustomerSidebar({
                                 }
                             >
                                 <a onClick={() => handleGroupSelect(group.id)}>
-                                    <div
-                                        className="flex-center"
-                                        style={{ gap: '8px', width: '100%' }}
-                                    >
+                                    <div className="flex-center w-full gap-8">
                                         {group.color && (
                                             <span
-                                                className="status-dot"
+                                                className="status-dot w-8 h-8"
                                                 style={{
                                                     backgroundColor:
-                                                        group.color,
-                                                    width: '8px',
-                                                    height: '8px',
+                                                        group.color || '#999',
                                                 }}
                                             />
                                         )}
@@ -109,14 +104,7 @@ export default function CustomerSidebar({
                 {/* Tagi */}
                 <div className="versum-sidebar__section">
                     <div className="versum-sidebar__header">TAGI</div>
-                    <div
-                        style={{
-                            padding: '0 15px',
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '4px',
-                        }}
-                    >
+                    <div className="versum-sidebar__tag-list">
                         {tags.map((tag) => (
                             <button
                                 key={tag.id}
@@ -127,15 +115,12 @@ export default function CustomerSidebar({
                                             : tag.id,
                                     )
                                 }
-                                className={`label ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
+                                className={`label cursor-pointer font-normal ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
                                 style={{
-                                    cursor: 'pointer',
                                     backgroundColor:
                                         filters.tagId === tag.id
                                             ? '#008bb4'
                                             : tag.color || '#999',
-                                    borderColor: 'transparent',
-                                    fontWeight: 400,
                                 }}
                             >
                                 {tag.name}
@@ -147,8 +132,7 @@ export default function CustomerSidebar({
                 {/* Filtry zaawansowane */}
                 <div className="versum-sidebar__section">
                     <div
-                        className="versum-sidebar__header flex-between"
-                        style={{ cursor: 'pointer' }}
+                        className="versum-sidebar__header flex-between cursor-pointer"
                         onClick={() =>
                             setShowAdvancedFilters(!showAdvancedFilters)
                         }
@@ -160,25 +144,16 @@ export default function CustomerSidebar({
                     </div>
 
                     {showAdvancedFilters && (
-                        <div
-                            style={{
-                                padding: '10px 15px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '12px',
-                            }}
-                        >
+                        <div className="versum-sidebar__filters">
                             <div className="form-group mb-0">
                                 <label
-                                    className="control-label"
-                                    style={{
-                                        fontSize: '11px',
-                                        marginBottom: '4px',
-                                    }}
+                                    htmlFor="filter-gender"
+                                    className="control-label versum-label-xs"
                                 >
                                     Płeć
                                 </label>
                                 <select
+                                    id="filter-gender"
                                     value={filters.gender || ''}
                                     onChange={(e) =>
                                         onFilterChange({
@@ -200,15 +175,13 @@ export default function CustomerSidebar({
                             <div className="row row-tight">
                                 <div className="col-xs-6">
                                     <label
-                                        className="control-label"
-                                        style={{
-                                            fontSize: '11px',
-                                            marginBottom: '4px',
-                                        }}
+                                        htmlFor="filter-age-min"
+                                        className="control-label versum-label-xs"
                                     >
                                         Wiek od
                                     </label>
                                     <input
+                                        id="filter-age-min"
                                         type="number"
                                         min={0}
                                         value={filters.ageMin || ''}
@@ -226,15 +199,13 @@ export default function CustomerSidebar({
                                 </div>
                                 <div className="col-xs-6">
                                     <label
-                                        className="control-label"
-                                        style={{
-                                            fontSize: '11px',
-                                            marginBottom: '4px',
-                                        }}
+                                        htmlFor="filter-age-max"
+                                        className="control-label fz-11 mb-4"
                                     >
                                         do
                                     </label>
                                     <input
+                                        id="filter-age-max"
                                         type="number"
                                         min={0}
                                         value={filters.ageMax || ''}
@@ -255,15 +226,13 @@ export default function CustomerSidebar({
                             <div className="row row-tight">
                                 <div className="col-xs-6">
                                     <label
-                                        className="control-label"
-                                        style={{
-                                            fontSize: '11px',
-                                            marginBottom: '4px',
-                                        }}
+                                        htmlFor="filter-spent-min"
+                                        className="control-label versum-label-xs"
                                     >
                                         Wydane od
                                     </label>
                                     <input
+                                        id="filter-spent-min"
                                         type="number"
                                         min={0}
                                         value={filters.spentMin || ''}
@@ -281,15 +250,13 @@ export default function CustomerSidebar({
                                 </div>
                                 <div className="col-xs-6">
                                     <label
-                                        className="control-label"
-                                        style={{
-                                            fontSize: '11px',
-                                            marginBottom: '4px',
-                                        }}
+                                        htmlFor="filter-spent-max"
+                                        className="control-label versum-label-xs"
                                     >
                                         do
                                     </label>
                                     <input
+                                        id="filter-spent-max"
                                         type="number"
                                         min={0}
                                         value={filters.spentMax || ''}
@@ -307,8 +274,8 @@ export default function CustomerSidebar({
                                 </div>
                             </div>
 
-                            <div className="checkbox" style={{ margin: 0 }}>
-                                <label style={{ fontSize: '12px' }}>
+                            <div className="checkbox m-0">
+                                <label className="fz-12">
                                     <input
                                         type="checkbox"
                                         checked={filters.smsConsent === true}
@@ -325,8 +292,8 @@ export default function CustomerSidebar({
                                     Zgoda SMS
                                 </label>
                             </div>
-                            <div className="checkbox" style={{ margin: 0 }}>
-                                <label style={{ fontSize: '12px' }}>
+                            <div className="checkbox m-0">
+                                <label className="fz-12">
                                     <input
                                         type="checkbox"
                                         checked={filters.emailConsent === true}
@@ -351,8 +318,7 @@ export default function CustomerSidebar({
                                         limit: filters.limit,
                                     })
                                 }
-                                className="btn btn-default btn-xs btn-block"
-                                style={{ marginTop: '5px' }}
+                                className="btn btn-default btn-xs btn-block mt-5"
                             >
                                 Wyczyść filtry
                             </button>

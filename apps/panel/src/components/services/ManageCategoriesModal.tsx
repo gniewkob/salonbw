@@ -64,9 +64,7 @@ export default function ManageCategoriesModal({
             <div key={category.id}>
                 <div
                     className="versum-list-item flex-between"
-                    style={{
-                        paddingLeft: `${20 + level * 20}px`,
-                    }}
+                    style={{ paddingLeft: `${20 + level * 20}px` }}
                 >
                     <div className="flex-center gap-10">
                         {category.color && (
