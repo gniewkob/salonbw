@@ -18,7 +18,6 @@ export function middleware(request: NextRequest) {
     const isPublicAsset =
         path.startsWith('/_next') ||
         path.startsWith('/assets') ||
-        path.startsWith('/salonblackandwhite/assets') ||
         path.startsWith('/versum-calendar') ||
         path.startsWith('/favicon.ico') ||
         path.startsWith('/api') ||
@@ -26,10 +25,6 @@ export function middleware(request: NextRequest) {
         path.startsWith('/graphql') ||
         path.startsWith('/settings/timetable/schedules') ||
         path.startsWith('/track_new_events.json') ||
-        path.startsWith('/salonblackandwhite/events') ||
-        path.startsWith('/salonblackandwhite/graphql') ||
-        path.startsWith('/salonblackandwhite/settings/timetable/schedules') ||
-        path.startsWith('/salonblackandwhite/track_new_events.json') ||
         path.startsWith('/icon'); // icon.ico/svg
 
     // Allow public access to auth pages and assets
