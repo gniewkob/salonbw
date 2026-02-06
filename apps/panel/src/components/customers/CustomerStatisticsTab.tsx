@@ -174,10 +174,12 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                                     {month.month}
                                                 </div>
                                                 <div
-                                                    className="h-full bg-cyan"
-                                                    style={{
-                                                        width: `${widthPercent}%`,
-                                                    }}
+                                                    className="h-full bg-cyan w-dynamic"
+                                                    style={
+                                                        {
+                                                            '--dynamic-width': `${widthPercent}%`,
+                                                        } as React.CSSProperties
+                                                    }
                                                 />
                                                 <div className="text-right fz-12 bold w-60">
                                                     {month.count}
