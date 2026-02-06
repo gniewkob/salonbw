@@ -69,6 +69,40 @@ const nextConfig = {
                 source: '/salonblackandwhite/graphql',
                 destination: '/graphql',
             },
+            // Exact paths (without trailing segments)
+            {
+                source: '/salonblackandwhite/customers',
+                destination: '/clients',
+            },
+            {
+                source: '/salonblackandwhite/calendar',
+                destination: '/calendar',
+            },
+            {
+                source: '/salonblackandwhite/products',
+                destination: '/products',
+            },
+            {
+                source: '/salonblackandwhite/statistics',
+                destination: '/statistics',
+            },
+            {
+                source: '/salonblackandwhite/communication',
+                destination: '/communication',
+            },
+            {
+                source: '/salonblackandwhite/services',
+                destination: '/services',
+            },
+            {
+                source: '/salonblackandwhite/settings',
+                destination: '/settings',
+            },
+            {
+                source: '/salonblackandwhite/extension',
+                destination: '/extension',
+            },
+            // Paths with trailing segments
             {
                 source: '/salonblackandwhite/customers/:path*',
                 destination: '/clients/:path*',
@@ -111,6 +145,10 @@ const nextConfig = {
             },
 
             // Compatibility alias used by Versum HTML nav
+            {
+                source: '/customers',
+                destination: '/clients',
+            },
             {
                 source: '/customers/:path*',
                 destination: '/clients/:path*',
