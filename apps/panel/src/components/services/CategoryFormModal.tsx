@@ -101,10 +101,7 @@ export default function CategoryFormModal({
     if (!isOpen) return null;
 
     return (
-        <div
-            className="modal fade in"
-            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-        >
+        <div className="modal fade in block bg-modal-overlay">
             <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -122,13 +119,17 @@ export default function CategoryFormModal({
                     </div>
 
                     <form className="form-horizontal" onSubmit={handleSubmit}>
-                        <div className="modal-body">
+                        <div className="modal-body py-20">
                             <div className="form-group">
-                                <label className="col-sm-3 control-label">
+                                <label
+                                    htmlFor="category_name"
+                                    className="col-sm-3 control-label"
+                                >
                                     Nazwa kategorii *
                                 </label>
                                 <div className="col-sm-9">
                                     <input
+                                        id="category_name"
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) =>
@@ -144,11 +145,15 @@ export default function CategoryFormModal({
                             </div>
 
                             <div className="form-group">
-                                <label className="col-sm-3 control-label">
+                                <label
+                                    htmlFor="category_description"
+                                    className="col-sm-3 control-label"
+                                >
                                     Opis
                                 </label>
                                 <div className="col-sm-9">
                                     <textarea
+                                        id="category_description"
                                         value={formData.description}
                                         onChange={(e) =>
                                             setFormData({
@@ -163,11 +168,15 @@ export default function CategoryFormModal({
                             </div>
 
                             <div className="form-group">
-                                <label className="col-sm-3 control-label">
+                                <label
+                                    htmlFor="category_parent"
+                                    className="col-sm-3 control-label"
+                                >
                                     Kategoria nadrzędna
                                 </label>
                                 <div className="col-sm-9">
                                     <select
+                                        id="category_parent"
                                         value={formData.parentId || ''}
                                         onChange={(e) =>
                                             setFormData({
@@ -197,14 +206,7 @@ export default function CategoryFormModal({
                                     Kolor
                                 </label>
                                 <div className="col-sm-9">
-                                    <div
-                                        className="flex-center"
-                                        style={{
-                                            gap: '6px',
-                                            flexWrap: 'wrap',
-                                            marginTop: '5px',
-                                        }}
-                                    >
+                                    <div className="flex-center gap-6 flex-wrap mt-5">
                                         {COLOR_OPTIONS.map((color) => (
                                             <button
                                                 key={color}
@@ -215,17 +217,13 @@ export default function CategoryFormModal({
                                                         color,
                                                     })
                                                 }
+                                                className="status-dot w-24 h-24"
                                                 style={{
-                                                    width: '24px',
-                                                    height: '24px',
                                                     backgroundColor: color,
                                                     border:
                                                         formData.color === color
                                                             ? '2px solid #000'
                                                             : '1px solid #ddd',
-                                                    borderRadius: '50%',
-                                                    padding: 0,
-                                                    cursor: 'pointer',
                                                 }}
                                                 aria-label={`Wybierz kolor ${color}`}
                                             />

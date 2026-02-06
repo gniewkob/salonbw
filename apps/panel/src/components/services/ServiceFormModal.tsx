@@ -178,11 +178,17 @@ export default function ServiceFormModal({
     if (!isOpen) return null;
 
     const renderBasicTab = () => (
-        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+        <div className="tab-pane active py-20">
             <div className="form-group">
-                <label className="col-sm-3 control-label">Nazwa usługi *</label>
+                <label
+                    htmlFor="service_name"
+                    className="col-sm-3 control-label"
+                >
+                    Nazwa usługi *
+                </label>
                 <div className="col-sm-9">
                     <input
+                        id="service_name"
                         type="text"
                         className="form-control"
                         title="Nazwa usługi"
@@ -196,9 +202,15 @@ export default function ServiceFormModal({
             </div>
 
             <div className="form-group">
-                <label className="col-sm-3 control-label">Kategoria</label>
+                <label
+                    htmlFor="service_category"
+                    className="col-sm-3 control-label"
+                >
+                    Kategoria
+                </label>
                 <div className="col-sm-9">
                     <select
+                        id="service_category"
                         value={formData.categoryId || ''}
                         onChange={(e) =>
                             setFormData({
@@ -221,9 +233,15 @@ export default function ServiceFormModal({
             </div>
 
             <div className="form-group">
-                <label className="col-sm-3 control-label">Czas trwania *</label>
+                <label
+                    htmlFor="service_duration"
+                    className="col-sm-3 control-label"
+                >
+                    Czas trwania *
+                </label>
                 <div className="col-sm-4">
                     <select
+                        id="service_duration"
                         value={formData.duration}
                         onChange={(e) =>
                             setFormData({
@@ -247,10 +265,16 @@ export default function ServiceFormModal({
             </div>
 
             <div className="form-group">
-                <label className="col-sm-3 control-label">Cena (PLN) *</label>
+                <label
+                    htmlFor="service_price"
+                    className="col-sm-3 control-label"
+                >
+                    Cena (PLN) *
+                </label>
                 <div className="col-sm-4">
                     <div className="input-group">
                         <input
+                            id="service_price"
                             type="number"
                             step="0.01"
                             className="form-control"
@@ -269,6 +293,7 @@ export default function ServiceFormModal({
                 </div>
                 <div className="col-sm-5">
                     <select
+                        id="service_price_type"
                         value={formData.priceType}
                         onChange={(e) =>
                             setFormData({
@@ -286,10 +311,13 @@ export default function ServiceFormModal({
             </div>
 
             <div className="form-group">
-                <label className="col-sm-3 control-label">Stawka VAT</label>
+                <label htmlFor="service_vat" className="col-sm-3 control-label">
+                    Stawka VAT
+                </label>
                 <div className="col-sm-4">
                     <div className="input-group">
                         <input
+                            id="service_vat"
                             type="number"
                             step="0.01"
                             title="Stawka VAT"
@@ -348,13 +376,17 @@ export default function ServiceFormModal({
     );
 
     const renderDescriptionTab = () => (
-        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+        <div className="tab-pane active py-20">
             <div className="form-group">
-                <label className="col-sm-3 control-label">
+                <label
+                    htmlFor="service_desc_private"
+                    className="col-sm-3 control-label"
+                >
                     Opis (prywatny)
                 </label>
                 <div className="col-sm-9">
                     <textarea
+                        id="service_desc_private"
                         value={formData.description}
                         onChange={(e) =>
                             setFormData({
@@ -369,9 +401,15 @@ export default function ServiceFormModal({
                 </div>
             </div>
             <div className="form-group">
-                <label className="col-sm-3 control-label">Opis publiczny</label>
+                <label
+                    htmlFor="service_desc_public"
+                    className="col-sm-3 control-label"
+                >
+                    Opis publiczny
+                </label>
                 <div className="col-sm-9">
                     <textarea
+                        id="service_desc_public"
                         value={formData.publicDescription}
                         onChange={(e) =>
                             setFormData({
@@ -389,19 +427,19 @@ export default function ServiceFormModal({
     );
 
     const renderResourcesTab = () => (
-        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+        <div className="tab-pane active py-20">
             <div className="alert alert-info">
                 W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
                 wymagane do wykonania tej usługi.
             </div>
-            <p className="text-center versum-muted" style={{ padding: '40px' }}>
+            <p className="text-center versum-muted p-40">
                 Zasoby nie są jeszcze skonfigurowane w systemie.
             </p>
         </div>
     );
 
     const renderEmployeesTab = () => (
-        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+        <div className="tab-pane active py-20">
             <div className="alert alert-info">
                 Wybierz pracowników, którzy świadczą tę usługę. Możesz również
                 zdefiniować indywidualne czasy trwania i ceny.
@@ -412,9 +450,9 @@ export default function ServiceFormModal({
                     <thead>
                         <tr>
                             <th>Pracownik</th>
-                            <th style={{ width: '150px' }}>Czas trwania</th>
-                            <th style={{ width: '150px' }}>Cena</th>
-                            <th style={{ width: '50px' }}></th>
+                            <th className="w-150">Czas trwania</th>
+                            <th className="w-150">Cena</th>
+                            <th className="w-50"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -422,8 +460,7 @@ export default function ServiceFormModal({
                             <tr>
                                 <td
                                     colSpan={4}
-                                    className="text-center versum-muted"
-                                    style={{ padding: '20px' }}
+                                    className="text-center versum-muted p-20"
                                 >
                                     Nie wybrano żadnych pracowników.
                                 </td>
@@ -522,7 +559,7 @@ export default function ServiceFormModal({
                 </table>
             </div>
 
-            <div style={{ marginTop: '15px' }}>
+            <div className="mt-15">
                 <button
                     type="button"
                     className="btn btn-default btn-sm"
@@ -535,10 +572,7 @@ export default function ServiceFormModal({
     );
 
     return (
-        <div
-            className="modal fade in"
-            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-        >
+        <div className="modal fade in block bg-modal-overlay">
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -555,14 +589,8 @@ export default function ServiceFormModal({
                     </div>
 
                     <form className="form-horizontal" onSubmit={handleSubmit}>
-                        <div
-                            className="modal-body"
-                            style={{ padding: '0 15px' }}
-                        >
-                            <ul
-                                className="nav nav-tabs"
-                                style={{ marginTop: '15px' }}
-                            >
+                        <div className="modal-body px-15">
+                            <ul className="nav nav-tabs mt-15">
                                 <li
                                     className={
                                         activeTab === 'basic' ? 'active' : ''
@@ -625,10 +653,7 @@ export default function ServiceFormModal({
                                 </li>
                             </ul>
 
-                            <div
-                                className="tab-content"
-                                style={{ minHeight: '300px' }}
-                            >
+                            <div className="tab-content min-h-300">
                                 {activeTab === 'basic' && renderBasicTab()}
                                 {activeTab === 'resources' &&
                                     renderResourcesTab()}
