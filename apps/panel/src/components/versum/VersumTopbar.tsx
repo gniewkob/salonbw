@@ -51,7 +51,7 @@ export default function VersumTopbar() {
             id="navbar"
         >
             <div className="notification-bar-container"></div>
-            <div className="d-flex ai-center">
+            <div>
                 <a
                     className="menu-toggler navbar-toggle"
                     id="menu-toggler"

@@ -569,30 +569,30 @@
    ======================================== */
 
 .navbar.navbar-default {
-    height: 50px;
-    min-height: 50px;
+    height: var(--versum-topbar-h);
+    min-height: var(--versum-topbar-h);
     border-bottom: 1px solid var(--versum-border);
     background: #f7f8f9;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
+    padding: 0;
     position: sticky;
     top: 0;
     z-index: 30;
     margin: 0;
-    overflow: hidden;
 }
 
+/* Brand container - matches vendored structure */
 .navbar .brand {
     display: flex;
     align-items: center;
-    height: 50px;
+    height: var(--versum-topbar-h);
     background: #fff;
-    border-right: 1px solid var(--versum-border);
     justify-content: center;
     flex-shrink: 0;
     padding: 0 15px;
+    /* Width should match mainnav (62px) + some for centering */
+    min-width: calc(var(--versum-mainnav-w) + 20px);
 }
 
 .navbar .brand-text-sbw a {
@@ -609,21 +609,30 @@
     align-items: center;
 }
 
-#main-container {
+/* Main container - matches vendored .main-container */
+#main-container,
+.main-container {
+    position: relative;
     display: flex;
     min-height: calc(100vh - var(--versum-topbar-h));
+    width: 100%;
     background: #f7f8f9;
 }
 
-#sidebar {
+/* Sidebar - matches vendored .sidebar */
+#sidebar,
+.sidebar {
     width: auto;
     display: flex;
     background: #fff;
     border-right: 1px solid var(--versum-border);
     flex-shrink: 0;
+    height: 100%;
 }
 
-#mainnav {
+/* Mainnav - matches vendored .mainnav */
+#mainnav,
+.mainnav {
     width: var(--versum-mainnav-w);
     background: var(--versum-mainnav-bg);
     display: flex;
