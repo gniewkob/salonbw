@@ -19,7 +19,7 @@
     min-height: 100vh;
     background: var(--versum-bg);
     color: var(--versum-text);
-    font-family: 'Open Sans', Arial, sans-serif;
+    font-family: 'Open Sans', 'Lato', Arial, sans-serif;
 }
 
 .versum-topbar {
@@ -404,8 +404,9 @@
 
 .versum-page__title {
     margin: 0;
-    font-size: 26px;
-    color: #6f757c;
+    font-size: 20px;
+    color: #777;
+    font-family: 'Lato', sans-serif;
     font-weight: 300;
 }
 
@@ -441,6 +442,8 @@
     border-color: #63b5ee;
     padding: 0 10px;
     cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
 }
 
 .versum-button--light {
