@@ -39,6 +39,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-customers-nav',
         permission: 'nav:clients',
         secondaryNav: true, // Page has its own sidebar with dynamic content
+        wideContent: true,
     },
     {
         key: 'products',
@@ -56,6 +57,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-statistics-nav',
         permission: 'nav:statistics',
         secondaryNav: true,
+        wideContent: true,
     },
     {
         key: 'communication',
@@ -64,6 +66,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-communication-nav',
         permission: 'nav:communication',
         secondaryNav: true,
+        wideContent: true,
     },
     {
         key: 'services',
@@ -72,6 +75,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-services-nav',
         permission: 'nav:services',
         secondaryNav: true,
+        wideContent: true,
     },
     {
         key: 'settings',
@@ -93,17 +97,23 @@ export const VERSUM_MODULES: VersumModule[] = [
 ];
 
 export function resolveVersumModule(pathname: string): VersumModule {
-    const path = pathname.toLowerCase();
+    // Normalize path: strip salon prefix if present
+    let path = pathname.toLowerCase();
+    if (path.startsWith('/salonblackandwhite')) {
+        path = path.slice('/salonblackandwhite'.length);
+    }
+    if (path === '') path = '/';
 
     if (
         path.startsWith('/calendar') ||
         path.startsWith('/appointments') ||
-        path.startsWith('/dashboard')
+        path.startsWith('/dashboard') ||
+        path === '/'
     ) {
         return VERSUM_MODULES[0];
     }
 
-    if (path.startsWith('/clients')) {
+    if (path.startsWith('/clients') || path.startsWith('/customers')) {
         return VERSUM_MODULES[1];
     }
 

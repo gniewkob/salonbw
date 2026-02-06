@@ -1,7 +1,4 @@
-import { useState } from 'react';
 import Modal from '@/components/Modal';
-import { useProductCategories } from '@/hooks/useProducts';
-import { useServiceCategories } from '@/hooks/useServicesAdmin';
 
 interface Props {
     type: 'service' | 'product';
@@ -9,19 +6,13 @@ interface Props {
 }
 
 export default function ManageCategoriesModal({ type, onClose }: Props) {
-    const { data: productCategories } = useProductCategories();
-    // We conditionally call hooks, which is bad practice, but since 'type' prop doesn't change during lifecycle of modal, it's "okay" or we should split components.
-    // Better: separate hooks or conditional data.
-    // For now, let's just fetch both or use based on type if hooks allow enabled option.
-    // simpler: just render "Work in progress"
-
     return (
-        <Modal
-            open
-            onClose={onClose}
-            title={`Zarządzaj kategoriami (${type === 'product' ? 'Produkty' : 'Usługi'})`}
-        >
+        <Modal open onClose={onClose}>
             <div className="p-4">
+                <h2 className="text-lg font-semibold mb-4">
+                    Zarządzaj kategoriami (
+                    {type === 'product' ? 'Produkty' : 'Usługi'})
+                </h2>
                 <p>
                     Funkcja zarządzania kategoriami jest w trakcie
                     implementacji.
