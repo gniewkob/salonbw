@@ -1922,3 +1922,11 @@
 .w-dynamic {
     width: var(--dynamic-width, auto) !important;
 }
+
+/* Utility: No Select */
+.no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

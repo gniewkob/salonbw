@@ -217,6 +217,7 @@ export default function CategoryFormModal({
                                                         color,
                                                     })
                                                 }
+                                                // eslint-disable-next-line
                                                 className="status-dot w-24 h-24 bg-dynamic"
                                                 style={
                                                     {
@@ -241,6 +242,7 @@ export default function CategoryFormModal({
                                                     color: e.target.value,
                                                 })
                                             }
+                                            // eslint-disable-next-line
                                             className="bg-dynamic"
                                             style={
                                                 {

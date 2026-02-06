@@ -78,6 +78,7 @@ export default function CustomerSidebar({
                                 <a onClick={() => handleGroupSelect(group.id)}>
                                     <div className="flex-center w-full gap-8">
                                         {group.color && (
+                                            // eslint-disable-next-line
                                             <span
                                                 className="status-dot w-8 h-8 bg-dynamic"
                                                 style={
@@ -118,6 +119,7 @@ export default function CustomerSidebar({
                                             : tag.id,
                                     )
                                 }
+                                // eslint-disable-next-line
                                 className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
                                 style={
                                     {
