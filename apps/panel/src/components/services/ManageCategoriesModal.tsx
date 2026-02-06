@@ -63,16 +63,22 @@ export default function ManageCategoriesModal({
         return (
             <div key={category.id}>
                 <div
-                    className="versum-list-item flex-between"
-                    style={{ paddingLeft: `${20 + level * 20}px` }}
+                    className="versum-list-item flex-between pl-dynamic"
+                    style={
+                        {
+                            '--dynamic-padding': `${20 + level * 20}px`,
+                        } as React.CSSProperties
+                    }
                 >
                     <div className="flex-center gap-10">
                         {category.color && (
                             <span
-                                className="status-dot w-10 h-10"
-                                style={{
-                                    backgroundColor: category.color,
-                                }}
+                                className="status-dot w-10 h-10 bg-dynamic"
+                                style={
+                                    {
+                                        '--dynamic-color': category.color,
+                                    } as React.CSSProperties
+                                }
                             />
                         )}
                         <span className={level === 0 ? 'fw-600' : ''}>

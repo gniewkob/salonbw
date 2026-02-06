@@ -217,14 +217,18 @@ export default function CategoryFormModal({
                                                         color,
                                                     })
                                                 }
-                                                className="status-dot w-24 h-24"
-                                                style={{
-                                                    backgroundColor: color,
-                                                    border:
-                                                        formData.color === color
-                                                            ? '2px solid #000'
-                                                            : '1px solid #ddd',
-                                                }}
+                                                className="status-dot w-24 h-24 bg-dynamic"
+                                                style={
+                                                    {
+                                                        '--dynamic-color':
+                                                            color,
+                                                        border:
+                                                            formData.color ===
+                                                            color
+                                                                ? '2px solid #000'
+                                                                : '1px solid #ddd',
+                                                    } as React.CSSProperties
+                                                }
                                                 aria-label={`Wybierz kolor ${color}`}
                                             />
                                         ))}
@@ -237,14 +241,13 @@ export default function CategoryFormModal({
                                                     color: e.target.value,
                                                 })
                                             }
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                padding: 0,
-                                                border: '1px solid #ddd',
-                                                borderRadius: '50%',
-                                                cursor: 'pointer',
-                                            }}
+                                            className="bg-dynamic"
+                                            style={
+                                                {
+                                                    '--dynamic-color':
+                                                        'transparent',
+                                                } as React.CSSProperties
+                                            }
                                             title="Wybierz własny kolor"
                                         />
                                     </div>

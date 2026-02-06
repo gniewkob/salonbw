@@ -79,11 +79,14 @@ export default function CustomerSidebar({
                                     <div className="flex-center w-full gap-8">
                                         {group.color && (
                                             <span
-                                                className="status-dot w-8 h-8"
-                                                style={{
-                                                    backgroundColor:
-                                                        group.color || '#999',
-                                                }}
+                                                className="status-dot w-8 h-8 bg-dynamic"
+                                                style={
+                                                    {
+                                                        '--dynamic-color':
+                                                            group.color ||
+                                                            '#999',
+                                                    } as React.CSSProperties
+                                                }
                                             />
                                         )}
                                         <span className="flex-1 text-truncate">
@@ -115,13 +118,15 @@ export default function CustomerSidebar({
                                             : tag.id,
                                     )
                                 }
-                                className={`label cursor-pointer font-normal ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
-                                style={{
-                                    backgroundColor:
-                                        filters.tagId === tag.id
-                                            ? '#008bb4'
-                                            : tag.color || '#999',
-                                }}
+                                className={`label cursor-pointer font-normal bg-dynamic ${filters.tagId === tag.id ? 'label-primary' : 'label-default'}`}
+                                style={
+                                    {
+                                        '--dynamic-color':
+                                            filters.tagId === tag.id
+                                                ? '#008bb4'
+                                                : tag.color || '#999',
+                                    } as React.CSSProperties
+                                }
                             >
                                 {tag.name}
                             </button>
