@@ -173,6 +173,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                                 <div className="text-muted fz-12 w-80">
                                                     {month.month}
                                                 </div>
+                                                {/* eslint-disable-next-line */}
                                                 <div
                                                     className="h-full bg-cyan w-dynamic"
                                                     style={

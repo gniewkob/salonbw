@@ -64,6 +64,7 @@ export default function ManageCategoriesModal({
             <div key={category.id}>
                 <div
                     className="versum-list-item flex-between pl-dynamic"
+                    // eslint-disable-next-line
                     style={
                         {
                             '--dynamic-padding': `${20 + level * 20}px`,
@@ -74,6 +75,7 @@ export default function ManageCategoriesModal({
                         {category.color && (
                             <span
                                 className="status-dot w-10 h-10 bg-dynamic"
+                                // eslint-disable-next-line
                                 style={
                                     {
                                         '--dynamic-color': category.color,
