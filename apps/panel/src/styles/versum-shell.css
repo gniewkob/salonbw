@@ -576,6 +576,7 @@
     display: flex;
     align-items: center;
     padding: 0;
+    padding-left: var(--versum-mainnav-w);
     position: sticky;
     top: 0;
     z-index: 30;
@@ -588,11 +589,8 @@
     align-items: center;
     height: var(--versum-topbar-h);
     background: #fff;
-    justify-content: center;
     flex-shrink: 0;
     padding: 0 15px;
-    /* Width should match mainnav (62px) + some for centering */
-    min-width: calc(var(--versum-mainnav-w) + 20px);
 }
 
 .navbar .brand-text-sbw a {
@@ -619,21 +617,25 @@
     background: #f7f8f9;
 }
 
-/* Sidebar - matches vendored .sidebar */
+/* Sidebar - matches vendored .sidebar with padding for fixed mainnav */
 #sidebar,
 .sidebar {
     width: auto;
-    display: flex;
+    display: block;
     background: #fff;
     border-right: 1px solid var(--versum-border);
     flex-shrink: 0;
-    height: 100%;
+    padding-left: var(--versum-mainnav-w);
 }
 
-/* Mainnav - matches vendored .mainnav */
+/* Mainnav - matches vendored .mainnav with position: fixed */
 #mainnav,
 .mainnav {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: var(--versum-mainnav-w);
+    height: 100vh;
     background: var(--versum-mainnav-bg);
     display: flex;
     flex-direction: column;
@@ -827,8 +829,7 @@
 }
 
 .main-container .mainnav {
-    width: var(--versum-mainnav-w);
-    background: var(--versum-mainnav-bg);
+    /* Inherits fixed positioning from #mainnav rule above */
     color: #93a1b0;
     border-right: 1px solid #1b1e22;
 }
@@ -839,7 +840,7 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - var(--versum-topbar-h));
+    min-height: 100vh;
 }
 
 .main-container .mainnav .nav li {
@@ -984,6 +985,9 @@
     white-space: nowrap;
     vertical-align: middle;
     cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
     background-image: none;
     border: 1px solid transparent;
@@ -1225,6 +1229,91 @@
     margin-left: 8px;
 }
 
+/* Hygiene & Cleanup Helpers */
+.versum-panel-sub {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid var(--versum-border);
+    border-radius: 4px;
+}
+
+.versum-panel-sub__title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+}
+
+.versum-panel-sub__description {
+    font-size: 12px;
+    margin: 5px 0;
+    color: #777;
+}
+
+.versum-panel-sub__meta {
+    font-size: 11px;
+    color: #999;
+}
+
+.versum-sidebar__search {
+    padding: 15px;
+}
+
+.versum-sidebar__tag-list {
+    padding: 0 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.versum-sidebar__filters {
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.versum-label-xs {
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.text-versum-blue {
+    color: #008bb4;
+}
+
+.versum-alert {
+    font-size: 12px;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.versum-alert-info {
+    border: 1px solid #bce8f1;
+    background: #d9edf7;
+    color: #31708f;
+}
+
+.versum-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.versum-checkbox-large {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Safari Support */
+* {
+    -webkit-user-select: auto;
+}
+
 /* Links */
 .versum-link {
     color: #4b94ce !important;
@@ -1421,6 +1510,108 @@
 }
 
 /* Nav Tabs */
+.border-bottom {
+    border-bottom: 1px solid #f5f5f5 !important;
+}
+.py-20 {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+}
+.mt-15 {
+    margin-top: 15px !important;
+}
+.w-150 {
+    width: 150px !important;
+}
+.p-20 {
+    padding: 20px !important;
+}
+.px-5 {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+.p-0 {
+    padding: 0 !important;
+}
+.m-0 {
+    margin: 0 !important;
+}
+.mb-5 {
+    margin-bottom: 5px !important;
+}
+.mb-15 {
+    margin-bottom: 15px !important;
+}
+.mr-6 {
+    margin-right: 6px !important;
+}
+.mt-5 {
+    margin-top: 5px !important;
+}
+.mt-30 {
+    margin-top: 30px !important;
+}
+.w-10 {
+    width: 10px !important;
+}
+.h-10 {
+    height: 10px !important;
+}
+.w-8 {
+    width: 8px !important;
+}
+.h-8 {
+    height: 8px !important;
+}
+.w-full {
+    width: 100% !important;
+}
+.gap-8 {
+    gap: 8px !important;
+}
+.block {
+    display: block !important;
+}
+.bold {
+    font-weight: 600 !important;
+}
+.font-normal {
+    font-weight: 400 !important;
+}
+.fz-12 {
+    font-size: 12px !important;
+}
+.cursor-pointer {
+    cursor: pointer !important;
+}
+.overflow-y-auto {
+    overflow-y: auto !important;
+}
+.w-50 {
+    width: 50px !important;
+}
+.min-h-300 {
+    min-height: 300px !important;
+}
+.min.h-400 {
+    height: 400px !important;
+}
+.mb-10 {
+    margin-bottom: 10px !important;
+}
+.mt-20 {
+    margin-top: 20px !important;
+}
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+.w-80 {
+    width: 80px !important;
+}
+.h-80 {
+    font-size: 11px !important;
+}
 .nav-tabs {
     border-bottom: 1px solid #ddd;
     margin: 0 0 20px;
