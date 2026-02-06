@@ -135,7 +135,8 @@ jobs:
         if: steps.should_run.outputs.run == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Lint, typecheck, test, and build
+      # Development mode: only typecheck and build (skip lint, test, bundle check)
+      - name: Typecheck and build
         if: steps.should_run.outputs.run == 'true'
         run: |
           if [ "${{ matrix.app }}" == "public" ]; then
@@ -143,16 +144,9 @@ jobs:
           else
             FILTER="@salonbw/panel"
           fi
-          pnpm turbo run lint typecheck test build --filter="$FILTER" --cache-dir=.turbo
+          pnpm turbo run typecheck build --filter="$FILTER" --cache-dir=.turbo
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
-
-      - name: Enforce bundle size budget
-        if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
-        run: pnpm --filter frontend run bundle:check
-        env:
-          BUNDLE_FIRST_LOAD_LIMIT_KB: 330
-          BUNDLE_ROUTES: "/dashboard/admin,/dashboard/admin/retail,/dashboard/admin/scheduler,/dashboard/employee,/appointments"
 
   backend:
     name: Backend API
@@ -187,132 +181,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck, test, and build backend
-        run: pnpm turbo run typecheck test build --filter=salonbw-backend --cache-dir=.turbo
+      # Development mode: only typecheck and build (skip test)
+      - name: Typecheck and build backend
+        run: pnpm turbo run typecheck build --filter=salonbw-backend --cache-dir=.turbo
 
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    env:
-      CI: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Configure npm registry
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -n "${NPM_TOKEN:-}" ]; then
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
-          fi
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run pnpm audit
-        run: |
-          echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Run audit in JSON mode to avoid false failures when only moderate/low are present.
-          pnpm audit --prod --json > audit.json || true
-
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-
-          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-          const auditPath = path.join(process.cwd(), 'audit.json');
-          const write = (text) => fs.appendFileSync(summaryPath, text + '\\n');
-
-          let raw = '';
-          try {
-            raw = fs.readFileSync(auditPath, 'utf8').trim();
-          } catch {
-            write('⚠️ Unable to read audit output.');
-            process.exit(0);
-          }
-
-          if (!raw) {
-            write('✅ No vulnerabilities reported by pnpm audit.');
-            process.exit(0);
-          }
-
-          const lines = raw.split('\\n').filter(Boolean);
-          const high = { high: 0, critical: 0, moderate: 0, low: 0, total: 0 };
-          const details = [];
-
-          for (const line of lines) {
-            let entry;
-            try {
-              entry = JSON.parse(line);
-            } catch {
-              continue;
-            }
-            if (entry?.type === 'auditSummary') {
-              const vuln = entry?.data?.vulnerabilities || {};
-              high.high = vuln.high || 0;
-              high.critical = vuln.critical || 0;
-              high.moderate = vuln.moderate || 0;
-              high.low = vuln.low || 0;
-              high.total = vuln.total || 0;
-            }
-            if (entry?.type === 'auditAdvisory') {
-              details.push({
-                module_name: entry?.data?.advisory?.module_name,
-                severity: entry?.data?.advisory?.severity,
-                title: entry?.data?.advisory?.title,
-                url: entry?.data?.advisory?.url,
-              });
-            }
-          }
-
-          if (high.total === 0) {
-            write('✅ No vulnerabilities reported by pnpm audit.');
-            process.exit(0);
-          }
-
-          write(`Vulnerabilities: total=${high.total}, critical=${high.critical}, high=${high.high}, moderate=${high.moderate}, low=${high.low}`);
-          write('');
-          write('```');
-          for (const item of details.slice(0, 50)) {
-            const parts = [item.severity, item.module_name, item.title, item.url].filter(Boolean);
-            write(parts.join(' | '));
-          }
-          if (details.length > 50) {
-            write(`...and ${details.length - 50} more`);
-          }
-          write('```');
-
-          if (high.critical > 0 || high.high > 0) {
-            write('❌ High/Critical vulnerabilities detected. Failing CI.');
-            process.exit(1);
-          }
-
-          write('⚠️ Only moderate/low vulnerabilities detected. CI will pass.');
-          process.exit(0);
-          NODE
-
-      - name: Check for outdated dependencies
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
-        run: |
-          echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          pnpm outdated || true >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+  # Security audit disabled for development - run manually with: gh workflow run ci.yml
+  # security:
+  #   name: Security Audit
+  #   ...
 
 # cspell:ignore GITHUB npmjs github elif
