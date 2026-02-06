@@ -19,7 +19,8 @@
     min-height: 100vh;
     background: var(--versum-bg);
     color: var(--versum-text);
-    font-family: 'Open Sans', 'Lato', Arial, sans-serif;
+    font-family:
+        'Open Sans', 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .versum-topbar {
@@ -584,14 +585,92 @@
 .navbar .brand {
     display: flex;
     align-items: center;
+    width: var(--versum-mainnav-w);
+    height: var(--versum-topbar-h);
+    background: #fff;
+    border-right: 1px solid var(--versum-border);
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .navbar .brand-text-sbw a {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    font-size: 14px;
+    font-weight: 700;
+    color: #3f464d;
     text-decoration: none;
     letter-spacing: 0.5px;
+    font-family: 'Lato', sans-serif;
+    text-transform: lowercase;
+}
+
+#main-container {
+    display: flex;
+    min-height: calc(100vh - var(--versum-topbar-h));
+    background: #f7f8f9;
+}
+
+#sidebar {
+    width: auto;
+    display: flex;
+    background: #fff;
+    border-right: 1px solid var(--versum-border);
+    flex-shrink: 0;
+}
+
+#mainnav {
+    width: var(--versum-mainnav-w);
+    background: var(--versum-mainnav-bg);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+}
+
+#sidenav {
+    width: 170px;
+    background: #fff;
+    border-right: 1px solid var(--versum-border);
+    padding-top: 10px;
+    overflow-y: auto;
+}
+
+#sidenav .nav-header {
+    margin: 10px 0 5px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #7d848c;
+    text-transform: uppercase;
+}
+
+#sidenav .nav-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#sidenav .nav-list li a {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: #616971;
+    text-decoration: none;
+}
+
+#sidenav .nav-list li a:hover,
+#sidenav .nav-list li.active a {
+    color: var(--versum-accent);
+    background: #eef3f7;
+}
+
+#sidenav .nav-list li.active a {
+    font-weight: 700;
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .navbar .ml-auto {
@@ -809,8 +888,14 @@
 
 .main-container .main-content .inner {
     max-width: var(--versum-content-max);
+    margin: 0 auto;
     padding: var(--versum-content-pad);
     min-height: calc(100vh - var(--versum-topbar-h));
+}
+
+.main-container .main-content .inner.inner--wide {
+    max-width: none;
+    margin: 0;
 }
 
 /* Utility classes */

@@ -101,176 +101,194 @@ export default function CategoryFormModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full">
-                <div className="border-b px-6 py-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        {category ? 'Edytuj kategorię' : 'Nowa kategoria'}
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg"
-                        aria-label="Zamknij"
-                    >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    <div>
-                        <label
-                            htmlFor="cat-name"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Nazwa kategorii *
-                        </label>
-                        <input
-                            id="cat-name"
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    name: e.target.value,
-                                })
-                            }
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="cat-description"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Opis
-                        </label>
-                        <textarea
-                            id="cat-description"
-                            value={formData.description}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    description: e.target.value,
-                                })
-                            }
-                            rows={2}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="cat-parent"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Kategoria nadrzędna
-                        </label>
-                        <select
-                            id="cat-parent"
-                            value={formData.parentId || ''}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    parentId: e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined,
-                                })
-                            }
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        >
-                            <option value="">Brak (kategoria główna)</option>
-                            {flatCategories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {'—'.repeat(cat.level)} {cat.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Kolor
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {COLOR_OPTIONS.map((color) => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    onClick={() =>
-                                        setFormData({ ...formData, color })
-                                    }
-                                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                                        formData.color === color
-                                            ? 'border-gray-800 scale-110'
-                                            : 'border-transparent'
-                                    }`}
-                                    style={{ backgroundColor: color }}
-                                    aria-label={`Wybierz kolor ${color}`}
-                                />
-                            ))}
-                            <input
-                                type="color"
-                                value={formData.color}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        color: e.target.value,
-                                    })
-                                }
-                                className="w-8 h-8 rounded cursor-pointer"
-                                title="Wybierz własny kolor"
-                            />
-                        </div>
-                    </div>
-
-                    <label className="flex items-center gap-3 cursor-pointer pt-2">
-                        <input
-                            type="checkbox"
-                            checked={formData.isActive}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    isActive: e.target.checked,
-                                })
-                            }
-                            className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                            Kategoria aktywna
-                        </span>
-                    </label>
-
-                    <div className="flex justify-end gap-3 pt-4 border-t">
+        <div
+            className="modal fade in"
+            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+        >
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
                         <button
                             type="button"
+                            className="close"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
+                            aria-label="Zamknij"
                         >
-                            Anuluj
+                            <span aria-hidden="true">&times;</span>
                         </button>
-                        <button
-                            type="submit"
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700"
-                        >
-                            {category ? 'Zapisz zmiany' : 'Dodaj kategorię'}
-                        </button>
+                        <h4 className="modal-title">
+                            {category ? 'Edytuj kategorię' : 'Nowa kategoria'}
+                        </h4>
                     </div>
-                </form>
+
+                    <form className="form-horizontal" onSubmit={handleSubmit}>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="col-sm-3 control-label">
+                                    Nazwa kategorii *
+                                </label>
+                                <div className="col-sm-9">
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                name: e.target.value,
+                                            })
+                                        }
+                                        className="form-control"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="col-sm-3 control-label">
+                                    Opis
+                                </label>
+                                <div className="col-sm-9">
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                description: e.target.value,
+                                            })
+                                        }
+                                        rows={3}
+                                        className="form-control"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="col-sm-3 control-label">
+                                    Kategoria nadrzędna
+                                </label>
+                                <div className="col-sm-9">
+                                    <select
+                                        value={formData.parentId || ''}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                parentId: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                            })
+                                        }
+                                        className="form-control"
+                                    >
+                                        <option value="">
+                                            Brak (kategoria główna)
+                                        </option>
+                                        {flatCategories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {'\u00A0'.repeat(cat.level * 4)}{' '}
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="col-sm-3 control-label">
+                                    Kolor
+                                </label>
+                                <div className="col-sm-9">
+                                    <div
+                                        className="flex-center"
+                                        style={{
+                                            gap: '6px',
+                                            flexWrap: 'wrap',
+                                            marginTop: '5px',
+                                        }}
+                                    >
+                                        {COLOR_OPTIONS.map((color) => (
+                                            <button
+                                                key={color}
+                                                type="button"
+                                                onClick={() =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        color,
+                                                    })
+                                                }
+                                                style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    backgroundColor: color,
+                                                    border:
+                                                        formData.color === color
+                                                            ? '2px solid #000'
+                                                            : '1px solid #ddd',
+                                                    borderRadius: '50%',
+                                                    padding: 0,
+                                                    cursor: 'pointer',
+                                                }}
+                                                aria-label={`Wybierz kolor ${color}`}
+                                            />
+                                        ))}
+                                        <input
+                                            type="color"
+                                            value={formData.color}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    color: e.target.value,
+                                                })
+                                            }
+                                            style={{
+                                                width: '24px',
+                                                height: '24px',
+                                                padding: 0,
+                                                border: '1px solid #ddd',
+                                                borderRadius: '50%',
+                                                cursor: 'pointer',
+                                            }}
+                                            title="Wybierz własny kolor"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="col-sm-offset-3 col-sm-9">
+                                    <div className="checkbox">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isActive}
+                                                onChange={(e) =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        isActive:
+                                                            e.target.checked,
+                                                    })
+                                                }
+                                            />
+                                            Kategoria aktywna
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="btn btn-default"
+                            >
+                                Anuluj
+                            </button>
+                            <button type="submit" className="btn btn-primary">
+                                {category ? 'Zapisz zmiany' : 'Dodaj kategorię'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

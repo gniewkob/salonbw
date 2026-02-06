@@ -1,9 +1,12 @@
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 import { useServiceCategories } from '@/hooks/useServicesAdmin';
+import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 
 export default function ServicesNav() {
     const router = useRouter();
-    const { data: categories } = useServiceCategories();
+    const { data: categories = [] } = useServiceCategories();
+    const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
     const currentCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
@@ -33,9 +36,7 @@ export default function ServicesNav() {
                     className="pull-right"
                     href="javascript:;"
                     title="Zarządzaj kategoriami"
-                    onClick={() => {
-                        /* TODO: Manage categories modal/page */
-                    }}
+                    onClick={() => setIsManageModalOpen(true)}
                 >
                     <i className="icon-cog"></i>
                 </a>
@@ -49,7 +50,7 @@ export default function ServicesNav() {
                         Wszystkie usługi
                     </a>
                 </li>
-                {categories?.map((category) => (
+                {categories.map((category) => (
                     <li
                         key={category.id}
                         className={
@@ -73,6 +74,12 @@ export default function ServicesNav() {
                     </li>
                 ))}
             </ul>
+
+            <ManageCategoriesModal
+                isOpen={isManageModalOpen}
+                categories={categories}
+                onClose={() => setIsManageModalOpen(false)}
+            />
         </div>
     );
 }
