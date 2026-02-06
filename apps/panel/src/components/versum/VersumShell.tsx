@@ -24,7 +24,7 @@ export default function VersumShell({
     const showSecondary = activeModule.secondaryNav || !!secondaryNav;
 
     return (
-        <>
+        <div id="versum-shell-root">
             <VersumTopbar />
             <div className="main-container" id="main-container">
                 <div className="sidebar hidden-print" id="sidebar">
@@ -33,16 +33,17 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    {(secondaryNav || showSecondary) &&
-                        (secondaryNav || (
-                            <VersumSecondaryNav module={activeModule} />
-                        ))}
+                    <VersumSecondaryNav module={activeModule} />
                 </div>
                 <div className="main-content" id="main-content" role="main">
-                    <div className="inner">{children}</div>
+                    <div
+                        className={`inner ${activeModule.wideContent ? 'inner--wide' : ''}`}
+                    >
+                        {children}
+                    </div>
                 </div>
             </div>
             <FloatingHelpButton />
-        </>
+        </div>
     );
 }

@@ -1,7 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import type { Service, ServiceCategory, PriceType } from '@/types';
+import { useState, useEffect, useMemo } from 'react';
+import type {
+    Service,
+    ServiceCategory,
+    PriceType,
+    Employee,
+    EmployeeService,
+} from '@/types';
+import SelectorModal from '@/components/versum/modals/SelectorModal';
+import { useEmployees } from '@/hooks/useEmployees';
+import { useServiceEmployeesDetails } from '@/hooks/useServicesAdmin';
 
 interface Props {
     isOpen: boolean;
@@ -25,6 +34,11 @@ export interface ServiceFormData {
     commissionPercent: number | undefined;
     isActive: boolean;
     onlineBooking: boolean;
+    assignedEmployees: Array<{
+        employeeId: number;
+        customDuration?: number;
+        customPrice?: number;
+    }>;
 }
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240];
@@ -36,6 +50,9 @@ export default function ServiceFormModal({
     onClose,
     onSave,
 }: Props) {
+    const [activeTab, setActiveTab] = useState<
+        'basic' | 'resources' | 'employees' | 'description'
+    >('basic');
     const [formData, setFormData] = useState<ServiceFormData>({
         name: '',
         description: '',
@@ -50,7 +67,13 @@ export default function ServiceFormModal({
         commissionPercent: undefined,
         isActive: true,
         onlineBooking: true,
+        assignedEmployees: [],
     });
+
+    const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
+    const { data: allEmployees = [] } = useEmployees();
+    const { data: existingEmployees = [], refetch: refetchEmployees } =
+        useServiceEmployeesDetails(service?.id || 0);
 
     useEffect(() => {
         if (service) {
@@ -68,6 +91,11 @@ export default function ServiceFormModal({
                 commissionPercent: service.commissionPercent,
                 isActive: service.isActive,
                 onlineBooking: service.onlineBooking,
+                assignedEmployees: existingEmployees.map((e) => ({
+                    employeeId: e.employeeId,
+                    customDuration: e.customDuration,
+                    customPrice: e.customPrice,
+                })),
             });
         } else {
             setFormData({
@@ -84,9 +112,10 @@ export default function ServiceFormModal({
                 commissionPercent: undefined,
                 isActive: true,
                 onlineBooking: true,
+                assignedEmployees: [],
             });
         }
-    }, [service, isOpen]);
+    }, [service, isOpen, existingEmployees]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -109,320 +138,182 @@ export default function ServiceFormModal({
 
     const flatCategories = flattenCategories(categories);
 
+    const availableEmployeesForSelection = useMemo(() => {
+        const assignedIds = new Set(
+            formData.assignedEmployees.map((e) => e.employeeId),
+        );
+        return (allEmployees || []).filter((e) => !assignedIds.has(e.id));
+    }, [allEmployees, formData.assignedEmployees]);
+
+    const handleEmployeeSelect = (employeeId: number) => {
+        setFormData({
+            ...formData,
+            assignedEmployees: [...formData.assignedEmployees, { employeeId }],
+        });
+        setIsEmployeeSelectorOpen(false);
+    };
+
+    const handleRemoveEmployee = (employeeId: number) => {
+        setFormData({
+            ...formData,
+            assignedEmployees: formData.assignedEmployees.filter(
+                (e) => e.employeeId !== employeeId,
+            ),
+        });
+    };
+
+    const handleEmployeeDataChange = (
+        employeeId: number,
+        field: 'customDuration' | 'customPrice',
+        value: number | undefined,
+    ) => {
+        setFormData({
+            ...formData,
+            assignedEmployees: formData.assignedEmployees.map((e) =>
+                e.employeeId === employeeId ? { ...e, [field]: value } : e,
+            ),
+        });
+    };
+
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        {service ? 'Edytuj usługę' : 'Nowa usługa'}
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg"
-                        aria-label="Zamknij"
-                    >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+    const renderBasicTab = () => (
+        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Nazwa usługi *</label>
+                <div className="col-sm-9">
+                    <input
+                        type="text"
+                        className="form-control"
+                        title="Nazwa usługi"
+                        value={formData.name}
+                        onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                        }
+                        required
+                    />
                 </div>
+            </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {/* Basic Info */}
-                    <div className="space-y-4">
-                        <div>
-                            <label
-                                htmlFor="service-name"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Nazwa usługi *
-                            </label>
-                            <input
-                                id="service-name"
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        name: e.target.value,
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                required
-                            />
-                        </div>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Kategoria</label>
+                <div className="col-sm-9">
+                    <select
+                        value={formData.categoryId || ''}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                categoryId: e.target.value
+                                    ? Number(e.target.value)
+                                    : undefined,
+                            })
+                        }
+                        className="form-control"
+                    >
+                        <option value="">Bez kategorii</option>
+                        {flatCategories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {'\u00A0'.repeat(cat.level * 4)} {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
-                        <div>
-                            <label
-                                htmlFor="service-description"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Opis
-                            </label>
-                            <textarea
-                                id="service-description"
-                                value={formData.description}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        description: e.target.value,
-                                    })
-                                }
-                                rows={3}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            />
-                        </div>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Czas trwania *</label>
+                <div className="col-sm-4">
+                    <select
+                        value={formData.duration}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                duration: Number(e.target.value),
+                            })
+                        }
+                        className="form-control"
+                    >
+                        {DURATION_OPTIONS.map((d) => (
+                            <option key={d} value={d}>
+                                {d < 60
+                                    ? `${d} min`
+                                    : d % 60 === 0
+                                      ? `${d / 60} godz.`
+                                      : `${Math.floor(d / 60)} godz. ${d % 60} min`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label
-                                    htmlFor="service-public-description"
-                                    className="block text-sm font-medium text-gray-700 mb-1"
-                                >
-                                    Opis publiczny
-                                </label>
-                                <textarea
-                                    id="service-public-description"
-                                    value={formData.publicDescription || ''}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            publicDescription: e.target.value,
-                                        })
-                                    }
-                                    rows={3}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="service-private-description"
-                                    className="block text-sm font-medium text-gray-700 mb-1"
-                                >
-                                    Opis prywatny
-                                </label>
-                                <textarea
-                                    id="service-private-description"
-                                    value={formData.privateDescription || ''}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            privateDescription: e.target.value,
-                                        })
-                                    }
-                                    rows={3}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="service-category"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Kategoria
-                            </label>
-                            <select
-                                id="service-category"
-                                value={formData.categoryId || ''}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        categoryId: e.target.value
-                                            ? Number(e.target.value)
-                                            : undefined,
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            >
-                                <option value="">Bez kategorii</option>
-                                {flatCategories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {'—'.repeat(cat.level)} {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Cena (PLN) *</label>
+                <div className="col-sm-4">
+                    <div className="input-group">
+                        <input
+                            type="number"
+                            step="0.01"
+                            className="form-control"
+                            title="Cena"
+                            value={formData.price}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    price: parseFloat(e.target.value) || 0,
+                                })
+                            }
+                            required
+                        />
+                        <span className="input-group-addon">zł</span>
                     </div>
+                </div>
+                <div className="col-sm-5">
+                    <select
+                        value={formData.priceType}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                priceType: e.target.value as PriceType,
+                            })
+                        }
+                        title="Typ ceny"
+                        className="form-control"
+                    >
+                        <option value="fixed">Stała</option>
+                        <option value="from">Od (minimalna)</option>
+                    </select>
+                </div>
+            </div>
 
-                    {/* Duration & Price */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                htmlFor="service-duration"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Czas trwania *
-                            </label>
-                            <select
-                                id="service-duration"
-                                value={formData.duration}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        duration: Number(e.target.value),
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            >
-                                {DURATION_OPTIONS.map((d) => (
-                                    <option key={d} value={d}>
-                                        {d < 60
-                                            ? `${d} min`
-                                            : d % 60 === 0
-                                              ? `${d / 60} godz.`
-                                              : `${Math.floor(d / 60)} godz. ${d % 60} min`}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="service-price"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Cena (PLN) *
-                            </label>
-                            <div className="relative">
-                                <input
-                                    id="service-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={formData.price}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            price:
-                                                parseFloat(e.target.value) || 0,
-                                        })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 pr-16"
-                                    required
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                    PLN
-                                </span>
-                            </div>
-                        </div>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Stawka VAT</label>
+                <div className="col-sm-4">
+                    <div className="input-group">
+                        <input
+                            type="number"
+                            step="0.01"
+                            title="Stawka VAT"
+                            value={formData.vatRate || ''}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    vatRate: e.target.value
+                                        ? parseFloat(e.target.value)
+                                        : undefined,
+                                })
+                            }
+                            className="form-control"
+                            placeholder="23"
+                        />
+                        <span className="input-group-addon">%</span>
                     </div>
+                </div>
+            </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                htmlFor="service-pricetype"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Typ ceny
-                            </label>
-                            <select
-                                id="service-pricetype"
-                                value={formData.priceType}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        priceType: e.target.value as PriceType,
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                            >
-                                <option value="fixed">Stała</option>
-                                <option value="from">Od (minimalna)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="service-commission"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Prowizja (%)
-                            </label>
-                            <input
-                                id="service-commission"
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={formData.commissionPercent || ''}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        commissionPercent: e.target.value
-                                            ? parseFloat(e.target.value)
-                                            : undefined,
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                placeholder="Domyślna"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                htmlFor="service-vat"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                VAT (%)
-                            </label>
-                            <input
-                                id="service-vat"
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                value={formData.vatRate ?? ''}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        vatRate: e.target.value
-                                            ? parseFloat(e.target.value)
-                                            : undefined,
-                                    })
-                                }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                placeholder="23"
-                            />
-                        </div>
-                        <div className="flex items-end">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={!!formData.isFeatured}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            isFeatured: e.target.checked,
-                                        })
-                                    }
-                                    className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                />
-                                <span className="text-sm font-medium text-gray-700">
-                                    Wyróżniona usługa
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Toggles */}
-                    <div className="flex items-center gap-8 pt-4 border-t">
-                        <label className="flex items-center gap-3 cursor-pointer">
+            <div className="form-group">
+                <div className="col-sm-offset-3 col-sm-9">
+                    <div className="checkbox">
+                        <label>
                             <input
                                 type="checkbox"
                                 checked={formData.isActive}
@@ -432,14 +323,12 @@ export default function ServiceFormModal({
                                         isActive: e.target.checked,
                                     })
                                 }
-                                className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
-                            <span className="text-sm font-medium text-gray-700">
-                                Usługa aktywna
-                            </span>
+                            Usługa aktywna
                         </label>
-
-                        <label className="flex items-center gap-3 cursor-pointer">
+                    </div>
+                    <div className="checkbox">
+                        <label>
                             <input
                                 type="checkbox"
                                 checked={formData.onlineBooking}
@@ -449,32 +338,331 @@ export default function ServiceFormModal({
                                         onlineBooking: e.target.checked,
                                     })
                                 }
-                                className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
-                            <span className="text-sm font-medium text-gray-700">
-                                Dostępna w rezerwacjach online
-                            </span>
+                            Dostępna w rezerwacjach online
                         </label>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
 
-                    {/* Actions */}
-                    <div className="flex justify-end gap-3 pt-4 border-t">
+    const renderDescriptionTab = () => (
+        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">
+                    Opis (prywatny)
+                </label>
+                <div className="col-sm-9">
+                    <textarea
+                        value={formData.description}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                description: e.target.value,
+                            })
+                        }
+                        rows={4}
+                        className="form-control"
+                        placeholder="Opis widoczny tylko dla personelu"
+                    />
+                </div>
+            </div>
+            <div className="form-group">
+                <label className="col-sm-3 control-label">Opis publiczny</label>
+                <div className="col-sm-9">
+                    <textarea
+                        value={formData.publicDescription}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                publicDescription: e.target.value,
+                            })
+                        }
+                        rows={4}
+                        className="form-control"
+                        placeholder="Opis widoczny dla klientów w rezerwacji online"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderResourcesTab = () => (
+        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+            <div className="alert alert-info">
+                W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
+                wymagane do wykonania tej usługi.
+            </div>
+            <p className="text-center versum-muted" style={{ padding: '40px' }}>
+                Zasoby nie są jeszcze skonfigurowane w systemie.
+            </p>
+        </div>
+    );
+
+    const renderEmployeesTab = () => (
+        <div className="tab-pane active" style={{ padding: '20px 0' }}>
+            <div className="alert alert-info">
+                Wybierz pracowników, którzy świadczą tę usługę. Możesz również
+                zdefiniować indywidualne czasy trwania i ceny.
+            </div>
+
+            <div className="versum-table-wrap">
+                <table className="versum-table">
+                    <thead>
+                        <tr>
+                            <th>Pracownik</th>
+                            <th style={{ width: '150px' }}>Czas trwania</th>
+                            <th style={{ width: '150px' }}>Cena</th>
+                            <th style={{ width: '50px' }}></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {formData.assignedEmployees.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan={4}
+                                    className="text-center versum-muted"
+                                    style={{ padding: '20px' }}
+                                >
+                                    Nie wybrano żadnych pracowników.
+                                </td>
+                            </tr>
+                        ) : (
+                            formData.assignedEmployees.map((assignment) => {
+                                const employee = (allEmployees || []).find(
+                                    (e) => e.id === assignment.employeeId,
+                                );
+                                return (
+                                    <tr key={assignment.employeeId}>
+                                        <td>
+                                            {employee?.name ||
+                                                `Pracownik #${assignment.employeeId}`}
+                                        </td>
+                                        <td>
+                                            <select
+                                                className="form-control input-sm"
+                                                value={
+                                                    assignment.customDuration ??
+                                                    ''
+                                                }
+                                                title="Indywidualny czas trwania"
+                                                onChange={(e) =>
+                                                    handleEmployeeDataChange(
+                                                        assignment.employeeId,
+                                                        'customDuration',
+                                                        e.target.value
+                                                            ? Number(
+                                                                  e.target
+                                                                      .value,
+                                                              )
+                                                            : undefined,
+                                                    )
+                                                }
+                                            >
+                                                <option value="">
+                                                    Domyślny (
+                                                    {formData.duration} min)
+                                                </option>
+                                                {DURATION_OPTIONS.map((d) => (
+                                                    <option key={d} value={d}>
+                                                        {d} min
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div className="input-group input-group-sm">
+                                                <input
+                                                    type="number"
+                                                    className="form-control"
+                                                    title="Indywidualna cena dla pracownika"
+                                                    placeholder={formData.price.toString()}
+                                                    value={
+                                                        assignment.customPrice ??
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleEmployeeDataChange(
+                                                            assignment.employeeId,
+                                                            'customPrice',
+                                                            e.target.value
+                                                                ? parseFloat(
+                                                                      e.target
+                                                                          .value,
+                                                                  )
+                                                                : undefined,
+                                                        )
+                                                    }
+                                                />
+                                                <span className="input-group-addon">
+                                                    zł
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-right">
+                                            <button
+                                                type="button"
+                                                className="btn btn-xs btn-default"
+                                                onClick={() =>
+                                                    handleRemoveEmployee(
+                                                        assignment.employeeId,
+                                                    )
+                                                }
+                                                title="Usuń"
+                                            >
+                                                &times;
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style={{ marginTop: '15px' }}>
+                <button
+                    type="button"
+                    className="btn btn-default btn-sm"
+                    onClick={() => setIsEmployeeSelectorOpen(true)}
+                >
+                    + dodaj pracownika
+                </button>
+            </div>
+        </div>
+    );
+
+    return (
+        <div
+            className="modal fade in"
+            style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+        >
+            <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                    <div className="modal-header">
                         <button
                             type="button"
+                            className="close"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
                         >
-                            Anuluj
+                            &times;
                         </button>
-                        <button
-                            type="submit"
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700"
-                        >
-                            {service ? 'Zapisz zmiany' : 'Dodaj usługę'}
-                        </button>
+                        <h4 className="modal-title">
+                            {service ? 'Edytuj usługę' : 'Nowa usługa'}
+                        </h4>
                     </div>
-                </form>
+
+                    <form className="form-horizontal" onSubmit={handleSubmit}>
+                        <div
+                            className="modal-body"
+                            style={{ padding: '0 15px' }}
+                        >
+                            <ul
+                                className="nav nav-tabs"
+                                style={{ marginTop: '15px' }}
+                            >
+                                <li
+                                    className={
+                                        activeTab === 'basic' ? 'active' : ''
+                                    }
+                                >
+                                    <a
+                                        href="javascript:;"
+                                        onClick={() => setActiveTab('basic')}
+                                    >
+                                        Podstawowe dane
+                                    </a>
+                                </li>
+                                <li
+                                    className={
+                                        activeTab === 'resources'
+                                            ? 'active'
+                                            : ''
+                                    }
+                                >
+                                    <a
+                                        href="javascript:;"
+                                        onClick={() =>
+                                            setActiveTab('resources')
+                                        }
+                                    >
+                                        Zasoby
+                                    </a>
+                                </li>
+                                <li
+                                    className={
+                                        activeTab === 'employees'
+                                            ? 'active'
+                                            : ''
+                                    }
+                                >
+                                    <a
+                                        href="javascript:;"
+                                        onClick={() =>
+                                            setActiveTab('employees')
+                                        }
+                                    >
+                                        Pracownicy
+                                    </a>
+                                </li>
+                                <li
+                                    className={
+                                        activeTab === 'description'
+                                            ? 'active'
+                                            : ''
+                                    }
+                                >
+                                    <a
+                                        href="javascript:;"
+                                        onClick={() =>
+                                            setActiveTab('description')
+                                        }
+                                    >
+                                        Opis
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div
+                                className="tab-content"
+                                style={{ minHeight: '300px' }}
+                            >
+                                {activeTab === 'basic' && renderBasicTab()}
+                                {activeTab === 'resources' &&
+                                    renderResourcesTab()}
+                                {activeTab === 'employees' &&
+                                    renderEmployeesTab()}
+                                {activeTab === 'description' &&
+                                    renderDescriptionTab()}
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="btn btn-default"
+                            >
+                                Anuluj
+                            </button>
+                            <button type="submit" className="btn btn-primary">
+                                {service ? 'Zapisz zmiany' : 'Dodaj usługę'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
+
+            {isEmployeeSelectorOpen && (
+                <SelectorModal
+                    title="Wybierz pracownika"
+                    items={availableEmployeesForSelection}
+                    onSelect={handleEmployeeSelect}
+                    onClose={() => setIsEmployeeSelectorOpen(false)}
+                />
+            )}
         </div>
     );
 }

@@ -50,18 +50,21 @@ export default function VersumTopbar() {
             className="navbar navbar-default navbar-static-top d-flex"
             id="navbar"
         >
-            <div className="notification-bar-container"></div>
-            <div>
-                <a className="menu-toggler navbar-toggle" id="menu-toggler">
+            <div className="brand brand-text-sbw">
+                <Link href="/dashboard" title="przejdź do pulpitu">
+                    Black&amp;White
+                </Link>
+            </div>
+            <div className="flex-center">
+                <a
+                    className="menu-toggler navbar-toggle"
+                    id="menu-toggler"
+                    href="javascript:;"
+                >
                     <span className="icon-bar"></span>
                     <span className="icon-bar"></span>
                     <span className="icon-bar"></span>
                 </a>
-                <div className="brand brand-text-sbw">
-                    <Link href="/dashboard" title="przejdź do pulpitu">
-                        Black&amp;White
-                    </Link>
-                </div>
             </div>
             <div className="ml-auto">
                 <ul className="navbar-right simple-list d-flex">

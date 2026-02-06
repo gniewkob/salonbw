@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/DashboardLayout';
 import ServicesNav from '@/components/versum/navs/ServicesNav';
@@ -253,58 +254,60 @@ export default function ServiceDetailsPage() {
             pageTitle={summaryData?.name ?? 'Usługa'}
             secondaryNav={<ServicesNav />}
         >
-            <div className="versum-page">
-                <div className="text-sm text-gray-500 mb-3 flex items-center gap-2">
-                    {/* Breadcrumbs fallback if needed, currently header handled by Layout but we can keep inline nav */}
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
-                    <div className="text-lg font-semibold text-gray-800">
-                        {summaryData?.name ?? 'Usługa'}
+            <div className="versum-page" data-testid="service-details-page">
+                <header className="versum-page-header">
+                    <div className="versum-breadcrumb">
+                        <Link href="/services">Usługi</Link>
+                        <span className="separator">›</span>
+                        <span>{summaryData?.name ?? 'Usługa'}</span>
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="px-3 py-1.5 text-sm border border-blue-200 text-blue-600 rounded bg-white hover:bg-blue-50"
-                        >
-                            edytuj
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsVariantsModalOpen(true)}
-                            className="px-3 py-1.5 text-sm border border-blue-200 text-blue-600 rounded bg-white hover:bg-blue-50"
-                        >
-                            zarządzaj wariantami
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex gap-4">
-                    <aside className="w-56 bg-white border border-gray-200 rounded shrink-0">
-                        <div className="px-4 py-3 text-sm font-semibold text-gray-700 border-b">
-                            {summaryData?.name ?? 'Usługa'}
+                    <div className="versum-header-content">
+                        <div className="versum-header-title">
+                            <h1>{summaryData?.name ?? 'Usługa'}</h1>
                         </div>
-                        <div className="py-2">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.key}
-                                    type="button"
+                        <div className="versum-header-actions">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="btn btn-default"
+                            >
+                                edytuj
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsVariantsModalOpen(true)}
+                                className="btn btn-default"
+                                style={{ marginLeft: '8px' }}
+                            >
+                                zarządzaj wariantami
+                            </button>
+                        </div>
+                    </div>
+
+                    <ul className="nav nav-tabs">
+                        {tabs.map((tab) => (
+                            <li
+                                key={tab.key}
+                                className={
+                                    activeTab === tab.key ? 'active' : ''
+                                }
+                            >
+                                <a
+                                    href="javascript:;"
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left ${
-                                        activeTab === tab.key
-                                            ? 'bg-blue-50 text-blue-600 font-medium border-l-2 border-blue-500'
-                                            : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
                                 >
-                                    {tab.icon}
                                     {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </aside>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </header>
 
-                    <section className="flex-1 bg-white border border-gray-200 rounded p-6 min-w-0">
+                <div
+                    className="versum-page-content"
+                    style={{ marginTop: '20px' }}
+                >
+                    <section className="versum-widget">
                         {activeTab === 'summary' && (
                             <div>
                                 <div className="flex items-baseline gap-2 mb-4">
@@ -316,60 +319,46 @@ export default function ServiceDetailsPage() {
                                     </div>
                                 </div>
 
-                                <div className="border border-gray-200 rounded mb-4">
-                                    {variantsData.length === 0 && (
-                                        <div className="px-4 py-3 text-sm text-gray-500">
-                                            Brak wariantów
-                                        </div>
-                                    )}
-                                    {variantsData.map((variant) => (
-                                        <div
-                                            key={variant.id}
-                                            className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 text-sm"
-                                        >
-                                            <div className="font-medium text-gray-800">
-                                                {variant.name}
-                                            </div>
-                                            <div className="flex items-center gap-6 text-gray-500">
-                                                <div className="flex items-center gap-2">
-                                                    <svg
-                                                        className="w-4 h-4"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
+                                <div
+                                    className="versum-table-wrap"
+                                    style={{ marginBottom: '20px' }}
+                                >
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Wariant</th>
+                                                <th>Czas trwania</th>
+                                                <th>Cena</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {variantsData.length === 0 && (
+                                                <tr>
+                                                    <td
+                                                        colSpan={3}
+                                                        className="text-center text-gray-500"
                                                     >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={1.6}
-                                                            d="M12 6v6l4 2"
-                                                        />
-                                                    </svg>
-                                                    {formatDuration(
-                                                        variant.duration,
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-700">
-                                                    <svg
-                                                        className="w-4 h-4"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={1.6}
-                                                            d="M12 2v20M6 6h8a4 4 0 010 8H6"
-                                                        />
-                                                    </svg>
-                                                    {formatCurrency(
-                                                        variant.price,
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                                        Brak wariantów
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {variantsData.map((variant) => (
+                                                <tr key={variant.id}>
+                                                    <td>{variant.name}</td>
+                                                    <td>
+                                                        {formatDuration(
+                                                            variant.duration,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatCurrency(
+                                                            variant.price,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
@@ -547,61 +536,54 @@ export default function ServiceDetailsPage() {
 
                         {activeTab === 'history' && (
                             <div>
-                                <div className="border border-gray-200 rounded">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-gray-50 text-gray-600">
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
                                             <tr>
-                                                <th className="text-left px-3 py-2">
-                                                    data
-                                                </th>
-                                                <th className="text-left px-3 py-2">
-                                                    wariant
-                                                </th>
-                                                <th className="text-left px-3 py-2">
-                                                    klient
-                                                </th>
-                                                <th className="text-left px-3 py-2">
-                                                    pracownik
-                                                </th>
-                                                <th className="text-left px-3 py-2">
-                                                    czas trwania
-                                                </th>
-                                                <th className="text-left px-3 py-2">
-                                                    cena
-                                                </th>
+                                                <th>Data</th>
+                                                <th>Wariant</th>
+                                                <th>Klient</th>
+                                                <th>Pracownik</th>
+                                                <th>Czas trwania</th>
+                                                <th>Cena</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {history.data?.items?.map(
-                                                (item, idx) => (
-                                                    <tr
-                                                        key={item.id}
-                                                        className={`border-t ${
-                                                            idx === 0
-                                                                ? 'bg-blue-50'
-                                                                : ''
-                                                        }`}
+                                            {history.data?.items?.length ===
+                                                0 && (
+                                                <tr>
+                                                    <td
+                                                        colSpan={6}
+                                                        className="text-center text-gray-500"
                                                     >
-                                                        <td className="px-3 py-2 text-blue-600">
+                                                        Brak historii wizyt dla
+                                                        tej usługi
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {history.data?.items?.map(
+                                                (item) => (
+                                                    <tr key={item.id}>
+                                                        <td className="versum-link">
                                                             {new Date(
                                                                 item.startTime,
                                                             ).toLocaleString(
                                                                 'pl-PL',
                                                             )}
                                                         </td>
-                                                        <td className="px-3 py-2">
+                                                        <td>
                                                             {item.serviceVariant
                                                                 ?.name ?? '—'}
                                                         </td>
-                                                        <td className="px-3 py-2">
+                                                        <td>
                                                             {item.client
                                                                 ?.name ?? '—'}
                                                         </td>
-                                                        <td className="px-3 py-2">
+                                                        <td>
                                                             {item.employee
                                                                 ?.name ?? '—'}
                                                         </td>
-                                                        <td className="px-3 py-2">
+                                                        <td>
                                                             {item.endTime
                                                                 ? formatDuration(
                                                                       Math.round(
@@ -616,7 +598,7 @@ export default function ServiceDetailsPage() {
                                                                   )
                                                                 : '—'}
                                                         </td>
-                                                        <td className="px-3 py-2">
+                                                        <td>
                                                             {formatCurrency(
                                                                 item.paidAmount ??
                                                                     item
@@ -636,14 +618,14 @@ export default function ServiceDetailsPage() {
 
                         {activeTab === 'employees' && (
                             <div>
-                                <div className="border border-gray-200 rounded">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-gray-50 text-gray-600">
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
                                             <tr>
-                                                <th className="text-left px-3 py-2 w-80">
-                                                    Nazwa
+                                                <th style={{ width: '300px' }}>
+                                                    Nazwa wariantu
                                                 </th>
-                                                <th className="text-left px-3 py-2">
+                                                <th>
                                                     Pracownicy i czas
                                                     wykonywania
                                                 </th>
@@ -656,62 +638,73 @@ export default function ServiceDetailsPage() {
                                                         variant.id,
                                                     ) ?? [];
                                                 return (
-                                                    <tr
-                                                        key={variant.id}
-                                                        className="border-t"
-                                                    >
-                                                        <td className="px-3 py-3 align-top">
+                                                    <tr key={variant.id}>
+                                                        <td className="align-top">
                                                             <div className="font-semibold">
-                                                                {
-                                                                    summaryData?.name
-                                                                }{' '}
-                                                                - {variant.name}
+                                                                {variant.name}
                                                             </div>
-                                                            <div className="text-xs text-gray-500">
+                                                            <div
+                                                                className="versum-muted"
+                                                                style={{
+                                                                    fontSize:
+                                                                        '11px',
+                                                                }}
+                                                            >
                                                                 {formatDuration(
                                                                     variant.duration,
                                                                 )}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">
+                                                                ,{' '}
                                                                 {formatCurrency(
                                                                     variant.price,
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-3 align-top">
+                                                        <td className="align-top">
                                                             {assigned.length ===
                                                             0 ? (
-                                                                <div className="text-gray-500 text-sm">
+                                                                <div className="versum-muted">
                                                                     Brak
                                                                     przypisań
                                                                 </div>
                                                             ) : (
-                                                                assigned.map(
-                                                                    (
-                                                                        assignment,
-                                                                    ) => (
-                                                                        <div
-                                                                            key={
-                                                                                assignment.id
-                                                                            }
-                                                                            className="flex items-center justify-between py-2 border-b last:border-b-0"
-                                                                        >
-                                                                            <div>
-                                                                                {
-                                                                                    assignment
-                                                                                        .employee
-                                                                                        ?.name
+                                                                <ul
+                                                                    className="list-unstyled"
+                                                                    style={{
+                                                                        margin: 0,
+                                                                        padding: 0,
+                                                                    }}
+                                                                >
+                                                                    {assigned.map(
+                                                                        (
+                                                                            assignment,
+                                                                        ) => (
+                                                                            <li
+                                                                                key={
+                                                                                    assignment.id
                                                                                 }
-                                                                            </div>
-                                                                            <div className="text-gray-500">
-                                                                                {formatDuration(
-                                                                                    assignment.customDuration ??
-                                                                                        variant.duration,
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    ),
-                                                                )
+                                                                                className="flex-between"
+                                                                                style={{
+                                                                                    padding:
+                                                                                        '4px 0',
+                                                                                }}
+                                                                            >
+                                                                                <span>
+                                                                                    {
+                                                                                        assignment
+                                                                                            .employee
+                                                                                            ?.name
+                                                                                    }
+                                                                                </span>
+                                                                                <span className="versum-muted">
+                                                                                    {formatDuration(
+                                                                                        assignment.customDuration ??
+                                                                                            variant.duration,
+                                                                                    )}
+                                                                                </span>
+                                                                            </li>
+                                                                        ),
+                                                                    )}
+                                                                </ul>
                                                             )}
                                                         </td>
                                                     </tr>
