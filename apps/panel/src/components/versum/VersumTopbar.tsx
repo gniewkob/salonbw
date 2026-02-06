@@ -69,6 +69,7 @@ export default function VersumTopbar() {
                         <div className="omnibox-wrapper">
                             <input
                                 className="omnibox"
+                                data-search-url="/global_searches"
                                 id="omnibox"
                                 placeholder="Szukaj..."
                             />
@@ -78,8 +79,13 @@ export default function VersumTopbar() {
                             ></div>
                         </div>
                     </li>
+                    <li
+                        className="notification_center"
+                        id="notification_center_navbar"
+                    ></li>
                     <li className="all_complete tasks_tooltip">
                         <a
+                            aria-expanded="false"
                             className="link"
                             href="javascript:;"
                             title="Twoje zadania"
@@ -94,6 +100,12 @@ export default function VersumTopbar() {
                                 />
                             </div>
                         </a>
+                        <div className="dropdown_cover"></div>
+                        <div
+                            className="dropdown-menu-tasks"
+                            id="dropdownTasks"
+                            role="menu"
+                        ></div>
                     </li>
                     <li
                         ref={helpMenuRef}
@@ -101,6 +113,7 @@ export default function VersumTopbar() {
                     >
                         <a
                             className="ai-center d-flex dropdown-toggle"
+                            data-toggle="dropdown"
                             href="javascript:;"
                             onClick={() => setHelpMenuOpen(!helpMenuOpen)}
                         >
@@ -134,6 +147,7 @@ export default function VersumTopbar() {
                     >
                         <a
                             className="dropdown-toggle e2e-nav-user-dropdown"
+                            data-toggle="dropdown"
                             href="javascript:;"
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                         >
@@ -145,6 +159,13 @@ export default function VersumTopbar() {
                         <ul className="dropdown-menu larger-dropdown-menu">
                             <li className="main-menu-li">
                                 <a className="profil" href="/settings/profile">
+                                    {user?.avatarUrl && (
+                                        <img
+                                            alt="Avatar"
+                                            className="avatar"
+                                            src={user.avatarUrl}
+                                        />
+                                    )}
                                     <strong>
                                         {user?.name || 'Użytkownik'}
                                     </strong>

@@ -26,41 +26,41 @@ export default function ServicesNav() {
     };
 
     return (
-        <section className="versum-secondarynav__section">
-            <h4>
+        <div className="sidebar-inner nav-scroll-container">
+            <div className="nav-header">
                 KATEGORIE
-                {/* Placeholder for managing categories */}
-                <button
-                    className="versum-secondarynav__add-btn"
+                <a
+                    className="pull-right"
+                    href="javascript:;"
                     title="Zarządzaj kategoriami"
                     onClick={() => {
                         /* TODO: Manage categories modal/page */
                     }}
                 >
-                    ⚙️
-                </button>
-            </h4>
-            <ul>
-                <li className={!currentCategoryId ? 'is-active' : undefined}>
-                    <button
+                    <i className="icon-cog"></i>
+                </a>
+            </div>
+            <ul className="nav nav-list">
+                <li className={!currentCategoryId ? 'active' : undefined}>
+                    <a
+                        href="javascript:;"
                         onClick={() => updateFilters(undefined)}
-                        className="versum-secondarynav__item-btn"
                     >
                         Wszystkie usługi
-                    </button>
+                    </a>
                 </li>
                 {categories?.map((category) => (
                     <li
                         key={category.id}
                         className={
                             currentCategoryId === category.id
-                                ? 'is-active'
+                                ? 'active'
                                 : undefined
                         }
                     >
-                        <button
+                        <a
+                            href="javascript:;"
                             onClick={() => updateFilters(category.id)}
-                            className="versum-secondarynav__item-btn"
                         >
                             {category.color && (
                                 <span
@@ -69,10 +69,10 @@ export default function ServicesNav() {
                                 />
                             )}
                             {category.name}
-                        </button>
+                        </a>
                     </li>
                 ))}
             </ul>
-        </section>
+        </div>
     );
 }

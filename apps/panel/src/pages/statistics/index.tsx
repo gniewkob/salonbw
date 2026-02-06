@@ -46,7 +46,7 @@ function StatisticsPageContent() {
 
                     <div className="versum-page__toolbar">
                         <input
-                            className="versum-input"
+                            className="form-control versum-toolbar-search"
                             type="date"
                             value={reportDate}
                             onChange={(event) =>
@@ -56,7 +56,7 @@ function StatisticsPageContent() {
                         />
                         <button
                             type="button"
-                            className="versum-button versum-button--light"
+                            className="btn btn-default versum-toolbar-btn"
                         >
                             pobierz raport Excel
                         </button>
@@ -67,96 +67,164 @@ function StatisticsPageContent() {
                             Ładowanie raportu...
                         </div>
                     ) : (
-                        <div className="p-4">
-                            <h2 className="mb-3 text-xl text-gray-700">
-                                Salon ogółem
+                        <div className="inner">
+                            <h2
+                                className="nav-header"
+                                style={{ margin: '20px 0 10px' }}
+                            >
+                                SALON OGÓŁEM
                             </h2>
-                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
-                                <div className="border border-gray-300 bg-white p-3">
-                                    <table className="versum-table">
-                                        <tbody>
-                                            <tr>
-                                                <td>Sprzedaż usług brutto</td>
-                                                <td>
-                                                    {totals.dayRevenue.toFixed(
-                                                        2,
-                                                    )}{' '}
-                                                    zł
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    Sprzedaż produktów brutto
-                                                </td>
-                                                <td>0,00 zł</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Utarg za ten tydzień</td>
-                                                <td>
-                                                    {totals.weekRevenue.toFixed(
-                                                        2,
-                                                    )}{' '}
-                                                    zł
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Utarg za ten miesiąc</td>
-                                                <td>
-                                                    {totals.totalRevenue.toFixed(
-                                                        2,
-                                                    )}{' '}
-                                                    zł
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Łączna liczba wizyt</td>
-                                                <td>{totals.totalVisits}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Średnia wartość wizyty</td>
-                                                <td>
-                                                    {totals.avgVisitValue.toFixed(
-                                                        2,
-                                                    )}{' '}
-                                                    zł
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="border border-gray-300 bg-white p-3">
-                                        <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                                            Udział metod płatności
-                                        </h3>
-                                        <div className="mx-auto h-44 w-44 rounded-full bg-[#86be3f]" />
-                                        <p className="mt-2 text-xs text-gray-600">
-                                            gotówka:{' '}
-                                            {totals.totalRevenue.toFixed(2)} zł
-                                            (100%)
-                                        </p>
+                            <div className="row">
+                                <div className="col-sm-6">
+                                    <div className="versum-widget">
+                                        <div className="versum-widget__header">
+                                            Podsumowanie finansowe
+                                        </div>
+                                        <table className="versum-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        Sprzedaż usług brutto
+                                                    </td>
+                                                    <td className="text-right">
+                                                        {totals.dayRevenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        Sprzedaż produktów
+                                                        brutto
+                                                    </td>
+                                                    <td className="text-right">
+                                                        0,00 zł
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        Utarg za ten tydzień
+                                                    </td>
+                                                    <td className="text-right">
+                                                        {totals.weekRevenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        Utarg za ten miesiąc
+                                                    </td>
+                                                    <td className="text-right">
+                                                        {totals.totalRevenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Łączna liczba wizyt</td>
+                                                    <td className="text-right">
+                                                        {totals.totalVisits}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        Średnia wartość wizyty
+                                                    </td>
+                                                    <td className="text-right">
+                                                        {totals.avgVisitValue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div className="border border-gray-300 bg-white p-3">
-                                        <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                                            Udział pracowników w utargu
-                                        </h3>
-                                        <div className="mx-auto h-44 w-44 rounded-full bg-[#c95334]" />
-                                        <p className="mt-2 text-xs text-gray-600">
-                                            na podstawie wizyt zakończonych
-                                        </p>
+                                </div>
+                                <div className="col-sm-6">
+                                    <div className="row">
+                                        <div className="col-xs-6">
+                                            <div className="versum-stat-tile">
+                                                <div className="versum-stat-tile__title">
+                                                    Metody płatności
+                                                </div>
+                                                <div className="text-center">
+                                                    <div
+                                                        className="color-circle"
+                                                        style={{
+                                                            width: '80px',
+                                                            height: '80px',
+                                                            margin: '0 auto 10px',
+                                                            background:
+                                                                '#86be3f',
+                                                        }}
+                                                    />
+                                                    <div
+                                                        className="versum-muted"
+                                                        style={{
+                                                            fontSize: '11px',
+                                                        }}
+                                                    >
+                                                        gotówka:{' '}
+                                                        {totals.totalRevenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł (100%)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="col-xs-6">
+                                            <div className="versum-stat-tile">
+                                                <div className="versum-stat-tile__title">
+                                                    Wizyty
+                                                </div>
+                                                <div className="text-center">
+                                                    <div
+                                                        className="color-circle"
+                                                        style={{
+                                                            width: '80px',
+                                                            height: '80px',
+                                                            margin: '0 auto 10px',
+                                                            background:
+                                                                '#c95334',
+                                                        }}
+                                                    />
+                                                    <p
+                                                        className="versum-muted"
+                                                        style={{
+                                                            fontSize: '11px',
+                                                        }}
+                                                    >
+                                                        na podstawie wizyt
+                                                        zakończonych
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <h2 className="mb-3 mt-6 text-xl text-gray-700">
-                                Dane w podziale na pracowników
-                            </h2>
+                            <div
+                                className="nav-header"
+                                style={{
+                                    marginTop: '20px',
+                                    marginBottom: '10px',
+                                }}
+                            >
+                                DANE W PODZIALE NA PRACOWNIKÓW
+                            </div>
                             {employeesLoading ? (
                                 <div className="p-3 text-sm versum-muted">
                                     Ładowanie pracowników...
                                 </div>
                             ) : (
-                                <div className="versum-table-wrap border border-gray-300">
+                                <div className="versum-table-wrap">
                                     <table className="versum-table">
                                         <thead>
                                             <tr>
@@ -172,7 +240,14 @@ function StatisticsPageContent() {
                                             {employees.map((employee) => (
                                                 <tr key={employee.employeeId}>
                                                     <td>
-                                                        {employee.employeeName}
+                                                        <a
+                                                            href="javascript:;"
+                                                            className="versum-link"
+                                                        >
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </a>
                                                     </td>
                                                     <td>
                                                         {

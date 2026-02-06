@@ -33,13 +33,10 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    {(secondaryNav || showSecondary) && (
-                        <div className="sidenav" id="sidenav">
-                            {secondaryNav || (
-                                <VersumSecondaryNav module={activeModule} />
-                            )}
-                        </div>
-                    )}
+                    {(secondaryNav || showSecondary) &&
+                        (secondaryNav || (
+                            <VersumSecondaryNav module={activeModule} />
+                        ))}
                 </div>
                 <div className="main-content" id="main-content" role="main">
                     <div className="inner">{children}</div>

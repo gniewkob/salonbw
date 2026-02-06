@@ -27,6 +27,7 @@ export default function VersumMainNav({
                             <Link
                                 href={item.href}
                                 data-testid={`mainnav-${item.key}`}
+                                title={item.label}
                             >
                                 <div>
                                     <VersumIcon

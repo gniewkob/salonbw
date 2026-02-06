@@ -30,177 +30,263 @@ export default function CustomerSummaryTab({ customer }: Props) {
     };
 
     return (
-        <div className="space-y-6">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-sm text-gray-500">Wizyty</div>
-                    <div className="text-2xl font-semibold text-gray-900">
-                        {statsLoading ? '...' : (stats?.completedVisits ?? 0)}
-                    </div>
-                </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-sm text-gray-500">Wydano</div>
-                    <div className="text-2xl font-semibold text-cyan-600">
-                        {statsLoading
-                            ? '...'
-                            : formatCurrency(stats?.totalSpent ?? 0)}
-                    </div>
-                </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-sm text-gray-500">Średnia wartość</div>
-                    <div className="text-2xl font-semibold text-gray-900">
-                        {statsLoading
-                            ? '...'
-                            : formatCurrency(stats?.averageSpent ?? 0)}
-                    </div>
-                </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-sm text-gray-500">Ostatnia wizyta</div>
-                    <div className="text-2xl font-semibold text-gray-900">
-                        {statsLoading
-                            ? '...'
-                            : formatDate(stats?.lastVisitDate ?? null)}
-                    </div>
-                </div>
-            </div>
-
-            {/* Favorite Services */}
-            {stats?.favoriteServices && stats.favoriteServices.length > 0 && (
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                        Ulubione usługi
-                    </h3>
-                    <div className="space-y-2">
-                        {stats.favoriteServices.map((service) => (
-                            <div
-                                key={service.serviceId}
-                                className="flex items-center justify-between"
-                            >
-                                <span className="text-gray-700">
-                                    {service.serviceName}
-                                </span>
-                                <span className="text-sm text-gray-500">
-                                    {service.count}x
-                                </span>
+        <div className="row">
+            <div className="col-sm-12">
+                {/* KPI Tiles */}
+                <div
+                    className="row"
+                    style={{
+                        marginBottom: '20px',
+                        marginLeft: 0,
+                        marginRight: 0,
+                    }}
+                >
+                    <div
+                        className="col-xs-6 col-sm-3"
+                        style={{ padding: '0 5px' }}
+                    >
+                        <div className="versum-tile">
+                            <div className="versum-tile__label">Wizyty</div>
+                            <div className="versum-tile__value">
+                                {statsLoading
+                                    ? '...'
+                                    : (stats?.completedVisits ?? 0)}
                             </div>
-                        ))}
+                        </div>
                     </div>
-                </div>
-            )}
-
-            {/* Favorite Employees */}
-            {stats?.favoriteEmployees && stats.favoriteEmployees.length > 0 && (
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                        Ulubieni pracownicy
-                    </h3>
-                    <div className="space-y-2">
-                        {stats.favoriteEmployees.map((employee) => (
+                    <div
+                        className="col-xs-6 col-sm-3"
+                        style={{ padding: '0 5px' }}
+                    >
+                        <div className="versum-tile">
+                            <div className="versum-tile__label">Wydano</div>
                             <div
-                                key={employee.employeeId}
-                                className="flex items-center justify-between"
+                                className="versum-tile__value"
+                                style={{ color: 'var(--versum-accent)' }}
                             >
-                                <span className="text-gray-700">
-                                    {employee.employeeName}
-                                </span>
-                                <span className="text-sm text-gray-500">
-                                    {employee.count}x
-                                </span>
+                                {statsLoading
+                                    ? '...'
+                                    : formatCurrency(stats?.totalSpent ?? 0)}
                             </div>
-                        ))}
+                        </div>
+                    </div>
+                    <div
+                        className="col-xs-6 col-sm-3"
+                        style={{ padding: '0 5px' }}
+                    >
+                        <div className="versum-tile">
+                            <div className="versum-tile__label">
+                                Średnia wartość
+                            </div>
+                            <div className="versum-tile__value">
+                                {statsLoading
+                                    ? '...'
+                                    : formatCurrency(stats?.averageSpent ?? 0)}
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        className="col-xs-6 col-sm-3"
+                        style={{ padding: '0 5px' }}
+                    >
+                        <div className="versum-tile">
+                            <div className="versum-tile__label">
+                                Ostatnia wizyta
+                            </div>
+                            <div className="versum-tile__value">
+                                {statsLoading
+                                    ? '...'
+                                    : formatDate(stats?.lastVisitDate ?? null)}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
 
-            {/* Recent Visits */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                    Ostatnie wizyty
-                </h3>
-                {historyLoading ? (
-                    <p className="text-sm text-gray-500">Ładowanie...</p>
-                ) : history?.items.length === 0 ? (
-                    <p className="text-sm text-gray-500">Brak wizyt</p>
-                ) : (
-                    <div className="space-y-3">
-                        {history?.items.map((visit) => (
-                            <div
-                                key={visit.id}
-                                className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
-                            >
-                                <div>
-                                    <div className="font-medium text-gray-700">
-                                        {visit.service?.name ?? 'Usługa'}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                        {formatDate(visit.date)} •{' '}
-                                        {visit.employee?.name}
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="font-medium text-gray-900">
-                                        {formatCurrency(visit.price)}
-                                    </div>
-                                    <div
-                                        className={`text-xs ${
-                                            visit.status === 'completed'
-                                                ? 'text-green-600'
-                                                : visit.status === 'cancelled'
-                                                  ? 'text-red-600'
-                                                  : 'text-gray-500'
-                                        }`}
+                <div className="row">
+                    <div className="col-sm-6">
+                        {/* Favorite Services */}
+                        <div className="versum-widget">
+                            <div className="versum-widget__header">
+                                Ulubione usługi
+                            </div>
+                            <div className="versum-widget__content">
+                                {stats?.favoriteServices &&
+                                stats.favoriteServices.length > 0 ? (
+                                    <ul className="list-unstyled">
+                                        {stats.favoriteServices.map(
+                                            (service) => (
+                                                <li
+                                                    key={service.serviceId}
+                                                    className="flex-between"
+                                                    style={{
+                                                        borderBottom:
+                                                            '1px solid #f5f5f5',
+                                                        padding: '5px 0',
+                                                    }}
+                                                >
+                                                    <span>
+                                                        {service.serviceName}
+                                                    </span>
+                                                    <span className="text-muted">
+                                                        {service.count}x
+                                                    </span>
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <p className="text-muted text-center">
+                                        Brak danych
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Recent Visits */}
+                        <div className="versum-widget">
+                            <div className="versum-widget__header">
+                                Ostatnie wizyty
+                            </div>
+                            <div className="versum-widget__content">
+                                {historyLoading ? (
+                                    <p className="text-muted text-center">
+                                        Ładowanie...
+                                    </p>
+                                ) : history?.items.length === 0 ? (
+                                    <p className="text-muted text-center">
+                                        Brak wizyt
+                                    </p>
+                                ) : (
+                                    <table
+                                        className="versum-table"
+                                        style={{ fontSize: '12px' }}
                                     >
-                                        {visit.status === 'completed'
-                                            ? 'Zakończona'
-                                            : visit.status === 'cancelled'
-                                              ? 'Anulowana'
-                                              : visit.status}
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Usługa</th>
+                                                <th className="text-right">
+                                                    Cena
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {history?.items.map((visit) => (
+                                                <tr key={visit.id}>
+                                                    <td>
+                                                        {formatDate(visit.date)}
+                                                    </td>
+                                                    <td>
+                                                        {visit.service?.name}
+                                                        <br />
+                                                        <small className="text-muted">
+                                                            {
+                                                                visit.employee
+                                                                    ?.name
+                                                            }
+                                                        </small>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        {formatCurrency(
+                                                            visit.price,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-sm-6">
+                        {/* Contact Info */}
+                        <div className="versum-widget">
+                            <div className="versum-widget__header">
+                                Informacje kontaktowe
+                            </div>
+                            <div className="versum-widget__content form-horizontal">
+                                <div className="form-group">
+                                    <label className="control-label">
+                                        Telefon
+                                    </label>
+                                    <div className="control-content">
+                                        {customer.phone || '-'}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="control-label">
+                                        E-mail
+                                    </label>
+                                    <div className="control-content">
+                                        {customer.email || '-'}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="control-label">
+                                        Adres
+                                    </label>
+                                    <div className="control-content">
+                                        {[
+                                            customer.address,
+                                            customer.postalCode,
+                                            customer.city,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(', ') || '-'}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="control-label">
+                                        Klient od
+                                    </label>
+                                    <div className="control-content">
+                                        {formatDate(customer.createdAt)}
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                        </div>
 
-            {/* Contact Info */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                    Informacje kontaktowe
-                </h3>
-                <dl className="grid grid-cols-2 gap-4">
-                    <div>
-                        <dt className="text-xs text-gray-500">Telefon</dt>
-                        <dd className="text-gray-900">
-                            {customer.phone || '-'}
-                        </dd>
+                        {/* Favorite Employees */}
+                        {stats?.favoriteEmployees &&
+                            stats.favoriteEmployees.length > 0 && (
+                                <div className="versum-widget">
+                                    <div className="versum-widget__header">
+                                        Ulubieni pracownicy
+                                    </div>
+                                    <div className="versum-widget__content">
+                                        <ul className="list-unstyled">
+                                            {stats.favoriteEmployees.map(
+                                                (employee) => (
+                                                    <li
+                                                        key={
+                                                            employee.employeeId
+                                                        }
+                                                        className="flex-between"
+                                                        style={{
+                                                            borderBottom:
+                                                                '1px solid #f5f5f5',
+                                                            padding: '5px 0',
+                                                        }}
+                                                    >
+                                                        <span>
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </span>
+                                                        <span className="text-muted">
+                                                            {employee.count}x
+                                                        </span>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
                     </div>
-                    <div>
-                        <dt className="text-xs text-gray-500">E-mail</dt>
-                        <dd className="text-gray-900">
-                            {customer.email || '-'}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-xs text-gray-500">Adres</dt>
-                        <dd className="text-gray-900">
-                            {[
-                                customer.address,
-                                customer.postalCode,
-                                customer.city,
-                            ]
-                                .filter(Boolean)
-                                .join(', ') || '-'}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-xs text-gray-500">Klient od</dt>
-                        <dd className="text-gray-900">
-                            {formatDate(customer.createdAt)}
-                        </dd>
-                    </div>
-                </dl>
+                </div>
             </div>
         </div>
     );

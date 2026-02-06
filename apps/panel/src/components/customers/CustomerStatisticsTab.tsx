@@ -44,196 +44,347 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
 
     return (
         <div className="space-y-6">
-            {/* Summary Stats */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-semibold text-cyan-600">
-                        {stats.totalVisits}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                        Wszystkie wizyty
+            {/* Summary Stats Tiles */}
+            <div className="row">
+                <div className="col-sm-3">
+                    <div className="versum-tile">
+                        <div className="versum-tile__value text-cyan">
+                            {stats.totalVisits}
+                        </div>
+                        <div className="versum-tile__label">
+                            Wszystkie wizyty
+                        </div>
                     </div>
                 </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-semibold text-green-600">
-                        {stats.completedVisits}
+                <div className="col-sm-3">
+                    <div className="versum-tile">
+                        <div className="versum-tile__value text-green">
+                            {stats.completedVisits}
+                        </div>
+                        <div className="versum-tile__label">Zakończone</div>
                     </div>
-                    <div className="text-sm text-gray-500">Zakończone</div>
                 </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-semibold text-red-600">
-                        {stats.cancelledVisits}
+                <div className="col-sm-3">
+                    <div className="versum-tile">
+                        <div className="versum-tile__value text-red">
+                            {stats.cancelledVisits}
+                        </div>
+                        <div className="versum-tile__label">Anulowane</div>
                     </div>
-                    <div className="text-sm text-gray-500">Anulowane</div>
                 </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                    <div className="text-2xl font-semibold text-orange-600">
-                        {stats.noShowVisits}
-                    </div>
-                    <div className="text-sm text-gray-500">Nieobecności</div>
-                </div>
-            </div>
-
-            {/* Financial Stats */}
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                    Statystyki finansowe
-                </h3>
-                <div className="grid gap-6 md:grid-cols-3">
-                    <div>
-                        <div className="text-3xl font-semibold text-cyan-600">
-                            {formatCurrency(stats.totalSpent)}
+                <div className="col-sm-3">
+                    <div className="versum-tile">
+                        <div className="versum-tile__value text-orange">
+                            {stats.noShowVisits}
                         </div>
-                        <div className="text-sm text-gray-500">
-                            Łączne wydatki
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-3xl font-semibold text-gray-800">
-                            {formatCurrency(stats.averageSpent)}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                            Średnia wartość wizyty
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-3xl font-semibold text-green-600">
-                            {visitCompletionRate}%
-                        </div>
-                        <div className="text-sm text-gray-500">
-                            Wskaźnik realizacji
-                        </div>
+                        <div className="versum-tile__label">Nieobecności</div>
                     </div>
                 </div>
             </div>
 
-            {/* Timeline */}
-            <div className="rounded-lg border bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                    Historia współpracy
-                </h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <div className="text-sm text-gray-500">
-                            Pierwsza wizyta
+            <div className="row">
+                <div className="col-sm-8">
+                    {/* Financial Stats Widget */}
+                    <div className="versum-widget">
+                        <div className="versum-widget__header">
+                            <span>Statystyki finansowe</span>
                         </div>
-                        <div className="text-lg font-medium text-gray-800">
-                            {formatDate(stats.firstVisitDate)}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-gray-500">
-                            Ostatnia wizyta
-                        </div>
-                        <div className="text-lg font-medium text-gray-800">
-                            {formatDate(stats.lastVisitDate)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Monthly Chart (Simple Bar Chart) */}
-            {stats.visitsByMonth.length > 0 && (
-                <div className="rounded-lg border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                        Wizyty według miesięcy
-                    </h3>
-                    <div className="space-y-2">
-                        {stats.visitsByMonth.map((month) => {
-                            const maxCount = Math.max(
-                                ...stats.visitsByMonth.map((m) => m.count),
-                            );
-                            const widthPercent =
-                                maxCount > 0
-                                    ? (month.count / maxCount) * 100
-                                    : 0;
-
-                            return (
-                                <div
-                                    key={month.month}
-                                    className="flex items-center gap-3"
-                                >
-                                    <div className="w-20 text-sm text-gray-500">
-                                        {month.month}
+                        <div className="versum-widget__content">
+                            <div className="row">
+                                <div className="col-sm-4">
+                                    <div
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '11px',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        Łączne wydatki
                                     </div>
-                                    <div className="flex-1">
-                                        <div
-                                            className="h-6 rounded bg-cyan-500"
-                                            style={{
-                                                width: `${widthPercent}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="w-16 text-right text-sm font-medium text-gray-700">
-                                        {month.count} wizyt
-                                    </div>
-                                    <div className="w-24 text-right text-sm text-gray-500">
-                                        {formatCurrency(month.spent)}
+                                    <div
+                                        style={{
+                                            fontSize: '24px',
+                                            fontWeight: 600,
+                                            color: '#4b94ce',
+                                        }}
+                                    >
+                                        {formatCurrency(stats.totalSpent)}
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Favorite Services */}
-            {stats.favoriteServices.length > 0 && (
-                <div className="rounded-lg border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                        Najczęściej wybierane usługi
-                    </h3>
-                    <div className="space-y-3">
-                        {stats.favoriteServices.map((service, index) => (
-                            <div
-                                key={service.serviceId}
-                                className="flex items-center justify-between"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-100 text-xs font-semibold text-cyan-700">
-                                        {index + 1}
-                                    </span>
-                                    <span className="font-medium text-gray-800">
-                                        {service.serviceName}
-                                    </span>
+                                <div className="col-sm-4">
+                                    <div
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '11px',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        Średnia wartość
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '24px',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {formatCurrency(stats.averageSpent)}
+                                    </div>
                                 </div>
-                                <span className="text-gray-500">
-                                    {service.count} razy
-                                </span>
+                                <div className="col-sm-4">
+                                    <div
+                                        className="text-muted"
+                                        style={{
+                                            fontSize: '11px',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        Wskaźnik realizacji
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '24px',
+                                            fontWeight: 600,
+                                            color: '#5cb85c',
+                                        }}
+                                    >
+                                        {visitCompletionRate}%
+                                    </div>
+                                </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
-                </div>
-            )}
 
-            {/* Favorite Employees */}
-            {stats.favoriteEmployees.length > 0 && (
-                <div className="rounded-lg border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                        Ulubieni pracownicy
-                    </h3>
-                    <div className="space-y-3">
-                        {stats.favoriteEmployees.map((employee, index) => (
-                            <div
-                                key={employee.employeeId}
-                                className="flex items-center justify-between"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-100 text-xs font-semibold text-cyan-700">
-                                        {index + 1}
-                                    </span>
-                                    <span className="font-medium text-gray-800">
-                                        {employee.employeeName}
-                                    </span>
+                    {/* Timeline Widget */}
+                    <div
+                        className="versum-widget"
+                        style={{ marginTop: '20px' }}
+                    >
+                        <div className="versum-widget__header">
+                            <span>Historia współpracy</span>
+                        </div>
+                        <div className="versum-widget__content">
+                            <div className="row">
+                                <div className="col-sm-6">
+                                    <div
+                                        className="text-muted"
+                                        style={{ fontSize: '11px' }}
+                                    >
+                                        Pierwsza wizyta
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '16px',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {formatDate(stats.firstVisitDate)}
+                                    </div>
                                 </div>
-                                <span className="text-gray-500">
-                                    {employee.count} wizyt
-                                </span>
+                                <div className="col-sm-6">
+                                    <div
+                                        className="text-muted"
+                                        style={{ fontSize: '11px' }}
+                                    >
+                                        Ostatnia wizyta
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '16px',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {formatDate(stats.lastVisitDate)}
+                                    </div>
+                                </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
+
+                    {/* Monthly Chart Widget */}
+                    {stats.visitsByMonth.length > 0 && (
+                        <div
+                            className="versum-widget"
+                            style={{ marginTop: '20px' }}
+                        >
+                            <div className="versum-widget__header">
+                                <span>Wizyty według miesięcy</span>
+                            </div>
+                            <div className="versum-widget__content">
+                                <div className="space-y-2">
+                                    {stats.visitsByMonth.map((month) => {
+                                        const maxCount = Math.max(
+                                            ...stats.visitsByMonth.map(
+                                                (m) => m.count,
+                                            ),
+                                        );
+                                        const widthPercent =
+                                            maxCount > 0
+                                                ? (month.count / maxCount) * 100
+                                                : 0;
+
+                                        return (
+                                            <div
+                                                key={month.month}
+                                                className="flex items-center gap-3"
+                                                style={{ marginBottom: '8px' }}
+                                            >
+                                                <div
+                                                    className="text-muted"
+                                                    style={{
+                                                        width: '80px',
+                                                        fontSize: '12px',
+                                                    }}
+                                                >
+                                                    {month.month}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        flex: 1,
+                                                        background: '#f5f5f5',
+                                                        height: '12px',
+                                                        borderRadius: '6px',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            height: '100%',
+                                                            background:
+                                                                '#4b94ce',
+                                                            width: `${widthPercent}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        width: '60px',
+                                                        textAlign: 'right',
+                                                        fontSize: '12px',
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    {month.count}
+                                                </div>
+                                                <div
+                                                    className="text-muted"
+                                                    style={{
+                                                        width: '90px',
+                                                        textAlign: 'right',
+                                                        fontSize: '12px',
+                                                    }}
+                                                >
+                                                    {formatCurrency(
+                                                        month.spent,
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                <div className="col-sm-4">
+                    {/* Favorite Services */}
+                    {stats.favoriteServices.length > 0 && (
+                        <div className="versum-widget">
+                            <div className="versum-widget__header">
+                                <span>Najczęstsze usługi</span>
+                            </div>
+                            <div className="versum-widget__content">
+                                <div className="space-y-3">
+                                    {stats.favoriteServices.map(
+                                        (service, index) => (
+                                            <div
+                                                key={service.serviceId}
+                                                className="flex-between"
+                                                style={{ marginBottom: '10px' }}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        style={{
+                                                            color: '#999',
+                                                            fontSize: '11px',
+                                                            width: '15px',
+                                                        }}
+                                                    >
+                                                        {index + 1}.
+                                                    </span>
+                                                    <span
+                                                        style={{
+                                                            fontSize: '13px',
+                                                        }}
+                                                    >
+                                                        {service.serviceName}
+                                                    </span>
+                                                </div>
+                                                <span
+                                                    className="text-muted"
+                                                    style={{ fontSize: '12px' }}
+                                                >
+                                                    {service.count}x
+                                                </span>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Favorite Employees */}
+                    {stats.favoriteEmployees.length > 0 && (
+                        <div
+                            className="versum-widget"
+                            style={{ marginTop: '20px' }}
+                        >
+                            <div className="versum-widget__header">
+                                <span>Ulubieni pracownicy</span>
+                            </div>
+                            <div className="versum-widget__content">
+                                <div className="space-y-3">
+                                    {stats.favoriteEmployees.map(
+                                        (employee, index) => (
+                                            <div
+                                                key={employee.employeeId}
+                                                className="flex-between"
+                                                style={{ marginBottom: '10px' }}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        style={{
+                                                            color: '#999',
+                                                            fontSize: '11px',
+                                                            width: '15px',
+                                                        }}
+                                                    >
+                                                        {index + 1}.
+                                                    </span>
+                                                    <span
+                                                        style={{
+                                                            fontSize: '13px',
+                                                        }}
+                                                    >
+                                                        {employee.employeeName}
+                                                    </span>
+                                                </div>
+                                                <span
+                                                    className="text-muted"
+                                                    style={{ fontSize: '12px' }}
+                                                >
+                                                    {employee.count}x
+                                                </span>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
