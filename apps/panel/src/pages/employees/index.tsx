@@ -1,7 +1,8 @@
 import { useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -15,19 +16,20 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="p-4 text-sm text-gray-500">
-                Loading employee form…
-            </div>
+            <div className="versum-loading">Loading employee form…</div>
         ),
     },
 );
 
 export default function EmployeesPage() {
+    const { role } = useAuth();
     const { data } = useEmployees();
     const api = useEmployeeApi();
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+
+    if (!role) return null;
 
     if (data && rows.length === 0) setRows(data);
 
@@ -64,61 +66,65 @@ export default function EmployeesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
-            <DashboardLayout>
-                <div className="mb-2 flex justify-end">
-                    <button
-                        className="border px-2 py-1"
-                        onClick={() => {
-                            setEditing(null);
-                            setOpenForm(true);
-                        }}
-                    >
-                        Add Employee
-                    </button>
-                </div>
-                {rows && (
-                    <DataTable
-                        data={rows}
-                        columns={columns}
-                        initialSort="id"
-                        renderActions={(r) => (
-                            <span className="space-x-2">
-                                <button
-                                    className="border px-2 py-1"
-                                    onClick={() => {
-                                        setEditing(r);
-                                        setOpenForm(true);
-                                    }}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="border px-2 py-1"
-                                    onClick={() => void handleDelete(r)}
-                                >
-                                    Delete
-                                </button>
-                            </span>
-                        )}
-                    />
-                )}
-                <Modal
-                    open={openForm || Boolean(editing)}
-                    onClose={() => {
-                        setOpenForm(false);
-                        setEditing(null);
-                    }}
-                >
-                    <EmployeeForm
-                        initial={editing ?? undefined}
-                        onCancel={() => {
+            <VersumShell role={role}>
+                <div className="versum-page" data-testid="employees-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">Pracownicy</h1>
+                        <button
+                            className="versum-btn versum-btn--primary"
+                            onClick={() => {
+                                setEditing(null);
+                                setOpenForm(true);
+                            }}
+                        >
+                            Dodaj pracownika
+                        </button>
+                    </header>
+
+                    {rows && (
+                        <DataTable
+                            data={rows}
+                            columns={columns}
+                            initialSort="id"
+                            renderActions={(r) => (
+                                <span className="space-x-2">
+                                    <button
+                                        className="versum-btn versum-btn--sm versum-btn--light"
+                                        onClick={() => {
+                                            setEditing(r);
+                                            setOpenForm(true);
+                                        }}
+                                    >
+                                        Edytuj
+                                    </button>
+                                    <button
+                                        className="versum-btn versum-btn--sm versum-btn--danger"
+                                        onClick={() => void handleDelete(r)}
+                                    >
+                                        Usuń
+                                    </button>
+                                </span>
+                            )}
+                        />
+                    )}
+                    <Modal
+                        open={openForm || Boolean(editing)}
+                        onClose={() => {
                             setOpenForm(false);
                             setEditing(null);
                         }}
-                        onSubmit={editing ? handleUpdate : handleCreate}
-                    />
-                </Modal>
-            </DashboardLayout>
+                    >
+                        <EmployeeForm
+                            initial={editing ?? undefined}
+                            onCancel={() => {
+                                setOpenForm(false);
+                                setEditing(null);
+                            }}
+                            onSubmit={editing ? handleUpdate : handleCreate}
+                        />
+                    </Modal>
+                </div>
+            </VersumShell>
         </RouteGuard>
     );
 }

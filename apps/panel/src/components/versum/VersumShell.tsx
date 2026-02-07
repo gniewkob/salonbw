@@ -5,6 +5,7 @@ import VersumMainNav from './VersumMainNav';
 import VersumSecondaryNav from './VersumSecondaryNav';
 import VersumTopbar from './VersumTopbar';
 import FloatingHelpButton from './FloatingHelpButton';
+import PajaxLoader from './PajaxLoader';
 import { resolveVersumModule, visibleVersumModules } from './navigation';
 
 interface VersumShellProps {
@@ -25,6 +26,7 @@ export default function VersumShell({
 
     return (
         <div id="versum-shell-root">
+            <PajaxLoader />
             <VersumTopbar />
             <div className="main-container" id="main-container">
                 <div className="sidebar hidden-print" id="sidebar">

@@ -38,6 +38,7 @@ interface CalendarViewProps {
     currentDate: Date;
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
+    hideSidebar?: boolean; // When true, don't render sidebar (used in VersumShell)
 }
 
 const VIEW_MAP: Record<CalendarViewType, string> = {
@@ -59,6 +60,7 @@ export default function CalendarView({
     currentDate,
     currentView,
     selectedEmployeeIds,
+    hideSidebar = false,
 }: CalendarViewProps) {
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
         null,
@@ -138,22 +140,25 @@ export default function CalendarView({
     );
 
     return (
-        <div className="flex h-full flex-col md:flex-row">
+        <div
+            className={`flex h-full ${hideSidebar ? '' : 'flex-col md:flex-row'}`}
+        >
             {/* Sidebar matches Versum layout: Left side filters */}
-            <div className="w-full md:w-64 flex-shrink-0 border-r border-gray-200 bg-white">
-                <CalendarSidebar
-                    employees={employees}
-                    selectedEmployeeIds={selectedEmployeeIds}
-                    onEmployeeToggle={handleEmployeeToggle}
-                    // Pass empty handlers for now if generic sidebar doesn't need them
-                    onSelectAll={() =>
-                        onEmployeeFilterChange(employees.map((e) => e.id))
-                    }
-                    onClearAll={() => onEmployeeFilterChange([])}
-                    currentDate={currentDate}
-                    onDateSelect={onDateChange}
-                />
-            </div>
+            {!hideSidebar && (
+                <div className="w-full md:w-64 flex-shrink-0 border-r border-gray-200 bg-white">
+                    <CalendarSidebar
+                        employees={employees}
+                        selectedEmployeeIds={selectedEmployeeIds}
+                        onEmployeeToggle={handleEmployeeToggle}
+                        onSelectAll={() =>
+                            onEmployeeFilterChange(employees.map((e) => e.id))
+                        }
+                        onClearAll={() => onEmployeeFilterChange([])}
+                        currentDate={currentDate}
+                        onDateSelect={onDateChange}
+                    />
+                </div>
+            )}
 
             {/* Main Calendar Area */}
             <div className="flex-1 overflow-auto bg-white p-2">

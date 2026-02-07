@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual } from 'typeorm';
+import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -24,19 +24,36 @@ import {
 } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Review } from '../reviews/review.entity';
+import { Commission } from '../commissions/commission.entity';
+import { Timetable } from '../timetables/entities/timetable.entity';
+import { TimetableException } from '../timetables/entities/timetable-exception.entity';
 import {
     DateRange,
     GroupBy,
     DashboardStats,
     RevenueDataPoint,
     EmployeeStats,
+    EmployeeActivity,
+    EmployeeActivitySummary,
     ServiceStats,
     ClientStats,
+    ClientReturningStats,
+    ClientOriginStats,
     CashRegisterSummary,
     CashRegisterEntry,
     TipsSummary,
+    CommissionReport,
+    CommissionReportSummary,
+    WarehouseMovementStats,
+    WarehouseValueStats,
+    WorkTimeReport,
 } from './dto/statistics.dto';
 import { Role } from '../users/role.enum';
+import {
+    ProductMovement,
+    MovementType,
+} from '../warehouse/entities/product-movement.entity';
+import { Product } from '../products/product.entity';
 
 @Injectable()
 export class StatisticsService {
@@ -47,6 +64,16 @@ export class StatisticsService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Review)
         private readonly reviewRepository: Repository<Review>,
+        @InjectRepository(Timetable)
+        private readonly timetableRepository: Repository<Timetable>,
+        @InjectRepository(TimetableException)
+        private readonly timetableExceptionRepository: Repository<TimetableException>,
+        @InjectRepository(Commission)
+        private readonly commissionRepository: Repository<Commission>,
+        @InjectRepository(ProductMovement)
+        private readonly productMovementRepository: Repository<ProductMovement>,
+        @InjectRepository(Product)
+        private readonly productRepository: Repository<Product>,
     ) {}
 
     async getDashboard(): Promise<DashboardStats> {
@@ -480,6 +507,111 @@ export class StatisticsService {
         }));
     }
 
+    async getEmployeeActivity(date: Date): Promise<EmployeeActivitySummary> {
+        const dayStart = startOfDay(date);
+        const dayEnd = endOfDay(date);
+        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeekVersum = dayOfWeek === 0 ? 7 : dayOfWeek; // Versum uses 1-7 (Mon-Sun)
+
+        const employees = await this.userRepository.find({
+            where: { role: Role.Employee },
+        });
+
+        const employeesActivity: EmployeeActivity[] = [];
+        let totalWorkTime = 0;
+        let totalAppointments = 0;
+
+        for (const employee of employees) {
+            // Get timetable for employee
+            const timetable = await this.timetableRepository.findOne({
+                where: {
+                    employeeId: employee.id,
+                    isActive: true,
+                    validFrom: LessThanOrEqual(date),
+                },
+                relations: ['slots', 'exceptions'],
+                order: { validFrom: 'DESC' },
+            });
+
+            // Calculate work time from timetable
+            let workTimeMinutes = 0;
+
+            if (timetable) {
+                // Check for exceptions first
+                const exception = timetable.exceptions?.find(
+                    (e) =>
+                        new Date(e.date) >= dayStart &&
+                        new Date(e.date) <= dayEnd,
+                );
+
+                if (exception) {
+                    // Use exception hours - check if it's not a day off
+                    if (
+                        exception.type !== 'day_off' &&
+                        exception.customStartTime &&
+                        exception.customEndTime
+                    ) {
+                        // Parse time strings (HH:mm:ss)
+                        const [startHour, startMin] = exception.customStartTime
+                            .split(':')
+                            .map(Number);
+                        const [endHour, endMin] = exception.customEndTime
+                            .split(':')
+                            .map(Number);
+                        workTimeMinutes =
+                            endHour * 60 + endMin - (startHour * 60 + startMin);
+                    }
+                } else {
+                    // Use regular slot for this day
+                    // Versum uses 1-7 (Mon-Sun), our DayOfWeek uses 0-6 (Mon-Sun)
+                    const slot = timetable.slots?.find(
+                        (s) => s.dayOfWeek === dayOfWeekVersum - 1,
+                    );
+
+                    if (slot) {
+                        // Parse time strings (HH:mm:ss)
+                        const [startHour, startMin] = slot.startTime
+                            .split(':')
+                            .map(Number);
+                        const [endHour, endMin] = slot.endTime
+                            .split(':')
+                            .map(Number);
+                        workTimeMinutes =
+                            endHour * 60 + endMin - (startHour * 60 + startMin);
+                    }
+                }
+            }
+
+            // Count appointments for this employee on this date
+            const appointments = await this.appointmentRepository.count({
+                where: {
+                    employeeId: employee.id,
+                    startTime: Between(dayStart, dayEnd),
+                    status: AppointmentStatus.Completed,
+                },
+            });
+
+            employeesActivity.push({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                workTimeMinutes: Math.round(workTimeMinutes),
+                appointmentsCount: appointments,
+            });
+
+            totalWorkTime += workTimeMinutes;
+            totalAppointments += appointments;
+        }
+
+        return {
+            date: format(date, 'yyyy-MM-dd'),
+            employees: employeesActivity,
+            totals: {
+                workTimeMinutes: Math.round(totalWorkTime),
+                appointmentsCount: totalAppointments,
+            },
+        };
+    }
+
     private resolveAppointmentPrice(appointment: Appointment): number {
         return (
             appointment.paidAmount ??
@@ -488,6 +620,486 @@ export class StatisticsService {
                     appointment.service?.price ??
                     0,
             )
+        );
+    }
+
+    async getCommissionReport(
+        from: Date,
+        to: Date,
+    ): Promise<CommissionReportSummary> {
+        const employees = await this.userRepository.find({
+            where: { role: Role.Employee },
+        });
+
+        const employeesReport: CommissionReport[] = [];
+        let totalServiceRevenue = 0;
+        let totalServiceCommission = 0;
+        let totalProductRevenue = 0;
+        let totalProductCommission = 0;
+
+        for (const employee of employees) {
+            // Get completed appointments for employee in date range
+            const appointments = await this.appointmentRepository.find({
+                where: {
+                    employee: { id: employee.id },
+                    startTime: Between(from, to),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: ['service', 'serviceVariant'],
+            });
+
+            const serviceRevenue = appointments.reduce(
+                (sum, a) => sum + this.resolveAppointmentPrice(a),
+                0,
+            );
+
+            // Get commissions for employee in date range
+            const commissions = await this.commissionRepository
+                .createQueryBuilder('commission')
+                .where('commission.employeeId = :employeeId', {
+                    employeeId: employee.id,
+                })
+                .andWhere('commission.createdAt BETWEEN :from AND :to', {
+                    from,
+                    to,
+                })
+                .getMany();
+
+            const serviceCommission = commissions.reduce(
+                (sum, c) => sum + Number(c.amount),
+                0,
+            );
+
+            // TODO: Product sales - when retail module is ready
+            const productRevenue = 0;
+            const productCommission = 0;
+
+            const totalRevenue = serviceRevenue + productRevenue;
+            const totalCommission = serviceCommission + productCommission;
+
+            employeesReport.push({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                serviceRevenue,
+                serviceCommission,
+                productRevenue,
+                productCommission,
+                totalRevenue,
+                totalCommission,
+            });
+
+            totalServiceRevenue += serviceRevenue;
+            totalServiceCommission += serviceCommission;
+            totalProductRevenue += productRevenue;
+            totalProductCommission += productCommission;
+        }
+
+        return {
+            date: format(from, 'yyyy-MM-dd'),
+            employees: employeesReport,
+            totals: {
+                serviceRevenue: totalServiceRevenue,
+                serviceCommission: totalServiceCommission,
+                productRevenue: totalProductRevenue,
+                productCommission: totalProductCommission,
+                totalRevenue: totalServiceRevenue + totalProductRevenue,
+                totalCommission:
+                    totalServiceCommission + totalProductCommission,
+            },
+        };
+    }
+
+    async getClientReturningStats(
+        from: Date,
+        to: Date,
+    ): Promise<ClientReturningStats> {
+        // Get all clients who had appointments in the period
+        const appointments = await this.appointmentRepository
+            .createQueryBuilder('appointment')
+            .innerJoin('appointment.client', 'client')
+            .where('appointment.startTime BETWEEN :from AND :to', { from, to })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
+            .select('client.id', 'clientId')
+            .addSelect('MIN(appointment.startTime)', 'firstVisit')
+            .addSelect('COUNT(*)', 'visitCount')
+            .groupBy('client.id')
+            .getRawMany();
+
+        // Get clients who had appointments BEFORE this period (returning)
+        const clientIds = appointments.map((a) => a.clientId);
+        const returningClientsList =
+            clientIds.length > 0
+                ? await this.appointmentRepository
+                      .createQueryBuilder('appointment')
+                      .where('appointment.clientId IN (:...clientIds)', {
+                          clientIds,
+                      })
+                      .andWhere('appointment.startTime < :from', { from })
+                      .andWhere('appointment.status = :status', {
+                          status: AppointmentStatus.Completed,
+                      })
+                      .select('DISTINCT appointment.clientId', 'clientId')
+                      .getRawMany()
+                : [];
+
+        const returningClientIds = new Set(
+            returningClientsList.map((r) => r.clientId),
+        );
+
+        const totalClients = appointments.length;
+        const returningClients = appointments.filter((a) =>
+            returningClientIds.has(a.clientId),
+        ).length;
+        const newClients = totalClients - returningClients;
+
+        // Monthly breakdown
+        const monthlyData = await this.appointmentRepository
+            .createQueryBuilder('appointment')
+            .innerJoin('appointment.client', 'client')
+            .where('appointment.startTime BETWEEN :from AND :to', { from, to })
+            .andWhere('appointment.status = :status', {
+                status: AppointmentStatus.Completed,
+            })
+            .select("DATE_TRUNC('month', appointment.startTime)", 'month')
+            .addSelect('client.id', 'clientId')
+            .addSelect('MIN(appointment.startTime)', 'firstVisitInPeriod')
+            .groupBy("DATE_TRUNC('month', appointment.startTime)")
+            .addGroupBy('client.id')
+            .orderBy('month', 'ASC')
+            .getRawMany();
+
+        // Group by month and calculate new/returning
+        const monthMap = new Map<
+            string,
+            { newClients: number; returningClients: number }
+        >();
+
+        for (const row of monthlyData) {
+            const monthKey = format(new Date(row.month), 'yyyy-MM');
+            const clientId = row.clientId;
+
+            if (!monthMap.has(monthKey)) {
+                monthMap.set(monthKey, { newClients: 0, returningClients: 0 });
+            }
+
+            const monthStats = monthMap.get(monthKey)!;
+
+            // Check if client had visits before this period
+            const hadPreviousVisits = returningClientIds.has(clientId);
+
+            if (hadPreviousVisits) {
+                monthStats.returningClients++;
+            } else {
+                monthStats.newClients++;
+            }
+        }
+
+        const byMonth = Array.from(monthMap.entries()).map(
+            ([month, stats]) => ({
+                month,
+                newClients: stats.newClients,
+                returningClients: stats.returningClients,
+            }),
+        );
+
+        return {
+            totalClients,
+            returningClients,
+            returningPercentage:
+                totalClients > 0
+                    ? Math.round((returningClients / totalClients) * 100)
+                    : 0,
+            newClients,
+            newPercentage:
+                totalClients > 0
+                    ? Math.round((newClients / totalClients) * 100)
+                    : 0,
+            byMonth,
+        };
+    }
+
+    async getClientOriginStats(
+        from: Date,
+        to: Date,
+    ): Promise<ClientOriginStats> {
+        // Get new clients in period with their origin/source
+        const clients = await this.userRepository
+            .createQueryBuilder('user')
+            .where('user.role = :role', { role: Role.Client })
+            .andWhere('user.createdAt BETWEEN :from AND :to', { from, to })
+            .select('user.id', 'id')
+            .addSelect('user.source', 'source')
+            .getRawMany();
+
+        // Count by source
+        const sourceCounts = new Map<string, number>();
+        let total = 0;
+
+        for (const client of clients) {
+            const source = client.source || 'Nieznane';
+            sourceCounts.set(source, (sourceCounts.get(source) || 0) + 1);
+            total++;
+        }
+
+        const origins = Array.from(sourceCounts.entries())
+            .map(([origin, count]) => ({
+                origin,
+                count,
+                percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+            }))
+            .sort((a, b) => b.count - a.count);
+
+        return {
+            totalClients: total,
+            origins,
+        };
+    }
+
+    async getWarehouseMovementStats(
+        from: Date,
+        to: Date,
+    ): Promise<WarehouseMovementStats> {
+        // Get movements in period
+        const movements = await this.productMovementRepository.find({
+            where: {
+                createdAt: Between(from, to),
+            },
+            relations: ['product', 'createdBy'],
+            order: { createdAt: 'DESC' },
+        });
+
+        // Group by type
+        const typeMap = new Map<
+            string,
+            { count: number; quantityChange: number }
+        >();
+
+        for (const m of movements) {
+            const type = m.movementType;
+            if (!typeMap.has(type)) {
+                typeMap.set(type, { count: 0, quantityChange: 0 });
+            }
+            const stats = typeMap.get(type)!;
+            stats.count++;
+            stats.quantityChange += m.quantity;
+        }
+
+        const byType = Array.from(typeMap.entries()).map(([type, stats]) => ({
+            type,
+            count: stats.count,
+            quantityChange: stats.quantityChange,
+        }));
+
+        const recentMovements = movements.slice(0, 50).map((m) => ({
+            id: m.id,
+            productName: m.product?.name || 'Produkt',
+            type: m.movementType,
+            quantity: m.quantity,
+            quantityBefore: m.quantityBefore,
+            quantityAfter: m.quantityAfter,
+            createdAt: m.createdAt.toISOString(),
+            createdByName: m.createdBy?.name || null,
+        }));
+
+        return {
+            totalMovements: movements.length,
+            byType,
+            recentMovements,
+        };
+    }
+
+    async getWarehouseValueStats(): Promise<WarehouseValueStats> {
+        // Get all products with quantities
+        const products = await this.productRepository.find({
+            relations: ['category'],
+        });
+
+        let totalValue = 0;
+        let totalQuantity = 0;
+        const categoryMap = new Map<
+            string,
+            {
+                productCount: number;
+                totalValue: number;
+                totalQuantity: number;
+            }
+        >();
+
+        const lowStockProducts: WarehouseValueStats['lowStockProducts'] = [];
+
+        for (const p of products) {
+            const quantity = p.stock || 0;
+            const price = Number(p.purchasePrice || p.unitPrice || 0);
+            const value = quantity * price;
+
+            totalValue += value;
+            totalQuantity += quantity;
+
+            const category = p.category?.name || 'Bez kategorii';
+            if (!categoryMap.has(category)) {
+                categoryMap.set(category, {
+                    productCount: 0,
+                    totalValue: 0,
+                    totalQuantity: 0,
+                });
+            }
+            const catStats = categoryMap.get(category)!;
+            catStats.productCount++;
+            catStats.totalValue += value;
+            catStats.totalQuantity += quantity;
+
+            // Check low stock
+            const minQty = p.minQuantity || 5;
+            if (quantity <= minQty) {
+                lowStockProducts.push({
+                    id: p.id,
+                    name: p.name,
+                    quantity,
+                    minQuantity: minQty,
+                    price: Number(p.unitPrice || 0),
+                });
+            }
+        }
+
+        const byCategory = Array.from(categoryMap.entries())
+            .map(([category, stats]) => ({
+                category,
+                productCount: stats.productCount,
+                totalValue: stats.totalValue,
+                totalQuantity: stats.totalQuantity,
+            }))
+            .sort((a, b) => b.totalValue - a.totalValue);
+
+        return {
+            totalProducts: products.length,
+            totalValue,
+            totalQuantity,
+            byCategory,
+            lowStockProducts: lowStockProducts.slice(0, 20),
+        };
+    }
+
+    async getWorkTimeReport(from: Date, to: Date): Promise<WorkTimeReport[]> {
+        const employees = await this.userRepository.find({
+            where: { role: Role.Employee },
+        });
+
+        const reports: WorkTimeReport[] = [];
+
+        for (const employee of employees) {
+            // Get timetable for employee
+            const timetable = await this.timetableRepository.findOne({
+                where: {
+                    employeeId: employee.id,
+                    isActive: true,
+                },
+                relations: ['slots', 'exceptions'],
+            });
+
+            // Calculate work time for each day in range
+            const byDay: WorkTimeReport['byDay'] = [];
+            let totalWorkTimeMinutes = 0;
+            let totalAppointments = 0;
+            let workingDays = 0;
+
+            // Iterate through each day in the range
+            const days = eachDayOfInterval({ start: from, end: to });
+
+            for (const day of days) {
+                const dayStart = startOfDay(day);
+                const dayEnd = endOfDay(day);
+                const dayOfWeek = day.getDay();
+                const dayOfWeekVersum = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+                let workTimeMinutes = 0;
+
+                if (timetable) {
+                    // Check for exceptions first
+                    const exception = timetable.exceptions?.find((e) => {
+                        const exDate = new Date(e.date);
+                        return exDate >= dayStart && exDate <= dayEnd;
+                    });
+
+                    if (exception) {
+                        if (
+                            exception.type !== 'day_off' &&
+                            exception.customStartTime &&
+                            exception.customEndTime
+                        ) {
+                            const [startHour, startMin] =
+                                exception.customStartTime
+                                    .split(':')
+                                    .map(Number);
+                            const [endHour, endMin] = exception.customEndTime
+                                .split(':')
+                                .map(Number);
+                            workTimeMinutes =
+                                endHour * 60 +
+                                endMin -
+                                (startHour * 60 + startMin);
+                        }
+                    } else {
+                        // Use regular slot
+                        const slot = timetable.slots?.find(
+                            (s) => s.dayOfWeek === dayOfWeekVersum - 1,
+                        );
+
+                        if (slot) {
+                            const [startHour, startMin] = slot.startTime
+                                .split(':')
+                                .map(Number);
+                            const [endHour, endMin] = slot.endTime
+                                .split(':')
+                                .map(Number);
+                            workTimeMinutes =
+                                endHour * 60 +
+                                endMin -
+                                (startHour * 60 + startMin);
+                        }
+                    }
+                }
+
+                // Count appointments for this day
+                const appointments = await this.appointmentRepository.count({
+                    where: {
+                        employeeId: employee.id,
+                        startTime: Between(dayStart, dayEnd),
+                        status: AppointmentStatus.Completed,
+                    },
+                });
+
+                if (workTimeMinutes > 0) {
+                    workingDays++;
+                    totalWorkTimeMinutes += workTimeMinutes;
+                }
+                totalAppointments += appointments;
+
+                byDay.push({
+                    date: format(day, 'yyyy-MM-dd'),
+                    workTimeMinutes: Math.round(workTimeMinutes),
+                    appointmentsCount: appointments,
+                });
+            }
+
+            reports.push({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                totalWorkTimeMinutes: Math.round(totalWorkTimeMinutes),
+                totalAppointments,
+                workingDays,
+                averageWorkTimePerDay:
+                    workingDays > 0
+                        ? Math.round(totalWorkTimeMinutes / workingDays)
+                        : 0,
+                byDay,
+            });
+        }
+
+        // Sort by total work time descending
+        return reports.sort(
+            (a, b) => b.totalWorkTimeMinutes - a.totalWorkTimeMinutes,
         );
     }
 

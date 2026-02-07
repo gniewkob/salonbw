@@ -290,6 +290,7 @@ export class CustomersService {
     async findOne(id: number) {
         const customer = await this.usersRepo.findOne({
             where: { id, role: Role.Client },
+            relations: ['groups'],
         });
         if (!customer) {
             throw new NotFoundException('Customer not found');

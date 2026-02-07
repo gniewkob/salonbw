@@ -4,10 +4,12 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    ManyToMany,
 } from 'typeorm';
 import { Role } from './role.enum';
 import { ColumnNumericTransformer } from '../column-numeric.transformer';
 import { ApiHideProperty } from '@nestjs/swagger';
+import { CustomerGroup } from '../customers/entities/customer-group.entity';
 
 export enum Gender {
     Male = 'male',
@@ -87,4 +89,8 @@ export class User {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    // Relations
+    @ManyToMany(() => CustomerGroup, (group) => group.members)
+    groups: CustomerGroup[];
 }

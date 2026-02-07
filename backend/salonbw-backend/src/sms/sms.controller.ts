@@ -17,10 +17,12 @@ import { Role } from '../users/role.enum';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../users/user.entity';
 import { SmsService } from './sms.service';
+import { AutomaticReminderService } from '../notifications/automatic-reminder.service';
 import {
     TemplateType,
     MessageChannel,
 } from './entities/message-template.entity';
+import { SmsStatus } from './entities/sms-log.entity';
 import {
     CreateTemplateDto,
     UpdateTemplateDto,
@@ -33,7 +35,10 @@ import {
 @Controller('sms')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class SmsController {
-    constructor(private readonly smsService: SmsService) {}
+    constructor(
+        private readonly smsService: SmsService,
+        private readonly reminderService: AutomaticReminderService,
+    ) {}
 
     // Template endpoints
     @Get('templates')
@@ -95,7 +100,13 @@ export class SmsController {
     @Post('send-bulk')
     @Roles(Role.Admin)
     async sendBulkSms(@Body() dto: SendBulkSmsDto, @CurrentUser() user: User) {
-        return this.smsService.sendBulkSms(dto, user);
+        const logs = await this.smsService.sendBulkSms(dto, user);
+        const success = logs.filter(
+            (l) =>
+                l.status === SmsStatus.Sent || l.status === SmsStatus.Delivered,
+        ).length;
+        const failed = logs.filter((l) => l.status === SmsStatus.Failed).length;
+        return { success, failed, total: logs.length };
     }
 
     @Post('send-from-template')
@@ -141,5 +152,32 @@ export class SmsController {
             : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const toDate = to ? new Date(to) : new Date();
         return this.smsService.getStats(fromDate, toDate);
+    }
+
+    // Automatic reminders endpoints
+    @Get('reminders/stats')
+    @Roles(Role.Admin)
+    async getReminderStats(@Query('days') days?: string) {
+        const daysNum = days ? parseInt(days, 10) : 7;
+        return this.reminderService.getReminderStats(daysNum);
+    }
+
+    @Post('reminders/trigger')
+    @Roles(Role.Admin)
+    async triggerReminders(@Body('hours') hours?: number) {
+        const hoursNum = hours || 24;
+        const results =
+            await this.reminderService.sendRemindersForNextHours(hoursNum);
+        return {
+            success: true,
+            count: results.length,
+            results: results.map((r) => ({
+                appointmentId: r.appointmentId,
+                clientName: r.clientName,
+                smsSent: r.smsSent,
+                emailSent: r.emailSent,
+                error: r.error,
+            })),
+        };
     }
 }

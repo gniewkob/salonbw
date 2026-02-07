@@ -1,3 +1,5 @@
+'use client';
+
 import { useRouter } from 'next/router';
 import { useEmployees } from '@/hooks/useEmployees';
 import {
@@ -14,17 +16,38 @@ import {
     subMonths,
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { useState, useEffect } from 'react';
 
 export default function CalendarNav() {
     const router = useRouter();
     const { data: employees } = useEmployees();
 
     const dateParam = router.query.date as string;
-    const selectedDate = dateParam ? new Date(dateParam) : new Date();
-
-    const selectedEmployeeId = router.query.employeeId
+    const urlEmployeeId = router.query.employeeId
         ? Number(router.query.employeeId)
         : undefined;
+
+    const [selectedDate, setSelectedDate] = useState(
+        dateParam ? new Date(dateParam) : new Date(),
+    );
+
+    // Local state for selected employees (multiple selection like in Versum)
+    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
+        urlEmployeeId ? [urlEmployeeId] : [],
+    );
+
+    // Sync with URL
+    useEffect(() => {
+        if (dateParam) {
+            setSelectedDate(new Date(dateParam));
+        }
+    }, [dateParam]);
+
+    useEffect(() => {
+        if (urlEmployeeId && !selectedEmployeeIds.includes(urlEmployeeId)) {
+            setSelectedEmployeeIds([urlEmployeeId]);
+        }
+    }, [urlEmployeeId]);
 
     // Calendar grid logic
     const monthStart = startOfMonth(selectedDate);
@@ -39,18 +62,26 @@ export default function CalendarNav() {
 
     // Navigation handlers
     const handleDateClick = (date: Date) => {
+        setSelectedDate(date);
         const query = { ...router.query, date: format(date, 'yyyy-MM-dd') };
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
         });
     };
 
-    const handleEmployeeClick = (employeeId: number | undefined) => {
+    const handleEmployeeToggle = (employeeId: number) => {
+        const newSelection = selectedEmployeeIds.includes(employeeId)
+            ? selectedEmployeeIds.filter((id) => id !== employeeId)
+            : [...selectedEmployeeIds, employeeId];
+
+        setSelectedEmployeeIds(newSelection);
+
+        // Sync with URL (use first selected for now, or none if empty)
         const query = { ...router.query };
-        if (employeeId === undefined) {
+        if (newSelection.length === 0) {
             delete query.employeeId;
         } else {
-            query.employeeId = String(employeeId);
+            query.employeeId = String(newSelection[0]);
         }
         void router.push({ pathname: router.pathname, query }, undefined, {
             shallow: true,
@@ -65,28 +96,30 @@ export default function CalendarNav() {
         handleDateClick(newDate);
     };
 
+    const monthYear = format(selectedDate, 'LLLL yyyy', {
+        locale: pl,
+    }).toUpperCase();
+
     return (
         <>
-            <div className="nav-header">
-                {format(selectedDate, 'LLLL yyyy', {
-                    locale: pl,
-                }).toUpperCase()}
-                <div className="pull-right">
-                    <button
-                        onClick={() => changeMonth(-1)}
-                        className="btn btn-xs btn-link"
-                    >
-                        <i className="icon-chevron-left">&lt;</i>
-                    </button>
-                    <button
-                        onClick={() => changeMonth(1)}
-                        className="btn btn-xs btn-link"
-                    >
-                        <i className="icon-chevron-right">&gt;</i>
-                    </button>
-                </div>
+            {/* Mini Calendar Header */}
+            <div className="nav-header flex-between">
+                <button
+                    onClick={() => changeMonth(-1)}
+                    className="btn btn-xs btn-link p-0"
+                >
+                    &lt;
+                </button>
+                <span>{monthYear}</span>
+                <button
+                    onClick={() => changeMonth(1)}
+                    className="btn btn-xs btn-link p-0"
+                >
+                    &gt;
+                </button>
             </div>
 
+            {/* Mini Calendar Grid */}
             <div className="versum-mini-cal">
                 <div className="versum-mini-cal__weekdays">
                     <span>pn</span>
@@ -95,21 +128,23 @@ export default function CalendarNav() {
                     <span>cz</span>
                     <span>pt</span>
                     <span>so</span>
-                    <span>nd</span>
+                    <span>n</span>
                 </div>
                 <div className="versum-mini-cal__days">
                     {calendarDays.map((day) => {
                         const isSelected = isSameDay(day, selectedDate);
                         const isCurrentMonth = isSameMonth(day, monthStart);
+                        const today = isToday(day);
+
                         return (
                             <button
                                 key={day.toISOString()}
                                 onClick={() => handleDateClick(day)}
                                 className={`
-                                    flex h-6 w-6 items-center justify-center rounded-full text-xs
-                                    ${!isCurrentMonth ? 'text-gray-300' : ''}
-                                    ${isSelected ? 'bg-sky-500 text-white' : 'hover:bg-gray-100'}
-                                    ${isToday(day) && !isSelected ? 'font-bold text-sky-500' : ''}
+                                    versum-mini-cal__day
+                                    ${!isCurrentMonth ? 'versum-mini-cal__day--other-month' : ''}
+                                    ${isSelected ? 'versum-mini-cal__day--selected' : ''}
+                                    ${today && !isSelected ? 'versum-mini-cal__day--today' : ''}
                                 `}
                             >
                                 {format(day, 'd')}
@@ -119,39 +154,32 @@ export default function CalendarNav() {
                 </div>
             </div>
 
+            {/* Employees Section */}
             <div className="nav-header">PRACOWNICY</div>
-            <ul className="nav nav-list">
-                <li className={!selectedEmployeeId ? 'active' : undefined}>
-                    <a
-                        href="javascript:;"
-                        onClick={() => handleEmployeeClick(undefined)}
-                    >
-                        Wszyscy pracownicy
-                    </a>
-                </li>
+            <div className="versum-employee-filter">
                 {employees?.map((employee) => (
-                    <li
+                    <label
                         key={employee.id}
-                        className={
-                            selectedEmployeeId === employee.id
-                                ? 'active'
-                                : undefined
-                        }
+                        className="versum-employee-filter__item"
                     >
-                        <a
-                            href="javascript:;"
-                            onClick={() => handleEmployeeClick(employee.id)}
-                        >
-                            <span className="versum-avatar-xs mr-2">
-                                <div className="h-4 w-4 rounded-full bg-gray-300 flex items-center justify-center text-[10px] text-white font-bold">
-                                    {employee.name.charAt(0)}
-                                </div>
-                            </span>
+                        <input
+                            type="checkbox"
+                            checked={selectedEmployeeIds.includes(employee.id)}
+                            onChange={() => handleEmployeeToggle(employee.id)}
+                            className="versum-checkbox"
+                        />
+                        <span
+                            className="versum-employee-filter__color"
+                            style={{
+                                backgroundColor: employee.color || '#999',
+                            }}
+                        />
+                        <span className="versum-employee-filter__name">
                             {employee.name}
-                        </a>
-                    </li>
+                        </span>
+                    </label>
                 ))}
-            </ul>
+            </div>
         </>
     );
 }

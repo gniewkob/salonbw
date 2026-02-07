@@ -7,13 +7,9 @@ describe('POS operations', () => {
 
     it('records a product sale', () => {
         const now = new Date().toISOString();
-        cy.intercept(
-            'GET',
-            'http://localhost:3001/products*',
-            { fixture: 'products.json' },
-        ).as(
-            'getProducts',
-        );
+        cy.intercept('GET', 'http://localhost:3001/products*', {
+            fixture: 'products.json',
+        }).as('getProducts');
         cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
@@ -59,13 +55,9 @@ describe('POS operations', () => {
 
     it('adjusts inventory with positive delta', () => {
         const now = new Date().toISOString();
-        cy.intercept(
-            'GET',
-            'http://localhost:3001/products*',
-            { fixture: 'products.json' },
-        ).as(
-            'getProducts',
-        );
+        cy.intercept('GET', 'http://localhost:3001/products*', {
+            fixture: 'products.json',
+        }).as('getProducts');
         cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
@@ -112,13 +104,9 @@ describe('POS operations', () => {
 
     it('adjusts inventory with negative delta', () => {
         const now = new Date().toISOString();
-        cy.intercept(
-            'GET',
-            'http://localhost:3001/products*',
-            { fixture: 'products.json' },
-        ).as(
-            'getProducts',
-        );
+        cy.intercept('GET', 'http://localhost:3001/products*', {
+            fixture: 'products.json',
+        }).as('getProducts');
         cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');
@@ -164,13 +152,9 @@ describe('POS operations', () => {
 
     it('shows validation error for empty sale form', () => {
         const now = new Date().toISOString();
-        cy.intercept(
-            'GET',
-            'http://localhost:3001/products*',
-            { fixture: 'products.json' },
-        ).as(
-            'getProducts',
-        );
+        cy.intercept('GET', 'http://localhost:3001/products*', {
+            fixture: 'products.json',
+        }).as('getProducts');
         cy.intercept('GET', 'http://localhost:3001/employees*', {
             fixture: 'employees.json',
         }).as('getEmployees');

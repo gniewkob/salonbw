@@ -78,6 +78,22 @@ export interface EmployeeStats {
     reviewCount: number;
 }
 
+export interface EmployeeActivity {
+    employeeId: number;
+    employeeName: string;
+    workTimeMinutes: number;
+    appointmentsCount: number;
+}
+
+export interface EmployeeActivitySummary {
+    date: string;
+    employees: EmployeeActivity[];
+    totals: {
+        workTimeMinutes: number;
+        appointmentsCount: number;
+    };
+}
+
 export interface ServiceStats {
     serviceId: number;
     serviceName: string;
@@ -98,6 +114,28 @@ export interface ClientStats {
         clientName: string;
         visits: number;
         totalSpent: number;
+    }>;
+}
+
+export interface ClientReturningStats {
+    totalClients: number;
+    returningClients: number;
+    returningPercentage: number;
+    newClients: number;
+    newPercentage: number;
+    byMonth: Array<{
+        month: string;
+        newClients: number;
+        returningClients: number;
+    }>;
+}
+
+export interface ClientOriginStats {
+    totalClients: number;
+    origins: Array<{
+        origin: string;
+        count: number;
+        percentage: number;
     }>;
 }
 
@@ -133,4 +171,80 @@ export interface TipsSummary {
     tipsCount: number;
     tipsTotal: number;
     averageTip: number;
+}
+
+export interface CommissionReport {
+    employeeId: number;
+    employeeName: string;
+    serviceRevenue: number;
+    serviceCommission: number;
+    productRevenue: number;
+    productCommission: number;
+    totalRevenue: number;
+    totalCommission: number;
+}
+
+export interface CommissionReportSummary {
+    date: string;
+    employees: CommissionReport[];
+    totals: {
+        serviceRevenue: number;
+        serviceCommission: number;
+        productRevenue: number;
+        productCommission: number;
+        totalRevenue: number;
+        totalCommission: number;
+    };
+}
+
+export interface WarehouseMovementStats {
+    totalMovements: number;
+    byType: Array<{
+        type: string;
+        count: number;
+        quantityChange: number;
+    }>;
+    recentMovements: Array<{
+        id: number;
+        productName: string;
+        type: string;
+        quantity: number;
+        quantityBefore: number;
+        quantityAfter: number;
+        createdAt: string;
+        createdByName: string | null;
+    }>;
+}
+
+export interface WarehouseValueStats {
+    totalProducts: number;
+    totalValue: number;
+    totalQuantity: number;
+    byCategory: Array<{
+        category: string;
+        productCount: number;
+        totalValue: number;
+        totalQuantity: number;
+    }>;
+    lowStockProducts: Array<{
+        id: number;
+        name: string;
+        quantity: number;
+        minQuantity: number;
+        price: number;
+    }>;
+}
+
+export interface WorkTimeReport {
+    employeeId: number;
+    employeeName: string;
+    totalWorkTimeMinutes: number;
+    totalAppointments: number;
+    workingDays: number;
+    averageWorkTimePerDay: number;
+    byDay: Array<{
+        date: string;
+        workTimeMinutes: number;
+        appointmentsCount: number;
+    }>;
 }

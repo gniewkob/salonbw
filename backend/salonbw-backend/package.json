@@ -9,6 +9,7 @@
         "build": "nest build",
         "import:products": "ts-node --transpile-only scripts/import-products.ts",
         "import:services": "ts-node --transpile-only scripts/import-services.ts",
+        "seed:test": "ts-node --transpile-only scripts/seed-test-data.ts",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "nest start --watch",

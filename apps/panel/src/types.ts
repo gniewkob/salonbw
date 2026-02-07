@@ -287,7 +287,7 @@ export interface CalendarEvent {
     allDay?: boolean;
 }
 
-export type CalendarView = 'day' | 'week' | 'month';
+export type CalendarView = 'day' | 'week' | 'month' | 'reception';
 
 export interface CalendarData {
     events: CalendarEvent[];
@@ -323,6 +323,7 @@ export interface Customer {
     gdprConsentDate?: string;
     createdAt: string;
     updatedAt: string;
+    groups?: CustomerGroup[];
 }
 
 export interface CustomerGroup {

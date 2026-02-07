@@ -303,7 +303,7 @@ export class SmsService {
     // Send appointment reminder
     async sendAppointmentReminder(
         appointmentId: number,
-        actor: User,
+        actor?: User | null,
     ): Promise<SmsLog | null> {
         const appointment = await this.appointmentRepository.findOne({
             where: { id: appointmentId },

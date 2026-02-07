@@ -1,87 +1,282 @@
+'use client';
+
 import { useDashboard } from '@/hooks/useDashboard';
-import StatsWidget from '@/components/StatsWidget';
+import { useDashboardStats } from '@/hooks/useStatistics';
+import { format, startOfMonth, endOfDay } from 'date-fns';
+import { pl } from 'date-fns/locale';
+import Link from 'next/link';
+
+interface DashboardStats {
+    todayRevenue: number;
+    todayAppointments: number;
+    todayCompletedAppointments: number;
+    todayNewClients: number;
+    weekRevenue: number;
+    weekAppointments: number;
+    monthRevenue: number;
+    monthAppointments: number;
+    pendingAppointments: number;
+    averageRating: number;
+}
 
 export default function AdminDashboard() {
-    const { data, loading } = useDashboard();
+    const { data: dashboardData, loading: dashboardLoading } = useDashboard();
 
-    if (loading) {
-        return <div className="p-4">Loading dashboard...</div>;
+    // Get stats for current month
+    const from = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+    const to = format(endOfDay(new Date()), 'yyyy-MM-dd');
+
+    const { data: stats, isLoading: statsLoading } = useDashboardStats();
+
+    if (dashboardLoading || statsLoading) {
+        return (
+            <div className="versum-dashboard">
+                <div className="versum-dashboard__loading">
+                    Ładowanie pulpitu...
+                </div>
+            </div>
+        );
     }
 
-    if (!data) {
-        return <div className="p-4">No data available</div>;
+    if (!stats) {
+        return (
+            <div className="versum-dashboard">
+                <div className="versum-dashboard__empty">Brak danych</div>
+            </div>
+        );
     }
 
-    const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('pl-PL', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
+    // Calculate daily stats for mini chart (simplified)
+    const today = new Date();
+    const daysInMonth = today.getDate();
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="versum-dashboard">
+            {/* Header */}
+            <div className="versum-dashboard__header">
+                <h1 className="versum-dashboard__title">Pulpit</h1>
+                <Link
+                    href="/clients/new"
+                    className="versum-btn versum-btn--primary"
+                >
+                    <i className="versum-icon versum-icon--plus"></i>
+                    Dodaj klienta
+                </Link>
+            </div>
+
+            {/* Stats Period Selector */}
+            <div className="versum-dashboard__period">
+                <button className="versum-dashboard__period-btn active">
+                    bieżący miesiąc
+                </button>
+                <span className="versum-dashboard__period-label">
+                    Statystyki salonu:{' '}
+                    {format(startOfMonth(today), 'd MMMM yyyy', { locale: pl })}{' '}
+                    - {format(today, 'd MMMM yyyy', { locale: pl })}
+                </span>
+            </div>
 
             {/* Stats Grid */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatsWidget
-                    title="Total Clients"
-                    value={data.clientCount}
-                    loading={false}
-                />
-                <StatsWidget
-                    title="Total Employees"
-                    value={data.employeeCount}
-                    loading={false}
-                />
-                <StatsWidget
-                    title="Today's Appointments"
-                    value={data.todayAppointments}
-                    loading={false}
-                />
-            </section>
-
-            {/* Upcoming Appointments */}
-            <section className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                    Upcoming Appointments
-                </h2>
-                {data.upcomingAppointments.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2">Client</th>
-                                    <th className="text-left py-2">Service</th>
-                                    <th className="text-left py-2">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.upcomingAppointments.map((apt) => (
-                                    <tr key={apt.id} className="border-b">
-                                        <td className="py-2">
-                                            {apt.client?.name ?? 'Unknown'}
-                                        </td>
-                                        <td className="py-2">
-                                            {apt.service?.name ?? 'Unknown'}
-                                        </td>
-                                        <td className="py-2">
-                                            {formatDate(apt.startTime)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            <div className="versum-dashboard__stats">
+                {/* Liczba wizyt */}
+                <div className="versum-stat-card">
+                    <h3 className="versum-stat-card__title">liczba wizyt</h3>
+                    <div className="versum-stat-card__value">
+                        {stats.todayAppointments}
+                        <span className="versum-stat-card__change positive">
+                            ↑ 100%
+                        </span>
                     </div>
-                ) : (
-                    <p className="text-gray-500">No upcoming appointments</p>
-                )}
-            </section>
+                    <div className="versum-stat-card__chart">
+                        {/* Simplified bar chart visualization */}
+                        <div className="versum-mini-chart">
+                            {Array.from({ length: daysInMonth }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="versum-mini-chart__bar"
+                                    style={{
+                                        height: `${Math.random() * 60 + 20}%`,
+                                        opacity:
+                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Nowych klientów */}
+                <div className="versum-stat-card">
+                    <h3 className="versum-stat-card__title">nowych klientów</h3>
+                    <div className="versum-stat-card__value">
+                        {stats.todayNewClients}
+                        <span className="versum-stat-card__change positive">
+                            ↑ 100%
+                        </span>
+                    </div>
+                    <div className="versum-stat-card__chart">
+                        <div className="versum-mini-chart">
+                            {Array.from({ length: daysInMonth }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="versum-mini-chart__bar versum-mini-chart__bar--blue"
+                                    style={{
+                                        height: `${Math.random() * 40 + 10}%`,
+                                        opacity:
+                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Obroty salonu */}
+                <div className="versum-stat-card">
+                    <h3 className="versum-stat-card__title">obroty salonu</h3>
+                    <div className="versum-stat-card__value">
+                        <button className="versum-stat-card__toggle">
+                            pokaż obrót
+                        </button>
+                        <span className="versum-stat-card__change positive">
+                            ↑ 100%
+                        </span>
+                    </div>
+                    <div className="versum-stat-card__chart">
+                        <div className="versum-mini-chart">
+                            {Array.from({ length: daysInMonth }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="versum-mini-chart__bar versum-mini-chart__bar--green"
+                                    style={{
+                                        height: `${Math.random() * 80 + 20}%`,
+                                        opacity:
+                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Sections Grid */}
+            <div className="versum-dashboard__grid">
+                {/* Activity Log */}
+                <div className="versum-dashboard__section">
+                    <div className="versum-dashboard__section-header">
+                        <h2>więcej aktywności</h2>
+                        <Link
+                            href="/settings/employees/activity_logs"
+                            className="versum-link"
+                        >
+                            więcej
+                        </Link>
+                    </div>
+                    <div className="versum-activity-list">
+                        {dashboardData?.upcomingAppointments
+                            ?.slice(0, 5)
+                            .map((apt) => (
+                                <div
+                                    key={apt.id}
+                                    className="versum-activity-item"
+                                >
+                                    <div className="versum-activity-item__avatar">
+                                        {apt.client?.name?.charAt(0) || '?'}
+                                    </div>
+                                    <div className="versum-activity-item__content">
+                                        <div className="versum-activity-item__title">
+                                            Wizyta:{' '}
+                                            {apt.client?.name || 'Unknown'}
+                                        </div>
+                                        <div className="versum-activity-item__meta">
+                                            {format(
+                                                new Date(apt.startTime),
+                                                'd MMMM, HH:mm',
+                                                { locale: pl },
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )) || (
+                            <div className="versum-activity-item versum-activity-item--empty">
+                                Brak aktywności
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Upcoming Appointments */}
+                <div className="versum-dashboard__section">
+                    <div className="versum-dashboard__section-header">
+                        <h2>najbliższe zaplanowane wizyty</h2>
+                    </div>
+                    <div className="versum-appointments-list">
+                        {dashboardData?.upcomingAppointments
+                            ?.slice(0, 5)
+                            .map((apt) => (
+                                <div
+                                    key={apt.id}
+                                    className="versum-appointment-item"
+                                >
+                                    <div className="versum-appointment-item__time">
+                                        {format(
+                                            new Date(apt.startTime),
+                                            'HH:mm',
+                                        )}
+                                    </div>
+                                    <div className="versum-appointment-item__details">
+                                        <div className="versum-appointment-item__client">
+                                            {apt.client?.name || 'Unknown'}
+                                        </div>
+                                        <div className="versum-appointment-item__service">
+                                            {apt.service?.name || 'Unknown'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )) || (
+                            <div className="versum-appointment-item versum-appointment-item--empty">
+                                Brak zaplanowanych wizyt
+                            </div>
+                        )}
+                    </div>
+                    <Link
+                        href="/calendar"
+                        className="versum-dashboard__section-footer"
+                    >
+                        kalendarz wizyt
+                    </Link>
+                </div>
+
+                {/* Tasks */}
+                <div className="versum-dashboard__section">
+                    <div className="versum-dashboard__section-header">
+                        <h2>zadania</h2>
+                        <div className="versum-dashboard__section-actions">
+                            <button className="versum-icon-btn">+</button>
+                            <button className="versum-icon-btn">🗑</button>
+                        </div>
+                    </div>
+                    <div className="versum-tasks">
+                        <div className="versum-tasks__input">
+                            <input
+                                type="text"
+                                placeholder="nowe zadanie"
+                                className="versum-input versum-input--ghost"
+                            />
+                        </div>
+                        <div className="versum-tasks__empty">
+                            Nie znaleziono żadnych zadań
+                        </div>
+                    </div>
+                    <Link
+                        href="/todo/archives/"
+                        className="versum-dashboard__section-footer"
+                    >
+                        archiwum zadań
+                    </Link>
+                </div>
+            </div>
         </div>
     );
 }

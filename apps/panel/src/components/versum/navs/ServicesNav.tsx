@@ -28,19 +28,12 @@ export default function ServicesNav() {
         });
     };
 
+    // Count services without category
+    const uncategorizedCount = 0; // This would need to be fetched from API
+
     return (
         <div className="sidebar-inner nav-scroll-container">
-            <div className="nav-header">
-                KATEGORIE
-                <a
-                    className="pull-right"
-                    href="javascript:;"
-                    title="Zarządzaj kategoriami"
-                    onClick={() => setIsManageModalOpen(true)}
-                >
-                    <i className="icon-cog"></i>
-                </a>
-            </div>
+            {/* All Services */}
             <ul className="nav nav-list">
                 <li className={!currentCategoryId ? 'active' : undefined}>
                     <a
@@ -50,6 +43,10 @@ export default function ServicesNav() {
                         Wszystkie usługi
                     </a>
                 </li>
+            </ul>
+
+            {/* Category List */}
+            <ul className="nav nav-list">
                 {categories.map((category) => (
                     <li
                         key={category.id}
@@ -63,17 +60,28 @@ export default function ServicesNav() {
                             href="javascript:;"
                             onClick={() => updateFilters(category.id)}
                         >
-                            {category.color && (
-                                <span
-                                    className="versum-chip"
-                                    data-color={category.color}
-                                />
-                            )}
                             {category.name}
                         </a>
                     </li>
                 ))}
+                {/* Uncategorized services */}
+                <li className={currentCategoryId === 0 ? 'active' : undefined}>
+                    <a href="javascript:;" onClick={() => updateFilters(0)}>
+                        usługi bez kategorii
+                    </a>
+                </li>
             </ul>
+
+            {/* Manage Categories Link */}
+            <div className="versum-secondarynav__manage-groups">
+                <a
+                    href="javascript:;"
+                    onClick={() => setIsManageModalOpen(true)}
+                    className="versum-secondarynav__link"
+                >
+                    dodaj/edytuj/usuń
+                </a>
+            </div>
 
             <ManageCategoriesModal
                 isOpen={isManageModalOpen}

@@ -1,13 +1,18 @@
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 import EmailList from '@/components/EmailList';
 
 export default function EmailsPage() {
+    const { role } = useAuth();
+
+    if (!role) return null;
+
     return (
         <RouteGuard permission="nav:emails">
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <EmailList />
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }

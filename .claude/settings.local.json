@@ -23,7 +23,12 @@
       "Bash(pnpm --filter frontend run typecheck:*)",
       "Bash(pnpm --filter frontend run build:*)",
       "Bash(ANALYZE=true pnpm run build:*)",
-      "Bash(export ANALYZE=true)"
+      "Bash(export ANALYZE=true)",
+      "Bash(pnpm eslint src --fix)",
+      "Bash(pnpm tsc --noEmit)",
+      "Bash(pnpm lint --fix)",
+      "Bash(pnpm test)",
+      "Bash(pnpm --filter salonbw-backend test)"
     ],
     "deny": [],
     "ask": []

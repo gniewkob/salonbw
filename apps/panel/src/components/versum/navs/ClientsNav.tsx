@@ -3,13 +3,15 @@ import {
     useCustomerGroups,
     useCustomerTags,
     useCreateCustomerGroup,
+    useAddGroupMembers,
 } from '@/hooks/useCustomers';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useState } from 'react';
-import type { CustomerFilterParams } from '@/types';
+import type { CustomerFilterParams, CustomerGroup } from '@/types';
 import CreateCustomerGroupModal from '../modals/CreateCustomerGroupModal';
 import SelectorModal from '../modals/SelectorModal';
+import { useDroppable } from '@dnd-kit/core';
 
 type FilterCriteriaId = 'used_services' | 'has_visit' | 'by_employee';
 
@@ -29,6 +31,51 @@ const FILTER_CRITERIA: Array<{
     { id: 'by_employee', label: 'obsługiwani przez pracowników' },
 ];
 
+// Komponent dla grupy z obsługą drop
+function DroppableGroupItem({
+    group,
+    isActive,
+    onClick,
+}: {
+    group: CustomerGroup;
+    isActive: boolean;
+    onClick: () => void;
+}) {
+    const { isOver, setNodeRef } = useDroppable({
+        id: group.id,
+    });
+
+    return (
+        <li
+            ref={setNodeRef}
+            className={isActive ? 'active' : undefined}
+            style={{
+                backgroundColor: isOver ? 'rgba(0, 139, 180, 0.1)' : undefined,
+                borderRadius: 4,
+                transition: 'background-color 0.2s',
+            }}
+        >
+            <a href="javascript:;" onClick={onClick}>
+                {group.color && (
+                    <span
+                        className="versum-chip"
+                        data-color={group.color}
+                        style={{
+                            boxShadow: isOver
+                                ? `0 0 0 2px ${group.color}`
+                                : undefined,
+                        }}
+                    />
+                )}
+                {group.name}
+                {isOver && (
+                    <span className="ml-4 text-xs text-sky-600">↑ upuść</span>
+                )}
+            </a>
+        </li>
+    );
+}
+
 export default function ClientsNav() {
     const router = useRouter();
     const { data: groups } = useCustomerGroups();
@@ -36,6 +83,7 @@ export default function ClientsNav() {
     const { data: services } = useServices();
     const { data: employees } = useEmployees();
     const createGroup = useCreateCustomerGroup();
+    const addToGroup = useAddGroupMembers();
 
     const [showMoreGroups, setShowMoreGroups] = useState(false);
     const [showMoreCriteria, setShowMoreCriteria] = useState(false);
@@ -130,34 +178,14 @@ export default function ClientsNav() {
                 <ul className="nav nav-list">
                     {(showMoreGroups ? groups : groups.slice(0, 3)).map(
                         (group) => (
-                            <li
+                            <DroppableGroupItem
                                 key={group.id}
-                                className={
-                                    currentGroupId === group.id
-                                        ? 'active'
-                                        : undefined
+                                group={group}
+                                isActive={currentGroupId === group.id}
+                                onClick={() =>
+                                    updateFilters({ groupId: group.id })
                                 }
-                            >
-                                <a
-                                    href="javascript:;"
-                                    onClick={() =>
-                                        updateFilters({ groupId: group.id })
-                                    }
-                                >
-                                    {group.color && (
-                                        <span
-                                            className="versum-chip"
-                                            data-color={group.color}
-                                        />
-                                    )}
-                                    {group.name}
-                                    {group.memberCount !== undefined && (
-                                        <span className="versum-muted ml-auto">
-                                            {group.memberCount}
-                                        </span>
-                                    )}
-                                </a>
-                            </li>
+                            />
                         ),
                     )}
                     {groups.length > 3 && (
@@ -173,6 +201,95 @@ export default function ClientsNav() {
                         </li>
                     )}
                 </ul>
+            )}
+
+            {/* Link do zarządzania grupami - jak w Versum */}
+            <div className="versum-secondarynav__manage-groups">
+                <a
+                    href="javascript:;"
+                    onClick={() => setShowCreateGroupModal(true)}
+                    className="versum-secondarynav__link"
+                >
+                    dodaj/edytuj/usuń
+                </a>
+            </div>
+
+            {/* Sekcja "Kryteria wyszukiwania" - pokazuje się gdy wybrano grupę */}
+            {currentGroupId && (
+                <div className="versum-secondarynav__filter-criteria">
+                    <div className="nav-header">
+                        Kryteria wyszukiwania
+                        <a
+                            className="pull-right"
+                            href="javascript:;"
+                            onClick={() =>
+                                updateFilters({ groupId: undefined })
+                            }
+                            title="Wyczyść filtry"
+                        >
+                            ✕
+                        </a>
+                    </div>
+                    <div className="versum-filter-section">
+                        <div className="versum-filter-label">
+                            należą do grup:
+                        </div>
+                        <div className="versum-filter-operator">
+                            <label className="versum-radio">
+                                <input
+                                    type="radio"
+                                    name="groupOperator"
+                                    checked={
+                                        router.query.groupOperator !== 'or'
+                                    }
+                                    onChange={() =>
+                                        updateFilters({ groupOperator: 'and' })
+                                    }
+                                />
+                                każdej z wybranych
+                            </label>
+                            <label className="versum-radio">
+                                <input
+                                    type="radio"
+                                    name="groupOperator"
+                                    checked={
+                                        router.query.groupOperator === 'or'
+                                    }
+                                    onChange={() =>
+                                        updateFilters({ groupOperator: 'or' })
+                                    }
+                                />
+                                którejkolwiek z wybranych
+                            </label>
+                        </div>
+                    </div>
+                    <div className="versum-filter-groups">
+                        <div className="versum-filter-label">grupy:</div>
+                        <div className="versum-filter-selected">
+                            {groups
+                                ?.filter((g) => currentGroupId === g.id)
+                                .map((group) => (
+                                    <span
+                                        key={group.id}
+                                        className="versum-filter-tag"
+                                    >
+                                        {group.name}
+                                        <a
+                                            href="javascript:;"
+                                            onClick={() =>
+                                                updateFilters({
+                                                    groupId: undefined,
+                                                })
+                                            }
+                                            className="versum-filter-remove"
+                                        >
+                                            ✕
+                                        </a>
+                                    </span>
+                                ))}
+                        </div>
+                    </div>
+                </div>
             )}
 
             <div className="nav-header">WYBIERZ KRYTERIA</div>

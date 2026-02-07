@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import type { ComponentProps } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 import type ClientDashboardComponent from '@/components/dashboard/ClientDashboard';
@@ -31,6 +31,8 @@ const AdminDashboard = dynamic<ComponentProps<typeof AdminDashboardComponent>>(
 export default function DashboardPage() {
     const { role } = useAuth();
 
+    if (!role) return null;
+
     const renderDashboard = () => {
         switch (role) {
             case 'client':
@@ -39,8 +41,6 @@ export default function DashboardPage() {
                 return <AdminDashboard />;
             case 'employee':
             case 'receptionist':
-                // For now, employees and receptionists see the admin dashboard
-                // (they have access to /dashboard endpoint)
                 return <AdminDashboard />;
             default:
                 return <div>Please log in to view your dashboard</div>;
@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
     return (
         <RouteGuard roles={['client', 'employee', 'receptionist', 'admin']}>
-            <DashboardLayout>{renderDashboard()}</DashboardLayout>
+            <VersumShell role={role}>{renderDashboard()}</VersumShell>
         </RouteGuard>
     );
 }
