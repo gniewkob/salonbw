@@ -84,13 +84,11 @@ export default function VersumSecondaryNav({
     } else if (module.key === 'products') {
         content = <WarehouseNav />;
     } else if (module.key === 'statistics') {
-        content = renderSections(statisticsSections);
+        content = <StatisticsNav />;
     } else if (module.key === 'communication') {
         content = renderSections(communicationSections);
     } else if (module.key === 'services') {
         content = <ServicesNav />;
-    } else if (module.key === 'statistics') {
-        content = <StatisticsNav />;
     }
 
     return (

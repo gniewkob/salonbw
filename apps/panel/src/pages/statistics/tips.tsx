@@ -7,7 +7,7 @@ import { useTipsSummary } from '@/hooks/useStatistics';
 
 export default function TipsPage() {
     const { role } = useAuth();
-    const [range, setRange] = useState<'today' | 'week' | 'month'>('month');
+    const [range, setRange] = useState<'today' | 'this_week' | 'this_month'>('this_month');
     const { data, isLoading } = useTipsSummary({ range });
 
     const formatMoney = (value: number): string => {
@@ -18,9 +18,9 @@ export default function TipsPage() {
         switch (range) {
             case 'today':
                 return 'dzisiaj';
-            case 'week':
+            case 'this_week':
                 return 'ten tydzień';
-            case 'month':
+            case 'this_month':
                 return 'ten miesiąc';
             default:
                 return '';

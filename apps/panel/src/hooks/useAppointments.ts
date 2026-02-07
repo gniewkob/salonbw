@@ -1,6 +1,6 @@
 import type { paths } from '@salonbw/api';
-import type { Appointment as LocalAppointment } from '@/types';
-import { useList } from './useList';
+import type { Appointment as LocalAppointment, CalendarEvent } from '@/types';
+import { useQuery } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,17 +16,73 @@ export const APPOINTMENTS_QUERY_KEY = ['api', '/appointments'] as const;
 export const MY_APPOINTMENTS_QUERY_KEY = ['api', '/appointments/me'] as const;
 
 interface UseAppointmentsOptions {
+    from?: string;
+    to?: string;
     enabled?: boolean;
 }
 
 export function useAppointments(options: UseAppointmentsOptions = {}) {
-    const list = useList<Appointment>('/appointments', options);
-    return { ...list, queryKey: APPOINTMENTS_QUERY_KEY };
+    const { apiFetch } = useAuth();
+    const { from, to, enabled = true } = options;
+
+    const queryParams = new URLSearchParams();
+    if (from) queryParams.set('from', from);
+    if (to) queryParams.set('to', to);
+    const queryString = queryParams.toString();
+    const endpoint = `/appointments${queryString ? `?${queryString}` : ''}`;
+
+    const query = useQuery({
+        queryKey: [...APPOINTMENTS_QUERY_KEY, from, to],
+        queryFn: () => apiFetch<Appointment[]>(endpoint),
+        enabled,
+    });
+
+    // Transform appointments to CalendarEvents
+    const calendarEvents: CalendarEvent[] =
+        query.data?.map((apt) => ({
+            id: apt.id,
+            type: 'appointment' as const,
+            title: apt.service?.name || 'Wizyta',
+            startTime: apt.startTime,
+            endTime: apt.endTime || apt.startTime,
+            employeeId: apt.employee?.id || 0,
+            employeeName: apt.employee?.name || '',
+            clientId: apt.client?.id,
+            clientName: apt.client?.name,
+            serviceId: apt.service?.id,
+            serviceName: apt.service?.name,
+            status: apt.status,
+        })) || [];
+
+    return {
+        data: calendarEvents,
+        rawData: query.data,
+        error: (query.error as Error | null) ?? null,
+        loading: query.isLoading,
+        isLoading: query.isLoading,
+        refetch: query.refetch,
+        queryKey: APPOINTMENTS_QUERY_KEY,
+    };
 }
 
 export function useMyAppointments(options: UseAppointmentsOptions = {}) {
-    const list = useList<Appointment>('/appointments/me', options);
-    return { ...list, queryKey: MY_APPOINTMENTS_QUERY_KEY };
+    const list = useQuery({
+        queryKey: MY_APPOINTMENTS_QUERY_KEY,
+        queryFn: async () => {
+            const { apiFetch } = useAuth();
+            return apiFetch<Appointment[]>('/appointments/me');
+        },
+        enabled: options.enabled,
+    });
+
+    return {
+        data: list.data ?? null,
+        error: (list.error as Error | null) ?? null,
+        loading: list.isLoading,
+        isLoading: list.isLoading,
+        refetch: list.refetch,
+        queryKey: MY_APPOINTMENTS_QUERY_KEY,
+    };
 }
 
 export function useAppointmentMutations() {

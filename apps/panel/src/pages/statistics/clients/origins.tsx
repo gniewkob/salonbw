@@ -172,10 +172,10 @@ export default function ClientOriginsPage() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(
-                                                            value: number,
-                                                        ) => [
-                                                            `${value} klientów`,
-                                                        ]}
+                                                            value?: number,
+                                                        ) =>
+                                                            `${value ?? 0} klientów`
+                                                        }
                                                     />
                                                 </PieChart>
                                             </ResponsiveContainer>
@@ -212,10 +212,10 @@ export default function ClientOriginsPage() {
                                                     />
                                                     <Tooltip
                                                         formatter={(
-                                                            value: number,
-                                                        ) => [
-                                                            `${value} klientów`,
-                                                        ]}
+                                                            value?: number,
+                                                        ) =>
+                                                            `${value ?? 0} klientów`
+                                                        }
                                                     />
                                                     <Bar
                                                         dataKey="count"

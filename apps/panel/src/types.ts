@@ -484,6 +484,7 @@ export interface ProductExtended extends Product {
     trackStock: boolean;
     createdAt: string;
     updatedAt: string;
+    volumeMl?: number;
 }
 
 export interface ProductCardView {
@@ -1002,6 +1003,18 @@ export interface EmployeeStats {
     tips: number;
     rating: number;
     reviewCount: number;
+}
+
+export interface CommissionReportSummary {
+    totalCommissions: number;
+    totalBaseAmount: number;
+    byEmployee: Array<{
+        employeeId: number;
+        employeeName: string;
+        commissionAmount: number;
+        baseAmount: number;
+        appointmentsCount: number;
+    }>;
 }
 
 export interface ServiceStats {
