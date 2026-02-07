@@ -101,6 +101,15 @@ jobs:
             exit 0
           fi
 
+          # Handle force push (when BASE commit doesn't exist anymore)
+          if ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "Base commit $BASE not found (force push?), deploying all"
+            echo "panel=true" >> "$GITHUB_OUTPUT"
+            echo "landing=true" >> "$GITHUB_OUTPUT"
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           files="$(git diff --name-only "$BASE" "$HEAD")"
           echo "Changed files:" && echo "$files"
 
