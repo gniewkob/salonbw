@@ -9,7 +9,7 @@ import VersumShell from '@/components/versum/VersumShell';
 
 interface Props {
     children: ReactNode;
-    pageTitle?: string;
+    // pageTitle removed
     secondaryNav?: ReactNode;
 }
 
@@ -47,7 +47,6 @@ const AdminSidebar: ComponentType<SidebarProps> =
 
 export default function DashboardLayout({
     children,
-    pageTitle,
     secondaryNav,
 }: Props) {
     const [menuOpen, setMenuOpen] = useState(false);

@@ -220,7 +220,11 @@ test.describe('Calendar Module E2E', () => {
             }
 
             // Calendar events
-            if (apiPath.startsWith('/events') && !apiPath.includes('screen_data') && !apiPath.includes('finalize')) {
+            if (
+                apiPath.startsWith('/events') &&
+                !apiPath.includes('screen_data') &&
+                !apiPath.includes('finalize')
+            ) {
                 await fulfillJson(route, MOCK_EVENTS);
                 return;
             }
@@ -232,8 +236,14 @@ test.describe('Calendar Module E2E', () => {
             }
 
             // Finalize event
-            if (apiPath.includes('/finalize') && route.request().method() === 'POST') {
-                const body = route.request().postDataJSON() as Record<string, unknown>;
+            if (
+                apiPath.includes('/finalize') &&
+                route.request().method() === 'POST'
+            ) {
+                const body = route.request().postDataJSON() as Record<
+                    string,
+                    unknown
+                >;
                 const isNoShow = body?.not_an_appointment === true;
 
                 await fulfillJson(route, {
@@ -262,7 +272,9 @@ test.describe('Calendar Module E2E', () => {
 
             // GraphQL
             if (apiPath === '/graphql') {
-                const body = route.request().postDataJSON() as { operationName?: string };
+                const body = route.request().postDataJSON() as {
+                    operationName?: string;
+                };
                 const operationName = body?.operationName ?? '';
 
                 switch (operationName) {
@@ -314,9 +326,18 @@ test.describe('Calendar Module E2E', () => {
                                             id: 1,
                                             name: 'Botox na włosy',
                                             variants: [
-                                                { id: 1, name: null, duration: 120, price: 300, vat: 23 },
+                                                {
+                                                    id: 1,
+                                                    name: null,
+                                                    duration: 120,
+                                                    price: 300,
+                                                    vat: 23,
+                                                },
                                             ],
-                                            category: { id: 1, name: 'Damskie' },
+                                            category: {
+                                                id: 1,
+                                                name: 'Damskie',
+                                            },
                                         },
                                     ],
                                     hasNext: false,
@@ -339,7 +360,11 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
 
             // Wait for calendar container to be present
-            await expect(page.locator('#calendar_container, .fc-view-container, [data-calendar]')).toBeVisible({
+            await expect(
+                page.locator(
+                    '#calendar_container, .fc-view-container, [data-calendar]',
+                ),
+            ).toBeVisible({
                 timeout: 15000,
             });
         });
@@ -349,13 +374,19 @@ test.describe('Calendar Module E2E', () => {
             await page.waitForTimeout(2000);
 
             // Look for month view button
-            const monthButton = page.locator('button:has-text("miesiąc"), .fc-month-button, [data-view="month"]');
+            const monthButton = page.locator(
+                'button:has-text("miesiąc"), .fc-month-button, [data-view="month"]',
+            );
             if (await monthButton.isVisible()) {
                 await monthButton.click();
                 await page.waitForTimeout(500);
 
                 // Verify month view is active
-                await expect(page.locator('.fc-month-view, .fc-dayGridMonth-view, [data-view="month"].active')).toBeVisible();
+                await expect(
+                    page.locator(
+                        '.fc-month-view, .fc-dayGridMonth-view, [data-view="month"].active',
+                    ),
+                ).toBeVisible();
             }
         });
 
@@ -363,12 +394,18 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(2000);
 
-            const weekButton = page.locator('button:has-text("tydzień"), .fc-agendaWeek-button, [data-view="week"]');
+            const weekButton = page.locator(
+                'button:has-text("tydzień"), .fc-agendaWeek-button, [data-view="week"]',
+            );
             if (await weekButton.isVisible()) {
                 await weekButton.click();
                 await page.waitForTimeout(500);
 
-                await expect(page.locator('.fc-agendaWeek-view, .fc-timeGridWeek-view, [data-view="week"].active')).toBeVisible();
+                await expect(
+                    page.locator(
+                        '.fc-agendaWeek-view, .fc-timeGridWeek-view, [data-view="week"].active',
+                    ),
+                ).toBeVisible();
             }
         });
 
@@ -376,12 +413,18 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(2000);
 
-            const dayButton = page.locator('button:has-text("dzień"), .fc-agendaDay-button, [data-view="day"]');
+            const dayButton = page.locator(
+                'button:has-text("dzień"), .fc-agendaDay-button, [data-view="day"]',
+            );
             if (await dayButton.isVisible()) {
                 await dayButton.click();
                 await page.waitForTimeout(500);
 
-                await expect(page.locator('.fc-agendaDay-view, .fc-timeGridDay-view, [data-view="day"].active')).toBeVisible();
+                await expect(
+                    page.locator(
+                        '.fc-agendaDay-view, .fc-timeGridDay-view, [data-view="day"].active',
+                    ),
+                ).toBeVisible();
             }
         });
 
@@ -389,12 +432,18 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(2000);
 
-            const receptionButton = page.locator('button:has-text("recepcja"), .fc-agendaResource-button, [data-view="reception"]');
+            const receptionButton = page.locator(
+                'button:has-text("recepcja"), .fc-agendaResource-button, [data-view="reception"]',
+            );
             if (await receptionButton.isVisible()) {
                 await receptionButton.click();
                 await page.waitForTimeout(500);
 
-                await expect(page.locator('.fc-agendaResource-view, .fc-resourceTimeGridDay-view, [data-view="reception"].active')).toBeVisible();
+                await expect(
+                    page.locator(
+                        '.fc-agendaResource-view, .fc-resourceTimeGridDay-view, [data-view="reception"].active',
+                    ),
+                ).toBeVisible();
             }
         });
     });
@@ -404,7 +453,9 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(2000);
 
-            const prevButton = page.locator('.fc-prev-button, button[aria-label="prev"], button:has-text("<")');
+            const prevButton = page.locator(
+                '.fc-prev-button, button[aria-label="prev"], button:has-text("<")',
+            );
             await expect(prevButton).toBeVisible();
             await prevButton.click();
 
@@ -416,7 +467,9 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(2000);
 
-            const nextButton = page.locator('.fc-next-button, button[aria-label="next"], button:has-text(">")');
+            const nextButton = page.locator(
+                '.fc-next-button, button[aria-label="next"], button:has-text(">")',
+            );
             await expect(nextButton).toBeVisible();
             await nextButton.click();
 
@@ -424,10 +477,14 @@ test.describe('Calendar Module E2E', () => {
         });
 
         test('should navigate to today', async ({ page }) => {
-            await page.goto('/calendar?date=2026-01-01', { waitUntil: 'domcontentloaded' });
+            await page.goto('/calendar?date=2026-01-01', {
+                waitUntil: 'domcontentloaded',
+            });
             await page.waitForTimeout(2000);
 
-            const todayButton = page.locator('.fc-today-button, button:has-text("dziś"), button:has-text("today")');
+            const todayButton = page.locator(
+                '.fc-today-button, button:has-text("dziś"), button:has-text("today")',
+            );
             if (await todayButton.isVisible()) {
                 await todayButton.click();
                 await page.waitForTimeout(500);
@@ -441,7 +498,9 @@ test.describe('Calendar Module E2E', () => {
             await page.waitForTimeout(3000);
 
             // Look for event elements
-            const events = page.locator('.fc-event, [data-event-id], .calendar-event');
+            const events = page.locator(
+                '.fc-event, [data-event-id], .calendar-event',
+            );
             const count = await events.count();
 
             // Should have at least some events rendered
@@ -458,7 +517,9 @@ test.describe('Calendar Module E2E', () => {
                 await page.waitForTimeout(500);
 
                 // Check for tooltip/popover
-                const tooltip = page.locator('.tippy-content, .tooltip, .popover, [role="tooltip"]');
+                const tooltip = page.locator(
+                    '.tippy-content, .tooltip, .popover, [role="tooltip"]',
+                );
                 // Tooltip may or may not appear depending on implementation
             }
         });
@@ -473,7 +534,9 @@ test.describe('Calendar Module E2E', () => {
                 await page.waitForTimeout(1000);
 
                 // Check for modal/drawer with event details
-                const modal = page.locator('.modal, [role="dialog"], .drawer, .event-details');
+                const modal = page.locator(
+                    '.modal, [role="dialog"], .drawer, .event-details',
+                );
                 // Modal may appear
             }
         });
@@ -485,19 +548,25 @@ test.describe('Calendar Module E2E', () => {
             await page.waitForTimeout(3000);
 
             // Find and click non-finalized event
-            const event = page.locator('.fc-event:not(.finalized), [data-finalized="false"]').first();
+            const event = page
+                .locator('.fc-event:not(.finalized), [data-finalized="false"]')
+                .first();
             if (await event.isVisible()) {
                 await event.click();
                 await page.waitForTimeout(1000);
 
                 // Look for finalize button
-                const finalizeButton = page.locator('button:has-text("finalizuj"), button:has-text("zakończ"), [data-action="finalize"]');
+                const finalizeButton = page.locator(
+                    'button:has-text("finalizuj"), button:has-text("zakończ"), [data-action="finalize"]',
+                );
                 if (await finalizeButton.isVisible()) {
                     await finalizeButton.click();
                     await page.waitForTimeout(500);
 
                     // Confirm finalization (may have confirmation dialog)
-                    const confirmButton = page.locator('button:has-text("potwierdź"), button:has-text("tak"), .btn-primary');
+                    const confirmButton = page.locator(
+                        'button:has-text("potwierdź"), button:has-text("tak"), .btn-primary',
+                    );
                     if (await confirmButton.isVisible()) {
                         await confirmButton.click();
                     }
@@ -509,18 +578,24 @@ test.describe('Calendar Module E2E', () => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(3000);
 
-            const event = page.locator('.fc-event:not(.finalized), [data-finalized="false"]').first();
+            const event = page
+                .locator('.fc-event:not(.finalized), [data-finalized="false"]')
+                .first();
             if (await event.isVisible()) {
                 await event.click();
                 await page.waitForTimeout(1000);
 
                 // Look for no_show option
-                const noShowButton = page.locator('button:has-text("nie odbyła się"), button:has-text("no show"), [data-action="no_show"]');
+                const noShowButton = page.locator(
+                    'button:has-text("nie odbyła się"), button:has-text("no show"), [data-action="no_show"]',
+                );
                 if (await noShowButton.isVisible()) {
                     await noShowButton.click();
                     await page.waitForTimeout(500);
 
-                    const confirmButton = page.locator('button:has-text("potwierdź"), button:has-text("tak"), .btn-primary');
+                    const confirmButton = page.locator(
+                        'button:has-text("potwierdź"), button:has-text("tak"), .btn-primary',
+                    );
                     if (await confirmButton.isVisible()) {
                         await confirmButton.click();
                     }
@@ -530,18 +605,24 @@ test.describe('Calendar Module E2E', () => {
     });
 
     test.describe('Finalized Event View', () => {
-        test('should show finalized event as non-editable', async ({ page }) => {
+        test('should show finalized event as non-editable', async ({
+            page,
+        }) => {
             await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
             await page.waitForTimeout(3000);
 
             // Find finalized event
-            const finalizedEvent = page.locator('.fc-event.finalized, [data-finalized="true"]').first();
+            const finalizedEvent = page
+                .locator('.fc-event.finalized, [data-finalized="true"]')
+                .first();
             if (await finalizedEvent.isVisible()) {
                 await finalizedEvent.click();
                 await page.waitForTimeout(1000);
 
                 // Finalize button should not be present or should be disabled
-                const finalizeButton = page.locator('button:has-text("finalizuj"):not([disabled])');
+                const finalizeButton = page.locator(
+                    'button:has-text("finalizuj"):not([disabled])',
+                );
                 const isVisible = await finalizeButton.isVisible();
                 expect(isVisible).toBe(false);
             }

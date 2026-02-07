@@ -3,8 +3,10 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
-import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useWarehouseProducts,
     useProductCategories,
@@ -18,11 +20,9 @@ function flattenCategoryIds(
 ): number[] {
     const out: number[] = [];
 
-    // First find the target node
     const findNode = (arr: ProductCategory[]) => {
         for (const node of arr) {
             if (node.id === targetId) {
-                // Found it, now collect all children
                 collect(node.children || []);
                 return true;
             }
@@ -44,16 +44,24 @@ function flattenCategoryIds(
     return out;
 }
 
-export default function WarehouseProductsPage() {
-    return <WarehouseProductsPageContent />;
-}
+type ProductTypeFilter = 'all' | 'product_and_supply' | 'product' | 'supply';
 
-function WarehouseProductsPageContent() {
+const productTypeOptions: { value: ProductTypeFilter; label: string }[] = [
+    { value: 'all', label: 'wszystkie produkty' },
+    { value: 'product_and_supply', label: 'towar i materiał' },
+    { value: 'product', label: 'towar' },
+    { value: 'supply', label: 'materiał' },
+];
+
+export default function WarehouseProductsPage() {
+    const { role } = useAuth();
     const router = useRouter();
     const queryClient = useQueryClient();
     const productApi = useProductApi();
 
     const [search, setSearch] = useState('');
+    const [productTypeFilter, setProductTypeFilter] =
+        useState<ProductTypeFilter>('all');
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
@@ -69,15 +77,8 @@ function WarehouseProductsPageContent() {
     });
 
     const { data: categories = [] } = useProductCategories();
-    // Fetch all products or filtered by search.
-    // We do client-side category filtering to support nested categories correctly if API doesn't.
-    // Assuming useWarehouseProducts supports searching.
     const { data: products = [], isLoading } = useWarehouseProducts({
         search: search || undefined,
-        // We might need to pass categoryId if API supports nested filtering,
-        // but existing logic used client-side flatten. Let's keep existing logic safe:
-        // fetch by search, then filter. Or if API is paginated, this is risky.
-        // Assuming fetch-all for now as per previous code.
         includeInactive: true,
     });
 
@@ -90,15 +91,32 @@ function WarehouseProductsPageContent() {
     );
 
     const filteredProducts = useMemo(() => {
-        if (!selectedCategoryId) return products;
-        return products.filter((product) => {
-            if (!product.categoryId) return false;
-            return (
-                product.categoryId === selectedCategoryId ||
-                flatCategoryIds.includes(product.categoryId)
-            );
-        });
-    }, [flatCategoryIds, products, selectedCategoryId]);
+        let result = products;
+
+        // Filter by category
+        if (selectedCategoryId) {
+            result = result.filter((product) => {
+                if (!product.categoryId) return false;
+                return (
+                    product.categoryId === selectedCategoryId ||
+                    flatCategoryIds.includes(product.categoryId)
+                );
+            });
+        }
+
+        // Filter by product type
+        if (productTypeFilter !== 'all') {
+            result = result.filter((product) => {
+                const type = product.productType ?? 'product';
+                if (productTypeFilter === 'product_and_supply') {
+                    return type === 'product' || type === 'supply';
+                }
+                return type === productTypeFilter;
+            });
+        }
+
+        return result;
+    }, [flatCategoryIds, products, selectedCategoryId, productTypeFilter]);
 
     const exportProductsCsv = () => {
         const header = [
@@ -160,254 +178,358 @@ function WarehouseProductsPageContent() {
         });
     };
 
-    const actions = (
-        <div className="flex flex-wrap justify-end gap-2">
-            <Link
-                href="/sales/new"
-                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-            >
-                dodaj sprzedaż
-            </Link>
-            <Link
-                href="/use/new"
-                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-            >
-                dodaj zużycie
-            </Link>
-            <button
-                type="button"
-                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-                onClick={() => setIsCreateOpen(true)}
-            >
-                dodaj produkt
-            </button>
-        </div>
-    );
+    if (!role) return null;
 
     return (
-        <WarehouseLayout
-            pageTitle="Magazyn / Produkty | SalonBW"
-            heading="Magazyn / Produkty"
-            activeTab="products"
-            actions={actions}
-        >
-            <div className="versum-page__toolbar">
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="wyszukaj produkt"
-                    className="versum-input w-[280px]"
-                />
-                <button
-                    type="button"
-                    className="versum-button versum-button--light"
-                    onClick={exportProductsCsv}
-                >
-                    pobierz bazę produktów w pliku Excel
-                </button>
-            </div>
+        <RouteGuard roles={['admin']} permission="nav:warehouse">
+            <VersumShell role={role}>
+                <div className="products-page">
+                    {/* Breadcrumbs */}
+                    <ul className="breadcrumb">
+                        <li>
+                            <Link href="/products">Magazyn</Link>
+                        </li>
+                        <li className="active">/ Produkty</li>
+                    </ul>
 
-            {isLoading ? (
-                <p className="p-4 text-sm versum-muted">
-                    Ładowanie produktów...
-                </p>
-            ) : (
-                <>
-                    <div className="versum-table-wrap">
-                        <table className="versum-table">
-                            <thead>
-                                <tr>
-                                    <th>Nazwa</th>
-                                    <th>Kategoria</th>
-                                    <th>Rodzaj produktu</th>
-                                    <th>Kod wewnętrzny (SKU)</th>
-                                    <th>Stan magazynowy</th>
-                                    <th>Cena sprzedaży</th>
-                                    <th>Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredProducts.length > 0 ? (
-                                    filteredProducts.map((product) => (
-                                        <tr key={product.id}>
-                                            <td>
-                                                <Link
-                                                    href={`/products/${product.id}`}
-                                                    className="text-sky-600 hover:underline"
-                                                >
-                                                    {product.name}
+                    {/* Tabs - jak w Versum */}
+                    <div className="products-tabs">
+                        <Link href="/products" className="products-tab active">
+                            Produkty
+                        </Link>
+                        <Link href="/sales/history" className="products-tab">
+                            Sprzedaż
+                        </Link>
+                        <Link href="/use/history" className="products-tab">
+                            Zużycie
+                        </Link>
+                        <Link
+                            href="/deliveries/history"
+                            className="products-tab"
+                        >
+                            Dostawy
+                        </Link>
+                        <Link href="/orders/history" className="products-tab">
+                            Zamówienia
+                        </Link>
+                        <Link
+                            href="/inventory"
+                            className="products-tab products-tab--right"
+                        >
+                            Inwentaryzacja
+                        </Link>
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="products-toolbar">
+                        <div className="products-search">
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="wyszukaj produkt"
+                                className="versum-input"
+                            />
+                        </div>
+                        <div className="products-filter">
+                            <select
+                                value={productTypeFilter}
+                                onChange={(e) =>
+                                    setProductTypeFilter(
+                                        e.target.value as ProductTypeFilter,
+                                    )
+                                }
+                                className="versum-select"
+                            >
+                                {productTypeOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="products-actions">
+                            <Link
+                                href="/sales/new"
+                                className="versum-btn versum-btn--secondary"
+                            >
+                                dodaj sprzedaż
+                            </Link>
+                            <Link
+                                href="/use/new"
+                                className="versum-btn versum-btn--secondary"
+                            >
+                                dodaj zużycie
+                            </Link>
+                            <Link
+                                href="/products/new"
+                                className="versum-btn versum-btn--primary"
+                            >
+                                dodaj produkt
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+                    {isLoading ? (
+                        <div className="products-loading">
+                            Ładowanie produktów...
+                        </div>
+                    ) : (
+                        <>
+                            <div className="products-table-wrap">
+                                <table className="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th className="col-checkbox">
+                                                <input type="checkbox" />
+                                            </th>
+                                            <th className="col-name">
+                                                <Link href="/products?sort_by=name&order=desc">
+                                                    Nazwa
                                                 </Link>
-                                            </td>
-                                            <td>
-                                                {product.category?.name ??
-                                                    'brak kategorii'}
-                                            </td>
-                                            <td>
-                                                {product.productType ?? 'towar'}
-                                            </td>
-                                            <td>{product.sku ?? '-'}</td>
-                                            <td>
-                                                {product.stock}{' '}
-                                                {product.unit ?? 'op.'}
-                                            </td>
-                                            <td>
-                                                {Number(
-                                                    product.unitPrice ?? 0,
-                                                ).toFixed(2)}{' '}
-                                                zł
-                                            </td>
-                                            <td>
-                                                <Link
-                                                    href="/sales/new"
-                                                    className="text-sky-600 hover:underline"
-                                                >
-                                                    sprzedaj
+                                            </th>
+                                            <th>Kategoria</th>
+                                            <th>Rodzaj produktu</th>
+                                            <th>Kod wewnętrzny (SKU)</th>
+                                            <th>
+                                                <Link href="/products?sort_by=stock&order=asc">
+                                                    Stan magazynowy
                                                 </Link>
-                                                {' · '}
-                                                <Link
-                                                    href="/use/new"
-                                                    className="text-sky-600 hover:underline"
-                                                >
-                                                    zużyj
+                                            </th>
+                                            <th>
+                                                <Link href="/products?sort_by=price&order=asc">
+                                                    Cena sprzedaży
                                                 </Link>
-                                            </td>
+                                            </th>
+                                            <th className="col-actions"></th>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan={7}
-                                            className="p-4 text-center versum-muted"
-                                        >
-                                            Brak produktów spełniających
-                                            kryteria
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600">
-                        Pozycje od 1 do {filteredProducts.length} | na stronie
-                        20
-                    </div>
-                </>
-            )}
+                                    </thead>
+                                    <tbody>
+                                        {filteredProducts.length > 0 ? (
+                                            filteredProducts.map((product) => (
+                                                <tr key={product.id}>
+                                                    <td>
+                                                        <input type="checkbox" />
+                                                    </td>
+                                                    <td>
+                                                        <Link
+                                                            href={`/products/${product.id}`}
+                                                            className="product-name-link"
+                                                        >
+                                                            {product.name}
+                                                        </Link>
+                                                    </td>
+                                                    <td>
+                                                        {product.category
+                                                            ?.name ??
+                                                            'brak kategorii'}
+                                                    </td>
+                                                    <td>
+                                                        {product.productType ??
+                                                            'towar'}
+                                                    </td>
+                                                    <td>
+                                                        {product.sku ?? '-'}
+                                                    </td>
+                                                    <td>
+                                                        {product.stock}{' '}
+                                                        {product.unit ?? 'op.'}{' '}
+                                                        (
+                                                        {product.stock *
+                                                            (product.volumeMl ??
+                                                                0)}{' '}
+                                                        ml)
+                                                    </td>
+                                                    <td>
+                                                        {Number(
+                                                            product.unitPrice ??
+                                                                0,
+                                                        ).toFixed(2)}{' '}
+                                                        zł
+                                                    </td>
+                                                    <td className="col-actions">
+                                                        <Link
+                                                            href={`/sales/new?product_id=${product.id}`}
+                                                            className="action-link"
+                                                            title="Sprzedaj"
+                                                        >
+                                                            🛒
+                                                        </Link>
+                                                        <Link
+                                                            href={`/use/new?product_id=${product.id}`}
+                                                            className="action-link"
+                                                            title="Zużyj"
+                                                        >
+                                                            📦
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan={8}
+                                                    className="text-center text-muted"
+                                                >
+                                                    Brak produktów spełniających
+                                                    kryteria
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
 
-            {isCreateOpen ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45">
-                    <div className="w-full max-w-xl rounded border border-gray-300 bg-white p-4 shadow-lg">
-                        <h2 className="mb-3 text-lg font-semibold">
-                            Dodaj produkt
-                        </h2>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                            <label className="col-span-2">
-                                <span className="mb-1 block">Nazwa</span>
-                                <input
-                                    type="text"
-                                    value={newProduct.name}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            name: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
-                            <label>
-                                <span className="mb-1 block">Marka</span>
-                                <input
-                                    type="text"
-                                    value={newProduct.brand}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            brand: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
-                            <label>
-                                <span className="mb-1 block">Cena brutto</span>
-                                <input
-                                    type="number"
-                                    value={newProduct.unitPrice}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            unitPrice: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
-                            <label>
-                                <span className="mb-1 block">Stan</span>
-                                <input
-                                    type="number"
-                                    value={newProduct.stock}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            stock: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
-                            <label>
-                                <span className="mb-1 block">VAT (%)</span>
-                                <input
-                                    type="number"
-                                    value={newProduct.vatRate}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            vatRate: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
-                            <label>
-                                <span className="mb-1 block">
-                                    Minimalny stan
+                            {/* Pagination */}
+                            <div className="products-pagination">
+                                <span>
+                                    Pozycje od 1 do {filteredProducts.length} z{' '}
+                                    {filteredProducts.length}
                                 </span>
-                                <input
-                                    type="number"
-                                    value={newProduct.minQuantity}
-                                    onChange={(event) =>
-                                        setNewProduct((prev) => ({
-                                            ...prev,
-                                            minQuantity: event.target.value,
-                                        }))
-                                    }
-                                    className="w-full rounded border border-gray-300 px-2 py-1.5"
-                                />
-                            </label>
+                                <span className="separator">|</span>
+                                <label>
+                                    na stronie
+                                    <select className="versum-select">
+                                        <option>10 wyników</option>
+                                        <option selected>20 wyników</option>
+                                        <option>50 wyników</option>
+                                        <option>100 wyników</option>
+                                    </select>
+                                </label>
+                                <div className="pagination-nav">
+                                    <input
+                                        type="text"
+                                        value="1"
+                                        className="versum-input versum-input--small"
+                                        readOnly
+                                    />
+                                    <span>z</span>
+                                    <span>1</span>
+                                    <button className="versum-btn versum-btn--icon">
+                                        ›
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Export link */}
+                            <div className="products-export">
+                                <button
+                                    onClick={exportProductsCsv}
+                                    className="link-excel"
+                                >
+                                    📊 pobierz bazę produktów w pliku Excel
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Create Modal */}
+                    {isCreateOpen && (
+                        <div className="modal-overlay">
+                            <div className="modal">
+                                <h2>Dodaj produkt</h2>
+                                <div className="modal-body">
+                                    <label>
+                                        Nazwa
+                                        <input
+                                            type="text"
+                                            value={newProduct.name}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    name: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        Marka
+                                        <input
+                                            type="text"
+                                            value={newProduct.brand}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    brand: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        Cena brutto
+                                        <input
+                                            type="number"
+                                            value={newProduct.unitPrice}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    unitPrice: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        Stan
+                                        <input
+                                            type="number"
+                                            value={newProduct.stock}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    stock: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        VAT (%)
+                                        <input
+                                            type="number"
+                                            value={newProduct.vatRate}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    vatRate: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        Minimalny stan
+                                        <input
+                                            type="number"
+                                            value={newProduct.minQuantity}
+                                            onChange={(e) =>
+                                                setNewProduct((prev) => ({
+                                                    ...prev,
+                                                    minQuantity: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        onClick={() => setIsCreateOpen(false)}
+                                        className="versum-btn"
+                                    >
+                                        anuluj
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            void handleCreateProduct()
+                                        }
+                                        className="versum-btn versum-btn--primary"
+                                    >
+                                        zapisz
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button
-                                type="button"
-                                className="rounded border border-gray-300 px-3 py-1.5 text-sm"
-                                onClick={() => setIsCreateOpen(false)}
-                            >
-                                anuluj
-                            </button>
-                            <button
-                                type="button"
-                                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white"
-                                onClick={() => void handleCreateProduct()}
-                            >
-                                zapisz
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </div>
-            ) : null}
-        </WarehouseLayout>
+            </VersumShell>
+        </RouteGuard>
     );
 }

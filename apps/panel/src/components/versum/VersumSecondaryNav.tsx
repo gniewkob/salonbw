@@ -4,6 +4,7 @@ import ServicesNav from './navs/ServicesNav';
 import ClientsNav from './navs/ClientsNav';
 import CalendarNav from './navs/CalendarNav';
 import WarehouseNav from './navs/WarehouseNav';
+import StatisticsNav from './navs/StatisticsNav';
 
 type SecondaryItem = {
     label: string;
@@ -88,6 +89,8 @@ export default function VersumSecondaryNav({
         content = renderSections(communicationSections);
     } else if (module.key === 'services') {
         content = <ServicesNav />;
+    } else if (module.key === 'statistics') {
+        content = <StatisticsNav />;
     }
 
     return (

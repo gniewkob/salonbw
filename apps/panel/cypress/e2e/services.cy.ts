@@ -12,9 +12,7 @@ describe('services crud', () => {
         cy.intercept('POST', 'http://localhost:3001/services', {
             id: 3,
             name: 'New',
-        }).as(
-            'createSvc',
-        );
+        }).as('createSvc');
         cy.visit('/dashboard/services');
         cy.wait('@profile');
         cy.wait('@getSvc');

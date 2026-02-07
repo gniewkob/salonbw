@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { MagnifyingGlassIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import type { Customer } from '@/types';
+import { useCustomerGroups } from '@/hooks/useCustomers';
 
 interface ClientsListProps {
     customers: Customer[];
@@ -8,7 +10,9 @@ interface ClientsListProps {
 }
 
 export default function ClientsList({ customers, loading }: ClientsListProps) {
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
+    const { data: groups } = useCustomerGroups();
 
     const filteredCustomers = customers.filter(
         (c) =>
@@ -16,8 +20,69 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
             c.phone?.includes(searchTerm),
     );
 
+    // Pobierz aktywny filtr grupy
+    const currentGroupId = router.query.groupId
+        ? Number(router.query.groupId)
+        : undefined;
+    const activeGroup = groups?.find((g) => g.id === currentGroupId);
+
+    // Funkcja do czyszczenia filtra
+    const clearGroupFilter = () => {
+        const { groupId, ...restQuery } = router.query;
+        void router.push(
+            { pathname: router.pathname, query: restQuery },
+            undefined,
+            { shallow: true },
+        );
+    };
+
     return (
         <div className="flex flex-col h-full bg-white">
+            {/* Aktywne filtry - jak w Versum */}
+            {activeGroup && (
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">
+                                wybrane kryteria wyszukiwania:
+                            </span>
+                        </div>
+                        <button
+                            onClick={clearGroupFilter}
+                            className="text-gray-400 hover:text-gray-600"
+                            title="Wyczyść filtry"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-white border border-gray-200 text-gray-700">
+                            należą do grup ({filteredCustomers.length})
+                            <span className="ml-2 font-medium">
+                                {activeGroup.name}
+                            </span>
+                            <button
+                                onClick={clearGroupFilter}
+                                className="ml-2 text-gray-400 hover:text-red-500"
+                            >
+                                ✕
+                            </button>
+                        </span>
+                    </div>
+                    <div className="mt-2 text-sm">
+                        <span className="text-gray-600">
+                            Klientów spełniających kryteria:
+                        </span>
+                        <span className="ml-1 font-semibold text-gray-900">
+                            {filteredCustomers.length}
+                        </span>
+                        <button className="ml-3 text-sky-600 hover:text-sky-800 text-xs">
+                            utwórz grupę
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Toolbar */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
                 <div className="relative max-w-md w-full">

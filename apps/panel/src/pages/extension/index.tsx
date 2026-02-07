@@ -1,5 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 
 type ExtensionCard = {
     title: string;
@@ -53,9 +54,13 @@ const cards: ExtensionCard[] = [
 ];
 
 export default function ExtensionPage() {
+    const { role } = useAuth();
+
+    if (!role) return null;
+
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <div className="versum-page" data-testid="extension-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">Dodatki</h1>
@@ -68,13 +73,13 @@ export default function ExtensionPage() {
                             >
                                 <h3>{card.title}</h3>
                                 <p>{card.description}</p>
-                                <p className="mt-4 text-xs text-gray-600">
+                                <p className="versum-extension-card__status">
                                     status:{' '}
                                     <strong
                                         className={
                                             card.status === 'Aktywny'
-                                                ? 'text-emerald-600'
-                                                : 'text-gray-500'
+                                                ? 'versum-text-success'
+                                                : 'versum-text-muted'
                                         }
                                     >
                                         {card.status}
@@ -84,7 +89,7 @@ export default function ExtensionPage() {
                         ))}
                     </div>
                 </div>
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }

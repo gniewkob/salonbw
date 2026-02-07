@@ -1,7 +1,7 @@
 import { useState, useEffect, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
@@ -16,18 +16,17 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="p-4 text-sm text-gray-500">
-                Loading review form…
-            </div>
+            <div className="versum-loading">Loading review form…</div>
         ),
     },
 );
 
 export default function ReviewsPage() {
     const { role } = useAuth();
+    if (!role) return null;
+
     const isAdmin = role === 'admin';
     const [employeeId, setEmployeeId] = useState(1);
-    // Admin sees all reviews (filtered by employee), others see only their own
     const { data, page, total, limit, setPage, rating, setRating } = useReviews(
         isAdmin ? { employeeId } : { mine: true },
     );
@@ -109,112 +108,79 @@ export default function ReviewsPage() {
 
     return (
         <RouteGuard permission="nav:reviews">
-            <DashboardLayout>
-                <div className="mb-2 flex justify-between">
-                    <div className="flex items-center gap-2">
-                        {isAdmin && (
-                            <label>
-                                Employee
-                                <input
-                                    className="border ml-1 p-1 w-16"
-                                    value={employeeId}
-                                    onChange={(e) => {
-                                        setEmployeeId(
-                                            Number(e.target.value) || 1,
-                                        );
-                                    }}
-                                />
-                            </label>
-                        )}
-                        <label>
-                            Rating
-                            <input
-                                className="border ml-1 p-1 w-16"
-                                value={rating ?? ''}
-                                onChange={(e) =>
-                                    setRating(
-                                        e.target.value
-                                            ? Number(e.target.value)
-                                            : undefined,
-                                    )
-                                }
-                                placeholder="All"
-                            />
-                        </label>
-                    </div>
-                    <button
-                        className="border px-2 py-1"
-                        onClick={() => {
-                            setEditing(null);
-                            setOpenForm(true);
-                        }}
-                    >
-                        Add Review
-                    </button>
-                </div>
-                {rows && (
+            <VersumShell role={role}>
+                <div className="versum-page" data-testid="reviews-page">
+                    <header className="versum-page__header">
+                        <h1 className="versum-page__title">Opinie</h1>
+                        <div className="flex items-center gap-4">
+                            {isAdmin && (
+                                <label className="versum-label">
+                                    Employee
+                                    <input
+                                        className="versum-input versum-input--sm ml-2 w-20"
+                                        value={employeeId}
+                                        onChange={(e) =>
+                                            setEmployeeId(
+                                                Number(e.target.value),
+                                            )
+                                        }
+                                    />
+                                </label>
+                            )}
+                            <button
+                                className="versum-btn versum-btn--primary"
+                                onClick={() => {
+                                    setEditing(null);
+                                    setOpenForm(true);
+                                }}
+                            >
+                                Dodaj opinię
+                            </button>
+                        </div>
+                    </header>
+
                     <DataTable
                         data={rows}
                         columns={columns}
-                        initialSort="id"
-                        pageSize={rows.length || 1}
                         renderActions={(r) => (
                             <span className="space-x-2">
                                 <button
-                                    className="border px-2 py-1"
+                                    className="versum-btn versum-btn--sm versum-btn--light"
                                     onClick={() => {
                                         setEditing(r);
                                         setOpenForm(true);
                                     }}
                                 >
-                                    Edit
+                                    Edytuj
                                 </button>
                                 <button
-                                    className="border px-2 py-1"
+                                    className="versum-btn versum-btn--sm versum-btn--danger"
                                     onClick={() => void handleDelete(r)}
                                 >
-                                    Delete
+                                    Usuń
                                 </button>
                             </span>
                         )}
                     />
-                )}
-                <div className="mt-2 flex justify-end gap-2">
-                    <button
-                        className="border px-2 py-1"
-                        disabled={page <= 1}
-                        onClick={() => setPage(page - 1)}
-                    >
-                        Prev
-                    </button>
-                    <span>
-                        {page} / {Math.ceil(total / limit) || 1}
-                    </span>
-                    <button
-                        className="border px-2 py-1"
-                        disabled={page * limit >= total}
-                        onClick={() => setPage(page + 1)}
-                    >
-                        Next
-                    </button>
-                </div>
-                <Modal
-                    open={openForm || Boolean(editing)}
-                    onClose={() => {
-                        setOpenForm(false);
-                        setEditing(null);
-                    }}
-                >
-                    <ReviewForm
-                        initial={editing ?? undefined}
-                        onCancel={() => {
+
+                    <Modal
+                        open={openForm || Boolean(editing)}
+                        onClose={() => {
                             setOpenForm(false);
                             setEditing(null);
                         }}
-                        onSubmit={editing ? handleUpdate : handleCreate}
-                    />
-                </Modal>
-            </DashboardLayout>
+                    >
+                        <ReviewForm
+                            initial={editing ?? undefined}
+                            onCancel={() => {
+                                setOpenForm(false);
+                                setEditing(null);
+                            }}
+                            onSubmit={editing ? handleUpdate : handleCreate}
+                        />
+                    </Modal>
+                </div>
+            </VersumShell>
         </RouteGuard>
     );
 }

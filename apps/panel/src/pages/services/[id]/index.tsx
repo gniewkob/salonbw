@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
 import ServicesNav from '@/components/versum/navs/ServicesNav';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
@@ -250,10 +250,7 @@ export default function ServiceDetailsPage() {
     }
 
     return (
-        <DashboardLayout
-            pageTitle={summaryData?.name ?? 'Usługa'}
-            secondaryNav={<ServicesNav />}
-        >
+        <VersumShell role={role}>
             <div className="versum-page" data-testid="service-details-page">
                 <header className="versum-page-header">
                     <div className="versum-breadcrumb">
@@ -713,6 +710,6 @@ export default function ServiceDetailsPage() {
                     />
                 )}
             </div>
-        </DashboardLayout>
+        </VersumShell>
     );
 }

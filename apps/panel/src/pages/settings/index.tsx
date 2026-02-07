@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 
 type SettingsTile = {
     href: string;
@@ -27,9 +28,13 @@ const mainTiles: SettingsTile[] = [
 ];
 
 export default function SettingsPage() {
+    const { role } = useAuth();
+
+    if (!role) return null;
+
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <div className="versum-page" data-testid="settings-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">Ustawienia</h1>
@@ -40,7 +45,7 @@ export default function SettingsPage() {
                             <Link
                                 key={tile.label}
                                 href={tile.href}
-                                className="versum-tile"
+                                className="versum-tile versum-tile--clickable"
                             >
                                 <span
                                     className="versum-tile__icon"
@@ -53,13 +58,13 @@ export default function SettingsPage() {
                         ))}
                     </div>
 
-                    <div className="px-4 pb-5 pt-2">
-                        <h2 className="mb-3 text-lg text-gray-700">
+                    <div className="versum-section">
+                        <h2 className="versum-section__title">
                             Ustawienia dodatków
                         </h2>
                         <Link
                             href="/extension"
-                            className="versum-tile inline-flex"
+                            className="versum-tile versum-tile--clickable"
                         >
                             <span
                                 className="versum-tile__icon"
@@ -71,7 +76,7 @@ export default function SettingsPage() {
                         </Link>
                     </div>
                 </div>
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }
