@@ -103,6 +103,51 @@ export class VersumCompatController {
         return this.versumCompatService.graphql(body);
     }
 
+    // ============================================================================
+    // CUSTOMERS (Klienci) - Versum Compat Endpoints
+    // ============================================================================
+
+    @Get(['customers', 'salonblackandwhite/customers'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomers(@Query() query: Record<string, unknown>) {
+        return this.versumCompatService.getCustomers({
+            search: typeof query.search === 'string' ? query.search : undefined,
+            groupId: typeof query.group_id === 'string' ? Number(query.group_id) : undefined,
+            page: typeof query.page === 'string' ? Number(query.page) : undefined,
+            perPage: typeof query.per_page === 'string' ? Number(query.per_page) : undefined,
+        });
+    }
+
+    @Get(['customers/:id', 'salonblackandwhite/customers/:id'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomer(@Param('id', ParseIntPipe) id: number) {
+        return this.versumCompatService.getCustomer(id);
+    }
+
+    @Get(['customer_groups', 'salonblackandwhite/customer_groups'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomerGroups() {
+        return this.versumCompatService.getCustomerGroups();
+    }
+
+    @Get(['customers/:id/notes', 'salonblackandwhite/customers/:id/notes'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomerNotes(@Param('id', ParseIntPipe) id: number) {
+        return this.versumCompatService.getCustomerNotes(id);
+    }
+
+    @Get(['customers/:id/tags', 'salonblackandwhite/customers/:id/tags'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomerTags(@Param('id', ParseIntPipe) id: number) {
+        return this.versumCompatService.getCustomerTags(id);
+    }
+
+    @Get(['customers/:id/history', 'salonblackandwhite/customers/:id/history'])
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    async getCustomerHistory(@Param('id', ParseIntPipe) id: number) {
+        return this.versumCompatService.getCustomerHistory(id);
+    }
+
     private parseDate(value: unknown, fallback: Date) {
         if (typeof value === 'string' && value.trim().length > 0) {
             const parsed = new Date(value);

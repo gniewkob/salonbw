@@ -28,7 +28,11 @@
       "Bash(pnpm tsc --noEmit)",
       "Bash(pnpm lint --fix)",
       "Bash(pnpm test)",
-      "Bash(pnpm --filter salonbw-backend test)"
+      "Bash(pnpm --filter salonbw-backend test)",
+      "Bash(pnpm up)",
+      "Bash(pnpm up merge diff xlsx systeminformation)",
+      "Bash(pnpm up merge@2.1.1)",
+      "Bash(pnpm up xlsx@latest)"
     ],
     "deny": [],
     "ask": []
