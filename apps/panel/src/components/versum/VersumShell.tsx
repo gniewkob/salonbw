@@ -35,7 +35,7 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    <VersumSecondaryNav module={activeModule} />
+                    {secondaryNav || <VersumSecondaryNav module={activeModule} />}
                 </div>
                 <div className="main-content" id="main-content" role="main">
                     <div

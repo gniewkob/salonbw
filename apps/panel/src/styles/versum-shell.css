@@ -2166,9 +2166,50 @@
     color: #d9534f;
 }
 
-/* Strona Klientów - styl jak w Versum */
+/* Strona Klientów - styl jak w Versum (Pixel-Perfect) */
 .clients-page {
     padding: 20px;
+    background: #fff;
+}
+
+/* Breadcrumbs - Versum style */
+.clients-page .breadcrumb {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #505960;
+}
+
+.clients-page .breadcrumb li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clients-page .breadcrumb li:first-child::before {
+    content: '👥';
+    font-size: 14px;
+}
+
+.clients-page .breadcrumb li a {
+    color: #505960;
+    text-decoration: none;
+}
+
+.clients-page .breadcrumb li a:hover {
+    text-decoration: underline;
+}
+
+.clients-page .breadcrumb li.active {
+    color: #505960;
+}
+
+.clients-page .breadcrumb li.active::before {
+    content: '/';
+    margin: 0 4px;
+    color: #828a92;
 }
 
 /* Breadcrumbs */
@@ -2197,19 +2238,18 @@
     color: #505960;
 }
 
-/* Toolbar */
+/* Toolbar - Versum style */
 .clients-toolbar {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eceff2;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding: 0;
 }
 
 .clients-search {
-    flex: 1;
-    max-width: 300px;
+    flex: 0 0 auto;
+    max-width: 220px;
 }
 
 .clients-search input {
@@ -2218,15 +2258,52 @@
     border: 1px solid #cfd4da;
     border-radius: 3px;
     font-size: 13px;
+    background: #fff;
+}
+
+.clients-search input::placeholder {
+    color: #999;
+}
+
+.clients-sort {
+    flex: 0 0 auto;
 }
 
 .clients-sort button {
     color: #505960;
     font-size: 13px;
+    background: #fff;
+    border: 1px solid #cfd4da;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
 .clients-sort button strong {
-    color: #52a8e8;
+    color: #008bb4;
+    font-weight: 600;
+}
+
+/* Dodaj klienta button - primary blue */
+.clients-toolbar .versum-btn--primary,
+.clients-toolbar .btn-primary {
+    margin-left: auto;
+    background: #63b5ee;
+    border-color: #4b94ce;
+    color: #fff;
+    padding: 6px 16px;
+    font-size: 13px;
+    border-radius: 3px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.clients-toolbar .versum-btn--primary::before {
+    content: '+';
+    font-size: 16px;
+    font-weight: 300;
 }
 
 /* Aktywne filtry */
@@ -2315,17 +2392,17 @@
     text-decoration: underline;
 }
 
-/* Lista klientów */
+/* Lista klientów - Versum pixel-perfect */
 .clients-list {
     background: #fff;
-    border: 1px solid #eceff2;
-    border-radius: 3px;
+    border: none;
+    border-radius: 0;
 }
 
 .clients-list-header {
-    padding: 12px 15px;
-    border-bottom: 1px solid #eceff2;
-    background: #f5f7f9;
+    padding: 10px 0;
+    border-bottom: none;
+    background: transparent;
 }
 
 .clients-checkbox-all {
@@ -2339,39 +2416,49 @@
 
 .clients-checkbox-all input[type='checkbox'] {
     margin: 0;
+    width: 16px;
+    height: 16px;
 }
 
-/* Tabela */
+/* Tabela - Versum style */
 .clients-table {
     width: 100%;
     border-collapse: collapse;
 }
 
 .clients-table tbody tr {
-    border-bottom: 1px solid #eceff2;
+    border-bottom: 1px solid #e8eaed;
     transition: background 0.15s;
 }
 
 .clients-table tbody tr:hover {
-    background: #f5f7f9;
+    background: #f8f9fa;
 }
 
 .clients-table td {
-    padding: 12px 15px;
+    padding: 10px 12px;
     font-size: 13px;
+    vertical-align: middle;
 }
 
 .clients-table .col-checkbox {
     width: 40px;
+    padding-left: 0;
+}
+
+.clients-table .col-checkbox input {
+    width: 16px;
+    height: 16px;
 }
 
 .clients-table .col-name {
-    width: 30%;
+    width: auto;
 }
 
 .clients-name-link {
-    color: #52a8e8;
+    color: #008bb4;
     text-decoration: none;
+    font-weight: 400;
 }
 
 .clients-name-link:hover {
@@ -2379,13 +2466,27 @@
 }
 
 .clients-table .col-phone {
-    width: 25%;
+    width: auto;
+    white-space: nowrap;
 }
 
+/* Email icon in phone column */
 .clients-icon-link {
-    color: #828a92;
+    color: #999;
     text-decoration: none;
-    margin-right: 8px;
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+.clients-icon-link::before {
+    content: '✉';
+}
+
+/* Phone icon */
+.clients-phone-link::before {
+    content: '📞';
+    margin-right: 4px;
+    font-size: 12px;
 }
 
 .clients-phone-link {
@@ -2398,38 +2499,51 @@
 }
 
 .clients-table .col-last-visit {
-    width: 20%;
-    color: #828a92;
+    width: auto;
+    color: #666;
+    white-space: nowrap;
+}
+
+.clients-table .col-last-visit::before {
+    content: '📅';
+    margin-right: 4px;
+    font-size: 12px;
 }
 
 .clients-table .col-actions {
-    width: 50px;
+    width: 40px;
     text-align: right;
 }
 
 .clients-edit-link {
-    color: #828a92;
+    color: #999;
     text-decoration: none;
     opacity: 0.6;
+    font-size: 14px;
+}
+
+.clients-edit-link::before {
+    content: '✏️';
 }
 
 .clients-edit-link:hover {
     opacity: 1;
 }
 
-/* Paginacja */
+/* Paginacja - Versum style */
 .clients-pagination {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 15px;
-    border-top: 1px solid #eceff2;
+    gap: 8px;
+    padding: 15px 0;
     font-size: 13px;
-    color: #828a92;
+    color: #666;
+    margin-top: 10px;
 }
 
 .clients-pagination-separator {
     color: #cfd4da;
+    margin: 0 4px;
 }
 
 .clients-pagination label {
@@ -2442,7 +2556,9 @@
     padding: 4px 8px;
     border: 1px solid #cfd4da;
     border-radius: 3px;
-    font-size: 12px;
+    font-size: 13px;
+    background: #fff;
+    min-width: 50px;
 }
 
 .clients-pagination-nav {
@@ -2453,12 +2569,12 @@
 }
 
 .clients-pagination-nav input {
-    width: 40px;
+    width: 36px;
     text-align: center;
     padding: 4px;
     border: 1px solid #cfd4da;
     border-radius: 3px;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .clients-pagination-nav button {
@@ -2467,6 +2583,7 @@
     background: #fff;
     border-radius: 3px;
     cursor: pointer;
+    color: #666;
 }
 
 .clients-pagination-nav button:hover {
@@ -3719,4 +3836,272 @@
 .versum-input--ghost:focus {
     outline: none;
     border-bottom-color: #4b94ce;
+}
+
+/* ========================================
+   Client Detail Nav (KARTA KLIENTA)
+   Versum 1:1 Sidebar Styles
+   ======================================== */
+
+.client-detail-nav {
+    padding: 10px 0;
+}
+
+.client-nav-header {
+    font-size: 10px !important;
+    font-weight: 700;
+    color: #7d848c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.client-nav-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #616971;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.client-nav-name:hover {
+    color: var(--versum-accent);
+    background: #eef3f7;
+}
+
+.client-nav-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+}
+
+.client-nav-tabs {
+    margin-top: 5px;
+}
+
+.client-nav-tabs li {
+    margin: 0;
+}
+
+.client-nav-tabs li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: #616971;
+    text-decoration: none;
+}
+
+.client-nav-tabs li a:hover {
+    color: var(--versum-accent);
+    background: #eef3f7;
+}
+
+.client-nav-tabs li.active a {
+    color: var(--versum-accent);
+    font-weight: 600;
+    background: #eef3f7;
+}
+
+/* Customer Summary - Versum 1:1 */
+.customer-summary {
+    max-width: 100%;
+}
+
+.customer-summary-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.customer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.customer-actions .btn {
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+.customer-actions .btn-default {
+    background: #fff;
+    border: 1px solid #cfd4da;
+    color: #505960;
+}
+
+/* Customer Info Card - Versum style */
+.customer-info-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eceff2;
+}
+
+.customer-info-main {
+    flex: 1;
+}
+
+.customer-name {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.customer-name a {
+    color: #333;
+    text-decoration: none;
+}
+
+.customer-name a:hover {
+    color: var(--versum-accent);
+}
+
+.customer-info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.customer-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #505960;
+}
+
+.customer-info-item .label {
+    color: #828a92;
+    min-width: 100px;
+}
+
+.customer-info-item a {
+    color: var(--versum-accent);
+    text-decoration: none;
+}
+
+.customer-info-item a:hover {
+    text-decoration: underline;
+}
+
+.customer-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #eceff2;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.customer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Visits Sections */
+.customer-visits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.visits-section {
+    background: #fff;
+    border: 1px solid #eceff2;
+    border-radius: 3px;
+    padding: 15px;
+}
+
+.visits-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #505960;
+    margin: 0 0 15px 0;
+}
+
+.visits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.visit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.visit-item:last-child {
+    border-bottom: none;
+}
+
+.visit-service {
+    flex: 1;
+}
+
+.visit-service a {
+    color: var(--versum-accent);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.visit-service a:hover {
+    text-decoration: underline;
+}
+
+.visit-details {
+    color: #828a92;
+    font-size: 12px;
+}
+
+.visit-employee {
+    margin: 0 15px;
+}
+
+.visit-employee a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #ff6b6b;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 10px;
+    text-decoration: none;
+}
+
+.visit-price {
+    font-weight: 600;
+    color: #505960;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.link-more {
+    display: block;
+    text-align: right;
+    color: var(--versum-accent);
+    font-size: 12px;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+.link-more:hover {
+    text-decoration: underline;
 }

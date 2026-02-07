@@ -44,7 +44,7 @@
         "@heroicons/react": "^2.2.0",
         "@next/bundle-analyzer": "^16.0.1",
         "@next/env": "15.2.9",
-        "@salonbw/api": "link:../../packages/api",
+        "@salonbw/api": "workspace:*",
         "@sentry/nextjs": "^10.35.0",
         "@swc/helpers": "^0.5.17",
         "@tanstack/react-query": "^5.90.7",

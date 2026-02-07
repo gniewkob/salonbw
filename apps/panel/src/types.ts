@@ -1,6 +1,7 @@
 export interface Client {
     id: number;
     name: string;
+    phone?: string;
 }
 
 export type Role = 'client' | 'employee' | 'receptionist' | 'admin';
@@ -307,6 +308,7 @@ export type NoteType =
 export interface Customer {
     id: number;
     name: string;
+    fullName?: string; // Alias dla name (Versum compat)
     email: string;
     phone?: string;
     firstName?: string;
@@ -323,7 +325,9 @@ export interface Customer {
     gdprConsentDate?: string;
     createdAt: string;
     updatedAt: string;
+    lastVisitDate?: string | null;
     groups?: CustomerGroup[];
+    tags?: CustomerTag[];
 }
 
 export interface CustomerGroup {
@@ -400,6 +404,7 @@ export interface CustomerFilterParams {
     ageMin?: number;
     ageMax?: number;
     groupId?: number;
+    groupOperator?: 'and' | 'or' | 'AND' | 'OR';
     tagId?: number;
     spentMin?: number;
     spentMax?: number;

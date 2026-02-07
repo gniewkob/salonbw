@@ -7,6 +7,9 @@ import { ServiceVariant } from '../services/entities/service-variant.entity';
 import { ServiceCategory } from '../services/entities/service-category.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
 import { Timetable } from '../timetables/entities/timetable.entity';
+import { CustomerGroup } from '../customers/entities/customer-group.entity';
+import { CustomerNote } from '../customers/entities/customer-note.entity';
+import { CustomerTag } from '../customers/entities/customer-tag.entity';
 import { VersumCompatController } from './versum-compat.controller';
 import { VersumCompatService } from './versum-compat.service';
 
@@ -20,6 +23,9 @@ import { VersumCompatService } from './versum-compat.service';
             ServiceCategory,
             EmployeeService,
             Timetable,
+            CustomerGroup,
+            CustomerNote,
+            CustomerTag,
         ]),
     ],
     controllers: [VersumCompatController],
