@@ -22,6 +22,11 @@ export class ClientLogDto {
     @IsOptional()
     userAgent?: string;
 
+    @ApiPropertyOptional({ description: 'The stack trace of the error' })
+    @IsString()
+    @IsOptional()
+    stack?: string;
+
     @ApiPropertyOptional({ description: 'Additional context or data' })
     @IsObject()
     @IsOptional()
