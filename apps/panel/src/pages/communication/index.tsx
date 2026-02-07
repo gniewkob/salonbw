@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSmsHistory } from '@/hooks/useSms';
 
 function formatDateTime(value?: string) {
@@ -14,10 +16,7 @@ function formatDateTime(value?: string) {
 }
 
 export default function CommunicationPage() {
-    return <CommunicationPageContent />;
-}
-
-function CommunicationPageContent() {
+    const { role } = useAuth();
     const [status, setStatus] = useState('');
     const [page, setPage] = useState(1);
     const { data, loading } = useSmsHistory({
@@ -26,29 +25,49 @@ function CommunicationPageContent() {
         status: status || undefined,
     });
 
+    if (!role) return null;
+
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <div className="versum-page" data-testid="communication-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">
                             Łączność / Nieprzeczytane wiadomości
                         </h1>
                         <div className="flex gap-2">
-                            <button type="button" className="versum-button">
+                            <Link
+                                href="/communication/templates"
+                                className="versum-btn versum-btn--light"
+                            >
+                                Szablony
+                            </Link>
+                            <Link
+                                href="/communication/reminders"
+                                className="versum-btn versum-btn--light"
+                            >
+                                Przypomnienia
+                            </Link>
+                            <button
+                                type="button"
+                                className="versum-btn versum-btn--default"
+                            >
                                 wyślij wiadomość pojedynczą
                             </button>
-                            <button type="button" className="versum-button">
+                            <Link
+                                href="/communication/mass"
+                                className="versum-btn versum-btn--primary"
+                            >
                                 wyślij wiadomość masową
-                            </button>
+                            </Link>
                         </div>
                     </header>
 
                     <div className="versum-page__toolbar">
-                        <label className="text-xs text-gray-600">
+                        <label className="versum-label">
                             Status:
                             <select
-                                className="versum-select ml-1"
+                                className="versum-select ml-2"
                                 value={status}
                                 onChange={(event) => {
                                     setStatus(event.target.value);
@@ -63,10 +82,10 @@ function CommunicationPageContent() {
                                 <option value="failed">nieudane</option>
                             </select>
                         </label>
-                        <label className="text-xs text-gray-600">
+                        <label className="versum-label">
                             Rodzaj:
                             <select
-                                className="versum-select ml-1"
+                                className="versum-select ml-2"
                                 defaultValue="all"
                             >
                                 <option value="all">SMS i email</option>
@@ -77,10 +96,10 @@ function CommunicationPageContent() {
                     </div>
 
                     {loading ? (
-                        <div className="p-4 text-sm versum-muted">
+                        <div className="versum-loading">
                             Ładowanie wiadomości...
                         </div>
-                    ) : (
+                    ) : data ? (
                         <>
                             <div className="versum-table-wrap">
                                 <table className="versum-table">
@@ -101,15 +120,19 @@ function CommunicationPageContent() {
                                                         {entry.subject ||
                                                             'Wiadomość'}
                                                     </strong>
-                                                    <div className="versum-muted text-xs">
+                                                    <div className="versum-muted text-xs mt-1">
                                                         {entry.content.slice(
                                                             0,
                                                             120,
                                                         )}
+                                                        {entry.content.length >
+                                                        120
+                                                            ? '...'
+                                                            : ''}
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span className="rounded bg-sky-100 px-2 py-1 text-xs text-sky-700">
+                                                    <span className="versum-badge versum-badge--info">
                                                         {entry.channel}
                                                     </span>
                                                 </td>
@@ -125,8 +148,8 @@ function CommunicationPageContent() {
                                 </table>
                             </div>
 
-                            <div className="flex items-center justify-between border-t border-gray-300 bg-white px-3 py-2 text-xs text-gray-600">
-                                <span>
+                            <div className="versum-pagination">
+                                <span className="versum-pagination__info">
                                     Pozycje{' '}
                                     {Math.min(
                                         (page - 1) * data.limit + 1,
@@ -138,7 +161,7 @@ function CommunicationPageContent() {
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
-                                        className="versum-button versum-button--light"
+                                        className="versum-btn versum-btn--sm versum-btn--light"
                                         disabled={page <= 1}
                                         onClick={() =>
                                             setPage((current) =>
@@ -150,7 +173,7 @@ function CommunicationPageContent() {
                                     </button>
                                     <button
                                         type="button"
-                                        className="versum-button versum-button--light"
+                                        className="versum-btn versum-btn--sm versum-btn--light"
                                         disabled={
                                             page * data.limit >= data.total
                                         }
@@ -163,9 +186,11 @@ function CommunicationPageContent() {
                                 </div>
                             </div>
                         </>
+                    ) : (
+                        <div className="versum-empty">Brak wiadomości</div>
                     )}
                 </div>
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }

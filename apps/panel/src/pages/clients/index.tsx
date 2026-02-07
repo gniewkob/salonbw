@@ -1,23 +1,378 @@
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
-import ClientsSidebar from '@/components/clients/ClientsSidebar';
-import ClientsList from '@/components/clients/ClientsList';
-import { useCustomers } from '@/hooks/useCustomers'; // Assuming hook exists
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+    useCustomers,
+    useCustomerGroups,
+    useAddGroupMembers,
+} from '@/hooks/useCustomers';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import type { CustomerFilterParams, Customer } from '@/types';
+import {
+    DndContext,
+    DragOverlay,
+    useDraggable,
+    useDroppable,
+    DragStartEvent,
+    DragEndEvent,
+    defaultDropAnimationSideEffects,
+    DragOverlayProps,
+} from '@dnd-kit/core';
+
+// Komponent dla wiersza klienta z obsługą drag
+function DraggableCustomerRow({
+    customer,
+    isDragging,
+}: {
+    customer: Customer;
+    isDragging: boolean;
+}) {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id: customer.id,
+    });
+
+    const style = transform
+        ? {
+              transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+              opacity: isDragging ? 0.5 : 1,
+              cursor: 'grab',
+          }
+        : {
+              cursor: 'grab',
+          };
+
+    return (
+        <tr
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            style={style}
+            className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50`}
+        >
+            <td className="col-checkbox">
+                <input type="checkbox" onClick={(e) => e.stopPropagation()} />
+            </td>
+            <td className="col-name">
+                <Link
+                    href={`/clients/${customer.id}`}
+                    className="clients-name-link"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {customer.name}
+                </Link>
+            </td>
+            <td className="col-phone">
+                {customer.phone && (
+                    <>
+                        <a
+                            href={`mailto:${customer.email}`}
+                            className="clients-icon-link"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            ✉
+                        </a>
+                        <a
+                            href={`tel:${customer.phone}`}
+                            className="clients-phone-link"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {customer.phone}
+                        </a>
+                    </>
+                )}
+            </td>
+            <td className="col-last-visit">
+                {customer.lastVisitDate
+                    ? new Date(customer.lastVisitDate).toLocaleDateString(
+                          'pl-PL',
+                      )
+                    : '-'}
+            </td>
+            <td className="col-actions">
+                <Link
+                    href={`/clients/${customer.id}/edit`}
+                    className="clients-edit-link"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    ✏️
+                </Link>
+            </td>
+        </tr>
+    );
+}
 
 export default function ClientsPage() {
-    // We fetch data here using standard user hooks
-    const { data: customers = [], loading } = useCustomers();
+    const { role } = useAuth();
+    const router = useRouter();
+
+    // Pobierz aktywne filtry z URL
+    const currentGroupId = router.query.groupId
+        ? Number(router.query.groupId)
+        : undefined;
+    const currentTagId = router.query.tagId
+        ? Number(router.query.tagId)
+        : undefined;
+    const currentServiceId = router.query.serviceId
+        ? Number(router.query.serviceId)
+        : undefined;
+    const currentEmployeeId = router.query.employeeId
+        ? Number(router.query.employeeId)
+        : undefined;
+    const hasUpcomingVisit = router.query.hasUpcomingVisit === 'true';
+
+    // Przygotuj filtry dla API
+    const filters: CustomerFilterParams = useMemo(
+        () => ({
+            groupId: currentGroupId,
+            tagId: currentTagId,
+            serviceId: currentServiceId,
+            employeeId: currentEmployeeId,
+            hasUpcomingVisit:
+                router.query.hasUpcomingVisit === 'true' ? true : undefined,
+            limit: 50,
+        }),
+        [
+            currentGroupId,
+            currentTagId,
+            currentServiceId,
+            currentEmployeeId,
+            router.query.hasUpcomingVisit,
+        ],
+    );
+
+    const { data: customersData, isLoading } = useCustomers(filters);
+    const customers = customersData?.items ?? [];
+    const { data: groups } = useCustomerGroups();
+    const addToGroup = useAddGroupMembers();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [draggedCustomer, setDraggedCustomer] = useState<Customer | null>(
+        null,
+    );
+    const [dropTarget, setDropTarget] = useState<number | null>(null);
+
+    const activeGroup = groups?.find((g) => g.id === currentGroupId);
+
+    // Funkcja do czyszczenia filtra
+    const clearGroupFilter = () => {
+        const { groupId, ...restQuery } = router.query;
+        void router.push(
+            { pathname: router.pathname, query: restQuery },
+            undefined,
+            { shallow: true },
+        );
+    };
+
+    // Lokalne filtrowanie wyszukiwania (wyszukuje w już przefiltrowanych przez API)
+    const filteredCustomers = searchTerm
+        ? customers.filter(
+              (c) =>
+                  c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.phone?.includes(searchTerm),
+          )
+        : customers;
+
+    // Handlery dla Drag & Drop
+    const handleDragStart = (event: DragStartEvent) => {
+        const customer = customers.find((c) => c.id === event.active.id);
+        if (customer) {
+            setDraggedCustomer(customer);
+        }
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && over.id !== active.id) {
+            const groupId = Number(over.id);
+            const customerId = Number(active.id);
+
+            // Sprawdź czy klient już jest w grupie
+            const group = groups?.find((g) => g.id === groupId);
+            const customer = customers.find((c) => c.id === customerId);
+
+            if (
+                group &&
+                customer &&
+                !customer.groups?.some((g) => g.id === groupId)
+            ) {
+                await addToGroup.mutateAsync({
+                    groupId,
+                    customerIds: [customerId],
+                });
+            }
+        }
+
+        setDraggedCustomer(null);
+        setDropTarget(null);
+    };
+
+    if (!role) return null;
 
     return (
         <RouteGuard
             roles={['client', 'employee', 'receptionist', 'admin']}
             permission="nav:customers"
         >
-            <DashboardLayout secondaryNav={<ClientsSidebar />}>
-                <div className="h-[calc(100vh-64px)] overflow-hidden">
-                    <ClientsList customers={customers} loading={loading} />
-                </div>
-            </DashboardLayout>
+            <VersumShell role={role}>
+                <DndContext
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                >
+                    <div className="clients-page">
+                        {/* Breadcrumbs */}
+                        <ul className="breadcrumb">
+                            <li>
+                                <Link href="/clients">Klienci</Link>
+                            </li>
+                            <li className="active">/ Lista klientów</li>
+                        </ul>
+
+                        {/* Toolbar */}
+                        <div className="clients-toolbar">
+                            <div className="clients-search">
+                                <input
+                                    type="text"
+                                    placeholder="wyszukaj klienta"
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
+                                    className="versum-input"
+                                />
+                            </div>
+                            <div className="clients-sort">
+                                <button className="versum-btn versum-btn--link">
+                                    nazwisko: <strong>od A do Z</strong>
+                                </button>
+                            </div>
+                            <Link
+                                href="/clients/new"
+                                className="versum-btn versum-btn--primary versum-btn--add"
+                            >
+                                Dodaj klienta
+                            </Link>
+                        </div>
+
+                        {/* Aktywne filtry - jak w Versum */}
+                        {activeGroup && (
+                            <div className="clients-active-filters">
+                                <div className="clients-filter-header">
+                                    <span>wybrane kryteria wyszukiwania:</span>
+                                    <button
+                                        onClick={clearGroupFilter}
+                                        className="clients-filter-close"
+                                        title="Wyczyść filtry"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="clients-filter-badge">
+                                    <span className="clients-filter-tag">
+                                        należą do grup (
+                                        {filteredCustomers.length})
+                                        <span className="clients-filter-name">
+                                            {activeGroup.name}
+                                        </span>
+                                        <button
+                                            onClick={clearGroupFilter}
+                                            className="clients-filter-remove"
+                                        >
+                                            ✕
+                                        </button>
+                                    </span>
+                                </div>
+                                <div className="clients-filter-stats">
+                                    <span>
+                                        Klientów spełniających kryteria:
+                                    </span>
+                                    <strong>{filteredCustomers.length}</strong>
+                                    <button className="clients-filter-create-group">
+                                        utwórz grupę
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Lista klientów */}
+                        <div className="clients-list">
+                            <div className="clients-list-header">
+                                <label className="clients-checkbox-all">
+                                    <input type="checkbox" />
+                                    <span>zaznacz wszystkich (0)</span>
+                                </label>
+                            </div>
+
+                            {isLoading ? (
+                                <div className="clients-loading">
+                                    Ładowanie...
+                                </div>
+                            ) : (
+                                <table className="clients-table">
+                                    <tbody>
+                                        {filteredCustomers.map((customer) => (
+                                            <DraggableCustomerRow
+                                                key={customer.id}
+                                                customer={customer}
+                                                isDragging={
+                                                    draggedCustomer?.id ===
+                                                    customer.id
+                                                }
+                                            />
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+
+                            {/* Paginacja */}
+                            <div className="clients-pagination">
+                                <span>
+                                    Pozycje od 1 do {filteredCustomers.length} z{' '}
+                                    {filteredCustomers.length}
+                                </span>
+                                <span className="clients-pagination-separator">
+                                    |
+                                </span>
+                                <label>
+                                    na stronie
+                                    <select className="versum-select">
+                                        <option>10 wyników</option>
+                                        <option selected>20 wyników</option>
+                                        <option>50 wyników</option>
+                                        <option>100 wyników</option>
+                                    </select>
+                                </label>
+                                <div className="clients-pagination-nav">
+                                    <input
+                                        type="text"
+                                        value="1"
+                                        className="versum-input versum-input--small"
+                                        readOnly
+                                    />
+                                    <span>z</span>
+                                    <span>1</span>
+                                    <button className="versum-btn versum-btn--icon">
+                                        ›
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Drag Overlay - podgląd przeciąganego klienta */}
+                    <DragOverlay dropAnimation={null}>
+                        {draggedCustomer ? (
+                            <div className="bg-white shadow-lg rounded p-12 border border-sky-200 flex items-center gap-8">
+                                <span className="text-lg">👤</span>
+                                <span className="font-medium">
+                                    {draggedCustomer.name}
+                                </span>
+                            </div>
+                        ) : null}
+                    </DragOverlay>
+                </DndContext>
+            </VersumShell>
         </RouteGuard>
     );
 }

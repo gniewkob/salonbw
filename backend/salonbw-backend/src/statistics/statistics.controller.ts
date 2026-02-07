@@ -58,6 +58,13 @@ export class StatisticsController {
         return this.statisticsService.getEmployeeRanking(fromDate, toDate);
     }
 
+    @Get('employees/activity')
+    @Roles(Role.Admin)
+    async getEmployeeActivity(@Query('date') date?: string) {
+        const activityDate = date ? new Date(date) : new Date();
+        return this.statisticsService.getEmployeeActivity(activityDate);
+    }
+
     @Get('services')
     @Roles(Role.Admin)
     async getServiceRanking(
@@ -114,5 +121,99 @@ export class StatisticsController {
             );
 
         return this.statisticsService.getTipsSummary(fromDate, toDate);
+    }
+
+    @Get('commissions')
+    @Roles(Role.Admin)
+    async getCommissionReport(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
+
+        return this.statisticsService.getCommissionReport(fromDate, toDate);
+    }
+
+    @Get('clients/returning')
+    @Roles(Role.Admin)
+    async getClientReturningStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
+
+        return this.statisticsService.getClientReturningStats(fromDate, toDate);
+    }
+
+    @Get('clients/origins')
+    @Roles(Role.Admin)
+    async getClientOriginStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
+
+        return this.statisticsService.getClientOriginStats(fromDate, toDate);
+    }
+
+    @Get('warehouse/movements')
+    @Roles(Role.Admin)
+    async getWarehouseMovementStats(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
+
+        return this.statisticsService.getWarehouseMovementStats(
+            fromDate,
+            toDate,
+        );
+    }
+
+    @Get('warehouse/value')
+    @Roles(Role.Admin)
+    async getWarehouseValueStats() {
+        return this.statisticsService.getWarehouseValueStats();
+    }
+
+    @Get('worktime')
+    @Roles(Role.Admin)
+    async getWorkTimeReport(
+        @Query('range') range?: DateRange,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const { from: fromDate, to: toDate } =
+            this.statisticsService.resolveDateRange(
+                range ?? DateRange.ThisMonth,
+                from,
+                to,
+            );
+
+        return this.statisticsService.getWorkTimeReport(fromDate, toDate);
     }
 }

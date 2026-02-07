@@ -61,4 +61,473 @@ body {
     .badge-warning {
         @apply bg-yellow-100 text-yellow-800;
     }
+
+    /* Mass Communication Styles */
+    .versum-mass-communication {
+        @apply max-w-3xl mx-auto;
+    }
+
+    .versum-mass-communication__section {
+        @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4;
+    }
+
+    .versum-mass-communication__section h3 {
+        @apply text-lg font-semibold text-gray-800 mb-4;
+    }
+
+    .versum-mass-communication__subsection {
+        @apply mt-4 pl-4 border-l-2 border-gray-200;
+    }
+
+    .versum-mass-communication__subsection h4 {
+        @apply text-sm font-medium text-gray-600 mb-3;
+    }
+
+    .versum-mass-communication__footer {
+        @apply flex justify-between items-center mt-6 pt-4 border-t border-gray-200;
+    }
+
+    /* Step indicator */
+    .versum-steps {
+        @apply flex items-center justify-center mb-8 py-4;
+    }
+
+    .versum-step {
+        @apply flex items-center gap-2;
+    }
+
+    .versum-step__number {
+        @apply w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold;
+    }
+
+    .versum-step.active .versum-step__number {
+        @apply bg-[#25B4C1] text-white;
+    }
+
+    .versum-step__label {
+        @apply text-sm text-gray-600 font-medium;
+    }
+
+    .versum-step.active .versum-step__label {
+        @apply text-gray-900;
+    }
+
+    .versum-step__divider {
+        @apply w-12 h-px bg-gray-300 mx-4;
+    }
+
+    /* Channel selector */
+    .versum-channel-selector {
+        @apply flex gap-4;
+    }
+
+    .versum-channel {
+        @apply flex items-center gap-2 p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1];
+    }
+
+    .versum-channel input {
+        @apply hidden;
+    }
+
+    .versum-channel.active {
+        @apply border-[#25B4C1] bg-[#25B4C1]/5;
+    }
+
+    .versum-channel__icon {
+        @apply text-2xl;
+    }
+
+    /* Checkbox row */
+    .versum-checkbox-row {
+        @apply flex items-center gap-3 py-2 cursor-pointer;
+    }
+
+    .versum-checkbox-row input[type='checkbox'] {
+        @apply w-4 h-4 rounded border-gray-300 text-[#25B4C1] focus:ring-[#25B4C1];
+    }
+
+    .versum-group-dot {
+        @apply w-3 h-3 rounded-full inline-block;
+    }
+
+    /* Template list */
+    .versum-template-list {
+        @apply space-y-2;
+    }
+
+    .versum-template-item {
+        @apply p-4 border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1] hover:bg-gray-50;
+    }
+
+    .versum-template-item.active {
+        @apply border-[#25B4C1] bg-[#25B4C1]/5;
+    }
+
+    .versum-template-item__name {
+        @apply block font-medium text-gray-800 mb-1;
+    }
+
+    .versum-template-item__preview {
+        @apply block text-sm text-gray-500;
+    }
+
+    /* Form styles */
+    .versum-form-group {
+        @apply mb-4;
+    }
+
+    .versum-form-group label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+
+    .versum-input {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
+    }
+
+    .versum-textarea {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent resize-none;
+    }
+
+    .versum-char-count {
+        @apply block text-right text-xs text-gray-500 mt-1;
+    }
+
+    /* Variables help */
+    .versum-variables-help {
+        @apply bg-gray-50 p-4 rounded-lg mt-4;
+    }
+
+    .versum-variables-help h4 {
+        @apply text-sm font-medium text-gray-700 mb-2;
+    }
+
+    .versum-variables-help code {
+        @apply inline-block px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 mr-2 font-mono;
+    }
+
+    /* Send result */
+    .versum-mass-communication--success {
+        @apply text-center py-8;
+    }
+
+    .versum-send-result {
+        @apply max-w-md mx-auto;
+    }
+
+    .versum-send-result__icon {
+        @apply w-16 h-16 rounded-full bg-green-100 text-green-600 text-3xl flex items-center justify-center mx-auto mb-4;
+    }
+
+    .versum-send-result h3 {
+        @apply text-xl font-semibold text-gray-800 mb-6;
+    }
+
+    .versum-send-result__stats {
+        @apply flex justify-center gap-8 mb-8;
+    }
+
+    .versum-stat {
+        @apply text-center;
+    }
+
+    .versum-stat__value {
+        @apply block text-3xl font-bold mb-1;
+    }
+
+    .versum-stat--success .versum-stat__value {
+        @apply text-green-600;
+    }
+
+    .versum-stat--error .versum-stat__value {
+        @apply text-red-600;
+    }
+
+    .versum-stat__label {
+        @apply text-sm text-gray-600;
+    }
+
+    .versum-recipient-count {
+        @apply text-sm text-gray-600;
+    }
+
+    /* Button styles */
+    .versum-btn {
+        @apply px-4 py-2 rounded-md font-medium text-sm transition-colors cursor-pointer border-0;
+    }
+
+    .versum-btn--primary {
+        @apply bg-[#25B4C1] text-white hover:bg-[#1f9ba8] disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .versum-btn--light {
+        @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+    }
+
+    .versum-btn--danger {
+        @apply bg-red-100 text-red-700 hover:bg-red-200;
+    }
+
+    .versum-btn--sm {
+        @apply px-3 py-1 text-xs;
+    }
+
+    .versum-btn--default {
+        @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
+    }
+
+    /* Template page styles */
+    .versum-page__toolbar {
+        @apply flex items-center mb-4;
+    }
+
+    .versum-label {
+        @apply text-sm text-gray-700;
+    }
+
+    .versum-select {
+        @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
+    }
+
+    .versum-table-wrap {
+        @apply overflow-x-auto;
+    }
+
+    .versum-table {
+        @apply w-full border-collapse;
+    }
+
+    .versum-table th {
+        @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
+    }
+
+    .versum-table td {
+        @apply text-left p-3 border-b border-gray-200 text-sm;
+    }
+
+    .versum-table tr:hover {
+        @apply bg-gray-50;
+    }
+
+    .versum-badge {
+        @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700;
+    }
+
+    .versum-badge--success {
+        @apply bg-green-100 text-green-800;
+    }
+
+    .versum-badge--inactive {
+        @apply bg-gray-200 text-gray-600;
+    }
+
+    .versum-badge--error {
+        @apply bg-red-100 text-red-800;
+    }
+
+    .versum-badge--sm {
+        @apply px-1.5 py-0.5 text-xs;
+    }
+
+    .versum-actions {
+        @apply flex gap-2;
+    }
+
+    .versum-muted {
+        @apply text-gray-500;
+    }
+
+    .versum-template-preview {
+        @apply max-w-xs text-gray-600;
+    }
+
+    .versum-empty {
+        @apply text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-200;
+    }
+
+    .versum-loading {
+        @apply text-center py-12 text-gray-500;
+    }
+
+    /* Modal styles */
+    .versum-modal-overlay {
+        @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
+    }
+
+    .versum-modal {
+        @apply bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+    }
+
+    .versum-modal__header {
+        @apply flex justify-between items-center p-4 border-b border-gray-200;
+    }
+
+    .versum-modal__header h3 {
+        @apply text-lg font-semibold text-gray-800;
+    }
+
+    .versum-modal__close {
+        @apply text-2xl text-gray-400 hover:text-gray-600 cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100;
+    }
+
+    .versum-modal__body {
+        @apply p-4 space-y-4;
+    }
+
+    .versum-modal__footer {
+        @apply flex justify-end gap-2 p-4 border-t border-gray-200 bg-gray-50;
+    }
+
+    .versum-form-row {
+        @apply grid grid-cols-2 gap-4;
+    }
+
+    /* Reception View Styles */
+    .versum-reception-view {
+        @apply h-full overflow-auto;
+    }
+
+    .versum-reception-summary {
+        @apply flex gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200;
+    }
+
+    .versum-reception-summary__item {
+        @apply flex-1 text-center p-3 rounded-lg bg-gray-50;
+    }
+
+    .versum-reception-summary__item--scheduled {
+        @apply bg-blue-50;
+    }
+
+    .versum-reception-summary__item--confirmed {
+        @apply bg-purple-50;
+    }
+
+    .versum-reception-summary__item--in-progress {
+        @apply bg-yellow-50;
+    }
+
+    .versum-reception-summary__item--completed {
+        @apply bg-green-50;
+    }
+
+    .versum-reception-summary__value {
+        @apply block text-2xl font-bold text-gray-800;
+    }
+
+    .versum-reception-summary__label {
+        @apply block text-sm text-gray-500 mt-1;
+    }
+
+    .versum-reception-table-wrap {
+        @apply bg-white rounded-lg border border-gray-200 overflow-hidden;
+    }
+
+    .versum-reception-table {
+        @apply w-full border-collapse;
+    }
+
+    .versum-reception-table th {
+        @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
+    }
+
+    .versum-reception-table td {
+        @apply text-left p-3 border-b border-gray-200 text-sm;
+    }
+
+    .versum-reception-table tbody tr:hover {
+        @apply bg-gray-50;
+    }
+
+    .versum-reception-table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .versum-reception-row--overdue {
+        @apply bg-red-50/50;
+    }
+
+    .versum-reception-row--overdue:hover {
+        @apply bg-red-50;
+    }
+
+    .versum-reception-row--processing {
+        @apply opacity-70;
+    }
+
+    .versum-reception-time {
+        @apply font-medium whitespace-nowrap;
+    }
+
+    .versum-reception-overdue-badge {
+        @apply block text-xs text-red-600 font-medium mt-1;
+    }
+
+    .versum-reception-client {
+        @apply min-w-[150px];
+    }
+
+    .versum-reception-phone {
+        @apply text-xs text-gray-500 mt-1;
+    }
+
+    .versum-reception-actions {
+        @apply flex gap-2 flex-wrap;
+    }
+
+    .versum-reception-no-actions {
+        @apply text-gray-400;
+    }
+
+    .versum-status-badge {
+        @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
+    }
+
+    .versum-status--scheduled {
+        @apply bg-blue-100 text-blue-800;
+    }
+
+    .versum-status--confirmed {
+        @apply bg-purple-100 text-purple-800;
+    }
+
+    .versum-status--in-progress {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+
+    .versum-status--completed {
+        @apply bg-green-100 text-green-800;
+    }
+
+    .versum-status--cancelled {
+        @apply bg-gray-200 text-gray-600;
+    }
+
+    .versum-status--no-show {
+        @apply bg-red-100 text-red-800;
+    }
+
+    .versum-reception-empty {
+        @apply text-center py-16 bg-white rounded-lg border border-gray-200;
+    }
+
+    .versum-reception-empty__icon {
+        @apply text-5xl mb-4;
+    }
+
+    .versum-reception-empty h3 {
+        @apply text-lg font-medium text-gray-800 mb-2;
+    }
+
+    .versum-reception-empty p {
+        @apply text-gray-500;
+    }
+
+    /* Additional button styles */
+    .versum-btn--success {
+        @apply bg-green-500 text-white hover:bg-green-600;
+    }
+
+    .versum-btn--warning {
+        @apply bg-yellow-500 text-white hover:bg-yellow-600;
+    }
 }

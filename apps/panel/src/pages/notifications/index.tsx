@@ -1,13 +1,18 @@
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
+import { useAuth } from '@/contexts/AuthContext';
 import NotificationList from '@/components/NotificationList';
 
 export default function NotificationsPage() {
+    const { role } = useAuth();
+
+    if (!role) return null;
+
     return (
         <RouteGuard>
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <NotificationList />
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }

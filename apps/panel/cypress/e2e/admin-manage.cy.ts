@@ -10,13 +10,9 @@ describe('admin manage data', () => {
         cy.intercept('GET', 'http://localhost:3001/products*', {
             fixture: 'products.json',
         }).as('getProd');
-        cy.intercept(
-            'DELETE',
-            'http://localhost:3001/products/1',
-            { statusCode: 204 },
-        ).as(
-            'deleteProd',
-        );
+        cy.intercept('DELETE', 'http://localhost:3001/products/1', {
+            statusCode: 204,
+        }).as('deleteProd');
 
         cy.visit('/products');
         cy.wait('@profile');

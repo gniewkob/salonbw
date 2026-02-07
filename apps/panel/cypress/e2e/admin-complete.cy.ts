@@ -48,10 +48,14 @@ describe('admin completes appointment', () => {
         cy.contains('Alice').click({ force: true });
 
         // Complete the appointment
-        cy.intercept('PATCH', 'http://localhost:3001/appointments/99/complete', {
-            statusCode: 200,
-            body: { id: 99, paymentStatus: 'completed' },
-        }).as('complete');
+        cy.intercept(
+            'PATCH',
+            'http://localhost:3001/appointments/99/complete',
+            {
+                statusCode: 200,
+                body: { id: 99, paymentStatus: 'completed' },
+            },
+        ).as('complete');
         cy.contains('button', 'Complete').click({ force: true });
         cy.wait('@complete');
         cy.contains('Appointment completed');

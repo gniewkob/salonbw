@@ -235,10 +235,13 @@ export function useSmsMutations() {
 
     const sendBulkSms = useMutation({
         mutationFn: async (payload: SendBulkSmsPayload) => {
-            return apiFetch<SmsLog[]>('/sms/send-bulk', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
+            return apiFetch<{ success: number; failed: number; total: number }>(
+                '/sms/send-bulk',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
         },
         onSuccess: invalidateAll,
     });
@@ -263,6 +266,26 @@ export function useSmsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const triggerAutomaticReminders = useMutation({
+        mutationFn: async (hours: number = 24) => {
+            return apiFetch<{
+                success: boolean;
+                count: number;
+                results: Array<{
+                    appointmentId: number;
+                    clientName: string;
+                    smsSent: boolean;
+                    emailSent: boolean;
+                    error?: string;
+                }>;
+            }>('/sms/reminders/trigger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hours }),
+            });
+        },
+    });
+
     return {
         createTemplate,
         updateTemplate,
@@ -271,5 +294,21 @@ export function useSmsMutations() {
         sendBulkSms,
         sendFromTemplate,
         sendAppointmentReminder,
+        triggerAutomaticReminders,
     };
+}
+
+export function useReminderStats(days?: number) {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: ['sms-reminder-stats', days],
+        queryFn: () =>
+            apiFetch<{
+                total: number;
+                sent: number;
+                failed: number;
+                upcoming: number;
+            }>(`/sms/reminders/stats${days ? `?days=${days}` : ''}`),
+    });
 }

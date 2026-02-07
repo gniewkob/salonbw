@@ -44,6 +44,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             gdprConsent: true,
             createdAt: now,
             updatedAt: now,
+            groups: [],
         },
         {
             id: 2,
@@ -59,6 +60,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             gdprConsent: true,
             createdAt: now,
             updatedAt: now,
+            groups: [],
         },
     ];
 
