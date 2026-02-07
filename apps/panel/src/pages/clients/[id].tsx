@@ -6,6 +6,7 @@ import type { Route } from 'next';
 import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
@@ -14,7 +15,7 @@ import {
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
-import type { Customer } from '@/types';
+import type { Customer, CustomerTag } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
 import CustomerConsentsTab from '@/components/customers/CustomerConsentsTab';
 
@@ -61,19 +62,26 @@ export default function CustomerDetailPage() {
 
     if (!role) return null;
 
+    // Custom sidebar for client detail page (KARTA KLIENTA)
+    const clientDetailSidebar = customer ? (
+        <ClientDetailNav
+            customerId={customer.id}
+            customerName={customer.name}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+        />
+    ) : null;
+
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:clients"
         >
-            <VersumShell role={role}>
+            <VersumShell role={role} secondaryNav={clientDetailSidebar}>
                 <div className="customer-detail-page">
-                    {/* Breadcrumbs */}
+                    {/* Breadcrumbs - Versum style */}
                     <ul className="breadcrumb">
-                        <li>
-                            <Link href="/clients">Klienci</Link>
-                        </li>
-                        <li className="active">/ {customer?.name}</li>
+                        <li>Klienci / {customer?.name || '...'}</li>
                     </ul>
 
                     {isLoading ? (
@@ -194,7 +202,7 @@ export default function CustomerDetailPage() {
     );
 }
 
-// View Components
+// View Components - Versum 1:1 Style
 function CustomerSummaryView({
     customer,
     stats,
@@ -216,79 +224,75 @@ function CustomerSummaryView({
         return new Date(dateStr).toLocaleDateString('pl-PL');
     };
 
+    const formatDateTime = (dateStr: string, timeStr?: string) => {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const formatted = date.toLocaleDateString('pl-PL');
+        return timeStr ? `${formatted} ${timeStr}` : formatted;
+    };
+
     return (
         <div className="customer-summary">
-            {/* Header with actions */}
+            {/* Header with actions - Versum style */}
             <div className="customer-summary-header">
                 <div className="customer-actions">
                     <Link
                         href={`/clients/${customer.id}/edit`}
-                        className="versum-btn versum-btn--default"
+                        className="btn btn-default"
                     >
                         edytuj
                     </Link>
-                    <button className="versum-btn versum-btn--default">
+                    <button className="btn btn-default">
                         więcej ▼
                     </button>
                 </div>
             </div>
 
-            {/* Customer Info Card */}
+            {/* Customer Info Card - Versum 1:1 */}
             <div className="customer-info-card">
                 <div className="customer-info-main">
-                    <h2 className="customer-name">
-                        <Link href={`/clients/${customer.id}`}>
-                            {customer.name}
-                        </Link>
-                    </h2>
+                    <h1 className="customer-name">
+                        {customer.fullName || customer.name}
+                    </h1>
                     <div className="customer-info-details">
                         {customer.phone && (
                             <div className="customer-info-item">
+                                <span className="label">📞</span>
                                 <a href={`tel:${customer.phone}`}>
                                     {customer.phone}
                                 </a>
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span className="customer-label">email</span>
-                            <span>
-                                {customer.email || (
-                                    <span className="text-muted">
-                                        nie podano
-                                    </span>
-                                )}
-                            </span>
+                            <span className="label">✉</span>
+                            {customer.email ? (
+                                <a href={`mailto:${customer.email}`}>
+                                    {customer.email}
+                                </a>
+                            ) : (
+                                <span className="text-muted">nie podano</span>
+                            )}
                         </div>
-                        {customer.groups && customer.groups.length > 0 && (
+                        {customer.tags && customer.tags.length > 0 && (
                             <div className="customer-info-item">
-                                <span className="customer-label">
-                                    należy do grup
-                                </span>
-                                <span>
-                                    {customer.groups
-                                        .map((g) => g.name)
-                                        .join(', ')}
-                                </span>
+                                <span className="label">🏷️</span>
+                                <span>{customer.tags.map((t: CustomerTag) => t.name).join(', ')}</span>
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span className="customer-label">opis</span>
-                            <span>
-                                {customer.description || (
-                                    <>
-                                        <span className="text-muted">
-                                            brak opisu
-                                        </span>{' '}
-                                        <a href="#" className="link-edit">
-                                            edytuj opis
-                                        </a>
-                                    </>
-                                )}
-                            </span>
+                            <span className="label">📝</span>
+                            {customer.description ? (
+                                <span>{customer.description}</span>
+                            ) : (
+                                <>
+                                    <span className="text-muted">brak opisu</span>
+                                    <a href="#" className="link-edit">edytuj opis</a>
+                                </>
+                            )}
                         </div>
                         {customer.gender && (
                             <div className="customer-info-item">
-                                <span>płeć</span>
+                                <span className="label">płeć</span>
                                 <span>
                                     {customer.gender === 'female'
                                         ? 'Kobieta'
@@ -299,57 +303,47 @@ function CustomerSummaryView({
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span>data dodania</span>
+                            <span className="label">data dodania</span>
                             <span>{formatDate(customer.createdAt)}</span>
                         </div>
                     </div>
                 </div>
                 <div className="customer-avatar">
-                    <img
-                        src="/images/avatar-placeholder.png"
-                        alt=""
-                        className="avatar-image"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                                'none';
-                        }}
-                    />
+                    <svg viewBox="0 0 120 120" className="avatar-placeholder">
+                        <circle cx="60" cy="60" r="60" fill="#e8eaed" />
+                        <path
+                            d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
+                            fill="#bdc1c6"
+                        />
+                    </svg>
                 </div>
             </div>
 
-            {/* Visits Sections */}
+            {/* Visits Sections - Versum 1:1 */}
             <div className="customer-visits">
                 {/* Upcoming visits */}
                 <div className="visits-section">
-                    <h3>
-                        zaplanowane wizyty: {stats?.upcomingVisits?.length || 0}
-                    </h3>
+                    <h3>zaplanowane wizyty: {stats?.upcomingVisits?.length || 0}</h3>
                     {stats?.upcomingVisits?.length > 0 ? (
                         <div className="visits-list">
-                            {stats.upcomingVisits.map((visit: any) => (
+                            {stats.upcomingVisits.slice(0, 3).map((visit: any) => (
                                 <div key={visit.id} className="visit-item">
                                     <div className="visit-service">
-                                        <Link
-                                            href={`/services/${visit.serviceId}`}
-                                        >
+                                        <Link href={`/services/${visit.serviceId}`}>
                                             {visit.serviceName}
                                         </Link>
-                                    </div>
-                                    <div className="visit-details">
-                                        {formatDate(visit.date)} {visit.time},{' '}
-                                        {visit.employeeName}
+                                        <div className="visit-details">
+                                            {formatDateTime(visit.date, visit.time)}, {visit.employeeName}
+                                        </div>
                                     </div>
                                     <div className="visit-price">
                                         {formatCurrency(visit.price)}
                                     </div>
                                 </div>
                             ))}
-                            <Link
-                                href={`/clients/${customer.id}?tab=history`}
-                                className="link-more"
-                            >
-                                więcej
-                            </Link>
+                            {stats.upcomingVisits.length > 3 && (
+                                <a href="#" className="link-more">więcej</a>
+                            )}
                         </div>
                     ) : (
                         <p className="text-muted">Brak zaplanowanych wizyt</p>
@@ -361,26 +355,19 @@ function CustomerSummaryView({
                     <h3>zrealizowane wizyty: {stats?.completedVisits || 0}</h3>
                     {history?.items?.length > 0 ? (
                         <div className="visits-list">
-                            {history.items.map((visit: any) => (
+                            {history.items.slice(0, 3).map((visit: any) => (
                                 <div key={visit.id} className="visit-item">
                                     <div className="visit-service">
-                                        <Link
-                                            href={`/services/${visit.service?.id}`}
-                                        >
+                                        <Link href={`/services/${visit.service?.id}`}>
                                             {visit.service?.name}
                                         </Link>
-                                    </div>
-                                    <div className="visit-details">
-                                        {formatDate(visit.date)}
+                                        <div className="visit-details">
+                                            {formatDate(visit.date)}
+                                        </div>
                                     </div>
                                     <div className="visit-employee">
-                                        <Link
-                                            href={`/employees/${visit.employee?.id}`}
-                                        >
-                                            {visit.employee?.name
-                                                ?.split(' ')
-                                                .map((n: string) => n[0])
-                                                .join('')}
+                                        <Link href={`/employees/${visit.employee?.id}`}>
+                                            {visit.employee?.initials || visit.employee?.name?.split(' ').map((n: string) => n[0]).join('')}
                                         </Link>
                                     </div>
                                     <div className="visit-price">
@@ -388,12 +375,9 @@ function CustomerSummaryView({
                                     </div>
                                 </div>
                             ))}
-                            <Link
-                                href={`/clients/${customer.id}?tab=history`}
-                                className="link-more"
-                            >
-                                więcej
-                            </Link>
+                            {(stats?.completedVisits || 0) > 3 && (
+                                <a href="#" className="link-more">więcej</a>
+                            )}
                         </div>
                     ) : (
                         <p className="text-muted">Brak zrealizowanych wizyt</p>

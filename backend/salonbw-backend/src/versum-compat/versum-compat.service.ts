@@ -13,6 +13,9 @@ import { ServiceCategory } from '../services/entities/service-category.entity';
 import { EmployeeService } from '../services/entities/employee-service.entity';
 import { Timetable } from '../timetables/entities/timetable.entity';
 import { DayOfWeek } from '../timetables/entities/timetable-slot.entity';
+import { CustomerGroup } from '../customers/entities/customer-group.entity';
+import { CustomerNote } from '../customers/entities/customer-note.entity';
+import { CustomerTag } from '../customers/entities/customer-tag.entity';
 
 interface EventQueryParams {
     start: Date;
@@ -41,6 +44,12 @@ export class VersumCompatService {
         private readonly employeeServicesRepository: Repository<EmployeeService>,
         @InjectRepository(Timetable)
         private readonly timetablesRepository: Repository<Timetable>,
+        @InjectRepository(CustomerGroup)
+        private readonly customerGroupsRepository: Repository<CustomerGroup>,
+        @InjectRepository(CustomerNote)
+        private readonly customerNotesRepository: Repository<CustomerNote>,
+        @InjectRepository(CustomerTag)
+        private readonly customerTagsRepository: Repository<CustomerTag>,
     ) {}
 
     async getEvents(params: EventQueryParams) {
@@ -1157,5 +1166,187 @@ export class VersumCompatService {
         const offsetMins = String(abs % 60).padStart(2, '0');
 
         return `${localIso}${sign}${offsetHours}:${offsetMins}`;
+    }
+
+    // ============================================================================
+    // CUSTOMERS (Klienci) - Versum Compat Layer
+    // ============================================================================
+
+    async getCustomers(query: {
+        search?: string;
+        groupId?: number;
+        page?: number;
+        perPage?: number;
+    }) {
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 20;
+        const skip = (page - 1) * perPage;
+
+        const qb = this.usersRepository
+            .createQueryBuilder('user')
+            .leftJoinAndSelect('user.groups', 'groups')
+            .where('user.role = :role', { role: Role.Client });
+
+        if (query.search) {
+            qb.andWhere(
+                new Brackets((qb2) => {
+                    qb2.where('user.name ILIKE :search', {
+                        search: `%${query.search}%`,
+                    })
+                        .orWhere('user.email ILIKE :search', {
+                            search: `%${query.search}%`,
+                        })
+                        .orWhere('user.phone ILIKE :search', {
+                            search: `%${query.search}%`,
+                        });
+                }),
+            );
+        }
+
+        if (query.groupId) {
+            qb.innerJoin(
+                'customer_group_members',
+                'cgm',
+                'cgm.userId = user.id AND cgm.groupId = :groupId',
+                { groupId: query.groupId },
+            );
+        }
+
+        const [users, total] = await qb
+            .orderBy('user.name', 'ASC')
+            .skip(skip)
+            .take(perPage)
+            .getManyAndCount();
+
+        return {
+            customers: users.map((u) => this.mapCustomer(u)),
+            pagination: {
+                page,
+                perPage,
+                total,
+                totalPages: Math.ceil(total / perPage),
+            },
+        };
+    }
+
+    async getCustomer(id: number) {
+        const user = await this.usersRepository.findOne({
+            where: { id, role: Role.Client },
+            relations: ['groups', 'tags'],
+        });
+
+        if (!user) {
+            throw new NotFoundException('Customer not found');
+        }
+
+        return {
+            customer: this.mapCustomerDetailed(user),
+        };
+    }
+
+    async getCustomerGroups() {
+        const groups = await this.customerGroupsRepository.find({
+            order: { name: 'ASC' },
+        });
+
+        return {
+            groups: groups.map((g) => ({
+                id: g.id,
+                name: g.name,
+                description: g.description,
+                color: g.color,
+                memberCount: g.members?.length ?? 0,
+            })),
+        };
+    }
+
+    async getCustomerNotes(customerId: number) {
+        const notes = await this.customerNotesRepository.find({
+            where: { customer: { id: customerId } },
+            order: { createdAt: 'DESC' },
+            relations: ['createdBy'],
+        });
+
+        return {
+            notes: notes.map((n) => ({
+                id: n.id,
+                content: n.content,
+                type: n.type,
+                isPinned: n.isPinned,
+                createdAt: n.createdAt,
+                createdBy: n.createdBy?.name ?? 'System',
+            })),
+        };
+    }
+
+    async getCustomerTags(customerId: number) {
+        // Tags are stored in customer_tags table with many-to-many relation
+        // For now, return empty array - can be extended when tag relation is confirmed
+        const user = await this.usersRepository.findOne({
+            where: { id: customerId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('Customer not found');
+        }
+
+        return {
+            tags: [],
+        };
+    }
+
+    async getCustomerHistory(customerId: number) {
+        const appointments = await this.appointmentsRepository.find({
+            where: { clientId: customerId },
+            relations: ['employee', 'service', 'serviceVariant'],
+            order: { startTime: 'DESC' },
+        });
+
+        return {
+            events: appointments.map((a) => ({
+                id: a.id,
+                date: this.toWarsawIso(a.startTime),
+                serviceName:
+                    a.serviceVariant?.name ?? a.service?.name ?? 'Wizyta',
+                employeeName: a.employee?.name ?? '',
+                status: a.status,
+                price: a.paidAmount ?? 0,
+                isFinalized: a.status === AppointmentStatus.Completed,
+            })),
+        };
+    }
+
+    private mapCustomer(user: User) {
+        return {
+            id: user.id,
+            full_name: user.name,
+            first_name: user.firstName ?? user.name?.split(' ')[0] ?? '',
+            last_name: user.lastName ?? user.name?.split(' ').slice(1).join(' ') ?? '',
+            email: user.email,
+            phone: user.phone,
+            gender: user.gender,
+            birth_date: user.birthDate ? this.toWarsawIso(user.birthDate) : null,
+            address: user.address,
+            city: user.city,
+            postal_code: user.postalCode,
+            created_at: this.toWarsawIso(user.createdAt),
+            gdpr_consent: user.gdprConsent,
+            sms_consent: user.smsConsent,
+            email_consent: user.emailConsent,
+            groups: user.groups?.map((g) => ({ id: g.id, name: g.name })) ?? [],
+            last_visit_date: null, // Will be populated if needed
+        };
+    }
+
+    private mapCustomerDetailed(user: User) {
+        return {
+            ...this.mapCustomer(user),
+            description: user.description,
+            tags: [],
+            total_visits: 0, // Can be computed if needed
+            total_spent: 0,
+            first_visit_date: null,
+            last_visit_date: null,
+        };
     }
 }

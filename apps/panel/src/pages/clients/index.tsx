@@ -21,7 +21,7 @@ import {
     DragOverlayProps,
 } from '@dnd-kit/core';
 
-// Komponent dla wiersza klienta z obsługą drag
+// Komponent dla wiersza klienta z obsługą drag (Versum 1:1 style)
 function DraggableCustomerRow({
     customer,
     isDragging,
@@ -60,27 +60,30 @@ function DraggableCustomerRow({
                     className="clients-name-link"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {customer.name}
+                    {customer.fullName || customer.name}
                 </Link>
+            </td>
+            <td className="col-email">
+                {customer.email && (
+                    <a
+                        href={`mailto:${customer.email}`}
+                        className="clients-icon-link"
+                        onClick={(e) => e.stopPropagation()}
+                        title={customer.email}
+                    >
+                        ✉
+                    </a>
+                )}
             </td>
             <td className="col-phone">
                 {customer.phone && (
-                    <>
-                        <a
-                            href={`mailto:${customer.email}`}
-                            className="clients-icon-link"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            ✉
-                        </a>
-                        <a
-                            href={`tel:${customer.phone}`}
-                            className="clients-phone-link"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {customer.phone}
-                        </a>
-                    </>
+                    <a
+                        href={`tel:${customer.phone}`}
+                        className="clients-phone-link"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {customer.phone}
+                    </a>
                 )}
             </td>
             <td className="col-last-visit">
@@ -95,6 +98,7 @@ function DraggableCustomerRow({
                     href={`/clients/${customer.id}/edit`}
                     className="clients-edit-link"
                     onClick={(e) => e.stopPropagation()}
+                    title="Edytuj"
                 >
                     ✏️
                 </Link>
@@ -213,7 +217,7 @@ export default function ClientsPage() {
     return (
         <RouteGuard
             roles={['client', 'employee', 'receptionist', 'admin']}
-            permission="nav:customers"
+            permission="nav:clients"
         >
             <VersumShell role={role}>
                 <DndContext
@@ -221,15 +225,12 @@ export default function ClientsPage() {
                     onDragEnd={handleDragEnd}
                 >
                     <div className="clients-page">
-                        {/* Breadcrumbs */}
+                        {/* Breadcrumbs - Versum style */}
                         <ul className="breadcrumb">
-                            <li>
-                                <Link href="/clients">Klienci</Link>
-                            </li>
-                            <li className="active">/ Lista klientów</li>
+                            <li>Klienci / Lista klientów</li>
                         </ul>
 
-                        {/* Toolbar */}
+                        {/* Toolbar - Versum style */}
                         <div className="clients-toolbar">
                             <div className="clients-search">
                                 <input
@@ -244,13 +245,14 @@ export default function ClientsPage() {
                             </div>
                             <div className="clients-sort">
                                 <button className="versum-btn versum-btn--link">
-                                    nazwisko: <strong>od A do Z</strong>
+                                    nazwisko: od A do Z ▼
                                 </button>
                             </div>
                             <Link
                                 href="/clients/new"
                                 className="versum-btn versum-btn--primary versum-btn--add"
                             >
+                                <span className="btn-icon">+</span>
                                 Dodaj klienta
                             </Link>
                         </div>
@@ -325,11 +327,11 @@ export default function ClientsPage() {
                                 </table>
                             )}
 
-                            {/* Paginacja */}
+                            {/* Paginacja - Versum style */}
                             <div className="clients-pagination">
                                 <span>
                                     Pozycje od 1 do {filteredCustomers.length} z{' '}
-                                    {filteredCustomers.length}
+                                    {customersData?.total || filteredCustomers.length}
                                 </span>
                                 <span className="clients-pagination-separator">
                                     |
@@ -337,10 +339,9 @@ export default function ClientsPage() {
                                 <label>
                                     na stronie
                                     <select className="versum-select">
-                                        <option>10 wyników</option>
-                                        <option selected>20 wyników</option>
-                                        <option>50 wyników</option>
-                                        <option>100 wyników</option>
+                                        <option>20</option>
+                                        <option>50</option>
+                                        <option>100</option>
                                     </select>
                                 </label>
                                 <div className="clients-pagination-nav">
@@ -351,7 +352,7 @@ export default function ClientsPage() {
                                         readOnly
                                     />
                                     <span>z</span>
-                                    <span>1</span>
+                                    <span>{Math.ceil((customersData?.total || filteredCustomers.length) / 20)}</span>
                                     <button className="versum-btn versum-btn--icon">
                                         ›
                                     </button>
