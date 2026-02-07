@@ -194,10 +194,10 @@ export default function WarehouseValuePage() {
                                                     </Pie>
                                                     <Tooltip
                                                         formatter={(
-                                                            value: number,
+                                                            value?: number,
                                                         ) =>
                                                             formatCurrency(
-                                                                value,
+                                                                value ?? 0,
                                                             )
                                                         }
                                                     />

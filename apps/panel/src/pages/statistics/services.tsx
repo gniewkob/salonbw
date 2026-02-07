@@ -7,8 +7,8 @@ import { useServiceRanking } from '@/hooks/useStatistics';
 
 export default function ServicesStatisticsPage() {
     const { role } = useAuth();
-    const [range, setRange] = useState<'week' | 'month' | 'last_month'>(
-        'month',
+    const [range, setRange] = useState<'this_week' | 'this_month' | 'last_month'>(
+        'this_month',
     );
     const { data, isLoading } = useServiceRanking({ range });
 
@@ -19,9 +19,9 @@ export default function ServicesStatisticsPage() {
     const getDateRangeLabel = () => {
         const today = new Date();
         switch (range) {
-            case 'week':
+            case 'this_week':
                 return `${format(subDays(today, 7), 'dd.MM.yyyy')} - ${format(today, 'dd.MM.yyyy')}`;
-            case 'month':
+            case 'this_month':
                 return `${format(subDays(today, 30), 'dd.MM.yyyy')} - ${format(today, 'dd.MM.yyyy')}`;
             case 'last_month':
                 return 'poprzedni miesiąc';

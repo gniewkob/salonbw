@@ -21,8 +21,8 @@ function StatisticsPageContent() {
     const [reportDate, setReportDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
-    const { data: dashboard, loading: dashboardLoading } = useDashboardStats();
-    const { data: employees, loading: employeesLoading } = useEmployeeRanking({
+    const { data: dashboard, isLoading: dashboardLoading } = useDashboardStats();
+    const { data: employees, isLoading: employeesLoading } = useEmployeeRanking({
         range: DateRange.ThisMonth,
     });
 
@@ -41,6 +41,8 @@ function StatisticsPageContent() {
                     : 0,
         };
     }, [dashboard]);
+
+    if (!employees) return null;
 
     return (
         <div className="versum-page" data-testid="statistics-page">

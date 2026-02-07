@@ -172,7 +172,7 @@ const StatCard = ({ title, value }: { title: string; value: string }) => (
 );
 
 export default function ServiceDetailsPage() {
-    const { user } = useAuth();
+    const { user, role } = useAuth();
     const router = useRouter();
     const serviceId = Number(router.query.id);
     const [activeTab, setActiveTab] = useState<TabKey>('summary');
@@ -250,7 +250,7 @@ export default function ServiceDetailsPage() {
     }
 
     return (
-        <VersumShell role={role}>
+        <VersumShell role={role || 'admin'}>
             <div className="versum-page" data-testid="service-details-page">
                 <header className="versum-page-header">
                     <div className="versum-breadcrumb">
