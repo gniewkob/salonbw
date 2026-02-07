@@ -45,6 +45,7 @@ const VIEW_MAP: Record<CalendarViewType, string> = {
     day: 'timeGridDay',
     week: 'timeGridWeek',
     month: 'dayGridMonth',
+    reception: 'timeGridDay',
 };
 
 export default function CalendarView({

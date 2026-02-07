@@ -43,7 +43,7 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
-            <DashboardLayout pageTitle={heading}>
+            <DashboardLayout>
                 <div className="versum-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">{heading}</h1>

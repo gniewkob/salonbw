@@ -1,27 +1,54 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { pl } from 'date-fns/locale';
 import { useRouter } from 'next/router';
-import { useEmployees } from '@/hooks/useEmployees';
 
 registerLocale('pl', pl);
 
-export default function CalendarSidebar() {
-    const router = useRouter();
-    const { date: dateParam, employeeId } = router.query;
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const { data: employees } = useEmployees();
+interface Employee {
+    id: number;
+    name: string;
+    color?: string;
+}
 
-    // Sync state with URL
+interface CalendarSidebarProps {
+    employees: Employee[];
+    selectedEmployeeIds: number[];
+    onEmployeeToggle: (employeeId: number) => void;
+    onSelectAll: () => void;
+    onClearAll: () => void;
+    currentDate: Date;
+    onDateSelect: (date: Date) => void;
+}
+
+export default function CalendarSidebar({
+    employees,
+    selectedEmployeeIds,
+    onEmployeeToggle,
+    onSelectAll,
+    onClearAll,
+    currentDate,
+    onDateSelect,
+}: CalendarSidebarProps) {
+    const router = useRouter();
+    const { date: dateParam } = router.query;
+    const [selectedDate, setSelectedDate] = useState<Date>(currentDate);
+
+    // Sync state with URL and props
     useEffect(() => {
         if (dateParam) {
             setSelectedDate(new Date(dateParam as string));
+        } else {
+            setSelectedDate(currentDate);
         }
-    }, [dateParam]);
+    }, [dateParam, currentDate]);
 
     const handleDateChange = (date: Date | null) => {
         if (!date) return;
         setSelectedDate(date);
+        onDateSelect(date);
 
         // Update URL
         const year = date.getFullYear();
@@ -39,30 +66,6 @@ export default function CalendarSidebar() {
         );
     };
 
-    const toggleEmployee = (id: number) => {
-        // Simple single selection for now, like the URL logic in calendar.tsx
-        // or toggle logic if we support multiple.
-        // calendar.tsx currently supports single employeeIdParam.
-
-        const currentId = Number(employeeId);
-        if (currentId === id) {
-            // Deselect
-            const { employeeId: _, ...rest } = router.query;
-            router.push({ pathname: router.pathname, query: rest }, undefined, {
-                shallow: true,
-            });
-        } else {
-            router.push(
-                {
-                    pathname: router.pathname,
-                    query: { ...router.query, employeeId: id },
-                },
-                undefined,
-                { shallow: true },
-            );
-        }
-    };
-
     return (
         <div className="flex flex-col gap-4 p-4">
             <div className="versum-datepicker-container">
@@ -76,43 +79,38 @@ export default function CalendarSidebar() {
             </div>
 
             <div className="versum-sidebar-section">
-                <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                    Pracownicy
-                </h3>
-                <div className="space-y-1">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
-                        <input
-                            type="checkbox"
-                            checked={!employeeId}
-                            onChange={() => {
-                                const { employeeId: _, ...rest } = router.query;
-                                router.push(
-                                    { pathname: router.pathname, query: rest },
-                                    undefined,
-                                    { shallow: true },
-                                );
-                            }}
-                            className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                        />
-                        <span
-                            className={
-                                !employeeId
-                                    ? 'font-medium text-gray-900'
-                                    : 'text-gray-700'
-                            }
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase">
+                        Pracownicy
+                    </h3>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={onSelectAll}
+                            className="text-xs text-sky-600 hover:text-sky-700"
                         >
                             Wszyscy
-                        </span>
-                    </label>
-                    {employees?.map((emp) => (
+                        </button>
+                        <span className="text-gray-300">|</span>
+                        <button
+                            type="button"
+                            onClick={onClearAll}
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                        >
+                            Wyczyść
+                        </button>
+                    </div>
+                </div>
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {employees.map((emp) => (
                         <label
                             key={emp.id}
                             className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
                         >
                             <input
                                 type="checkbox"
-                                checked={Number(employeeId) === emp.id}
-                                onChange={() => toggleEmployee(emp.id)}
+                                checked={selectedEmployeeIds.includes(emp.id)}
+                                onChange={() => onEmployeeToggle(emp.id)}
                                 className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
                             />
                             <div className="flex items-center gap-2">
@@ -122,9 +120,7 @@ export default function CalendarSidebar() {
                                         backgroundColor: emp.color || '#ccc',
                                     }}
                                 />
-                                <span className="text-gray-700">
-                                    {emp.firstName} {emp.lastName}
-                                </span>
+                                <span className="text-gray-700">{emp.name}</span>
                             </div>
                         </label>
                     ))}

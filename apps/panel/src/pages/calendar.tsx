@@ -23,7 +23,7 @@ import CalendarView from '@/components/calendar/CalendarView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAppointments } from '@/hooks/useAppointments';
-import type { CalendarView as ViewType } from '@/types';
+import type { CalendarView as ViewType, Appointment } from '@/types';
 import ReceptionView from '@/components/calendar/ReceptionView';
 
 export default function CalendarPage() {
@@ -79,10 +79,10 @@ export default function CalendarPage() {
     };
 
     const dateRange = getDateRange();
-    const { data: appointmentData, loading } = useAppointments(
-        dateRange.from,
-        dateRange.to,
-    );
+    const { data: appointmentData, rawData, loading } = useAppointments({
+        from: dateRange.from,
+        to: dateRange.to,
+    });
 
     // Navigation handlers
     const navigateDate = (direction: 'prev' | 'next') => {
@@ -205,9 +205,8 @@ export default function CalendarPage() {
                                     dzień
                                 </button>
                                 <button
-                                    className="versum-calendar-header__view-btn versum-calendar-header__view-btn--reception"
-                                    onClick={() => setView('reception')}
                                     className={`versum-calendar-header__view-btn versum-calendar-header__view-btn--reception ${view === 'reception' ? 'active' : ''}`}
+                                    onClick={() => setView('reception')}
                                 >
                                     recepcja
                                 </button>
@@ -219,13 +218,13 @@ export default function CalendarPage() {
                     <div className="versum-calendar-content">
                         {view === 'reception' ? (
                             <ReceptionView
-                                appointments={appointmentData || []}
+                                appointments={(rawData as Appointment[]) || []}
                                 loading={loading}
                             />
                         ) : (
                             <CalendarView
                                 events={appointmentData || []}
-                                employees={employees}
+                                employees={employees || []}
                                 loading={loading}
                                 currentDate={currentDate}
                                 currentView={view}
@@ -238,18 +237,8 @@ export default function CalendarPage() {
                                 }
                                 onDateChange={handleDateChange}
                                 onViewChange={setView}
-                                onEmployeeFilterChange={(ids) => {
-                                    const query = { ...router.query };
-                                    if (ids.length === 0) {
-                                        delete query.employeeId;
-                                    } else {
-                                        query.employeeId = String(ids[0]);
-                                    }
-                                    void router.push(
-                                        { pathname: router.pathname, query },
-                                        undefined,
-                                        { shallow: true },
-                                    );
+                                onEmployeeFilterChange={() => {
+                                    // Employee filter handled via sidebar
                                 }}
                             />
                         )}

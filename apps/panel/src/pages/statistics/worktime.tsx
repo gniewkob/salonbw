@@ -308,22 +308,16 @@ export default function WorkTimeReportPage() {
                                                             <YAxis />
                                                             <Tooltip
                                                                 formatter={(
-                                                                    value: number,
-                                                                    name: string,
+                                                                    value?: number,
+                                                                    name?: string,
                                                                 ) => {
                                                                     if (
                                                                         name ===
                                                                         'workTime'
                                                                     ) {
-                                                                        return [
-                                                                            `${value}h`,
-                                                                            'Godziny',
-                                                                        ];
+                                                                        return `${value ?? 0}h`;
                                                                     }
-                                                                    return [
-                                                                        value,
-                                                                        'Wizyty',
-                                                                    ];
+                                                                    return `${value ?? 0} wizyt`;
                                                                 }}
                                                             />
                                                             <Bar
