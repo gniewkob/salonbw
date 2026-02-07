@@ -132,6 +132,9 @@ async function bootstrap() {
             'X-XSRF-TOKEN',
             'X-Request-Id',
             'X-Log-Token',
+            'Cache-Control',
+            'Pragma',
+            'Expires',
         ],
         exposedHeaders: ['X-Request-Id'],
     });

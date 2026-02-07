@@ -37,7 +37,7 @@ const dataBase = path.join(__dirname, '.next', 'data');
 
 function tryServeNextData(req, res, pathname) {
     if (!pathname || !pathname.startsWith('/_next/data/')) return false;
-    const relative = pathname.replace(/^\/\/_next\/data\//, '');
+    const relative = pathname.replace(/^\/_next\/data\//, '');
     const dataPath = path.join(dataBase, relative);
     if (!dataPath.startsWith(dataBase + path.sep)) {
         res.statusCode = 400;
