@@ -9,6 +9,11 @@ interface VersumMainNavProps {
     role: Role;
 }
 
+// Badge counts for each module (in real app, these would come from API)
+const MODULE_BADGES: Record<string, string> = {
+    communication: '140',
+};
+
 export default function VersumMainNav({
     modules,
     activeModule,
@@ -18,6 +23,8 @@ export default function VersumMainNav({
             <ul className="nav" e2e-main-nav="">
                 {modules.map((item) => {
                     const isActive = item.key === activeModule.key;
+                    const badge = MODULE_BADGES[item.key];
+                    
                     return (
                         <li
                             key={item.key}
@@ -29,13 +36,21 @@ export default function VersumMainNav({
                                 data-testid={`mainnav-${item.key}`}
                                 title={item.label}
                             >
-                                <div>
+                                <div className="nav-icon-wrapper">
                                     <VersumIcon
                                         id={item.iconId}
                                         className={item.iconId}
                                     />
+                                    {isActive && (
+                                        <div className="active-indicator"></div>
+                                    )}
                                 </div>
-                                <span>{item.label}</span>
+                                <span className="nav-label">
+                                    {badge && (
+                                        <span className="nav-badge">{badge} </span>
+                                    )}
+                                    {item.label}
+                                </span>
                             </Link>
                         </li>
                     );

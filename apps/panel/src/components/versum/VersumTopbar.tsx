@@ -51,27 +51,18 @@ export default function VersumTopbar() {
             id="navbar"
         >
             <div className="notification-bar-container"></div>
-            <div>
-                <a
-                    className="menu-toggler navbar-toggle"
-                    id="menu-toggler"
-                    href="javascript:;"
-                    title="Otwórz menu"
+            
+            {/* Logo - positioned absolutely like original Versum */}
+            <div className="brand">
+                <Link
+                    href="/dashboard"
+                    title="przejdź do pulpitu"
+                    aria-label="Black and White - Przejdź do pulpitu"
                 >
-                    <span className="icon-bar"></span>
-                    <span className="icon-bar"></span>
-                    <span className="icon-bar"></span>
-                </a>
-                <div className="brand brand-text-sbw">
-                    <Link
-                        href="/dashboard"
-                        title="przejdź do pulpitu"
-                        aria-label="Black and White - Przejdź do pulpitu"
-                    >
-                        Black&amp;White
-                    </Link>
-                </div>
+                    <span className="brand-text">versum</span>
+                </Link>
             </div>
+
             <div className="ml-auto">
                 <ul className="navbar-right simple-list d-flex">
                     <li className="d-flex">
@@ -88,10 +79,28 @@ export default function VersumTopbar() {
                             ></div>
                         </div>
                     </li>
+                    
+                    {/* Notification center with counter */}
                     <li
                         className="notification_center"
                         id="notification_center_navbar"
-                    ></li>
+                    >
+                        <a
+                            className="link"
+                            href="javascript:;"
+                            title="Powiadomienia"
+                        >
+                            <div className="notification-badge">
+                                <VersumIcon
+                                    id="svg-notifications"
+                                    className="svg-notifications"
+                                />
+                                <span className="badge-count">7</span>
+                            </div>
+                        </a>
+                    </li>
+                    
+                    {/* Messages with counter */}
                     <li className="all_complete tasks_tooltip">
                         <a
                             aria-expanded="false"
@@ -107,6 +116,7 @@ export default function VersumTopbar() {
                                     id="svg-todo"
                                     className="svg-todo"
                                 />
+                                <span className="badge-count">0</span>
                             </div>
                         </a>
                         <div className="dropdown_cover"></div>
@@ -116,6 +126,7 @@ export default function VersumTopbar() {
                             role="menu"
                         ></div>
                     </li>
+                    
                     <li
                         ref={helpMenuRef}
                         className={`dropdown help_tooltip right-menu ${helpMenuOpen ? 'open' : ''}`}
@@ -151,6 +162,7 @@ export default function VersumTopbar() {
                             </li>
                         </ul>
                     </li>
+                    
                     <li
                         ref={userMenuRef}
                         className={`dropdown right-menu ${userMenuOpen ? 'open' : ''}`}
