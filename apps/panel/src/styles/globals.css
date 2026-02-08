@@ -922,6 +922,75 @@ body {
     border-color: #6b7280;
 }
 
+/* ============================================
+   MINI CALENDAR - Custom Implementation (CalendarNav)
+   ============================================ */
+
+.versum-mini-cal {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.versum-mini-cal__weekdays {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.versum-mini-cal__weekdays span {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: lowercase;
+    width: 28px;
+    text-align: center;
+    flex: 1;
+}
+
+.versum-mini-cal__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.versum-mini-cal__day {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #374151;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.versum-mini-cal__day:hover {
+    background: #f3f4f6;
+}
+
+.versum-mini-cal__day--selected {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.versum-mini-cal__day--today {
+    border: 1px solid #3b82f6;
+    font-weight: 600;
+}
+
+.versum-mini-cal__day--other-month {
+    color: #d1d5db;
+}
+
 @layer components {
     /* ============================================
        VERSUM CALENDAR HEADER - 1:1 with Original
