@@ -530,4 +530,375 @@ body {
     .versum-btn--warning {
         @apply bg-yellow-500 text-white hover:bg-yellow-600;
     }
+
+    /* ============================================
+       VERSUM CALENDAR STYLES - Matching Original
+       ============================================ */
+
+    /* Calendar background - gray like Versum */
+    .fc {
+        --fc-border-color: #d1d5db;
+        --fc-page-bg-color: #eceff2;
+        --fc-neutral-bg-color: #eceff2;
+    }
+
+    .fc-view-harness {
+        background: #eceff2 !important;
+    }
+
+    .fc-timegrid-body {
+        background: #eceff2 !important;
+    }
+
+    .fc-timegrid-slots {
+        background: #eceff2 !important;
+    }
+
+    .fc-timegrid-slot {
+        background: #eceff2 !important;
+        border-bottom: 1px solid #d1d5db !important;
+    }
+
+    .fc-timegrid-slot-lane {
+        background: #eceff2 !important;
+    }
+
+    /* Header styling */
+    .fc-col-header-cell {
+        background: #f3f4f6 !important;
+        border-bottom: 2px solid #d1d5db !important;
+        padding: 8px 4px !important;
+    }
+
+    .fc-col-header-cell-cushion {
+        color: #374151 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+
+    /* Event styling - Versum-like gray blocks */
+    .fc-event {
+        border: none !important;
+        border-radius: 3px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+    }
+
+    .fc-event-main {
+        padding: 4px 6px !important;
+    }
+
+    .fc-event-title {
+        font-weight: 500 !important;
+        font-size: 12px !important;
+        color: #1f2937 !important;
+    }
+
+    /* Time text in events */
+    .fc-event-time {
+        font-size: 11px !important;
+        color: #6b7280 !important;
+        font-weight: 500 !important;
+    }
+
+    /* Current time indicator */
+    .fc-timegrid-now-indicator-line {
+        border-color: #ef4444 !important;
+        border-width: 2px !important;
+    }
+
+    .fc-timegrid-now-indicator-arrow {
+        color: #ef4444 !important;
+    }
+
+    /* Day grid (month view) */
+    .fc-daygrid-day {
+        background: #ffffff !important;
+    }
+
+    .fc-daygrid-day.fc-day-today {
+        background: #fef3c7 !important;
+    }
+
+    .fc-daygrid-day-top {
+        padding: 4px !important;
+    }
+
+    .fc-daygrid-day-number {
+        font-size: 13px !important;
+        color: #374151 !important;
+        font-weight: 500 !important;
+    }
+
+    /* Week number column */
+    .fc-timegrid-axis {
+        background: #f3f4f6 !important;
+        font-weight: 600 !important;
+        color: #6b7280 !important;
+        font-size: 11px !important;
+    }
+
+    /* Toolbar buttons */
+    .fc-button {
+        background: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        color: #374151 !important;
+        font-weight: 500 !important;
+        text-transform: lowercase !important;
+        padding: 6px 12px !important;
+        box-shadow: none !important;
+    }
+
+    .fc-button:hover {
+        background: #f3f4f6 !important;
+        border-color: #9ca3af !important;
+    }
+
+    .fc-button-active {
+        background: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: #ffffff !important;
+    }
+
+    /* ============================================
+       MINI CALENDAR (SIDEBAR) - Versum Style
+       ============================================ */
+
+    .versum-mini-calendar {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+    }
+
+    .versum-mini-calendar .react-datepicker {
+        border: none;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .versum-mini-calendar .react-datepicker__header {
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        padding-top: 8px;
+    }
+
+    .versum-mini-calendar .react-datepicker__current-month {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+    }
+
+    .versum-mini-calendar .react-datepicker__day-names {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 8px;
+    }
+
+    .versum-mini-calendar .react-datepicker__day-name {
+        font-size: 11px;
+        color: #9ca3af;
+        text-transform: lowercase;
+        width: 28px;
+    }
+
+    .versum-mini-calendar .react-datepicker__month {
+        margin: 0.4em;
+    }
+
+    .versum-mini-calendar .react-datepicker__week {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .versum-mini-calendar .react-datepicker__day {
+        font-size: 12px;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        border-radius: 3px;
+        color: #374151;
+    }
+
+    .versum-mini-calendar .react-datepicker__day:hover {
+        background: #f3f4f6;
+    }
+
+    .versum-mini-calendar .react-datepicker__day--selected {
+        background: #3b82f6 !important;
+        color: white !important;
+    }
+
+    .versum-mini-calendar .react-datepicker__day--today {
+        border: 1px solid #3b82f6;
+        font-weight: 600;
+    }
+
+    .versum-mini-calendar .react-datepicker__day--outside-month {
+        color: #d1d5db;
+    }
+
+    .versum-mini-calendar .react-datepicker__navigation {
+        top: 8px;
+    }
+
+    .versum-mini-calendar .react-datepicker__navigation-icon::before {
+        border-color: #6b7280;
+    }
+
+    /* ============================================
+       EMPLOYEE LIST (SIDEBAR) - Versum Style
+       ============================================ */
+
+    .versum-employee-list {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+    }
+
+    .versum-employee-list__header {
+        font-size: 11px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .versum-employee-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .versum-employee-item:hover {
+        background: #f3f4f6;
+    }
+
+    .versum-employee-item__checkbox {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #d1d5db;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+
+    .versum-employee-item__checkbox.checked {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    .versum-employee-item__color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .versum-employee-item__name {
+        font-size: 13px;
+        color: #374151;
+        flex: 1;
+    }
+
+    /* ============================================
+       EVENT TOOLTIP (On Hover) - Versum Style
+       ============================================ */
+
+    .versum-event-tooltip {
+        position: absolute;
+        z-index: 1000;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 12px;
+        min-width: 220px;
+        pointer-events: none;
+    }
+
+    .versum-event-tooltip::before {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid #ffffff;
+    }
+
+    .versum-event-tooltip__time {
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .versum-event-tooltip__client {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 2px;
+    }
+
+    .versum-event-tooltip__service {
+        font-size: 13px;
+        color: #4b5563;
+        margin-bottom: 4px;
+    }
+
+    .versum-event-tooltip__employee {
+        font-size: 12px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .versum-event-tooltip__price {
+        font-size: 13px;
+        font-weight: 600;
+        color: #059669;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .versum-event-tooltip__status {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-top: 6px;
+    }
+
+    .versum-event-tooltip__status--scheduled {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .versum-event-tooltip__status--confirmed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .versum-event-tooltip__status--in-progress {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .versum-event-tooltip__status--completed {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
 }
