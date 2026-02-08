@@ -248,16 +248,22 @@
     width: auto;
     display: flex;
     flex-shrink: 0;
+    padding-left: var(--versum-mainnav-w);
 }
 
 /* Mainnav - Dark sidebar with icons */
 #mainnav,
 .mainnav {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: var(--versum-mainnav-w);
+    height: 100vh;
     background: var(--versum-mainnav-bg);
     color: #93a1b0;
     border-right: 1px solid #1b1e22;
     flex-shrink: 0;
+    z-index: 20;
 }
 
 .mainnav .nav {
@@ -266,7 +272,7 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - var(--versum-topbar-h));
+    min-height: 100vh;
 }
 
 .mainnav .nav li {
