@@ -5,6 +5,7 @@ import { ServiceCategory } from '../../services/entities/service-category.entity
 import { EmployeeService } from '../../services/entities/employee-service.entity';
 import { Appointment, AppointmentStatus } from '../../appointments/appointment.entity';
 import { Role } from '../../users/role.enum';
+import { PriceType } from '../../services/service.entity';
 
 export default class TestDataSeed {
     async run(dataSource: DataSource): Promise<void> {
@@ -17,92 +18,110 @@ export default class TestDataSeed {
         console.log('Seeding test data...');
 
         // 1. Create employees
-        const employee1 = await userRepo.save({
-            email: 'aleksandra.bodora@salon-bw.pl',
-            password: '$2b$10$TestPasswordHash',
-            name: 'Aleksandra Bodora',
-            role: Role.Employee,
-            phone: '500111222',
-            firstName: 'Aleksandra',
-            lastName: 'Bodora',
-            receiveNotifications: true,
-        }).catch(() => userRepo.findOne({ where: { email: 'aleksandra.bodora@salon-bw.pl' } }));
+        let employee1 = await userRepo.findOne({ where: { email: 'aleksandra.bodora@salon-bw.pl' } });
+        if (!employee1) {
+            employee1 = await userRepo.save({
+                email: 'aleksandra.bodora@salon-bw.pl',
+                password: '$2b$10$TestPasswordHash',
+                name: 'Aleksandra Bodora',
+                role: Role.Employee,
+                phone: '500111222',
+                firstName: 'Aleksandra',
+                lastName: 'Bodora',
+                receiveNotifications: true,
+            });
+        }
 
-        const employee2 = await userRepo.save({
-            email: 'pracownik.testowy@salon-bw.pl',
-            password: '$2b$10$TestPasswordHash',
-            name: 'Pracownik Testowy',
-            role: Role.Employee,
-            phone: '500333444',
-            firstName: 'Pracownik',
-            lastName: 'Testowy',
-            receiveNotifications: true,
-        }).catch(() => userRepo.findOne({ where: { email: 'pracownik.testowy@salon-bw.pl' } }));
+        let employee2 = await userRepo.findOne({ where: { email: 'pracownik.testowy@salon-bw.pl' } });
+        if (!employee2) {
+            employee2 = await userRepo.save({
+                email: 'pracownik.testowy@salon-bw.pl',
+                password: '$2b$10$TestPasswordHash',
+                name: 'Pracownik Testowy',
+                role: Role.Employee,
+                phone: '500333444',
+                firstName: 'Pracownik',
+                lastName: 'Testowy',
+                receiveNotifications: true,
+            });
+        }
 
         console.log(`✓ Employees: ${employee1?.id}, ${employee2?.id}`);
 
         // 2. Create service category
-        const category = await categoryRepo.save({
-            name: 'Koloryzacja',
-            description: 'Usługi koloryzacji włosów',
-        }).catch(() => categoryRepo.findOne({ where: { name: 'Koloryzacja' } }));
+        let category = await categoryRepo.findOne({ where: { name: 'Koloryzacja' } });
+        if (!category) {
+            category = await categoryRepo.save({
+                name: 'Koloryzacja',
+                description: 'Usługi koloryzacji włosów',
+            });
+        }
 
         // 3. Create services
-        const service1 = await serviceRepo.save({
-            name: 'Koloryzacja Ola - włosy długie',
-            description: 'Pełna koloryzacja włosów długich',
-            duration: 180,
-            price: 350.00,
-            priceType: 'fixed' as const,
-            categoryId: category?.id,
-        }).catch(() => serviceRepo.findOne({ where: { name: 'Koloryzacja Ola - włosy długie' } }));
+        let service1 = await serviceRepo.findOne({ where: { name: 'Koloryzacja Ola - włosy długie' } });
+        if (!service1) {
+            service1 = await serviceRepo.save({
+                name: 'Koloryzacja Ola - włosy długie',
+                description: 'Pełna koloryzacja włosów długich',
+                duration: 180,
+                price: 350.00,
+                priceType: PriceType.Fixed,
+                categoryId: category?.id,
+            });
+        }
 
-        const service2 = await serviceRepo.save({
-            name: 'Strzyżenie Damskie Ola - włosy średnie',
-            description: 'Strzyżenie i modelowanie włosów średniej długości',
-            duration: 60,
-            price: 120.00,
-            priceType: 'fixed' as const,
-            categoryId: category?.id,
-        }).catch(() => serviceRepo.findOne({ where: { name: 'Strzyżenie Damskie Ola - włosy średnie' } }));
+        let service2 = await serviceRepo.findOne({ where: { name: 'Strzyżenie Damskie Ola - włosy średnie' } });
+        if (!service2) {
+            service2 = await serviceRepo.save({
+                name: 'Strzyżenie Damskie Ola - włosy średnie',
+                description: 'Strzyżenie i modelowanie włosów średniej długości',
+                duration: 60,
+                price: 120.00,
+                priceType: PriceType.Fixed,
+                categoryId: category?.id,
+            });
+        }
 
-        const service3 = await serviceRepo.save({
-            name: 'Botoks',
-            description: 'Zabieg botoksem na włosy',
-            duration: 90,
-            price: 200.00,
-            priceType: 'fixed' as const,
-            categoryId: category?.id,
-        }).catch(() => serviceRepo.findOne({ where: { name: 'Botoks' } }));
+        let service3 = await serviceRepo.findOne({ where: { name: 'Botoks' } });
+        if (!service3) {
+            service3 = await serviceRepo.save({
+                name: 'Botoks',
+                description: 'Zabieg botoksem na włosy',
+                duration: 90,
+                price: 200.00,
+                priceType: PriceType.Fixed,
+                categoryId: category?.id,
+            });
+        }
 
         console.log(`✓ Services: ${service1?.id}, ${service2?.id}, ${service3?.id}`);
 
         // 4. Assign services to employees
-        if (employee1 && service1) {
+        if (employee1?.id && service1?.id) {
             await employeeServiceRepo.save({
                 employeeId: employee1.id,
                 serviceId: service1.id,
             }).catch(() => {});
         }
-        if (employee1 && service2) {
+        if (employee1?.id && service2?.id) {
             await employeeServiceRepo.save({
                 employeeId: employee1.id,
                 serviceId: service2.id,
             }).catch(() => {});
         }
-        if (employee1 && service3) {
+        if (employee1?.id && service3?.id) {
             await employeeServiceRepo.save({
                 employeeId: employee1.id,
                 serviceId: service3.id,
             }).catch(() => {});
         }
-        if (employee2 && service1) {
+        if (employee2?.id && service1?.id) {
             await employeeServiceRepo.save({
                 employeeId: employee2.id,
                 serviceId: service1.id,
             }).catch(() => {});
         }
-        if (employee2 && service2) {
+        if (employee2?.id && service2?.id) {
             await employeeServiceRepo.save({
                 employeeId: employee2.id,
                 serviceId: service2.id,
@@ -110,35 +129,44 @@ export default class TestDataSeed {
         }
 
         // 5. Create test clients
-        const client1 = await userRepo.save({
-            email: 'klient.testowy1@example.com',
-            password: '$2b$10$TestPasswordHash',
-            name: 'Anna Kowalska',
-            role: Role.Client,
-            phone: '600111222',
-            firstName: 'Anna',
-            lastName: 'Kowalska',
-        }).catch(() => userRepo.findOne({ where: { email: 'klient.testowy1@example.com' } }));
+        let client1 = await userRepo.findOne({ where: { email: 'klient.testowy1@example.com' } });
+        if (!client1) {
+            client1 = await userRepo.save({
+                email: 'klient.testowy1@example.com',
+                password: '$2b$10$TestPasswordHash',
+                name: 'Anna Kowalska',
+                role: Role.Client,
+                phone: '600111222',
+                firstName: 'Anna',
+                lastName: 'Kowalska',
+            });
+        }
 
-        const client2 = await userRepo.save({
-            email: 'klient.testowy2@example.com',
-            password: '$2b$10$TestPasswordHash',
-            name: 'Maria Nowak',
-            role: Role.Client,
-            phone: '600333444',
-            firstName: 'Maria',
-            lastName: 'Nowak',
-        }).catch(() => userRepo.findOne({ where: { email: 'klient.testowy2@example.com' } }));
+        let client2 = await userRepo.findOne({ where: { email: 'klient.testowy2@example.com' } });
+        if (!client2) {
+            client2 = await userRepo.save({
+                email: 'klient.testowy2@example.com',
+                password: '$2b$10$TestPasswordHash',
+                name: 'Maria Nowak',
+                role: Role.Client,
+                phone: '600333444',
+                firstName: 'Maria',
+                lastName: 'Nowak',
+            });
+        }
 
-        const client3 = await userRepo.save({
-            email: 'klient.testowy3@example.com',
-            password: '$2b$10$TestPasswordHash',
-            name: 'Katarzyna Wiśniewska',
-            role: Role.Client,
-            phone: '600555666',
-            firstName: 'Katarzyna',
-            lastName: 'Wiśniewska',
-        }).catch(() => userRepo.findOne({ where: { email: 'klient.testowy3@example.com' } }));
+        let client3 = await userRepo.findOne({ where: { email: 'klient.testowy3@example.com' } });
+        if (!client3) {
+            client3 = await userRepo.save({
+                email: 'klient.testowy3@example.com',
+                password: '$2b$10$TestPasswordHash',
+                name: 'Katarzyna Wiśniewska',
+                role: Role.Client,
+                phone: '600555666',
+                firstName: 'Katarzyna',
+                lastName: 'Wiśniewska',
+            });
+        }
 
         console.log(`✓ Clients: ${client1?.id}, ${client2?.id}, ${client3?.id}`);
 
@@ -147,7 +175,7 @@ export default class TestDataSeed {
             startTime: new Date('2026-02-08'),
         });
 
-        if (client1 && employee1 && service1) {
+        if (client1?.id && employee1?.id && service1?.id) {
             await appointmentRepo.save({
                 clientId: client1.id,
                 employeeId: employee1.id,
@@ -160,7 +188,7 @@ export default class TestDataSeed {
             console.log('✓ Appointment 1: 09:00 - Koloryzacja');
         }
 
-        if (client2 && employee2 && service2) {
+        if (client2?.id && employee2?.id && service2?.id) {
             await appointmentRepo.save({
                 clientId: client2.id,
                 employeeId: employee2.id,
@@ -173,7 +201,7 @@ export default class TestDataSeed {
             console.log('✓ Appointment 2: 10:30 - Strzyżenie');
         }
 
-        if (client3 && employee1 && service3) {
+        if (client3?.id && employee1?.id && service3?.id) {
             await appointmentRepo.save({
                 clientId: client3.id,
                 employeeId: employee1.id,
