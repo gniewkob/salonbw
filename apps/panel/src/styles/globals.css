@@ -674,92 +674,6 @@ body {
     }
 
     /* ============================================
-       MINI CALENDAR (SIDEBAR) - Versum Style
-       ============================================ */
-
-    .versum-mini-calendar {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        padding: 12px;
-    }
-
-    .versum-mini-calendar .react-datepicker {
-        border: none;
-        font-family: 'Open Sans', sans-serif;
-    }
-
-    .versum-mini-calendar .react-datepicker__header {
-        background: #ffffff;
-        border-bottom: 1px solid #e5e7eb;
-        padding-top: 8px;
-    }
-
-    .versum-mini-calendar .react-datepicker__current-month {
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-        text-transform: uppercase;
-    }
-
-    .versum-mini-calendar .react-datepicker__day-names {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 8px;
-    }
-
-    .versum-mini-calendar .react-datepicker__day-name {
-        font-size: 11px;
-        color: #9ca3af;
-        text-transform: lowercase;
-        width: 28px;
-    }
-
-    .versum-mini-calendar .react-datepicker__month {
-        margin: 0.4em;
-    }
-
-    .versum-mini-calendar .react-datepicker__week {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .versum-mini-calendar .react-datepicker__day {
-        font-size: 12px;
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
-        border-radius: 3px;
-        color: #374151;
-    }
-
-    .versum-mini-calendar .react-datepicker__day:hover {
-        background: #f3f4f6;
-    }
-
-    .versum-mini-calendar .react-datepicker__day--selected {
-        background: #3b82f6 !important;
-        color: white !important;
-    }
-
-    .versum-mini-calendar .react-datepicker__day--today {
-        border: 1px solid #3b82f6;
-        font-weight: 600;
-    }
-
-    .versum-mini-calendar .react-datepicker__day--outside-month {
-        color: #d1d5db;
-    }
-
-    .versum-mini-calendar .react-datepicker__navigation {
-        top: 8px;
-    }
-
-    .versum-mini-calendar .react-datepicker__navigation-icon::before {
-        border-color: #6b7280;
-    }
-
-    /* ============================================
        EMPLOYEE LIST (SIDEBAR) - Versum Style
        ============================================ */
 
@@ -915,7 +829,100 @@ body {
         background: #f3f4f6;
         color: #4b5563;
     }
+}
 
+/* ============================================
+   MINI CALENDAR - React Datepicker Overrides
+   (Outside @layer for higher specificity)
+   ============================================ */
+
+.versum-mini-calendar {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.versum-mini-calendar .react-datepicker {
+    border: none;
+    font-family: 'Open Sans', sans-serif;
+    width: 100%;
+}
+
+.versum-mini-calendar .react-datepicker__header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding-top: 8px;
+}
+
+.versum-mini-calendar .react-datepicker__current-month {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+}
+
+.versum-mini-calendar .react-datepicker__day-names {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+}
+
+.versum-mini-calendar .react-datepicker__day-name {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: lowercase;
+    width: 28px;
+    flex: 1;
+}
+
+.versum-mini-calendar .react-datepicker__month {
+    margin: 0.4em;
+}
+
+.versum-mini-calendar .react-datepicker__week {
+    display: flex;
+    justify-content: space-around;
+}
+
+.versum-mini-calendar .react-datepicker__day {
+    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 3px;
+    color: #374151;
+    flex: 1;
+    text-align: center;
+}
+
+.versum-mini-calendar .react-datepicker__day:hover {
+    background: #f3f4f6;
+}
+
+.versum-mini-calendar .react-datepicker__day--selected {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.versum-mini-calendar .react-datepicker__day--today {
+    border: 1px solid #3b82f6;
+    font-weight: 600;
+}
+
+.versum-mini-calendar .react-datepicker__day--outside-month {
+    color: #d1d5db;
+}
+
+.versum-mini-calendar .react-datepicker__navigation {
+    top: 8px;
+}
+
+.versum-mini-calendar .react-datepicker__navigation-icon::before {
+    border-color: #6b7280;
+}
+
+@layer components {
     /* ============================================
        VERSUM CALENDAR HEADER - 1:1 with Original
        ============================================ */
