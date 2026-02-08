@@ -915,4 +915,140 @@ body {
         background: #f3f4f6;
         color: #4b5563;
     }
+
+    /* ============================================
+       VERSUM CALENDAR HEADER - 1:1 with Original
+       ============================================ */
+
+    .versum-calendar-page {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #f5f5f5;
+    }
+
+    .versum-calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+        gap: 16px;
+    }
+
+    .versum-calendar-header__left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .versum-calendar-header__nav-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'versum';
+        font-size: 14px;
+        color: #374151;
+        transition: all 0.15s ease;
+    }
+
+    .versum-calendar-header__nav-btn:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .versum-calendar-header__today-btn {
+        padding: 6px 12px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-transform: lowercase;
+    }
+
+    .versum-calendar-header__today-btn:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .versum-calendar-header__today-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .versum-calendar-header__print-link {
+        margin-left: 12px;
+        font-size: 13px;
+        color: #3b82f6;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .versum-calendar-header__print-link:hover {
+        text-decoration: underline;
+    }
+
+    .versum-calendar-header__title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+        text-align: center;
+        flex: 0 0 auto;
+    }
+
+    .versum-calendar-header__right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex: 1;
+    }
+
+    .versum-calendar-header__view-switcher {
+        display: flex;
+        background: #f3f4f6;
+        border-radius: 4px;
+        padding: 2px;
+        gap: 2px;
+    }
+
+    .versum-calendar-header__view-btn {
+        padding: 6px 14px;
+        background: transparent;
+        border: none;
+        border-radius: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-transform: lowercase;
+    }
+
+    .versum-calendar-header__view-btn:hover {
+        color: #374151;
+    }
+
+    .versum-calendar-header__view-btn.active {
+        background: #3b82f6;
+        color: #ffffff;
+    }
+
+    .versum-calendar-content {
+        flex: 1;
+        overflow: hidden;
+        background: #ffffff;
+    }
 }
