@@ -535,32 +535,32 @@ body {
        VERSUM CALENDAR STYLES - Matching Original
        ============================================ */
 
-    /* Calendar background - gray like Versum */
+    /* Calendar background - white like original Versum */
     .fc {
-        --fc-border-color: #d1d5db;
-        --fc-page-bg-color: #eceff2;
-        --fc-neutral-bg-color: #eceff2;
+        --fc-border-color: #e5e7eb;
+        --fc-page-bg-color: #ffffff;
+        --fc-neutral-bg-color: #ffffff;
     }
 
     .fc-view-harness {
-        background: #eceff2 !important;
+        background: #ffffff !important;
     }
 
     .fc-timegrid-body {
-        background: #eceff2 !important;
+        background: #ffffff !important;
     }
 
     .fc-timegrid-slots {
-        background: #eceff2 !important;
+        background: #ffffff !important;
     }
 
     .fc-timegrid-slot {
-        background: #eceff2 !important;
-        border-bottom: 1px solid #d1d5db !important;
+        background: #ffffff !important;
+        border-bottom: 1px solid #f3f4f6 !important;
     }
 
     .fc-timegrid-slot-lane {
-        background: #eceff2 !important;
+        background: #ffffff !important;
     }
 
     /* Header styling */
@@ -657,6 +657,20 @@ body {
         background: #3b82f6 !important;
         border-color: #3b82f6 !important;
         color: #ffffff !important;
+    }
+
+    /* ============================================
+       HIDE FULLCALENDAR DEFAULT HEADER (Versum uses custom)
+       ============================================ */
+    
+    /* Hide FullCalendar's default toolbar - we use our custom Versum header */
+    .fc .fc-toolbar {
+        display: none !important;
+    }
+    
+    /* Also hide the second toolbar if present */
+    .fc-toolbar.fc-header-toolbar {
+        display: none !important;
     }
 
     /* ============================================
