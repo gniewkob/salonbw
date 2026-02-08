@@ -1,0 +1,30 @@
+name: Add Test Data
+
+on:
+  workflow_dispatch:
+
+jobs:
+  add-test-data:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install axios
+        working-directory: backend/salonbw-backend
+
+      - name: Add test data via API
+        env:
+          API_URL: ${{ secrets.API_URL || 'https://api.salon-bw.pl' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'kontakt@bodora.pl' }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: node scripts/add-test-data-api.js
+        working-directory: backend/salonbw-backend
