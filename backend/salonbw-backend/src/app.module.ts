@@ -28,6 +28,7 @@ import { RetailModule } from './retail/retail.module';
 import { CSPModule } from './csp/csp.module';
 import { CacheModule } from './cache/cache.module';
 import { DatabaseSlowQueryService } from './database/database-slow-query.service';
+import { DatabaseController } from './database/database.controller';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CalendarModule } from './calendar/calendar.module';
@@ -126,7 +127,7 @@ import { VersumCompatModule } from './versum-compat/versum-compat.module';
         LoyaltyModule,
         VersumCompatModule,
     ],
-    controllers: [AppController, HealthController],
+    controllers: [AppController, HealthController, DatabaseController],
     providers: [
         AppService,
         HealthService,
