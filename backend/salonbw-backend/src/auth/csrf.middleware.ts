@@ -24,6 +24,8 @@ const EXCLUDED_PATHS = new Set([
     '/track_new_events',
     '/fresh_chat_user',
     '/todo/alerts',
+    // Database seed endpoint - admin only, useful for testing
+    '/database/seed-test-data',
 ]);
 
 @Injectable()
