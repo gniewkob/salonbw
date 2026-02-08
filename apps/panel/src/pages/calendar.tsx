@@ -23,11 +23,14 @@ import CalendarView from '@/components/calendar/CalendarView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAppointments } from '@/hooks/useAppointments';
-import type { CalendarView as ViewType, Appointment } from '@/types';
+import type { CalendarView as ViewType, Appointment, CalendarEvent } from '@/types';
 import ReceptionView from '@/components/calendar/ReceptionView';
+import AppointmentDetailsModal from '@/components/AppointmentDetailsModal';
+import AppointmentForm from '@/components/AppointmentForm';
+import FinalizationModal from '@/components/calendar/FinalizationModal';
 
 export default function CalendarPage() {
-    const { role } = useAuth();
+    const { role, apiFetch } = useAuth();
     const router = useRouter();
     const { date: dateParam, employeeId: employeeIdParam } = router.query;
 
@@ -36,6 +39,14 @@ export default function CalendarPage() {
     const [currentDate, setCurrentDate] = useState(
         dateParam ? new Date(dateParam as string) : new Date(),
     );
+
+    // Modal states
+    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+    const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
+    const [selectedSlotStart, setSelectedSlotStart] = useState<Date | null>(null);
+    const [selectedSlotEnd, setSelectedSlotEnd] = useState<Date | null>(null);
 
     // Handle employee selection from URL
     const selectedEmployeeIds = employeeIdParam
@@ -133,9 +144,46 @@ export default function CalendarPage() {
         // TODO: Implement API call
     };
 
+    // Modal handlers
+    const handleEventClick = (event: CalendarEvent) => {
+        setSelectedEvent(event);
+        setIsDetailsModalOpen(true);
+    };
+
+    const handleDateSelect = (start: Date, end: Date) => {
+        setSelectedSlotStart(start);
+        setSelectedSlotEnd(end);
+        setIsFormModalOpen(true);
+    };
+
+    const handleCloseDetails = () => {
+        setIsDetailsModalOpen(false);
+        setSelectedEvent(null);
+    };
+
+    const handleCloseForm = () => {
+        setIsFormModalOpen(false);
+        setSelectedSlotStart(null);
+        setSelectedSlotEnd(null);
+    };
+
+    const handleCloseFinalize = () => {
+        setIsFinalizeModalOpen(false);
+    };
+
+    const handleEditEvent = () => {
+        setIsDetailsModalOpen(false);
+        setIsFormModalOpen(true);
+    };
+
+    const handleFinalizeEvent = () => {
+        setIsDetailsModalOpen(false);
+        setIsFinalizeModalOpen(true);
+    };
+
     const isToday = isSameDay(currentDate, new Date());
 
-    // Format header date like "sobota, 7 lutego 2026"
+    // Format header date like "sobota, 7 lutego 2026" (Versum style)
     const headerDate = format(currentDate, 'eeee, d MMMM yyyy', { locale: pl });
 
     if (!role) return null;
@@ -230,11 +278,9 @@ export default function CalendarPage() {
                                 currentView={view}
                                 selectedEmployeeIds={selectedEmployeeIds}
                                 hideSidebar={true}
-                                onEventClick={(e) => console.log('Click', e)}
+                                onEventClick={handleEventClick}
                                 onEventDrop={handleEventDrop}
-                                onDateSelect={(start, end) =>
-                                    console.log('Select', start, end)
-                                }
+                                onDateSelect={handleDateSelect}
                                 onDateChange={handleDateChange}
                                 onViewChange={setView}
                                 onEmployeeFilterChange={() => {
@@ -244,6 +290,54 @@ export default function CalendarPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Modals */}
+                <AppointmentDetailsModal
+                    open={isDetailsModalOpen}
+                    onClose={handleCloseDetails}
+                    appointment={selectedEvent as unknown as Appointment}
+                    canCancel={selectedEvent?.status === 'scheduled' || selectedEvent?.status === 'confirmed'}
+                    canComplete={selectedEvent?.status === 'in_progress'}
+                    onCancel={(id) => {
+                        // TODO: Implement cancel
+                        console.log('Cancel appointment', id);
+                        handleCloseDetails();
+                    }}
+                    onComplete={(id) => {
+                        handleFinalizeEvent();
+                    }}
+                />
+
+                {isFormModalOpen && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                            <h3 className="text-lg font-semibold mb-4">
+                                {selectedEvent ? 'Edytuj wizytę' : 'Nowa wizyta'}
+                            </h3>
+                            <AppointmentForm
+                                services={[]}
+                                initial={{
+                                    startTime: selectedSlotStart?.toISOString(),
+                                }}
+                                onSubmit={async (data) => {
+                                    console.log('Create appointment', data);
+                                    handleCloseForm();
+                                }}
+                                onCancel={handleCloseForm}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <FinalizationModal
+                    open={isFinalizeModalOpen}
+                    onClose={handleCloseFinalize}
+                    appointment={selectedEvent as unknown as Appointment}
+                    onSuccess={() => {
+                        handleCloseFinalize();
+                        // Refresh data
+                    }}
+                />
             </VersumShell>
         </RouteGuard>
     );
