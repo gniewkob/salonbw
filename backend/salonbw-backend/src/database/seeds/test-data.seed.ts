@@ -1,17 +1,17 @@
 import { DataSource } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { Service } from '../../services/service.entity';
-import { ServiceCategory } from '../../services/entities/service-category.entity';
 import { EmployeeService } from '../../services/entities/employee-service.entity';
 import { Appointment, AppointmentStatus } from '../../appointments/appointment.entity';
 import { Role } from '../../users/role.enum';
 import { PriceType } from '../../services/service.entity';
 
+// Seed test data without service_categories (table may not exist in old migrations)
+
 export default class TestDataSeed {
     async run(dataSource: DataSource): Promise<void> {
         const userRepo = dataSource.getRepository(User);
         const serviceRepo = dataSource.getRepository(Service);
-        const categoryRepo = dataSource.getRepository(ServiceCategory);
         const employeeServiceRepo = dataSource.getRepository(EmployeeService);
         const appointmentRepo = dataSource.getRepository(Appointment);
 
@@ -48,16 +48,7 @@ export default class TestDataSeed {
 
         console.log(`✓ Employees: ${employee1?.id}, ${employee2?.id}`);
 
-        // 2. Create service category
-        let category = await categoryRepo.findOne({ where: { name: 'Koloryzacja' } });
-        if (!category) {
-            category = await categoryRepo.save({
-                name: 'Koloryzacja',
-                description: 'Usługi koloryzacji włosów',
-            });
-        }
-
-        // 3. Create services
+        // 2. Create services (without category - table may not exist)
         let service1 = await serviceRepo.findOne({ where: { name: 'Koloryzacja Ola - włosy długie' } });
         if (!service1) {
             service1 = await serviceRepo.save({
@@ -66,7 +57,6 @@ export default class TestDataSeed {
                 duration: 180,
                 price: 350.00,
                 priceType: PriceType.Fixed,
-                categoryId: category?.id,
             });
         }
 
@@ -78,7 +68,6 @@ export default class TestDataSeed {
                 duration: 60,
                 price: 120.00,
                 priceType: PriceType.Fixed,
-                categoryId: category?.id,
             });
         }
 
@@ -90,7 +79,6 @@ export default class TestDataSeed {
                 duration: 90,
                 price: 200.00,
                 priceType: PriceType.Fixed,
-                categoryId: category?.id,
             });
         }
 
