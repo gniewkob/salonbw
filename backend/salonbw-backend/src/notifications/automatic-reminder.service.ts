@@ -11,7 +11,9 @@ import { SmsService } from '../sms/sms.service';
 import {
     TemplateType,
     MessageChannel,
+    MessageTemplate,
 } from '../sms/entities/message-template.entity';
+import { EmailsService } from '../emails/emails.service';
 
 interface ReminderResult {
     appointmentId: number;
@@ -30,7 +32,10 @@ export class AutomaticReminderService {
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
+        @InjectRepository(MessageTemplate)
+        private readonly templatesRepository: Repository<MessageTemplate>,
         private readonly smsService: SmsService,
+        private readonly emailsService: EmailsService,
         private readonly config: ConfigService,
     ) {}
 
@@ -130,10 +135,10 @@ export class AutomaticReminderService {
                 }
             }
 
-            // TODO: Send Email reminder (when email service is ready)
-            // if (result.email && emailConsent) {
-            //     result.emailSent = await this.sendEmailReminder(appointment);
-            // }
+            // Send Email reminder
+            if (result.email && emailConsent) {
+                result.emailSent = await this.sendEmailReminder(appointment);
+            }
 
             // Mark as sent if at least one channel succeeded
             if (result.smsSent || result.emailSent) {
@@ -170,6 +175,28 @@ export class AutomaticReminderService {
         }
     }
 
+    private getAppointmentVariables(
+        appointment: Appointment,
+    ): Record<string, string> {
+        const startTime = new Date(appointment.startTime);
+        return {
+            client_name: appointment.client?.name ?? '',
+            service_name: appointment.service?.name ?? '',
+            employee_name: appointment.employee?.name ?? '',
+            date: startTime.toLocaleDateString('pl-PL', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            }),
+            time: startTime.toLocaleTimeString('pl-PL', {
+                hour: '2-digit',
+                minute: '2-digit',
+            }),
+            salon_name: this.config.get<string>('SALON_NAME', 'SalonBW'),
+            salon_phone: this.config.get<string>('SALON_PHONE', ''),
+        };
+    }
+
     /**
      * Mark appointment reminder as sent
      */
@@ -180,6 +207,50 @@ export class AutomaticReminderService {
         this.logger.log(
             `Marked reminder as sent for appointment ${appointment.id}`,
         );
+    }
+
+    private async sendEmailReminder(
+        appointment: Appointment,
+    ): Promise<boolean> {
+        try {
+            const client = appointment.client;
+            if (!client?.email) return false;
+
+            const template = await this.templatesRepository.findOne({
+                where: {
+                    type: TemplateType.AppointmentReminder,
+                    channel: MessageChannel.Email,
+                    isDefault: true,
+                    isActive: true,
+                },
+            });
+
+            if (!template) {
+                this.logger.warn('No default email reminder template found');
+                return false;
+            }
+
+            const vars = this.getAppointmentVariables(appointment);
+            const subject =
+                template.subject?.trim() ||
+                `Przypomnienie o wizycie: ${vars.date}, ${vars.time}`;
+
+            await this.emailsService.send({
+                to: client.email,
+                subject,
+                template: template.content,
+                data: vars,
+                recipientId: client.id,
+            });
+
+            return true;
+        } catch (error) {
+            this.logger.error(
+                `Email reminder failed for appointment ${appointment.id}:`,
+                error,
+            );
+            return false;
+        }
     }
 
     /**

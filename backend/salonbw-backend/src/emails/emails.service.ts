@@ -97,6 +97,17 @@ export class EmailsService {
     }
 
     async send(dto: SendEmailDto): Promise<void> {
+        return this.sendInternal(dto, { sentById: null });
+    }
+
+    async sendAsUser(dto: SendEmailDto, sentById: number): Promise<void> {
+        return this.sendInternal(dto, { sentById });
+    }
+
+    private async sendInternal(
+        dto: SendEmailDto,
+        opts: { sentById: number | null },
+    ): Promise<void> {
         const html = this.renderTemplate(dto.template, dto.data);
 
         const resolvedRecipientId =
@@ -114,7 +125,7 @@ export class EmailsService {
             status: EmailLogStatus.Pending,
             errorMessage: null,
             recipientId: resolvedRecipientId,
-            sentById: null,
+            sentById: opts.sentById,
             sentAt: null,
         });
 

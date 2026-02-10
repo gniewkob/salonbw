@@ -7,12 +7,15 @@ import { ReminderService } from './reminder.service';
 import { AutomaticReminderService } from './automatic-reminder.service';
 import { WhatsappServiceMock } from './whatsapp.mock';
 import { SmsModule } from '../sms/sms.module';
+import { MessageTemplate } from '../sms/entities/message-template.entity';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
     imports: [
         HttpModule,
-        TypeOrmModule.forFeature([Appointment]),
+        TypeOrmModule.forFeature([Appointment, MessageTemplate]),
         forwardRef(() => SmsModule),
+        EmailsModule,
     ],
     providers: [
         process.env.NODE_ENV === 'test'
