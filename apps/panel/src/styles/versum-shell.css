@@ -10,7 +10,8 @@
     --versum-panel-bg: #f5f7f9;
     --versum-text: #505960;
     --versum-muted: #828a92;
-    --versum-accent: #52a8e8;
+    /* Versum active/link blue */
+    --versum-accent: #008bb4;
     --versum-mainnav-bg: #24272b;
     --versum-mainnav-active: #181a1e;
     --versum-green: #2ecc71;

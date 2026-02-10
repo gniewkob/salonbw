@@ -35,17 +35,56 @@ type TabId =
     | 'gallery'
     | 'files';
 
+function parseNumericIdParam(
+    value: string | string[] | undefined,
+): number | null {
+    if (!value) return null;
+    const raw = Array.isArray(value) ? value[0] : value;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+}
+
+function parseTabNameParam(
+    value: string | string[] | undefined,
+): string | null {
+    if (!value) return null;
+    return Array.isArray(value) ? value[0] : value;
+}
+
+function tabIdFromTabName(tabName: string | null): TabId {
+    switch (tabName) {
+        case 'personal_data':
+            return 'personal';
+        case 'statistics':
+            return 'statistics';
+        case 'events_history':
+            return 'history';
+        case 'opinions':
+            return 'comments';
+        case 'communication_preferences':
+            return 'communication';
+        case 'gallery':
+            return 'gallery';
+        case 'files':
+            return 'files';
+        default:
+            return 'summary';
+    }
+}
+
 export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
     const { id } = router.query;
-    const customerId = id ? Number(id) : null;
-    const [activeTab, setActiveTab] = useState<TabId>('summary');
+    const customerId = parseNumericIdParam(id);
+    const activeTab = tabIdFromTabName(
+        parseTabNameParam(router.query.tab_name),
+    );
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const { data: customer, isLoading, error } = useCustomer(customerId);
-    const { data: stats } = useCustomerStatistics(customerId ?? 0);
-    const { data: history } = useCustomerEventHistory(customerId ?? 0, {
+    const { data: stats } = useCustomerStatistics(customerId);
+    const { data: history } = useCustomerEventHistory(customerId, {
         limit: 3,
     });
     const updateCustomer = useUpdateCustomer();
@@ -58,16 +97,16 @@ export default function CustomerDetailPage() {
     if (!role) return null;
 
     // Custom sidebar for client detail page (KARTA KLIENTA)
-    const clientDetailSidebar = customer ? (
-        <div className="secondarynav" id="sidenav">
-            <ClientDetailNav
-                customerId={customer.id}
-                customerName={customer.name}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-            />
-        </div>
-    ) : null;
+    const clientDetailSidebar =
+        customerId !== null ? (
+            <div className="secondarynav" id="sidenav">
+                <ClientDetailNav
+                    customerId={customerId}
+                    customerName={customer?.fullName || customer?.name || '...'}
+                    activeTab={activeTab}
+                />
+            </div>
+        ) : null;
 
     return (
         <RouteGuard
@@ -100,13 +139,17 @@ export default function CustomerDetailPage() {
                             <div className="customer-actions-bar">
                                 <div className="customer-actions-bar__spacer" />
                                 <div className="btn-group">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsEditModalOpen(true)}
+                                    <Link
+                                        href={{
+                                            pathname: `/clients/${customer.id}`,
+                                            query: {
+                                                tab_name: 'personal_data',
+                                            },
+                                        }}
                                         className="btn btn-default btn-xs"
                                     >
                                         edytuj
-                                    </button>
+                                    </Link>
                                     <button
                                         type="button"
                                         className="btn btn-default btn-xs"
