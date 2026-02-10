@@ -460,6 +460,8 @@ jobs:
           DEST="${{ steps.dest.outputs.remote_path_panel }}"
           APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
           TARGET_APP="apps/panel"
+          REMOTE_ROOT="/usr/home/vetternkraft"
+          REMOTE_DEST="${REMOTE_ROOT}/${DEST}"
           echo "Targeting PANEL: $DEST"
 
           BUNDLE_DIR="deploy_bundle_panel"
@@ -550,11 +552,11 @@ jobs:
           # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$TAR_NAME" vetternkraft@s0.mydevil.net:"$DEST/deploy.tar.gz"
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # 3. Extract and Clean
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; rm -rf $DEST/app.js $DEST/app.cjs $DEST/node_modules $DEST/.next $DEST/public; tar -xzf $DEST/deploy.tar.gz -C $DEST/; rm $DEST/deploy.tar.gz; test -d $DEST/.next; test -d $DEST/public; test -d $DEST/node_modules; (test -f $DEST/app.js || test -f $DEST/app.cjs)"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; rm -rf '$REMOTE_DEST/app.js' '$REMOTE_DEST/app.cjs' '$REMOTE_DEST/node_modules' '$REMOTE_DEST/.next' '$REMOTE_DEST/public'; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; test -d '$REMOTE_DEST/node_modules'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs')"
 
       - name: Upload frontend bundle (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
@@ -563,6 +565,8 @@ jobs:
           DEST="${{ steps.dest.outputs.remote_path_public }}"
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           TARGET_APP="apps/landing"
+          REMOTE_ROOT="/usr/home/vetternkraft"
+          REMOTE_DEST="${REMOTE_ROOT}/${DEST}"
           echo "Targeting LANDING: $DEST"
 
           BUNDLE_DIR="deploy_bundle_landing"
@@ -649,11 +653,11 @@ jobs:
           # Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$TAR_NAME" vetternkraft@s0.mydevil.net:"$DEST/deploy.tar.gz"
+          scp -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # Extract and Clean
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; rm -rf $DEST/app.js $DEST/app.cjs $DEST/node_modules $DEST/.next $DEST/public; tar -xzf $DEST/deploy.tar.gz -C $DEST/; rm $DEST/deploy.tar.gz; test -d $DEST/.next; test -d $DEST/public; test -d $DEST/node_modules; (test -f $DEST/app.js || test -f $DEST/app.cjs)"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; rm -rf '$REMOTE_DEST/app.js' '$REMOTE_DEST/app.cjs' '$REMOTE_DEST/node_modules' '$REMOTE_DEST/.next' '$REMOTE_DEST/public'; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; test -d '$REMOTE_DEST/node_modules'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs')"
 
       - name: Prepare standalone runtime (set node version) (panel)
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
