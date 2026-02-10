@@ -5,6 +5,7 @@ import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
+import { useEmailMutations } from '@/hooks/useEmails';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { MessageChannel } from '@/types';
 
@@ -14,6 +15,7 @@ export default function MassCommunicationPage() {
     const { data: customersData } = useCustomers({ limit: 1000 });
     const { data: templates = [] } = useMessageTemplates();
     const { sendBulkSms } = useSmsMutations();
+    const { sendBulkEmail } = useEmailMutations();
 
     const customers = useMemo(
         () => customersData?.items ?? [],
@@ -86,13 +88,25 @@ export default function MassCommunicationPage() {
 
         setIsSending(true);
         try {
-            const result = await sendBulkSms.mutateAsync({
-                recipients: recipientContacts,
-                content,
-                templateId: selectedTemplateId ?? undefined,
-            });
-
-            setSendResult(result);
+            if (channel === 'email') {
+                await sendBulkEmail.mutateAsync({
+                    recipients: recipientContacts,
+                    subject,
+                    template: content,
+                });
+                setSendResult({
+                    success: recipientContacts.length,
+                    failed: 0,
+                    total: recipientContacts.length,
+                });
+            } else {
+                const result = await sendBulkSms.mutateAsync({
+                    recipients: recipientContacts,
+                    content,
+                    templateId: selectedTemplateId ?? undefined,
+                });
+                setSendResult(result);
+            }
             setStep('preview');
         } catch (error) {
             console.error('Failed to send:', error);
