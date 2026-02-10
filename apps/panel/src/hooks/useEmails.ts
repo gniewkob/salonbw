@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import type { EmailLog } from '@/types';
 
@@ -13,6 +13,21 @@ type EmailHistoryFilter = {
     to?: string;
     page?: number;
     limit?: number;
+};
+
+type SendEmailPayload = {
+    to: string;
+    subject: string;
+    template: string;
+    data?: Record<string, string>;
+    recipientId?: number;
+};
+
+type SendBulkEmailPayload = {
+    recipients: string[];
+    subject: string;
+    template: string;
+    data?: Record<string, string>;
 };
 
 export function useEmailHistory(filter: EmailHistoryFilter) {
@@ -37,6 +52,7 @@ export function useEmailHistory(filter: EmailHistoryFilter) {
                     id: number;
                     to: string;
                     subject: string;
+                    template?: string;
                     status: string;
                     sentAt: string | null;
                     createdAt: string;
@@ -56,6 +72,42 @@ export function useEmailHistory(filter: EmailHistoryFilter) {
         loading: query.isLoading,
         refetch: query.refetch,
     };
+}
+
+export function useEmailMutations() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    const invalidate = () => {
+        void queryClient.invalidateQueries({
+            queryKey: EMAIL_HISTORY_QUERY_KEY,
+        });
+    };
+
+    const sendEmailAuth = useMutation({
+        mutationFn: async (payload: SendEmailPayload) => {
+            return apiFetch<{ status: string }>('/emails/send-auth', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            });
+        },
+        onSuccess: invalidate,
+    });
+
+    const sendBulkEmail = useMutation({
+        mutationFn: async (payload: SendBulkEmailPayload) => {
+            return apiFetch<{ status: string; total: number }>(
+                '/emails/send-bulk',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
+        },
+        onSuccess: invalidate,
+    });
+
+    return { sendEmailAuth, sendBulkEmail };
 }
 
 // Back-compat: older UI expects a flat list of EmailLog.
