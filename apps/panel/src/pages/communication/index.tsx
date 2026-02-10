@@ -326,13 +326,13 @@ export default function CommunicationPage() {
                 </div>
 
                 {isModalOpen && (
-                    <div className="versum-modal-backdrop">
+                    <div className="versum-modal-overlay">
                         <div className="versum-modal" role="dialog">
                             <div className="versum-modal__header">
                                 <h3>Wyślij wiadomość ({kind})</h3>
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--light"
+                                    className="versum-modal__close"
                                     onClick={() => {
                                         setIsModalOpen(false);
                                         resetCompose();
