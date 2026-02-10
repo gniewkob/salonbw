@@ -16,15 +16,21 @@ import {
     useDraggable,
     DragStartEvent,
     DragEndEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core';
+import type { Route } from 'next';
 
 // Komponent dla wiersza klienta z obsługą drag (Versum 1:1 style)
 function DraggableCustomerRow({
     customer,
     isDragging,
+    onOpen,
 }: {
     customer: Customer;
     isDragging: boolean;
+    onOpen: (id: number) => void;
 }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: customer.id,
@@ -47,15 +53,21 @@ function DraggableCustomerRow({
             {...attributes}
             style={style}
             className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50`}
+            onClick={() => onOpen(customer.id)}
         >
             <td className="col-checkbox">
-                <input type="checkbox" onClick={(e) => e.stopPropagation()} />
+                <input
+                    type="checkbox"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                />
             </td>
             <td className="col-name">
                 <Link
                     href={`/clients/${customer.id}`}
                     className="clients-name-link"
                     onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
                 >
                     {customer.fullName || customer.name}
                 </Link>
@@ -66,6 +78,7 @@ function DraggableCustomerRow({
                         href={`mailto:${customer.email}`}
                         className="clients-icon-link"
                         onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         title={customer.email}
                     >
                         <i className="fa fa-envelope-o" aria-hidden="true" />
@@ -78,6 +91,7 @@ function DraggableCustomerRow({
                         href={`tel:${customer.phone}`}
                         className="clients-phone-link"
                         onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                     >
                         <i className="fa fa-phone" aria-hidden="true" />
                         {customer.phone}
@@ -100,6 +114,7 @@ function DraggableCustomerRow({
                     href={`/clients/${customer.id}/edit`}
                     className="clients-edit-link"
                     onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
                     title="Edytuj"
                 >
                     <i className="fa fa-pencil" aria-hidden="true" />
@@ -154,6 +169,12 @@ export default function ClientsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [draggedCustomer, setDraggedCustomer] = useState<Customer | null>(
         null,
+    );
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            // Prevent normal clicks from being treated as drag starts.
+            activationConstraint: { distance: 8 },
+        }),
     );
 
     const activeGroup = groups?.find((g) => g.id === currentGroupId);
@@ -223,6 +244,7 @@ export default function ClientsPage() {
         >
             <VersumShell role={role}>
                 <DndContext
+                    sensors={sensors}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
@@ -322,6 +344,11 @@ export default function ClientsPage() {
                                                 isDragging={
                                                     draggedCustomer?.id ===
                                                     customer.id
+                                                }
+                                                onOpen={(id) =>
+                                                    void router.push(
+                                                        `/clients/${id}` as Route,
+                                                    )
                                                 }
                                             />
                                         ))}
