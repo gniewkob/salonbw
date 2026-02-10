@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-10 (Calendar embed restored on `/calendar`; production dashboard deploy fixed)_
+_Last updated: 2026-02-10 (Calendar embed restored on `/calendar`; production dashboard deploy fixed + absolute remote upload paths)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy; `/healthz` 200 |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `40e1a1f4` | `21865640899` | 2026-02-10 12:55 | production | Deploy workflow fix: deterministic bundle upload; verify requires `.next` + `node_modules` |
+| Dashboard (`panel.salon-bw.pl`) | `46895699` | `21866459396` | 2026-02-10 13:21 | production | Deploy workflow fix: deterministic bundle upload + absolute remote upload/extract paths; verify requires `.next` + `node_modules` |
 
 Verification:
 
@@ -88,6 +88,7 @@ Verification:
   - isolated bundle dirs per app (`deploy_bundle_panel` / `deploy_bundle_landing`);
   - `npm install --ignore-scripts` to avoid non-runtime hooks;
   - remote verification requires `.next` + `public` + `node_modules` + `app.js`/`app.cjs` (validated on production run `21865640899`).
+- **2026-02-10** – `Deploy (MyDevil)` uses absolute remote upload/extract paths for frontend bundles (validated on production run `21866459396`).
 - **2026-02-04** – **Calendar module DoD complete**:
   - static runtime served from `apps/panel/public/versum-calendar/index.html`;
   - panel rewrites added for compat paths: `/events/*`, `/settings/timetable/schedules/*`, `/graphql`, `/track_new_events.json`;

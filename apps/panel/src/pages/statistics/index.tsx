@@ -23,11 +23,13 @@ function StatisticsPageContent() {
     );
     const { data: dashboard, isLoading: dashboardLoading } =
         useDashboardStats();
-    const { data: employees, isLoading: employeesLoading } = useEmployeeRanking(
-        {
-            range: DateRange.ThisMonth,
-        },
-    );
+    const {
+        data: employees = [],
+        isLoading: employeesLoading,
+        error: employeesError,
+    } = useEmployeeRanking({
+        range: DateRange.ThisMonth,
+    });
 
     const totals = useMemo(() => {
         const totalRevenue = dashboard?.monthRevenue ?? 0;
@@ -45,7 +47,74 @@ function StatisticsPageContent() {
         };
     }, [dashboard]);
 
-    if (!employees) return null;
+    const downloadCsvReport = () => {
+        const escape = (value: unknown) =>
+            `"${String(value ?? '').replaceAll('"', '""')}"`;
+
+        const lines: string[][] = [];
+        lines.push(['sep=;']);
+        lines.push(['Raport finansowy']);
+        lines.push(['Data', reportDate]);
+        lines.push([]);
+        lines.push(['Salon ogolem']);
+        lines.push([
+            'Sprzedaz uslug brutto',
+            `${totals.dayRevenue.toFixed(2)}`,
+        ]);
+        lines.push(['Sprzedaz produktow brutto', '0.00']);
+        lines.push([
+            'Utarg za ten tydzien',
+            `${totals.weekRevenue.toFixed(2)}`,
+        ]);
+        lines.push([
+            'Utarg za ten miesiac',
+            `${totals.totalRevenue.toFixed(2)}`,
+        ]);
+        lines.push(['Laczna liczba wizyt', `${totals.totalVisits}`]);
+        lines.push([
+            'Srednia wartosc wizyty',
+            `${totals.avgVisitValue.toFixed(2)}`,
+        ]);
+        lines.push([]);
+        lines.push(['Dane w podziale na pracownikow']);
+        lines.push([
+            'Pracownik',
+            'Wizyty',
+            'Sprzedaz uslug brutto',
+            'Srednia wartosc wizyty',
+            'Napiwki',
+            'Ocena',
+        ]);
+
+        for (const employee of employees) {
+            lines.push(
+                [
+                    employee.employeeName,
+                    employee.completedAppointments,
+                    employee.revenue.toFixed(2),
+                    employee.averageRevenue.toFixed(2),
+                    employee.tips.toFixed(2),
+                    employee.rating.toFixed(1),
+                ].map((v) => String(v)),
+            );
+        }
+
+        const csv = lines
+            .map((row) => row.map(escape).join(';'))
+            .join('\n')
+            .replaceAll('.', ',');
+
+        // Excel on Windows often needs BOM to reliably detect UTF-8.
+        const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `raport-finansowy-${reportDate}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="versum-page" data-testid="statistics-page">
@@ -66,6 +135,8 @@ function StatisticsPageContent() {
                 <button
                     type="button"
                     className="btn btn-default versum-toolbar-btn"
+                    onClick={downloadCsvReport}
+                    disabled={dashboardLoading || employeesLoading}
                 >
                     pobierz raport Excel
                 </button>
@@ -172,6 +243,10 @@ function StatisticsPageContent() {
                     {employeesLoading ? (
                         <div className="p-3 text-sm versum-muted">
                             Ładowanie pracowników...
+                        </div>
+                    ) : employeesError ? (
+                        <div className="p-3 text-sm versum-muted">
+                            Nie udało się pobrać danych pracowników.
                         </div>
                     ) : (
                         <div className="versum-table-wrap">
