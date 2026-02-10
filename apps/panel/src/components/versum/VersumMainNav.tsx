@@ -24,7 +24,7 @@ export default function VersumMainNav({
                 {modules.map((item) => {
                     const isActive = item.key === activeModule.key;
                     const badge = MODULE_BADGES[item.key];
-                    
+
                     return (
                         <li
                             key={item.key}
@@ -47,7 +47,9 @@ export default function VersumMainNav({
                                 </div>
                                 <span className="nav-label">
                                     {badge && (
-                                        <span className="nav-badge">{badge} </span>
+                                        <span className="nav-badge">
+                                            {badge}{' '}
+                                        </span>
                                     )}
                                     {item.label}
                                 </span>

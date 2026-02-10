@@ -1,10 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import type {
-    EventClickArg,
-    EventDropArg,
-    DateSelectArg,
-} from '@fullcalendar/core';
+import type { EventDropArg } from '@fullcalendar/core';
 import type { PluginDef } from '@fullcalendar/core';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
 import CalendarSidebar from './CalendarSidebar';
@@ -129,6 +125,17 @@ export default function CalendarView({
         [onEventDrop],
     );
 
+    const handleDatesSet = useCallback(
+        (arg: { view: { type: string } }) => {
+            const viewType = arg.view.type;
+            // Map FullCalendar view IDs to our canonical view enum.
+            if (viewType === 'timeGridDay') onViewChange('day');
+            else if (viewType === 'timeGridWeek') onViewChange('week');
+            else if (viewType === 'dayGridMonth') onViewChange('month');
+        },
+        [onViewChange],
+    );
+
     // Sidebar handlers
     const handleEmployeeToggle = useCallback(
         (employeeId: number) => {
@@ -165,7 +172,11 @@ export default function CalendarView({
             <div className="flex-1 overflow-auto bg-white p-2">
                 {/* Custom Header matching Versum's top bar usually goes here or in Layout */}
 
-                {loading ? (
+                {pluginLoadError ? (
+                    <div className="p-4 text-center text-sm text-red-700">
+                        Calendar engine failed to load: {pluginLoadError}
+                    </div>
+                ) : loading ? (
                     <div className="flex h-full items-center justify-center opacity-50">
                         Loading appointments...
                     </div>
@@ -183,6 +194,7 @@ export default function CalendarView({
                         }
                         eventDrop={handleEventDrop}
                         select={(info) => onDateSelect(info.start, info.end)}
+                        datesSet={handleDatesSet}
                         selectable
                         editable
                         locale="pl"

@@ -28,9 +28,6 @@ export default function ServicesNav() {
         });
     };
 
-    // Count services without category
-    const uncategorizedCount = 0; // This would need to be fetched from API
-
     return (
         <div className="sidebar-inner nav-scroll-container">
             {/* All Services */}

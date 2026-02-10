@@ -7,12 +7,12 @@ export default function InvoicesPage() {
     const { role } = useAuth();
     const isAdmin = role === 'admin';
 
-    if (!role) return null;
-
     // Admin sees all invoices, others see only their own
-    const allInvoices = useInvoices({ enabled: isAdmin });
-    const myInvoices = useMyInvoices({ enabled: !isAdmin });
+    const allInvoices = useInvoices({ enabled: Boolean(role) && isAdmin });
+    const myInvoices = useMyInvoices({ enabled: Boolean(role) && !isAdmin });
     const { data, loading } = isAdmin ? allInvoices : myInvoices;
+
+    if (!role) return null;
 
     return (
         <RouteGuard permission="nav:invoices">

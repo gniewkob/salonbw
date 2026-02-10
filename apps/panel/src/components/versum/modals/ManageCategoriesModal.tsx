@@ -1,5 +1,3 @@
-import Modal from '@/components/Modal';
-
 interface Props {
     type: 'service' | 'product';
     onClose: () => void;

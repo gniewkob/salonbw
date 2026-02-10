@@ -47,12 +47,27 @@ const nextConfig = {
     async rewrites() {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         return [
-            // Calendar embed - serve directly from API to avoid Next.js hydration conflicts
-            // Calendar embed - (removed, now handled by pages/calendar.tsx)
-            // {
-            //    source: '/calendar',
-            //    destination: '/api/calendar-embed',
-            // },
+            // Legacy Versum compatibility aliases (vendored calendar runtime uses these in some flows)
+            // Note: Next rewrites do not reliably chain, so map to `/api/*` directly.
+            {
+                source: '/salonblackandwhite/events/:path*',
+                destination: '/api/events/:path*',
+            },
+            {
+                source: '/salonblackandwhite/settings/timetable/schedules/:path*',
+                destination: '/api/settings/timetable/schedules/:path*',
+            },
+            {
+                source: '/salonblackandwhite/track_new_events.json',
+                destination: '/api/track_new_events.json',
+            },
+            {
+                source: '/salonblackandwhite/graphql',
+                destination: '/api/graphql',
+            },
+
+            // Calendar embed is handled by `src/pages/calendar.tsx`, which replaces the document
+            // with HTML served by `/api/calendar-embed` to avoid hydration conflicts.
             // Exact paths (without trailing segments)
             {
                 source: '/customers',

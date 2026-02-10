@@ -21,10 +21,13 @@ function StatisticsPageContent() {
     const [reportDate, setReportDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
-    const { data: dashboard, isLoading: dashboardLoading } = useDashboardStats();
-    const { data: employees, isLoading: employeesLoading } = useEmployeeRanking({
-        range: DateRange.ThisMonth,
-    });
+    const { data: dashboard, isLoading: dashboardLoading } =
+        useDashboardStats();
+    const { data: employees, isLoading: employeesLoading } = useEmployeeRanking(
+        {
+            range: DateRange.ThisMonth,
+        },
+    );
 
     const totals = useMemo(() => {
         const totalRevenue = dashboard?.monthRevenue ?? 0;

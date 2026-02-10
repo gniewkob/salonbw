@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer, CustomerGroup } from '@/types';
+import { Customer } from '@/types';
 import {
     useCustomerStatistics,
     useCustomerEventHistory,
@@ -299,11 +299,11 @@ export default function CustomerSummaryTab({
                                                             />
                                                             {group.name}
                                                             <button
-                                                                onClick={() =>
-                                                                    handleRemoveFromGroup(
+                                                                onClick={() => {
+                                                                    void handleRemoveFromGroup(
                                                                         group.id,
-                                                                    )
-                                                                }
+                                                                    );
+                                                                }}
                                                                 className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity text-current hover:text-red-500"
                                                                 title="Usuń z grupy"
                                                                 disabled={
@@ -405,9 +405,11 @@ export default function CustomerSummaryTab({
                                             <li
                                                 key={group.id}
                                                 className="list-group-item cursor-pointer hover:bg-gray-50 flex items-center gap-8"
-                                                onClick={() =>
-                                                    handleAddToGroup(group.id)
-                                                }
+                                                onClick={() => {
+                                                    void handleAddToGroup(
+                                                        group.id,
+                                                    );
+                                                }}
                                             >
                                                 <span
                                                     className="w-12 h-12 rounded-full"

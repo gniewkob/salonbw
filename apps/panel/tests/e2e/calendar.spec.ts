@@ -156,6 +156,7 @@ const MOCK_SCHEDULES = {
 test.describe('Calendar Module E2E', () => {
     test.beforeEach(async ({ context, page, baseURL }) => {
         const targetUrl = baseURL ?? 'http://127.0.0.1:3100';
+        const targetHost = new URL(targetUrl).host;
 
         // Set auth cookies
         await context.addCookies([
@@ -201,6 +202,24 @@ test.describe('Calendar Module E2E', () => {
         // Setup API mocks
         await page.route('**/*', async (route) => {
             const url = new URL(route.request().url());
+
+            // Keep tests deterministic: block external hosts (fonts, GTM, etc.).
+            if (
+                url.host !== targetHost &&
+                !url.hostname.includes('api.salon-bw.pl')
+            ) {
+                await route.abort();
+                return;
+            }
+
+            // Allow the vendored calendar bootstrap HTML and static assets to load normally.
+            if (
+                url.pathname === '/api/calendar-embed' ||
+                url.pathname.startsWith('/versum-calendar/')
+            ) {
+                await route.continue();
+                return;
+            }
             const apiPath = normalizeApiPath(url);
 
             if (!apiPath) {
@@ -631,6 +650,9 @@ test.describe('Calendar Module E2E', () => {
 });
 
 function normalizeApiPath(url: URL): string | null {
+    if (url.pathname === '/api/calendar-embed') {
+        return null;
+    }
     if (url.pathname.startsWith('/api/')) {
         return url.pathname.replace('/api', '');
     }

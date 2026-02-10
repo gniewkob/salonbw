@@ -4,17 +4,13 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import VersumShell from '@/components/versum/VersumShell';
-import ServicesNav from '@/components/versum/navs/ServicesNav';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEmployees } from '@/hooks/useEmployees';
 import {
     useServiceSummary,
     useServiceStats,
     useServiceHistory,
     useServiceEmployeesDetails,
-    useServiceComments,
-    useServiceCommissions,
     useServiceVariants,
     useServiceCategories,
     useUpdateService,
@@ -176,7 +172,7 @@ export default function ServiceDetailsPage() {
     const router = useRouter();
     const serviceId = Number(router.query.id);
     const [activeTab, setActiveTab] = useState<TabKey>('summary');
-    const [historyPage, setHistoryPage] = useState(1);
+    const [historyPage] = useState(1);
 
     // Modals
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

@@ -2,29 +2,12 @@
 
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
-import { format, startOfMonth, endOfDay } from 'date-fns';
+import { format, startOfMonth } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import Link from 'next/link';
 
-interface DashboardStats {
-    todayRevenue: number;
-    todayAppointments: number;
-    todayCompletedAppointments: number;
-    todayNewClients: number;
-    weekRevenue: number;
-    weekAppointments: number;
-    monthRevenue: number;
-    monthAppointments: number;
-    pendingAppointments: number;
-    averageRating: number;
-}
-
 export default function AdminDashboard() {
     const { data: dashboardData, loading: dashboardLoading } = useDashboard();
-
-    // Get stats for current month
-    const from = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-    const to = format(endOfDay(new Date()), 'yyyy-MM-dd');
 
     const { data: stats, isLoading: statsLoading } = useDashboardStats();
 

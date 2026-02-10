@@ -22,7 +22,6 @@ export default function VersumShell({
     const router = useRouter();
     const activeModule = resolveVersumModule(router.pathname);
     const modules = visibleVersumModules(role);
-    const showSecondary = activeModule.secondaryNav || !!secondaryNav;
 
     return (
         <div id="versum-shell-root">
@@ -35,7 +34,9 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    {secondaryNav || <VersumSecondaryNav module={activeModule} />}
+                    {secondaryNav || (
+                        <VersumSecondaryNav module={activeModule} />
+                    )}
                 </div>
                 <div className="main-content" id="main-content" role="main">
                     <div

@@ -14,11 +14,8 @@ import {
     DndContext,
     DragOverlay,
     useDraggable,
-    useDroppable,
     DragStartEvent,
     DragEndEvent,
-    defaultDropAnimationSideEffects,
-    DragOverlayProps,
 } from '@dnd-kit/core';
 
 // Komponent dla wiersza klienta z obsługą drag (Versum 1:1 style)
@@ -124,7 +121,6 @@ export default function ClientsPage() {
     const currentEmployeeId = router.query.employeeId
         ? Number(router.query.employeeId)
         : undefined;
-    const hasUpcomingVisit = router.query.hasUpcomingVisit === 'true';
 
     // Przygotuj filtry dla API
     const filters: CustomerFilterParams = useMemo(
@@ -154,13 +150,13 @@ export default function ClientsPage() {
     const [draggedCustomer, setDraggedCustomer] = useState<Customer | null>(
         null,
     );
-    const [dropTarget, setDropTarget] = useState<number | null>(null);
 
     const activeGroup = groups?.find((g) => g.id === currentGroupId);
 
     // Funkcja do czyszczenia filtra
     const clearGroupFilter = () => {
-        const { groupId, ...restQuery } = router.query;
+        const restQuery = { ...router.query };
+        delete restQuery.groupId;
         void router.push(
             { pathname: router.pathname, query: restQuery },
             undefined,
@@ -185,31 +181,32 @@ export default function ClientsPage() {
         }
     };
 
-    const handleDragEnd = async (event: DragEndEvent) => {
-        const { active, over } = event;
+    const handleDragEnd = (event: DragEndEvent) => {
+        void (async () => {
+            const { active, over } = event;
 
-        if (over && over.id !== active.id) {
-            const groupId = Number(over.id);
-            const customerId = Number(active.id);
+            if (over && over.id !== active.id) {
+                const groupId = Number(over.id);
+                const customerId = Number(active.id);
 
-            // Sprawdź czy klient już jest w grupie
-            const group = groups?.find((g) => g.id === groupId);
-            const customer = customers.find((c) => c.id === customerId);
+                // Sprawdź czy klient już jest w grupie
+                const group = groups?.find((g) => g.id === groupId);
+                const customer = customers.find((c) => c.id === customerId);
 
-            if (
-                group &&
-                customer &&
-                !customer.groups?.some((g) => g.id === groupId)
-            ) {
-                await addToGroup.mutateAsync({
-                    groupId,
-                    customerIds: [customerId],
-                });
+                if (
+                    group &&
+                    customer &&
+                    !customer.groups?.some((g) => g.id === groupId)
+                ) {
+                    await addToGroup.mutateAsync({
+                        groupId,
+                        customerIds: [customerId],
+                    });
+                }
             }
-        }
 
-        setDraggedCustomer(null);
-        setDropTarget(null);
+            setDraggedCustomer(null);
+        })();
     };
 
     if (!role) return null;
@@ -331,7 +328,8 @@ export default function ClientsPage() {
                             <div className="clients-pagination">
                                 <span>
                                     Pozycje od 1 do {filteredCustomers.length} z{' '}
-                                    {customersData?.total || filteredCustomers.length}
+                                    {customersData?.total ||
+                                        filteredCustomers.length}
                                 </span>
                                 <span className="clients-pagination-separator">
                                     |
@@ -352,7 +350,12 @@ export default function ClientsPage() {
                                         readOnly
                                     />
                                     <span>z</span>
-                                    <span>{Math.ceil((customersData?.total || filteredCustomers.length) / 20)}</span>
+                                    <span>
+                                        {Math.ceil(
+                                            (customersData?.total ||
+                                                filteredCustomers.length) / 20,
+                                        )}
+                                    </span>
                                     <button className="versum-btn versum-btn--icon">
                                         ›
                                     </button>

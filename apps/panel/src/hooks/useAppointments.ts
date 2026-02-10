@@ -66,12 +66,10 @@ export function useAppointments(options: UseAppointmentsOptions = {}) {
 }
 
 export function useMyAppointments(options: UseAppointmentsOptions = {}) {
+    const { apiFetch } = useAuth();
     const list = useQuery({
         queryKey: MY_APPOINTMENTS_QUERY_KEY,
-        queryFn: async () => {
-            const { apiFetch } = useAuth();
-            return apiFetch<Appointment[]>('/appointments/me');
-        },
+        queryFn: () => apiFetch<Appointment[]>('/appointments/me'),
         enabled: options.enabled,
     });
 

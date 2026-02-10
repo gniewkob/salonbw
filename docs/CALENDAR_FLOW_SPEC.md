@@ -5,8 +5,8 @@ Last updated: 2026-02-04
 ## Runtime Entry
 
 1. User opens `/calendar`.
-2. Next.js page `apps/panel/src/pages/calendar/index.tsx` server-loads `public/versum-calendar/index.html`.
-3. The page writes vendored HTML into `document` (direct embed; no iframe).
+2. Next.js page `apps/panel/src/pages/calendar.tsx` fetches `/api/calendar-embed`.
+3. The page writes the returned vendored HTML into `document` (direct embed; no iframe).
 4. Vendored scripts call compat endpoints on the same origin:
    - `/events/*`
    - `/settings/timetable/schedules/*`
@@ -18,16 +18,19 @@ Last updated: 2026-02-04
 
 `apps/panel/next.config.mjs` rewrites:
 
-- `/salonblackandwhite/events/:path*` -> `/events/:path*`
-- `/salonblackandwhite/settings/timetable/schedules/:path*` -> `/settings/timetable/schedules/:path*`
-- `/salonblackandwhite/track_new_events.json` -> `/track_new_events.json`
-- `/salonblackandwhite/graphql` -> `/graphql`
+- `/salonblackandwhite/events/:path*` -> `/api/events/:path*`
+- `/salonblackandwhite/settings/timetable/schedules/:path*` -> `/api/settings/timetable/schedules/:path*`
+- `/salonblackandwhite/track_new_events.json` -> `/api/track_new_events.json`
+- `/salonblackandwhite/graphql` -> `/api/graphql`
 - `/events/:path*` -> `/api/events/:path*`
 - `/settings/timetable/schedules/:path*` -> `/api/settings/timetable/schedules/:path*`
 - `/track_new_events.json` -> `/api/track_new_events.json`
 - `/graphql` -> `/api/graphql`
 
-`/api/*` then proxies to backend API host via existing rewrite.
+`/api/*` then proxies to backend API host via `apps/panel/src/pages/api/[...path].ts`.
+
+Embed HTML is served by:
+- `apps/panel/src/pages/api/calendar-embed.ts` (reads `apps/panel/public/versum-calendar/index.html` and injects runtime config)
 
 ## Backend Compat Endpoints
 

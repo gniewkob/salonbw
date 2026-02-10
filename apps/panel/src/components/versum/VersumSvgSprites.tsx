@@ -93,7 +93,7 @@ export default function VersumSvgSprites() {
                         <path d="M15.85 8.35v5.9c0 .9-.8 1.7-1.7 1.7h0-11.7c-.9 0-1.7-.8-1.7-1.7V2.45c0-.9.8-1.7 1.7-1.7h9.2"></path>
                     </g>
                 </symbol>
-                
+
                 {/* Notifications bell icon */}
                 <symbol id="svg-notifications" viewBox="0 0 24 24">
                     <g fill="currentColor">

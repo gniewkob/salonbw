@@ -66,6 +66,7 @@ const referenceRoot = path.resolve(
 
 test.beforeEach(async ({ context, page, baseURL }) => {
     const targetUrl = baseURL ?? 'http://127.0.0.1:3000';
+    const targetHost = new URL(targetUrl).host;
 
     await context.addCookies([
         { name: 'sbw_auth', value: 'true', url: targetUrl },
@@ -121,6 +122,24 @@ test.beforeEach(async ({ context, page, baseURL }) => {
     await page.route('**/*', async (route) => {
         const url = new URL(route.request().url());
 
+        // Keep tests deterministic: block external hosts (fonts, GTM, etc.).
+        if (
+            url.host !== targetHost &&
+            !url.hostname.includes('api.salon-bw.pl')
+        ) {
+            await route.abort();
+            return;
+        }
+
+        // Allow the vendored calendar bootstrap HTML and static assets to load normally.
+        if (
+            url.pathname === '/api/calendar-embed' ||
+            url.pathname.startsWith('/versum-calendar/')
+        ) {
+            await route.continue();
+            return;
+        }
+
         const apiPath = normalizeApiPath(url);
 
         if (!apiPath) {
@@ -136,6 +155,58 @@ test.beforeEach(async ({ context, page, baseURL }) => {
                 role: 'admin',
             });
             return;
+        }
+
+        // Versum compat calendar endpoints (used by the vendored embed on `/calendar`)
+        if (
+            apiPath.startsWith('/events') &&
+            !apiPath.includes('screen_data') &&
+            !apiPath.includes('finalize')
+        ) {
+            await fulfillJson(route, []);
+            return;
+        }
+        if (apiPath.includes('/settings/timetable/schedules')) {
+            await fulfillJson(route, {});
+            return;
+        }
+        if (apiPath.includes('track_new_events')) {
+            await fulfillJson(route, { events: [] });
+            return;
+        }
+        if (apiPath === '/graphql') {
+            const body = route.request().postDataJSON() as {
+                operationName?: string;
+            };
+            const operationName = body?.operationName ?? '';
+
+            switch (operationName) {
+                case 'GetViewer':
+                    await fulfillJson(route, {
+                        data: {
+                            viewer: {
+                                branch: {
+                                    resourcesActivated: false,
+                                    currency: 'PLN',
+                                    vatRates: [23, 8, 5, 0],
+                                    vatPayer: true,
+                                },
+                                abilities: [],
+                            },
+                        },
+                    });
+                    return;
+                case 'GetEmployees':
+                    await fulfillJson(route, {
+                        data: {
+                            employees: { items: [] },
+                        },
+                    });
+                    return;
+                default:
+                    await fulfillJson(route, { data: {} });
+                    return;
+            }
         }
 
         if (apiPath.startsWith('/calendar/events')) {
@@ -463,11 +534,28 @@ for (const screen of screens) {
 }
 
 function normalizeApiPath(url: URL): string | null {
+    if (url.pathname === '/api/calendar-embed') {
+        return null;
+    }
     if (url.pathname.startsWith('/api/')) {
         return url.pathname.replace('/api', '');
     }
 
     if (url.hostname.includes('api.salon-bw.pl')) {
+        return url.pathname;
+    }
+
+    // Handle Versum compat paths (same-origin requests)
+    if (url.pathname.startsWith('/events')) {
+        return url.pathname;
+    }
+    if (url.pathname.startsWith('/settings/timetable')) {
+        return url.pathname;
+    }
+    if (url.pathname.includes('track_new_events')) {
+        return url.pathname;
+    }
+    if (url.pathname === '/graphql') {
         return url.pathname;
     }
 
