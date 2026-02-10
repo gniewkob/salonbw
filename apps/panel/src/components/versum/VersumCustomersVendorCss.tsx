@@ -10,6 +10,24 @@ import Head from 'next/head';
 export default function VersumCustomersVendorCss() {
     return (
         <Head>
+            {/* Match Versum typography on Customers pages */}
+            <link
+                rel="stylesheet"
+                media="only x"
+                href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700&subset=latin,latin-ext"
+                onLoad={(e) => {
+                    // Non-blocking font CSS loading (Versum uses a similar pattern).
+                    e.currentTarget.media = 'all';
+                }}
+            />
+            <link
+                rel="stylesheet"
+                media="only x"
+                href="https://fonts.googleapis.com/css?family=Lato:300&subset=latin,latin-ext"
+                onLoad={(e) => {
+                    e.currentTarget.media = 'all';
+                }}
+            />
             <link
                 rel="stylesheet"
                 href="/versum-vendor/css/jquery-ui-bundle.css"
