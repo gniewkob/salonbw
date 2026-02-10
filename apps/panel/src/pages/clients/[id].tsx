@@ -7,6 +7,7 @@ import { useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
@@ -114,6 +115,7 @@ export default function CustomerDetailPage() {
             permission="nav:clients"
         >
             <VersumShell role={role} secondaryNav={clientDetailSidebar}>
+                <VersumCustomersVendorCss />
                 <div className="customer-detail-page">
                     {/* Breadcrumbs - Versum style */}
                     <ul className="breadcrumb">
