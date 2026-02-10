@@ -59,7 +59,7 @@ export default function CreateCustomerGroupModal({
                         </button>
                         <h4 className="modal-title">Nowa grupa klientów</h4>
                     </div>
-                    <div className="modal-body modal-body-scroll py-20">
+                    <div className="modal-body modal-body-scroll">
                         <div className="form-group">
                             <label
                                 className="control-label"
