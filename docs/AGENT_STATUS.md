@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-10 (Calendar embed restored on `/calendar`; production dashboard deploy fixed + absolute remote upload paths)_
+_Last updated: 2026-02-10 (Statistics report export added; production dashboard deployed)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy; `/healthz` 200 |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `46895699` | `21866459396` | 2026-02-10 13:21 | production | Deploy workflow fix: deterministic bundle upload + absolute remote upload/extract paths; verify requires `.next` + `node_modules` |
+| Dashboard (`panel.salon-bw.pl`) | `6888ea7d` | `21866690126` | 2026-02-10 13:28 | production | Added CSV export for `Statystyki / Raport finansowy`; deploy workflow uses absolute remote upload/extract paths |
 
 Verification:
 
