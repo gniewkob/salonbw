@@ -77,6 +77,15 @@ const nextConfig = {
                 source: '/customers/:path*',
                 destination: '/clients/:path*',
             },
+            // Versum legacy paths (from `panel.versum.com/<slug>/customers*`)
+            {
+                source: '/salonblackandwhite/customers',
+                destination: '/clients',
+            },
+            {
+                source: '/salonblackandwhite/customers/:path*',
+                destination: '/clients/:path*',
+            },
 
             // Other modules
             {
