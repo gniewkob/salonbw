@@ -6,6 +6,7 @@ export { default as CustomerStatisticsTab } from './CustomerStatisticsTab';
 export { default as CustomerHistoryTab } from './CustomerHistoryTab';
 export { default as CustomerNotesTab } from './CustomerNotesTab';
 export { default as CustomerConsentsTab } from './CustomerConsentsTab';
+export { default as CustomerCommunicationTab } from './CustomerCommunicationTab';
 export { default as CustomerGalleryTab } from './CustomerGalleryTab';
 export { default as CustomerFilesTab } from './CustomerFilesTab';
 export { default as CustomerReviewsTab } from './CustomerReviewsTab';

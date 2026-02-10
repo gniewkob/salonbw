@@ -16,6 +16,14 @@ import {
 } from '@/hooks/useCustomers';
 import type { Customer, CustomerTag } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
+import {
+    CustomerStatisticsTab,
+    CustomerHistoryTab,
+    CustomerNotesTab,
+    CustomerGalleryTab,
+    CustomerFilesTab,
+    CustomerCommunicationTab,
+} from '@/components/customers';
 
 type TabId =
     | 'summary'
@@ -151,32 +159,33 @@ export default function CustomerDetailPage() {
                                     />
                                 )}
                                 {activeTab === 'statistics' && (
-                                    <CustomerStatisticsView
+                                    <CustomerStatisticsTab
                                         customerId={customer.id}
                                     />
                                 )}
                                 {activeTab === 'history' && (
-                                    <CustomerHistoryView
+                                    <CustomerHistoryTab
                                         customerId={customer.id}
                                     />
                                 )}
                                 {activeTab === 'comments' && (
-                                    <CustomerCommentsView
+                                    <CustomerNotesTab
                                         customerId={customer.id}
                                     />
                                 )}
                                 {activeTab === 'communication' && (
-                                    <CustomerCommunicationView
+                                    <CustomerCommunicationTab
                                         customer={customer}
+                                        onUpdate={handleUpdate}
                                     />
                                 )}
                                 {activeTab === 'gallery' && (
-                                    <CustomerGalleryView
+                                    <CustomerGalleryTab
                                         customerId={customer.id}
                                     />
                                 )}
                                 {activeTab === 'files' && (
-                                    <CustomerFilesView
+                                    <CustomerFilesTab
                                         customerId={customer.id}
                                     />
                                 )}
@@ -408,66 +417,6 @@ function CustomerSummaryView({
                     )}
                 </div>
             </div>
-        </div>
-    );
-}
-
-function CustomerStatisticsView({ customerId }: { customerId: number }) {
-    void customerId;
-    return (
-        <div className="customer-tab-content">
-            <h3>Statystyki klienta</h3>
-            <p>Tu będą statystyki...</p>
-        </div>
-    );
-}
-
-function CustomerHistoryView({ customerId }: { customerId: number }) {
-    void customerId;
-    return (
-        <div className="customer-tab-content">
-            <h3>Historia wizyt</h3>
-            <p>Tu będzie historia wizyt...</p>
-        </div>
-    );
-}
-
-function CustomerCommentsView({ customerId }: { customerId: number }) {
-    void customerId;
-    return (
-        <div className="customer-tab-content">
-            <h3>Komentarze</h3>
-            <p>Tu będą komentarze...</p>
-        </div>
-    );
-}
-
-function CustomerCommunicationView({ customer }: { customer: Customer }) {
-    void customer;
-    return (
-        <div className="customer-tab-content">
-            <h3>Komunikacja</h3>
-            <p>Tu będzie historia komunikacji...</p>
-        </div>
-    );
-}
-
-function CustomerGalleryView({ customerId }: { customerId: number }) {
-    void customerId;
-    return (
-        <div className="customer-tab-content">
-            <h3>Galeria zdjęć</h3>
-            <p>Tu będzie galeria...</p>
-        </div>
-    );
-}
-
-function CustomerFilesView({ customerId }: { customerId: number }) {
-    void customerId;
-    return (
-        <div className="customer-tab-content">
-            <h3>Załączone pliki</h3>
-            <p>Tu będą pliki...</p>
         </div>
     );
 }
