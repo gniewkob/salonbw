@@ -19,7 +19,7 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `272fe444` | `21872437959` | 2026-02-10 16:05 | production | Customer files/gallery uploads (disk) + thumbnails + email history |
+| API (`api.salon-bw.pl`) | `d9f98be8` | `21884951339` | 2026-02-10 22:33 | production | Customer groups: allow staff roles (admin/employee/receptionist) |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
 | Dashboard (`panel.salon-bw.pl`) | `f156d550` | `21882802509` | 2026-02-10 21:23 | production | Clients: detail nav driven by `?tab_name=...`, fixed `customerId` parsing + removed `client` role access |
 
