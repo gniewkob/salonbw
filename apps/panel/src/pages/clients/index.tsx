@@ -68,7 +68,7 @@ function DraggableCustomerRow({
                         onClick={(e) => e.stopPropagation()}
                         title={customer.email}
                     >
-                        ✉
+                        <i className="fa fa-envelope-o" aria-hidden="true" />
                     </a>
                 )}
             </td>
@@ -79,15 +79,20 @@ function DraggableCustomerRow({
                         className="clients-phone-link"
                         onClick={(e) => e.stopPropagation()}
                     >
+                        <i className="fa fa-phone" aria-hidden="true" />
                         {customer.phone}
                     </a>
                 )}
             </td>
             <td className="col-last-visit">
                 {customer.lastVisitDate
-                    ? new Date(customer.lastVisitDate).toLocaleDateString(
-                          'pl-PL',
-                      )
+                    ? new Date(customer.lastVisitDate).toLocaleString('pl-PL', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                      })
                     : '-'}
             </td>
             <td className="col-actions">
@@ -97,7 +102,7 @@ function DraggableCustomerRow({
                     onClick={(e) => e.stopPropagation()}
                     title="Edytuj"
                 >
-                    ✏️
+                    <i className="fa fa-pencil" aria-hidden="true" />
                 </Link>
             </td>
         </tr>

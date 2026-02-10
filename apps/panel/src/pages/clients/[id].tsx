@@ -303,14 +303,20 @@ function CustomerSummaryView({
                     <div className="customer-info-details">
                         {customer.phone && (
                             <div className="customer-info-item">
-                                <span className="label">📞</span>
+                                <i
+                                    className="fa fa-phone customer-info-icon"
+                                    aria-hidden="true"
+                                />
                                 <a href={`tel:${customer.phone}`}>
                                     {customer.phone}
                                 </a>
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span className="label">✉</span>
+                            <i
+                                className="fa fa-envelope-o customer-info-icon"
+                                aria-hidden="true"
+                            />
                             {customer.email ? (
                                 <a href={`mailto:${customer.email}`}>
                                     {customer.email}
@@ -321,7 +327,10 @@ function CustomerSummaryView({
                         </div>
                         {customer.tags && customer.tags.length > 0 && (
                             <div className="customer-info-item">
-                                <span className="label">🏷️</span>
+                                <i
+                                    className="fa fa-tags customer-info-icon"
+                                    aria-hidden="true"
+                                />
                                 <span>
                                     {customer.tags
                                         .map((t: CustomerTag) => t.name)
@@ -330,7 +339,10 @@ function CustomerSummaryView({
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span className="label">📝</span>
+                            <i
+                                className="fa fa-file-text-o customer-info-icon"
+                                aria-hidden="true"
+                            />
                             {customer.description ? (
                                 <span>{customer.description}</span>
                             ) : (
@@ -346,7 +358,9 @@ function CustomerSummaryView({
                         </div>
                         {customer.gender && (
                             <div className="customer-info-item">
-                                <span className="label">płeć</span>
+                                <span className="customer-info-label">
+                                    płeć
+                                </span>
                                 <span>
                                     {customer.gender === 'female'
                                         ? 'Kobieta'
@@ -357,7 +371,9 @@ function CustomerSummaryView({
                             </div>
                         )}
                         <div className="customer-info-item">
-                            <span className="label">data dodania</span>
+                            <span className="customer-info-label">
+                                data dodania
+                            </span>
                             <span>{formatDate(customer.createdAt)}</span>
                         </div>
                     </div>
