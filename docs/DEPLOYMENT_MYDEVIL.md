@@ -104,6 +104,10 @@ scp apps/landing/.env.production <user>@s0.mydevil.net:/home/<user>/domains/dev.
 scp apps/panel/.env.production <user>@s0.mydevil.net:/home/<user>/domains/panel.salon-bw.pl/public_nodejs/.env.production
 ```
 
+SMTP note (production):
+- `SMTP_USER` / `SMTP_PASSWORD` should be set directly on the server (API `.env`) and not stored in CI/CD.
+- The automated workflow preserves existing `SMTP_*` lines on the server when updating `.env`.
+
 ## 4. Install dependencies on the server
 
 SSH into mydevil and run:

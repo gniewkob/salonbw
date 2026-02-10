@@ -214,7 +214,8 @@ i
 
 - Node.js 22 is available via `/usr/local/bin/node22`, but the global default is Node 18. That is why `npm` prints `EBADENGINE` warnings—safe to ignore.
 - Passenger restarts look for `tmp/restart.txt`. For standalone bundles we ship `.next/standalone` plus `.next/static` and `public`; the startup script (`apps/landing/app.cjs` or `apps/panel/app.cjs`) now links/copies those asset folders into the standalone dir automatically, but the sources must still exist beside the deployment.
-- SMTP credentials for contact form use the mailbox `kontakt@salon-bw.pl` on `mail0.mydevil.net` (port 465, SSL). Stored in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`.
+- SMTP credentials for contact form use the mailbox `kontakt@salon-bw.pl` on `mail0.mydevil.net` (port 465, SSL).
+  - Production policy: keep `SMTP_USER` / `SMTP_PASSWORD` only on the server in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env` (not in CI/CD).
 
 ## 8. Documentation Hygiene
 

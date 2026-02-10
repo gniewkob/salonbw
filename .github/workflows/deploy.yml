@@ -918,12 +918,6 @@ jobs:
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           DB_URL_SECRET: ${{ secrets.DATABASE_URL }}
           WHATSAPP_LANG: ${{ secrets.WHATSAPP_LANG }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
           COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           # Legacy/Duplicate vars support
@@ -964,12 +958,6 @@ jobs:
               `COOKIE_DOMAIN="${esc(env.COOKIE_DOMAIN)}"`,
               `FRONTEND_URL="${esc(env.FRONTEND_URL)}"`,
               `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
-              `SMTP_HOST="${esc(env.SMTP_HOST)}"`,
-              `SMTP_PORT="${esc(env.SMTP_PORT)}"`,
-              `SMTP_SECURE="${esc(env.SMTP_SECURE)}"`,
-              `SMTP_USER="${esc(env.SMTP_USER)}"`,
-              `SMTP_PASSWORD="${esc(env.SMTP_PASSWORD)}"`,
-              `SMTP_FROM="${esc(env.SMTP_FROM)}"`,
 
               // Explicit PG* vars for psql/scripts
               `PGHOST="${esc(env.PGHOST_VAL || env.DB_HOST || "pgsql0.mydevil.net")}"`,
@@ -982,9 +970,27 @@ jobs:
             fs.writeFileSync(".env.production", content);
           '
 
-          # Upload the generated .env file safely via rsync
+          # Upload the generated base .env (without SMTP credentials).
+          # SMTP_* must be set directly on the server and is preserved across deploys.
           rsync -az -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
-            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env
+            ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env.generated
+
+          # Merge server-side to avoid moving SMTP credentials through CI/CD.
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} <<'REMOTE_CMDS'
+          set -euo pipefail
+          REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}'
+          cd "$REMOTE_PATH"
+          touch .env
+          # Preserve existing SMTP_* lines (if any) from the server-managed .env.
+          SMTP_LINES="$(grep -E '^SMTP_' .env || true)"
+          cat .env.generated > .env.new
+          if [ -n "$SMTP_LINES" ]; then
+            printf "\n%s\n" "$SMTP_LINES" >> .env.new
+          fi
+          mv .env.new .env
+          rm -f .env.generated
+          chmod 600 .env
+          REMOTE_CMDS
 
       - name: Validate DB connectivity (api)
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}

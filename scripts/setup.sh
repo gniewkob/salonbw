@@ -79,7 +79,8 @@ SMTP_HOST=mail0.mydevil.net
 SMTP_PORT=465
 SMTP_SECURE=true
 SMTP_USER=kontakt@salon-bw.pl
-SMTP_PASSWORD=not_set
+# SMTP_PASSWORD is intentionally not set here. Provide it locally in backend/salonbw-backend/.env
+# (and in production keep SMTP credentials only on the server, not in CI/CD).
 PORT=3001
 NODE_ENV=development
 EOF
