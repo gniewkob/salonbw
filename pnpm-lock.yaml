@@ -89,8 +89,8 @@ importers:
         specifier: ^5.90.7
         version: 5.90.7(react@18.3.1)
       autoprefixer:
-        specifier: ^10.4.22
-        version: 10.4.22(postcss@8.5.6)
+        specifier: ^10.4.24
+        version: 10.4.24(postcss@8.5.6)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -255,8 +255,8 @@ importers:
         specifier: ^5.90.7
         version: 5.90.7(react@18.3.1)
       autoprefixer:
-        specifier: ^10.4.22
-        version: 10.4.22(postcss@8.5.6)
+        specifier: ^10.4.24
+        version: 10.4.24(postcss@8.5.6)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -3876,8 +3876,8 @@ packages:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
 
-  autoprefixer@10.4.22:
-    resolution: {integrity: sha512-ARe0v/t9gO28Bznv6GgqARmVqcWOV3mfgUPn9becPHMiD3o9BwlRgaeccZnwTpZ7Zwqrm+c1sUSsMxIzQzc8Xg==}
+  autoprefixer@10.4.24:
+    resolution: {integrity: sha512-uHZg7N9ULTVbutaIsDRoUkoS8/h3bdsmVJYZ5l3wv8Cp/6UIIoRDm90hZ+BwxUj/hGBEzLxdHNSKuFpn8WOyZw==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -3992,10 +3992,6 @@ packages:
     resolution: {integrity: sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==}
     engines: {node: ^4.5.0 || >= 5.9}
 
-  baseline-browser-mapping@2.8.32:
-    resolution: {integrity: sha512-OPz5aBThlyLFgxyhdwf/s2+8ab3OvT7AdTNvKHBwpXomIYeXqpUUuT8LrdtxZSsWJ4R4CU1un4XGh5Ez3nlTpw==}
-    hasBin: true
-
   baseline-browser-mapping@2.9.19:
     resolution: {integrity: sha512-ipDqC8FrAl/76p2SSWKSI+H9tFwm7vYqXQrItCuiVPt26Km0jS+NzSsBWAaBusvSbQcfJG+JitdMm+wZAgTYqg==}
     hasBin: true
@@ -4048,11 +4044,6 @@ packages:
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
-
-  browserslist@4.28.0:
-    resolution: {integrity: sha512-tbydkR/CxfMwelN0vwdP/pLkDwyAASZ+VfWm4EOwlB6SWhx1sYnWLqo8N5j0rAzPfzfRaxt0mM/4wPU/Su84RQ==}
-    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
-    hasBin: true
 
   browserslist@4.28.1:
     resolution: {integrity: sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==}
@@ -4124,12 +4115,6 @@ packages:
   camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
-
-  caniuse-lite@1.0.30001756:
-    resolution: {integrity: sha512-4HnCNKbMLkLdhJz3TToeVWHSnfJvPaq6vu/eRP0Ahub/07n484XHhBF5AJoSGHdVrS8tKFauUQz8Bp9P7LVx7A==}
-
-  caniuse-lite@1.0.30001765:
-    resolution: {integrity: sha512-LWcNtSyZrakjECqmpP4qdg0MMGdN368D7X8XvvAqOcqMv0RxnlqVKZl2V6/mBR68oYMxOZPLw/gO7DuisMHUvQ==}
 
   caniuse-lite@1.0.30001769:
     resolution: {integrity: sha512-BCfFL1sHijQlBGWBMuJyhZUhzo7wer5sVj9hqekB/7xn0Ypy+pER/edCYQm4exbXj4WiySGp40P8UuTh6w1srg==}
@@ -4701,9 +4686,6 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
-
-  electron-to-chromium@1.5.250:
-    resolution: {integrity: sha512-/5UMj9IiGDMOFBnN4i7/Ry5onJrAGSbOGo3s9FEKmwobGq6xw832ccET0CE3CkkMBZ8GJSlUIesZofpyurqDXw==}
 
   electron-to-chromium@1.5.286:
     resolution: {integrity: sha512-9tfDXhJ4RKFNerfjdCcZfufu49vg620741MNs26a9+bhLThdB+plgMeou98CAaHu/WATj2iHOOHTp1hWtABj2A==}
@@ -6563,10 +6545,6 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
-  normalize-range@0.1.2:
-    resolution: {integrity: sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==}
-    engines: {node: '>=0.10.0'}
-
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
@@ -6872,8 +6850,8 @@ packages:
     resolution: {integrity: sha512-NFnZqUliT+OHkRXVSf8vdOr13N1wv31hRryVjqbreVh/SDCNaI6mnRDDq89HVRCbem1SAl7yj04OANeqP0nT6A==}
     hasBin: true
 
-  pino@10.3.0:
-    resolution: {integrity: sha512-0GNPNzHXBKw6U/InGe79A3Crzyk9bcSyObF9/Gfo9DLEf5qj5RF50RSjsu0W1rZ6ZqRGdzDFCRBQvi9/rSGPtA==}
+  pino@10.3.1:
+    resolution: {integrity: sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg==}
     hasBin: true
 
   pirates@4.0.7:
@@ -8146,12 +8124,6 @@ packages:
   untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
     engines: {node: '>=8'}
-
-  update-browserslist-db@1.1.4:
-    resolution: {integrity: sha512-q0SPT4xyU84saUX+tomz1WLkxUbuaJnR1xWt17M7fJtEJigJeWUNGUqrauFXsHnqev9y9JTRGwk13tFBuKby4A==}
-    hasBin: true
-    peerDependencies:
-      browserslist: '>= 4.21.0'
 
   update-browserslist-db@1.2.3:
     resolution: {integrity: sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==}
@@ -13006,12 +12978,11 @@ snapshots:
 
   atomic-sleep@1.0.0: {}
 
-  autoprefixer@10.4.22(postcss@8.5.6):
+  autoprefixer@10.4.24(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.0
-      caniuse-lite: 1.0.30001756
+      browserslist: 4.28.1
+      caniuse-lite: 1.0.30001769
       fraction.js: 5.3.4
-      normalize-range: 0.1.2
       picocolors: 1.1.1
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
@@ -13178,8 +13149,6 @@ snapshots:
 
   base64id@2.0.0: {}
 
-  baseline-browser-mapping@2.8.32: {}
-
   baseline-browser-mapping@2.9.19: {}
 
   bcrypt-pbkdf@1.0.2:
@@ -13244,14 +13213,6 @@ snapshots:
   braces@3.0.3:
     dependencies:
       fill-range: 7.1.1
-
-  browserslist@4.28.0:
-    dependencies:
-      baseline-browser-mapping: 2.8.32
-      caniuse-lite: 1.0.30001765
-      electron-to-chromium: 1.5.250
-      node-releases: 2.0.27
-      update-browserslist-db: 1.1.4(browserslist@4.28.0)
 
   browserslist@4.28.1:
     dependencies:
@@ -13341,10 +13302,6 @@ snapshots:
   camelcase@5.3.1: {}
 
   camelcase@6.3.0: {}
-
-  caniuse-lite@1.0.30001756: {}
-
-  caniuse-lite@1.0.30001765: {}
 
   caniuse-lite@1.0.30001769: {}
 
@@ -13859,8 +13816,6 @@ snapshots:
       safe-buffer: 5.2.1
 
   ee-first@1.1.1: {}
-
-  electron-to-chromium@1.5.250: {}
 
   electron-to-chromium@1.5.286: {}
 
@@ -16358,8 +16313,6 @@ snapshots:
 
   normalize-path@3.0.0: {}
 
-  normalize-range@0.1.2: {}
-
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
@@ -16653,7 +16606,7 @@ snapshots:
   pino-http@11.0.0:
     dependencies:
       get-caller-file: 2.0.5
-      pino: 10.3.0
+      pino: 10.3.1
       pino-std-serializers: 7.1.0
       process-warning: 5.0.0
 
@@ -16689,7 +16642,7 @@ snapshots:
       sonic-boom: 4.2.0
       thread-stream: 4.0.0
 
-  pino@10.3.0:
+  pino@10.3.1:
     dependencies:
       '@pinojs/redact': 0.4.0
       atomic-sleep: 1.0.0
@@ -18258,12 +18211,6 @@ snapshots:
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
 
   untildify@4.0.0: {}
-
-  update-browserslist-db@1.1.4(browserslist@4.28.0):
-    dependencies:
-      browserslist: 4.28.0
-      escalade: 3.2.0
-      picocolors: 1.1.1
 
   update-browserslist-db@1.2.3(browserslist@4.28.1):
     dependencies:
