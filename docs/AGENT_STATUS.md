@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-10 (Statistics report export added; production dashboard deployed)_
+_Last updated: 2026-02-10 (Clients module: uploads/gallery thumbnails + email history deployed)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy; `/healthz` 200 |
+| API (`api.salon-bw.pl`) | `272fe444` | `21872437959` | 2026-02-10 16:05 | production | Customer files/gallery uploads (disk) + thumbnails + email history |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `6888ea7d` | `21866690126` | 2026-02-10 13:28 | production | Added CSV export for `Statystyki / Raport finansowy`; deploy workflow uses absolute remote upload/extract paths |
+| Dashboard (`panel.salon-bw.pl`) | `272fe444` | `21872437916` | 2026-02-10 16:07 | production | Clients: tabs wired end-to-end (files/gallery/communication history) + `/clients/[id]/edit` |
 
 Verification:
 
