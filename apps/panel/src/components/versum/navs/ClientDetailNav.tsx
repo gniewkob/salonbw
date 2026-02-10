@@ -16,31 +16,65 @@ interface Tab {
     id: TabId;
     label: string;
     iconClass: string;
+    tabName?: string;
 }
 
 const tabs: Tab[] = [
     { id: 'summary', label: 'podsumowanie', iconClass: 'fa-th-large' },
-    { id: 'personal', label: 'dane osobowe', iconClass: 'fa-id-card-o' },
-    { id: 'statistics', label: 'statystyki', iconClass: 'fa-bar-chart' },
-    { id: 'history', label: 'historia wizyt', iconClass: 'fa-calendar-o' },
-    { id: 'comments', label: 'komentarze', iconClass: 'fa-comment-o' },
-    { id: 'communication', label: 'komunikacja', iconClass: 'fa-envelope-o' },
-    { id: 'gallery', label: 'galeria zdjęć', iconClass: 'fa-camera' },
-    { id: 'files', label: 'załączone pliki', iconClass: 'fa-paperclip' },
+    {
+        id: 'personal',
+        label: 'dane osobowe',
+        iconClass: 'fa-id-card-o',
+        tabName: 'personal_data',
+    },
+    {
+        id: 'statistics',
+        label: 'statystyki',
+        iconClass: 'fa-bar-chart',
+        tabName: 'statistics',
+    },
+    {
+        id: 'history',
+        label: 'historia wizyt',
+        iconClass: 'fa-calendar-o',
+        tabName: 'events_history',
+    },
+    {
+        id: 'comments',
+        label: 'komentarze',
+        iconClass: 'fa-comment-o',
+        tabName: 'opinions',
+    },
+    {
+        id: 'communication',
+        label: 'komunikacja',
+        iconClass: 'fa-envelope-o',
+        tabName: 'communication_preferences',
+    },
+    {
+        id: 'gallery',
+        label: 'galeria zdjęć',
+        iconClass: 'fa-camera',
+        tabName: 'gallery',
+    },
+    {
+        id: 'files',
+        label: 'załączone pliki',
+        iconClass: 'fa-paperclip',
+        tabName: 'files',
+    },
 ];
 
 interface ClientDetailNavProps {
     customerId: number;
     customerName: string;
     activeTab: TabId;
-    onTabChange: (tab: TabId) => void;
 }
 
 export default function ClientDetailNav({
     customerId,
     customerName,
     activeTab,
-    onTabChange,
 }: ClientDetailNavProps) {
     return (
         <div className="sidebar-inner client-detail-nav">
@@ -70,13 +104,25 @@ export default function ClientDetailNav({
                         key={tab.id}
                         className={activeTab === tab.id ? 'active' : ''}
                     >
-                        <a onClick={() => onTabChange(tab.id)}>
+                        <Link
+                            href={
+                                tab.id === 'summary'
+                                    ? { pathname: `/clients/${customerId}` }
+                                    : {
+                                          pathname: `/clients/${customerId}`,
+                                          query: { tab_name: tab.tabName },
+                                      }
+                            }
+                            aria-current={
+                                activeTab === tab.id ? 'page' : undefined
+                            }
+                        >
                             <i
                                 className={`fa ${tab.iconClass} client-nav-icon`}
                                 aria-hidden="true"
                             />
                             {tab.label}
-                        </a>
+                        </Link>
                     </li>
                 ))}
             </ul>

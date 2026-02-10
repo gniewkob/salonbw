@@ -239,7 +239,7 @@ export default function ClientsPage() {
 
     return (
         <RouteGuard
-            roles={['client', 'employee', 'receptionist', 'admin']}
+            roles={['employee', 'receptionist', 'admin']}
             permission="nav:clients"
         >
             <VersumShell role={role}>
