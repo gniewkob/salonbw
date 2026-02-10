@@ -98,8 +98,19 @@ export class StocktakingService {
 
         return rows.map((row: Record<string, unknown>) => ({
             id: Number(row.id),
-            stocktakingNumber: String(row.stocktakingNumber ?? ''),
-            stocktakingDate: String(row.stocktakingDate ?? ''),
+            stocktakingNumber:
+                typeof row.stocktakingNumber === 'string' ||
+                typeof row.stocktakingNumber === 'number'
+                    ? String(row.stocktakingNumber)
+                    : '',
+            stocktakingDate:
+                row.stocktakingDate instanceof Date
+                    ? row.stocktakingDate.toISOString()
+                    : typeof row.stocktakingDate === 'string'
+                      ? row.stocktakingDate
+                      : typeof row.stocktakingDate === 'number'
+                        ? new Date(row.stocktakingDate).toISOString()
+                        : '',
             productsCount: Number(row.productsCount ?? 0),
             shortageCount: Number(row.shortageCount ?? 0),
             overageCount: Number(row.overageCount ?? 0),

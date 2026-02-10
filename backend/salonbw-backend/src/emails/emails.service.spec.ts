@@ -56,7 +56,8 @@ describe('EmailsService', () => {
 
         await service.send(dto);
 
-        expect(logger.warn).toHaveBeenCalledWith(
+        const warn = logger.warn as unknown as jest.Mock;
+        expect(warn).toHaveBeenCalledWith(
             expect.objectContaining({
                 to: dto.to,
                 subject: dto.subject,
