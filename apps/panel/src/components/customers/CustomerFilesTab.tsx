@@ -1,30 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import {
+    getBrowserApiBase,
+    useCustomerFiles,
+    useDeleteCustomerFile,
+    useUploadCustomerFile,
+    type CustomerFileCategory,
+} from '@/hooks/useCustomerMedia';
 
 interface Props {
     customerId: number;
 }
 
-type FileCategory = 'consent' | 'contract' | 'medical' | 'invoice' | 'other';
-
-interface CustomerFile {
-    id: number;
-    name: string;
-    url: string;
-    size: number;
-    mimeType: string;
-    category: FileCategory;
-    description?: string;
-    createdAt: string;
-    uploadedBy?: {
-        id: number;
-        name: string;
-    };
-}
-
 const categoryConfig: Record<
-    FileCategory,
+    CustomerFileCategory,
     { label: string; icon: string; color: string }
 > = {
     consent: {
@@ -60,38 +50,31 @@ function formatFileSize(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerFilesTab({ customerId }: Props) {
-    const [files] = useState<CustomerFile[]>([]);
-    const [filterCategory, setFilterCategory] = useState<FileCategory | 'all'>(
-        'all',
-    );
-    const isLoading = false;
+    const { data: files = [], isLoading } = useCustomerFiles(customerId);
+    const upload = useUploadCustomerFile(customerId);
+    const del = useDeleteCustomerFile(customerId);
 
-    // TODO: Integrate with API when backend supports customer files
-    // const { data: files, isLoading } = useCustomerFiles(customerId);
-    // const uploadFile = useUploadCustomerFile();
-    // const deleteFile = useDeleteCustomerFile();
+    const [filterCategory, setFilterCategory] = useState<
+        CustomerFileCategory | 'all'
+    >('all');
 
-    const handleUpload = () => {
-        // TODO: Implement file upload
-        alert('Funkcja dodawania plików będzie dostępna wkrótce');
-    };
-
-    const handleDownload = (file: CustomerFile) => {
-        window.open(file.url, '_blank');
-    };
-
-    const handleDelete = (fileId: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć ten plik?')) return;
-        // TODO: Implement delete
-        console.log('Delete file:', fileId);
-    };
-
-    const filteredFiles =
-        filterCategory === 'all'
+    const filteredFiles = useMemo(() => {
+        return filterCategory === 'all'
             ? files
             : files.filter((f) => f.category === filterCategory);
+    }, [files, filterCategory]);
+
+    const base = getBrowserApiBase();
+
+    const handleDownload = (downloadUrl: string) => {
+        window.open(`${base}${downloadUrl}`, '_blank', 'noopener,noreferrer');
+    };
+
+    const handleDelete = async (fileId: number) => {
+        if (!confirm('Czy na pewno chcesz usunąć ten plik?')) return;
+        await del.mutateAsync(fileId);
+    };
 
     if (isLoading) {
         return (
@@ -107,12 +90,23 @@ export default function CustomerFilesTab({ customerId }: Props) {
                 <div className="versum-widget">
                     <div className="versum-widget__header flex-between">
                         <span>Dokumenty klienta</span>
-                        <button
-                            onClick={handleUpload}
-                            className="btn btn-primary btn-xs"
-                        >
+                        <label className="btn btn-primary btn-xs m-0">
                             + Dodaj plik
-                        </button>
+                            <input
+                                type="file"
+                                className="sr-only"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    void upload.mutateAsync({
+                                        file,
+                                        category: 'other',
+                                    });
+                                    e.currentTarget.value = '';
+                                }}
+                                disabled={upload.isPending}
+                            />
+                        </label>
                     </div>
 
                     <div className="versum-widget__content">
@@ -131,7 +125,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                             key={key}
                                             onClick={() =>
                                                 setFilterCategory(
-                                                    key as FileCategory,
+                                                    key as CustomerFileCategory,
                                                 )
                                             }
                                             className={`btn btn-xs ${filterCategory === key ? 'btn-primary' : 'btn-default'}`}
@@ -189,18 +183,14 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                 {new Date(
                                                     file.createdAt,
                                                 ).toLocaleDateString('pl-PL')}
-                                                {file.uploadedBy && (
-                                                    <div className="fz-10">
-                                                        przez:{' '}
-                                                        {file.uploadedBy.name}
-                                                    </div>
-                                                )}
                                             </td>
                                             <td>
                                                 <div className="btn-group">
                                                     <button
                                                         onClick={() =>
-                                                            handleDownload(file)
+                                                            handleDownload(
+                                                                file.downloadUrl,
+                                                            )
                                                         }
                                                         className="btn btn-default btn-xs"
                                                         title="Pobierz plik"
@@ -211,13 +201,14 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                     </button>
                                                     <button
                                                         onClick={() =>
-                                                            handleDelete(
+                                                            void handleDelete(
                                                                 file.id,
                                                             )
                                                         }
                                                         className="btn btn-danger btn-xs"
                                                         title="Usuń plik"
                                                         aria-label="Usuń plik"
+                                                        disabled={del.isPending}
                                                     >
                                                         <i className="fa fa-trash"></i>{' '}
                                                         🗑
@@ -234,18 +225,12 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                 <p className="fz-14 mb-5">
                                     {filterCategory === 'all'
                                         ? 'Brak dokumentów klienta.'
-                                        : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as FileCategory].label}".`}
+                                        : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as CustomerFileCategory].label}".`}
                                 </p>
                                 <p className="fz-11">
                                     Dodaj zgody, umowy lub inne dokumenty
                                     związane z klientem.
                                 </p>
-                                <button
-                                    onClick={handleUpload}
-                                    className="btn btn-default btn-xs mt-15"
-                                >
-                                    Dodaj pierwszy dokument
-                                </button>
                             </div>
                         )}
                     </div>

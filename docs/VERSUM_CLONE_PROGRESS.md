@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-06
+> Data aktualizacji: 2026-02-10
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 
 ---
@@ -101,6 +101,11 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
+- Dodano `/clients/[id]/edit` (edycja danych osobowych)
+- Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
+- Backend: `email_logs` + `GET /emails/history` + media endpoints dla klientów (uploads na dysku w `uploads/`, miniatury `jimp`)
 
 ### 2026-02-06 - Sprint 5 zakończony
 - Przepisano stronę magazynu (/products) na VersumShell

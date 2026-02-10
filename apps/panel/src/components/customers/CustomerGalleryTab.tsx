@@ -1,38 +1,29 @@
 'use client';
 
 import { useState } from 'react';
+import {
+    getBrowserApiBase,
+    useCustomerGallery,
+    useDeleteCustomerGalleryImage,
+    useUploadCustomerGalleryImage,
+} from '@/hooks/useCustomerMedia';
 
 interface Props {
     customerId: number;
 }
 
-interface GalleryImage {
-    id: number;
-    url: string;
-    thumbnailUrl: string;
-    description?: string;
-    createdAt: string;
-    serviceId?: number;
-    serviceName?: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerGalleryTab({ customerId }: Props) {
-    const [images] = useState<GalleryImage[]>([]);
-    const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(
-        null,
-    );
-    const isLoading = false;
+    const { data: images = [], isLoading } = useCustomerGallery(customerId);
+    const upload = useUploadCustomerGalleryImage(customerId);
+    const del = useDeleteCustomerGalleryImage(customerId);
 
-    // TODO: Integrate with API when backend supports customer gallery
-    // const { data: images, isLoading } = useCustomerGallery(customerId);
-    // const uploadImage = useUploadCustomerImage();
-    // const deleteImage = useDeleteCustomerImage();
+    const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
+    const selectedImage =
+        selectedImageId !== null
+            ? (images.find((img) => img.id === selectedImageId) ?? null)
+            : null;
 
-    const handleUpload = () => {
-        // TODO: Implement file upload
-        alert('Funkcja dodawania zdjęć będzie dostępna wkrótce');
-    };
+    const base = getBrowserApiBase();
 
     if (isLoading) {
         return (
@@ -48,12 +39,21 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                 <div className="versum-widget">
                     <div className="versum-widget__header flex-between">
                         <span>Galeria klienta</span>
-                        <button
-                            onClick={handleUpload}
-                            className="btn btn-primary btn-xs"
-                        >
+                        <label className="btn btn-primary btn-xs m-0">
                             + Dodaj zdjęcie
-                        </button>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={(e) => {
+                                    const image = e.target.files?.[0];
+                                    if (!image) return;
+                                    void upload.mutateAsync({ image });
+                                    e.currentTarget.value = '';
+                                }}
+                                disabled={upload.isPending}
+                            />
+                        </label>
                     </div>
 
                     <div className="versum-widget__content">
@@ -67,15 +67,12 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                         <div
                                             className="versum-panel-sub p-0 overflow-hidden cursor-pointer border"
                                             onClick={() =>
-                                                setSelectedImage(image)
+                                                setSelectedImageId(image.id)
                                             }
                                         >
                                             <div className="aspect-square">
                                                 <img
-                                                    src={
-                                                        image.thumbnailUrl ||
-                                                        image.url
-                                                    }
+                                                    src={`${base}${image.thumbnailUrl}`}
                                                     alt={
                                                         image.description ||
                                                         'Zdjęcie klienta'
@@ -83,9 +80,9 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                                     className="absolute-fill object-cover"
                                                 />
                                             </div>
-                                            {image.serviceName && (
+                                            {image.serviceId && (
                                                 <div className="p-5 fz-11 border-top-eee bg-f9">
-                                                    {image.serviceName}
+                                                    usługa #{image.serviceId}
                                                 </div>
                                             )}
                                         </div>
@@ -102,12 +99,6 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                                     Dodaj zdjęcia efektów zabiegów, aby
                                     dokumentować historię klienta.
                                 </p>
-                                <button
-                                    onClick={handleUpload}
-                                    className="btn btn-default btn-xs mt-15"
-                                >
-                                    Dodaj pierwsze zdjęcie
-                                </button>
                             </div>
                         )}
                     </div>
@@ -117,30 +108,47 @@ export default function CustomerGalleryTab({ customerId }: Props) {
             {selectedImage && (
                 <div
                     className="modal fade in block bg-modal-overlay flex-center"
-                    onClick={() => setSelectedImage(null)}
+                    onClick={() => setSelectedImageId(null)}
                 >
                     <div
                         className="relative max-w-90 max-h-90"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
-                            onClick={() => setSelectedImage(null)}
+                            onClick={() => setSelectedImageId(null)}
                             className="abs-tr--15 bg-white br-full w-30 h-30 cursor-pointer fw-bold border-none"
                             title="Zamknij"
                         >
                             ✕
                         </button>
+                        <button
+                            onClick={() => {
+                                if (
+                                    confirm(
+                                        'Czy na pewno chcesz usunąć to zdjęcie?',
+                                    )
+                                ) {
+                                    void del.mutateAsync(selectedImage.id);
+                                    setSelectedImageId(null);
+                                }
+                            }}
+                            className="abs-tr--55 bg-white br-2 px-10 py-6 cursor-pointer fw-600 border-none"
+                            title="Usuń"
+                            disabled={del.isPending}
+                        >
+                            Usuń
+                        </button>
                         <img
-                            src={selectedImage.url}
+                            src={`${base}${selectedImage.url}`}
                             alt={selectedImage.description || 'Zdjęcie klienta'}
                             className="max-w-full max-h-85vh br-2 shadow-modal"
                         />
                         {(selectedImage.description ||
-                            selectedImage.serviceName) && (
+                            selectedImage.serviceId) && (
                             <div className="bg-white p-15 mt-5 br-2">
-                                {selectedImage.serviceName && (
+                                {selectedImage.serviceId && (
                                     <div className="fw-600">
-                                        {selectedImage.serviceName}
+                                        usługa #{selectedImage.serviceId}
                                     </div>
                                 )}
                                 {selectedImage.description && (

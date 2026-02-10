@@ -125,7 +125,6 @@ export class ApiClient {
             }
         }
         this.defaultHeaders = {
-            "Content-Type": "application/json",
             ...options.headers,
         };
     }
@@ -261,7 +260,14 @@ export class ApiClient {
         baseHeaders.forEach((value, key) => headers.set(key, value));
         const incomingHeaders = new Headers(init.headers ?? {});
         incomingHeaders.forEach((value, key) => headers.set(key, value));
-        if (!headers.has("Content-Type") && init.body) {
+
+        // Do not force Content-Type for FormData; the browser must set boundary.
+        const body = mergedInit.body ?? init.body;
+        const isFormData =
+            typeof FormData !== "undefined" && body instanceof FormData;
+        if (isFormData) {
+            headers.delete("Content-Type");
+        } else if (!headers.has("Content-Type") && typeof body === "string") {
             headers.set("Content-Type", "application/json");
         }
         const token = this.getAccessToken();
