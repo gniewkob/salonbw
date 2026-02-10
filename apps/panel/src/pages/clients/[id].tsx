@@ -52,6 +52,7 @@ export default function CustomerDetailPage() {
     const { id } = router.query;
     const customerId = id ? Number(id) : null;
     const [activeTab, setActiveTab] = useState<TabId>('summary');
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const { data: customer, isLoading, error } = useCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId ?? 0);
@@ -150,6 +151,7 @@ export default function CustomerDetailPage() {
                                         customer={customer}
                                         stats={stats}
                                         history={history}
+                                        onEdit={() => setIsEditModalOpen(true)}
                                     />
                                 )}
                                 {activeTab === 'personal' && (
@@ -190,6 +192,40 @@ export default function CustomerDetailPage() {
                                     />
                                 )}
                             </div>
+
+                            {isEditModalOpen && (
+                                <div
+                                    className="versum-modal-overlay"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                >
+                                    <div
+                                        className="versum-modal"
+                                        role="dialog"
+                                        aria-label="Edycja klienta"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <div className="versum-modal__header">
+                                            <h3>Edycja klienta</h3>
+                                            <button
+                                                type="button"
+                                                className="versum-modal__close"
+                                                onClick={() =>
+                                                    setIsEditModalOpen(false)
+                                                }
+                                                aria-label="Zamknij"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <div className="versum-modal__body">
+                                            <CustomerPersonalDataTab
+                                                customer={customer}
+                                                onUpdate={handleUpdate}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <div className="customer-error">
@@ -213,10 +249,12 @@ function CustomerSummaryView({
     customer,
     stats,
     history,
+    onEdit,
 }: {
     customer: Customer;
     stats: CustomerSummaryStats | null | undefined;
     history: CustomerHistory | null | undefined;
+    onEdit: () => void;
 }) {
     const upcomingVisits = stats?.upcomingVisits ?? [];
     const historyItems = history?.items ?? [];
@@ -245,12 +283,13 @@ function CustomerSummaryView({
             {/* Header with actions - Versum style */}
             <div className="customer-summary-header">
                 <div className="customer-actions">
-                    <Link
-                        href={`/clients/${customer.id}/edit`}
+                    <button
+                        type="button"
+                        onClick={onEdit}
                         className="btn btn-default"
                     >
                         edytuj
-                    </Link>
+                    </button>
                     <button className="btn btn-default">więcej ▼</button>
                 </div>
             </div>
