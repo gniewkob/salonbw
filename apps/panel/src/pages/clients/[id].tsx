@@ -329,9 +329,7 @@ function CustomerSummaryView({
             <div className="customer-visits">
                 {/* Upcoming visits */}
                 <div className="visits-section">
-                    <h3>
-                        zaplanowane wizyty: {upcomingVisits.length}
-                    </h3>
+                    <h3>zaplanowane wizyty: {upcomingVisits.length}</h3>
                     {upcomingVisits.length > 0 ? (
                         <div className="visits-list">
                             {upcomingVisits.slice(0, 3).map((visit) => (

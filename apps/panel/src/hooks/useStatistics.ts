@@ -59,11 +59,12 @@ export interface EmployeeRankingParams {
     range?: 'today' | 'this_week' | 'this_month' | 'last_month' | 'custom';
     from?: string;
     to?: string;
+    enabled?: boolean;
 }
 
 export function useEmployeeRanking(params: EmployeeRankingParams = {}) {
     const { apiFetch } = useAuth();
-    const { range = 'this_month', from, to } = params;
+    const { range = 'this_month', from, to, enabled = true } = params;
 
     const queryParams = new URLSearchParams();
     queryParams.set('range', range);
@@ -76,6 +77,7 @@ export function useEmployeeRanking(params: EmployeeRankingParams = {}) {
             apiFetch<EmployeeStats[]>(
                 `/statistics/employees?${queryParams.toString()}`,
             ),
+        enabled,
     });
 }
 
@@ -83,7 +85,7 @@ export function useEmployeeRanking(params: EmployeeRankingParams = {}) {
 
 export function useServiceRanking(params: EmployeeRankingParams = {}) {
     const { apiFetch } = useAuth();
-    const { range = 'this_month', from, to } = params;
+    const { range = 'this_month', from, to, enabled = true } = params;
 
     const queryParams = new URLSearchParams();
     queryParams.set('range', range);
@@ -96,6 +98,7 @@ export function useServiceRanking(params: EmployeeRankingParams = {}) {
             apiFetch<ServiceStats[]>(
                 `/statistics/services?${queryParams.toString()}`,
             ),
+        enabled,
     });
 }
 
@@ -103,7 +106,7 @@ export function useServiceRanking(params: EmployeeRankingParams = {}) {
 
 export function useClientStats(params: EmployeeRankingParams = {}) {
     const { apiFetch } = useAuth();
-    const { range = 'this_month', from, to } = params;
+    const { range = 'this_month', from, to, enabled = true } = params;
 
     const queryParams = new URLSearchParams();
     queryParams.set('range', range);
@@ -116,6 +119,7 @@ export function useClientStats(params: EmployeeRankingParams = {}) {
             apiFetch<ClientStatsData>(
                 `/statistics/clients?${queryParams.toString()}`,
             ),
+        enabled,
     });
 }
 
