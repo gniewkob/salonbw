@@ -356,7 +356,8 @@ export class TimetablesService {
         const currentDate = new Date(from);
 
         while (currentDate <= to) {
-            const dayOfWeek = (currentDate.getDay() + 6) % 7; // Convert to ISO (Mon=0)
+            // Convert JS day index (Sun=0) to ISO-like (Mon=0) and keep it typed as DayOfWeek.
+            const dayOfWeek = ((currentDate.getDay() + 6) % 7) as DayOfWeek;
             const dateStr = currentDate.toISOString().split('T')[0];
 
             // Check for exceptions on this date

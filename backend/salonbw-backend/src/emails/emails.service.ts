@@ -2,8 +2,12 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
 import { PinoLogger } from 'nestjs-pino';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SendEmailDto } from './dto/send-email.dto';
 import { MetricsService } from '../observability/metrics.service';
+import { EmailLog, EmailLogStatus } from './email-log.entity';
+import { User } from '../users/user.entity';
 
 type MailOptions = { to: string; subject: string; html: string; from?: string };
 type TransportOpts = {
@@ -29,6 +33,10 @@ export class EmailsService {
         private readonly configService: ConfigService,
         private readonly metrics: MetricsService,
         private readonly logger: PinoLogger,
+        @InjectRepository(EmailLog)
+        private readonly emailLogs: Repository<EmailLog>,
+        @InjectRepository(User)
+        private readonly users: Repository<User>,
     ) {
         this.logger.setContext('EmailsService');
         this.isProduction =
@@ -91,9 +99,35 @@ export class EmailsService {
     async send(dto: SendEmailDto): Promise<void> {
         const html = this.renderTemplate(dto.template, dto.data);
 
+        const resolvedRecipientId =
+            dto.recipientId ??
+            (dto.to
+                ? ((await this.users.findOne({ where: { email: dto.to } }))
+                      ?.id ?? null)
+                : null);
+
+        const log = this.emailLogs.create({
+            to: dto.to,
+            subject: dto.subject,
+            template: dto.template,
+            data: dto.data ?? null,
+            status: EmailLogStatus.Pending,
+            errorMessage: null,
+            recipientId: resolvedRecipientId,
+            sentById: null,
+            sentAt: null,
+        });
+
+        const savedLog = await this.emailLogs.save(log);
+
         if (!this.transporter) {
             if (this.isProduction) {
                 this.metrics.incEmail('failed');
+                await this.emailLogs.update(savedLog.id, {
+                    status: EmailLogStatus.Failed,
+                    errorMessage:
+                        this.smtpStatus.error ?? 'SMTP not configured',
+                });
                 throw new InternalServerErrorException(
                     'Email service is not configured',
                     { cause: this.smtpStatus.error },
@@ -111,6 +145,10 @@ export class EmailsService {
                 'Email logged (SMTP not configured)',
             );
             this.metrics.incEmail('success');
+            await this.emailLogs.update(savedLog.id, {
+                status: EmailLogStatus.Sent,
+                sentAt: new Date(),
+            });
             return;
         }
 
@@ -128,12 +166,21 @@ export class EmailsService {
                 'Email sent successfully',
             );
             this.metrics.incEmail('success');
+            await this.emailLogs.update(savedLog.id, {
+                status: EmailLogStatus.Sent,
+                sentAt: new Date(),
+            });
         } catch (error: unknown) {
             this.logger.error(
                 { error, to: dto.to, subject: dto.subject },
                 'Failed to send email',
             );
             this.metrics.incEmail('failed');
+            await this.emailLogs.update(savedLog.id, {
+                status: EmailLogStatus.Failed,
+                errorMessage:
+                    error instanceof Error ? error.message : String(error),
+            });
             throw new InternalServerErrorException(
                 'Failed to send email message',
                 { cause: error },

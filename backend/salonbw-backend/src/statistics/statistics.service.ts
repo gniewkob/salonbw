@@ -26,7 +26,11 @@ import { User } from '../users/user.entity';
 import { Review } from '../reviews/review.entity';
 import { Commission } from '../commissions/commission.entity';
 import { Timetable } from '../timetables/entities/timetable.entity';
-import { TimetableException } from '../timetables/entities/timetable-exception.entity';
+import {
+    TimetableException,
+    ExceptionType,
+} from '../timetables/entities/timetable-exception.entity';
+import { DayOfWeek } from '../timetables/entities/timetable-slot.entity';
 import {
     DateRange,
     GroupBy,
@@ -92,7 +96,7 @@ export class StatisticsService {
         });
 
         const todayCompleted = todayAppointments.filter(
-            (a) => a.status === 'completed',
+            (a) => a.status === AppointmentStatus.Completed,
         );
 
         const todayRevenue = todayCompleted.reduce(
@@ -547,7 +551,7 @@ export class StatisticsService {
                 if (exception) {
                     // Use exception hours - check if it's not a day off
                     if (
-                        exception.type !== 'day_off' &&
+                        exception.type !== ExceptionType.DayOff &&
                         exception.customStartTime &&
                         exception.customEndTime
                     ) {
@@ -564,8 +568,9 @@ export class StatisticsService {
                 } else {
                     // Use regular slot for this day
                     // Versum uses 1-7 (Mon-Sun), our DayOfWeek uses 0-6 (Mon-Sun)
+                    const targetDayOfWeek = (dayOfWeekVersum - 1) as DayOfWeek;
                     const slot = timetable.slots?.find(
-                        (s) => s.dayOfWeek === dayOfWeekVersum - 1,
+                        (s) => s.dayOfWeek === targetDayOfWeek,
                     );
 
                     if (slot) {
@@ -1024,7 +1029,7 @@ export class StatisticsService {
 
                     if (exception) {
                         if (
-                            exception.type !== 'day_off' &&
+                            exception.type !== ExceptionType.DayOff &&
                             exception.customStartTime &&
                             exception.customEndTime
                         ) {
@@ -1042,8 +1047,10 @@ export class StatisticsService {
                         }
                     } else {
                         // Use regular slot
+                        const targetDayOfWeek = (dayOfWeekVersum -
+                            1) as DayOfWeek;
                         const slot = timetable.slots?.find(
-                            (s) => s.dayOfWeek === dayOfWeekVersum - 1,
+                            (s) => s.dayOfWeek === targetDayOfWeek,
                         );
 
                         if (slot) {
@@ -1114,28 +1121,31 @@ export class StatisticsService {
         switch (range) {
             case DateRange.Today:
                 return { from: startOfDay(now), to: endOfDay(now) };
-            case DateRange.Yesterday:
+            case DateRange.Yesterday: {
                 const yesterday = subDays(now, 1);
                 return { from: startOfDay(yesterday), to: endOfDay(yesterday) };
+            }
             case DateRange.ThisWeek:
                 return {
                     from: startOfWeek(now, { weekStartsOn: 1 }),
                     to: endOfDay(now),
                 };
-            case DateRange.LastWeek:
+            case DateRange.LastWeek: {
                 const lastWeek = subWeeks(now, 1);
                 return {
                     from: startOfWeek(lastWeek, { weekStartsOn: 1 }),
                     to: endOfWeek(lastWeek, { weekStartsOn: 1 }),
                 };
+            }
             case DateRange.ThisMonth:
                 return { from: startOfMonth(now), to: endOfDay(now) };
-            case DateRange.LastMonth:
+            case DateRange.LastMonth: {
                 const lastMonth = subMonths(now, 1);
                 return {
                     from: startOfMonth(lastMonth),
                     to: endOfMonth(lastMonth),
                 };
+            }
             case DateRange.ThisYear:
                 return { from: startOfYear(now), to: endOfDay(now) };
             case DateRange.Custom:
