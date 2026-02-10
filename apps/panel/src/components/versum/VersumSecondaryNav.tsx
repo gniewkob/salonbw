@@ -74,7 +74,8 @@ export default function VersumSecondaryNav({
     }
 
     return (
-        <div className="secondarynav" id="sidenav">
+        // Match Versum DOM: `.sidenav#sidenav` (keep `secondarynav` as compatibility class)
+        <div className="sidenav secondarynav" id="sidenav">
             {content}
         </div>
     );

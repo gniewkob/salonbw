@@ -100,7 +100,7 @@ export default function CustomerDetailPage() {
     // Custom sidebar for client detail page (KARTA KLIENTA)
     const clientDetailSidebar =
         customerId !== null ? (
-            <div className="secondarynav" id="sidenav">
+            <div className="sidenav secondarynav" id="sidenav">
                 <ClientDetailNav
                     customerId={customerId}
                     customerName={customer?.fullName || customer?.name || '...'}
@@ -116,7 +116,7 @@ export default function CustomerDetailPage() {
         >
             <VersumShell role={role} secondaryNav={clientDetailSidebar}>
                 <VersumCustomersVendorCss />
-                <div className="customer-detail-page">
+                <div className="show_customer" id="customers_main">
                     {/* Breadcrumbs - Versum style */}
                     <ul className="breadcrumb">
                         <li>Klienci / {customer?.name || '...'}</li>
@@ -163,7 +163,10 @@ export default function CustomerDetailPage() {
                             </div>
 
                             {/* Content */}
-                            <div className="customer-card-content">
+                            <div
+                                className="customer-card-content"
+                                id="pjax_container"
+                            >
                                 {activeTab === 'summary' && (
                                     <CustomerSummaryView
                                         customer={customer}

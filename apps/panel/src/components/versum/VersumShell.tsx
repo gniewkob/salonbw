@@ -23,6 +23,11 @@ export default function VersumShell({
     const activeModule = resolveVersumModule(router.pathname);
     const modules = visibleVersumModules(role);
 
+    // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
+    // Our internal module key differs (e.g. "clients"), so map where needed.
+    const mainContentClass =
+        activeModule.key === 'clients' ? 'customers' : activeModule.key;
+
     return (
         <div id="versum-shell-root">
             <PajaxLoader />
@@ -38,7 +43,11 @@ export default function VersumShell({
                         <VersumSecondaryNav module={activeModule} />
                     )}
                 </div>
-                <div className="main-content" id="main-content" role="main">
+                <div
+                    className={`main-content ${mainContentClass}`}
+                    id="main-content"
+                    role="main"
+                >
                     <div
                         className={`inner ${activeModule.wideContent ? 'inner--wide' : ''}`}
                     >

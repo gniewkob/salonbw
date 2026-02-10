@@ -50,8 +50,6 @@ function DraggableCustomerRow({
     return (
         <tr
             ref={setNodeRef}
-            {...listeners}
-            {...attributes}
             style={style}
             className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50`}
             onClick={() => onOpen(customer.id)}
@@ -111,6 +109,18 @@ function DraggableCustomerRow({
                     : '-'}
             </td>
             <td className="col-actions">
+                <span
+                    className="clients-drag-handle"
+                    title="Przeciągnij do grupy"
+                    // Drag listeners must be on a dedicated handle; attaching to the whole row
+                    // prevents normal click navigation in some browsers.
+                    {...listeners}
+                    {...attributes}
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                >
+                    ⋮⋮
+                </span>
                 <Link
                     href={`/clients/${customer.id}/edit`}
                     className="clients-edit-link"
@@ -250,7 +260,7 @@ export default function ClientsPage() {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    <div className="clients-page">
+                    <div className="customers_index" id="customers_main">
                         {/* Breadcrumbs - Versum style */}
                         <ul className="breadcrumb">
                             <li>Klienci / Lista klientów</li>
