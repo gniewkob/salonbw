@@ -26,7 +26,12 @@ body {
     }
 
     .btn-primary {
-        @apply bg-[#25B4C1] text-white hover:bg-[#1f9ba8];
+        background: var(--versum-accent);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        filter: brightness(0.95);
     }
 
     .btn-secondary {
@@ -256,7 +261,17 @@ body {
     }
 
     .versum-btn--primary {
-        @apply bg-[#25B4C1] text-white hover:bg-[#1f9ba8] disabled:opacity-50 disabled:cursor-not-allowed;
+        background: var(--versum-accent);
+        color: #fff;
+    }
+
+    .versum-btn--primary:hover {
+        filter: brightness(0.95);
+    }
+
+    .versum-btn--primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     .versum-btn--light {

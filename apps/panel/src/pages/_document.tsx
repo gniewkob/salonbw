@@ -21,6 +21,10 @@ export default function Document(props: CustomDocumentProps) {
                     href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
                     rel="stylesheet"
                 />
+                <link
+                    rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+                />
                 {/* Vendored CSS removed - using only versum-shell.css for React modules */}
             </Head>
             <body>

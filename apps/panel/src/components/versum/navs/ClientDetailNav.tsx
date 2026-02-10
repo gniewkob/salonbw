@@ -15,18 +15,18 @@ type TabId =
 interface Tab {
     id: TabId;
     label: string;
-    icon: string;
+    iconClass: string;
 }
 
 const tabs: Tab[] = [
-    { id: 'summary', label: 'podsumowanie', icon: '📊' },
-    { id: 'personal', label: 'dane osobowe', icon: '👤' },
-    { id: 'statistics', label: 'statystyki', icon: '📈' },
-    { id: 'history', label: 'historia wizyt', icon: '📅' },
-    { id: 'comments', label: 'komentarze', icon: '💬' },
-    { id: 'communication', label: 'komunikacja', icon: '📧' },
-    { id: 'gallery', label: 'galeria zdjęć', icon: '📷' },
-    { id: 'files', label: 'załączone pliki', icon: '📎' },
+    { id: 'summary', label: 'podsumowanie', iconClass: 'fa-th-large' },
+    { id: 'personal', label: 'dane osobowe', iconClass: 'fa-id-card-o' },
+    { id: 'statistics', label: 'statystyki', iconClass: 'fa-bar-chart' },
+    { id: 'history', label: 'historia wizyt', iconClass: 'fa-calendar-o' },
+    { id: 'comments', label: 'komentarze', iconClass: 'fa-comment-o' },
+    { id: 'communication', label: 'komunikacja', iconClass: 'fa-envelope-o' },
+    { id: 'gallery', label: 'galeria zdjęć', iconClass: 'fa-camera' },
+    { id: 'files', label: 'załączone pliki', iconClass: 'fa-paperclip' },
 ];
 
 interface ClientDetailNavProps {
@@ -54,7 +54,10 @@ export default function ClientDetailNav({
                         href={`/clients/${customerId}`}
                         className="client-nav-name"
                     >
-                        <span className="client-nav-icon">👤</span>
+                        <i
+                            className="fa fa-user-o client-nav-icon"
+                            aria-hidden="true"
+                        />
                         {customerName}
                     </Link>
                 </li>
@@ -67,12 +70,11 @@ export default function ClientDetailNav({
                         key={tab.id}
                         className={activeTab === tab.id ? 'active' : ''}
                     >
-                        <a
-                            href="javascript:;"
-                            onClick={() => onTabChange(tab.id)}
-                            className="client-nav-tab"
-                        >
-                            <span className="client-nav-icon">{tab.icon}</span>
+                        <a onClick={() => onTabChange(tab.id)}>
+                            <i
+                                className={`fa ${tab.iconClass} client-nav-icon`}
+                                aria-hidden="true"
+                            />
                             {tab.label}
                         </a>
                     </li>

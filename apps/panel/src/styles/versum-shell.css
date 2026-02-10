@@ -64,11 +64,230 @@
 }
 
 /* ========================================
+   Bootstrap-like modal + form primitives (Versum legacy parity)
+   Used by customer group modals and other cloned UI pieces.
+   ======================================== */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 60px 12px;
+    overflow: auto;
+}
+
+.modal-backdrop.fade {
+    opacity: 1;
+}
+
+.modal-backdrop.in {
+    opacity: 1;
+}
+
+.modal-dialog {
+    width: 600px;
+    max-width: 100%;
+}
+
+.modal-content {
+    background: #fff;
+    border: 1px solid var(--versum-border);
+    border-radius: 3px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6eaee;
+    background: #f7f9fb;
+}
+
+.modal-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4d565e;
+    margin: 0;
+}
+
+.modal-body {
+    padding: 12px;
+}
+
+.modal-body-scroll {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #e6eaee;
+    background: #f7f9fb;
+}
+
+.close {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: #7a838b;
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 6px;
+}
+
+.close:hover {
+    color: #2f3a42;
+}
+
+.form-group {
+    margin: 0 0 12px;
+}
+
+.control-label {
+    display: block;
+    font-size: 11px;
+    color: #6b7680;
+    margin: 0 0 6px;
+}
+
+.form-control {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #ccd2d8;
+    border-radius: 3px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: #4d565e;
+    background: #fff;
+    outline: none;
+}
+
+textarea.form-control {
+    height: auto;
+    padding: 8px 10px;
+    resize: vertical;
+}
+
+.form-control:focus {
+    border-color: #9ccdf2;
+    box-shadow: 0 0 0 3px rgba(82, 168, 232, 0.18);
+}
+
+.btn-danger {
+    background: #e74c3c;
+    border: 1px solid #d64233;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    filter: brightness(0.95);
+}
+
+.versum-color-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.versum-color-picker button {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    background: #eee;
+}
+
+.versum-color-picker button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(82, 168, 232, 0.25);
+}
+
+/* ========================================
    Clients Module (Versum parity)
    ======================================== */
 
 .clients-page {
     max-width: 820px; /* leave empty space on the right like Versum */
+}
+
+.customer-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0 0 10px;
+}
+
+.customer-actions-bar__spacer {
+    flex: 1;
+}
+
+.link-edit {
+    margin-left: 8px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--versum-accent);
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.link-edit:hover {
+    text-decoration: underline;
+}
+
+/* Client detail secondary nav (KARTA KLIENTA) */
+.client-detail-nav .client-nav-name {
+    font-weight: 700;
+}
+
+.client-detail-nav .client-nav-icon {
+    width: 16px;
+    margin-right: 8px;
+    text-align: center;
+    color: #9aa2a9;
+}
+
+.client-detail-nav .nav-list li.active .client-nav-icon,
+.client-detail-nav .nav-list li a:hover .client-nav-icon {
+    color: var(--versum-accent);
+}
+
+.client-detail-nav .client-nav-tabs {
+    margin-top: 6px;
+    margin-left: 14px;
+    padding-left: 10px;
+    border-left: 1px solid #e2e7ec;
+}
+
+.client-detail-nav .client-nav-tabs li {
+    position: relative;
+}
+
+.client-detail-nav .client-nav-tabs li::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    width: 10px;
+    border-top: 1px solid #e2e7ec;
+}
+
+.client-detail-nav .client-nav-tabs li a {
+    cursor: pointer;
 }
 
 .clients-toolbar {
