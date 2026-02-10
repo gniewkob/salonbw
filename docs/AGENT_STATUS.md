@@ -30,6 +30,12 @@ Verification:
 
 ## Recent Incidents
 
+### 2026-02-10: SMTP credentials moved out of CI/CD
+
+- **Impact:** Reduced risk of SMTP secret exposure via CI/CD.
+- **Change:** `Deploy (MyDevil)` no longer injects `SMTP_*` into generated API `.env`; deploy preserves server-managed `SMTP_*` lines instead.
+- **Action required:** Maintain `SMTP_USER` / `SMTP_PASSWORD` only on the server in `/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env`.
+
 ### 2026-02-02: API deploy path normalized (symlink to apps path)
 
 - **Impact:** None observed (path alignment only).
