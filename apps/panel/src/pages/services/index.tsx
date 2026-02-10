@@ -6,12 +6,13 @@ import {
     useCreateService,
     useServiceCategories,
 } from '@/hooks/useServicesAdmin';
+import { useServiceRanking } from '@/hooks/useStatistics';
 import ServiceFormModal, {
     ServiceFormData,
 } from '@/components/services/ServiceFormModal';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Service, ServiceVariant } from '@/types';
+import type { Role, Service, ServiceVariant } from '@/types';
 
 // Extended service type with computed fields for display
 interface ServiceWithDisplay extends Service {
@@ -27,12 +28,12 @@ export default function ServicesPage() {
 
     return (
         <VersumShell role={role}>
-            <ServicesPageContent />
+            <ServicesPageContent role={role} />
         </VersumShell>
     );
 }
 
-function ServicesPageContent() {
+function ServicesPageContent({ role }: { role: Role }) {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -49,7 +50,19 @@ function ServicesPageContent() {
     });
 
     const { data: categories = [] } = useServiceCategories();
+    const { data: ranking = [] } = useServiceRanking({
+        range: 'this_month',
+        enabled: role === 'admin',
+    });
     const createService = useCreateService();
+
+    const popularityByServiceId = useMemo(() => {
+        const map = new Map<number, number>();
+        for (const row of ranking) {
+            map.set(Number(row.serviceId), row.bookingCount);
+        }
+        return map;
+    }, [ranking]);
 
     // Process services with display values
     const processedServices: ServiceWithDisplay[] = useMemo(() => {
@@ -92,8 +105,10 @@ function ServicesPageContent() {
                 }
             }
 
-            // Calculate mock popularity based on service id (consistent random-like value)
-            const popularity = Math.max(0, (service.id * 7) % 600);
+            const popularity =
+                role === 'admin'
+                    ? (popularityByServiceId.get(service.id) ?? 0)
+                    : undefined;
 
             return {
                 ...service,
@@ -102,7 +117,7 @@ function ServicesPageContent() {
                 popularity,
             };
         });
-    }, [services]);
+    }, [services, popularityByServiceId, role]);
 
     const filtered = useMemo(() => {
         const query = search.trim().toLowerCase();
@@ -159,6 +174,57 @@ function ServicesPageContent() {
         if (count === 1) return 'raz';
         if (count >= 2 && count <= 4) return `${count} razy`;
         return `${count} razy`;
+    };
+
+    const downloadCsvPriceList = () => {
+        const esc = (val: unknown) => {
+            const s = String(val ?? '');
+            if (/[",\n\r]/.test(s)) return `"${s.replaceAll('"', '""')}"`;
+            return s;
+        };
+
+        const lines: string[] = [];
+        lines.push(
+            [
+                'id',
+                'name',
+                'category',
+                'duration',
+                'price_gross',
+                'vat_rate',
+                'active',
+                'online_booking',
+            ].join(','),
+        );
+
+        for (const s of filtered) {
+            lines.push(
+                [
+                    esc(s.id),
+                    esc(s.name),
+                    esc(s.categoryRelation?.name ?? ''),
+                    esc(s.displayDuration ?? ''),
+                    esc(s.displayPrice ?? ''),
+                    esc(s.vatRate ?? 23),
+                    esc(s.isActive ? 1 : 0),
+                    esc(s.onlineBooking ? 1 : 0),
+                ].join(','),
+            );
+        }
+
+        const content = '\uFEFF' + lines.join('\n') + '\n';
+        const blob = new Blob([content], {
+            type: 'text/csv;charset=utf-8',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const date = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `cennik-uslugi-${date}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -324,7 +390,7 @@ function ServicesPageContent() {
                             className="versum-link"
                             onClick={(e) => {
                                 e.preventDefault();
-                                alert('Export do Excel - wkrótce');
+                                downloadCsvPriceList();
                             }}
                         >
                             pobierz cennik w pliku Excel
