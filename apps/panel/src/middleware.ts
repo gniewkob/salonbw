@@ -19,6 +19,7 @@ export function middleware(request: NextRequest) {
         path.startsWith('/_next') ||
         path.startsWith('/assets') ||
         path.startsWith('/versum-calendar') ||
+        path.startsWith('/versum-vendor') ||
         path.startsWith('/favicon.ico') ||
         path.startsWith('/api') ||
         path.startsWith('/events') ||
