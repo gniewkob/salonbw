@@ -63,17 +63,9 @@ export default async function handler(
             // that are in the <head> of index.html.
             // We need to return the <head> scripts/styles + #main-content.
 
-            // Extract HEAD content (simplified)
-            const headMatch = html.match(/<head>([\s\S]*?)<\/head>/);
-            const headContent = headMatch ? headMatch[1] : '';
-
             // Extract Main Content
-            // We want everything inside #main-content
-            // Regex to find <div ... id="main-content" ...> ... </div>
-            // This is risky with regex. Better to find start and end indices if possible.
-            // Given the file structure is static:
-            const contentStartMarker = 'id="main-content" role="main">';
-            const contentEndMarker = '<script>'; // The script block follows main content?
+            // We want everything inside #main-content. This is legacy HTML and we keep
+            // the logic minimal; avoid brittle parsing unless PJAX support is revived.
             // Actually, looking at the file:
             // Line 250: <div class="main-content calendar" id="main-content" role="main">
             // ... content ...

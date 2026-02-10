@@ -3,7 +3,6 @@ import {
     useCustomerGroups,
     useCustomerTags,
     useCreateCustomerGroup,
-    useAddGroupMembers,
 } from '@/hooks/useCustomers';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -83,7 +82,6 @@ export default function ClientsNav() {
     const { data: services } = useServices();
     const { data: employees } = useEmployees();
     const createGroup = useCreateCustomerGroup();
-    const addToGroup = useAddGroupMembers();
 
     const [showMoreGroups, setShowMoreGroups] = useState(false);
     const [showMoreCriteria, setShowMoreCriteria] = useState(false);

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { format, subDays, subMonths } from 'date-fns';
 import Link from 'next/link';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,7 +34,16 @@ export default function ClientsStatisticsPage() {
                         <select
                             className="form-control versum-select"
                             value={range}
-                            onChange={(e) => setRange(e.target.value as any)}
+                            onChange={(e) => {
+                                const next = e.target.value;
+                                if (
+                                    next === 'month' ||
+                                    next === 'quarter' ||
+                                    next === 'year'
+                                ) {
+                                    setRange(next);
+                                }
+                            }}
                         >
                             <option value="month">ostatni miesiąc</option>
                             <option value="quarter">ostatnie 3 miesiące</option>

@@ -13,24 +13,6 @@ type SecondaryItem = {
 
 // clientsSections moved to ClientsNav
 
-const statisticsSections: SecondaryItem[] = [
-    {
-        label: 'RAPORTY',
-        children: [
-            'Raport finansowy',
-            'Pracownicy',
-            'Prowizje pracowników',
-            'Stan kasy',
-            'Napiwki',
-            'Usługi',
-            'Klienci',
-            'Magazyn',
-            'Raport czasu pracy',
-            'Komentarze',
-        ],
-    },
-];
-
 const communicationSections: SecondaryItem[] = [
     {
         label: 'ŁĄCZNOŚĆ',

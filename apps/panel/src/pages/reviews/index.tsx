@@ -23,13 +23,9 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
 
 export default function ReviewsPage() {
     const { role } = useAuth();
-    if (!role) return null;
-
     const isAdmin = role === 'admin';
     const [employeeId, setEmployeeId] = useState(1);
-    const { data, page, total, limit, setPage, rating, setRating } = useReviews(
-        isAdmin ? { employeeId } : { mine: true },
-    );
+    const { data } = useReviews(isAdmin ? { employeeId } : { mine: true });
     const api = useReviewApi();
     type Row = Review & { employeeName?: string; authorName?: string };
     const [rows, setRows] = useState<Row[]>([]);
@@ -45,6 +41,8 @@ export default function ReviewsPage() {
             })),
         );
     }, [data]);
+
+    if (!role) return null;
 
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },

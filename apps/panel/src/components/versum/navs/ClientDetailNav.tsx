@@ -1,7 +1,6 @@
 // Sidebar navigation for client detail page (KARTA KLIENTA)
 // Matches Versum 1:1 style
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 type TabId =
     | 'summary'
@@ -43,13 +42,11 @@ export default function ClientDetailNav({
     activeTab,
     onTabChange,
 }: ClientDetailNavProps) {
-    const router = useRouter();
-
     return (
         <div className="sidebar-inner client-detail-nav">
             {/* Header - KARTA KLIENTA */}
             <div className="nav-header client-nav-header">KARTA KLIENTA</div>
-            
+
             {/* Customer name link */}
             <ul className="nav nav-list">
                 <li>

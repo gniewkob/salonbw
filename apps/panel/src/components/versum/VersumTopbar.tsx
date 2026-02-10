@@ -51,7 +51,7 @@ export default function VersumTopbar() {
             id="navbar"
         >
             <div className="notification-bar-container"></div>
-            
+
             {/* Logo - positioned absolutely like original Versum */}
             <div className="brand">
                 <Link
@@ -79,7 +79,7 @@ export default function VersumTopbar() {
                             ></div>
                         </div>
                     </li>
-                    
+
                     {/* Notification center with counter */}
                     <li
                         className="notification_center"
@@ -99,7 +99,7 @@ export default function VersumTopbar() {
                             </div>
                         </a>
                     </li>
-                    
+
                     {/* Messages with counter */}
                     <li className="all_complete tasks_tooltip">
                         <a
@@ -126,7 +126,7 @@ export default function VersumTopbar() {
                             role="menu"
                         ></div>
                     </li>
-                    
+
                     <li
                         ref={helpMenuRef}
                         className={`dropdown help_tooltip right-menu ${helpMenuOpen ? 'open' : ''}`}
@@ -162,7 +162,7 @@ export default function VersumTopbar() {
                             </li>
                         </ul>
                     </li>
-                    
+
                     <li
                         ref={userMenuRef}
                         className={`dropdown right-menu ${userMenuOpen ? 'open' : ''}`}

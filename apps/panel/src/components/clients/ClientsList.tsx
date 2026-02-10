@@ -28,7 +28,8 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
 
     // Funkcja do czyszczenia filtra
     const clearGroupFilter = () => {
-        const { groupId, ...restQuery } = router.query;
+        const restQuery = { ...router.query };
+        delete restQuery.groupId;
         void router.push(
             { pathname: router.pathname, query: restQuery },
             undefined,

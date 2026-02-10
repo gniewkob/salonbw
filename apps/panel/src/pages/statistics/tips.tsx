@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { format, subDays, addDays, startOfMonth, endOfMonth } from 'date-fns';
 import Link from 'next/link';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,9 @@ import { useTipsSummary } from '@/hooks/useStatistics';
 
 export default function TipsPage() {
     const { role } = useAuth();
-    const [range, setRange] = useState<'today' | 'this_week' | 'this_month'>('this_month');
+    const [range, setRange] = useState<'today' | 'this_week' | 'this_month'>(
+        'this_month',
+    );
     const { data, isLoading } = useTipsSummary({ range });
 
     const formatMoney = (value: number): string => {
@@ -46,11 +47,20 @@ export default function TipsPage() {
                         <select
                             className="form-control versum-select"
                             value={range}
-                            onChange={(e) => setRange(e.target.value as any)}
+                            onChange={(e) => {
+                                const next = e.target.value;
+                                if (
+                                    next === 'today' ||
+                                    next === 'this_week' ||
+                                    next === 'this_month'
+                                ) {
+                                    setRange(next);
+                                }
+                            }}
                         >
                             <option value="today">dzisiaj</option>
-                            <option value="week">ten tydzień</option>
-                            <option value="month">ten miesiąc</option>
+                            <option value="this_week">ten tydzień</option>
+                            <option value="this_month">ten miesiąc</option>
                         </select>
                     </div>
                     <button

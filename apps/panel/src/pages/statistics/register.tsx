@@ -1,34 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCashRegister } from '@/hooks/useStatistics';
-
-interface CashRegisterEntry {
-    id: number;
-    time: string;
-    type: 'appointment' | 'product' | 'other';
-    description: string;
-    paymentMethod: string;
-    amount: number;
-    tip: number;
-    employeeName: string | null;
-    clientName: string | null;
-}
-
-interface CashRegisterSummary {
-    date: string;
-    entries: CashRegisterEntry[];
-    totals: {
-        cash: number;
-        card: number;
-        transfer: number;
-        online: number;
-        voucher: number;
-        total: number;
-        tips: number;
-    };
-}
+import type { CashRegisterSummary } from '@/types';
 
 export default function CashRegisterPage() {
     const { role } = useAuth();
@@ -52,7 +27,7 @@ export default function CashRegisterPage() {
     };
 
     // Calculate summary from entries
-    const calculateSummary = (entries: CashRegisterEntry[]) => {
+    const calculateSummary = (entries: CashRegisterSummary['entries']) => {
         const summary = {
             appointments: 0,
             products: 0,

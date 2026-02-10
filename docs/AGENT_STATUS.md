@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-04 (Calendar module DoD complete - E2E tests added)_
+_Last updated: 2026-02-10 (Calendar embed restored on `/calendar`)_
 
 ## Platform Architecture
 
@@ -81,6 +81,9 @@ Verification:
 
 ## What's Working
 
+- **2026-02-10** – `/calendar` restored to the **vendored Versum embed**:
+  - `/calendar` (Next page) replaces the document with HTML served by `apps/panel/src/pages/api/calendar-embed.ts`;
+  - legacy `/salonblackandwhite/*` compat aliases are rewritten to `/api/*` in `apps/panel/next.config.mjs`.
 - **2026-02-04** – **Calendar module DoD complete**:
   - static runtime served from `apps/panel/public/versum-calendar/index.html`;
   - panel rewrites added for compat paths: `/events/*`, `/settings/timetable/schedules/*`, `/graphql`, `/track_new_events.json`;
