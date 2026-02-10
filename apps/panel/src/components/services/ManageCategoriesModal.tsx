@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ServiceCategory } from '@/types';
 import CategoryFormModal from './CategoryFormModal';
 import {
+    type CreateServiceCategoryDto,
     useCreateServiceCategory,
     useUpdateServiceCategory,
     useDeleteServiceCategory,
@@ -41,11 +42,11 @@ export default function ManageCategoriesModal({
         setIsFormOpen(true);
     };
 
-    const handleSave = async (data: any) => {
+    const handleSave = async (data: CreateServiceCategoryDto) => {
         if (editingCategory) {
             await updateCategory.mutateAsync({
                 id: editingCategory.id,
-                ...data,
+                data,
             });
         } else {
             await createCategory.mutateAsync(data);
@@ -105,9 +106,9 @@ export default function ManageCategoriesModal({
                         </button>
                         <button
                             className="btn btn-default btn-xs"
-                            onClick={() =>
-                                handleDelete(category.id, category.name)
-                            }
+                            onClick={() => {
+                                void handleDelete(category.id, category.name);
+                            }}
                             title="Usuń kategorię"
                             aria-label="Usuń kategorię"
                         >

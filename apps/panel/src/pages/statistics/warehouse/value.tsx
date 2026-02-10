@@ -94,7 +94,9 @@ export default function WarehouseValuePage() {
                             Raport wartości produktów
                         </h1>
                         <button
-                            onClick={fetchData}
+                            onClick={() => {
+                                void fetchData();
+                            }}
                             className="versum-btn versum-btn--default"
                             disabled={isLoading}
                         >

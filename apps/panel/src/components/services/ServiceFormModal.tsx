@@ -1,13 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type {
-    Service,
-    ServiceCategory,
-    PriceType,
-    Employee,
-    EmployeeService,
-} from '@/types';
+import type { Service, ServiceCategory, PriceType } from '@/types';
 import SelectorModal from '@/components/versum/modals/SelectorModal';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useServiceEmployeesDetails } from '@/hooks/useServicesAdmin';
@@ -72,8 +66,9 @@ export default function ServiceFormModal({
 
     const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
     const { data: allEmployees = [] } = useEmployees();
-    const { data: existingEmployees = [], refetch: refetchEmployees } =
-        useServiceEmployeesDetails(service?.id || 0);
+    const { data: existingEmployees = [] } = useServiceEmployeesDetails(
+        service?.id || 0,
+    );
 
     useEffect(() => {
         if (service) {

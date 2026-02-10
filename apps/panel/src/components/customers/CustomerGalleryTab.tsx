@@ -34,12 +34,6 @@ export default function CustomerGalleryTab({ customerId }: Props) {
         alert('Funkcja dodawania zdjęć będzie dostępna wkrótce');
     };
 
-    const handleDelete = (imageId: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć to zdjęcie?')) return;
-        // TODO: Implement delete
-        console.log('Delete image:', imageId);
-    };
-
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">

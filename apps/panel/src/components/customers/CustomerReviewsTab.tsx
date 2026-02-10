@@ -202,7 +202,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
 
                                             {review.content && (
                                                 <div className="fz-13 text-333 lh-14 italic">
-                                                    "{review.content}"
+                                                    &quot;{review.content}&quot;
                                                 </div>
                                             )}
 

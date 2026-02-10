@@ -45,10 +45,7 @@ const AdminSidebar: ComponentType<SidebarProps> =
               .default as ComponentType<SidebarProps>)
         : dynamic<SidebarProps>(() => import('./sidebars/AdminSidebarMenu'));
 
-export default function DashboardLayout({
-    children,
-    secondaryNav,
-}: Props) {
+export default function DashboardLayout({ children, secondaryNav }: Props) {
     const [menuOpen, setMenuOpen] = useState(false);
     const { role } = useAuth();
 

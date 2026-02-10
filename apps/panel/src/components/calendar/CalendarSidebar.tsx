@@ -120,7 +120,9 @@ export default function CalendarSidebar({
                                         backgroundColor: emp.color || '#ccc',
                                     }}
                                 />
-                                <span className="text-gray-700">{emp.name}</span>
+                                <span className="text-gray-700">
+                                    {emp.name}
+                                </span>
                             </div>
                         </label>
                     ))}

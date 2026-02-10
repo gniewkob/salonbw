@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer, CustomerTag } from '@/types';
+import { Customer } from '@/types';
 import CustomerSummaryTab from './CustomerSummaryTab';
 import CustomerPersonalDataTab from './CustomerPersonalDataTab';
 import CustomerStatisticsTab from './CustomerStatisticsTab';
@@ -38,17 +38,11 @@ const tabs: { id: TabId; label: string }[] = [
 
 interface Props {
     customer: Customer;
-    tags: CustomerTag[];
     onClose?: () => void;
     onUpdate?: (data: Partial<Customer>) => Promise<void> | void;
 }
 
-export default function CustomerCard({
-    customer,
-    tags,
-    onClose,
-    onUpdate,
-}: Props) {
+export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
     const [activeTab, setActiveTab] = useState<TabId>('summary');
 
     const initials = customer.name
@@ -57,15 +51,6 @@ export default function CustomerCard({
         .join('')
         .toUpperCase()
         .slice(0, 2);
-
-    const genderDisplay =
-        customer.gender === 'female'
-            ? 'Kobieta'
-            : customer.gender === 'male'
-              ? 'Mężczyzna'
-              : customer.gender
-                ? 'Inna'
-                : null;
 
     return (
         <div className="inner">

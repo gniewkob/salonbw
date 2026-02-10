@@ -10,14 +10,12 @@ import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
-    useTagsForCustomer,
     useUpdateCustomer,
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
 import type { Customer, CustomerTag } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
-import CustomerConsentsTab from '@/components/customers/CustomerConsentsTab';
 
 type TabId =
     | 'summary'
@@ -48,7 +46,6 @@ export default function CustomerDetailPage() {
     const [activeTab, setActiveTab] = useState<TabId>('summary');
 
     const { data: customer, isLoading, error } = useCustomer(customerId);
-    const { data: tags } = useTagsForCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId ?? 0);
     const { data: history } = useCustomerEventHistory(customerId ?? 0, {
         limit: 3,
@@ -209,9 +206,12 @@ function CustomerSummaryView({
     history,
 }: {
     customer: Customer;
-    stats: any;
-    history: any;
+    stats: CustomerSummaryStats | null | undefined;
+    history: CustomerHistory | null | undefined;
 }) {
+    const upcomingVisits = stats?.upcomingVisits ?? [];
+    const historyItems = history?.items ?? [];
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('pl-PL', {
             style: 'currency',
@@ -242,9 +242,7 @@ function CustomerSummaryView({
                     >
                         edytuj
                     </Link>
-                    <button className="btn btn-default">
-                        więcej ▼
-                    </button>
+                    <button className="btn btn-default">więcej ▼</button>
                 </div>
             </div>
 
@@ -276,7 +274,11 @@ function CustomerSummaryView({
                         {customer.tags && customer.tags.length > 0 && (
                             <div className="customer-info-item">
                                 <span className="label">🏷️</span>
-                                <span>{customer.tags.map((t: CustomerTag) => t.name).join(', ')}</span>
+                                <span>
+                                    {customer.tags
+                                        .map((t: CustomerTag) => t.name)
+                                        .join(', ')}
+                                </span>
                             </div>
                         )}
                         <div className="customer-info-item">
@@ -285,8 +287,12 @@ function CustomerSummaryView({
                                 <span>{customer.description}</span>
                             ) : (
                                 <>
-                                    <span className="text-muted">brak opisu</span>
-                                    <a href="#" className="link-edit">edytuj opis</a>
+                                    <span className="text-muted">
+                                        brak opisu
+                                    </span>
+                                    <a href="#" className="link-edit">
+                                        edytuj opis
+                                    </a>
                                 </>
                             )}
                         </div>
@@ -323,17 +329,25 @@ function CustomerSummaryView({
             <div className="customer-visits">
                 {/* Upcoming visits */}
                 <div className="visits-section">
-                    <h3>zaplanowane wizyty: {stats?.upcomingVisits?.length || 0}</h3>
-                    {stats?.upcomingVisits?.length > 0 ? (
+                    <h3>
+                        zaplanowane wizyty: {upcomingVisits.length}
+                    </h3>
+                    {upcomingVisits.length > 0 ? (
                         <div className="visits-list">
-                            {stats.upcomingVisits.slice(0, 3).map((visit: any) => (
+                            {upcomingVisits.slice(0, 3).map((visit) => (
                                 <div key={visit.id} className="visit-item">
                                     <div className="visit-service">
-                                        <Link href={`/services/${visit.serviceId}`}>
+                                        <Link
+                                            href={`/services/${visit.serviceId}`}
+                                        >
                                             {visit.serviceName}
                                         </Link>
                                         <div className="visit-details">
-                                            {formatDateTime(visit.date, visit.time)}, {visit.employeeName}
+                                            {formatDateTime(
+                                                visit.date,
+                                                visit.time,
+                                            )}
+                                            , {visit.employeeName}
                                         </div>
                                     </div>
                                     <div className="visit-price">
@@ -341,8 +355,10 @@ function CustomerSummaryView({
                                     </div>
                                 </div>
                             ))}
-                            {stats.upcomingVisits.length > 3 && (
-                                <a href="#" className="link-more">więcej</a>
+                            {upcomingVisits.length > 3 && (
+                                <a href="#" className="link-more">
+                                    więcej
+                                </a>
                             )}
                         </div>
                     ) : (
@@ -353,12 +369,14 @@ function CustomerSummaryView({
                 {/* Completed visits */}
                 <div className="visits-section">
                     <h3>zrealizowane wizyty: {stats?.completedVisits || 0}</h3>
-                    {history?.items?.length > 0 ? (
+                    {historyItems.length > 0 ? (
                         <div className="visits-list">
-                            {history.items.slice(0, 3).map((visit: any) => (
+                            {historyItems.slice(0, 3).map((visit) => (
                                 <div key={visit.id} className="visit-item">
                                     <div className="visit-service">
-                                        <Link href={`/services/${visit.service?.id}`}>
+                                        <Link
+                                            href={`/services/${visit.service?.id}`}
+                                        >
                                             {visit.service?.name}
                                         </Link>
                                         <div className="visit-details">
@@ -366,8 +384,14 @@ function CustomerSummaryView({
                                         </div>
                                     </div>
                                     <div className="visit-employee">
-                                        <Link href={`/employees/${visit.employee?.id}`}>
-                                            {visit.employee?.initials || visit.employee?.name?.split(' ').map((n: string) => n[0]).join('')}
+                                        <Link
+                                            href={`/employees/${visit.employee?.id}`}
+                                        >
+                                            {visit.employee?.initials ||
+                                                visit.employee?.name
+                                                    ?.split(' ')
+                                                    .map((n: string) => n[0])
+                                                    .join('')}
                                         </Link>
                                     </div>
                                     <div className="visit-price">
@@ -376,7 +400,9 @@ function CustomerSummaryView({
                                 </div>
                             ))}
                             {(stats?.completedVisits || 0) > 3 && (
-                                <a href="#" className="link-more">więcej</a>
+                                <a href="#" className="link-more">
+                                    więcej
+                                </a>
                             )}
                         </div>
                     ) : (
@@ -389,6 +415,7 @@ function CustomerSummaryView({
 }
 
 function CustomerStatisticsView({ customerId }: { customerId: number }) {
+    void customerId;
     return (
         <div className="customer-tab-content">
             <h3>Statystyki klienta</h3>
@@ -398,6 +425,7 @@ function CustomerStatisticsView({ customerId }: { customerId: number }) {
 }
 
 function CustomerHistoryView({ customerId }: { customerId: number }) {
+    void customerId;
     return (
         <div className="customer-tab-content">
             <h3>Historia wizyt</h3>
@@ -407,6 +435,7 @@ function CustomerHistoryView({ customerId }: { customerId: number }) {
 }
 
 function CustomerCommentsView({ customerId }: { customerId: number }) {
+    void customerId;
     return (
         <div className="customer-tab-content">
             <h3>Komentarze</h3>
@@ -416,6 +445,7 @@ function CustomerCommentsView({ customerId }: { customerId: number }) {
 }
 
 function CustomerCommunicationView({ customer }: { customer: Customer }) {
+    void customer;
     return (
         <div className="customer-tab-content">
             <h3>Komunikacja</h3>
@@ -425,6 +455,7 @@ function CustomerCommunicationView({ customer }: { customer: Customer }) {
 }
 
 function CustomerGalleryView({ customerId }: { customerId: number }) {
+    void customerId;
     return (
         <div className="customer-tab-content">
             <h3>Galeria zdjęć</h3>
@@ -434,6 +465,7 @@ function CustomerGalleryView({ customerId }: { customerId: number }) {
 }
 
 function CustomerFilesView({ customerId }: { customerId: number }) {
+    void customerId;
     return (
         <div className="customer-tab-content">
             <h3>Załączone pliki</h3>
@@ -441,3 +473,34 @@ function CustomerFilesView({ customerId }: { customerId: number }) {
         </div>
     );
 }
+
+type CustomerUpcomingVisit = {
+    id: number;
+    serviceId: number;
+    serviceName: string;
+    date: string;
+    time?: string;
+    employeeName: string;
+    price: number;
+};
+
+type CustomerSummaryStats = {
+    completedVisits?: number;
+    upcomingVisits?: CustomerUpcomingVisit[];
+};
+
+type CustomerHistoryItem = {
+    id: number;
+    date: string;
+    price: number;
+    service?: { id: number; name: string } | null;
+    employee?: {
+        id: number;
+        initials?: string | null;
+        name?: string | null;
+    } | null;
+};
+
+type CustomerHistory = {
+    items?: CustomerHistoryItem[];
+};

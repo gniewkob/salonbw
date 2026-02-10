@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { format, subDays, subWeeks, subMonths } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import Link from 'next/link';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,9 +7,9 @@ import { useServiceRanking } from '@/hooks/useStatistics';
 
 export default function ServicesStatisticsPage() {
     const { role } = useAuth();
-    const [range, setRange] = useState<'this_week' | 'this_month' | 'last_month'>(
-        'this_month',
-    );
+    const [range, setRange] = useState<
+        'this_week' | 'this_month' | 'last_month'
+    >('this_month');
     const { data, isLoading } = useServiceRanking({ range });
 
     const formatMoney = (value: number): string => {
@@ -49,10 +49,19 @@ export default function ServicesStatisticsPage() {
                         <select
                             className="form-control versum-select"
                             value={range}
-                            onChange={(e) => setRange(e.target.value as any)}
+                            onChange={(e) => {
+                                const next = e.target.value;
+                                if (
+                                    next === 'this_week' ||
+                                    next === 'this_month' ||
+                                    next === 'last_month'
+                                ) {
+                                    setRange(next);
+                                }
+                            }}
                         >
-                            <option value="week">ostatnie 7 dni</option>
-                            <option value="month">ostatnie 30 dni</option>
+                            <option value="this_week">ostatnie 7 dni</option>
+                            <option value="this_month">ostatnie 30 dni</option>
                             <option value="last_month">
                                 poprzedni miesiąc
                             </option>
