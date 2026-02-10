@@ -9,6 +9,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { useState } from 'react';
 import type { CustomerFilterParams, CustomerGroup } from '@/types';
 import CreateCustomerGroupModal from '../modals/CreateCustomerGroupModal';
+import ManageCustomerGroupsModal from '../modals/ManageCustomerGroupsModal';
 import SelectorModal from '../modals/SelectorModal';
 import { useDroppable } from '@dnd-kit/core';
 
@@ -86,6 +87,7 @@ export default function ClientsNav() {
     const [showMoreGroups, setShowMoreGroups] = useState(false);
     const [showMoreCriteria, setShowMoreCriteria] = useState(false);
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+    const [showManageGroupsModal, setShowManageGroupsModal] = useState(false);
     const [showServiceSelector, setShowServiceSelector] = useState(false);
     const [showEmployeeSelector, setShowEmployeeSelector] = useState(false);
 
@@ -205,7 +207,7 @@ export default function ClientsNav() {
             <div className="versum-secondarynav__manage-groups">
                 <a
                     href="javascript:;"
-                    onClick={() => setShowCreateGroupModal(true)}
+                    onClick={() => setShowManageGroupsModal(true)}
                     className="versum-secondarynav__link"
                 >
                     dodaj/edytuj/usuń
@@ -365,6 +367,12 @@ export default function ClientsNav() {
                         setShowCreateGroupModal(false);
                     }}
                     submitting={createGroup.isPending}
+                />
+            )}
+
+            {showManageGroupsModal && (
+                <ManageCustomerGroupsModal
+                    onClose={() => setShowManageGroupsModal(false)}
                 />
             )}
 

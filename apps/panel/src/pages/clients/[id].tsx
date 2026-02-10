@@ -35,17 +35,6 @@ type TabId =
     | 'gallery'
     | 'files';
 
-const tabs: { id: TabId; label: string }[] = [
-    { id: 'summary', label: 'podsumowanie' },
-    { id: 'personal', label: 'dane osobowe' },
-    { id: 'statistics', label: 'statystyki' },
-    { id: 'history', label: 'historia wizyt' },
-    { id: 'comments', label: 'komentarze' },
-    { id: 'communication', label: 'komunikacja' },
-    { id: 'gallery', label: 'galeria zdjęć' },
-    { id: 'files', label: 'załączone pliki' },
-];
-
 export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
@@ -70,12 +59,14 @@ export default function CustomerDetailPage() {
 
     // Custom sidebar for client detail page (KARTA KLIENTA)
     const clientDetailSidebar = customer ? (
-        <ClientDetailNav
-            customerId={customer.id}
-            customerName={customer.name}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-        />
+        <div className="secondarynav" id="sidenav">
+            <ClientDetailNav
+                customerId={customer.id}
+                customerName={customer.name}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
+        </div>
     ) : null;
 
     return (
@@ -106,41 +97,23 @@ export default function CustomerDetailPage() {
                         </div>
                     ) : customer ? (
                         <>
-                            {/* Nagłówek karty klienta */}
-                            <div className="customer-card-header">
-                                <div className="customer-card-nav">
-                                    <div className="customer-card-title">
-                                        Karta klienta
-                                    </div>
-                                    <div className="customer-card-name">
-                                        <Link
-                                            href={`/clients/${customer.id}`}
-                                            className="customer-name-link"
-                                        >
-                                            {customer.name}
-                                        </Link>
-                                    </div>
-                                    {/* Tabs */}
-                                    <ul className="customer-tabs">
-                                        {tabs.map((tab) => (
-                                            <li
-                                                key={tab.id}
-                                                className={
-                                                    activeTab === tab.id
-                                                        ? 'active'
-                                                        : ''
-                                                }
-                                            >
-                                                <a
-                                                    onClick={() =>
-                                                        setActiveTab(tab.id)
-                                                    }
-                                                >
-                                                    {tab.label}
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
+                            <div className="customer-actions-bar">
+                                <div className="customer-actions-bar__spacer" />
+                                <div className="btn-group">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditModalOpen(true)}
+                                        className="btn btn-default btn-xs"
+                                    >
+                                        edytuj
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-default btn-xs"
+                                        title="Wiecej"
+                                    >
+                                        więcej ▼
+                                    </button>
                                 </div>
                             </div>
 
@@ -280,20 +253,6 @@ function CustomerSummaryView({
 
     return (
         <div className="customer-summary">
-            {/* Header with actions - Versum style */}
-            <div className="customer-summary-header">
-                <div className="customer-actions">
-                    <button
-                        type="button"
-                        onClick={onEdit}
-                        className="btn btn-default"
-                    >
-                        edytuj
-                    </button>
-                    <button className="btn btn-default">więcej ▼</button>
-                </div>
-            </div>
-
             {/* Customer Info Card - Versum 1:1 */}
             <div className="customer-info-card">
                 <div className="customer-info-main">
@@ -350,9 +309,13 @@ function CustomerSummaryView({
                                     <span className="text-muted">
                                         brak opisu
                                     </span>
-                                    <a href="#" className="link-edit">
+                                    <button
+                                        type="button"
+                                        onClick={onEdit}
+                                        className="link-edit"
+                                    >
                                         edytuj opis
-                                    </a>
+                                    </button>
                                 </>
                             )}
                         </div>

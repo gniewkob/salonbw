@@ -119,6 +119,7 @@ export default function CreateCustomerGroupModal({
                                             }))
                                         }
                                         data-color={color}
+                                        style={{ backgroundColor: color }}
                                         title={color}
                                     />
                                 ))}
