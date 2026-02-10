@@ -85,10 +85,10 @@
 | Moduł Magazyn | ✅ | 100% |
 | Moduł Usługi | ❌ | 0% |
 | Moduł Statystyki | ❌ | 0% |
-| Moduł Łączność | ❌ | 0% |
+| Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~35%** (2 z 8 modułów gotowe)
+**Całkowity postęp: ~40%** (2 z 8 modułów gotowe + Łączność w toku)
 
 ---
 
@@ -106,6 +106,10 @@
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
 - Backend: `email_logs` + `GET /emails/history` + media endpoints dla klientów (uploads na dysku w `uploads/`, miniatury `jimp`)
+
+### 2026-02-10 - Łączność: email send + masowa wysyłka + email reminders
+- Panel: `/communication` przełączanie SMS/Email (historia), wysyłka pojedyncza (SMS + email), masowa wysyłka (SMS + email)
+- Backend: `POST /emails/send-auth` (panel) + `POST /emails/send-bulk` (panel) + automatyczne przypomnienia email (jeśli ustawiony domyślny szablon email)
 
 ### 2026-02-06 - Sprint 5 zakończony
 - Przepisano stronę magazynu (/products) na VersumShell
