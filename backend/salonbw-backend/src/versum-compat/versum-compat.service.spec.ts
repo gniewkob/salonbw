@@ -103,9 +103,7 @@ describe('VersumCompatService', () => {
         };
 
         appointmentsRepository.findOne.mockResolvedValue(appointment);
-        appointmentsRepository.save.mockImplementation(
-            async (entity) => entity,
-        );
+        appointmentsRepository.save.mockImplementation((entity) => entity);
 
         const result = await service.finalizeEvent(101, { id: 999 } as never, {
             not_an_appointment: true,

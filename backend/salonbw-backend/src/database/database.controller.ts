@@ -11,15 +11,15 @@ import TestDataSeed from './seeds/test-data.seed';
 @ApiTags('Database')
 @Controller('database')
 export class DatabaseController {
-    constructor(
-        @InjectDataSource() private dataSource: DataSource,
-    ) {}
+    constructor(@InjectDataSource() private dataSource: DataSource) {}
 
     @Post('seed-test-data')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Seed test data (employees, services, appointments)' })
+    @ApiOperation({
+        summary: 'Seed test data (employees, services, appointments)',
+    })
     async seedTestData() {
         const seed = new TestDataSeed();
         await seed.run(this.dataSource);

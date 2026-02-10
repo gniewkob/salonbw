@@ -351,7 +351,10 @@ export class ProductsService {
             );
 
             for (const row of movementRows as Array<Record<string, unknown>>) {
-                const movementType = String(row.movementType ?? 'adjustment');
+                const movementType =
+                    typeof row.movementType === 'string'
+                        ? row.movementType
+                        : 'adjustment';
                 const isDelivery = movementType === 'delivery';
                 const isStocktaking = movementType === 'stocktaking';
                 const source: ProductHistoryItem['source'] = isDelivery

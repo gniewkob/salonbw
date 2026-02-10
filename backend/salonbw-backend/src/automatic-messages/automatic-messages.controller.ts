@@ -39,7 +39,7 @@ export class AutomaticMessagesController {
     @Roles(Role.Admin)
     async findAll(): Promise<AutomaticMessageRuleResponseDto[]> {
         const rules = await this.automaticMessagesService.findAll();
-        return rules.map(this.mapToResponse);
+        return rules.map((rule) => this.mapToResponse(rule));
     }
 
     @Get(':id')

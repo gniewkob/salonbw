@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
+import {
+    IsString,
+    IsNotEmpty,
+    IsOptional,
+    IsObject,
+    IsNumber,
+} from 'class-validator';
 
 export class SendEmailDto {
     @ApiProperty({ description: 'Recipient email address' })
@@ -26,4 +32,12 @@ export class SendEmailDto {
     @IsOptional()
     @IsObject()
     data?: Record<string, string>;
+
+    @ApiProperty({
+        description: 'Optional recipient user id for history filtering',
+        required: false,
+    })
+    @IsOptional()
+    @IsNumber()
+    recipientId?: number;
 }

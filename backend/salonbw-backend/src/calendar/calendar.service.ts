@@ -258,13 +258,14 @@ export class CalendarService {
                     start: startOfWeek(date, { weekStartsOn: 1 }),
                     end: endOfWeek(date, { weekStartsOn: 1 }),
                 };
-            case CalendarView.Month:
+            case CalendarView.Month: {
                 const monthStart = startOfMonth(date);
                 const monthEnd = endOfMonth(date);
                 return {
                     start: startOfWeek(monthStart, { weekStartsOn: 1 }),
                     end: endOfWeek(monthEnd, { weekStartsOn: 1 }),
                 };
+            }
         }
     }
 

@@ -163,7 +163,7 @@ export class LoyaltyService {
         balance.lifetimeTierPoints += points;
 
         // Check for tier upgrade
-        await this.updateTier(balance, program);
+        this.updateTier(balance, program);
 
         await this.balanceRepo.save(balance);
 
@@ -628,10 +628,7 @@ export class LoyaltyService {
     }
 
     // Helpers
-    private async updateTier(
-        balance: LoyaltyBalance,
-        program: LoyaltyProgram,
-    ): Promise<void> {
+    private updateTier(balance: LoyaltyBalance, program: LoyaltyProgram): void {
         if (!program.enableTiers || !program.tierThresholds?.length) {
             return;
         }

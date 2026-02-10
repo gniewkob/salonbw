@@ -2,7 +2,10 @@ import { DataSource } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { Service } from '../../services/service.entity';
 import { EmployeeService } from '../../services/entities/employee-service.entity';
-import { Appointment, AppointmentStatus } from '../../appointments/appointment.entity';
+import {
+    Appointment,
+    AppointmentStatus,
+} from '../../appointments/appointment.entity';
 import { Role } from '../../users/role.enum';
 import { PriceType } from '../../services/service.entity';
 
@@ -18,7 +21,9 @@ export default class TestDataSeed {
         console.log('Seeding test data...');
 
         // 1. Create employees
-        let employee1 = await userRepo.findOne({ where: { email: 'aleksandra.bodora@salon-bw.pl' } });
+        let employee1 = await userRepo.findOne({
+            where: { email: 'aleksandra.bodora@salon-bw.pl' },
+        });
         if (!employee1) {
             employee1 = await userRepo.save({
                 email: 'aleksandra.bodora@salon-bw.pl',
@@ -32,7 +37,9 @@ export default class TestDataSeed {
             });
         }
 
-        let employee2 = await userRepo.findOne({ where: { email: 'pracownik.testowy@salon-bw.pl' } });
+        let employee2 = await userRepo.findOne({
+            where: { email: 'pracownik.testowy@salon-bw.pl' },
+        });
         if (!employee2) {
             employee2 = await userRepo.save({
                 email: 'pracownik.testowy@salon-bw.pl',
@@ -49,24 +56,29 @@ export default class TestDataSeed {
         console.log(`✓ Employees: ${employee1?.id}, ${employee2?.id}`);
 
         // 2. Create services (without category - table may not exist)
-        let service1 = await serviceRepo.findOne({ where: { name: 'Koloryzacja Ola - włosy długie' } });
+        let service1 = await serviceRepo.findOne({
+            where: { name: 'Koloryzacja Ola - włosy długie' },
+        });
         if (!service1) {
             service1 = await serviceRepo.save({
                 name: 'Koloryzacja Ola - włosy długie',
                 description: 'Pełna koloryzacja włosów długich',
                 duration: 180,
-                price: 350.00,
+                price: 350.0,
                 priceType: PriceType.Fixed,
             });
         }
 
-        let service2 = await serviceRepo.findOne({ where: { name: 'Strzyżenie Damskie Ola - włosy średnie' } });
+        let service2 = await serviceRepo.findOne({
+            where: { name: 'Strzyżenie Damskie Ola - włosy średnie' },
+        });
         if (!service2) {
             service2 = await serviceRepo.save({
                 name: 'Strzyżenie Damskie Ola - włosy średnie',
-                description: 'Strzyżenie i modelowanie włosów średniej długości',
+                description:
+                    'Strzyżenie i modelowanie włosów średniej długości',
                 duration: 60,
-                price: 120.00,
+                price: 120.0,
                 priceType: PriceType.Fixed,
             });
         }
@@ -77,47 +89,61 @@ export default class TestDataSeed {
                 name: 'Botoks',
                 description: 'Zabieg botoksem na włosy',
                 duration: 90,
-                price: 200.00,
+                price: 200.0,
                 priceType: PriceType.Fixed,
             });
         }
 
-        console.log(`✓ Services: ${service1?.id}, ${service2?.id}, ${service3?.id}`);
+        console.log(
+            `✓ Services: ${service1?.id}, ${service2?.id}, ${service3?.id}`,
+        );
 
         // 4. Assign services to employees
         if (employee1?.id && service1?.id) {
-            await employeeServiceRepo.save({
-                employeeId: employee1.id,
-                serviceId: service1.id,
-            }).catch(() => {});
+            await employeeServiceRepo
+                .save({
+                    employeeId: employee1.id,
+                    serviceId: service1.id,
+                })
+                .catch(() => {});
         }
         if (employee1?.id && service2?.id) {
-            await employeeServiceRepo.save({
-                employeeId: employee1.id,
-                serviceId: service2.id,
-            }).catch(() => {});
+            await employeeServiceRepo
+                .save({
+                    employeeId: employee1.id,
+                    serviceId: service2.id,
+                })
+                .catch(() => {});
         }
         if (employee1?.id && service3?.id) {
-            await employeeServiceRepo.save({
-                employeeId: employee1.id,
-                serviceId: service3.id,
-            }).catch(() => {});
+            await employeeServiceRepo
+                .save({
+                    employeeId: employee1.id,
+                    serviceId: service3.id,
+                })
+                .catch(() => {});
         }
         if (employee2?.id && service1?.id) {
-            await employeeServiceRepo.save({
-                employeeId: employee2.id,
-                serviceId: service1.id,
-            }).catch(() => {});
+            await employeeServiceRepo
+                .save({
+                    employeeId: employee2.id,
+                    serviceId: service1.id,
+                })
+                .catch(() => {});
         }
         if (employee2?.id && service2?.id) {
-            await employeeServiceRepo.save({
-                employeeId: employee2.id,
-                serviceId: service2.id,
-            }).catch(() => {});
+            await employeeServiceRepo
+                .save({
+                    employeeId: employee2.id,
+                    serviceId: service2.id,
+                })
+                .catch(() => {});
         }
 
         // 5. Create test clients
-        let client1 = await userRepo.findOne({ where: { email: 'klient.testowy1@example.com' } });
+        let client1 = await userRepo.findOne({
+            where: { email: 'klient.testowy1@example.com' },
+        });
         if (!client1) {
             client1 = await userRepo.save({
                 email: 'klient.testowy1@example.com',
@@ -130,7 +156,9 @@ export default class TestDataSeed {
             });
         }
 
-        let client2 = await userRepo.findOne({ where: { email: 'klient.testowy2@example.com' } });
+        let client2 = await userRepo.findOne({
+            where: { email: 'klient.testowy2@example.com' },
+        });
         if (!client2) {
             client2 = await userRepo.save({
                 email: 'klient.testowy2@example.com',
@@ -143,7 +171,9 @@ export default class TestDataSeed {
             });
         }
 
-        let client3 = await userRepo.findOne({ where: { email: 'klient.testowy3@example.com' } });
+        let client3 = await userRepo.findOne({
+            where: { email: 'klient.testowy3@example.com' },
+        });
         if (!client3) {
             client3 = await userRepo.save({
                 email: 'klient.testowy3@example.com',
@@ -156,7 +186,9 @@ export default class TestDataSeed {
             });
         }
 
-        console.log(`✓ Clients: ${client1?.id}, ${client2?.id}, ${client3?.id}`);
+        console.log(
+            `✓ Clients: ${client1?.id}, ${client2?.id}, ${client3?.id}`,
+        );
 
         // 6. Create appointments for 2026-02-08
         await appointmentRepo.delete({

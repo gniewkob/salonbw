@@ -112,9 +112,16 @@ export class VersumCompatController {
     async getCustomers(@Query() query: Record<string, unknown>) {
         return this.versumCompatService.getCustomers({
             search: typeof query.search === 'string' ? query.search : undefined,
-            groupId: typeof query.group_id === 'string' ? Number(query.group_id) : undefined,
-            page: typeof query.page === 'string' ? Number(query.page) : undefined,
-            perPage: typeof query.per_page === 'string' ? Number(query.per_page) : undefined,
+            groupId:
+                typeof query.group_id === 'string'
+                    ? Number(query.group_id)
+                    : undefined,
+            page:
+                typeof query.page === 'string' ? Number(query.page) : undefined,
+            perPage:
+                typeof query.per_page === 'string'
+                    ? Number(query.per_page)
+                    : undefined,
         });
     }
 

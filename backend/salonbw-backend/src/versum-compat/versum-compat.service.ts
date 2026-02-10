@@ -239,7 +239,7 @@ export class VersumCompatService {
             case 'GetViewer':
                 return {
                     data: {
-                        viewer: await this.getGraphqlViewer(),
+                        viewer: this.getGraphqlViewer(),
                     },
                 };
             case 'GetEmployees':
@@ -612,7 +612,7 @@ export class VersumCompatService {
         }));
     }
 
-    private async getGraphqlViewer() {
+    private getGraphqlViewer() {
         return {
             branch: {
                 resourcesActivated: false,
@@ -1321,11 +1321,14 @@ export class VersumCompatService {
             id: user.id,
             full_name: user.name,
             first_name: user.firstName ?? user.name?.split(' ')[0] ?? '',
-            last_name: user.lastName ?? user.name?.split(' ').slice(1).join(' ') ?? '',
+            last_name:
+                user.lastName ?? user.name?.split(' ').slice(1).join(' ') ?? '',
             email: user.email,
             phone: user.phone,
             gender: user.gender,
-            birth_date: user.birthDate ? this.toWarsawIso(user.birthDate) : null,
+            birth_date: user.birthDate
+                ? this.toWarsawIso(user.birthDate)
+                : null,
             address: user.address,
             city: user.city,
             postal_code: user.postalCode,

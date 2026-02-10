@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    StreamableFile,
     Param,
     ParseIntPipe,
     Patch,
@@ -10,7 +11,10 @@ import {
     Put,
     Query,
     Req,
+    Res,
     UseGuards,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -24,6 +28,14 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
 import { CustomersService } from './customers.service';
 import { CustomerStatisticsService } from './customer-statistics.service';
+import { CustomerMediaService } from './customer-media.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import { createReadStream } from 'node:fs';
+import type { Request as ExpressRequest, Response } from 'express';
 import {
     CustomerFilterDto,
     CreateCustomerDto,
@@ -52,6 +64,7 @@ export class CustomersController {
     constructor(
         private readonly customersService: CustomersService,
         private readonly statisticsService: CustomerStatisticsService,
+        private readonly mediaService: CustomerMediaService,
     ) {}
 
     // ==================== CUSTOMERS ====================
@@ -174,6 +187,263 @@ export class CustomersController {
         @Param('tagId', ParseIntPipe) tagId: number,
     ) {
         return this.customersService.removeTagFromCustomer(id, tagId);
+    }
+
+    // ==================== FILES ====================
+
+    @Get(':id/files')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'List customer files' })
+    listFiles(@Param('id', ParseIntPipe) id: number) {
+        return this.mediaService.listFiles(id);
+    }
+
+    @Post(':id/files')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Upload customer file' })
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: (
+                    req: ExpressRequest,
+                    _file: Express.Multer.File,
+                    cb: (error: Error | null, destination: string) => void,
+                ) => {
+                    const root =
+                        (process.env.UPLOADS_DIR || '').trim() ||
+                        path.join(process.cwd(), 'uploads');
+                    const rawId = req.params?.id;
+                    const customerId = Number(rawId);
+                    if (!Number.isInteger(customerId) || customerId <= 0) {
+                        return cb(new Error('Invalid customerId'), root);
+                    }
+                    const dir = path.join(
+                        root,
+                        'customers',
+                        String(customerId),
+                        'files',
+                    );
+                    fs.mkdirSync(dir, { recursive: true });
+                    cb(null, dir);
+                },
+                filename: (
+                    req: ExpressRequest & { __storedName?: string },
+                    file: Express.Multer.File,
+                    cb: (error: Error | null, filename: string) => void,
+                ) => {
+                    const ext = path
+                        .extname(file.originalname || '')
+                        .toLowerCase()
+                        .slice(0, 10);
+                    const name = `${uuidv4()}${ext || ''}`;
+                    req.__storedName = name;
+                    cb(null, name);
+                },
+            }),
+            limits: { fileSize: 20 * 1024 * 1024 },
+        }),
+    )
+    async uploadFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: ExpressRequest & { __storedName?: string; user?: unknown },
+        @UploadedFile() file: Express.Multer.File,
+        @Body('category') category?: string,
+        @Body('description') description?: string,
+    ) {
+        if (!file) {
+            throw new Error('No file uploaded');
+        }
+        const storedName = String(req.__storedName || file.filename);
+        const relPath = path.join('customers', String(id), 'files', storedName);
+        const actorId = (() => {
+            const user = req.user as { id?: unknown } | undefined;
+            return typeof user?.id === 'number' ? user.id : null;
+        })();
+        return this.mediaService.createFile({
+            customerId: id,
+            actorId,
+            storedRelativePath: relPath,
+            storedName,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            size: file.size,
+            category,
+            description,
+        });
+    }
+
+    @Get(':id/files/:fileId/download')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Download customer file' })
+    async downloadFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('fileId', ParseIntPipe) fileId: number,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const { file, fullPath } = await this.mediaService.getFileForDownload(
+            id,
+            fileId,
+        );
+        res.setHeader('Content-Type', file.mimeType);
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${encodeURIComponent(file.originalName)}"`,
+        );
+        return new StreamableFile(createReadStream(fullPath));
+    }
+
+    @Delete(':id/files/:fileId')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Delete customer file' })
+    deleteFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('fileId', ParseIntPipe) fileId: number,
+    ) {
+        return this.mediaService.deleteFile(id, fileId);
+    }
+
+    // ==================== GALLERY ====================
+
+    @Get(':id/gallery')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'List customer gallery images' })
+    listGallery(@Param('id', ParseIntPipe) id: number) {
+        return this.mediaService.listGallery(id);
+    }
+
+    @Post(':id/gallery')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Upload customer gallery image' })
+    @UseInterceptors(
+        FileInterceptor('image', {
+            storage: diskStorage({
+                destination: (
+                    req: ExpressRequest,
+                    _file: Express.Multer.File,
+                    cb: (error: Error | null, destination: string) => void,
+                ) => {
+                    const root =
+                        (process.env.UPLOADS_DIR || '').trim() ||
+                        path.join(process.cwd(), 'uploads');
+                    const rawId = req.params?.id;
+                    const customerId = Number(rawId);
+                    if (!Number.isInteger(customerId) || customerId <= 0) {
+                        return cb(new Error('Invalid customerId'), root);
+                    }
+                    const dir = path.join(
+                        root,
+                        'customers',
+                        String(customerId),
+                        'gallery',
+                    );
+                    fs.mkdirSync(dir, { recursive: true });
+                    cb(null, dir);
+                },
+                filename: (
+                    req: ExpressRequest & { __galleryBase?: string },
+                    file: Express.Multer.File,
+                    cb: (error: Error | null, filename: string) => void,
+                ) => {
+                    const ext = path
+                        .extname(file.originalname || '')
+                        .toLowerCase()
+                        .slice(0, 10);
+                    const base = uuidv4();
+                    req.__galleryBase = base;
+                    cb(null, `${base}${ext || ''}`);
+                },
+            }),
+            limits: { fileSize: 10 * 1024 * 1024 },
+        }),
+    )
+    async uploadGalleryImage(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: ExpressRequest & { __galleryBase?: string; user?: unknown },
+        @UploadedFile() file: Express.Multer.File,
+        @Body('description') description?: string,
+        @Body('serviceId') serviceIdRaw?: string,
+    ) {
+        if (!file) {
+            throw new Error('No image uploaded');
+        }
+
+        const base = String(req.__galleryBase || '').trim();
+        const storedName = file.filename;
+        const relPath = path.join(
+            'customers',
+            String(id),
+            'gallery',
+            storedName,
+        );
+        const thumbRel = path.join(
+            'customers',
+            String(id),
+            'gallery',
+            `${base || storedName.replace(path.extname(storedName), '')}.thumb.jpg`,
+        );
+        const actorId = (() => {
+            const user = req.user as { id?: unknown } | undefined;
+            return typeof user?.id === 'number' ? user.id : null;
+        })();
+        const serviceId =
+            serviceIdRaw && serviceIdRaw.trim().length > 0
+                ? Number(serviceIdRaw)
+                : null;
+
+        return this.mediaService.createGalleryImage({
+            customerId: id,
+            actorId,
+            storedRelativePath: relPath,
+            thumbnailRelativePath: thumbRel,
+            mimeType: file.mimetype,
+            size: file.size,
+            description,
+            serviceId: Number.isInteger(serviceId) ? serviceId : null,
+        });
+    }
+
+    @Get(':id/gallery/:imageId')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get customer gallery image' })
+    async getGalleryImage(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('imageId', ParseIntPipe) imageId: number,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const { fullPath, mimeType } = await this.mediaService.getGalleryImage(
+            id,
+            imageId,
+            'original',
+        );
+        res.setHeader('Content-Type', mimeType);
+        return new StreamableFile(createReadStream(fullPath));
+    }
+
+    @Get(':id/gallery/:imageId/thumbnail')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get customer gallery thumbnail' })
+    async getGalleryThumbnail(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('imageId', ParseIntPipe) imageId: number,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const { fullPath, mimeType } = await this.mediaService.getGalleryImage(
+            id,
+            imageId,
+            'thumbnail',
+        );
+        res.setHeader('Content-Type', mimeType);
+        return new StreamableFile(createReadStream(fullPath));
+    }
+
+    @Delete(':id/gallery/:imageId')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Delete customer gallery image' })
+    deleteGalleryImage(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('imageId', ParseIntPipe) imageId: number,
+    ) {
+        return this.mediaService.deleteGalleryImage(id, imageId);
     }
 }
 

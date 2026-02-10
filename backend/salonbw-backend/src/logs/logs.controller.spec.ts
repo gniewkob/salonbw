@@ -73,7 +73,8 @@ describe('LogsController', () => {
 
             const result = await controller.getLogs(dto);
 
-            expect(logService.findAll).toHaveBeenCalledWith({
+            const findAll = logService.findAll as unknown as jest.Mock;
+            expect(findAll).toHaveBeenCalledWith({
                 userId: 1,
                 action: LogAction.USER_LOGIN,
                 from: new Date('2023-01-01T00:00:00Z'),
@@ -99,7 +100,8 @@ describe('LogsController', () => {
 
             await controller.getLogs(dto);
 
-            expect(logService.findAll).toHaveBeenCalledWith({
+            const findAll = logService.findAll as unknown as jest.Mock;
+            expect(findAll).toHaveBeenCalledWith({
                 userId: undefined,
                 action: undefined,
                 from: undefined,
