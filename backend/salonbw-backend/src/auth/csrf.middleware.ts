@@ -17,6 +17,8 @@ const EXCLUDED_PATHS = new Set([
     '/api/auth/login',
     '/api/auth/register',
     '/logs/client',
+    // Public contact form endpoint (no session cookies / CSRF token)
+    '/emails/send',
     // Calendar endpoints - authenticated via JWT, vendored JS doesn't send CSRF
     '/graphql',
     '/events',
@@ -44,12 +46,10 @@ export class CsrfMiddleware implements NestMiddleware {
         }
 
         const path = `${req.baseUrl ?? ''}${req.path ?? ''}` || req.originalUrl;
-        console.log(
-            `[CSRF] Checking path: '${path}', Method: ${req.method}, Original: '${req.originalUrl}'`,
-        );
+        const debug =
+            this.configService.get<string>('CSRF_DEBUG', 'false') === 'true';
 
-        // DEBUG: Trace path
-        if (res && res.setHeader) {
+        if (debug && res?.setHeader) {
             res.setHeader('X-Debug-Path', path || 'empty');
             res.setHeader('X-Debug-Original', req.originalUrl || 'empty');
         }
@@ -59,7 +59,6 @@ export class CsrfMiddleware implements NestMiddleware {
         );
 
         if (path && isExcluded) {
-            console.log(`[CSRF] Excluding path: ${path}`);
             return next();
         }
 
