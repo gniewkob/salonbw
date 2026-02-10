@@ -456,21 +456,21 @@ export class CustomerGroupsController {
     constructor(private readonly customersService: CustomersService) {}
 
     @Get()
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'List all customer groups' })
     list() {
         return this.customersService.findAllGroups();
     }
 
     @Get(':id')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer group by ID' })
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.findOneGroup(id);
     }
 
     @Post()
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Create customer group' })
     @ApiResponse({ status: 201 })
     create(@Body() dto: CreateCustomerGroupDto) {
@@ -478,7 +478,7 @@ export class CustomerGroupsController {
     }
 
     @Put(':id')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Update customer group' })
     update(
         @Param('id', ParseIntPipe) id: number,
@@ -488,14 +488,14 @@ export class CustomerGroupsController {
     }
 
     @Delete(':id')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Delete customer group' })
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.deleteGroup(id);
     }
 
     @Post(':id/members')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Add members to group' })
     addMembers(
         @Param('id', ParseIntPipe) id: number,
@@ -505,7 +505,7 @@ export class CustomerGroupsController {
     }
 
     @Delete(':id/members/:customerId')
-    @Roles(Role.Admin)
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Remove member from group' })
     removeMember(
         @Param('id', ParseIntPipe) id: number,
