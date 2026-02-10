@@ -542,7 +542,8 @@ jobs:
           # Create Tarball
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
-          tar -tzf "$TAR_NAME" | head -n 40
+          # tar may exit non-zero on SIGPIPE when piped into head; ignore for debug listing.
+          tar -tzf "$TAR_NAME" | head -n 40 || true
 
           # 2. Upload Tarball
           # 2. Upload Tarball
@@ -643,7 +644,7 @@ jobs:
           # Create Tarball
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
-          tar -tzf "$TAR_NAME" | head -n 40
+          tar -tzf "$TAR_NAME" | head -n 40 || true
 
           # Upload Tarball
           echo "Uploading Bundle to $DEST..."
