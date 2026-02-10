@@ -9,6 +9,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../users/user.entity';
+import { SendBulkEmailDto } from './dto/send-bulk-email.dto';
 
 @Controller('emails')
 export class EmailsController {
@@ -22,6 +25,40 @@ export class EmailsController {
     async send(@Body() dto: SendEmailDto): Promise<{ status: string }> {
         await this.emailsService.send(dto);
         return { status: 'ok' };
+    }
+
+    // Authenticated send endpoint for internal usage (panel/admin).
+    // Public contact form must continue to use POST /emails/send.
+    @Post('send-auth')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist)
+    async sendAuth(
+        @Body() dto: SendEmailDto,
+        @CurrentUser() user: User,
+    ): Promise<{ status: string }> {
+        await this.emailsService.sendAsUser(dto, user.id);
+        return { status: 'ok' };
+    }
+
+    @Post('send-bulk')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    async sendBulk(
+        @Body() dto: SendBulkEmailDto,
+        @CurrentUser() user: User,
+    ): Promise<{ status: string; total: number }> {
+        for (const to of dto.recipients) {
+            await this.emailsService.sendAsUser(
+                {
+                    to,
+                    subject: dto.subject,
+                    template: dto.template,
+                    data: dto.data,
+                },
+                user.id,
+            );
+        }
+        return { status: 'ok', total: dto.recipients.length };
     }
 
     @Get('history')
