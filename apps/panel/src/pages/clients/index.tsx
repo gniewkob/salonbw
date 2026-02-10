@@ -1,5 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -243,6 +244,7 @@ export default function ClientsPage() {
             permission="nav:clients"
         >
             <VersumShell role={role}>
+                <VersumCustomersVendorCss />
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}

@@ -6,6 +6,7 @@ import type { Route } from 'next';
 import { useState, type FormEvent } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateCustomer } from '@/hooks/useCustomers';
 
@@ -47,6 +48,7 @@ export default function NewCustomerPage() {
             permission="nav:clients"
         >
             <VersumShell role={role}>
+                <VersumCustomersVendorCss />
                 <div className="clients-page">
                     <ul className="breadcrumb">
                         <li>Klienci / Dodaj klienta</li>

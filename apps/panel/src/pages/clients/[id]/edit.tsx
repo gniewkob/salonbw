@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import type { Customer } from '@/types';
@@ -32,6 +33,7 @@ export default function CustomerEditPage() {
             permission="nav:clients"
         >
             <VersumShell role={role}>
+                <VersumCustomersVendorCss />
                 <div className="versum-page" data-testid="customer-edit-page">
                     <header className="versum-page__header">
                         <h1 className="versum-page__title">Edycja klienta</h1>
