@@ -110,6 +110,7 @@
 ### 2026-02-10 - Łączność: email send + masowa wysyłka + email reminders
 - Panel: `/communication` przełączanie SMS/Email (historia), wysyłka pojedyncza (SMS + email), masowa wysyłka (SMS + email)
 - Backend: `POST /emails/send-auth` (panel) + `POST /emails/send-bulk` (panel) + automatyczne przypomnienia email (jeśli ustawiony domyślny szablon email)
+- Wymagane: szablon email `appointment_reminder` ustawiony jako `domyślny` i `aktywny` (w `/communication/templates`), inaczej email-przypomnienia nie będą wysyłane.
 
 ### 2026-02-06 - Sprint 5 zakończony
 - Przepisano stronę magazynu (/products) na VersumShell
