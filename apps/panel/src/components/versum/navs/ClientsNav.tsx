@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import {
     useCustomerGroups,
-    useCustomerTags,
     useCreateCustomerGroup,
 } from '@/hooks/useCustomers';
 import { useServices } from '@/hooks/useServices';
@@ -14,22 +13,6 @@ import SelectorModal from '../modals/SelectorModal';
 import { useDroppable } from '@dnd-kit/core';
 
 type FilterCriteriaId = 'used_services' | 'has_visit' | 'by_employee';
-
-const QUICK_GROUPS = [
-    { id: 'all', label: 'wszyscy klienci' },
-    { id: 'today', label: 'Umówieni na dzisiaj' },
-    { id: 'recent', label: 'Ostatnio dodani' },
-    { id: 'no_online', label: 'Nie rezerwują online' },
-] as const;
-
-const FILTER_CRITERIA: Array<{
-    id: FilterCriteriaId;
-    label: string;
-}> = [
-    { id: 'used_services', label: 'skorzystali z usług' },
-    { id: 'has_visit', label: 'mają wizytę w salonie' },
-    { id: 'by_employee', label: 'obsługiwani przez pracowników' },
-];
 
 // Komponent dla grupy z obsługą drop
 function DroppableGroupItem({
@@ -55,22 +38,23 @@ function DroppableGroupItem({
                 transition: 'background-color 0.2s',
             }}
         >
-            <a href="javascript:;" onClick={onClick}>
-                {group.color && (
-                    <span
-                        className="versum-chip"
-                        data-color={group.color}
-                        style={{
-                            boxShadow: isOver
-                                ? `0 0 0 2px ${group.color}`
-                                : undefined,
-                        }}
-                    />
-                )}
+            <a
+                className="standard_group"
+                data-id={group.id}
+                href="#"
+                title={group.name}
+                onClick={(e) => {
+                    e.preventDefault();
+                    onClick();
+                }}
+            >
+                <div className="icon_box">
+                    <i className="icon sprite-user_group" />
+                </div>
                 {group.name}
-                {isOver && (
-                    <span className="ml-4 text-xs text-sky-600">↑ upuść</span>
-                )}
+                {isOver ? (
+                    <span style={{ marginLeft: 8, fontSize: 11 }}>↑ upuść</span>
+                ) : null}
             </a>
         </li>
     );
@@ -79,13 +63,11 @@ function DroppableGroupItem({
 export default function ClientsNav() {
     const router = useRouter();
     const { data: groups } = useCustomerGroups();
-    const { data: tags } = useCustomerTags();
     const { data: services } = useServices();
     const { data: employees } = useEmployees();
     const createGroup = useCreateCustomerGroup();
 
     const [showMoreGroups, setShowMoreGroups] = useState(false);
-    const [showMoreCriteria, setShowMoreCriteria] = useState(false);
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
     const [showManageGroupsModal, setShowManageGroupsModal] = useState(false);
     const [showServiceSelector, setShowServiceSelector] = useState(false);
@@ -139,225 +121,263 @@ export default function ClientsNav() {
     };
 
     return (
-        <div className="sidebar-inner nav-scroll-container">
-            <div className="nav-header">
-                GRUPY KLIENTÓW
-                <a
-                    className="pull-right"
-                    href="javascript:;"
-                    title="Dodaj grupę"
-                    onClick={() => setShowCreateGroupModal(true)}
+        <div className="customers_index" id="customers_sidenav">
+            <div className="column_row">
+                <div
+                    id="index_show_left_column_content"
+                    data-tree-url="/salonblackandwhite/settings/customer_groups/groups_tree"
                 >
-                    + dodaj
-                </a>
-            </div>
-            <ul className="nav nav-list">
-                {QUICK_GROUPS.map((group) => (
-                    <li
-                        key={group.id}
-                        className={
-                            activeQuickGroup === group.id ? 'active' : undefined
-                        }
-                    >
-                        <a
-                            href="javascript:;"
-                            onClick={() =>
-                                updateFilters({
-                                    groupId: undefined,
-                                    tagId: undefined,
-                                })
-                            }
-                        >
-                            {group.label}
-                        </a>
-                    </li>
-                ))}
-            </ul>
+                    <div className="index_action_content">
+                        <div className="customer_groups column_row">
+                            <h4>Grupy klientów</h4>
+                            <div className="tree" id="groups">
+                                <a
+                                    className={`root ${activeQuickGroup === 'all' ? 'active' : ''}`}
+                                    data-name="all"
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        updateFilters({
+                                            groupId: undefined,
+                                            tagId: undefined,
+                                            hasUpcomingVisit: undefined,
+                                        });
+                                    }}
+                                >
+                                    <div className="icon_box">
+                                        <i className="icon sprite-group" />
+                                    </div>
+                                    wszyscy klienci
+                                </a>
 
-            {groups && groups.length > 0 && (
-                <ul className="nav nav-list">
-                    {(showMoreGroups ? groups : groups.slice(0, 3)).map(
-                        (group) => (
-                            <DroppableGroupItem
-                                key={group.id}
-                                group={group}
-                                isActive={currentGroupId === group.id}
-                                onClick={() =>
-                                    updateFilters({ groupId: group.id })
-                                }
-                            />
-                        ),
-                    )}
-                    {groups.length > 3 && (
-                        <li>
-                            <button
-                                onClick={() =>
-                                    setShowMoreGroups(!showMoreGroups)
-                                }
-                                className="versum-secondarynav__more-btn"
-                            >
-                                + {showMoreGroups ? 'mniej' : 'więcej'}
-                            </button>
-                        </li>
-                    )}
-                </ul>
-            )}
-
-            {/* Link do zarządzania grupami - jak w Versum */}
-            <div className="versum-secondarynav__manage-groups">
-                <a
-                    href="javascript:;"
-                    onClick={() => setShowManageGroupsModal(true)}
-                    className="versum-secondarynav__link"
-                >
-                    dodaj/edytuj/usuń
-                </a>
-            </div>
-
-            {/* Sekcja "Kryteria wyszukiwania" - pokazuje się gdy wybrano grupę */}
-            {currentGroupId && (
-                <div className="versum-secondarynav__filter-criteria">
-                    <div className="nav-header">
-                        Kryteria wyszukiwania
-                        <a
-                            className="pull-right"
-                            href="javascript:;"
-                            onClick={() =>
-                                updateFilters({ groupId: undefined })
-                            }
-                            title="Wyczyść filtry"
-                        >
-                            ✕
-                        </a>
-                    </div>
-                    <div className="versum-filter-section">
-                        <div className="versum-filter-label">
-                            należą do grup:
-                        </div>
-                        <div className="versum-filter-operator">
-                            <label className="versum-radio">
-                                <input
-                                    type="radio"
-                                    name="groupOperator"
-                                    checked={
-                                        router.query.groupOperator !== 'or'
-                                    }
-                                    onChange={() =>
-                                        updateFilters({ groupOperator: 'and' })
-                                    }
-                                />
-                                każdej z wybranych
-                            </label>
-                            <label className="versum-radio">
-                                <input
-                                    type="radio"
-                                    name="groupOperator"
-                                    checked={
-                                        router.query.groupOperator === 'or'
-                                    }
-                                    onChange={() =>
-                                        updateFilters({ groupOperator: 'or' })
-                                    }
-                                />
-                                którejkolwiek z wybranych
-                            </label>
-                        </div>
-                    </div>
-                    <div className="versum-filter-groups">
-                        <div className="versum-filter-label">grupy:</div>
-                        <div className="versum-filter-selected">
-                            {groups
-                                ?.filter((g) => currentGroupId === g.id)
-                                .map((group) => (
-                                    <span
-                                        key={group.id}
-                                        className="versum-filter-tag"
-                                    >
-                                        {group.name}
+                                <ul>
+                                    <li>
                                         <a
-                                            href="javascript:;"
+                                            data-name="visit_today"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                updateFilters({
+                                                    hasUpcomingVisit: true,
+                                                });
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <div className="icon sprite-group_today" />
+                                            </div>
+                                            Umówieni na dzisiaj
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            data-name="recently_added"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                // TODO(parity): implement backend filter for recently added.
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <i className="icon sprite-group_recent_added" />
+                                            </div>
+                                            Ostatnio dodani
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            data-name="offline_customers"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                // TODO(parity): implement backend filter for offline customers.
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <div className="icon sprite-client_absent_on" />
+                                            </div>
+                                            Nie rezerwują online
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <ul
+                                    id="standard_groups"
+                                    style={{
+                                        display: showMoreGroups
+                                            ? undefined
+                                            : 'none',
+                                    }}
+                                >
+                                    {(groups ?? []).map((group) => (
+                                        <DroppableGroupItem
+                                            key={group.id}
+                                            group={group}
+                                            isActive={
+                                                currentGroupId === group.id
+                                            }
                                             onClick={() =>
                                                 updateFilters({
-                                                    groupId: undefined,
+                                                    groupId: group.id,
                                                 })
                                             }
-                                            className="versum-filter-remove"
+                                        />
+                                    ))}
+                                </ul>
+
+                                {(groups?.length ?? 0) > 0 ? (
+                                    <ul>
+                                        <li>
+                                            <a
+                                                className="toggle_button"
+                                                data-for="#standard_groups, #group_options"
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setShowMoreGroups(
+                                                        (v) => !v,
+                                                    );
+                                                }}
+                                            >
+                                                <div className="icon_box">
+                                                    <i
+                                                        className={`icon ${showMoreGroups ? 'sprite-filter_less' : 'sprite-filter_more'}`}
+                                                    />
+                                                </div>
+                                                <span>
+                                                    {showMoreGroups
+                                                        ? 'mniej'
+                                                        : 'więcej'}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                ) : null}
+                            </div>
+
+                            <div
+                                className="tree_options"
+                                id="group_options"
+                                style={{
+                                    display: showMoreGroups
+                                        ? undefined
+                                        : 'none',
+                                }}
+                            >
+                                <a
+                                    data-enable-sortable=""
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setShowManageGroupsModal(true);
+                                    }}
+                                >
+                                    dodaj/edytuj/usuń
+                                </a>
+                            </div>
+                        </div>
+
+                        <div
+                            className="column_row"
+                            id="filter_boxes_container"
+                            style={{
+                                display: currentGroupId ? undefined : 'none',
+                            }}
+                        >
+                            <h4>Kryteria wyszukiwania</h4>
+                            <div id="filter_boxes">
+                                {groups
+                                    ?.filter((g) => currentGroupId === g.id)
+                                    .map((group) => (
+                                        <div
+                                            key={group.id}
+                                            className="filter-box"
                                         >
-                                            ✕
+                                            <span>należą do grup:</span>{' '}
+                                            <strong>{group.name}</strong>{' '}
+                                            <a
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    updateFilters({
+                                                        groupId: undefined,
+                                                    });
+                                                }}
+                                                title="Wyczyść"
+                                            >
+                                                ✕
+                                            </a>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+
+                        <div className="column_row" id="search_criteria">
+                            <h4>Wybierz kryteria</h4>
+                            <div className="list_container">
+                                <ul
+                                    className="simple-list"
+                                    id="visible_filters"
+                                >
+                                    <li>
+                                        <a
+                                            className="filter_link"
+                                            data-filter_name="services"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleCriteriaClick(
+                                                    'used_services',
+                                                );
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <i className="icon sprite-filter_purchased_services" />
+                                            </div>
+                                            skorzystali z usług
                                         </a>
-                                    </span>
-                                ))}
+                                    </li>
+                                    <li>
+                                        <a
+                                            className="filter_link"
+                                            data-filter_name="events"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleCriteriaClick(
+                                                    'has_visit',
+                                                );
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <i className="icon sprite-filter_visit_salon" />
+                                            </div>
+                                            mają wizytę w salonie
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            className="filter_link"
+                                            data-filter_name="employees"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleCriteriaClick(
+                                                    'by_employee',
+                                                );
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <i className="icon sprite-filter_handled_employees" />
+                                            </div>
+                                            obsługiwani przez pracowników
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            )}
-
-            <div className="nav-header">WYBIERZ KRYTERIA</div>
-            <ul className="nav nav-list">
-                {(showMoreCriteria
-                    ? FILTER_CRITERIA
-                    : FILTER_CRITERIA.slice(0, 3)
-                ).map((criterion) => {
-                    const isActive =
-                        (criterion.id === 'has_visit' &&
-                            router.query.hasUpcomingVisit === 'true') ||
-                        (criterion.id === 'used_services' &&
-                            router.query.serviceId !== undefined) ||
-                        (criterion.id === 'by_employee' &&
-                            router.query.employeeId !== undefined);
-
-                    return (
-                        <li
-                            key={criterion.id}
-                            className={isActive ? 'active' : undefined}
-                        >
-                            <a
-                                href="javascript:;"
-                                onClick={() =>
-                                    handleCriteriaClick(criterion.id)
-                                }
-                            >
-                                {criterion.label}
-                            </a>
-                        </li>
-                    );
-                })}
-                <li>
-                    <button
-                        onClick={() => setShowMoreCriteria(!showMoreCriteria)}
-                        className="versum-secondarynav__more-btn"
-                    >
-                        + {showMoreCriteria ? 'mniej' : 'więcej'}
-                    </button>
-                </li>
-            </ul>
-
-            {tags && tags.length > 0 && (
-                <section className="versum-secondarynav__section">
-                    <h4>TAGI</h4>
-                    <div className="versum-secondarynav__tags">
-                        {tags.slice(0, 10).map((tag) => (
-                            <button
-                                key={tag.id}
-                                onClick={() => {
-                                    const currentTagId = router.query.tagId
-                                        ? Number(router.query.tagId)
-                                        : undefined;
-                                    updateFilters({
-                                        tagId:
-                                            currentTagId === tag.id
-                                                ? undefined
-                                                : tag.id,
-                                    });
-                                }}
-                                className={`versum-tag ${Number(router.query.tagId) === tag.id ? 'is-active' : ''}`}
-                            >
-                                {tag.name}
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            )}
+            </div>
 
             {showCreateGroupModal && (
                 <CreateCustomerGroupModal
