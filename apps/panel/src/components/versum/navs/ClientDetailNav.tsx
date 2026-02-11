@@ -17,128 +17,137 @@ interface Tab {
     label: string;
     iconClass: string;
     tabName?: string;
+    isLast?: boolean;
 }
 
 const tabs: Tab[] = [
     {
         id: 'summary',
         label: 'podsumowanie',
-        iconClass: 'glyphicon-th-large',
+        iconClass: 'sprite-customer_dashboard',
     },
     {
         id: 'personal',
         label: 'dane osobowe',
-        iconClass: 'glyphicon-list-alt',
+        iconClass: 'sprite-customer_personal_data',
         tabName: 'personal_data',
     },
     {
         id: 'statistics',
         label: 'statystyki',
-        iconClass: 'glyphicon-stats',
+        iconClass: 'sprite-customer_statistics',
         tabName: 'statistics',
     },
     {
         id: 'history',
         label: 'historia wizyt',
-        iconClass: 'glyphicon-calendar',
+        iconClass: 'sprite-customer_history_visits',
         tabName: 'events_history',
     },
     {
         id: 'comments',
         label: 'komentarze',
-        iconClass: 'glyphicon-comment',
+        iconClass: 'sprite-opinions',
         tabName: 'opinions',
     },
     {
         id: 'communication',
         label: 'komunikacja',
-        iconClass: 'glyphicon-earphone',
+        iconClass: 'sprite-settings_sms_nav',
         tabName: 'communication_preferences',
     },
     {
         id: 'gallery',
         label: 'galeria zdjęć',
-        iconClass: 'glyphicon-camera',
+        iconClass: 'sprite-customer_photo_gallery',
         tabName: 'gallery',
     },
     {
         id: 'files',
         label: 'załączone pliki',
-        iconClass: 'glyphicon-paperclip',
+        iconClass: 'sprite-customer_files',
         tabName: 'files',
+        isLast: true,
     },
 ];
 
 interface ClientDetailNavProps {
     customerId: number;
     customerName: string;
+    customerGender?: 'male' | 'female' | 'other';
     activeTab: TabId;
 }
 
 export default function ClientDetailNav({
     customerId,
     customerName,
+    customerGender,
     activeTab,
 }: ClientDetailNavProps) {
-    return (
-        <div className="sidebar-inner client-detail-nav">
-            {/* Header - KARTA KLIENTA */}
-            <div className="nav-header client-nav-header">KARTA KLIENTA</div>
+    const genderIconClass =
+        customerGender === 'female'
+            ? 'sprite-customer_female'
+            : customerGender === 'male'
+              ? 'sprite-customer_male'
+              : 'sprite-customer_unknown_sex';
 
-            {/* Customer name link */}
-            <ul className="nav nav-list">
-                <li>
+    return (
+        <div className="show_action_content client-detail-nav">
+            <div className="column_row">
+                <h4>Karta klienta</h4>
+                <div className="tree">
                     <Link
                         href={`/customers/${customerId}`}
-                        className="client-nav-name"
+                        className="pjax_link root with_icon"
                     >
                         <span className="icon_box">
                             <i
-                                className="glyphicon glyphicon-user client-nav-icon"
+                                className={`gender_icon icon ${genderIconClass}`}
                                 aria-hidden="true"
                             />
                         </span>
-                        {customerName}
+                        <span className="customer_name">{customerName}</span>
                     </Link>
-                </li>
-            </ul>
-
-            {/* Tabs */}
-            <ul className="nav nav-list client-nav-tabs">
-                {tabs.map((tab) => (
-                    <li
-                        key={tab.id}
-                        className={activeTab === tab.id ? 'active' : ''}
-                    >
-                        <Link
-                            href={
-                                tab.id === 'summary'
-                                    ? { pathname: `/customers/${customerId}` }
-                                    : tab.id === 'personal'
-                                      ? {
-                                            pathname: `/customers/${customerId}`,
-                                            query: { tab_name: tab.tabName },
-                                        }
-                                      : {
-                                            pathname: `/customers/${customerId}`,
-                                            query: { tab_name: tab.tabName },
-                                        }
-                            }
-                            aria-current={
-                                activeTab === tab.id ? 'page' : undefined
-                            }
-                        >
-                            <span className="icon_box">
-                                <i
-                                    className={`glyphicon ${tab.iconClass} client-nav-icon`}
-                                    aria-hidden="true"
-                                />
-                            </span>
-                            {tab.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
+                    <ul>
+                        {tabs.map((tab) => (
+                            <li
+                                key={tab.id}
+                                className={activeTab === tab.id ? 'active' : ''}
+                            >
+                                <Link
+                                    className={`pjax_link ${tab.isLast ? 'last' : ''}`.trim()}
+                                    href={
+                                        tab.id === 'summary'
+                                            ? {
+                                                  pathname: `/customers/${customerId}`,
+                                              }
+                                            : {
+                                                  pathname: `/customers/${customerId}`,
+                                                  query: {
+                                                      tab_name: tab.tabName,
+                                                  },
+                                              }
+                                    }
+                                    data-tab_name={tab.tabName}
+                                    aria-current={
+                                        activeTab === tab.id
+                                            ? 'page'
+                                            : undefined
+                                    }
+                                >
+                                    <div className="icon_box">
+                                        <i
+                                            className={`icon ${tab.iconClass}`}
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                    {tab.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </div>
     );
 }

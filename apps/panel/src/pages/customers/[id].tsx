@@ -10,11 +10,12 @@ import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorC
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
+    useTagsForCustomer,
     useUpdateCustomer,
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
-import type { Customer } from '@/types';
+import type { Customer, CustomerTag } from '@/types';
 import {
     CustomerStatisticsTab,
     CustomerPersonalDataView,
@@ -92,6 +93,7 @@ export default function CustomerDetailPage() {
         isLoading: isCustomerLoading,
         error,
     } = useCustomer(customerId);
+    const { data: customerTags } = useTagsForCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId);
     const { data: history } = useCustomerEventHistory(customerId, {
         limit: 3,
@@ -112,6 +114,7 @@ export default function CustomerDetailPage() {
                 <ClientDetailNav
                     customerId={customerId}
                     customerName={customer?.fullName || customer?.name || '...'}
+                    customerGender={customer?.gender}
                     activeTab={activeTab}
                 />
             </div>
@@ -128,8 +131,11 @@ export default function CustomerDetailPage() {
                     {/* Breadcrumbs - Versum style */}
                     <ul className="breadcrumb">
                         <li>
-                            <i className="glyphicon glyphicon-user" /> Klienci /{' '}
-                            {customer?.name || '...'}
+                            <i
+                                className="icon sprite-breadcrumbs_customers"
+                                aria-hidden="true"
+                            />{' '}
+                            Klienci / {customer?.name || '...'}
                         </li>
                     </ul>
 
@@ -159,17 +165,17 @@ export default function CustomerDetailPage() {
                         </div>
                     ) : customer ? (
                         <>
-                            <div className="customer-actions-bar">
+                            <div className="customer-actions-bar customer_actions">
                                 <div className="customer-actions-bar__spacer" />
                                 <div className="btn-group customer-actions-group">
                                     <Link
                                         href={`/customers/${customer.id}/edit`}
-                                        className="btn btn-default btn-xs"
+                                        className="button button-light-blue button-small"
                                     >
                                         edytuj
                                     </Link>
                                     <details className="customer-more-dropdown">
-                                        <summary className="btn btn-default btn-xs customer-more-dropdown__trigger">
+                                        <summary className="button button-light-blue button-small customer-more-dropdown__trigger">
                                             więcej <span className="caret" />
                                         </summary>
                                         <ul className="customer-more-dropdown__menu">
@@ -206,12 +212,13 @@ export default function CustomerDetailPage() {
 
                             {/* Content */}
                             <div
-                                className="customer-card-content"
+                                className="customer-card-content customers_main_show_customer"
                                 id="pjax_container"
                             >
                                 {activeTab === 'summary' && (
                                     <CustomerSummaryView
                                         customer={customer}
+                                        tags={customerTags ?? []}
                                         stats={stats}
                                         history={history}
                                     />
@@ -274,10 +281,12 @@ export default function CustomerDetailPage() {
 // View Components - Versum 1:1 Style
 function CustomerSummaryView({
     customer,
+    tags,
     stats,
     history,
 }: {
     customer: Customer;
+    tags: CustomerTag[];
     stats: CustomerSummaryStats | null | undefined;
     history: CustomerHistory | null | undefined;
 }) {
@@ -312,7 +321,7 @@ function CustomerSummaryView({
                 : 'Nie podano';
     const groupsOrTags = [
         ...(customer.groups?.map((g) => g.name) ?? []),
-        ...(customer.tags?.map((t) => t.name) ?? []),
+        ...(tags.map((t) => t.name) ?? []),
     ].filter(Boolean);
 
     return (
@@ -327,7 +336,7 @@ function CustomerSummaryView({
                         {customer.phone && (
                             <div className="customer-info-item">
                                 <i
-                                    className="glyphicon glyphicon-earphone customer-info-icon"
+                                    className="icon sprite-customer_telephone customer-info-icon"
                                     aria-hidden="true"
                                 />
                                 <a href={`tel:${customer.phone}`}>
@@ -337,7 +346,7 @@ function CustomerSummaryView({
                         )}
                         <div className="customer-info-item">
                             <i
-                                className="glyphicon glyphicon-envelope customer-info-icon"
+                                className="icon sprite-customer_email customer-info-icon"
                                 aria-hidden="true"
                             />
                             {customer.email ? (
@@ -350,7 +359,7 @@ function CustomerSummaryView({
                         </div>
                         <div className="customer-info-item">
                             <i
-                                className="glyphicon glyphicon-user customer-info-icon"
+                                className="icon sprite-group customer-info-icon"
                                 aria-hidden="true"
                             />
                             <span>
@@ -361,7 +370,7 @@ function CustomerSummaryView({
                         </div>
                         <div className="customer-info-item">
                             <i
-                                className="glyphicon glyphicon-list-alt customer-info-icon"
+                                className="icon sprite-customer_description customer-info-icon"
                                 aria-hidden="true"
                             />
                             {customer.description ? (

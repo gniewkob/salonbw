@@ -31,11 +31,13 @@ export default function VersumShell({
         if (typeof document === 'undefined') return;
         const body = document.body;
         const previousId = body.id;
+        const hadE2eBodyClass = body.classList.contains('e2e-body');
         const previousModuleClass = body.getAttribute(
             'data-versum-module-class',
         );
         const nextModuleClass = `e2e-${activeModule.key}`;
 
+        body.classList.add('e2e-body');
         body.id = activeModule.key;
         body.classList.add(nextModuleClass);
         body.setAttribute('data-versum-module-class', nextModuleClass);
@@ -46,6 +48,9 @@ export default function VersumShell({
 
         return () => {
             body.classList.remove(nextModuleClass);
+            if (!hadE2eBodyClass) {
+                body.classList.remove('e2e-body');
+            }
             if (previousModuleClass) {
                 body.classList.add(previousModuleClass);
                 body.setAttribute(
