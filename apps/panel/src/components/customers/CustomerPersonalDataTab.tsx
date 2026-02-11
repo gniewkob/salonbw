@@ -16,8 +16,17 @@ type Draft = {
     birthDate: string;
     gender: '' | 'female' | 'male' | 'other';
     address: string;
+    buildingNo: string;
+    apartmentNo: string;
     city: string;
     postalCode: string;
+    country: string;
+    nameDay: string;
+    groups: string;
+    origin: string;
+    pesel: string;
+    nip: string;
+    cardNumber: string;
     description: string;
     emailConsent: boolean;
     smsConsent: boolean;
@@ -32,8 +41,17 @@ function toDraft(customer: Customer): Draft {
         birthDate: customer.birthDate || '',
         gender: customer.gender || '',
         address: customer.address || '',
+        buildingNo: '',
+        apartmentNo: '',
         city: customer.city || '',
         postalCode: customer.postalCode || '',
+        country: '',
+        nameDay: '',
+        groups: '',
+        origin: '',
+        pesel: '',
+        nip: '',
+        cardNumber: '',
         description: customer.description || '',
         emailConsent: customer.emailConsent,
         smsConsent: customer.smsConsent,
@@ -201,7 +219,33 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor="customer-personal-postal-code">
-                        10. Kod pocztowy
+                        10. Nr domu
+                    </label>
+                    <input
+                        id="customer-personal-building-no"
+                        className="form-control"
+                        value={draft.buildingNo}
+                        onChange={(e) =>
+                            updateField('buildingNo', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-apartment-no">
+                        11. Nr lokalu
+                    </label>
+                    <input
+                        id="customer-personal-apartment-no"
+                        className="form-control"
+                        value={draft.apartmentNo}
+                        onChange={(e) =>
+                            updateField('apartmentNo', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-postal-code">
+                        12. Kod pocztowy
                     </label>
                     <input
                         id="customer-personal-postal-code"
@@ -213,12 +257,84 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor="customer-personal-city">11. Miasto</label>
+                    <label htmlFor="customer-personal-city">13. Miasto</label>
                     <input
                         id="customer-personal-city"
                         className="form-control"
                         value={draft.city}
                         onChange={(e) => updateField('city', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-country">14. Kraj</label>
+                    <input
+                        id="customer-personal-country"
+                        className="form-control"
+                        value={draft.country}
+                        onChange={(e) => updateField('country', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-name-day">
+                        15. Data imienin
+                    </label>
+                    <input
+                        id="customer-personal-name-day"
+                        className="form-control"
+                        value={draft.nameDay}
+                        onChange={(e) => updateField('nameDay', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-groups">16. Grupy</label>
+                    <input
+                        id="customer-personal-groups"
+                        className="form-control"
+                        value={draft.groups}
+                        onChange={(e) => updateField('groups', e.target.value)}
+                        placeholder="kliknij, aby dodać do grupy"
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-origin">
+                        17. Pochodzenie klienta
+                    </label>
+                    <input
+                        id="customer-personal-origin"
+                        className="form-control"
+                        value={draft.origin}
+                        onChange={(e) => updateField('origin', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-pesel">18. PESEL</label>
+                    <input
+                        id="customer-personal-pesel"
+                        className="form-control"
+                        value={draft.pesel}
+                        onChange={(e) => updateField('pesel', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-nip">19. NIP</label>
+                    <input
+                        id="customer-personal-nip"
+                        className="form-control"
+                        value={draft.nip}
+                        onChange={(e) => updateField('nip', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-card-number">
+                        20. Numer karty
+                    </label>
+                    <input
+                        id="customer-personal-card-number"
+                        className="form-control"
+                        value={draft.cardNumber}
+                        onChange={(e) =>
+                            updateField('cardNumber', e.target.value)
+                        }
                     />
                 </div>
                 <div className="customer-new-row">

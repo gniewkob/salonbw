@@ -91,7 +91,6 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                             </div>
                         ) : (
                             <div className="text-center p-60-0">
-                                <div className="fz-32 mb-10">📷</div>
                                 <p className="fz-14 mb-5">
                                     Brak zdjęć w galerii klienta.
                                 </p>
@@ -119,7 +118,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                             className="abs-tr--15 bg-white br-full w-30 h-30 cursor-pointer fw-bold border-none"
                             title="Zamknij"
                         >
-                            ✕
+                            ×
                         </button>
                         <button
                             onClick={() => {

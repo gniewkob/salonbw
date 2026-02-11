@@ -804,6 +804,144 @@ textarea.form-control {
 }
 
 /* ========================================
+   Customer tabs parity helpers
+   ======================================== */
+.customer-statistics-tab,
+.customer-history-tab,
+.customer-comments-tab {
+    max-width: 980px;
+}
+
+.customer-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.customer-stats-col {
+    min-height: 44px;
+}
+
+.customer-stats-value {
+    font-size: 13px;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.customer-stats-value--all {
+    color: #2aa0cf;
+}
+.customer-stats-value--ok {
+    color: #56b060;
+}
+.customer-stats-value--cancelled {
+    color: #e36b5d;
+}
+.customer-stats-value--noshow {
+    color: #e39c4a;
+}
+
+.customer-stats-label,
+.customer-stats-subtitle {
+    font-size: 11px;
+    color: #8b949d;
+}
+
+.customer-stats-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.customer-stats-amount {
+    margin-top: 2px;
+    font-size: 14px;
+    color: #4e5861;
+}
+
+.customer-stats-history-title {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #4e5861;
+}
+
+.customer-stats-history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.customers-history-table {
+    width: 100%;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid #d9dfe5;
+}
+
+.customers-history-table th,
+.customers-history-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.customers-history-table th {
+    font-weight: 600;
+    color: #6a737c;
+}
+
+.customers-history-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.customer-comments-add {
+    margin-bottom: 12px;
+}
+
+.customer-comments-actions {
+    margin-top: 8px;
+}
+
+.customer-comment-row {
+    border: 1px solid #d9dfe5;
+    background: #fff;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.customer-comment-meta {
+    font-size: 11px;
+    color: #8b949d;
+    margin-bottom: 6px;
+}
+
+.customer-comment-pin {
+    margin-left: 8px;
+}
+
+.customer-comment-body {
+    font-size: 12px;
+    color: #505a63;
+    white-space: pre-wrap;
+}
+
+.customer-comment-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+}
+
+.customer-empty-state {
+    padding: 18px 10px;
+    font-size: 12px;
+    color: #8b949d;
+}
+
+/* ========================================
    Navbar (Topbar) - Matching Original Versum
    ======================================== */
 

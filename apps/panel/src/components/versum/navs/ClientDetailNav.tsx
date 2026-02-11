@@ -20,47 +20,51 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
-    { id: 'summary', label: 'podsumowanie', iconClass: 'fa-th-large' },
+    {
+        id: 'summary',
+        label: 'podsumowanie',
+        iconClass: 'glyphicon-th-large',
+    },
     {
         id: 'personal',
         label: 'dane osobowe',
-        iconClass: 'fa-id-card-o',
+        iconClass: 'glyphicon-list-alt',
         tabName: 'personal_data',
     },
     {
         id: 'statistics',
         label: 'statystyki',
-        iconClass: 'fa-bar-chart',
+        iconClass: 'glyphicon-stats',
         tabName: 'statistics',
     },
     {
         id: 'history',
         label: 'historia wizyt',
-        iconClass: 'fa-calendar-o',
+        iconClass: 'glyphicon-calendar',
         tabName: 'events_history',
     },
     {
         id: 'comments',
         label: 'komentarze',
-        iconClass: 'fa-comment-o',
+        iconClass: 'glyphicon-comment',
         tabName: 'opinions',
     },
     {
         id: 'communication',
         label: 'komunikacja',
-        iconClass: 'fa-envelope-o',
+        iconClass: 'glyphicon-earphone',
         tabName: 'communication_preferences',
     },
     {
         id: 'gallery',
         label: 'galeria zdjęć',
-        iconClass: 'fa-camera',
+        iconClass: 'glyphicon-camera',
         tabName: 'gallery',
     },
     {
         id: 'files',
         label: 'załączone pliki',
-        iconClass: 'fa-paperclip',
+        iconClass: 'glyphicon-paperclip',
         tabName: 'files',
     },
 ];
@@ -90,7 +94,7 @@ export default function ClientDetailNav({
                     >
                         <span className="icon_box">
                             <i
-                                className="fa fa-user-o client-nav-icon"
+                                className="glyphicon glyphicon-user client-nav-icon"
                                 aria-hidden="true"
                             />
                         </span>
@@ -125,7 +129,7 @@ export default function ClientDetailNav({
                         >
                             <span className="icon_box">
                                 <i
-                                    className={`fa ${tab.iconClass} client-nav-icon`}
+                                    className={`glyphicon ${tab.iconClass} client-nav-icon`}
                                     aria-hidden="true"
                                 />
                             </span>

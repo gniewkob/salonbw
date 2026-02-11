@@ -19,27 +19,27 @@ const categoryConfig: Record<
 > = {
     consent: {
         label: 'Zgoda',
-        icon: '✍️',
+        icon: 'glyphicon glyphicon-pencil',
         color: 'bg-green-100 text-green-700',
     },
     contract: {
         label: 'Umowa',
-        icon: '📄',
+        icon: 'glyphicon glyphicon-file',
         color: 'bg-blue-100 text-blue-700',
     },
     medical: {
         label: 'Dokumentacja medyczna',
-        icon: '🏥',
+        icon: 'glyphicon glyphicon-plus-sign',
         color: 'bg-purple-100 text-purple-700',
     },
     invoice: {
         label: 'Faktura',
-        icon: '🧾',
+        icon: 'glyphicon glyphicon-list-alt',
         color: 'bg-yellow-100 text-yellow-700',
     },
     other: {
         label: 'Inne',
-        icon: '📎',
+        icon: 'glyphicon glyphicon-paperclip',
         color: 'bg-gray-100 text-gray-700',
     },
 };
@@ -154,8 +154,14 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     {filteredFiles.map((file) => (
                                         <tr key={file.id}>
                                             <td className="text-center fz-18">
-                                                {categoryConfig[file.category]
-                                                    ?.icon || '📎'}
+                                                <i
+                                                    className={
+                                                        categoryConfig[
+                                                            file.category
+                                                        ]?.icon ||
+                                                        'glyphicon glyphicon-paperclip'
+                                                    }
+                                                />
                                             </td>
                                             <td>
                                                 <div className="bold">
@@ -196,8 +202,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                         title="Pobierz plik"
                                                         aria-label="Pobierz plik"
                                                     >
-                                                        <i className="fa fa-download"></i>{' '}
-                                                        ↓
+                                                        <i className="fa fa-download" />
                                                     </button>
                                                     <button
                                                         onClick={() =>
@@ -210,8 +215,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                                         aria-label="Usuń plik"
                                                         disabled={del.isPending}
                                                     >
-                                                        <i className="fa fa-trash"></i>{' '}
-                                                        🗑
+                                                        <i className="fa fa-trash" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -221,7 +225,6 @@ export default function CustomerFilesTab({ customerId }: Props) {
                             </table>
                         ) : (
                             <div className="text-center text-muted p-60-0">
-                                <div className="fz-32 mb-10">📁</div>
                                 <p className="fz-14 mb-5">
                                     {filterCategory === 'all'
                                         ? 'Brak dokumentów klienta.'
