@@ -970,6 +970,74 @@ textarea.form-control {
     padding-top: 10px;
 }
 
+.warehouse-section-title {
+    margin: 0 0 12px;
+    font-size: 30px;
+    line-height: 1;
+    color: #3f4750;
+    font-weight: 300;
+}
+
+.warehouse-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin-top: 14px;
+}
+
+.warehouse-form-grid label {
+    margin: 0;
+    font-size: 12px;
+    color: #69737c;
+}
+
+.warehouse-form-grid label span {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.warehouse-form-grid .form-control,
+.warehouse-form-grid .versum-select {
+    width: 100%;
+    max-width: 360px;
+}
+
+.warehouse-form-grid .warehouse-full {
+    grid-column: 1 / -1;
+}
+
+.warehouse-actions-row {
+    margin-top: 12px;
+}
+
+.warehouse-summary {
+    margin-top: 14px;
+    border-top: 1px solid #dde3e8;
+    padding-top: 10px;
+}
+
+.warehouse-summary-value {
+    text-align: right;
+    font-size: 22px;
+    line-height: 1.2;
+    color: #404851;
+    margin: 0 0 10px;
+    font-weight: 700;
+}
+
+.warehouse-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    font-size: 12px;
+    color: #55606a;
+}
+
+.warehouse-modal-panel {
+    width: 100%;
+    max-width: 620px;
+}
+
 .customer-new-form {
     max-width: 840px;
     padding-bottom: 24px;

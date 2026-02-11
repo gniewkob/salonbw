@@ -73,30 +73,24 @@ export default function WarehouseUsageCreatePage() {
             heading="Magazyn / Dodaj zużycie"
             activeTab="use"
             actions={
-                <Link
-                    href="/use/history"
-                    className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
-                >
+                <Link href="/use/history" className="btn btn-default btn-xs">
                     historia zużycia
                 </Link>
             }
         >
-            <div className="overflow-x-auto border border-gray-200">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+            <div className="products-table-wrap">
+                <table className="products-table">
+                    <thead>
                         <tr>
-                            <th className="px-2 py-2">nazwa</th>
-                            <th className="px-2 py-2">ilość</th>
-                            <th className="px-2 py-2">usuń</th>
+                            <th>nazwa</th>
+                            <th>ilość</th>
+                            <th>usuń</th>
                         </tr>
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr
-                                key={`${index}-${line.productId}`}
-                                className="border-t border-gray-200"
-                            >
-                                <td className="px-2 py-2">
+                            <tr key={`${index}-${line.productId}`}>
+                                <td>
                                     <select
                                         value={line.productId}
                                         onChange={(event) =>
@@ -104,7 +98,7 @@ export default function WarehouseUsageCreatePage() {
                                                 productId: event.target.value,
                                             })
                                         }
-                                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     >
                                         <option value="">
                                             wpisz nazwę, kod kreskowy itp.
@@ -119,7 +113,7 @@ export default function WarehouseUsageCreatePage() {
                                         ))}
                                     </select>
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={1}
@@ -129,16 +123,16 @@ export default function WarehouseUsageCreatePage() {
                                                 quantity: event.target.value,
                                             })
                                         }
-                                        className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2 text-center">
+                                <td>
                                     <button
                                         type="button"
-                                        className="text-red-500 hover:text-red-700"
+                                        className="btn btn-default btn-xs"
                                         onClick={() => removeLine(index)}
                                     >
-                                        x
+                                        usuń
                                     </button>
                                 </td>
                             </tr>
@@ -147,35 +141,33 @@ export default function WarehouseUsageCreatePage() {
                 </table>
             </div>
 
-            <div className="mt-2">
+            <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                    className="btn btn-default btn-xs"
                     onClick={addLine}
                 >
                     dodaj kolejną pozycję
                 </button>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-                <label className="text-sm">
-                    <span className="mb-1 block">Klient</span>
+            <div className="warehouse-form-grid">
+                <label>
+                    <span>Klient</span>
                     <input
                         type="text"
                         value={clientName}
                         onChange={(event) => setClientName(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                         placeholder="wpisz nazwisko lub imię klienta"
                     />
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">
-                        Pracownik, który zużył materiał
-                    </span>
+                <label>
+                    <span>Pracownik, który zużył materiał</span>
                     <select
                         value={employeeId}
                         onChange={(event) => setEmployeeId(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="versum-select"
                     >
                         <option value="">
                             wpisz nazwę lub wybierz z listy
@@ -189,10 +181,10 @@ export default function WarehouseUsageCreatePage() {
                 </label>
             </div>
 
-            <div className="mt-6">
+            <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="rounded bg-sky-500 px-4 py-2 text-sm text-white hover:bg-sky-600 disabled:opacity-60"
+                    className="btn btn-primary btn-xs"
                     onClick={() => void submit()}
                     disabled={createMutation.isPending}
                 >

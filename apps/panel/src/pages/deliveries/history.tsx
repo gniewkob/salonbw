@@ -27,66 +27,52 @@ export default function WarehouseDeliveriesHistoryPage() {
             heading="Magazyn / Historia dostaw"
             activeTab="deliveries"
             actions={
-                <Link
-                    href="/deliveries/new"
-                    className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-                >
+                <Link href="/deliveries/new" className="btn btn-primary btn-xs">
                     dodaj dostawę
                 </Link>
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">
-                    Ładowanie historii dostaw...
-                </p>
+                <p className="products-empty">Ładowanie historii dostaw...</p>
             ) : (
-                <div className="overflow-x-auto border border-gray-200">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                <div className="products-table-wrap">
+                    <table className="products-table">
+                        <thead>
                             <tr>
-                                <th className="px-3 py-2">nr dostawy</th>
-                                <th className="px-3 py-2">dostawca</th>
-                                <th className="px-3 py-2">data</th>
-                                <th className="px-3 py-2">status</th>
-                                <th className="px-3 py-2">wartość</th>
-                                <th className="px-3 py-2">akcje</th>
+                                <th>nr dostawy</th>
+                                <th>dostawca</th>
+                                <th>data</th>
+                                <th>status</th>
+                                <th>wartość</th>
+                                <th>akcje</th>
                             </tr>
                         </thead>
                         <tbody>
                             {deliveries.map((delivery) => (
-                                <tr
-                                    key={delivery.id}
-                                    className="border-t border-gray-200 hover:bg-gray-50"
-                                >
-                                    <td className="px-3 py-2">
-                                        {delivery.deliveryNumber}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {delivery.supplier?.name ?? '-'}
-                                    </td>
-                                    <td className="px-3 py-2">
+                                <tr key={delivery.id}>
+                                    <td>{delivery.deliveryNumber}</td>
+                                    <td>{delivery.supplier?.name ?? '-'}</td>
+                                    <td>
                                         {delivery.deliveryDate
                                             ? new Date(
                                                   delivery.deliveryDate,
                                               ).toLocaleDateString('pl-PL')
                                             : '-'}
                                     </td>
-                                    <td className="px-3 py-2">
-                                        {delivery.status}
-                                    </td>
-                                    <td className="px-3 py-2">
+                                    <td>{delivery.status}</td>
+                                    <td>
                                         {Number(
                                             delivery.totalCost ?? 0,
                                         ).toFixed(2)}{' '}
                                         zł
                                     </td>
-                                    <td className="px-3 py-2 text-xs">
+                                    <td>
                                         {delivery.status === 'draft' ||
                                         delivery.status === 'pending' ? (
                                             <>
                                                 <button
                                                     type="button"
-                                                    className="text-sky-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void receive(
                                                             delivery.id,
@@ -98,7 +84,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                 {' · '}
                                                 <button
                                                     type="button"
-                                                    className="text-red-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void cancel(delivery.id)
                                                     }

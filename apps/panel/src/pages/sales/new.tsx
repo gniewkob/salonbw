@@ -97,34 +97,26 @@ export default function WarehouseSaleCreatePage() {
             heading="Magazyn / Dodaj sprzedaż"
             activeTab="sales"
             actions={
-                <div className="text-right">
-                    <Link
-                        href="/sales/history"
-                        className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
-                    >
-                        historia sprzedaży
-                    </Link>
-                </div>
+                <Link href="/sales/history" className="btn btn-default btn-xs">
+                    historia sprzedaży
+                </Link>
             }
         >
-            <div className="overflow-x-auto border border-gray-200">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+            <div className="products-table-wrap">
+                <table className="products-table">
+                    <thead>
                         <tr>
-                            <th className="px-2 py-2">nazwa</th>
-                            <th className="px-2 py-2">ilość</th>
-                            <th className="px-2 py-2">cena op. (brutto)</th>
-                            <th className="px-2 py-2">rabat</th>
-                            <th className="px-2 py-2">usuń</th>
+                            <th>nazwa</th>
+                            <th>ilość</th>
+                            <th>cena op. (brutto)</th>
+                            <th>rabat</th>
+                            <th>usuń</th>
                         </tr>
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr
-                                key={`${index}-${line.productId}`}
-                                className="border-t border-gray-200"
-                            >
-                                <td className="px-2 py-2">
+                            <tr key={`${index}-${line.productId}`}>
+                                <td>
                                     <select
                                         value={line.productId}
                                         onChange={(event) => {
@@ -140,7 +132,7 @@ export default function WarehouseSaleCreatePage() {
                                                     : line.unitPrice,
                                             });
                                         }}
-                                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     >
                                         <option value="">
                                             wpisz nazwę, kod kreskowy itp.
@@ -155,7 +147,7 @@ export default function WarehouseSaleCreatePage() {
                                         ))}
                                     </select>
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={1}
@@ -165,10 +157,10 @@ export default function WarehouseSaleCreatePage() {
                                                 quantity: event.target.value,
                                             })
                                         }
-                                        className="w-20 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={0}
@@ -179,10 +171,10 @@ export default function WarehouseSaleCreatePage() {
                                                 unitPrice: event.target.value,
                                             })
                                         }
-                                        className="w-32 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={0}
@@ -193,16 +185,16 @@ export default function WarehouseSaleCreatePage() {
                                                 discount: event.target.value,
                                             })
                                         }
-                                        className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2 text-center">
+                                <td>
                                     <button
                                         type="button"
-                                        className="text-red-500 hover:text-red-700"
+                                        className="btn btn-default btn-xs"
                                         onClick={() => removeLine(index)}
                                     >
-                                        x
+                                        usuń
                                     </button>
                                 </td>
                             </tr>
@@ -211,33 +203,33 @@ export default function WarehouseSaleCreatePage() {
                 </table>
             </div>
 
-            <div className="mt-2">
+            <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                    className="btn btn-default btn-xs"
                     onClick={addLine}
                 >
                     dodaj kolejną pozycję
                 </button>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-                <label className="text-sm">
-                    <span className="mb-1 block">Klient</span>
+            <div className="warehouse-form-grid">
+                <label>
+                    <span>Klient</span>
                     <input
                         type="text"
                         value={clientName}
                         onChange={(event) => setClientName(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                         placeholder="wpisz nazwisko lub numer telefonu"
                     />
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">Polecający pracownik</span>
+                <label>
+                    <span>Polecający pracownik</span>
                     <select
                         value={employeeId}
                         onChange={(event) => setEmployeeId(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="versum-select"
                     >
                         <option value="">
                             wpisz nazwę lub wybierz z listy
@@ -249,46 +241,46 @@ export default function WarehouseSaleCreatePage() {
                         ))}
                     </select>
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">Data sprzedaży</span>
+                <label>
+                    <span>Data sprzedaży</span>
                     <input
                         type="date"
                         value={soldAt}
                         onChange={(event) => setSoldAt(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                     />
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">Płatność</span>
+                <label>
+                    <span>Płatność</span>
                     <select
                         value={paymentMethod}
                         onChange={(event) =>
                             setPaymentMethod(event.target.value)
                         }
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="versum-select"
                     >
                         <option value="cash">gotówka</option>
                         <option value="card">karta</option>
                         <option value="transfer">przelew</option>
                     </select>
                 </label>
-                <label className="text-sm md:col-span-2">
-                    <span className="mb-1 block">Opis</span>
+                <label className="warehouse-full">
+                    <span>Opis</span>
                     <textarea
                         value={note}
                         onChange={(event) => setNote(event.target.value)}
-                        className="h-28 w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                     />
                 </label>
             </div>
 
-            <div className="mt-6 border-t border-gray-200 pt-4">
-                <div className="mb-3 text-right text-2xl font-semibold">
+            <div className="warehouse-summary">
+                <div className="warehouse-summary-value">
                     Wartość sprzedaży: {totalGross.toFixed(2)} zł
                 </div>
                 <button
                     type="button"
-                    className="rounded bg-sky-500 px-4 py-2 text-sm text-white hover:bg-sky-600 disabled:opacity-60"
+                    className="btn btn-primary btn-xs"
                     onClick={() => void submit()}
                     disabled={createMutation.isPending}
                 >

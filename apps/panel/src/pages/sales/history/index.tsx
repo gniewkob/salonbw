@@ -13,49 +13,39 @@ export default function WarehouseSalesHistoryPage() {
             heading="Magazyn / Historia sprzedaży"
             activeTab="sales"
             actions={
-                <Link
-                    href="/sales/new"
-                    className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-                >
+                <Link href="/sales/new" className="btn btn-primary btn-xs">
                     dodaj sprzedaż
                 </Link>
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">
+                <p className="products-empty">
                     Ładowanie historii sprzedaży...
                 </p>
             ) : (
-                <div className="overflow-x-auto border border-gray-200">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                <div className="products-table-wrap">
+                    <table className="products-table">
+                        <thead>
                             <tr>
-                                <th className="px-3 py-2">nr sprzedaży</th>
-                                <th className="px-3 py-2">data</th>
-                                <th className="px-3 py-2">klient</th>
-                                <th className="px-3 py-2">pozycje</th>
-                                <th className="px-3 py-2">wartość brutto</th>
-                                <th className="px-3 py-2">szczegóły</th>
+                                <th>nr sprzedaży</th>
+                                <th>data</th>
+                                <th>klient</th>
+                                <th>pozycje</th>
+                                <th>wartość brutto</th>
+                                <th>szczegóły</th>
                             </tr>
                         </thead>
                         <tbody>
                             {sales.map((sale) => (
-                                <tr
-                                    key={sale.id}
-                                    className="border-t border-gray-200 hover:bg-gray-50"
-                                >
-                                    <td className="px-3 py-2">
-                                        {sale.saleNumber}
-                                    </td>
-                                    <td className="px-3 py-2">
+                                <tr key={sale.id}>
+                                    <td>{sale.saleNumber}</td>
+                                    <td>
                                         {new Date(
                                             sale.soldAt,
                                         ).toLocaleDateString('pl-PL')}
                                     </td>
-                                    <td className="px-3 py-2">
-                                        {sale.clientName ?? '-'}
-                                    </td>
-                                    <td className="px-3 py-2">
+                                    <td>{sale.clientName ?? '-'}</td>
+                                    <td>
                                         {sale.summary?.totalItems ??
                                             sale.items?.reduce(
                                                 (sum, item) =>
@@ -65,16 +55,16 @@ export default function WarehouseSalesHistoryPage() {
                                             ) ??
                                             0}
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td>
                                         {Number(sale.totalGross ?? 0).toFixed(
                                             2,
                                         )}{' '}
                                         zł
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td>
                                         <Link
                                             href={`/sales/history/${sale.id}`}
-                                            className="text-sky-600 hover:underline"
+                                            className="products-link"
                                         >
                                             otwórz
                                         </Link>
