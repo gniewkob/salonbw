@@ -5,7 +5,7 @@ import {
 } from '@/hooks/useCustomers';
 import { useServices } from '@/hooks/useServices';
 import { useEmployees } from '@/hooks/useEmployees';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CustomerFilterParams, CustomerGroup } from '@/types';
 import CreateCustomerGroupModal from '../modals/CreateCustomerGroupModal';
 import ManageCustomerGroupsModal from '../modals/ManageCustomerGroupsModal';
@@ -107,7 +107,27 @@ export default function ClientsNav() {
         ? Number(router.query.groupId)
         : undefined;
     const activeQuickGroup =
-        !currentGroupId && !router.query.tagId ? 'all' : undefined;
+        router.query.recentlyAdded === 'true'
+            ? 'recently_added'
+            : router.query.noOnlineReservations === 'true'
+              ? 'offline_customers'
+              : router.query.hasUpcomingVisit === 'true'
+                ? 'visit_today'
+                : !currentGroupId && !router.query.tagId
+                  ? 'all'
+                  : undefined;
+
+    useEffect(() => {
+        if (router.query.openCreateGroup !== '1') return;
+        setShowCreateGroupModal(true);
+        const nextQuery = { ...router.query };
+        delete nextQuery.openCreateGroup;
+        void router.replace(
+            { pathname: router.pathname, query: nextQuery },
+            undefined,
+            { shallow: true },
+        );
+    }, [router]);
 
     const handleCriteriaClick = (id: FilterCriteriaId) => {
         if (id === 'has_visit') {
@@ -141,6 +161,8 @@ export default function ClientsNav() {
                                             groupId: undefined,
                                             tagId: undefined,
                                             hasUpcomingVisit: undefined,
+                                            recentlyAdded: undefined,
+                                            noOnlineReservations: undefined,
                                         });
                                     }}
                                 >
@@ -158,7 +180,11 @@ export default function ClientsNav() {
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 updateFilters({
+                                                    groupId: undefined,
                                                     hasUpcomingVisit: true,
+                                                    recentlyAdded: undefined,
+                                                    noOnlineReservations:
+                                                        undefined,
                                                 });
                                             }}
                                         >
@@ -174,7 +200,13 @@ export default function ClientsNav() {
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                // TODO(parity): implement backend filter for recently added.
+                                                updateFilters({
+                                                    groupId: undefined,
+                                                    hasUpcomingVisit: undefined,
+                                                    recentlyAdded: true,
+                                                    noOnlineReservations:
+                                                        undefined,
+                                                });
                                             }}
                                         >
                                             <div className="icon_box">
@@ -189,7 +221,12 @@ export default function ClientsNav() {
                                             href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                // TODO(parity): implement backend filter for offline customers.
+                                                updateFilters({
+                                                    groupId: undefined,
+                                                    hasUpcomingVisit: undefined,
+                                                    recentlyAdded: undefined,
+                                                    noOnlineReservations: true,
+                                                });
                                             }}
                                         >
                                             <div className="icon_box">
@@ -224,34 +261,30 @@ export default function ClientsNav() {
                                     ))}
                                 </ul>
 
-                                {(groups?.length ?? 0) > 0 ? (
-                                    <ul>
-                                        <li>
-                                            <a
-                                                className="toggle_button"
-                                                data-for="#standard_groups, #group_options"
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setShowMoreGroups(
-                                                        (v) => !v,
-                                                    );
-                                                }}
-                                            >
-                                                <div className="icon_box">
-                                                    <i
-                                                        className={`icon ${showMoreGroups ? 'sprite-filter_less' : 'sprite-filter_more'}`}
-                                                    />
-                                                </div>
-                                                <span>
-                                                    {showMoreGroups
-                                                        ? 'mniej'
-                                                        : 'więcej'}
-                                                </span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                ) : null}
+                                <ul>
+                                    <li>
+                                        <a
+                                            className="toggle_button"
+                                            data-for="#standard_groups, #group_options"
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setShowMoreGroups((v) => !v);
+                                            }}
+                                        >
+                                            <div className="icon_box">
+                                                <i
+                                                    className={`icon ${showMoreGroups ? 'sprite-filter_less' : 'sprite-filter_more'}`}
+                                                />
+                                            </div>
+                                            <span>
+                                                {showMoreGroups
+                                                    ? 'mniej'
+                                                    : 'więcej'}
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
 
                             <div
@@ -272,6 +305,15 @@ export default function ClientsNav() {
                                     }}
                                 >
                                     dodaj/edytuj/usuń
+                                </a>
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setShowCreateGroupModal(true);
+                                    }}
+                                >
+                                    dodaj grupę
                                 </a>
                             </div>
                         </div>

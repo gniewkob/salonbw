@@ -326,7 +326,22 @@ export default function ClientsPage() {
                                         Klientów spełniających kryteria:
                                     </span>
                                     <strong>{filteredCustomers.length}</strong>
-                                    <button className="clients-filter-create-group">
+                                    <button
+                                        className="clients-filter-create-group"
+                                        onClick={() => {
+                                            void router.push(
+                                                {
+                                                    pathname: router.pathname,
+                                                    query: {
+                                                        ...router.query,
+                                                        openCreateGroup: '1',
+                                                    },
+                                                },
+                                                undefined,
+                                                { shallow: true },
+                                            );
+                                        }}
+                                    >
                                         utwórz grupę
                                     </button>
                                 </div>
