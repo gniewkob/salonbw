@@ -77,6 +77,9 @@ Moduł jest „100%” tylko gdy wszystkie warunki są spełnione:
 - Dla modułów klonowanych 1:1 **nie używamy Tailwindowego layoutu i utility-classes jako warstwy prezentacji**.
   - Wymagane: klasy i struktura DOM zgodna z Versum (`default.css`/`responsive.css`/`new-ui.css` + lokalne klasy kompatybilne).
   - Tailwind dopuszczalny wyłącznie pomocniczo poza warstwą UI klonowaną 1:1 (np. tooling/dev-only), nie w finalnym renderze modułu klonowanego.
+- `secondnav` traktujemy jako **kontekstowy**, nie statyczny:
+  - musi zmieniać sekcję i zestaw linków zgodnie z aktualnym podmodułem/trasą (np. `sprzedaż`, `zużycie`, `dostawy`, `zamówienia`, karta klienta, kalendarz),
+  - walidacja parity zawsze obejmuje przejścia route→secondnav (czy nawigacja boczna przełącza się identycznie jak w Versum).
 - Każda świadoma różnica vs Versum musi być opisana w:
   - `docs/VERSUM_CLONE_PROGRESS.md` (sekcja „Known deltas”),
   - PR/commit message.

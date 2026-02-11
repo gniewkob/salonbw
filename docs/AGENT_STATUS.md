@@ -87,6 +87,7 @@ Verification:
 
 ## What's Working
 
+- **2026-02-11** – Versum cloning rule captured in SOP: `secondnav` is route-contextual (must switch section/links per submodule, not static); parity checks now explicitly include route→secondnav transitions for customers/calendar/warehouse.
 - **2026-02-11** – Customers cleanup completed in panel/backend:
   - panel runtime uses only `/customers*` routes (legacy `/clients*` pages removed);
   - permissions and Versum module key migrated from `nav:clients`/`clients` to `nav:customers`/`customers`;
