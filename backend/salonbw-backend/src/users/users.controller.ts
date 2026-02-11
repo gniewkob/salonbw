@@ -6,6 +6,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { SkipThrottle } from '@nestjs/throttler';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -28,6 +29,7 @@ export class UsersController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Receptionist, Role.Admin)
+    @SkipThrottle()
     @Get('profile')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user profile' })
