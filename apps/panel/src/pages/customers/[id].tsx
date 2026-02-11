@@ -3,7 +3,6 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
@@ -18,6 +17,7 @@ import {
 import type { Customer, CustomerTag } from '@/types';
 import {
     CustomerStatisticsTab,
+    CustomerPersonalDataView,
     CustomerHistoryTab,
     CustomerNotesTab,
     CustomerGalleryTab,
@@ -103,12 +103,6 @@ export default function CustomerDetailPage() {
         await updateCustomer.mutateAsync({ id: customerId, data });
     };
 
-    useEffect(() => {
-        if (!router.isReady || !customerId) return;
-        if (activeTab !== 'personal') return;
-        void router.replace(`/customers/${customerId}/edit`);
-    }, [activeTab, customerId, router]);
-
     if (!role) return null;
 
     // Custom sidebar for client detail page (KARTA KLIENTA)
@@ -193,7 +187,11 @@ export default function CustomerDetailPage() {
                                         history={history}
                                     />
                                 )}
-                                {activeTab === 'personal' && null}
+                                {activeTab === 'personal' && (
+                                    <CustomerPersonalDataView
+                                        customer={customer}
+                                    />
+                                )}
                                 {activeTab === 'statistics' && (
                                     <CustomerStatisticsTab
                                         customerId={customer.id}

@@ -116,7 +116,8 @@ export default function ClientDetailNav({
                                     ? { pathname: `/customers/${customerId}` }
                                     : tab.id === 'personal'
                                       ? {
-                                            pathname: `/customers/${customerId}/edit`,
+                                            pathname: `/customers/${customerId}`,
+                                            query: { tab_name: tab.tabName },
                                         }
                                       : {
                                             pathname: `/customers/${customerId}`,
