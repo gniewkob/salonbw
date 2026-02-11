@@ -8,6 +8,7 @@ export default function WarehouseNav() {
     const router = useRouter();
     const { data: categories } = useProductCategories();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+    const path = router.pathname;
 
     const currentCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
@@ -55,6 +56,70 @@ export default function WarehouseNav() {
                 ) : null}
             </li>
         ));
+
+    const isSubmodulePath = (prefix: string) => path.startsWith(prefix);
+    const renderModuleNav = (
+        header: string,
+        items: Array<{ label: string; href: string }>,
+    ) => (
+        <>
+            <div className="nav-header">{header}</div>
+            <ul className="nav nav-list">
+                {items.map((item) => (
+                    <li
+                        key={item.href}
+                        className={
+                            path === item.href ||
+                            path.startsWith(`${item.href}/`) ||
+                            (item.href.endsWith('/history') &&
+                                path.startsWith(
+                                    `${item.href.replace('/history', '/history/')}`,
+                                ))
+                                ? 'active'
+                                : undefined
+                        }
+                    >
+                        <a href={item.href}>{item.label}</a>
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
+
+    if (isSubmodulePath('/sales')) {
+        return renderModuleNav('SPRZEDAŻ', [
+            { label: 'dodaj sprzedaż', href: '/sales/new' },
+            { label: 'historia sprzedaży', href: '/sales/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/use')) {
+        return renderModuleNav('ZUŻYCIE', [
+            { label: 'dodaj zużycie', href: '/use/new' },
+            { label: 'historia zużycia', href: '/use/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/deliveries')) {
+        return renderModuleNav('DOSTAWY', [
+            { label: 'dodaj dostawę', href: '/deliveries/new' },
+            { label: 'historia dostaw', href: '/deliveries/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/orders')) {
+        return renderModuleNav('ZAMÓWIENIA', [
+            { label: 'dodaj zamówienie', href: '/orders/new' },
+            { label: 'historia zamówień', href: '/orders/history' },
+        ]);
+    }
+
+    if (isSubmodulePath('/inventory')) {
+        return renderModuleNav('INWENTARYZACJA', [
+            { label: 'nowa inwentaryzacja', href: '/inventory/new' },
+            { label: 'historia inwentaryzacji', href: '/inventory' },
+        ]);
+    }
 
     return (
         <>
