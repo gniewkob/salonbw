@@ -59,7 +59,7 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
                 <div className="col-sm-12">
                     <ul className="versum-breadcrumb">
                         <li>
-                            <Link href="/clients">KLIENCI</Link>
+                            <Link href="/customers">KLIENCI</Link>
                         </li>
                         <li className="active">
                             {customer.firstName} {customer.lastName}

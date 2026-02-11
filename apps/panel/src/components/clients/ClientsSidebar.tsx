@@ -35,7 +35,7 @@ export default function ClientsSidebar() {
                         <Link
                             key={item.id}
                             href={{
-                                pathname: '/clients',
+                                pathname: '/customers',
                                 query: { ...router.query, group: item.id },
                             }}
                             className={`

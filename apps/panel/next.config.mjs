@@ -68,23 +68,14 @@ const nextConfig = {
 
             // Calendar embed is handled by `src/pages/calendar.tsx`, which replaces the document
             // with HTML served by `/api/calendar-embed` to avoid hydration conflicts.
-            // Exact paths (without trailing segments)
-            {
-                source: '/customers',
-                destination: '/clients',
-            },
-            {
-                source: '/customers/:path*',
-                destination: '/clients/:path*',
-            },
             // Versum legacy paths (from `panel.versum.com/<slug>/customers*`)
             {
                 source: '/salonblackandwhite/customers',
-                destination: '/clients',
+                destination: '/customers',
             },
             {
                 source: '/salonblackandwhite/customers/:path*',
-                destination: '/clients/:path*',
+                destination: '/customers/:path*',
             },
 
             // Other modules
@@ -137,6 +128,16 @@ const nextConfig = {
             {
                 source: '/signout',
                 destination: '/auth/login',
+                permanent: false,
+            },
+            {
+                source: '/clients',
+                destination: '/customers',
+                permanent: false,
+            },
+            {
+                source: '/clients/:path*',
+                destination: '/customers/:path*',
                 permanent: false,
             },
         ];

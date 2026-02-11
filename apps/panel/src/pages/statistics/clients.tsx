@@ -135,7 +135,7 @@ export default function ClientsStatisticsPage() {
                                                         >
                                                             <td>
                                                                 <Link
-                                                                    href={`/clients/${client.clientId}`}
+                                                                    href={`/customers/${client.clientId}`}
                                                                     className="versum-link"
                                                                 >
                                                                     {

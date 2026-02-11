@@ -15,7 +15,7 @@ const mainTiles: SettingsTile[] = [
     { href: '/admin/settings/calendar', label: 'godziny otwarcia', icon: '🕒' },
     { href: '/calendar', label: 'kalendarz', icon: '📅' },
     { href: '/employees', label: 'pracownicy', icon: '🪪' },
-    { href: '/clients', label: 'klienci', icon: '👥' },
+    { href: '/customers', label: 'klienci', icon: '👥' },
     { href: '/communication', label: 'rezerwacja online', icon: '☁️' },
     { href: '/reviews', label: 'komentarze', icon: '⭐' },
     { href: '/communication', label: 'łączność', icon: '💬' },

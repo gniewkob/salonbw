@@ -16,7 +16,7 @@ const links: { href: Route; label: string; testId: string }[] = [
         label: 'Moje wizyty',
         testId: 'nav-appointments',
     },
-    { href: '/clients', label: 'Klienci', testId: 'nav-clients' },
+    { href: '/customers', label: 'Klienci', testId: 'nav-clients' },
 ];
 
 export default function EmployeeSidebarMenu(props: Props) {

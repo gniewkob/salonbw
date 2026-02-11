@@ -34,7 +34,7 @@ export const VERSUM_MODULES: VersumModule[] = [
     },
     {
         key: 'clients',
-        href: '/clients',
+        href: '/customers',
         label: 'klienci',
         iconId: 'svg-customers-nav',
         permission: 'nav:clients',
@@ -109,7 +109,7 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[0];
     }
 
-    if (path.startsWith('/clients') || path.startsWith('/customers')) {
+    if (path.startsWith('/customers') || path.startsWith('/clients')) {
         return VERSUM_MODULES[1];
     }
 

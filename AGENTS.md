@@ -51,8 +51,8 @@ Panel calendar runtime note:
   - `/track_new_events.json`
 
 Panel canonical admin routes:
-- `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`
-- legacy `/admin/*` entry routes should be treated as compatibility aliases/redirects
+- `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`
+- legacy `/clients` and `/admin/*` entry routes should be treated as compatibility aliases/redirects
 
 ### Backend
 - API: backend/ (Node.js app; deployed separately from frontends)

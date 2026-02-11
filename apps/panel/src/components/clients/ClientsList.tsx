@@ -176,7 +176,7 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a
-                                            href={`/clients/${customer.id}`}
+                                            href={`/customers/${customer.id}`}
                                             className="text-sky-600 hover:text-sky-900"
                                         >
                                             Edytuj

@@ -39,7 +39,7 @@ export default function CustomerEditPage() {
                         <h1 className="versum-page__title">Edycja klienta</h1>
                         {customerId && (
                             <Link
-                                href={`/clients/${customerId}` as Route}
+                                href={`/customers/${customerId}` as Route}
                                 className="versum-btn versum-btn--light"
                             >
                                 Wróć do karty klienta

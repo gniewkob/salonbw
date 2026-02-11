@@ -85,7 +85,7 @@ export default function ClientDetailNav({
             <ul className="nav nav-list">
                 <li>
                     <Link
-                        href={`/clients/${customerId}`}
+                        href={`/customers/${customerId}`}
                         className="client-nav-name"
                     >
                         <i
@@ -107,9 +107,9 @@ export default function ClientDetailNav({
                         <Link
                             href={
                                 tab.id === 'summary'
-                                    ? { pathname: `/clients/${customerId}` }
+                                    ? { pathname: `/customers/${customerId}` }
                                     : {
-                                          pathname: `/clients/${customerId}`,
+                                          pathname: `/customers/${customerId}`,
                                           query: { tab_name: tab.tabName },
                                       }
                             }
