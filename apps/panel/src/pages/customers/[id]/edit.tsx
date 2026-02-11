@@ -44,9 +44,9 @@ export default function CustomerEditPage() {
     const handleSelectTab = (tab: EditTab) => {
         setActiveTab(tab);
         const idMap: Record<EditTab, string> = {
-            basic: 'customer-personal-first-name',
-            extended: 'customer-personal-birth-date',
-            advanced: 'customer-personal-email-consent',
+            basic: 'customer-form-basic',
+            extended: 'customer-form-extended',
+            advanced: 'customer-form-advanced',
         };
         const target = document.getElementById(idMap[tab]);
         target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -72,7 +72,7 @@ export default function CustomerEditPage() {
                 <div className="show_customer" id="customers_main">
                     <ul className="breadcrumb">
                         <li>
-                            Klienci / {customer?.name || '...'} / dane osobowe
+                            Klienci / {customer?.name || '...'} / Edytuj klienta
                         </li>
                     </ul>
 
