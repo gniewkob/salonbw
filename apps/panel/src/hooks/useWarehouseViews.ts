@@ -43,6 +43,7 @@ export function useWarehouseProducts(filters: ProductQuery) {
     const { apiFetch } = useAuth();
     return useQuery<ProductExtended[]>({
         queryKey: ['warehouse-products', filters],
+        staleTime: 30_000,
         queryFn: () =>
             apiFetch<ProductExtended[]>(
                 `/products${toQueryString({
@@ -58,6 +59,7 @@ export function useProductCategories() {
     const { apiFetch } = useAuth();
     return useQuery<ProductCategory[]>({
         queryKey: ['product-categories-tree'],
+        staleTime: 5 * 60_000,
         queryFn: () => apiFetch<ProductCategory[]>('/product-categories/tree'),
     });
 }

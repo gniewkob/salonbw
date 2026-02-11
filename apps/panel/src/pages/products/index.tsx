@@ -62,6 +62,7 @@ export default function WarehouseProductsPage() {
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
+    const showUncategorized = router.query.uncategorized === 'true';
 
     const { data: categories = [] } = useProductCategories();
     const { data: products = [], isLoading } = useWarehouseProducts({
@@ -81,7 +82,9 @@ export default function WarehouseProductsPage() {
         let result = products;
 
         // Filter by category
-        if (selectedCategoryId) {
+        if (showUncategorized) {
+            result = result.filter((product) => !product.categoryId);
+        } else if (selectedCategoryId) {
             result = result.filter((product) => {
                 if (!product.categoryId) return false;
                 return (
@@ -103,7 +106,13 @@ export default function WarehouseProductsPage() {
         }
 
         return result;
-    }, [flatCategoryIds, products, selectedCategoryId, productTypeFilter]);
+    }, [
+        flatCategoryIds,
+        products,
+        selectedCategoryId,
+        showUncategorized,
+        productTypeFilter,
+    ]);
 
     const exportProductsCsv = () => {
         const header = [
@@ -308,6 +317,16 @@ export default function WarehouseProductsPage() {
                                                     >
                                                         <i
                                                             className="fa fa-download"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </Link>
+                                                    <Link
+                                                        href={`/products/${product.id}/edit`}
+                                                        title="edytuj produkt"
+                                                        className="products-action-link"
+                                                    >
+                                                        <i
+                                                            className="fa fa-pencil"
                                                             aria-hidden="true"
                                                         />
                                                     </Link>
