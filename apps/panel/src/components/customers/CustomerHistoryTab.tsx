@@ -7,189 +7,108 @@ interface Props {
     customerId: number;
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
+
+function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('pl-PL');
+}
+
+function formatTime(dateStr: string) {
+    return new Date(dateStr).toLocaleTimeString('pl-PL', {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function formatCurrency(amount: number) {
+    return new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
+        currency: 'PLN',
+    }).format(amount);
+}
 
 export default function CustomerHistoryTab({ customerId }: Props) {
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const { data, isLoading, error } = useCustomerEventHistory(customerId, {
         limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
     });
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('pl-PL', {
-            style: 'currency',
-            currency: 'PLN',
-        }).format(amount);
-    };
-
-    const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleDateString('pl-PL', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const getStatusBadge = (status: string) => {
-        const statusConfig: Record<
-            string,
-            { label: string; className: string }
-        > = {
-            completed: {
-                label: 'Zakończona',
-                className: 'bg-green-100 text-green-800',
-            },
-            cancelled: {
-                label: 'Anulowana',
-                className: 'bg-red-100 text-red-800',
-            },
-            no_show: {
-                label: 'Nieobecność',
-                className: 'bg-orange-100 text-orange-800',
-            },
-            scheduled: {
-                label: 'Zaplanowana',
-                className: 'bg-blue-100 text-blue-800',
-            },
-            confirmed: {
-                label: 'Potwierdzona',
-                className: 'bg-cyan-100 text-cyan-800',
-            },
-            in_progress: {
-                label: 'W trakcie',
-                className: 'bg-purple-100 text-purple-800',
-            },
-        };
-
-        const config = statusConfig[status] || {
-            label: status,
-            className: 'bg-gray-100 text-gray-800',
-        };
-
+    if (isLoading) {
         return (
-            <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${config.className}`}
-            >
-                {config.label}
-            </span>
+            <div className="customer-loading">Ładowanie historii wizyt...</div>
         );
-    };
+    }
 
-    if (isLoading && !data) {
+    if (error || !data) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">Ładowanie historii...</div>
+            <div className="customer-error">
+                <p>Nie udało się załadować historii wizyt</p>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-                Błąd ładowania historii
-            </div>
-        );
-    }
-
-    const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil((data.total || 0) / PAGE_SIZE));
 
     return (
-        <div className="row">
-            <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header flex-between">
-                        <span>Historia wizyt</span>
-                        {data && (
-                            <span className="text-muted regular fz-11">
-                                {data.total} wizyt łącznie
-                            </span>
-                        )}
-                    </div>
-                    <div className="tab-pane active py-20">
-                        {data?.items.length === 0 ? (
-                            <div className="text-center p-40-0 text-muted">
-                                Brak historii wizyt
-                            </div>
-                        ) : (
-                            <table className="versum-table">
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Usługa</th>
-                                        <th className="w-100">Pracownik</th>
-                                        <th className="w-120">
-                                            Ostatnia zmiana
-                                        </th>
-                                        <th className="w-100 text-right">
-                                            Cena
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data?.items.map((visit) => (
-                                        <tr key={visit.id}>
-                                            <td>
-                                                <div className="bold">
-                                                    {formatDate(visit.date)}
-                                                </div>
-                                                <div className="text-muted fz-11">
-                                                    {visit.time}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {visit.service?.name || '-'}
-                                            </td>
-                                            <td>
-                                                {visit.employee?.name || '-'}
-                                            </td>
-                                            <td>
-                                                {getStatusBadge(visit.status)}
-                                            </td>
-                                            <td className="text-right bold">
-                                                {formatCurrency(visit.price)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+        <div className="customer-history-tab">
+            {data.items.length === 0 ? (
+                <div className="customer-empty-state">Brak historii wizyt.</div>
+            ) : (
+                <table className="customers-history-table table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Usługa</th>
+                            <th>Pracownik</th>
+                            <th className="text-right">Cena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.items.map((visit) => (
+                            <tr key={visit.id}>
+                                <td>
+                                    {formatDate(visit.date)}{' '}
+                                    {formatTime(visit.date)}
+                                </td>
+                                <td>{visit.service?.name || '-'}</td>
+                                <td>{visit.employee?.name || '-'}</td>
+                                <td className="text-right">
+                                    {formatCurrency(visit.price)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="versum-pagination-footer">
-                                <div>
-                                    Strona {page + 1} z {totalPages}
-                                </div>
-                                <div className="btn-group">
-                                    <button
-                                        onClick={() =>
-                                            setPage((p) => Math.max(0, p - 1))
-                                        }
-                                        disabled={page === 0}
-                                        className="btn btn-default btn-xs"
-                                    >
-                                        <i className="icon-chevron-left"></i>{' '}
-                                        Poprzednia
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setPage((p) =>
-                                                Math.min(totalPages - 1, p + 1),
-                                            )
-                                        }
-                                        disabled={page >= totalPages - 1}
-                                        className="btn btn-default btn-xs"
-                                    >
-                                        Następna{' '}
-                                        <i className="icon-chevron-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+            {totalPages > 1 && (
+                <div className="customers-history-pagination">
+                    <span>
+                        Strona {page} z {totalPages}
+                    </span>
+                    <div className="btn-group">
+                        <button
+                            type="button"
+                            className="btn btn-default btn-xs"
+                            disabled={page <= 1}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        >
+                            poprzednia
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-default btn-xs"
+                            disabled={page >= totalPages}
+                            onClick={() =>
+                                setPage((p) => Math.min(totalPages, p + 1))
+                            }
+                        >
+                            następna
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

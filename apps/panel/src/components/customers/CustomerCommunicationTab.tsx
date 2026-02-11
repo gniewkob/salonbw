@@ -43,7 +43,7 @@ export default function CustomerCommunicationTab({
     });
 
     return (
-        <div className="customer-tab-content">
+        <div className="customer-tab-content customer-communication-tab">
             <CustomerConsentsTab customer={customer} onUpdate={onUpdate} />
 
             <div className="versum-widget mt-20">
@@ -79,7 +79,7 @@ export default function CustomerCommunicationTab({
                                     Brak wysłanych SMS do tego klienta.
                                 </div>
                             ) : (
-                                <table className="versum-table fz-12">
+                                <table className="table customers-history-table">
                                     <thead>
                                         <tr>
                                             <th>Data</th>
@@ -90,7 +90,7 @@ export default function CustomerCommunicationTab({
                                     <tbody>
                                         {sms.data.items.map((row) => (
                                             <tr key={row.id}>
-                                                <td className="text-muted">
+                                                <td>
                                                     {formatDateTime(
                                                         row.sentAt ||
                                                             row.createdAt,
@@ -102,7 +102,7 @@ export default function CustomerCommunicationTab({
                                                         {row.subject ||
                                                             'Wiadomość'}
                                                     </div>
-                                                    <div className="text-muted">
+                                                    <div className="customer-stats-subtitle">
                                                         {row.content}
                                                     </div>
                                                 </td>
@@ -164,7 +164,7 @@ export default function CustomerCommunicationTab({
                                     Brak wysłanych emaili do tego klienta.
                                 </div>
                             ) : (
-                                <table className="versum-table fz-12">
+                                <table className="table customers-history-table">
                                     <thead>
                                         <tr>
                                             <th>Data</th>
@@ -176,7 +176,7 @@ export default function CustomerCommunicationTab({
                                     <tbody>
                                         {emails.data.items.map((row) => (
                                             <tr key={row.id}>
-                                                <td className="text-muted">
+                                                <td>
                                                     {formatDateTime(
                                                         row.sentAt ||
                                                             row.createdAt,
@@ -184,9 +184,7 @@ export default function CustomerCommunicationTab({
                                                 </td>
                                                 <td>{row.status}</td>
                                                 <td>{row.subject}</td>
-                                                <td className="text-muted">
-                                                    {row.to}
-                                                </td>
+                                                <td>{row.to}</td>
                                             </tr>
                                         ))}
                                     </tbody>
