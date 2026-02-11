@@ -63,7 +63,7 @@ function DraggableCustomerRow({
             </td>
             <td className="col-name">
                 <Link
-                    href={`/clients/${customer.id}`}
+                    href={`/customers/${customer.id}`}
                     className="clients-name-link"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
@@ -122,7 +122,7 @@ function DraggableCustomerRow({
                     ⋮⋮
                 </span>
                 <Link
-                    href={`/clients/${customer.id}/edit`}
+                    href={`/customers/${customer.id}/edit`}
                     className="clients-edit-link"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
@@ -285,7 +285,7 @@ export default function ClientsPage() {
                                 </button>
                             </div>
                             <Link
-                                href="/clients/new"
+                                href="/customers/new"
                                 className="versum-btn versum-btn--primary versum-btn--add"
                             >
                                 <span className="btn-icon">+</span>
@@ -359,7 +359,7 @@ export default function ClientsPage() {
                                                 }
                                                 onOpen={(id) =>
                                                     void router.push(
-                                                        `/clients/${id}` as Route,
+                                                        `/customers/${id}` as Route,
                                                     )
                                                 }
                                             />

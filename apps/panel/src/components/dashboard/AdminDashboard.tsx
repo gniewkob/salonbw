@@ -39,7 +39,7 @@ export default function AdminDashboard() {
             <div className="versum-dashboard__header">
                 <h1 className="versum-dashboard__title">Pulpit</h1>
                 <Link
-                    href="/clients/new"
+                    href="/customers/new"
                     className="versum-btn versum-btn--primary"
                 >
                     <i className="versum-icon versum-icon--plus"></i>

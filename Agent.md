@@ -9,7 +9,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Dashboard (staff/admin/client): `https://panel.salon-bw.pl`
 - Backend API: `https://api.salon-bw.pl`
 - All frontends talk to the same API; auth happens on panel, customer-facing stays on dev/public.
-- Panel admin canonical modules: `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/admin/*` routes are aliases/redirects).
+- Panel admin canonical modules: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/clients` and `/admin/*` routes are aliases/redirects).
 - Calendar route (`/calendar`) is a vendored Versum runtime embed (`apps/panel/public/versum-calendar/index.html`) and relies on backend compat endpoints (`/events/*`, `/settings/timetable/schedules/*`, `/graphql`, `/track_new_events.json`) proxied through panel rewrites; legacy `/salonblackandwhite/*` paths are rewritten to local routes for runtime compatibility.
 
 ## 2. Deployments (preferred)

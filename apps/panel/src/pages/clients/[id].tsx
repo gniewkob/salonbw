@@ -130,7 +130,7 @@ export default function CustomerDetailPage() {
                         <div className="customer-error">
                             <p>Nie udało się załadować danych klienta</p>
                             <Link
-                                href={'/clients' as Route}
+                                href={'/customers' as Route}
                                 className="versum-btn versum-btn--default"
                             >
                                 Wróć do listy klientów
@@ -143,7 +143,7 @@ export default function CustomerDetailPage() {
                                 <div className="btn-group">
                                     <Link
                                         href={{
-                                            pathname: `/clients/${customer.id}`,
+                                            pathname: `/customers/${customer.id}`,
                                             query: {
                                                 tab_name: 'personal_data',
                                             },
@@ -252,7 +252,7 @@ export default function CustomerDetailPage() {
                         <div className="customer-error">
                             <p>Nie znaleziono klienta</p>
                             <Link
-                                href={'/clients' as Route}
+                                href={'/customers' as Route}
                                 className="versum-btn versum-btn--default"
                             >
                                 Wróć do listy klientów

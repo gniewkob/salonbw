@@ -39,7 +39,7 @@ export default function NewCustomerPage() {
             email: form.email.trim() || undefined,
             phone: form.phone.trim() || undefined,
         });
-        void router.push(`/clients/${created.id}` as Route);
+        void router.push(`/customers/${created.id}` as Route);
     };
 
     return (
@@ -58,7 +58,7 @@ export default function NewCustomerPage() {
                         <div className="versum-widget__header flex-between">
                             <span>Nowy klient</span>
                             <Link
-                                href={'/clients' as Route}
+                                href={'/customers' as Route}
                                 className="btn btn-default btn-xs"
                             >
                                 Wróć do listy
@@ -166,7 +166,7 @@ export default function NewCustomerPage() {
 
                                 <div className="modal-footer">
                                     <Link
-                                        href={'/clients' as Route}
+                                        href={'/customers' as Route}
                                         className="btn btn-default"
                                     >
                                         Anuluj

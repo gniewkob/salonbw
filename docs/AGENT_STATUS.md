@@ -109,7 +109,7 @@ Verification:
   - removed unsupported `devil www options <domain> nodejs_version ...` calls from runtime prep and startup probes;
   - replaced incorrect panel-side DB migration step with panel bundle verification.
   - validated end-to-end on production dashboard deploy run `21686405136`.
-- **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/clients`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/admin/*` entry routes now redirect to canonical equivalents.
+- **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/clients` and `/admin/*` entry routes now redirect to canonical equivalents.
 - **2026-02-03** – Frontend E2E workflow removed; Lighthouse CI now targets only `https://dev.salon-bw.pl/` due to `/services` returning 500.
 - **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
   - ✅ API health endpoints operational (database, SMTP, Prometheus metrics)
