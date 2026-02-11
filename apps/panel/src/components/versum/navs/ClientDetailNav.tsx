@@ -88,10 +88,12 @@ export default function ClientDetailNav({
                         href={`/customers/${customerId}`}
                         className="client-nav-name"
                     >
-                        <i
-                            className="fa fa-user-o client-nav-icon"
-                            aria-hidden="true"
-                        />
+                        <span className="icon_box">
+                            <i
+                                className="fa fa-user-o client-nav-icon"
+                                aria-hidden="true"
+                            />
+                        </span>
                         {customerName}
                     </Link>
                 </li>
@@ -121,10 +123,12 @@ export default function ClientDetailNav({
                                 activeTab === tab.id ? 'page' : undefined
                             }
                         >
-                            <i
-                                className={`fa ${tab.iconClass} client-nav-icon`}
-                                aria-hidden="true"
-                            />
+                            <span className="icon_box">
+                                <i
+                                    className={`fa ${tab.iconClass} client-nav-icon`}
+                                    aria-hidden="true"
+                                />
+                            </span>
                             {tab.label}
                         </Link>
                     </li>

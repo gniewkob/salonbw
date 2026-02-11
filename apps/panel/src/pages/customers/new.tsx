@@ -120,7 +120,7 @@ export default function NewCustomerPage() {
 
                     <form
                         onSubmit={(e) => void onSubmit(e)}
-                        className="customer-new-form"
+                        className="customer-new-form customer-form-legacy"
                     >
                         <div
                             className="customer-new-section"
@@ -218,6 +218,34 @@ export default function NewCustomerPage() {
                                     <option value="male">Mężczyzna</option>
                                     <option value="other">Inna</option>
                                 </select>
+                            </div>
+                            <div className="customer-new-row customer-new-row--consent">
+                                <label>7. Zgody udzielone przez klienta</label>
+                                <div className="customer-consent-box">
+                                    Pamiętaj o dopełnieniu obowiązku
+                                    informacyjnego w zakresie realizacji umowy.
+                                </div>
+                            </div>
+                            <div className="customer-new-row customer-new-row--checkbox">
+                                <label htmlFor="customer-new-consent">
+                                    Wyrażam zgodę na przetwarzanie danych
+                                    osobowych
+                                </label>
+                                <input
+                                    id="customer-new-consent"
+                                    type="checkbox"
+                                    checked={
+                                        form.emailConsent || form.smsConsent
+                                    }
+                                    onChange={(e) =>
+                                        setForm((p) => ({
+                                            ...p,
+                                            emailConsent: e.target.checked,
+                                            smsConsent: e.target.checked,
+                                        }))
+                                    }
+                                    disabled={create.isPending}
+                                />
                             </div>
                         </div>
 
@@ -318,7 +346,12 @@ export default function NewCustomerPage() {
                             className="customer-new-section"
                             id="customer-new-advanced"
                         >
-                            <h4>zaawansowane</h4>
+                            <h4>
+                                Zaawansowane{' '}
+                                <span className="customer-advanced-hint">
+                                    Pokaż
+                                </span>
+                            </h4>
                             <div className="customer-new-row customer-new-row--checkbox">
                                 <label htmlFor="customer-new-email-consent">
                                     Zgoda na kontakt email
@@ -355,7 +388,7 @@ export default function NewCustomerPage() {
                             </div>
                         </div>
 
-                        <div className="customer-new-actions">
+                        <div className="customer-new-actions customer-new-actions--sticky">
                             <button
                                 type="submit"
                                 className="btn btn-primary btn-xs"

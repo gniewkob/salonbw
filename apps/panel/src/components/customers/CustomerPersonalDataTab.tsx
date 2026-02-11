@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Customer } from '@/types';
 
 interface Props {
@@ -45,6 +45,11 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
 
+    useEffect(() => {
+        setDraft(toDraft(customer));
+        setIsDirty(false);
+    }, [customer, customer.id, customer.updatedAt]);
+
     const updateField = <K extends keyof Draft>(key: K, value: Draft[K]) => {
         setDraft((prev) => ({ ...prev, [key]: value }));
         setIsDirty(true);
@@ -80,27 +85,8 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
     };
 
     return (
-        <div className="customer-personal-form">
-            <div className="customer-personal-actions">
-                <button
-                    type="button"
-                    className="btn btn-default btn-xs"
-                    onClick={handleReset}
-                    disabled={!isDirty || isSaving}
-                >
-                    anuluj
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-xs"
-                    onClick={() => void handleSave()}
-                    disabled={!isDirty || isSaving}
-                >
-                    {isSaving ? 'zapisywanie...' : 'zapisz'}
-                </button>
-            </div>
-
-            <div className="customer-new-section">
+        <div className="customer-personal-form customer-form-legacy">
+            <div className="customer-new-section" id="customer-form-basic">
                 <h4>dane podstawowe</h4>
                 <div className="customer-new-row">
                     <label htmlFor="customer-personal-first-name">
@@ -165,13 +151,34 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                         <option value="other">Inna</option>
                     </select>
                 </div>
+                <div className="customer-new-row customer-new-row--consent">
+                    <label>7. Zgody udzielone przez klienta</label>
+                    <div className="customer-consent-box">
+                        Pamiętaj o dopełnieniu obowiązku informacyjnego w
+                        zakresie realizacji umowy.
+                    </div>
+                </div>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor="customer-personal-gdpr">
+                        Wyrażam zgodę na przetwarzanie danych osobowych
+                    </label>
+                    <input
+                        id="customer-personal-gdpr"
+                        type="checkbox"
+                        checked={draft.emailConsent || draft.smsConsent}
+                        onChange={(e) => {
+                            updateField('emailConsent', e.target.checked);
+                            updateField('smsConsent', e.target.checked);
+                        }}
+                    />
+                </div>
             </div>
 
-            <div className="customer-new-section">
+            <div className="customer-new-section" id="customer-form-extended">
                 <h4>dane rozszerzone</h4>
                 <div className="customer-new-row">
                     <label htmlFor="customer-personal-birth-date">
-                        6. Data urodzenia
+                        8. Data urodzenia
                     </label>
                     <input
                         id="customer-personal-birth-date"
@@ -184,7 +191,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor="customer-personal-address">7. Ulica</label>
+                    <label htmlFor="customer-personal-address">9. Ulica</label>
                     <input
                         id="customer-personal-address"
                         className="form-control"
@@ -194,7 +201,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor="customer-personal-postal-code">
-                        8. Kod pocztowy
+                        10. Kod pocztowy
                     </label>
                     <input
                         id="customer-personal-postal-code"
@@ -206,7 +213,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor="customer-personal-city">9. Miasto</label>
+                    <label htmlFor="customer-personal-city">11. Miasto</label>
                     <input
                         id="customer-personal-city"
                         className="form-control"
@@ -216,7 +223,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor="customer-personal-description">
-                        10. Opis
+                        21. Opis
                     </label>
                     <textarea
                         id="customer-personal-description"
@@ -229,8 +236,11 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 </div>
             </div>
 
-            <div className="customer-new-section">
-                <h4>zgody komunikacyjne</h4>
+            <div className="customer-new-section" id="customer-form-advanced">
+                <h4>
+                    Zaawansowane{' '}
+                    <span className="customer-advanced-hint">Pokaż</span>
+                </h4>
                 <div className="customer-new-row customer-new-row--checkbox">
                     <label htmlFor="customer-personal-email-consent">
                         Zgoda na kontakt email
@@ -257,6 +267,25 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                         }
                     />
                 </div>
+            </div>
+
+            <div className="customer-new-actions customer-new-actions--sticky">
+                <button
+                    type="button"
+                    className="btn btn-primary btn-xs"
+                    onClick={() => void handleSave()}
+                    disabled={!isDirty || isSaving}
+                >
+                    {isSaving ? 'zapisywanie...' : 'zapisz zmiany'}
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-default btn-xs"
+                    onClick={handleReset}
+                    disabled={!isDirty || isSaving}
+                >
+                    anuluj
+                </button>
             </div>
         </div>
     );
