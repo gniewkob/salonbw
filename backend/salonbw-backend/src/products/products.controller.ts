@@ -12,6 +12,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { SkipThrottle } from '@nestjs/throttler';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -38,6 +39,7 @@ export class ProductsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Employee)
     @Get()
+    @SkipThrottle()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all products' })
     @ApiResponse({ status: 200, type: Product, isArray: true })
