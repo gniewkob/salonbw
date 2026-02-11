@@ -51,6 +51,10 @@ export default async function handler(
 
         let html = await fs.readFile(htmlPath, 'utf8');
 
+        // Vendored calendar template contains `user_id:userId` placeholder.
+        // Resolve it server-side to avoid runtime `ReferenceError: userId is not defined`.
+        html = html.replace(/"user_id":userId/g, `"user_id":${userId}`);
+
         // Check for PJAX request
         const isPjax =
             req.headers['x-pjax'] === 'true' ||
