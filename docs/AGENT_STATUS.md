@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-10 (Clients module: shell classes aligned with Versum vendor CSS; client rows clickable; Icon.css fixed for CDN assets)_
+_Last updated: 2026-02-11 (Customers: groups actions + quick filters parity completed; API and dashboard deployed to production)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `d9f98be8` | `21884951339` | 2026-02-10 22:33 | production | Customer groups: allow staff roles (admin/employee/receptionist) |
+| API (`api.salon-bw.pl`) | `ce53f87f` | `21901769878` | 2026-02-11 10:39 | production | Customers: quick filters (`recentlyAdded`, `noOnlineReservations`) + groups actions support |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `230bcd15` | `21885624225` | 2026-02-10 23:00 | production | Clients: `.main-content.customers` + `.sidenav` parity, fixed row click (drag handle only), Icon.css assets from Versum CDN |
+| Dashboard (`panel.salon-bw.pl`) | `ce53f87f` | `21901647817` | 2026-02-11 10:37 | production | Customers: secondnav group actions + `utwórz grupę` wired + `/customers` parity filters |
 
 Verification:
 
