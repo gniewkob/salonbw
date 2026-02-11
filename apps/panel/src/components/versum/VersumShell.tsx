@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import type { Role } from '@/types';
 import VersumMainNav from './VersumMainNav';
 import VersumSecondaryNav from './VersumSecondaryNav';
@@ -25,6 +26,38 @@ export default function VersumShell({
 
     // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
     const mainContentClass = activeModule.key;
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const body = document.body;
+        const previousId = body.id;
+        const previousModuleClass = body.getAttribute(
+            'data-versum-module-class',
+        );
+        const nextModuleClass = `e2e-${activeModule.key}`;
+
+        body.id = activeModule.key;
+        body.classList.add(nextModuleClass);
+        body.setAttribute('data-versum-module-class', nextModuleClass);
+
+        if (previousModuleClass && previousModuleClass !== nextModuleClass) {
+            body.classList.remove(previousModuleClass);
+        }
+
+        return () => {
+            body.classList.remove(nextModuleClass);
+            if (previousModuleClass) {
+                body.classList.add(previousModuleClass);
+                body.setAttribute(
+                    'data-versum-module-class',
+                    previousModuleClass,
+                );
+            } else {
+                body.removeAttribute('data-versum-module-class');
+            }
+            body.id = previousId;
+        };
+    }, [activeModule.key]);
 
     return (
         <div id="versum-shell-root">
