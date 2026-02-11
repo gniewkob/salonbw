@@ -37,16 +37,12 @@ export default function ProductDetailsTabs({
     activeTab,
 }: ProductDetailsTabsProps) {
     return (
-        <div className="mb-5 flex flex-wrap items-center border-b border-gray-300">
+        <div className="products-detail-tabs">
             {tabList(productId).map((tab) => (
                 <Link
                     key={tab.id}
                     href={tab.href}
-                    className={`-mb-px border border-b-0 px-4 py-2 text-sm ${
-                        activeTab === tab.id
-                            ? 'bg-white text-sky-600'
-                            : 'bg-gray-50 text-gray-700 hover:text-sky-600'
-                    }`}
+                    className={activeTab === tab.id ? 'active' : undefined}
                 >
                     {tab.label}
                 </Link>

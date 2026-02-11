@@ -24,17 +24,15 @@ export default function ProductFormulasPage() {
             activeTab="formulas"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">
-                    Ładowanie receptur...
-                </p>
+                <p className="products-empty">Ładowanie receptur...</p>
             ) : formulas.length === 0 ? (
-                <p className="py-6 text-[38px] leading-none text-gray-700">
+                <p className="products-empty">
                     Brak receptur dla tego produktu
                 </p>
             ) : (
-                <div className="overflow-x-auto border border-gray-200">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                <div className="products-table-wrap">
+                    <table className="products-table products-formulas-table">
+                        <thead>
                             <tr>
                                 <th className="px-3 py-2">Usługa</th>
                                 <th className="px-3 py-2">Wariant</th>
@@ -45,14 +43,11 @@ export default function ProductFormulasPage() {
                         </thead>
                         <tbody>
                             {formulas.map((formula) => (
-                                <tr
-                                    key={formula.id}
-                                    className="border-t border-gray-200 hover:bg-gray-50"
-                                >
+                                <tr key={formula.id}>
                                     <td className="px-3 py-2">
                                         <Link
                                             href={`/admin/services/${formula.serviceId}`}
-                                            className="text-sky-600 hover:underline"
+                                            className="products-link"
                                         >
                                             {formula.serviceName ??
                                                 `Usługa #${formula.serviceId}`}

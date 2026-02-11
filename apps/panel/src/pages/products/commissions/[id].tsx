@@ -41,21 +41,17 @@ export default function ProductCommissionsPage() {
             activeTab="commissions"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">
-                    Ładowanie prowizji...
-                </p>
+                <p className="products-empty">Ładowanie prowizji...</p>
             ) : (
-                <div>
-                    <h2 className="mb-3 text-[44px] leading-none text-gray-800">
-                        Prowizje
-                    </h2>
-                    <ol className="space-y-2 text-base text-gray-700">
+                <div className="products-commissions">
+                    <h2>Prowizje</h2>
+                    <ol>
                         {rules.map((rule) => (
                             <li key={rule.employeeId}>
                                 {rule.employeeName} (prowizja:{' '}
                                 <input
                                     type="number"
-                                    className="mx-1 w-20 rounded border border-gray-300 px-1 py-0.5 text-sm"
+                                    className="form-control products-commissions__input"
                                     value={
                                         edited[rule.employeeId] ??
                                         rule.commissionPercent
@@ -72,10 +68,10 @@ export default function ProductCommissionsPage() {
                             </li>
                         ))}
                     </ol>
-                    <div className="mt-4">
+                    <div className="products-commissions__actions">
                         <button
                             type="button"
-                            className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600 disabled:opacity-60"
+                            className="btn btn-primary btn-xs"
                             onClick={() => void save()}
                             disabled={updateMutation.isPending}
                         >

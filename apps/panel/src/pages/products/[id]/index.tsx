@@ -27,12 +27,10 @@ export default function ProductCardPage() {
             activeTab="card"
         >
             {isLoading || !data ? (
-                <p className="py-6 text-sm text-gray-500">
-                    Ładowanie karty produktu...
-                </p>
+                <p className="products-empty">Ładowanie karty produktu...</p>
             ) : (
-                <div className="space-y-6 text-sm">
-                    <h2 className="text-[44px] leading-none text-gray-800">
+                <div className="product-card-view">
+                    <h2 className="product-card-view__title">
                         {data.product.name} (
                         {data.metadata.packageSize ??
                             data.product.packageSize ??
@@ -43,25 +41,23 @@ export default function ProductCardPage() {
                         )
                     </h2>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <section>
-                            <h3 className="mb-2 text-base font-semibold">
-                                dane magazynowe
-                            </h3>
-                            <dl className="space-y-1 text-gray-700">
-                                <div className="flex justify-between gap-3">
+                    <div className="product-card-view__columns">
+                        <section className="product-card-view__panel">
+                            <h3>dane magazynowe</h3>
+                            <dl>
+                                <div>
                                     <dt>Stan magazynowy</dt>
                                     <dd>
                                         {data.stock.quantity} {data.stock.unit}
                                     </dd>
                                 </div>
-                                <div className="flex justify-between gap-3">
+                                <div>
                                     <dt>Minimalny stan magazynowy</dt>
                                     <dd>
                                         {data.stock.minQuantity ?? 'nie podano'}
                                     </dd>
                                 </div>
-                                <div className="flex justify-between gap-3">
+                                <div>
                                     <dt>Wartość sztuk w magazynie</dt>
                                     <dd>
                                         {formatCurrency(
@@ -72,28 +68,26 @@ export default function ProductCardPage() {
                             </dl>
                         </section>
 
-                        <section>
-                            <h3 className="mb-2 text-base font-semibold">
-                                sprzedaż produktu
-                            </h3>
-                            <dl className="space-y-1 text-gray-700">
-                                <div className="flex justify-between gap-3">
+                        <section className="product-card-view__panel">
+                            <h3>sprzedaż produktu</h3>
+                            <dl>
+                                <div>
                                     <dt>Cena sprzedaży</dt>
                                     <dd>
                                         {formatCurrency(data.pricing.saleGross)}
                                     </dd>
                                 </div>
-                                <div className="flex justify-between gap-3">
+                                <div>
                                     <dt>VAT</dt>
                                     <dd>{data.pricing.vatRate}%</dd>
                                 </div>
-                                <div className="flex justify-between gap-3">
+                                <div>
                                     <dt>Cena sprzedaży netto</dt>
                                     <dd>
                                         {formatCurrency(data.pricing.saleNet)}
                                     </dd>
                                 </div>
-                                <div className="flex justify-between gap-3">
+                                <div>
                                     <dt>Cena zakupu (ostatnia)</dt>
                                     <dd>
                                         {formatCurrency(
@@ -105,30 +99,28 @@ export default function ProductCardPage() {
                         </section>
                     </div>
 
-                    <section>
-                        <h3 className="mb-2 text-base font-semibold">
-                            dane ogólne
-                        </h3>
-                        <dl className="grid gap-x-8 gap-y-1 md:grid-cols-2">
-                            <div className="flex justify-between gap-3">
+                    <section className="product-card-view__panel">
+                        <h3>dane ogólne</h3>
+                        <dl className="product-card-view__meta">
+                            <div>
                                 <dt>Nazwa</dt>
                                 <dd>{data.product.name}</dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Rodzaj produktu</dt>
                                 <dd>{data.product.productType ?? 'towar'}</dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Kategoria</dt>
                                 <dd>
                                     {data.metadata.category ?? 'nie podano'}
                                 </dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Kod wewnętrzny (SKU)</dt>
                                 <dd>{data.metadata.sku ?? 'nie podano'}</dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Producent</dt>
                                 <dd>
                                     {data.metadata.manufacturer ??
@@ -136,18 +128,18 @@ export default function ProductCardPage() {
                                         'nie podano'}
                                 </dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Jednostka</dt>
                                 <dd>{data.stock.unit}</dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Wielkość opakowania</dt>
                                 <dd>
                                     {data.metadata.packageSize ?? '-'}{' '}
                                     {data.metadata.packageUnit ?? ''}
                                 </dd>
                             </div>
-                            <div className="flex justify-between gap-3">
+                            <div>
                                 <dt>Opis</dt>
                                 <dd>
                                     {data.product.description ?? 'nie podano'}

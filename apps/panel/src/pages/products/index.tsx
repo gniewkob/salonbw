@@ -2,16 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useWarehouseProducts,
     useProductCategories,
 } from '@/hooks/useWarehouseViews';
-import { useProductApi } from '@/api/products';
 import { ProductCategory } from '@/types';
 
 function flattenCategoryIds(
@@ -56,8 +55,6 @@ const productTypeOptions: { value: ProductTypeFilter; label: string }[] = [
 export default function WarehouseProductsPage() {
     const { role } = useAuth();
     const router = useRouter();
-    const queryClient = useQueryClient();
-    const productApi = useProductApi();
 
     const [search, setSearch] = useState('');
     const [productTypeFilter, setProductTypeFilter] =
@@ -65,16 +62,6 @@ export default function WarehouseProductsPage() {
     const selectedCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
-
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [newProduct, setNewProduct] = useState({
-        name: '',
-        brand: '',
-        unitPrice: '0',
-        stock: '0',
-        vatRate: '23',
-        minQuantity: '0',
-    });
 
     const { data: categories = [] } = useProductCategories();
     const { data: products = [], isLoading } = useWarehouseProducts({
@@ -154,380 +141,214 @@ export default function WarehouseProductsPage() {
         URL.revokeObjectURL(url);
     };
 
-    const handleCreateProduct = async () => {
-        if (!newProduct.name.trim()) return;
-        await productApi.create({
-            name: newProduct.name.trim(),
-            brand: newProduct.brand.trim() || undefined,
-            unitPrice: Number(newProduct.unitPrice),
-            stock: Number(newProduct.stock),
-            vatRate: Number(newProduct.vatRate),
-            minQuantity: Number(newProduct.minQuantity),
-        });
-        setIsCreateOpen(false);
-        setNewProduct({
-            name: '',
-            brand: '',
-            unitPrice: '0',
-            stock: '0',
-            vatRate: '23',
-            minQuantity: '0',
-        });
-        await queryClient.invalidateQueries({
-            queryKey: ['warehouse-products'],
-        });
-    };
-
     if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
             <VersumShell role={role}>
-                <div className="products-page">
-                    {/* Breadcrumbs */}
+                <VersumCustomersVendorCss />
+                <div className="products_index" id="products_main">
                     <ul className="breadcrumb">
-                        <li>
-                            <Link href="/products">Magazyn</Link>
-                        </li>
-                        <li className="active">/ Produkty</li>
+                        <li>Magazyn / Produkty</li>
                     </ul>
 
-                    {/* Tabs - jak w Versum */}
-                    <div className="products-tabs">
-                        <Link href="/products" className="products-tab active">
-                            Produkty
+                    <div className="products-top-tabs">
+                        <Link href="/products" className="active">
+                            produkty
                         </Link>
-                        <Link href="/sales/history" className="products-tab">
-                            Sprzedaż
-                        </Link>
-                        <Link href="/use/history" className="products-tab">
-                            Zużycie
-                        </Link>
-                        <Link
-                            href="/deliveries/history"
-                            className="products-tab"
-                        >
-                            Dostawy
-                        </Link>
-                        <Link href="/orders/history" className="products-tab">
-                            Zamówienia
-                        </Link>
+                        <Link href="/sales/history">sprzedaż</Link>
+                        <Link href="/use/history">zużycie</Link>
+                        <Link href="/deliveries/history">dostawy</Link>
+                        <Link href="/orders/history">zamówienia</Link>
                         <Link
                             href="/inventory"
-                            className="products-tab products-tab--right"
+                            className="products-top-tabs__right"
                         >
-                            Inwentaryzacja
+                            inwentaryzacja
                         </Link>
                     </div>
 
-                    {/* Toolbar */}
                     <div className="products-toolbar">
-                        <div className="products-search">
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="wyszukaj produkt"
-                                className="versum-input"
-                            />
-                        </div>
-                        <div className="products-filter">
-                            <select
-                                value={productTypeFilter}
-                                onChange={(e) =>
-                                    setProductTypeFilter(
-                                        e.target.value as ProductTypeFilter,
-                                    )
-                                }
-                                className="versum-select"
-                            >
-                                {productTypeOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="products-actions">
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="wyszukaj produkt"
+                            className="versum-input"
+                        />
+                        <select
+                            value={productTypeFilter}
+                            onChange={(e) =>
+                                setProductTypeFilter(
+                                    e.target.value as ProductTypeFilter,
+                                )
+                            }
+                            className="versum-select"
+                        >
+                            {productTypeOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="products-toolbar__actions">
                             <Link
                                 href="/sales/new"
-                                className="versum-btn versum-btn--secondary"
+                                className="btn btn-default btn-xs"
                             >
                                 dodaj sprzedaż
                             </Link>
                             <Link
                                 href="/use/new"
-                                className="versum-btn versum-btn--secondary"
+                                className="btn btn-default btn-xs"
                             >
                                 dodaj zużycie
                             </Link>
                             <Link
                                 href="/products/new"
-                                className="versum-btn versum-btn--primary"
+                                className="btn btn-primary btn-xs"
                             >
                                 dodaj produkt
                             </Link>
                         </div>
                     </div>
 
-                    {/* Table */}
-                    {isLoading ? (
-                        <div className="products-loading">
-                            Ładowanie produktów...
-                        </div>
-                    ) : (
-                        <>
-                            <div className="products-table-wrap">
-                                <table className="products-table">
-                                    <thead>
-                                        <tr>
-                                            <th className="col-checkbox">
-                                                <input type="checkbox" />
-                                            </th>
-                                            <th className="col-name">
-                                                <Link href="/products?sort_by=name&order=desc">
-                                                    Nazwa
-                                                </Link>
-                                            </th>
-                                            <th>Kategoria</th>
-                                            <th>Rodzaj produktu</th>
-                                            <th>Kod wewnętrzny (SKU)</th>
-                                            <th>
-                                                <Link href="/products?sort_by=stock&order=asc">
-                                                    Stan magazynowy
-                                                </Link>
-                                            </th>
-                                            <th>
-                                                <Link href="/products?sort_by=price&order=asc">
-                                                    Cena sprzedaży
-                                                </Link>
-                                            </th>
-                                            <th className="col-actions"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredProducts.length > 0 ? (
-                                            filteredProducts.map((product) => (
-                                                <tr key={product.id}>
-                                                    <td>
-                                                        <input type="checkbox" />
-                                                    </td>
-                                                    <td>
-                                                        <Link
-                                                            href={`/products/${product.id}`}
-                                                            className="product-name-link"
-                                                        >
-                                                            {product.name}
-                                                        </Link>
-                                                    </td>
-                                                    <td>
-                                                        {product.category
-                                                            ?.name ??
-                                                            'brak kategorii'}
-                                                    </td>
-                                                    <td>
-                                                        {product.productType ??
-                                                            'towar'}
-                                                    </td>
-                                                    <td>
-                                                        {product.sku ?? '-'}
-                                                    </td>
-                                                    <td>
-                                                        {product.stock}{' '}
-                                                        {product.unit ?? 'op.'}{' '}
-                                                        (
-                                                        {product.stock *
-                                                            (product.volumeMl ??
-                                                                0)}{' '}
-                                                        ml)
-                                                    </td>
-                                                    <td>
-                                                        {Number(
-                                                            product.unitPrice ??
-                                                                0,
-                                                        ).toFixed(2)}{' '}
-                                                        zł
-                                                    </td>
-                                                    <td className="col-actions">
-                                                        <Link
-                                                            href={`/sales/new?product_id=${product.id}`}
-                                                            className="action-link"
-                                                            title="Sprzedaj"
-                                                        >
-                                                            🛒
-                                                        </Link>
-                                                        <Link
-                                                            href={`/use/new?product_id=${product.id}`}
-                                                            className="action-link"
-                                                            title="Zużyj"
-                                                        >
-                                                            📦
-                                                        </Link>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan={8}
-                                                    className="text-center text-muted"
-                                                >
-                                                    Brak produktów spełniających
-                                                    kryteria
+                    <div className="products-table-wrap">
+                        <table className="products-table">
+                            <thead>
+                                <tr>
+                                    <th className="col-checkbox">
+                                        <input type="checkbox" />
+                                    </th>
+                                    <th className="col-name">Nazwa</th>
+                                    <th>Kategoria</th>
+                                    <th>Rodzaj produktu</th>
+                                    <th>Kod wewnętrzny (SKU)</th>
+                                    <th>Stan magazynowy</th>
+                                    <th>Cena sprzedaży</th>
+                                    <th className="col-actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {isLoading ? (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="products-empty"
+                                        >
+                                            Ładowanie produktów...
+                                        </td>
+                                    </tr>
+                                ) : filteredProducts.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="products-empty"
+                                        >
+                                            Brak produktów spełniających
+                                            kryteria
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredProducts.map((product) => {
+                                        const volume =
+                                            Number(product.volumeMl ?? 0) > 0
+                                                ? product.stock *
+                                                  Number(product.volumeMl)
+                                                : 0;
+                                        return (
+                                            <tr key={product.id}>
+                                                <td className="col-checkbox">
+                                                    <input type="checkbox" />
+                                                </td>
+                                                <td className="col-name">
+                                                    <Link
+                                                        href={`/products/${product.id}`}
+                                                    >
+                                                        {product.name}
+                                                    </Link>
+                                                </td>
+                                                <td>
+                                                    {product.category?.name ??
+                                                        'brak kategorii'}
+                                                </td>
+                                                <td>
+                                                    {product.productType ??
+                                                        'towar'}
+                                                </td>
+                                                <td>{product.sku ?? '-'}</td>
+                                                <td>
+                                                    {product.stock}{' '}
+                                                    {product.unit ?? 'op.'}
+                                                    {volume > 0
+                                                        ? ` (${volume} ml)`
+                                                        : ' (0 ml)'}
+                                                </td>
+                                                <td>
+                                                    {Number(
+                                                        product.unitPrice ?? 0,
+                                                    ).toFixed(2)}{' '}
+                                                    zł
+                                                </td>
+                                                <td className="col-actions">
+                                                    <Link
+                                                        href={`/sales/new?product_id=${product.id}`}
+                                                        title="dodaj sprzedaż"
+                                                        className="products-action-link"
+                                                    >
+                                                        <i
+                                                            className="fa fa-shopping-cart"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </Link>
+                                                    <Link
+                                                        href={`/use/new?product_id=${product.id}`}
+                                                        title="dodaj zużycie"
+                                                        className="products-action-link"
+                                                    >
+                                                        <i
+                                                            className="fa fa-download"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </Link>
                                                 </td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
 
-                            {/* Pagination */}
-                            <div className="products-pagination">
-                                <span>
-                                    Pozycje od 1 do {filteredProducts.length} z{' '}
-                                    {filteredProducts.length}
-                                </span>
-                                <span className="separator">|</span>
-                                <label>
-                                    na stronie
-                                    <select className="versum-select">
-                                        <option>10 wyników</option>
-                                        <option selected>20 wyników</option>
-                                        <option>50 wyników</option>
-                                        <option>100 wyników</option>
-                                    </select>
-                                </label>
-                                <div className="pagination-nav">
-                                    <input
-                                        type="text"
-                                        value="1"
-                                        className="versum-input versum-input--small"
-                                        readOnly
-                                    />
-                                    <span>z</span>
-                                    <span>1</span>
-                                    <button className="versum-btn versum-btn--icon">
-                                        ›
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Export link */}
-                            <div className="products-export">
-                                <button
-                                    onClick={exportProductsCsv}
-                                    className="link-excel"
-                                >
-                                    📊 pobierz bazę produktów w pliku Excel
-                                </button>
-                            </div>
-                        </>
-                    )}
-
-                    {/* Create Modal */}
-                    {isCreateOpen && (
-                        <div className="modal-overlay">
-                            <div className="modal">
-                                <h2>Dodaj produkt</h2>
-                                <div className="modal-body">
-                                    <label>
-                                        Nazwa
-                                        <input
-                                            type="text"
-                                            value={newProduct.name}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    name: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Marka
-                                        <input
-                                            type="text"
-                                            value={newProduct.brand}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    brand: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Cena brutto
-                                        <input
-                                            type="number"
-                                            value={newProduct.unitPrice}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    unitPrice: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Stan
-                                        <input
-                                            type="number"
-                                            value={newProduct.stock}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    stock: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        VAT (%)
-                                        <input
-                                            type="number"
-                                            value={newProduct.vatRate}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    vatRate: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Minimalny stan
-                                        <input
-                                            type="number"
-                                            value={newProduct.minQuantity}
-                                            onChange={(e) =>
-                                                setNewProduct((prev) => ({
-                                                    ...prev,
-                                                    minQuantity: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </label>
-                                </div>
-                                <div className="modal-footer">
-                                    <button
-                                        onClick={() => setIsCreateOpen(false)}
-                                        className="versum-btn"
-                                    >
-                                        anuluj
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            void handleCreateProduct()
-                                        }
-                                        className="versum-btn versum-btn--primary"
-                                    >
-                                        zapisz
-                                    </button>
-                                </div>
-                            </div>
+                    <div className="products-pagination">
+                        <span>
+                            Pozycje od 1 do {filteredProducts.length} z{' '}
+                            {filteredProducts.length}
+                        </span>
+                        <span>|</span>
+                        <span>na stronie</span>
+                        <select defaultValue="20">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <div className="products-pagination-nav">
+                            <input value="1" readOnly />
+                            <span>z 1</span>
+                            <button type="button">›</button>
                         </div>
-                    )}
+                    </div>
+
+                    <div className="products-export">
+                        <button
+                            type="button"
+                            onClick={exportProductsCsv}
+                            className="link-excel"
+                        >
+                            pobierz bazę produktów w pliku Excel
+                        </button>
+                    </div>
                 </div>
             </VersumShell>
         </RouteGuard>

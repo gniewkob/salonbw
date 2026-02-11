@@ -21,29 +21,20 @@ export default function ProductViewShell({
     children,
 }: ProductViewShellProps) {
     const actions = (
-        <div className="flex flex-wrap justify-end gap-2">
-            <Link
-                href="/sales/new"
-                className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
-            >
+        <div className="products-card-actions">
+            <Link href="/sales/new" className="btn btn-default btn-xs">
                 sprzedaj
             </Link>
-            <Link
-                href="/use/new"
-                className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
-            >
+            <Link href="/use/new" className="btn btn-default btn-xs">
                 zużyj
             </Link>
             <Link
                 href={`/products/${productId}`}
-                className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                className="btn btn-default btn-xs"
             >
                 więcej
             </Link>
-            <Link
-                href="/products"
-                className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-            >
+            <Link href="/products/new" className="btn btn-primary btn-xs">
                 dodaj produkt
             </Link>
         </div>
