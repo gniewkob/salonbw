@@ -12,6 +12,7 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { SkipThrottle } from '@nestjs/throttler';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -54,6 +55,7 @@ export class LogsController {
     }
 
     @Post('client')
+    @SkipThrottle()
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiOperation({ summary: 'Ingest client-side error log' })
     @ApiResponse({ status: 202, description: 'Log accepted' })
