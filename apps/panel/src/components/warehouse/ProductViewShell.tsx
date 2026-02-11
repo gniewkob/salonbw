@@ -29,10 +29,10 @@ export default function ProductViewShell({
                 zużyj
             </Link>
             <Link
-                href={`/products/${productId}`}
+                href={`/products/${productId}/edit`}
                 className="btn btn-default btn-xs"
             >
-                więcej
+                edytuj
             </Link>
             <Link href="/products/new" className="btn btn-primary btn-xs">
                 dodaj produkt
