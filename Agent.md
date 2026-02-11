@@ -93,7 +93,13 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 - `docs/DEPLOYMENT_MYDEVIL.md`
 - `docs/CI_CD.md`
 - `docs/RELEASE_CHECKLIST.md`
+- `docs/VERSUM_CLONING_STANDARD.md` (canonical SOP for 1:1 cloning/copying Versum -> panel)
 - **More context lives in `docs/`** (architecture, rollout, monitoring, and Versum-clone notes).
+
+## 10a. Versum Cloning Rule (mandatory)
+- For any Versum-to-panel work, follow `docs/VERSUM_CLONING_STANDARD.md` as the **single source of truth**.
+- Use copy-first workflow (markup/css/assets/flow), then integration adapters, then parity validation.
+- Do not ship module status as "100%" while any visible action is stubbed/TODO or parity-smoke is incomplete.
 
 ## 11. CI notes
 - `e2e-frontend-chrome.yml` runs panel E2E with a local backend via the MyDevil SSH tunnel and needs the same secrets as `e2e.yml`.

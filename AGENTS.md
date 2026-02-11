@@ -234,3 +234,15 @@ After any change that affects deploy/infra/runtime behavior, update:
 - Do not “simplify” cookies/origin rules without a confirmed auth test plan.
 - Do not replace symlink-based deployment paths unless the workflow is updated accordingly.
 - Do not add new tooling that requires new credentials unless explicitly provided and stored as Secrets.
+
+---
+
+## 12) Versum clone method (canonical, mandatory)
+
+For cloning/copying Versum views and flows to panel, the canonical process is:
+- `docs/VERSUM_CLONING_STANDARD.md`
+
+Rules:
+- Treat this document as the single source of truth for **how** to clone (copy-first, adapt later, validate parity).
+- Any deviation from 1:1 must be explicitly documented in `docs/VERSUM_CLONE_PROGRESS.md`.
+- Do not mark a module as "100%" if any UI action is stubbed, TODO, or missing parity smoke after deploy.
