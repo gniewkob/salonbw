@@ -108,10 +108,14 @@ export default function ClientDetailNav({
                             href={
                                 tab.id === 'summary'
                                     ? { pathname: `/customers/${customerId}` }
-                                    : {
-                                          pathname: `/customers/${customerId}`,
-                                          query: { tab_name: tab.tabName },
-                                      }
+                                    : tab.id === 'personal'
+                                      ? {
+                                            pathname: `/customers/${customerId}/edit`,
+                                        }
+                                      : {
+                                            pathname: `/customers/${customerId}`,
+                                            query: { tab_name: tab.tabName },
+                                        }
                             }
                             aria-current={
                                 activeTab === tab.id ? 'page' : undefined
