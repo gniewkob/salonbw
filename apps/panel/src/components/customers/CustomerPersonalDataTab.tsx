@@ -1,340 +1,261 @@
 'use client';
 
 import { useState } from 'react';
-import { Customer } from '@/types';
+import type { Customer } from '@/types';
 
 interface Props {
     customer: Customer;
     onUpdate?: (data: Partial<Customer>) => Promise<void> | void;
 }
 
-export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState<Partial<Customer>>({
+type Draft = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    birthDate: string;
+    gender: '' | 'female' | 'male' | 'other';
+    address: string;
+    city: string;
+    postalCode: string;
+    description: string;
+    emailConsent: boolean;
+    smsConsent: boolean;
+};
+
+function toDraft(customer: Customer): Draft {
+    return {
         firstName: customer.firstName || '',
         lastName: customer.lastName || '',
-        phone: customer.phone || '',
         email: customer.email || '',
+        phone: customer.phone || '',
         birthDate: customer.birthDate || '',
-        gender: customer.gender,
+        gender: customer.gender || '',
         address: customer.address || '',
         city: customer.city || '',
         postalCode: customer.postalCode || '',
         description: customer.description || '',
-    });
+        emailConsent: customer.emailConsent,
+        smsConsent: customer.smsConsent,
+    };
+}
 
-    const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-        >,
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
+    const [draft, setDraft] = useState<Draft>(() => toDraft(customer));
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
+
+    const updateField = <K extends keyof Draft>(key: K, value: Draft[K]) => {
+        setDraft((prev) => ({ ...prev, [key]: value }));
+        setIsDirty(true);
     };
 
-    const handleSave = () => {
-        if (onUpdate) {
-            void onUpdate(formData);
+    const handleSave = async () => {
+        if (!onUpdate || isSaving) return;
+        setIsSaving(true);
+        try {
+            await onUpdate({
+                firstName: draft.firstName || undefined,
+                lastName: draft.lastName || undefined,
+                email: draft.email || undefined,
+                phone: draft.phone || undefined,
+                birthDate: draft.birthDate || undefined,
+                gender: draft.gender || undefined,
+                address: draft.address || undefined,
+                city: draft.city || undefined,
+                postalCode: draft.postalCode || undefined,
+                description: draft.description || undefined,
+                emailConsent: draft.emailConsent,
+                smsConsent: draft.smsConsent,
+            });
+            setIsDirty(false);
+        } finally {
+            setIsSaving(false);
         }
-        setIsEditing(false);
     };
 
-    const handleCancel = () => {
-        setFormData({
-            firstName: customer.firstName || '',
-            lastName: customer.lastName || '',
-            phone: customer.phone || '',
-            email: customer.email || '',
-            birthDate: customer.birthDate || '',
-            gender: customer.gender,
-            address: customer.address || '',
-            city: customer.city || '',
-            postalCode: customer.postalCode || '',
-            description: customer.description || '',
-        });
-        setIsEditing(false);
+    const handleReset = () => {
+        setDraft(toDraft(customer));
+        setIsDirty(false);
     };
 
     return (
-        <div className="row">
-            <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header flex-between">
-                        <span>Dane osobowe</span>
-                        {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="btn btn-default btn-xs"
-                            >
-                                <i className="icon-edit"></i> Edytuj
-                            </button>
-                        ) : (
-                            <div className="btn-group">
-                                <button
-                                    onClick={handleCancel}
-                                    className="btn btn-default btn-xs"
-                                >
-                                    Anuluj
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className="btn btn-primary btn-xs"
-                                >
-                                    Zapisz
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    <div className="versum-widget__content form-horizontal">
-                        {/* First Name */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-firstName"
-                                className="control-label"
-                            >
-                                Imię
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <input
-                                        id="customer-firstName"
-                                        type="text"
-                                        name="firstName"
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                ) : (
-                                    <span>{customer.firstName || '-'}</span>
-                                )}
-                            </div>
-                        </div>
+        <div className="customer-personal-form">
+            <div className="customer-personal-actions">
+                <button
+                    type="button"
+                    className="btn btn-default btn-xs"
+                    onClick={handleReset}
+                    disabled={!isDirty || isSaving}
+                >
+                    anuluj
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-primary btn-xs"
+                    onClick={() => void handleSave()}
+                    disabled={!isDirty || isSaving}
+                >
+                    {isSaving ? 'zapisywanie...' : 'zapisz'}
+                </button>
+            </div>
 
-                        {/* Last Name */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-lastName"
-                                className="control-label"
-                            >
-                                Nazwisko
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <input
-                                        id="customer-lastName"
-                                        type="text"
-                                        name="lastName"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                ) : (
-                                    <span>{customer.lastName || '-'}</span>
-                                )}
-                            </div>
-                        </div>
+            <div className="customer-new-section">
+                <h4>dane podstawowe</h4>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-first-name">
+                        1. Imię
+                    </label>
+                    <input
+                        id="customer-personal-first-name"
+                        className="form-control"
+                        value={draft.firstName}
+                        onChange={(e) =>
+                            updateField('firstName', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-last-name">
+                        2. Nazwisko
+                    </label>
+                    <input
+                        id="customer-personal-last-name"
+                        className="form-control"
+                        value={draft.lastName}
+                        onChange={(e) =>
+                            updateField('lastName', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-email">3. Email</label>
+                    <input
+                        id="customer-personal-email"
+                        className="form-control"
+                        value={draft.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-phone">4. Telefon</label>
+                    <input
+                        id="customer-personal-phone"
+                        className="form-control"
+                        value={draft.phone}
+                        onChange={(e) => updateField('phone', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-gender">5. Płeć</label>
+                    <select
+                        id="customer-personal-gender"
+                        className="form-control"
+                        value={draft.gender}
+                        onChange={(e) =>
+                            updateField(
+                                'gender',
+                                (e.target.value || '') as Draft['gender'],
+                            )
+                        }
+                    >
+                        <option value="">Nie podano</option>
+                        <option value="female">Kobieta</option>
+                        <option value="male">Mężczyzna</option>
+                        <option value="other">Inna</option>
+                    </select>
+                </div>
+            </div>
 
-                        {/* Phone */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-phone"
-                                className="control-label"
-                            >
-                                Telefon
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <input
-                                        id="customer-phone"
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone || ''}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                ) : (
-                                    <span>{customer.phone || '-'}</span>
-                                )}
-                            </div>
-                        </div>
+            <div className="customer-new-section">
+                <h4>dane rozszerzone</h4>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-birth-date">
+                        6. Data urodzenia
+                    </label>
+                    <input
+                        id="customer-personal-birth-date"
+                        type="date"
+                        className="form-control"
+                        value={draft.birthDate}
+                        onChange={(e) =>
+                            updateField('birthDate', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-address">7. Ulica</label>
+                    <input
+                        id="customer-personal-address"
+                        className="form-control"
+                        value={draft.address}
+                        onChange={(e) => updateField('address', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-postal-code">
+                        8. Kod pocztowy
+                    </label>
+                    <input
+                        id="customer-personal-postal-code"
+                        className="form-control"
+                        value={draft.postalCode}
+                        onChange={(e) =>
+                            updateField('postalCode', e.target.value)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-city">9. Miasto</label>
+                    <input
+                        id="customer-personal-city"
+                        className="form-control"
+                        value={draft.city}
+                        onChange={(e) => updateField('city', e.target.value)}
+                    />
+                </div>
+                <div className="customer-new-row">
+                    <label htmlFor="customer-personal-description">
+                        10. Opis
+                    </label>
+                    <textarea
+                        id="customer-personal-description"
+                        className="form-control"
+                        value={draft.description}
+                        onChange={(e) =>
+                            updateField('description', e.target.value)
+                        }
+                    />
+                </div>
+            </div>
 
-                        {/* Email */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-email"
-                                className="control-label"
-                            >
-                                E-mail
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <input
-                                        id="customer-email"
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                ) : (
-                                    <span>{customer.email || '-'}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Birth Date */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-birthDate"
-                                className="control-label"
-                            >
-                                Data urodzenia
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <input
-                                        id="customer-birthDate"
-                                        type="date"
-                                        name="birthDate"
-                                        value={formData.birthDate || ''}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    />
-                                ) : (
-                                    <span>
-                                        {customer.birthDate
-                                            ? new Date(
-                                                  customer.birthDate,
-                                              ).toLocaleDateString('pl-PL')
-                                            : '-'}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Gender */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-gender"
-                                className="control-label"
-                            >
-                                Płeć
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <select
-                                        id="customer-gender"
-                                        name="gender"
-                                        value={formData.gender || ''}
-                                        onChange={handleChange}
-                                        className="form-control"
-                                    >
-                                        <option value="">Nie podano</option>
-                                        <option value="female">Kobieta</option>
-                                        <option value="male">Mężczyzna</option>
-                                        <option value="other">Inna</option>
-                                    </select>
-                                ) : (
-                                    <span>
-                                        {customer.gender === 'female'
-                                            ? 'Kobieta'
-                                            : customer.gender === 'male'
-                                              ? 'Mężczyzna'
-                                              : customer.gender === 'other'
-                                                ? 'Inna'
-                                                : '-'}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Address */}
-                        <div className="form-group mt-20">
-                            <label
-                                htmlFor="customer-address"
-                                className="control-label"
-                            >
-                                Adres
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <div className="row m-0">
-                                        <div className="col-sm-6 pl-0">
-                                            <input
-                                                id="customer-address"
-                                                type="text"
-                                                name="address"
-                                                placeholder="Ulica i numer"
-                                                aria-label="Ulica i numer"
-                                                value={formData.address}
-                                                onChange={handleChange}
-                                                className="form-control"
-                                            />
-                                        </div>
-                                        <div className="col-sm-3">
-                                            <input
-                                                id="customer-postalCode"
-                                                type="text"
-                                                name="postalCode"
-                                                placeholder="Kod"
-                                                aria-label="Kod pocztowy"
-                                                value={formData.postalCode}
-                                                onChange={handleChange}
-                                                className="form-control"
-                                            />
-                                        </div>
-                                        <div className="col-sm-3 pr-0">
-                                            <input
-                                                id="customer-city"
-                                                type="text"
-                                                name="city"
-                                                placeholder="Miasto"
-                                                aria-label="Miasto"
-                                                value={formData.city}
-                                                onChange={handleChange}
-                                                className="form-control"
-                                            />
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <span>
-                                        {[
-                                            customer.address,
-                                            customer.postalCode,
-                                            customer.city,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(', ') || '-'}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div className="form-group">
-                            <label
-                                htmlFor="customer-description"
-                                className="control-label"
-                            >
-                                Opis (notatka)
-                            </label>
-                            <div className="control-content">
-                                {isEditing ? (
-                                    <textarea
-                                        id="customer-description"
-                                        name="description"
-                                        value={formData.description}
-                                        onChange={handleChange}
-                                        rows={3}
-                                        className="form-control"
-                                        placeholder="Dodatkowe informacje..."
-                                    />
-                                ) : (
-                                    <span>{customer.description || '-'}</span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+            <div className="customer-new-section">
+                <h4>zgody komunikacyjne</h4>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor="customer-personal-email-consent">
+                        Zgoda na kontakt email
+                    </label>
+                    <input
+                        id="customer-personal-email-consent"
+                        type="checkbox"
+                        checked={draft.emailConsent}
+                        onChange={(e) =>
+                            updateField('emailConsent', e.target.checked)
+                        }
+                    />
+                </div>
+                <div className="customer-new-row customer-new-row--checkbox">
+                    <label htmlFor="customer-personal-sms-consent">
+                        Zgoda na kontakt SMS
+                    </label>
+                    <input
+                        id="customer-personal-sms-consent"
+                        type="checkbox"
+                        checked={draft.smsConsent}
+                        onChange={(e) =>
+                            updateField('smsConsent', e.target.checked)
+                        }
+                    />
                 </div>
             </div>
         </div>
