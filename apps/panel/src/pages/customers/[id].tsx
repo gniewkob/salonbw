@@ -14,7 +14,7 @@ import {
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
-import type { Customer, CustomerTag } from '@/types';
+import type { Customer } from '@/types';
 import {
     CustomerStatisticsTab,
     CustomerPersonalDataView,
@@ -127,7 +127,10 @@ export default function CustomerDetailPage() {
                 <div className="show_customer" id="customers_main">
                     {/* Breadcrumbs - Versum style */}
                     <ul className="breadcrumb">
-                        <li>Klienci / {customer?.name || '...'}</li>
+                        <li>
+                            <i className="glyphicon glyphicon-user" /> Klienci /{' '}
+                            {customer?.name || '...'}
+                        </li>
                     </ul>
 
                     {!router.isReady || isCustomerLoading ? (
@@ -158,20 +161,46 @@ export default function CustomerDetailPage() {
                         <>
                             <div className="customer-actions-bar">
                                 <div className="customer-actions-bar__spacer" />
-                                <div className="btn-group">
+                                <div className="btn-group customer-actions-group">
                                     <Link
                                         href={`/customers/${customer.id}/edit`}
                                         className="btn btn-default btn-xs"
                                     >
                                         edytuj
                                     </Link>
-                                    <button
-                                        type="button"
-                                        className="btn btn-default btn-xs"
-                                        title="Wiecej"
-                                    >
-                                        więcej ▼
-                                    </button>
+                                    <details className="customer-more-dropdown">
+                                        <summary className="btn btn-default btn-xs customer-more-dropdown__trigger">
+                                            więcej <span className="caret" />
+                                        </summary>
+                                        <ul className="customer-more-dropdown__menu">
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        window.print()
+                                                    }
+                                                >
+                                                    drukuj
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <Link
+                                                    href={`/customers/${customer.id}?tab_name=personal_data`}
+                                                >
+                                                    historia zmian
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    title="Usuwanie klienta będzie podłączone po endpointzie DELETE /customers/:id"
+                                                >
+                                                    usuń klienta
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </details>
                                 </div>
                             </div>
 
@@ -273,6 +302,18 @@ function CustomerSummaryView({
         const formatted = date.toLocaleDateString('pl-PL');
         return timeStr ? `${formatted} ${timeStr}` : formatted;
     };
+    const genderLabel =
+        customer.gender === 'female'
+            ? 'Kobieta'
+            : customer.gender === 'male'
+              ? 'Mężczyzna'
+              : customer.gender === 'other'
+                ? 'Inna'
+                : 'Nie podano';
+    const groupsOrTags = [
+        ...(customer.groups?.map((g) => g.name) ?? []),
+        ...(customer.tags?.map((t) => t.name) ?? []),
+    ].filter(Boolean);
 
     return (
         <div className="customer-summary">
@@ -286,7 +327,7 @@ function CustomerSummaryView({
                         {customer.phone && (
                             <div className="customer-info-item">
                                 <i
-                                    className="fa fa-phone customer-info-icon"
+                                    className="glyphicon glyphicon-earphone customer-info-icon"
                                     aria-hidden="true"
                                 />
                                 <a href={`tel:${customer.phone}`}>
@@ -296,7 +337,7 @@ function CustomerSummaryView({
                         )}
                         <div className="customer-info-item">
                             <i
-                                className="fa fa-envelope-o customer-info-icon"
+                                className="glyphicon glyphicon-envelope customer-info-icon"
                                 aria-hidden="true"
                             />
                             {customer.email ? (
@@ -307,22 +348,20 @@ function CustomerSummaryView({
                                 <span className="text-muted">nie podano</span>
                             )}
                         </div>
-                        {customer.tags && customer.tags.length > 0 && (
-                            <div className="customer-info-item">
-                                <i
-                                    className="fa fa-tags customer-info-icon"
-                                    aria-hidden="true"
-                                />
-                                <span>
-                                    {customer.tags
-                                        .map((t: CustomerTag) => t.name)
-                                        .join(', ')}
-                                </span>
-                            </div>
-                        )}
                         <div className="customer-info-item">
                             <i
-                                className="fa fa-file-text-o customer-info-icon"
+                                className="glyphicon glyphicon-user customer-info-icon"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                {groupsOrTags.length
+                                    ? groupsOrTags.join(', ')
+                                    : 'nie podano'}
+                            </span>
+                        </div>
+                        <div className="customer-info-item">
+                            <i
+                                className="glyphicon glyphicon-list-alt customer-info-icon"
                                 aria-hidden="true"
                             />
                             {customer.description ? (
@@ -341,20 +380,10 @@ function CustomerSummaryView({
                                 </>
                             )}
                         </div>
-                        {customer.gender && (
-                            <div className="customer-info-item">
-                                <span className="customer-info-label">
-                                    płeć
-                                </span>
-                                <span>
-                                    {customer.gender === 'female'
-                                        ? 'Kobieta'
-                                        : customer.gender === 'male'
-                                          ? 'Mężczyzna'
-                                          : 'Inna'}
-                                </span>
-                            </div>
-                        )}
+                        <div className="customer-info-item">
+                            <span className="customer-info-label">płeć</span>
+                            <span>{genderLabel}</span>
+                        </div>
                         <div className="customer-info-item">
                             <span className="customer-info-label">
                                 data dodania
