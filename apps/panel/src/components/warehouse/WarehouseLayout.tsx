@@ -18,7 +18,7 @@ const tabConfig: Array<{
     { id: 'sales', label: 'Sprzedaż', href: '/sales/new' },
     { id: 'use', label: 'Zużycie', href: '/use/new' },
     { id: 'deliveries', label: 'Dostawy', href: '/deliveries/new' },
-    { id: 'orders', label: 'Zamówienia', href: '/orders/history' },
+    { id: 'orders', label: 'Zamówienia', href: '/orders/new' },
 ];
 
 interface WarehouseLayoutProps {
