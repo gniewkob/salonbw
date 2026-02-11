@@ -64,6 +64,81 @@ export function useProductCategories() {
     });
 }
 
+export function useCreateProductCategory() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: {
+            name: string;
+            parentId?: number;
+            sortOrder?: number;
+            isActive?: boolean;
+        }) =>
+            apiFetch<ProductCategory>('/product-categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['product-categories-tree'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+        },
+    });
+}
+
+export function useUpdateProductCategory() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            id,
+            payload,
+        }: {
+            id: number;
+            payload: {
+                name?: string;
+                parentId?: number;
+                sortOrder?: number;
+                isActive?: boolean;
+            };
+        }) =>
+            apiFetch<ProductCategory>(`/product-categories/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['product-categories-tree'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+        },
+    });
+}
+
+export function useDeleteProductCategory() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch(`/product-categories/${id}`, { method: 'DELETE' }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['product-categories-tree'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+        },
+    });
+}
+
 export function useProductCard(productId?: number) {
     const { apiFetch } = useAuth();
     return useQuery<ProductCardView>({
