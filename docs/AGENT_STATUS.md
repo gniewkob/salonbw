@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-11 (Hotfix: removed profile/client-log throttling bottleneck and restored `/appointments` alias -> `/calendar`; API and dashboard deployed to production)_
+_Last updated: 2026-02-11 (Warehouse hotfix: inventory create flow moved to `/inventory/new` and product/category read endpoints exempted from throttling; API and dashboard deployed to production)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `46ce3663` | `21923841869` | 2026-02-11 21:33 | production | Hotfix: `@SkipThrottle()` for `GET /users/profile` and `POST /logs/client` to prevent 429 auth/session loops |
+| API (`api.salon-bw.pl`) | `1cbf7ab6` | `21924858375` | 2026-02-11 22:06 | production | Warehouse hotfix: `@SkipThrottle()` for `GET /products` and `GET /product-categories/tree` to remove 429 pressure on magazyn views |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `46ce3663` | `21923709433` | 2026-02-11 21:31 | production | Hotfix: `_app` prefetch switched to `/calendar`; added `/appointments` alias route redirecting to `/calendar` (removes `_next/data/.../appointments.json` 404) |
+| Dashboard (`panel.salon-bw.pl`) | `1cbf7ab6` | `21924708353` | 2026-02-11 22:04 | production | Warehouse hotfix: `/inventory` CTA `nowa inwentaryzacja` now routes to dedicated page `/inventory/new` (no in-place modal) |
 
 Verification:
 
@@ -92,6 +92,10 @@ Verification:
   - permissions and Versum module key migrated from `nav:clients`/`clients` to `nav:customers`/`customers`;
   - formulas endpoints migrated to `/customers/me/formulas` and `/customers/:id/formulas`;
   - legacy backend `ClientsController` removed from `UsersModule`.
+- **2026-02-11** – Warehouse stabilization hotfix deployed to production:
+  - dashboard: `/inventory` now opens creation flow on `/inventory/new`;
+  - API: `GET /products` and `GET /product-categories/tree` marked with `@SkipThrottle()` to reduce false 429 spikes during warehouse navigation;
+  - verification: `GET /products` and `GET /product-categories/tree` return stable `401` (no `429`) without auth under burst checks, and `/inventory/new` loads correctly after login.
 - **2026-02-10** – `/calendar` restored to the **vendored Versum embed**:
   - `/calendar` (Next page) replaces the document with HTML served by `apps/panel/src/pages/api/calendar-embed.ts`;
   - legacy `/salonblackandwhite/*` compat aliases are rewritten to `/api/*` in `apps/panel/next.config.mjs`.
