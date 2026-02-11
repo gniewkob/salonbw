@@ -2,13 +2,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Client } from '@/types';
 
-export function useClientApi() {
+export function useCustomerApi() {
     const { apiFetch } = useAuth();
     const toast = useToast();
 
     const create = async (data: { name: string }) => {
         try {
-            const res = await apiFetch<Client>('/clients', {
+            const res = await apiFetch<Client>('/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -23,7 +23,7 @@ export function useClientApi() {
 
     const update = async (id: number, data: { name: string }) => {
         try {
-            const res = await apiFetch<Client>(`/clients/${id}`, {
+            const res = await apiFetch<Client>(`/customers/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -38,7 +38,7 @@ export function useClientApi() {
 
     const remove = async (id: number) => {
         try {
-            await apiFetch(`/clients/${id}`, { method: 'DELETE' });
+            await apiFetch(`/customers/${id}`, { method: 'DELETE' });
             toast.success('Client deleted');
         } catch (err: unknown) {
             toast.error(err instanceof Error ? err.message : 'Error');

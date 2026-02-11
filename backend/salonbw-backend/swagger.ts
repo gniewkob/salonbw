@@ -17,7 +17,7 @@ import { ServicesService } from './src/services/services.service';
 import { ProductsController } from './src/products/products.controller';
 import { ProductsService } from './src/products/products.service';
 import { AppointmentFormulasController } from './src/formulas/appointment-formulas.controller';
-import { ClientFormulasController } from './src/formulas/client-formulas.controller';
+import { CustomerFormulasController } from './src/formulas/customer-formulas.controller';
 import { FormulasService } from './src/formulas/formulas.service';
 import { CommissionsController } from './src/commissions/commissions.controller';
 import { CommissionsService } from './src/commissions/commissions.service';
@@ -52,7 +52,7 @@ import { StockAlertsService } from './src/warehouse/stock-alerts.service';
         ProductsController,
         ProductCategoriesController,
         AppointmentFormulasController,
-        ClientFormulasController,
+        CustomerFormulasController,
         CommissionsController,
         DashboardController,
         SalesController,

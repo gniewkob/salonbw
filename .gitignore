@@ -116,3 +116,6 @@ data/
 !apps/landing/vendor/client-only/**
 !apps/panel/vendor/client-only/
 !apps/panel/vendor/client-only/**
+
+# Local audit/login credentials
+.env

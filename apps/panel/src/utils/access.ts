@@ -9,7 +9,7 @@ export type Permission =
     | 'nav:calendar'
     | 'nav:invoices'
     | 'nav:reviews'
-    | 'nav:clients'
+    | 'nav:customers'
     | 'nav:employees'
     | 'nav:products'
     | 'nav:services'
@@ -31,7 +31,7 @@ const rolePermissions: Record<Role, Set<Permission>> = {
         'dashboard:employee',
         'nav:appointments',
         'nav:calendar',
-        'nav:clients',
+        'nav:customers',
     ]),
     receptionist: new Set([
         'dashboard:receptionist',
@@ -42,7 +42,7 @@ const rolePermissions: Record<Role, Set<Permission>> = {
         'dashboard:admin',
         'nav:appointments',
         'nav:calendar',
-        'nav:clients',
+        'nav:customers',
         'nav:employees',
         'nav:products',
         'nav:services',

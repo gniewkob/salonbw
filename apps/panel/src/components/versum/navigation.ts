@@ -3,7 +3,7 @@ import { can, type Permission } from '@/utils/access';
 
 export type VersumModuleKey =
     | 'calendar'
-    | 'clients'
+    | 'customers'
     | 'products'
     | 'statistics'
     | 'communication'
@@ -33,11 +33,11 @@ export const VERSUM_MODULES: VersumModule[] = [
         wideContent: true,
     },
     {
-        key: 'clients',
+        key: 'customers',
         href: '/customers',
         label: 'klienci',
         iconId: 'svg-customers-nav',
-        permission: 'nav:clients',
+        permission: 'nav:customers',
         secondaryNav: true, // Page has its own sidebar with dynamic content
         wideContent: true,
     },
@@ -109,7 +109,7 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[0];
     }
 
-    if (path.startsWith('/customers') || path.startsWith('/clients')) {
+    if (path.startsWith('/customers')) {
         return VERSUM_MODULES[1];
     }
 

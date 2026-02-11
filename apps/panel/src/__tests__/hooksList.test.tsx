@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { useServices } from '@/hooks/useServices';
 import { useAppointments } from '@/hooks/useAppointments';
 import { useProducts } from '@/hooks/useProducts';
-import { useClients } from '@/hooks/useClients';
+import { useCustomersList } from '@/hooks/useCustomersList';
 import { useList } from '@/hooks/useList';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,12 +64,12 @@ describe('list hooks', () => {
         renderHook(() => useServices(), { wrapper });
         renderHook(() => useAppointments(), { wrapper });
         renderHook(() => useProducts(), { wrapper });
-        renderHook(() => useClients(), { wrapper });
+        renderHook(() => useCustomersList(), { wrapper });
         await Promise.resolve();
         expect(apiFetch).toHaveBeenCalledWith('/services');
         expect(apiFetch).toHaveBeenCalledWith('/appointments');
         expect(apiFetch).toHaveBeenCalledWith('/products');
-        expect(apiFetch).toHaveBeenCalledWith('/clients');
+        expect(apiFetch).toHaveBeenCalledWith('/customers');
     });
 });
 

@@ -114,10 +114,10 @@ export function useClientStats(params: EmployeeRankingParams = {}) {
     if (to) queryParams.set('to', to);
 
     return useQuery<ClientStatsData>({
-        queryKey: ['statistics', 'clients', params],
+        queryKey: ['statistics', 'customers', params],
         queryFn: () =>
             apiFetch<ClientStatsData>(
-                `/statistics/clients?${queryParams.toString()}`,
+                `/statistics/customers?${queryParams.toString()}`,
             ),
         enabled,
     });

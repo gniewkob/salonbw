@@ -51,7 +51,7 @@ const navItems: NavLink[] = [
     {
         href: '/customers' as Route,
         label: 'Clients',
-        permission: 'nav:clients',
+        permission: 'nav:customers',
     },
     {
         href: '/employees' as Route,

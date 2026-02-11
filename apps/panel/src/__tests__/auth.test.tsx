@@ -37,7 +37,7 @@ describe('auth flow', () => {
         await act(async () => {
             const clients =
                 await result.current.apiFetch<{ id: number; name: string }[]>(
-                    '/clients',
+                    '/customers',
                 );
             expect(clients[0].name).toBe('John');
         });

@@ -56,7 +56,7 @@ export default function ClientOriginsPage() {
         setIsLoading(true);
         try {
             const data = await apiFetch<OriginStats>(
-                `/statistics/clients/origins?range=${dateRange}`,
+                `/statistics/customers/origins?range=${dateRange}`,
             );
             setStats(data);
         } catch (error) {

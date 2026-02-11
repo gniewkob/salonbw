@@ -622,7 +622,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/clients/me/formulas": {
+    "/customers/me/formulas": {
         parameters: {
             query?: never;
             header?: never;
@@ -630,7 +630,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get formulas for current user */
-        get: operations["ClientFormulasController_findMine"];
+        get: operations["CustomerFormulasController_findMine"];
         put?: never;
         post?: never;
         delete?: never;
@@ -639,7 +639,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/clients/{id}/formulas": {
+    "/customers/{id}/formulas": {
         parameters: {
             query?: never;
             header?: never;
@@ -647,7 +647,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get formulas for client */
-        get: operations["ClientFormulasController_findForClient"];
+        get: operations["CustomerFormulasController_findForCustomer"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2952,7 +2952,7 @@ export interface operations {
             };
         };
     };
-    ClientFormulasController_findMine: {
+    CustomerFormulasController_findMine: {
         parameters: {
             query?: never;
             header?: never;
@@ -2971,7 +2971,7 @@ export interface operations {
             };
         };
     };
-    ClientFormulasController_findForClient: {
+    CustomerFormulasController_findForCustomer: {
         parameters: {
             query?: never;
             header?: never;

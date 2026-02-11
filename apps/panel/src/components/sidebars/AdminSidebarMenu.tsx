@@ -16,7 +16,7 @@ const links: { href: Route; label: string; testId: string }[] = [
         label: 'Wizyty',
         testId: 'nav-appointments',
     },
-    { href: '/customers', label: 'Klienci', testId: 'nav-clients' },
+    { href: '/customers', label: 'Klienci', testId: 'nav-customers' },
     { href: '/employees', label: 'Pracownicy', testId: 'nav-employees' },
     {
         href: '/admin/services' as Route,

@@ -82,7 +82,7 @@ export class StatisticsController {
         return this.statisticsService.getServiceRanking(fromDate, toDate);
     }
 
-    @Get('clients')
+    @Get('customers')
     @Roles(Role.Admin)
     async getClientStats(
         @Query('range') range?: DateRange,
@@ -140,7 +140,7 @@ export class StatisticsController {
         return this.statisticsService.getCommissionReport(fromDate, toDate);
     }
 
-    @Get('clients/returning')
+    @Get('customers/returning')
     @Roles(Role.Admin)
     async getClientReturningStats(
         @Query('range') range?: DateRange,
@@ -157,7 +157,7 @@ export class StatisticsController {
         return this.statisticsService.getClientReturningStats(fromDate, toDate);
     }
 
-    @Get('clients/origins')
+    @Get('customers/origins')
     @Roles(Role.Admin)
     async getClientOriginStats(
         @Query('range') range?: DateRange,

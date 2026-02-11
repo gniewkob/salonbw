@@ -20,19 +20,19 @@ const REPORTS: NavItem[] = [
     { id: 'tips', label: 'Napiwki', href: '/statistics/tips' },
     { id: 'services', label: 'Usługi', href: '/statistics/services' },
     {
-        id: 'clients',
+        id: 'customers',
         label: 'Klienci',
-        href: '/statistics/clients',
+        href: '/statistics/customers',
         children: [
             {
                 id: 'returning',
                 label: 'Powracalność klientów',
-                href: '/statistics/clients/returning',
+                href: '/statistics/customers/returning',
             },
             {
                 id: 'origins',
                 label: 'Pochodzenie klientów',
-                href: '/statistics/clients/origins',
+                href: '/statistics/customers/origins',
             },
         ],
     },

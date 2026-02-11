@@ -61,7 +61,7 @@ export default function VersumSecondaryNav({
 
     if (module.key === 'calendar') {
         content = <CalendarNav />;
-    } else if (module.key === 'clients') {
+    } else if (module.key === 'customers') {
         content = <ClientsNav />;
     } else if (module.key === 'products') {
         content = <WarehouseNav />;

@@ -24,9 +24,7 @@ export default function VersumShell({
     const modules = visibleVersumModules(role);
 
     // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
-    // Our internal module key differs (e.g. "clients"), so map where needed.
-    const mainContentClass =
-        activeModule.key === 'clients' ? 'customers' : activeModule.key;
+    const mainContentClass = activeModule.key;
 
     return (
         <div id="versum-shell-root">

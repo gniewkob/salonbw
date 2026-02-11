@@ -27,42 +27,81 @@ export default async function handler(
         return;
     }
     const targetPath = '/' + pathSegments.join('/');
-
-    // Read access token from cookie
     const accessToken = req.cookies.accessToken;
+    const method = (req.method || 'GET').toUpperCase();
+    const isBodyAllowed = method !== 'GET' && method !== 'HEAD';
 
-    // Build headers
-    const headers: Record<string, string> = {
-        'Content-Type': req.headers['content-type'] || 'application/json',
-    };
+    // Build upstream headers from incoming request, excluding hop-by-hop and host headers.
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+        if (!value) continue;
+        const k = key.toLowerCase();
+        if (
+            k === 'host' ||
+            k === 'connection' ||
+            k === 'content-length' ||
+            k === 'accept-encoding'
+        ) {
+            continue;
+        }
+        headers[key] = Array.isArray(value) ? value.join(', ') : value;
+    }
 
-    if (accessToken) {
+    // Ensure bearer header is present when access token exists.
+    if (accessToken && !headers.Authorization && !headers.authorization) {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    // Forward other relevant headers
-    if (req.headers['x-requested-with']) {
-        headers['X-Requested-With'] = req.headers['x-requested-with'] as string;
+    let body: string | undefined;
+    if (isBodyAllowed && req.body !== undefined) {
+        if (typeof req.body === 'string') {
+            body = req.body;
+        } else if (Buffer.isBuffer(req.body)) {
+            body = req.body.toString();
+        } else {
+            body = JSON.stringify(req.body);
+            if (!headers['Content-Type'] && !headers['content-type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+        }
     }
 
     const targetUrl = `${BACKEND_URL}${targetPath}`;
 
     try {
         const backendRes = await fetch(targetUrl, {
-            method: req.method,
+            method,
             headers,
-            body:
-                req.method !== 'GET' && req.method !== 'HEAD'
-                    ? JSON.stringify(req.body)
-                    : undefined,
+            body,
         });
 
-        // Forward response status and headers
+        // Forward response status and selected headers
         res.status(backendRes.status);
 
         const contentType = backendRes.headers.get('content-type');
         if (contentType) {
             res.setHeader('Content-Type', contentType);
+        }
+        const cacheControl = backendRes.headers.get('cache-control');
+        if (cacheControl) {
+            res.setHeader('Cache-Control', cacheControl);
+        }
+        const requestId = backendRes.headers.get('x-request-id');
+        if (requestId) {
+            res.setHeader('X-Request-Id', requestId);
+        }
+        const setCookie = (
+            backendRes.headers as unknown as {
+                getSetCookie?: () => string[];
+            }
+        ).getSetCookie?.();
+        if (setCookie && setCookie.length > 0) {
+            res.setHeader('Set-Cookie', setCookie);
+        } else {
+            const singleSetCookie = backendRes.headers.get('set-cookie');
+            if (singleSetCookie) {
+                res.setHeader('Set-Cookie', singleSetCookie);
+            }
         }
 
         // Return response body

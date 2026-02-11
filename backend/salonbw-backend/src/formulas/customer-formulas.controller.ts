@@ -20,8 +20,8 @@ import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
 
 @ApiTags('formulas')
-@Controller('clients')
-export class ClientFormulasController {
+@Controller('customers')
+export class CustomerFormulasController {
     constructor(private readonly formulasService: FormulasService) {}
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -38,9 +38,9 @@ export class ClientFormulasController {
     @Roles(Role.Employee, Role.Admin)
     @Get(':id/formulas')
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get formulas for client' })
+    @ApiOperation({ summary: 'Get formulas for customer' })
     @ApiResponse({ status: 200, type: Formula, isArray: true })
-    findForClient(@Param('id', ParseIntPipe) id: number): Promise<Formula[]> {
+    findForCustomer(@Param('id', ParseIntPipe) id: number): Promise<Formula[]> {
         return this.formulasService.findForClient(id);
     }
 }
