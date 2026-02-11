@@ -77,13 +77,23 @@ export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
     const { id } = router.query;
-    const customerId = parseNumericIdParam(id);
+    const parsedCustomerId = router.isReady ? parseNumericIdParam(id) : null;
+    const customerId =
+        parsedCustomerId !== null && parsedCustomerId > 0
+            ? parsedCustomerId
+            : null;
+    const hasInvalidCustomerId =
+        router.isReady && parsedCustomerId !== null && parsedCustomerId <= 0;
     const activeTab = tabIdFromTabName(
         parseTabNameParam(router.query.tab_name),
     );
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const { data: customer, isLoading, error } = useCustomer(customerId);
+    const {
+        data: customer,
+        isLoading: isCustomerLoading,
+        error,
+    } = useCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId);
     const { data: history } = useCustomerEventHistory(customerId, {
         limit: 3,
@@ -122,9 +132,19 @@ export default function CustomerDetailPage() {
                         <li>Klienci / {customer?.name || '...'}</li>
                     </ul>
 
-                    {isLoading ? (
+                    {!router.isReady || isCustomerLoading ? (
                         <div className="customer-loading">
                             Ładowanie danych klienta...
+                        </div>
+                    ) : hasInvalidCustomerId ? (
+                        <div className="customer-error">
+                            <p>Nieprawidłowy identyfikator klienta</p>
+                            <Link
+                                href={'/customers' as Route}
+                                className="versum-btn versum-btn--default"
+                            >
+                                Wróć do listy klientów
+                            </Link>
                         </div>
                     ) : error ? (
                         <div className="customer-error">
