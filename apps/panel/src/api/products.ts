@@ -22,6 +22,11 @@ export function useProductApi() {
         name: string;
         unitPrice: number;
         stock: number;
+        categoryId?: number;
+        productType?: string;
+        sku?: string;
+        unit?: string;
+        description?: string;
         lowStockThreshold?: number;
         minQuantity?: number;
         vatRate?: number;

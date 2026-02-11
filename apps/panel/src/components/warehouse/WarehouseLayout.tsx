@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import DashboardLayout from '@/components/DashboardLayout';
+import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 
 type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
 
@@ -43,40 +44,35 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
+            <VersumCustomersVendorCss />
             <DashboardLayout>
-                <div className="versum-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">{heading}</h1>
+                <div className="products_index" id="products_main">
+                    <header className="products-header">
+                        <h1>{heading}</h1>
                     </header>
 
-                    <div className="versum-page__toolbar">
-                        <nav className="flex items-center gap-4">
+                    <div className="products-top-tabs">
+                        <nav>
                             {tabConfig.map((tab) => (
                                 <Link
                                     key={tab.id}
                                     href={tab.href}
-                                    className={`border-b-2 pb-1 text-[11px] font-semibold uppercase tracking-wide ${
-                                        activeTab === tab.id
-                                            ? 'border-sky-500 text-sky-500'
-                                            : 'border-transparent text-gray-600 hover:text-sky-500'
-                                    }`}
+                                    className={
+                                        activeTab === tab.id ? 'active' : ''
+                                    }
                                 >
                                     {tab.label}
                                 </Link>
                             ))}
                             <Link
                                 href="/inventory"
-                                className={`border-b-2 pb-1 text-[11px] font-semibold uppercase tracking-wide ml-auto ${
-                                    inventoryActive
-                                        ? 'border-sky-500 text-sky-500'
-                                        : 'border-transparent text-gray-600 hover:text-sky-500'
-                                }`}
+                                className={`${inventoryActive ? 'active' : ''} products-top-tabs__right`}
                             >
                                 Inwentaryzacja
                             </Link>
                         </nav>
                         {actions ? (
-                            <div className="ml-auto flex items-center gap-2">
+                            <div className="products-toolbar__actions">
                                 {actions}
                             </div>
                         ) : null}

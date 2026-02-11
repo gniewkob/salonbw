@@ -37,13 +37,11 @@ export default function ProductHistoryPage() {
             activeTab="history"
         >
             {isLoading ? (
-                <p className="py-6 text-sm text-gray-500">
-                    Ładowanie historii...
-                </p>
+                <p className="products-empty">Ładowanie historii...</p>
             ) : (
-                <div className="overflow-x-auto border border-gray-200">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                <div className="products-table-wrap">
+                    <table className="products-table products-history-table">
+                        <thead>
                             <tr>
                                 <th className="px-3 py-2">typ</th>
                                 <th className="px-3 py-2">ilość op.</th>
@@ -56,15 +54,12 @@ export default function ProductHistoryPage() {
                         </thead>
                         <tbody>
                             {history.map((item) => (
-                                <tr
-                                    key={item.id}
-                                    className="border-t border-gray-200 hover:bg-gray-50"
-                                >
+                                <tr key={item.id}>
                                     <td className="px-3 py-2">
                                         {item.reference ? (
                                             <Link
                                                 href={item.reference.href}
-                                                className="text-sky-600 hover:underline"
+                                                className="products-link"
                                             >
                                                 {item.label}{' '}
                                                 {dateLabel(item.createdAt)}
@@ -98,7 +93,7 @@ export default function ProductHistoryPage() {
                             ))}
                         </tbody>
                     </table>
-                    <div className="px-3 py-2 text-sm text-gray-500">
+                    <div className="products-pagination">
                         Pozycje od 1 do {history.length} | na stronie 20
                     </div>
                 </div>
