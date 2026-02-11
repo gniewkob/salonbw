@@ -23,7 +23,7 @@ export class CustomerGroup {
     @Column({ nullable: true })
     color?: string;
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => User, (user) => user.groups)
     @JoinTable({
         name: 'customer_group_members',
         joinColumn: { name: 'groupId', referencedColumnName: 'id' },
