@@ -60,6 +60,8 @@ export class CustomersService {
             serviceId,
             employeeId,
             hasUpcomingVisit,
+            recentlyAdded,
+            noOnlineReservations,
             smsConsent,
             emailConsent,
             page = 1,
@@ -258,6 +260,30 @@ export class CustomersService {
                 `user.id IN (${upcomingSubquery.getQuery()})`,
             );
             query.setParameters(upcomingSubquery.getParameters());
+        }
+
+        // Recently added customers (last 30 days)
+        if (recentlyAdded) {
+            const since = new Date();
+            since.setDate(since.getDate() - 30);
+            query = query.andWhere('user.createdAt >= :recentlyAddedSince', {
+                recentlyAddedSince: since,
+            });
+        }
+
+        // Customers without any online reservation
+        if (noOnlineReservations) {
+            const onlineReservationsSubquery = this.appointmentsRepo
+                .createQueryBuilder('apt')
+                .select('apt.clientId')
+                .where('apt.reservedOnline = :reservedOnline', {
+                    reservedOnline: true,
+                });
+
+            query = query.andWhere(
+                `user.id NOT IN (${onlineReservationsSubquery.getQuery()})`,
+            );
+            query.setParameters(onlineReservationsSubquery.getParameters());
         }
 
         // Sorting

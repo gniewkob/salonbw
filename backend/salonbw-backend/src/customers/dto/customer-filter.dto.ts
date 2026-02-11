@@ -101,6 +101,23 @@ export class CustomerFilterDto {
     @Type(() => Boolean)
     hasUpcomingVisit?: boolean;
 
+    @ApiPropertyOptional({
+        description: 'Recently added customers (created in last 30 days)',
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Type(() => Boolean)
+    recentlyAdded?: boolean;
+
+    @ApiPropertyOptional({
+        description:
+            'Customers who never made online reservations (reservedOnline=true)',
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Type(() => Boolean)
+    noOnlineReservations?: boolean;
+
     @ApiPropertyOptional({ description: 'Has SMS consent' })
     @IsOptional()
     @IsBoolean()

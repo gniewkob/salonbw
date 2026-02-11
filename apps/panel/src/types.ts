@@ -413,6 +413,8 @@ export interface CustomerFilterParams {
     serviceId?: number;
     employeeId?: number;
     hasUpcomingVisit?: boolean;
+    recentlyAdded?: boolean;
+    noOnlineReservations?: boolean;
     smsConsent?: boolean;
     emailConsent?: boolean;
     page?: number;
