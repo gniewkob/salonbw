@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test('capture versum customers', async ({ page }) => {
+  const email = process.env.VERSUM_LOGIN_EMAIL;
+  const password = process.env.VERSUM_LOGIN_PASSWORD;
+  if (!email || !password) {
+    throw new Error('Missing VERSUM_LOGIN_EMAIL or VERSUM_LOGIN_PASSWORD');
+  }
+
   // Increase timeout
   test.setTimeout(60000);
   
@@ -20,11 +26,11 @@ test('capture versum customers', async ({ page }) => {
   console.log('Screenshot 1 saved: versum-login-page.png');
   
   // Fill email - use placeholder text to find the right input
-  await page.getByPlaceholder('Nazwa użytkownika / email').fill('REDACTED_EMAIL');
+  await page.getByPlaceholder('Nazwa użytkownika / email').fill(email);
   console.log('Email filled');
   
   // Fill password
-  await page.getByPlaceholder('').nth(1).fill('REDACTED_SECRET');
+  await page.getByPlaceholder('').nth(1).fill(password);
   console.log('Password filled');
   
   // Click login button
