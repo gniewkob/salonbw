@@ -338,6 +338,7 @@ export class CustomersService {
             password,
             name,
             role: Role.Client,
+            commissionBase: 0,
             ...dto,
         });
 
@@ -355,6 +356,13 @@ export class CustomersService {
             Object.assign(customer, dto, { name: newName });
         } else {
             Object.assign(customer, dto);
+        }
+
+        if (
+            customer.commissionBase === null ||
+            customer.commissionBase === undefined
+        ) {
+            customer.commissionBase = 0;
         }
 
         return this.usersRepo.save(customer);
