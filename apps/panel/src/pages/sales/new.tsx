@@ -14,7 +14,8 @@ interface SaleLineForm {
     productId: string;
     quantity: string;
     unitPrice: string;
-    discount: string;
+    unit: string;
+    vatRate: string;
 }
 
 export default function WarehouseSaleCreatePage() {
@@ -26,7 +27,13 @@ export default function WarehouseSaleCreatePage() {
     const createMutation = useCreateWarehouseSale();
 
     const [lines, setLines] = useState<SaleLineForm[]>([
-        { productId: '', quantity: '1', unitPrice: '', discount: '0' },
+        {
+            productId: '',
+            quantity: '1',
+            unitPrice: '',
+            unit: 'op.',
+            vatRate: '23',
+        },
     ]);
     const [clientName, setClientName] = useState('');
     const [employeeId, setEmployeeId] = useState('');
@@ -38,15 +45,35 @@ export default function WarehouseSaleCreatePage() {
         return lines.reduce((sum, line) => {
             const price = Number(line.unitPrice || 0);
             const qty = Number(line.quantity || 0);
-            const discount = Number(line.discount || 0);
-            return sum + Math.max(0, price * qty - discount);
+            return sum + Math.max(0, price * qty);
         }, 0);
     }, [lines]);
+
+    const totalNet = useMemo(() => {
+        return lines.reduce((sum, line) => {
+            const priceGross = Number(line.unitPrice || 0);
+            const qty = Number(line.quantity || 0);
+            const vatRate = Number(line.vatRate || 23);
+            const gross = priceGross * qty;
+            return sum + gross / (1 + vatRate / 100);
+        }, 0);
+    }, [lines]);
+
+    const totalVat = useMemo(
+        () => Math.max(0, totalGross - totalNet),
+        [totalGross, totalNet],
+    );
 
     const addLine = () => {
         setLines((current) => [
             ...current,
-            { productId: '', quantity: '1', unitPrice: '', discount: '0' },
+            {
+                productId: '',
+                quantity: '1',
+                unitPrice: '',
+                unit: 'op.',
+                vatRate: '23',
+            },
         ]);
     };
 
@@ -71,7 +98,7 @@ export default function WarehouseSaleCreatePage() {
                 productId: Number(line.productId),
                 quantity: Number(line.quantity || 0),
                 unitPrice: Number(line.unitPrice || 0),
-                discount: Number(line.discount || 0),
+                discount: 0,
             }))
             .filter((item) => item.quantity > 0);
 
@@ -107,9 +134,11 @@ export default function WarehouseSaleCreatePage() {
                     <thead>
                         <tr>
                             <th>nazwa</th>
+                            <th>jednostka</th>
                             <th>ilość</th>
                             <th>cena op. (brutto)</th>
-                            <th>rabat</th>
+                            <th>VAT</th>
+                            <th>wartość (brutto)</th>
                             <th>usuń</th>
                         </tr>
                     </thead>
@@ -130,6 +159,10 @@ export default function WarehouseSaleCreatePage() {
                                                 unitPrice: product
                                                     ? String(product.unitPrice)
                                                     : line.unitPrice,
+                                                unit: product?.unit || 'op.',
+                                                vatRate: String(
+                                                    product?.vatRate ?? 23,
+                                                ),
                                             });
                                         }}
                                         className="form-control"
@@ -147,6 +180,7 @@ export default function WarehouseSaleCreatePage() {
                                         ))}
                                     </select>
                                 </td>
+                                <td>{line.unit || 'op.'}</td>
                                 <td>
                                     <input
                                         type="number"
@@ -174,19 +208,13 @@ export default function WarehouseSaleCreatePage() {
                                         className="form-control"
                                     />
                                 </td>
+                                <td>{line.vatRate}%</td>
                                 <td>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        step="0.01"
-                                        value={line.discount}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                discount: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                    />
+                                    {(
+                                        Number(line.unitPrice || 0) *
+                                        Number(line.quantity || 0)
+                                    ).toFixed(2)}{' '}
+                                    zł
                                 </td>
                                 <td>
                                     <button
@@ -216,13 +244,23 @@ export default function WarehouseSaleCreatePage() {
             <div className="warehouse-form-grid">
                 <label>
                     <span>Klient</span>
-                    <input
-                        type="text"
-                        value={clientName}
-                        onChange={(event) => setClientName(event.target.value)}
-                        className="form-control"
-                        placeholder="wpisz nazwisko lub numer telefonu"
-                    />
+                    <div className="warehouse-inline-field">
+                        <input
+                            type="text"
+                            value={clientName}
+                            onChange={(event) =>
+                                setClientName(event.target.value)
+                            }
+                            className="form-control"
+                            placeholder="wpisz nazwisko lub numer telefonu"
+                        />
+                        <Link
+                            href="/customers/new"
+                            className="btn btn-default btn-xs"
+                        >
+                            nowy klient
+                        </Link>
+                    </div>
                 </label>
                 <label>
                     <span>Polecający pracownik</span>
@@ -278,16 +316,28 @@ export default function WarehouseSaleCreatePage() {
                 <div className="warehouse-summary-value">
                     Wartość sprzedaży: {totalGross.toFixed(2)} zł
                 </div>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-xs"
-                    onClick={() => void submit()}
-                    disabled={createMutation.isPending}
-                >
-                    {createMutation.isPending
-                        ? 'zapisywanie...'
-                        : 'wprowadź sprzedaż'}
-                </button>
+                <div className="warehouse-summary-meta">
+                    netto: {totalNet.toFixed(2)} zł (VAT: {totalVat.toFixed(2)}{' '}
+                    zł)
+                </div>
+                <div className="warehouse-actions-row">
+                    <Link
+                        href="/sales/history"
+                        className="btn btn-default btn-xs"
+                    >
+                        anuluj
+                    </Link>
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-xs"
+                        onClick={() => void submit()}
+                        disabled={createMutation.isPending}
+                    >
+                        {createMutation.isPending
+                            ? 'zapisywanie...'
+                            : 'wprowadź sprzedaż'}
+                    </button>
+                </div>
             </div>
         </WarehouseLayout>
     );

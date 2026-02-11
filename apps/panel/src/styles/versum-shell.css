@@ -1016,6 +1016,12 @@ textarea.form-control {
     padding-top: 10px;
 }
 
+.warehouse-summary-meta {
+    margin: 0 0 8px;
+    color: #6a747d;
+    font-size: 12px;
+}
+
 .warehouse-summary-value {
     text-align: right;
     font-size: 22px;
@@ -1036,6 +1042,16 @@ textarea.form-control {
 .warehouse-modal-panel {
     width: 100%;
     max-width: 620px;
+}
+
+.warehouse-inline-field {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.warehouse-inline-field .form-control {
+    max-width: 280px;
 }
 
 .customer-new-form {
