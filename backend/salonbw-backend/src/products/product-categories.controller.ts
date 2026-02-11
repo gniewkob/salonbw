@@ -10,6 +10,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { SkipThrottle } from '@nestjs/throttler';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -45,6 +46,7 @@ export class ProductCategoriesController {
 
     @Roles(Role.Admin, Role.Employee)
     @Get('tree')
+    @SkipThrottle()
     @ApiOperation({ summary: 'Get product categories as tree' })
     @ApiResponse({ status: 200, type: ProductCategory, isArray: true })
     findTree() {
