@@ -3,7 +3,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
@@ -16,7 +16,6 @@ import {
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
 import type { Customer, CustomerTag } from '@/types';
-import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
 import {
     CustomerStatisticsTab,
     CustomerHistoryTab,
@@ -87,7 +86,6 @@ export default function CustomerDetailPage() {
     const activeTab = tabIdFromTabName(
         parseTabNameParam(router.query.tab_name),
     );
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const {
         data: customer,
@@ -104,6 +102,12 @@ export default function CustomerDetailPage() {
         if (!customerId) return;
         await updateCustomer.mutateAsync({ id: customerId, data });
     };
+
+    useEffect(() => {
+        if (!router.isReady || !customerId) return;
+        if (activeTab !== 'personal') return;
+        void router.replace(`/customers/${customerId}/edit`);
+    }, [activeTab, customerId, router]);
 
     if (!role) return null;
 
@@ -162,12 +166,7 @@ export default function CustomerDetailPage() {
                                 <div className="customer-actions-bar__spacer" />
                                 <div className="btn-group">
                                     <Link
-                                        href={{
-                                            pathname: `/customers/${customer.id}`,
-                                            query: {
-                                                tab_name: 'personal_data',
-                                            },
-                                        }}
+                                        href={`/customers/${customer.id}/edit`}
                                         className="btn btn-default btn-xs"
                                     >
                                         edytuj
@@ -192,15 +191,9 @@ export default function CustomerDetailPage() {
                                         customer={customer}
                                         stats={stats}
                                         history={history}
-                                        onEdit={() => setIsEditModalOpen(true)}
                                     />
                                 )}
-                                {activeTab === 'personal' && (
-                                    <CustomerPersonalDataTab
-                                        customer={customer}
-                                        onUpdate={handleUpdate}
-                                    />
-                                )}
+                                {activeTab === 'personal' && null}
                                 {activeTab === 'statistics' && (
                                     <CustomerStatisticsTab
                                         customerId={customer.id}
@@ -233,40 +226,6 @@ export default function CustomerDetailPage() {
                                     />
                                 )}
                             </div>
-
-                            {isEditModalOpen && (
-                                <div
-                                    className="versum-modal-overlay"
-                                    onClick={() => setIsEditModalOpen(false)}
-                                >
-                                    <div
-                                        className="versum-modal"
-                                        role="dialog"
-                                        aria-label="Edycja klienta"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <div className="versum-modal__header">
-                                            <h3>Edycja klienta</h3>
-                                            <button
-                                                type="button"
-                                                className="versum-modal__close"
-                                                onClick={() =>
-                                                    setIsEditModalOpen(false)
-                                                }
-                                                aria-label="Zamknij"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                        <div className="versum-modal__body">
-                                            <CustomerPersonalDataTab
-                                                customer={customer}
-                                                onUpdate={handleUpdate}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </>
                     ) : (
                         <div className="customer-error">
@@ -290,12 +249,10 @@ function CustomerSummaryView({
     customer,
     stats,
     history,
-    onEdit,
 }: {
     customer: Customer;
     stats: CustomerSummaryStats | null | undefined;
     history: CustomerHistory | null | undefined;
-    onEdit: () => void;
 }) {
     const upcomingVisits = stats?.upcomingVisits ?? [];
     const historyItems = history?.items ?? [];
@@ -377,13 +334,12 @@ function CustomerSummaryView({
                                     <span className="text-muted">
                                         brak opisu
                                     </span>
-                                    <button
-                                        type="button"
-                                        onClick={onEdit}
+                                    <Link
+                                        href={`/customers/${customer.id}/edit`}
                                         className="link-edit"
                                     >
                                         edytuj opis
-                                    </button>
+                                    </Link>
                                 </>
                             )}
                         </div>

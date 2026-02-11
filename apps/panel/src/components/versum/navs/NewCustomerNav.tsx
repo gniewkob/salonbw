@@ -3,6 +3,7 @@ type NewCustomerTab = 'basic' | 'extended' | 'advanced';
 interface NewCustomerNavProps {
     activeTab: NewCustomerTab;
     onSelect: (tab: NewCustomerTab) => void;
+    title?: string;
 }
 
 const tabs: Array<{
@@ -18,10 +19,11 @@ const tabs: Array<{
 export default function NewCustomerNav({
     activeTab,
     onSelect,
+    title = 'NOWY KLIENT',
 }: NewCustomerNavProps) {
     return (
         <div className="sidebar-inner client-detail-nav">
-            <div className="nav-header client-nav-header">NOWY KLIENT</div>
+            <div className="nav-header client-nav-header">{title}</div>
             <ul className="nav nav-list client-nav-tabs client-nav-tabs--flat">
                 {tabs.map((tab) => (
                     <li
