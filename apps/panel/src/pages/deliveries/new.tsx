@@ -82,29 +82,26 @@ export default function WarehouseDeliveryCreatePage() {
             actions={
                 <Link
                     href="/deliveries/history"
-                    className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                    className="btn btn-default btn-xs"
                 >
                     historia dostaw
                 </Link>
             }
         >
-            <div className="overflow-x-auto border border-gray-200">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+            <div className="products-table-wrap">
+                <table className="products-table">
+                    <thead>
                         <tr>
-                            <th className="px-2 py-2">nazwa</th>
-                            <th className="px-2 py-2">ilość</th>
-                            <th className="px-2 py-2">cena/op. (netto)</th>
-                            <th className="px-2 py-2">usuń</th>
+                            <th>nazwa</th>
+                            <th>ilość</th>
+                            <th>cena/op. (netto)</th>
+                            <th>usuń</th>
                         </tr>
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
-                            <tr
-                                key={`${index}-${line.productId}`}
-                                className="border-t border-gray-200"
-                            >
-                                <td className="px-2 py-2">
+                            <tr key={`${index}-${line.productId}`}>
+                                <td>
                                     <select
                                         value={line.productId}
                                         onChange={(event) =>
@@ -112,7 +109,7 @@ export default function WarehouseDeliveryCreatePage() {
                                                 productId: event.target.value,
                                             })
                                         }
-                                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     >
                                         <option value="">
                                             wpisz nazwę, kod kreskowy itp.
@@ -127,7 +124,7 @@ export default function WarehouseDeliveryCreatePage() {
                                         ))}
                                     </select>
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={1}
@@ -137,10 +134,10 @@ export default function WarehouseDeliveryCreatePage() {
                                                 quantity: event.target.value,
                                             })
                                         }
-                                        className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2">
+                                <td>
                                     <input
                                         type="number"
                                         min={0}
@@ -151,16 +148,16 @@ export default function WarehouseDeliveryCreatePage() {
                                                 unitCost: event.target.value,
                                             })
                                         }
-                                        className="w-28 rounded border border-gray-300 px-2 py-1.5"
+                                        className="form-control"
                                     />
                                 </td>
-                                <td className="px-2 py-2 text-center">
+                                <td>
                                     <button
                                         type="button"
-                                        className="text-red-500 hover:text-red-700"
+                                        className="btn btn-default btn-xs"
                                         onClick={() => removeLine(index)}
                                     >
-                                        x
+                                        usuń
                                     </button>
                                 </td>
                             </tr>
@@ -169,23 +166,23 @@ export default function WarehouseDeliveryCreatePage() {
                 </table>
             </div>
 
-            <div className="mt-2">
+            <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                    className="btn btn-default btn-xs"
                     onClick={addLine}
                 >
                     dodaj kolejną pozycję
                 </button>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-                <label className="text-sm">
-                    <span className="mb-1 block">Dostawca</span>
+            <div className="warehouse-form-grid">
+                <label>
+                    <span>Dostawca</span>
                     <select
                         value={supplierId}
                         onChange={(event) => setSupplierId(event.target.value)}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="versum-select"
                     >
                         <option value="">
                             wpisz nazwę lub wybierz z listy
@@ -197,42 +194,42 @@ export default function WarehouseDeliveryCreatePage() {
                         ))}
                     </select>
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">Numer faktury</span>
+                <label>
+                    <span>Numer faktury</span>
                     <input
                         type="text"
                         value={invoiceNumber}
                         onChange={(event) =>
                             setInvoiceNumber(event.target.value)
                         }
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                     />
                 </label>
-                <label className="text-sm">
-                    <span className="mb-1 block">Wystawiono</span>
+                <label>
+                    <span>Wystawiono</span>
                     <input
                         type="date"
                         value={deliveryDate}
                         onChange={(event) =>
                             setDeliveryDate(event.target.value)
                         }
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                     />
                 </label>
-                <label className="text-sm md:col-span-2">
-                    <span className="mb-1 block">Uwagi</span>
+                <label className="warehouse-full">
+                    <span>Uwagi</span>
                     <textarea
                         value={notes}
                         onChange={(event) => setNotes(event.target.value)}
-                        className="h-28 w-full rounded border border-gray-300 px-2 py-1.5"
+                        className="form-control"
                     />
                 </label>
             </div>
 
-            <div className="mt-6">
+            <div className="warehouse-actions-row">
                 <button
                     type="button"
-                    className="rounded bg-sky-500 px-4 py-2 text-sm text-white hover:bg-sky-600 disabled:opacity-60"
+                    className="btn btn-primary btn-xs"
                     onClick={() => void submit()}
                     disabled={createDelivery.isPending}
                 >

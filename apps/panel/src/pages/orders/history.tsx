@@ -21,54 +21,38 @@ export default function WarehouseOrdersHistoryPage() {
             heading="Magazyn / Historia zamówień"
             activeTab="orders"
             actions={
-                <Link
-                    href="/orders/new"
-                    className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-                >
+                <Link href="/orders/new" className="btn btn-primary btn-xs">
                     dodaj zamówienie
                 </Link>
             }
         >
             {isLoading ? (
-                <p className="py-8 text-sm text-gray-500">
-                    Ładowanie zamówień...
-                </p>
+                <p className="products-empty">Ładowanie zamówień...</p>
             ) : (
-                <div className="overflow-x-auto border border-gray-200">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                <div className="products-table-wrap">
+                    <table className="products-table">
+                        <thead>
                             <tr>
-                                <th className="px-3 py-2">nr zamówienia</th>
-                                <th className="px-3 py-2">dostawca</th>
-                                <th className="px-3 py-2">status</th>
-                                <th className="px-3 py-2">pozycje</th>
-                                <th className="px-3 py-2">akcje</th>
+                                <th>nr zamówienia</th>
+                                <th>dostawca</th>
+                                <th>status</th>
+                                <th>pozycje</th>
+                                <th>akcje</th>
                             </tr>
                         </thead>
                         <tbody>
                             {orders.map((order) => (
-                                <tr
-                                    key={order.id}
-                                    className="border-t border-gray-200 hover:bg-gray-50"
-                                >
-                                    <td className="px-3 py-2">
-                                        {order.orderNumber}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {order.supplier?.name ?? '-'}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {order.status}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {order.items?.length ?? 0}
-                                    </td>
-                                    <td className="px-3 py-2 text-xs">
+                                <tr key={order.id}>
+                                    <td>{order.orderNumber}</td>
+                                    <td>{order.supplier?.name ?? '-'}</td>
+                                    <td>{order.status}</td>
+                                    <td>{order.items?.length ?? 0}</td>
+                                    <td>
                                         {order.status === 'draft' ? (
                                             <>
                                                 <button
                                                     type="button"
-                                                    className="text-sky-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void sendMutation.mutateAsync(
                                                             order.id,
@@ -80,7 +64,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 {' · '}
                                                 <button
                                                     type="button"
-                                                    className="text-red-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void cancelMutation.mutateAsync(
                                                             order.id,
@@ -94,7 +78,7 @@ export default function WarehouseOrdersHistoryPage() {
                                             <>
                                                 <button
                                                     type="button"
-                                                    className="text-sky-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void receiveMutation.mutateAsync(
                                                             order.id,
@@ -106,7 +90,7 @@ export default function WarehouseOrdersHistoryPage() {
                                                 {' · '}
                                                 <button
                                                     type="button"
-                                                    className="text-red-600 hover:underline"
+                                                    className="products-link"
                                                     onClick={() =>
                                                         void cancelMutation.mutateAsync(
                                                             order.id,

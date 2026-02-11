@@ -21,82 +21,70 @@ export default function WarehouseSaleDetailsPage() {
             heading={`Magazyn / Historia sprzedaży / ${sale?.saleNumber ?? ''}`}
             activeTab="sales"
             actions={
-                <div className="flex justify-end gap-2">
+                <div className="btn-group">
                     <Link
                         href="/sales/history"
-                        className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
+                        className="btn btn-default btn-xs"
                     >
                         historia sprzedaży
                     </Link>
-                    <Link
-                        href="/sales/new"
-                        className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
-                    >
+                    <Link href="/sales/new" className="btn btn-primary btn-xs">
                         dodaj sprzedaż
                     </Link>
                 </div>
             }
         >
             {isLoading || !sale ? (
-                <p className="py-8 text-sm text-gray-500">
+                <p className="products-empty">
                     Ładowanie szczegółów sprzedaży...
                 </p>
             ) : (
-                <div className="space-y-4">
-                    <h2 className="text-[40px] leading-none text-gray-800">
+                <div>
+                    <h2 className="warehouse-section-title">
                         Szczegóły sprzedaży
                     </h2>
-                    <div className="overflow-x-auto border border-gray-200">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                    <div className="products-table-wrap">
+                        <table className="products-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-3 py-2">lp</th>
-                                    <th className="px-3 py-2">nazwa</th>
-                                    <th className="px-3 py-2">cena netto</th>
-                                    <th className="px-3 py-2">cena brutto</th>
-                                    <th className="px-3 py-2">ilość</th>
-                                    <th className="px-3 py-2">VAT</th>
-                                    <th className="px-3 py-2">
-                                        wartość brutto
-                                    </th>
+                                    <th>lp</th>
+                                    <th>nazwa</th>
+                                    <th>cena netto</th>
+                                    <th>cena brutto</th>
+                                    <th>ilość</th>
+                                    <th>VAT</th>
+                                    <th>wartość brutto</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sale.items.map((item, index) => (
-                                    <tr
-                                        key={item.id}
-                                        className="border-t border-gray-200 hover:bg-gray-50"
-                                    >
-                                        <td className="px-3 py-2">
-                                            {index + 1}
-                                        </td>
-                                        <td className="px-3 py-2">
+                                    <tr key={item.id}>
+                                        <td>{index + 1}</td>
+                                        <td>
                                             <Link
                                                 href={`/products/${item.productId ?? ''}`}
-                                                className="text-sky-600 hover:underline"
+                                                className="products-link"
                                             >
                                                 {item.productName}
                                             </Link>
                                         </td>
-                                        <td className="px-3 py-2">
+                                        <td>
                                             {Number(item.unitPriceNet).toFixed(
                                                 2,
                                             )}{' '}
                                             zł
                                         </td>
-                                        <td className="px-3 py-2">
+                                        <td>
                                             {Number(
                                                 item.unitPriceGross,
                                             ).toFixed(2)}{' '}
                                             zł
                                         </td>
-                                        <td className="px-3 py-2">
+                                        <td>
                                             {item.quantity} {item.unit}
                                         </td>
-                                        <td className="px-3 py-2">
-                                            {item.vatRate}%
-                                        </td>
-                                        <td className="px-3 py-2">
+                                        <td>{item.vatRate}%</td>
+                                        <td>
                                             {Number(item.totalGross).toFixed(2)}{' '}
                                             zł
                                         </td>
@@ -106,7 +94,7 @@ export default function WarehouseSaleDetailsPage() {
                         </table>
                     </div>
 
-                    <div className="grid gap-2 text-sm text-gray-700 md:grid-cols-2">
+                    <div className="warehouse-meta-grid">
                         <div>klient: {sale.clientName ?? '-'}</div>
                         <div>pracownik: {sale.employee?.name ?? '-'}</div>
                         <div>

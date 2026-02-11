@@ -44,17 +44,14 @@ export default function InventoryDetailsPage() {
             activeTab="products"
             inventoryActive
             actions={
-                <div className="flex justify-end gap-2">
-                    <Link
-                        href="/inventory"
-                        className="rounded border border-sky-500 px-3 py-1.5 text-sm text-sky-500 hover:bg-sky-50"
-                    >
+                <div className="btn-group">
+                    <Link href="/inventory" className="btn btn-default btn-xs">
                         historia inwentaryzacji
                     </Link>
                     {data?.status === 'draft' ? (
                         <button
                             type="button"
-                            className="rounded bg-sky-500 px-3 py-1.5 text-sm text-white hover:bg-sky-600"
+                            className="btn btn-primary btn-xs"
                             onClick={() => void start()}
                         >
                             rozpocznij
@@ -63,7 +60,7 @@ export default function InventoryDetailsPage() {
                     {data?.status === 'in_progress' ? (
                         <button
                             type="button"
-                            className="rounded bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-700"
+                            className="btn btn-primary btn-xs"
                             onClick={() => void complete()}
                         >
                             zakończ
@@ -73,45 +70,34 @@ export default function InventoryDetailsPage() {
             }
         >
             {isLoading || !data ? (
-                <p className="py-8 text-sm text-gray-500">
-                    Ładowanie inwentaryzacji...
-                </p>
+                <p className="products-empty">Ładowanie inwentaryzacji...</p>
             ) : (
-                <div className="space-y-4">
-                    <div className="text-sm text-gray-700">
+                <div>
+                    <div className="products-pagination">
                         status: <strong>{data.status}</strong> | data:{' '}
                         {new Date(data.stocktakingDate).toLocaleDateString(
                             'pl-PL',
                         )}
                     </div>
-                    <div className="overflow-x-auto border border-gray-200">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
+                    <div className="products-table-wrap">
+                        <table className="products-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-3 py-2">produkt</th>
-                                    <th className="px-3 py-2">
-                                        stan systemowy
-                                    </th>
-                                    <th className="px-3 py-2">
-                                        stan policzony
-                                    </th>
-                                    <th className="px-3 py-2">różnica</th>
+                                    <th>produkt</th>
+                                    <th>stan systemowy</th>
+                                    <th>stan policzony</th>
+                                    <th>różnica</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {data.items.map((item) => (
-                                    <tr
-                                        key={item.id}
-                                        className="border-t border-gray-200 hover:bg-gray-50"
-                                    >
-                                        <td className="px-3 py-2">
+                                    <tr key={item.id}>
+                                        <td>
                                             {item.product?.name ??
                                                 `#${item.productId}`}
                                         </td>
-                                        <td className="px-3 py-2">
-                                            {item.systemQuantity}
-                                        </td>
-                                        <td className="px-3 py-2">
+                                        <td>{item.systemQuantity}</td>
+                                        <td>
                                             {data.status === 'in_progress' ? (
                                                 <input
                                                     type="number"
@@ -137,15 +123,13 @@ export default function InventoryDetailsPage() {
                                                             },
                                                         )
                                                     }
-                                                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                                                    className="form-control"
                                                 />
                                             ) : (
                                                 (item.countedQuantity ?? '-')
                                             )}
                                         </td>
-                                        <td className="px-3 py-2">
-                                            {item.difference ?? '-'}
-                                        </td>
+                                        <td>{item.difference ?? '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>
