@@ -3,6 +3,8 @@
 # Uruchom: bash scripts/capture-versum-manual.sh
 # Następnie zaloguj się ręcznie w otwartej przeglądarce
 
+set -euo pipefail
+
 cd apps/panel
 
 echo "Tworzenie testu..."
@@ -11,6 +13,9 @@ cat > tests/e2e/versum-manual.spec.ts << 'EOF'
 import { test, expect } from '@playwright/test';
 
 test('capture versum customers - manual login', async ({ page }) => {
+  const email = process.env.VERSUM_LOGIN_EMAIL || '<ustaw VERSUM_LOGIN_EMAIL>';
+  const passwordHint = process.env.VERSUM_LOGIN_PASSWORD ? '***' : '<ustaw VERSUM_LOGIN_PASSWORD>';
+
   test.setTimeout(120000); // 2 minutes
   
   // Set viewport
@@ -23,8 +28,8 @@ test('capture versum customers - manual login', async ({ page }) => {
   // Wait for user to login manually
   console.log('========================================');
   console.log('ZALOGUJ SIĘ RĘCZNIE W PRZEGLĄDARCE');
-  console.log('Email: REDACTED_EMAIL');
-  console.log('Hasło: REDACTED_SECRET');
+  console.log(`Email: ${email}`);
+  console.log(`Hasło: ${passwordHint}`);
   console.log('========================================');
   console.log('Po zalogowaniu, naciśnij ENTER w terminalu...');
   
@@ -74,8 +79,12 @@ echo "URUCHAMIANIE TESTU W TRYBIE HEADED"
 echo "========================================"
 echo ""
 echo "Zaloguj się ręcznie w otwartej przeglądarce:"
-echo "Email: REDACTED_EMAIL"
-echo "Hasło: REDACTED_SECRET"
+echo "Email: ${VERSUM_LOGIN_EMAIL:-<ustaw VERSUM_LOGIN_EMAIL>}"
+if [[ -n "${VERSUM_LOGIN_PASSWORD:-}" ]]; then
+  echo "Hasło: ***"
+else
+  echo "Hasło: <ustaw VERSUM_LOGIN_PASSWORD>"
+fi
 echo ""
 
 npx playwright test tests/e2e/versum-manual.spec.ts --headed --workers=1

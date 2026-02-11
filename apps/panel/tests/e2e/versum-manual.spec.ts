@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test('capture versum customers - manual login', async ({ page }) => {
+  const email = process.env.VERSUM_LOGIN_EMAIL || '<ustaw VERSUM_LOGIN_EMAIL>';
+  const passwordHint = process.env.VERSUM_LOGIN_PASSWORD ? '***' : '<ustaw VERSUM_LOGIN_PASSWORD>';
+
   test.setTimeout(120000); // 2 minutes
   
   // Set viewport
@@ -13,8 +16,8 @@ test('capture versum customers - manual login', async ({ page }) => {
   // Wait for user to login manually
   console.log('========================================');
   console.log('ZALOGUJ SIĘ RĘCZNIE W PRZEGLĄDARCE');
-  console.log('Email: REDACTED_EMAIL');
-  console.log('Hasło: REDACTED_SECRET');
+  console.log(`Email: ${email}`);
+  console.log(`Hasło: ${passwordHint}`);
   console.log('========================================');
   console.log('Po zalogowaniu, naciśnij ENTER w terminalu...');
   
