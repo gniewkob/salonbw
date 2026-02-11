@@ -562,6 +562,17 @@ textarea.form-control {
     padding-top: 10px;
 }
 
+.customer-personal-form {
+    max-width: 760px;
+}
+
+.customer-personal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
 /* ========================================
    Customer Card (Versum parity)
    ======================================== */
