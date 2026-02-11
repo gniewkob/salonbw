@@ -1,9 +1,9 @@
-import { ClientFormulasController } from './client-formulas.controller';
+import { CustomerFormulasController } from './customer-formulas.controller';
 import { FormulasService } from './formulas.service';
 import { Formula } from './formula.entity';
 
-describe('ClientFormulasController', () => {
-    let controller: ClientFormulasController;
+describe('CustomerFormulasController', () => {
+    let controller: CustomerFormulasController;
     let service: jest.Mocked<FormulasService>;
     let formulas: Formula[];
 
@@ -12,7 +12,7 @@ describe('ClientFormulasController', () => {
         service = {
             findForClient: jest.fn().mockResolvedValue(formulas),
         } as jest.Mocked<FormulasService>;
-        controller = new ClientFormulasController(service);
+        controller = new CustomerFormulasController(service);
     });
 
     it('delegates findMine to service', async () => {
@@ -23,9 +23,9 @@ describe('ClientFormulasController', () => {
         expect(findSpy).toHaveBeenCalledWith(1);
     });
 
-    it('delegates findForClient to service', async () => {
+    it('delegates findForCustomer to service', async () => {
         const findSpy = jest.spyOn(service, 'findForClient');
-        await expect(controller.findForClient(2)).resolves.toBe(formulas);
+        await expect(controller.findForCustomer(2)).resolves.toBe(formulas);
         expect(findSpy).toHaveBeenCalledWith(2);
     });
 });

@@ -16,7 +16,7 @@ const links: { href: Route; label: string; testId: string }[] = [
         label: 'Wizyty',
         testId: 'nav-appointments',
     },
-    { href: '/customers', label: 'Klienci', testId: 'nav-clients' },
+    { href: '/customers', label: 'Klienci', testId: 'nav-customers' },
 ];
 
 export default function ReceptionistSidebarMenu(props: Props) {

@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useClientApi } from '@/api/clients';
+import { useCustomerApi } from '@/api/customers';
 import { useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { createAuthValue } from '../testUtils';
@@ -14,14 +14,14 @@ jest.mock('react-hot-toast', () => ({
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const toast = require('react-hot-toast').toast;
 
-describe('useClientApi errors', () => {
+describe('useCustomerApi errors', () => {
     it('remove shows error on failure', async () => {
         const apiFetch = jest.fn().mockRejectedValue(new Error('fail'));
         mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
-        const { result } = renderHook(() => useClientApi(), { wrapper });
+        const { result } = renderHook(() => useCustomerApi(), { wrapper });
         await expect(
             act(async () => {
                 await result.current.remove(1);
@@ -36,7 +36,7 @@ describe('useClientApi errors', () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
-        const { result } = renderHook(() => useClientApi(), { wrapper });
+        const { result } = renderHook(() => useCustomerApi(), { wrapper });
         await expect(
             act(async () => {
                 await result.current.create({ name: 'X' });

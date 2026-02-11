@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useClientApi } from '@/api/clients';
+import { useCustomerApi } from '@/api/customers';
 import { useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { createAuthValue } from '../testUtils';
@@ -14,7 +14,7 @@ jest.mock('react-hot-toast', () => ({
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const toast = require('react-hot-toast').toast;
 
-describe('useClientApi extra', () => {
+describe('useCustomerApi extra', () => {
     it('updates and removes client', async () => {
         const apiFetch = jest
             .fn()
@@ -24,7 +24,7 @@ describe('useClientApi extra', () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ToastProvider>{children}</ToastProvider>
         );
-        const { result } = renderHook(() => useClientApi(), { wrapper });
+        const { result } = renderHook(() => useCustomerApi(), { wrapper });
         await act(async () => {
             await result.current.update(1, { name: 'X' });
         });

@@ -22,7 +22,7 @@ export function useReviews(options: Options = {}) {
         const endpoint = options.employeeId
             ? `/employees/${options.employeeId}/reviews`
             : options.clientId
-              ? `/clients/${options.clientId}/reviews`
+              ? `/customers/${options.clientId}/reviews`
               : options.mine
                 ? '/reviews/me'
                 : '/reviews';

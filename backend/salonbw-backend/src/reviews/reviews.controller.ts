@@ -88,6 +88,26 @@ export class ReviewsController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Client, Role.Employee, Role.Admin)
+    @Get('customers/:id/reviews')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get reviews for a customer' })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiResponse({ status: 200 })
+    findForCustomer(
+        @Param('id', ParseIntPipe) customerId: number,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ): Promise<PaginatedResult<Review>> {
+        return this.reviewsService.findForClient(
+            customerId,
+            page ? parseInt(page, 10) : 1,
+            limit ? parseInt(limit, 10) : 10,
+        );
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Client, Role.Employee, Role.Admin)
     @Get('employees/:id/reviews')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get reviews for an employee' })

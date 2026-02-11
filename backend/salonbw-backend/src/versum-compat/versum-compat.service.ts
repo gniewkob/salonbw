@@ -439,7 +439,7 @@ export class VersumCompatService {
             services_price: this.formatPln(servicePrice),
             customer_name: appointment.client?.name ?? '',
             unreversed_customer_name: appointment.client?.name ?? '',
-            customer_url: `/clients/${appointment.clientId}`,
+            customer_url: `/customers/${appointment.clientId}`,
             customer_phone_number: appointment.client?.phone ?? null,
             customer_phone_number_formatted: appointment.client?.phone ?? null,
             customer_email: appointment.client?.email ?? '',

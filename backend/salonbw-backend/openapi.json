@@ -1638,9 +1638,9 @@
         ]
       }
     },
-    "/clients/me/formulas": {
+    "/customers/me/formulas": {
       "get": {
-        "operationId": "ClientFormulasController_findMine",
+        "operationId": "CustomerFormulasController_findMine",
         "parameters": [],
         "responses": {
           "200": {
@@ -1668,9 +1668,9 @@
         ]
       }
     },
-    "/clients/{id}/formulas": {
+    "/customers/{id}/formulas": {
       "get": {
-        "operationId": "ClientFormulasController_findForClient",
+        "operationId": "CustomerFormulasController_findForCustomer",
         "parameters": [
           {
             "name": "id",

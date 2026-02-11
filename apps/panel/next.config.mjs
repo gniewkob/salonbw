@@ -130,16 +130,6 @@ const nextConfig = {
                 destination: '/auth/login',
                 permanent: false,
             },
-            {
-                source: '/clients',
-                destination: '/customers',
-                permanent: false,
-            },
-            {
-                source: '/clients/:path*',
-                destination: '/customers/:path*',
-                permanent: false,
-            },
         ];
     },
     async headers() {

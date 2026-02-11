@@ -54,7 +54,7 @@ export default function ClientReturningPage() {
         setIsLoading(true);
         try {
             const data = await apiFetch<ReturningStats>(
-                `/statistics/clients/returning?range=${dateRange}`,
+                `/statistics/customers/returning?range=${dateRange}`,
             );
             setStats(data);
         } catch (error) {

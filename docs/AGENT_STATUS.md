@@ -60,7 +60,7 @@ Verification:
 
 **Timeline:**
 
-- **21:00 UTC** - Database password changed in MyDevil panel to `B04Pak8q3{1D72$vB`
+- **21:00 UTC** - Database password changed in MyDevil panel (redacted)
 - **21:15 UTC** - GitHub secrets updated (`MYDEVIL_DB_PASSWORD`, `PGPASSWORD`)
 - **21:30 UTC** - Initial connection tests failed with auth errors
 - **21:45 UTC** - Used `devil pgsql passwd` to reset password, connection successful
@@ -87,6 +87,11 @@ Verification:
 
 ## What's Working
 
+- **2026-02-11** – Customers cleanup completed in panel/backend:
+  - panel runtime uses only `/customers*` routes (legacy `/clients*` pages removed);
+  - permissions and Versum module key migrated from `nav:clients`/`clients` to `nav:customers`/`customers`;
+  - formulas endpoints migrated to `/customers/me/formulas` and `/customers/:id/formulas`;
+  - legacy backend `ClientsController` removed from `UsersModule`.
 - **2026-02-10** – `/calendar` restored to the **vendored Versum embed**:
   - `/calendar` (Next page) replaces the document with HTML served by `apps/panel/src/pages/api/calendar-embed.ts`;
   - legacy `/salonblackandwhite/*` compat aliases are rewritten to `/api/*` in `apps/panel/next.config.mjs`.
@@ -109,7 +114,7 @@ Verification:
   - removed unsupported `devil www options <domain> nodejs_version ...` calls from runtime prep and startup probes;
   - replaced incorrect panel-side DB migration step with panel bundle verification.
   - validated end-to-end on production dashboard deploy run `21686405136`.
-- **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/clients` and `/admin/*` entry routes now redirect to canonical equivalents.
+- **2026-02-04** – Panel admin shell switched to Versum-style navigation with canonical module routes: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension`; legacy `/admin/*` entry routes redirect to canonical equivalents.
 - **2026-02-03** – Frontend E2E workflow removed; Lighthouse CI now targets only `https://dev.salon-bw.pl/` due to `/services` returning 500.
 - **2026-01-21 22:15 UTC** - Production readiness verification Phase 1 completed:
   - ✅ API health endpoints operational (database, SMTP, Prometheus metrics)
