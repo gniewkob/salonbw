@@ -236,14 +236,28 @@ export class CustomerMediaService {
         await this.ensureDir(path.dirname(fullThumb));
 
         try {
-            const image = await Jimp.read(fullOriginal);
+            // Read into memory first to avoid edge-cases with file paths / fs permissions
+            // in Passenger environments and to make errors distinguishable.
+            const buf = await fs.readFile(fullOriginal);
+            const image = await Jimp.read(buf);
             image.scaleToFit(320, 320);
             image.quality(80);
             await image.writeAsync(fullThumb);
-        } catch {
-            // If Jimp cannot decode, reject the upload.
+        } catch (err) {
+            // Distinguish IO errors (missing/permission) from decode errors.
+            const code =
+                typeof err === 'object' && err && 'code' in err
+                    ? String((err as { code?: unknown }).code)
+                    : null;
+
             await this.safeUnlink(fullOriginal);
             await this.safeUnlink(fullThumb);
+            if (code === 'ENOENT' || code === 'EACCES') {
+                throw new BadRequestException(
+                    'Image upload failed (cannot access stored file)',
+                );
+            }
+
             throw new UnsupportedMediaTypeException(
                 'Unsupported image encoding for thumbnail generation',
             );
