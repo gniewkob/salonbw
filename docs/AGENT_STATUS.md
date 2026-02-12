@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-11 (Warehouse hotfix: inventory create flow moved to `/inventory/new` and product/category read endpoints exempted from throttling; API and dashboard deployed to production)_
+_Last updated: 2026-02-12 (Warehouse: zamówienia/dostawy parity updates + delivery submit flow fix; dashboard deployed to production)_
 
 ## Platform Architecture
 
@@ -87,6 +87,14 @@ Verification:
 
 ## What's Working
 
+- **2026-02-12** – Warehouse magazyn updates shipped to production:
+  - commits: `90847948`, `e2b6b937`
+  - deploy runs: Dashboard `21965037142`, `21965343231`
+  - changes:
+    - `/orders/new` aligned closer to Versum (lp/jednostka/uwagi/akcje),
+    - `/deliveries/new` logic fixed (`wprowadź dostawę` now creates + receives to stock, plus `zapisz jako roboczą`),
+    - `/orders/history` and `/deliveries/history` improved (status labels + `?status=draft` filtering),
+    - warehouse secondnav extended with `wersje robocze` and `dostawcy` (`/suppliers`).
 - **2026-02-12** – Customers card tabs fixes shipped to production:
   - commit: `b75dfa6d`
   - deploy runs: API `21941396718`, Dashboard `21941473185`
