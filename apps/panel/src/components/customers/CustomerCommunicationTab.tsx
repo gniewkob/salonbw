@@ -1,237 +1,195 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { useMemo } from 'react';
 import type { Customer } from '@/types';
-import CustomerConsentsTab from './CustomerConsentsTab';
-import { useSmsHistory } from '@/hooks/useSms';
-import { useEmailHistory } from '@/hooks/useEmails';
 
 type Props = {
     customer: Customer;
-    onUpdate: (data: Partial<Customer>) => Promise<void>;
 };
 
-function formatDateTime(value?: string | null) {
-    if (!value) return '-';
-    try {
-        return new Date(value).toLocaleString('pl-PL');
-    } catch {
-        return '-';
-    }
-}
+type MessageTypeRow = {
+    key:
+        | 'notifications'
+        | 'mass_message'
+        | 'birthday_wishes'
+        | 'marketing_automation'
+        | 'opinions_after_visits';
+    label: string;
+};
 
-export default function CustomerCommunicationTab({
-    customer,
-    onUpdate,
-}: Props) {
-    const [active, setActive] = useState<'sms' | 'email'>('sms');
-
-    const [smsPage, setSmsPage] = useState(1);
-    const [emailPage, setEmailPage] = useState(1);
-
-    const sms = useSmsHistory({
-        recipientId: customer.id,
-        page: smsPage,
-        limit: 20,
-        channel: 'sms',
-    });
-
-    const emails = useEmailHistory({
-        recipientId: customer.id,
-        page: emailPage,
-        limit: 20,
-    });
+export default function CustomerCommunicationTab({ customer }: Props) {
+    const rows: MessageTypeRow[] = useMemo(
+        () => [
+            { key: 'notifications', label: 'Powiadomienia' },
+            { key: 'mass_message', label: 'Wiadomość masowa' },
+            {
+                key: 'birthday_wishes',
+                label: 'Życzenia urodzinowe, imieninowe',
+            },
+            { key: 'marketing_automation', label: 'Marketing automatyczny' },
+            { key: 'opinions_after_visits', label: 'Opinie po wizytach' },
+        ],
+        [],
+    );
 
     return (
         <div className="customer-tab-content customer-communication-tab">
-            <CustomerConsentsTab customer={customer} onUpdate={onUpdate} />
-
-            <div className="versum-widget mt-20">
-                <div className="versum-widget__header flex-between">
-                    <span>Historia komunikacji</span>
-                    <div className="btn-group">
-                        <button
-                            type="button"
-                            className={`btn btn-xs ${active === 'sms' ? 'btn-primary' : 'btn-default'}`}
-                            onClick={() => setActive('sms')}
+            <div className="customer-communication-section">
+                <div className="customer-communication-header">
+                    <div className="customer-communication-title">
+                        Informacje kontaktowe
+                    </div>
+                    <div className="customer-communication-actions">
+                        <Link
+                            href={`/customers/${customer.id}/edit`}
+                            className="btn btn-default btn-xs"
                         >
-                            SMS
-                        </button>
-                        <button
-                            type="button"
-                            className={`btn btn-xs ${active === 'email' ? 'btn-primary' : 'btn-default'}`}
-                            onClick={() => setActive('email')}
-                        >
-                            Email
-                        </button>
+                            Edytuj
+                        </Link>
                     </div>
                 </div>
 
-                <div className="versum-widget__content">
-                    {active === 'sms' && (
-                        <>
-                            {sms.loading ? (
-                                <div className="text-muted">
-                                    Ładowanie SMS...
-                                </div>
-                            ) : sms.data.items.length === 0 ? (
-                                <div className="customer-empty-state">
-                                    Brak wysłanych SMS do tego klienta.
-                                </div>
+                <div className="customer-communication-contact">
+                    <div className="customer-communication-contact__row">
+                        <div className="customer-communication-contact__label">
+                            Imię i nazwisko
+                        </div>
+                        <div className="customer-communication-contact__value">
+                            {customer.fullName || customer.name}
+                        </div>
+                    </div>
+                    <div className="customer-communication-contact__row">
+                        <div className="customer-communication-contact__label">
+                            Email
+                        </div>
+                        <div className="customer-communication-contact__value">
+                            {customer.email ? (
+                                <a href={`mailto:${customer.email}`}>
+                                    {customer.email}
+                                </a>
                             ) : (
-                                <table className="customers-history-table table">
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Status</th>
-                                            <th>Treść</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {sms.data.items.map((row) => (
-                                            <tr key={row.id}>
-                                                <td>
-                                                    {formatDateTime(
-                                                        row.sentAt ||
-                                                            row.createdAt,
-                                                    )}
-                                                </td>
-                                                <td>{row.status}</td>
-                                                <td>
-                                                    <div className="bold">
-                                                        {row.subject ||
-                                                            'Wiadomość'}
-                                                    </div>
-                                                    <div className="customer-stats-subtitle">
-                                                        {row.content}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <span className="text-muted">nie podano</span>
                             )}
-
-                            {sms.data.total > sms.data.limit && (
-                                <div className="versum-pagination-footer">
-                                    <div>
-                                        Strona {sms.data.page} z{' '}
-                                        {Math.max(
-                                            1,
-                                            Math.ceil(
-                                                sms.data.total / sms.data.limit,
-                                            ),
-                                        )}
-                                    </div>
-                                    <div className="btn-group">
-                                        <button
-                                            className="btn btn-default btn-xs"
-                                            disabled={smsPage <= 1}
-                                            onClick={() =>
-                                                setSmsPage((p) =>
-                                                    Math.max(1, p - 1),
-                                                )
-                                            }
-                                        >
-                                            Poprzednia
-                                        </button>
-                                        <button
-                                            className="btn btn-default btn-xs"
-                                            disabled={
-                                                smsPage * sms.data.limit >=
-                                                sms.data.total
-                                            }
-                                            onClick={() =>
-                                                setSmsPage((p) => p + 1)
-                                            }
-                                        >
-                                            Następna
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {active === 'email' && (
-                        <>
-                            {emails.loading ? (
-                                <div className="text-muted">
-                                    Ładowanie emaili...
-                                </div>
-                            ) : emails.data.items.length === 0 ? (
-                                <div className="customer-empty-state">
-                                    Brak wysłanych emaili do tego klienta.
-                                </div>
+                        </div>
+                    </div>
+                    <div className="customer-communication-contact__row">
+                        <div className="customer-communication-contact__label">
+                            Telefon
+                        </div>
+                        <div className="customer-communication-contact__value">
+                            {customer.phone ? (
+                                <a href={`tel:${customer.phone}`}>
+                                    {customer.phone}
+                                </a>
                             ) : (
-                                <table className="customers-history-table table">
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Status</th>
-                                            <th>Temat</th>
-                                            <th>Do</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {emails.data.items.map((row) => (
-                                            <tr key={row.id}>
-                                                <td>
-                                                    {formatDateTime(
-                                                        row.sentAt ||
-                                                            row.createdAt,
-                                                    )}
-                                                </td>
-                                                <td>{row.status}</td>
-                                                <td>{row.subject}</td>
-                                                <td>{row.to}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <span className="text-muted">nie podano</span>
                             )}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            {emails.data.total > emails.data.limit && (
-                                <div className="versum-pagination-footer">
-                                    <div>
-                                        Strona {emails.data.page} z{' '}
-                                        {Math.max(
-                                            1,
-                                            Math.ceil(
-                                                emails.data.total /
-                                                    emails.data.limit,
-                                            ),
+            <div className="customer-communication-section mt-20">
+                <div className="customer-communication-title">
+                    Ustawienia kanałów komunikacji
+                </div>
+
+                <div className="customer-communication-channels">
+                    <table className="customer-communication-table">
+                        <thead>
+                            <tr>
+                                <th>Typ wiadomości</th>
+                                <th className="col-center">SMS</th>
+                                <th className="col-center">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((r) => (
+                                <tr key={r.key}>
+                                    <td className="col-type">{r.label}</td>
+                                    <td className="col-center">
+                                        {customer.smsConsent ? (
+                                            <i
+                                                className="fa fa-check customer-communication-check customer-communication-check--ok"
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <span className="customer-communication-check customer-communication-check--empty" />
                                         )}
-                                    </div>
-                                    <div className="btn-group">
-                                        <button
-                                            className="btn btn-default btn-xs"
-                                            disabled={emailPage <= 1}
-                                            onClick={() =>
-                                                setEmailPage((p) =>
-                                                    Math.max(1, p - 1),
-                                                )
-                                            }
-                                        >
-                                            Poprzednia
-                                        </button>
-                                        <button
-                                            className="btn btn-default btn-xs"
-                                            disabled={
-                                                emailPage * emails.data.limit >=
-                                                emails.data.total
-                                            }
-                                            onClick={() =>
-                                                setEmailPage((p) => p + 1)
-                                            }
-                                        >
-                                            Następna
-                                        </button>
-                                    </div>
-                                </div>
+                                    </td>
+                                    <td className="col-center">
+                                        {customer.emailConsent ? (
+                                            <i
+                                                className="fa fa-check customer-communication-check customer-communication-check--ok"
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <span className="customer-communication-check customer-communication-check--empty" />
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div className="customer-communication-section mt-20">
+                <div className="customer-communication-title">
+                    Zgody udzielone przez klienta
+                </div>
+
+                <div className="customer-communication-consents">
+                    <div className="customer-communication-consent">
+                        <div className="customer-communication-consent__icon">
+                            {customer.gdprConsent ? (
+                                <i
+                                    className="fa fa-check customer-communication-consent__ok"
+                                    aria-hidden="true"
+                                />
+                            ) : (
+                                <i
+                                    className="fa fa-times customer-communication-consent__no"
+                                    aria-hidden="true"
+                                />
                             )}
-                        </>
-                    )}
+                        </div>
+                        <div className="customer-communication-consent__text">
+                            Administratorem Pani/a danych osobowych jest: Salon
+                            Fryzjerski Black&White Aleksandra Bodora z siedzibą
+                            Kopernika 13, 41-922 Radzionków, PL, NIP:
+                            6262231181, e-mail: kontakt@salon-bw.pl.
+                            <div className="mt-6">
+                                1. Administrator przetwarza dane osobowe w celu:
+                                realizacji umowy (wykonania usługi).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="customer-communication-consent">
+                        <div className="customer-communication-consent__icon">
+                            {customer.smsConsent || customer.emailConsent ? (
+                                <i
+                                    className="fa fa-check customer-communication-consent__ok"
+                                    aria-hidden="true"
+                                />
+                            ) : (
+                                <i
+                                    className="fa fa-times customer-communication-consent__no"
+                                    aria-hidden="true"
+                                />
+                            )}
+                        </div>
+                        <div className="customer-communication-consent__text">
+                            Wyrażam zgodę na przetwarzanie danych osobowych
+                            przez Salon Fryzjerski Black&White Aleksandra Bodora
+                            z siedzibą Kopernika 13, 41-922 Radzionków, PL, NIP:
+                            6262231181, w celu przesyłania informacji handlowych
+                            na mój adres e-mail oraz numer telefonu podany
+                            powyżej w formularzu kontaktowym.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

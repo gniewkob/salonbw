@@ -1386,6 +1386,136 @@ textarea.form-control {
     max-width: 980px;
 }
 
+/* ========================================
+   Customer communication_preferences (Versum parity)
+   ======================================== */
+.customer-communication-tab {
+    max-width: 980px;
+}
+
+.customer-communication-section {
+    max-width: 860px;
+}
+
+.customer-communication-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.customer-communication-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4d565e;
+}
+
+.customer-communication-contact {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    font-size: 12px;
+    color: #4f585f;
+}
+
+.customer-communication-contact__row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+.customer-communication-contact__label {
+    color: #6a737c;
+}
+
+.customer-communication-contact__value a {
+    color: #2b7bbd;
+    text-decoration: none;
+}
+
+.customer-communication-contact__value a:hover {
+    text-decoration: underline;
+}
+
+.customer-communication-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: #fff;
+    border-top: 1px solid #e0e6ec;
+    border-bottom: 1px solid #e0e6ec;
+    margin-top: 8px;
+}
+
+.customer-communication-table th,
+.customer-communication-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #edf1f4;
+}
+
+.customer-communication-table thead th {
+    font-weight: 600;
+    color: #4f585f;
+    border-bottom: 1px solid #d9dfe5;
+}
+
+.customer-communication-table .col-center {
+    text-align: center;
+    width: 110px;
+}
+
+.customer-communication-check--ok {
+    color: #56b060;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.customer-communication-check--empty {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+}
+
+.customer-communication-consents {
+    margin-top: 10px;
+    max-width: 860px;
+}
+
+.customer-communication-consent {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid #edf1f4;
+}
+
+.customer-communication-consent:first-child {
+    border-top: 0;
+}
+
+.customer-communication-consent__icon {
+    padding-top: 2px;
+    width: 22px;
+    text-align: center;
+}
+
+.customer-communication-consent__ok {
+    color: #56b060;
+}
+
+.customer-communication-consent__no {
+    color: #e74c3c;
+}
+
+.customer-communication-consent__text {
+    font-size: 12px;
+    color: #4f585f;
+    line-height: 1.45;
+}
+
 .customer-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
