@@ -51,6 +51,9 @@ test.describe('PROD smoke: warehouse layout parity', () => {
             '/use/new',
             '/use/planned',
             '/deliveries/new',
+            '/stock-alerts',
+            '/suppliers',
+            '/manufacturers',
             '/orders/new',
             '/inventory',
         ];

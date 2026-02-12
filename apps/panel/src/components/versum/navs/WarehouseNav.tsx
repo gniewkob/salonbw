@@ -72,21 +72,31 @@ export default function WarehouseNav() {
                 {items.map((item) => (
                     <li
                         key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
-                        className={
-                            (path === item.href &&
-                                (!item.query ||
-                                    Object.entries(item.query).every(
-                                        ([key, value]) =>
-                                            router.query[key] === value,
-                                    ))) ||
-                            path.startsWith(`${item.href}/`) ||
-                            (item.href.endsWith('/history') &&
-                                path.startsWith(
-                                    `${item.href.replace('/history', '/history/')}`,
-                                ))
+                        className={(() => {
+                            const queryMatches = item.query
+                                ? Object.entries(item.query).every(
+                                      ([key, value]) =>
+                                          router.query[key] === value,
+                                  )
+                                : true;
+                            const hasStatusFilter =
+                                typeof router.query.status === 'string';
+                            const plainHistoryItem =
+                                !item.query && item.href.endsWith('/history');
+                            const plainHistoryBlocked =
+                                plainHistoryItem && hasStatusFilter;
+
+                            return (path === item.href &&
+                                queryMatches &&
+                                !plainHistoryBlocked) ||
+                                path.startsWith(`${item.href}/`) ||
+                                (item.href.endsWith('/history') &&
+                                    path.startsWith(
+                                        `${item.href.replace('/history', '/history/')}`,
+                                    ))
                                 ? 'active'
-                                : undefined
-                        }
+                                : undefined;
+                        })()}
                     >
                         <a
                             href={
@@ -118,7 +128,12 @@ export default function WarehouseNav() {
         ]);
     }
 
-    if (isSubmodulePath('/deliveries') || isSubmodulePath('/suppliers')) {
+    if (
+        isSubmodulePath('/deliveries') ||
+        isSubmodulePath('/suppliers') ||
+        isSubmodulePath('/stock-alerts') ||
+        isSubmodulePath('/manufacturers')
+    ) {
         return renderModuleNav('DOSTAWY', [
             { label: 'dodaj dostawę', href: '/deliveries/new' },
             { label: 'historia dostaw', href: '/deliveries/history' },
@@ -127,7 +142,9 @@ export default function WarehouseNav() {
                 href: '/deliveries/history',
                 query: { status: 'draft' },
             },
+            { label: 'niski stan magazynowy', href: '/stock-alerts' },
             { label: 'dostawcy', href: '/suppliers' },
+            { label: 'producenci', href: '/manufacturers' },
         ]);
     }
 
