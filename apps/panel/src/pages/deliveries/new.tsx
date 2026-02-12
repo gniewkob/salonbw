@@ -33,6 +33,7 @@ export default function WarehouseDeliveryCreatePage() {
         new Date().toISOString().slice(0, 10),
     );
     const [notes, setNotes] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
     const [lines, setLines] = useState<DeliveryLineForm[]>([
         { productId: '', quantity: '1', unitCost: '0', unit: 'op.' },
     ]);
@@ -58,8 +59,8 @@ export default function WarehouseDeliveryCreatePage() {
         );
     };
 
-    const createDraft = async () => {
-        const items = lines
+    const getValidItems = () =>
+        lines
             .filter((line) => line.productId)
             .map((line) => ({
                 productId: Number(line.productId),
@@ -67,7 +68,16 @@ export default function WarehouseDeliveryCreatePage() {
                 unitCost: Number(line.unitCost || 0),
             }))
             .filter((line) => line.quantity > 0);
-        if (items.length === 0) return;
+
+    const createDraft = async () => {
+        setFormError(null);
+        const items = getValidItems();
+        if (items.length === 0) {
+            setFormError(
+                'Dodaj co najmniej jedną pozycję z produktem i ilością większą od 0.',
+            );
+            return null;
+        }
 
         const created = await createDelivery.mutateAsync({
             supplierId: supplierId ? Number(supplierId) : undefined,
@@ -81,10 +91,17 @@ export default function WarehouseDeliveryCreatePage() {
     };
 
     const submit = async () => {
+        setFormError(null);
         const created = await createDraft();
         if (!created) return;
         await receiveDelivery.mutateAsync({ id: created.id });
         await router.push('/deliveries/history');
+    };
+
+    const saveDraftAndExit = async () => {
+        const created = await createDraft();
+        if (!created) return;
+        await router.push('/deliveries/history?status=draft');
     };
 
     const totalNet = lines.reduce((sum, line) => {
@@ -293,7 +310,7 @@ export default function WarehouseDeliveryCreatePage() {
                 <button
                     type="button"
                     className="btn btn-default btn-xs"
-                    onClick={() => void createDraft()}
+                    onClick={() => void saveDraftAndExit()}
                     disabled={
                         createDelivery.isPending || receiveDelivery.isPending
                     }
@@ -315,6 +332,7 @@ export default function WarehouseDeliveryCreatePage() {
                         : 'wprowadź dostawę'}
                 </button>
             </div>
+            {formError ? <p className="products-empty">{formError}</p> : null}
         </WarehouseLayout>
     );
 }
