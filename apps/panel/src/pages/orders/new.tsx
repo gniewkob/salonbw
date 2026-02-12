@@ -14,6 +14,7 @@ interface OrderLineForm {
     productId: string;
     productName: string;
     quantity: string;
+    unit: string;
 }
 
 export default function WarehouseOrderCreatePage() {
@@ -26,14 +27,15 @@ export default function WarehouseOrderCreatePage() {
 
     const [supplierId, setSupplierId] = useState('');
     const [notes, setNotes] = useState('');
+    const [notesEnabled, setNotesEnabled] = useState(false);
     const [lines, setLines] = useState<OrderLineForm[]>([
-        { productId: '', productName: '', quantity: '1' },
+        { productId: '', productName: '', quantity: '1', unit: 'op.' },
     ]);
 
     const addLine = () => {
         setLines((current) => [
             ...current,
-            { productId: '', productName: '', quantity: '1' },
+            { productId: '', productName: '', quantity: '1', unit: 'op.' },
         ]);
     };
 
@@ -51,6 +53,7 @@ export default function WarehouseOrderCreatePage() {
                 productId: line.productId ? Number(line.productId) : undefined,
                 productName: line.productName || undefined,
                 quantity: Number(line.quantity || 0),
+                unit: line.unit || 'op.',
             }))
             .filter(
                 (line) =>
@@ -82,20 +85,30 @@ export default function WarehouseOrderCreatePage() {
             <div className="warehouse-form-grid">
                 <label>
                     <span>Dostawca</span>
-                    <select
-                        value={supplierId}
-                        onChange={(event) => setSupplierId(event.target.value)}
-                        className="versum-select"
-                    >
-                        <option value="">
-                            wpisz nazwę lub wybierz z listy
-                        </option>
-                        {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>
-                                {supplier.name}
+                    <div className="warehouse-inline-field">
+                        <select
+                            value={supplierId}
+                            onChange={(event) =>
+                                setSupplierId(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
                             </option>
-                        ))}
-                    </select>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
+                                </option>
+                            ))}
+                        </select>
+                        <Link
+                            href="/suppliers"
+                            className="btn btn-default btn-xs"
+                        >
+                            dodaj dostawcę
+                        </Link>
+                    </div>
                 </label>
             </div>
 
@@ -104,7 +117,9 @@ export default function WarehouseOrderCreatePage() {
                 <table className="products-table">
                     <thead>
                         <tr>
+                            <th>lp</th>
                             <th>nazwa</th>
+                            <th>jednostka</th>
                             <th>ilość</th>
                             <th>usuń</th>
                         </tr>
@@ -112,6 +127,7 @@ export default function WarehouseOrderCreatePage() {
                     <tbody>
                         {lines.map((line, index) => (
                             <tr key={`${index}-${line.productId}`}>
+                                <td>{index + 1}</td>
                                 <td>
                                     <select
                                         value={line.productId}
@@ -125,6 +141,7 @@ export default function WarehouseOrderCreatePage() {
                                                 productId: value,
                                                 productName:
                                                     product?.name ?? '',
+                                                unit: product?.unit || 'op.',
                                             });
                                         }}
                                         className="form-control"
@@ -152,6 +169,22 @@ export default function WarehouseOrderCreatePage() {
                                         className="form-control"
                                         placeholder="nazwa alternatywna"
                                     />
+                                </td>
+                                <td>
+                                    <select
+                                        value={line.unit}
+                                        onChange={(event) =>
+                                            updateLine(index, {
+                                                unit: event.target.value,
+                                            })
+                                        }
+                                        className="form-control"
+                                    >
+                                        <option value="op.">op.</option>
+                                        <option value="szt.">szt.</option>
+                                        <option value="ml">ml</option>
+                                        <option value="g">g</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <input
@@ -196,18 +229,36 @@ export default function WarehouseOrderCreatePage() {
                 >
                     dodaj kolejną pozycję
                 </button>
+                <Link href="/products/new" className="btn btn-default btn-xs">
+                    dodaj nowy produkt
+                </Link>
             </div>
 
-            <label className="warehouse-full">
-                <span>Uwagi</span>
-                <textarea
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                    className="form-control"
-                />
-            </label>
+            {notesEnabled ? (
+                <label className="warehouse-full">
+                    <span>Uwagi</span>
+                    <textarea
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        className="form-control"
+                    />
+                </label>
+            ) : (
+                <div className="warehouse-actions-row">
+                    <button
+                        type="button"
+                        className="btn btn-default btn-xs"
+                        onClick={() => setNotesEnabled(true)}
+                    >
+                        dodaj uwagi
+                    </button>
+                </div>
+            )}
 
             <div className="warehouse-actions-row">
+                <Link href="/orders/history" className="btn btn-default btn-xs">
+                    anuluj
+                </Link>
                 <button
                     type="button"
                     className="btn btn-primary btn-xs"

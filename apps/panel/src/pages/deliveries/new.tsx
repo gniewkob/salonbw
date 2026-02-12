@@ -5,12 +5,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseProducts } from '@/hooks/useWarehouseViews';
-import { useCreateDelivery, useSuppliers } from '@/hooks/useWarehouse';
+import {
+    useCreateDelivery,
+    useReceiveDelivery,
+    useSuppliers,
+} from '@/hooks/useWarehouse';
 
 interface DeliveryLineForm {
     productId: string;
     quantity: string;
     unitCost: string;
+    unit: string;
 }
 
 export default function WarehouseDeliveryCreatePage() {
@@ -20,6 +25,7 @@ export default function WarehouseDeliveryCreatePage() {
     });
     const { data: suppliers = [] } = useSuppliers();
     const createDelivery = useCreateDelivery();
+    const receiveDelivery = useReceiveDelivery();
 
     const [supplierId, setSupplierId] = useState('');
     const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -28,13 +34,13 @@ export default function WarehouseDeliveryCreatePage() {
     );
     const [notes, setNotes] = useState('');
     const [lines, setLines] = useState<DeliveryLineForm[]>([
-        { productId: '', quantity: '1', unitCost: '0' },
+        { productId: '', quantity: '1', unitCost: '0', unit: 'op.' },
     ]);
 
     const addLine = () => {
         setLines((current) => [
             ...current,
-            { productId: '', quantity: '1', unitCost: '0' },
+            { productId: '', quantity: '1', unitCost: '0', unit: 'op.' },
         ]);
     };
 
@@ -52,7 +58,7 @@ export default function WarehouseDeliveryCreatePage() {
         );
     };
 
-    const submit = async () => {
+    const createDraft = async () => {
         const items = lines
             .filter((line) => line.productId)
             .map((line) => ({
@@ -63,7 +69,7 @@ export default function WarehouseDeliveryCreatePage() {
             .filter((line) => line.quantity > 0);
         if (items.length === 0) return;
 
-        await createDelivery.mutateAsync({
+        const created = await createDelivery.mutateAsync({
             supplierId: supplierId ? Number(supplierId) : undefined,
             deliveryDate,
             invoiceNumber: invoiceNumber || undefined,
@@ -71,8 +77,21 @@ export default function WarehouseDeliveryCreatePage() {
             items,
         });
 
+        return created;
+    };
+
+    const submit = async () => {
+        const created = await createDraft();
+        if (!created) return;
+        await receiveDelivery.mutateAsync({ id: created.id });
         await router.push('/deliveries/history');
     };
+
+    const totalNet = lines.reduce((sum, line) => {
+        const qty = Number(line.quantity || 0);
+        const unit = Number(line.unitCost || 0);
+        return sum + qty * unit;
+    }, 0);
 
     return (
         <WarehouseLayout
@@ -92,23 +111,33 @@ export default function WarehouseDeliveryCreatePage() {
                 <table className="products-table">
                     <thead>
                         <tr>
+                            <th>lp</th>
                             <th>nazwa</th>
+                            <th>jednostka</th>
                             <th>ilość</th>
                             <th>cena/op. (netto)</th>
+                            <th>wartość (netto)</th>
                             <th>usuń</th>
                         </tr>
                     </thead>
                     <tbody>
                         {lines.map((line, index) => (
                             <tr key={`${index}-${line.productId}`}>
+                                <td>{index + 1}</td>
                                 <td>
                                     <select
                                         value={line.productId}
-                                        onChange={(event) =>
+                                        onChange={(event) => {
+                                            const value = event.target.value;
+                                            const product = products.find(
+                                                (item) =>
+                                                    String(item.id) === value,
+                                            );
                                             updateLine(index, {
-                                                productId: event.target.value,
-                                            })
-                                        }
+                                                productId: value,
+                                                unit: product?.unit || 'op.',
+                                            });
+                                        }}
                                         className="form-control"
                                     >
                                         <option value="">
@@ -124,6 +153,7 @@ export default function WarehouseDeliveryCreatePage() {
                                         ))}
                                     </select>
                                 </td>
+                                <td>{line.unit || 'op.'}</td>
                                 <td>
                                     <input
                                         type="number"
@@ -152,6 +182,13 @@ export default function WarehouseDeliveryCreatePage() {
                                     />
                                 </td>
                                 <td>
+                                    {(
+                                        Number(line.quantity || 0) *
+                                        Number(line.unitCost || 0)
+                                    ).toFixed(2)}{' '}
+                                    zł
+                                </td>
+                                <td>
                                     <button
                                         type="button"
                                         className="btn btn-default btn-xs"
@@ -174,25 +211,45 @@ export default function WarehouseDeliveryCreatePage() {
                 >
                     dodaj kolejną pozycję
                 </button>
+                <Link href="/products/new" className="btn btn-default btn-xs">
+                    dodaj nowy produkt
+                </Link>
+            </div>
+
+            <div className="warehouse-summary">
+                <p className="warehouse-summary-meta">Łącznie (netto)</p>
+                <p className="warehouse-summary-value">
+                    {totalNet.toFixed(2)} zł
+                </p>
             </div>
 
             <div className="warehouse-form-grid">
                 <label>
                     <span>Dostawca</span>
-                    <select
-                        value={supplierId}
-                        onChange={(event) => setSupplierId(event.target.value)}
-                        className="versum-select"
-                    >
-                        <option value="">
-                            wpisz nazwę lub wybierz z listy
-                        </option>
-                        {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.id}>
-                                {supplier.name}
+                    <div className="warehouse-inline-field">
+                        <select
+                            value={supplierId}
+                            onChange={(event) =>
+                                setSupplierId(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
                             </option>
-                        ))}
-                    </select>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
+                                </option>
+                            ))}
+                        </select>
+                        <Link
+                            href="/suppliers"
+                            className="btn btn-default btn-xs"
+                        >
+                            dodaj dostawcę
+                        </Link>
+                    </div>
                 </label>
                 <label>
                     <span>Numer faktury</span>
@@ -227,13 +284,33 @@ export default function WarehouseDeliveryCreatePage() {
             </div>
 
             <div className="warehouse-actions-row">
+                <Link
+                    href="/deliveries/history"
+                    className="btn btn-default btn-xs"
+                >
+                    anuluj
+                </Link>
+                <button
+                    type="button"
+                    className="btn btn-default btn-xs"
+                    onClick={() => void createDraft()}
+                    disabled={
+                        createDelivery.isPending || receiveDelivery.isPending
+                    }
+                >
+                    {createDelivery.isPending
+                        ? 'zapisywanie...'
+                        : 'zapisz jako roboczą'}
+                </button>
                 <button
                     type="button"
                     className="btn btn-primary btn-xs"
                     onClick={() => void submit()}
-                    disabled={createDelivery.isPending}
+                    disabled={
+                        createDelivery.isPending || receiveDelivery.isPending
+                    }
                 >
-                    {createDelivery.isPending
+                    {createDelivery.isPending || receiveDelivery.isPending
                         ? 'zapisywanie...'
                         : 'wprowadź dostawę'}
                 </button>
