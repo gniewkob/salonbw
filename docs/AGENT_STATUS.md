@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-12 (Warehouse: secondnav DOSTAWY extended with low-stock and manufacturers; dashboard deployed to production)_
+_Last updated: 2026-02-12 (Warehouse: secondnav dynamic counters deployed; delivery draft flow refinement in progress)_
 
 ## Platform Architecture
 
@@ -87,6 +87,12 @@ Verification:
 
 ## What's Working
 
+- **2026-02-12** – Warehouse secondnav dynamic counters deployed to production:
+  - commit: `72e14300`
+  - deploy run: Dashboard `21967243749`
+  - changes:
+    - `wersje robocze (N)` for deliveries and orders,
+    - `niski stan magazynowy (N)` in DOSTAWY secondnav.
 - **2026-02-12** – Warehouse secondnav (`DOSTAWY`) extended on production:
   - commit: `831b9f9e`
   - deploy run: Dashboard `21965674611`

@@ -137,6 +137,12 @@
   - `niski stan magazynowy (N)` na bazie `stock-summary`
 - cel: bliższa zgodność z zachowaniem Versum, gdzie secondnav pokazuje ilości w nawiasach.
 
+### 2026-02-12 - Magazyn: poprawa walidacji i flow zapisu roboczej dostawy
+- `/deliveries/new`:
+  - dodana walidacja pozycji dostawy (wymagany produkt + ilość > 0),
+  - przy pustej liście pozycji pokazywany jest jawny komunikat błędu zamiast cichego braku akcji,
+  - `zapisz jako roboczą` po zapisie przekierowuje do listy `?status=draft` (czytelny flow dalszej pracy na wersjach roboczych).
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
