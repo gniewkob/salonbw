@@ -3,12 +3,22 @@ import { useProductCategories } from '@/hooks/useWarehouseViews';
 import ManageCategoriesModal from '../modals/ManageCategoriesModal';
 import { useState } from 'react';
 import type { ProductCategory } from '@/types';
+import { useDeliveries } from '@/hooks/useWarehouse';
+import { useWarehouseOrders } from '@/hooks/useWarehouseViews';
+import { useStockSummary } from '@/hooks/useStockAlerts';
 
 export default function WarehouseNav() {
     const router = useRouter();
     const { data: categories } = useProductCategories();
+    const { data: draftDeliveries = [] } = useDeliveries({ status: 'draft' });
+    const { data: orders = [] } = useWarehouseOrders();
+    const { data: stockSummary } = useStockSummary();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const path = router.pathname;
+    const draftOrdersCount = orders.filter(
+        (order) => order.status === 'draft',
+    ).length;
+    const lowStockCount = stockSummary?.lowStockCount ?? 0;
 
     const currentCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
@@ -138,11 +148,14 @@ export default function WarehouseNav() {
             { label: 'dodaj dostawę', href: '/deliveries/new' },
             { label: 'historia dostaw', href: '/deliveries/history' },
             {
-                label: 'wersje robocze',
+                label: `wersje robocze (${draftDeliveries.length})`,
                 href: '/deliveries/history',
                 query: { status: 'draft' },
             },
-            { label: 'niski stan magazynowy', href: '/stock-alerts' },
+            {
+                label: `niski stan magazynowy (${lowStockCount})`,
+                href: '/stock-alerts',
+            },
             { label: 'dostawcy', href: '/suppliers' },
             { label: 'producenci', href: '/manufacturers' },
         ]);
@@ -153,7 +166,7 @@ export default function WarehouseNav() {
             { label: 'dodaj zamówienie', href: '/orders/new' },
             { label: 'historia zamówień', href: '/orders/history' },
             {
-                label: 'wersje robocze',
+                label: `wersje robocze (${draftOrdersCount})`,
                 href: '/orders/history',
                 query: { status: 'draft' },
             },

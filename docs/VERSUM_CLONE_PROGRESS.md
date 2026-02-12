@@ -130,6 +130,13 @@
 - test smoke produkcyjny magazynu rozszerzony o nowe trasy:
   - `/stock-alerts`, `/suppliers`, `/manufacturers`
 
+### 2026-02-12 - Magazyn: dynamiczne liczniki secondnav (parity detail)
+- secondnav magazynu wyświetla dynamiczne liczniki:
+  - `wersje robocze (N)` dla dostaw (status `draft`)
+  - `wersje robocze (N)` dla zamówień (status `draft`)
+  - `niski stan magazynowy (N)` na bazie `stock-summary`
+- cel: bliższa zgodność z zachowaniem Versum, gdzie secondnav pokazuje ilości w nawiasach.
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
