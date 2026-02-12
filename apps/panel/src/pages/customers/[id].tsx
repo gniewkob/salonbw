@@ -45,6 +45,20 @@ function parseNumericIdParam(
     return Number.isFinite(n) ? n : null;
 }
 
+function parseCustomerIdFromRoute(
+    idParam: string | string[] | undefined,
+    asPath: string,
+): number | null {
+    const fromParam = parseNumericIdParam(idParam);
+    if (fromParam !== null) return fromParam;
+
+    const match = asPath.match(/^\/customers\/(\d+)(?:[/?#]|$)/);
+    if (!match) return null;
+
+    const n = Number(match[1]);
+    return Number.isFinite(n) ? n : null;
+}
+
 function parseTabNameParam(
     value: string | string[] | undefined,
 ): string | null {
@@ -77,7 +91,7 @@ export default function CustomerDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
     const { id } = router.query;
-    const parsedCustomerId = router.isReady ? parseNumericIdParam(id) : null;
+    const parsedCustomerId = parseCustomerIdFromRoute(id, router.asPath);
     const customerId =
         parsedCustomerId !== null && parsedCustomerId > 0
             ? parsedCustomerId

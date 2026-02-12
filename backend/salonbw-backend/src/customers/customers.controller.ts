@@ -106,8 +106,12 @@ export class CustomersController {
     @Get(':id/statistics')
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Get customer statistics' })
-    getStatistics(@Param('id', ParseIntPipe) id: number) {
-        return this.statisticsService.getStatistics(id);
+    getStatistics(
+        @Param('id', ParseIntPipe) id: number,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        return this.statisticsService.getStatistics(id, { from, to });
     }
 
     @Get(':id/events-history')
@@ -117,8 +121,19 @@ export class CustomersController {
         @Param('id', ParseIntPipe) id: number,
         @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
         @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+        @Query('status') status?: string,
+        @Query('withCounts') withCounts?: string,
     ) {
-        return this.statisticsService.getEventHistory(id, { limit, offset });
+        return this.statisticsService.getEventHistory(id, {
+            limit,
+            offset,
+            from,
+            to,
+            status,
+            withCounts: withCounts === '1' || withCounts === 'true',
+        });
     }
 
     // ==================== NOTES ====================

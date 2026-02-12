@@ -7,6 +7,7 @@ import {
     useDeleteCustomerNote,
     useUpdateCustomerNote,
 } from '@/hooks/useCustomers';
+import { useToast } from '@/contexts/ToastContext';
 import type { CustomerNote } from '@/types';
 
 interface Props {
@@ -22,16 +23,29 @@ export default function CustomerNotesTab({ customerId }: Props) {
     const create = useCreateCustomerNote();
     const update = useUpdateCustomerNote();
     const remove = useDeleteCustomerNote();
+    const toast = useToast();
     const [content, setContent] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const handleAdd = async () => {
         if (!content.trim()) return;
-        await create.mutateAsync({
-            customerId,
-            content: content.trim(),
-            type: 'general',
-        });
-        setContent('');
+        setSubmitError(null);
+        try {
+            await create.mutateAsync({
+                customerId,
+                content: content.trim(),
+                type: 'general',
+            });
+            setContent('');
+            toast.success('Dodano komentarz');
+        } catch (e) {
+            const message =
+                e instanceof Error
+                    ? e.message
+                    : 'Nie udało się dodać komentarza';
+            setSubmitError(message);
+            toast.error('Nie udało się dodać komentarza');
+        }
     };
 
     if (isLoading) {
@@ -69,6 +83,9 @@ export default function CustomerNotesTab({ customerId }: Props) {
                         dodaj komentarz
                     </button>
                 </div>
+                {submitError ? (
+                    <div className="customer-inline-error">{submitError}</div>
+                ) : null}
             </div>
 
             <div className="customer-comments-list">
