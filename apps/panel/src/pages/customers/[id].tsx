@@ -11,7 +11,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
     useTagsForCustomer,
-    useUpdateCustomer,
     useCustomerStatistics,
     useCustomerEventHistory,
 } from '@/hooks/useCustomers';
@@ -112,12 +111,6 @@ export default function CustomerDetailPage() {
     const { data: history } = useCustomerEventHistory(customerId, {
         limit: 3,
     });
-    const updateCustomer = useUpdateCustomer();
-
-    const handleUpdate = async (data: Partial<Customer>) => {
-        if (!customerId) return;
-        await updateCustomer.mutateAsync({ id: customerId, data });
-    };
 
     if (!role) return null;
 
@@ -260,7 +253,6 @@ export default function CustomerDetailPage() {
                                 {activeTab === 'communication' && (
                                     <CustomerCommunicationTab
                                         customer={customer}
-                                        onUpdate={handleUpdate}
                                     />
                                 )}
                                 {activeTab === 'gallery' && (
