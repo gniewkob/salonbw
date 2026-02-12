@@ -87,6 +87,10 @@ Verification:
 
 ## What's Working
 
+- **2026-02-12** – Customers card tabs fixes shipped to production:
+  - commit: `b75dfa6d`
+  - deploy runs: API `21941396718`, Dashboard `21941473185`
+  - changes: `statistics` + `events_history` now have functional period filtering and correct time rendering; `gallery/files/communication_preferences` tabs use Versum-like markup/styles; comments tab shows errors and toasts on add failures.
 - **2026-02-11** – Antigravity Browser Control is available locally at `http://localhost:49230/` and can be used for interactive browser automation alongside MCP Playwright (click/scroll/type/navigate + progress overlay/control in IDE).
 - **2026-02-11** – Versum cloning rule captured in SOP: `secondnav` is route-contextual (must switch section/links per submodule, not static); parity checks now explicitly include route→secondnav transitions for customers/calendar/warehouse.
 - **2026-02-11** – Customers cleanup completed in panel/backend:
