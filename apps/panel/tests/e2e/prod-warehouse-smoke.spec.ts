@@ -49,6 +49,7 @@ test.describe('PROD smoke: warehouse layout parity', () => {
             '/products',
             '/sales/new',
             '/use/new',
+            '/use/planned',
             '/deliveries/new',
             '/orders/new',
             '/inventory',
@@ -72,4 +73,3 @@ test.describe('PROD smoke: warehouse layout parity', () => {
         }
     });
 });
-
