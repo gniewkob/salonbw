@@ -38,6 +38,12 @@ export default async function handler(
         const k = key.toLowerCase();
         if (
             k === 'host' ||
+            // Do not forward browser Origin/Referer through the server-side proxy.
+            // The backend has strict CORS origin validation and will return 500
+            // on disallowed origins (e.g. http vs https). The proxy itself is the
+            // trust boundary, so omit these to avoid false CORS rejections.
+            k === 'origin' ||
+            k === 'referer' ||
             k === 'connection' ||
             k === 'content-length' ||
             k === 'accept-encoding'
