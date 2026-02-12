@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-12 (Warehouse: secondnav dynamic counters deployed; delivery draft flow refinement in progress)_
+_Last updated: 2026-02-12 (Warehouse: delivery draft flow refinement deployed to production dashboard)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-12** – Warehouse delivery draft flow refinement deployed to production:
+  - commit: `d13ca98a`
+  - deploy run: Dashboard `21967469175`
+  - changes:
+    - `/deliveries/new` validates required delivery rows (product + quantity > 0),
+    - explicit validation message replaces silent no-op on empty data,
+    - `zapisz jako roboczą` redirects to `history dostaw` filtered by `?status=draft`.
 - **2026-02-12** – Warehouse secondnav dynamic counters deployed to production:
   - commit: `72e14300`
   - deploy run: Dashboard `21967243749`
