@@ -63,6 +63,12 @@ export default async function handler(
         ? await readRawBody(req)
         : undefined;
 
+    // Some upstream stacks (Passenger/proxies) can be sensitive to chunked uploads.
+    // When we buffer the full request body, we can safely set Content-Length.
+    if (body && !headers['Content-Length'] && !headers['content-length']) {
+        headers['Content-Length'] = String(body.byteLength);
+    }
+
     const targetUrl = `${BACKEND_URL}${targetPath}`;
 
     try {
