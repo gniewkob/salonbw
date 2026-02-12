@@ -105,6 +105,7 @@ const nextConfig = {
     },
     async redirects() {
         return [
+            // Legacy customers aliases (compat)
             {
                 source: '/clients',
                 destination: '/customers',
@@ -122,6 +123,16 @@ const nextConfig = {
             },
             {
                 source: '/admin/clients/:path*',
+                destination: '/customers/:path*',
+                permanent: false,
+            },
+            {
+                source: '/admin/customers',
+                destination: '/customers',
+                permanent: false,
+            },
+            {
+                source: '/admin/customers/:path*',
                 destination: '/customers/:path*',
                 permanent: false,
             },

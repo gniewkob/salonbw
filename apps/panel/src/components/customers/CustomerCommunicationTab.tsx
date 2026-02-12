@@ -75,11 +75,11 @@ export default function CustomerCommunicationTab({
                                     Ładowanie SMS...
                                 </div>
                             ) : sms.data.items.length === 0 ? (
-                                <div className="text-center text-muted py-20">
+                                <div className="customer-empty-state">
                                     Brak wysłanych SMS do tego klienta.
                                 </div>
                             ) : (
-                                <table className="table customers-history-table">
+                                <table className="customers-history-table table">
                                     <thead>
                                         <tr>
                                             <th>Data</th>
@@ -160,11 +160,11 @@ export default function CustomerCommunicationTab({
                                     Ładowanie emaili...
                                 </div>
                             ) : emails.data.items.length === 0 ? (
-                                <div className="text-center text-muted py-20">
+                                <div className="customer-empty-state">
                                     Brak wysłanych emaili do tego klienta.
                                 </div>
                             ) : (
-                                <table className="table customers-history-table">
+                                <table className="customers-history-table table">
                                     <thead>
                                         <tr>
                                             <th>Data</th>

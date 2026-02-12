@@ -89,19 +89,36 @@ export function useUpdateCustomer() {
 
 // ==================== STATISTICS ====================
 
-export function useCustomerStatistics(customerId: number | null) {
+export function useCustomerStatistics(
+    customerId: number | null,
+    options?: { from?: string; to?: string },
+) {
     const { apiFetch } = useAuth();
     return useQuery<CustomerStatistics>({
-        queryKey: ['customer-statistics', customerId],
-        queryFn: () =>
-            apiFetch<CustomerStatistics>(`/customers/${customerId}/statistics`),
+        queryKey: ['customer-statistics', customerId, options],
+        queryFn: () => {
+            const params = new URLSearchParams();
+            if (options?.from) params.set('from', options.from);
+            if (options?.to) params.set('to', options.to);
+            const queryStr = params.toString();
+            return apiFetch<CustomerStatistics>(
+                `/customers/${customerId}/statistics${queryStr ? `?${queryStr}` : ''}`,
+            );
+        },
         enabled: customerId !== null,
     });
 }
 
 export function useCustomerEventHistory(
     customerId: number | null,
-    options?: { limit?: number; offset?: number },
+    options?: {
+        limit?: number;
+        offset?: number;
+        from?: string;
+        to?: string;
+        status?: string; // comma-separated list of statuses
+        withCounts?: boolean;
+    },
 ) {
     const { apiFetch } = useAuth();
     return useQuery<CustomerEventHistory>({
@@ -110,6 +127,10 @@ export function useCustomerEventHistory(
             const params = new URLSearchParams();
             if (options?.limit) params.set('limit', String(options.limit));
             if (options?.offset) params.set('offset', String(options.offset));
+            if (options?.from) params.set('from', options.from);
+            if (options?.to) params.set('to', options.to);
+            if (options?.status) params.set('status', options.status);
+            if (options?.withCounts) params.set('withCounts', '1');
             const queryStr = params.toString();
             return apiFetch<CustomerEventHistory>(
                 `/customers/${customerId}/events-history${queryStr ? `?${queryStr}` : ''}`,

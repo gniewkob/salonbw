@@ -393,6 +393,13 @@ export interface CustomerEventHistory {
         status: string;
         price: number;
     }>;
+    counts?: {
+        all: number;
+        upcoming: number;
+        completed: number;
+        cancelled: number;
+        no_show: number;
+    };
     total: number;
     limit: number;
     offset: number;

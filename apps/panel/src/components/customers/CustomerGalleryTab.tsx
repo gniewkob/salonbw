@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     getBrowserApiBase,
     useCustomerGallery,
@@ -13,34 +13,42 @@ interface Props {
 }
 
 export default function CustomerGalleryTab({ customerId }: Props) {
-    const { data: images = [], isLoading } = useCustomerGallery(customerId);
+    const {
+        data: images = [],
+        isLoading,
+        error,
+    } = useCustomerGallery(customerId);
     const upload = useUploadCustomerGalleryImage(customerId);
     const del = useDeleteCustomerGalleryImage(customerId);
 
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
-    const selectedImage =
-        selectedImageId !== null
-            ? (images.find((img) => img.id === selectedImageId) ?? null)
-            : null;
+    const selectedImage = useMemo(() => {
+        if (selectedImageId === null) return null;
+        return images.find((img) => img.id === selectedImageId) ?? null;
+    }, [images, selectedImageId]);
 
     const base = getBrowserApiBase();
 
     if (isLoading) {
+        return <div className="customer-loading">Ładowanie galerii...</div>;
+    }
+
+    if (error) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">Ładowanie galerii...</div>
+            <div className="customer-error">
+                <p>Nie udało się załadować galerii</p>
             </div>
         );
     }
 
     return (
-        <div className="row">
+        <div className="row customer-gallery-tab">
             <div className="col-sm-12">
                 <div className="versum-widget">
                     <div className="versum-widget__header flex-between">
-                        <span>Galeria klienta</span>
+                        <span>galeria zdjęć</span>
                         <label className="btn btn-primary btn-xs m-0">
-                            + Dodaj zdjęcie
+                            dodaj zdjęcie
                             <input
                                 type="file"
                                 accept="image/*"
@@ -57,114 +65,121 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                     </div>
 
                     <div className="versum-widget__content">
-                        {images.length > 0 ? (
+                        {images.length === 0 ? (
+                            <div className="customer-empty-state">
+                                Brak zdjęć w galerii klienta.
+                            </div>
+                        ) : (
                             <div className="row">
                                 {images.map((image) => (
                                     <div
                                         key={image.id}
-                                        className="col-sm-3 mb-15"
+                                        className="col-xs-6 col-sm-3 mb-15"
                                     >
-                                        <div
-                                            className="versum-panel-sub p-0 overflow-hidden cursor-pointer border"
+                                        <button
+                                            type="button"
+                                            className="customer-gallery-thumb"
                                             onClick={() =>
                                                 setSelectedImageId(image.id)
                                             }
+                                            title="Podgląd"
                                         >
-                                            <div className="aspect-square">
-                                                <img
-                                                    src={`${base}${image.thumbnailUrl}`}
-                                                    alt={
-                                                        image.description ||
-                                                        'Zdjęcie klienta'
-                                                    }
-                                                    className="absolute-fill object-cover"
-                                                />
-                                            </div>
-                                            {image.serviceId && (
-                                                <div className="p-5 fz-11 border-top-eee bg-f9">
-                                                    usługa #{image.serviceId}
-                                                </div>
-                                            )}
-                                        </div>
+                                            <img
+                                                src={`${base}${image.thumbnailUrl}`}
+                                                alt={
+                                                    image.description ||
+                                                    'Zdjęcie klienta'
+                                                }
+                                            />
+                                        </button>
                                     </div>
                                 ))}
-                            </div>
-                        ) : (
-                            <div className="text-center p-60-0">
-                                <p className="fz-14 mb-5">
-                                    Brak zdjęć w galerii klienta.
-                                </p>
-                                <p className="fz-11">
-                                    Dodaj zdjęcia efektów zabiegów, aby
-                                    dokumentować historię klienta.
-                                </p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {selectedImage && (
+            {selectedImage ? (
                 <div
-                    className="modal fade in block bg-modal-overlay flex-center"
+                    className="modal fade in customer-modal-open"
+                    role="dialog"
+                    aria-modal="true"
                     onClick={() => setSelectedImageId(null)}
                 >
                     <div
-                        className="relative max-w-90 max-h-90"
+                        className="modal-dialog modal-lg"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button
-                            onClick={() => setSelectedImageId(null)}
-                            className="abs-tr--15 bg-white br-full w-30 h-30 cursor-pointer fw-bold border-none"
-                            title="Zamknij"
-                        >
-                            ×
-                        </button>
-                        <button
-                            onClick={() => {
-                                if (
-                                    confirm(
-                                        'Czy na pewno chcesz usunąć to zdjęcie?',
-                                    )
-                                ) {
-                                    void del.mutateAsync(selectedImage.id);
-                                    setSelectedImageId(null);
-                                }
-                            }}
-                            className="abs-tr--55 bg-white br-2 px-10 py-6 cursor-pointer fw-600 border-none"
-                            title="Usuń"
-                            disabled={del.isPending}
-                        >
-                            Usuń
-                        </button>
-                        <img
-                            src={`${base}${selectedImage.url}`}
-                            alt={selectedImage.description || 'Zdjęcie klienta'}
-                            className="max-w-full max-h-85vh br-2 shadow-modal"
-                        />
-                        {(selectedImage.description ||
-                            selectedImage.serviceId) && (
-                            <div className="bg-white p-15 mt-5 br-2">
-                                {selectedImage.serviceId && (
-                                    <div className="fw-600">
-                                        usługa #{selectedImage.serviceId}
-                                    </div>
-                                )}
-                                {selectedImage.description && (
-                                    <div className="fz-12 text-666">
-                                        {selectedImage.description}
-                                    </div>
-                                )}
-                                <div className="fz-11 text-999 mt-5">
-                                    {new Date(
-                                        selectedImage.createdAt,
-                                    ).toLocaleDateString('pl-PL')}
-                                </div>
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button
+                                    type="button"
+                                    className="close"
+                                    onClick={() => setSelectedImageId(null)}
+                                    aria-label="Zamknij"
+                                >
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <h4 className="modal-title">Podgląd zdjęcia</h4>
                             </div>
-                        )}
+                            <div className="modal-body">
+                                <div className="text-center">
+                                    <img
+                                        src={`${base}${selectedImage.url}`}
+                                        alt={
+                                            selectedImage.description ||
+                                            'Zdjęcie klienta'
+                                        }
+                                        className="customer-gallery-full"
+                                    />
+                                </div>
+
+                                {selectedImage.description ? (
+                                    <div className="mt-15">
+                                        <div className="text-muted fz-11">
+                                            opis
+                                        </div>
+                                        <div className="fz-12">
+                                            {selectedImage.description}
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-default btn-sm"
+                                    onClick={() => setSelectedImageId(null)}
+                                >
+                                    zamknij
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-danger btn-sm"
+                                    disabled={del.isPending}
+                                    onClick={() => {
+                                        if (
+                                            !confirm(
+                                                'Czy na pewno chcesz usunąć to zdjęcie?',
+                                            )
+                                        ) {
+                                            return;
+                                        }
+                                        void del
+                                            .mutateAsync(selectedImage.id)
+                                            .then(() =>
+                                                setSelectedImageId(null),
+                                            );
+                                    }}
+                                >
+                                    usuń
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }
