@@ -97,6 +97,7 @@ export default function WarehouseNav() {
         return renderModuleNav('ZUŻYCIE', [
             { label: 'dodaj zużycie', href: '/use/new' },
             { label: 'historia zużycia', href: '/use/history' },
+            { label: 'planowane zużycie', href: '/use/planned' },
         ]);
     }
 
