@@ -101,10 +101,11 @@ export default function WarehouseNav() {
         ]);
     }
 
-    if (isSubmodulePath('/deliveries')) {
+    if (isSubmodulePath('/deliveries') || isSubmodulePath('/suppliers')) {
         return renderModuleNav('DOSTAWY', [
             { label: 'dodaj dostawę', href: '/deliveries/new' },
             { label: 'historia dostaw', href: '/deliveries/history' },
+            { label: 'dostawcy', href: '/suppliers' },
         ]);
     }
 
