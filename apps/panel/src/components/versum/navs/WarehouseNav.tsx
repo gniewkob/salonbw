@@ -60,16 +60,25 @@ export default function WarehouseNav() {
     const isSubmodulePath = (prefix: string) => path.startsWith(prefix);
     const renderModuleNav = (
         header: string,
-        items: Array<{ label: string; href: string }>,
+        items: Array<{
+            label: string;
+            href: string;
+            query?: Record<string, string>;
+        }>,
     ) => (
         <>
             <div className="nav-header">{header}</div>
             <ul className="nav nav-list">
                 {items.map((item) => (
                     <li
-                        key={item.href}
+                        key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
                         className={
-                            path === item.href ||
+                            (path === item.href &&
+                                (!item.query ||
+                                    Object.entries(item.query).every(
+                                        ([key, value]) =>
+                                            router.query[key] === value,
+                                    ))) ||
                             path.startsWith(`${item.href}/`) ||
                             (item.href.endsWith('/history') &&
                                 path.startsWith(
@@ -79,7 +88,15 @@ export default function WarehouseNav() {
                                 : undefined
                         }
                     >
-                        <a href={item.href}>{item.label}</a>
+                        <a
+                            href={
+                                item.query
+                                    ? `${item.href}?${new URLSearchParams(item.query).toString()}`
+                                    : item.href
+                            }
+                        >
+                            {item.label}
+                        </a>
                     </li>
                 ))}
             </ul>
@@ -105,6 +122,11 @@ export default function WarehouseNav() {
         return renderModuleNav('DOSTAWY', [
             { label: 'dodaj dostawę', href: '/deliveries/new' },
             { label: 'historia dostaw', href: '/deliveries/history' },
+            {
+                label: 'wersje robocze',
+                href: '/deliveries/history',
+                query: { status: 'draft' },
+            },
             { label: 'dostawcy', href: '/suppliers' },
         ]);
     }
@@ -113,6 +135,11 @@ export default function WarehouseNav() {
         return renderModuleNav('ZAMÓWIENIA', [
             { label: 'dodaj zamówienie', href: '/orders/new' },
             { label: 'historia zamówień', href: '/orders/history' },
+            {
+                label: 'wersje robocze',
+                href: '/orders/history',
+                query: { status: 'draft' },
+            },
         ]);
     }
 
