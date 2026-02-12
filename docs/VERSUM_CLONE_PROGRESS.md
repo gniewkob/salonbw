@@ -120,6 +120,16 @@
   - dodane pozycje `wersje robocze`
   - dodana pozycja `dostawcy` + strona `/suppliers`
 
+### 2026-02-12 - Magazyn: rozbudowa secondnav DOSTAWY (niski stan + producenci)
+- secondnav `DOSTAWY` rozszerzony o:
+  - `niski stan magazynowy` -> `/stock-alerts`
+  - `producenci` -> `/manufacturers`
+- dodane widoki:
+  - `/stock-alerts` (lista produktów z niskim stanem, deficyt, dostawca, szybka akcja do dostawy)
+  - `/manufacturers` (zestawienie producentów na bazie katalogu produktów)
+- test smoke produkcyjny magazynu rozszerzony o nowe trasy:
+  - `/stock-alerts`, `/suppliers`, `/manufacturers`
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
