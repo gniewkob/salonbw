@@ -45,6 +45,7 @@ export default async function handler(
             k === 'origin' ||
             k === 'referer' ||
             k === 'connection' ||
+            // Let node/fetch compute these as needed.
             k === 'content-length' ||
             k === 'accept-encoding'
         ) {
@@ -58,19 +59,9 @@ export default async function handler(
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    let body: string | undefined;
-    if (isBodyAllowed && req.body !== undefined) {
-        if (typeof req.body === 'string') {
-            body = req.body;
-        } else if (Buffer.isBuffer(req.body)) {
-            body = req.body.toString();
-        } else {
-            body = JSON.stringify(req.body);
-            if (!headers['Content-Type'] && !headers['content-type']) {
-                headers['Content-Type'] = 'application/json';
-            }
-        }
-    }
+    const body: Uint8Array | undefined = isBodyAllowed
+        ? await readRawBody(req)
+        : undefined;
 
     const targetUrl = `${BACKEND_URL}${targetPath}`;
 
@@ -78,24 +69,25 @@ export default async function handler(
         const backendRes = await fetch(targetUrl, {
             method,
             headers,
-            body,
+            body: body as unknown as RequestInit['body'],
         });
 
-        // Forward response status and selected headers
+        // Forward response status and selected headers.
+        // For file downloads/uploads we must preserve binary response bodies
+        // and important headers like Content-Disposition.
         res.status(backendRes.status);
 
-        const contentType = backendRes.headers.get('content-type');
-        if (contentType) {
-            res.setHeader('Content-Type', contentType);
+        const passthroughHeaders = [
+            'content-type',
+            'content-disposition',
+            'cache-control',
+            'x-request-id',
+        ];
+        for (const name of passthroughHeaders) {
+            const v = backendRes.headers.get(name);
+            if (v) res.setHeader(name, v);
         }
-        const cacheControl = backendRes.headers.get('cache-control');
-        if (cacheControl) {
-            res.setHeader('Cache-Control', cacheControl);
-        }
-        const requestId = backendRes.headers.get('x-request-id');
-        if (requestId) {
-            res.setHeader('X-Request-Id', requestId);
-        }
+
         const setCookie = (
             backendRes.headers as unknown as {
                 getSetCookie?: () => string[];
@@ -110,13 +102,9 @@ export default async function handler(
             }
         }
 
-        // Return response body
-        const data = await backendRes.text();
-        try {
-            res.json(JSON.parse(data));
-        } catch {
-            res.send(data);
-        }
+        // Return response body (binary-safe).
+        const ab = await backendRes.arrayBuffer();
+        res.send(Buffer.from(ab));
     } catch (error) {
         console.error('API proxy error:', error);
         res.status(502).json({ error: 'Bad Gateway' });
@@ -125,6 +113,19 @@ export default async function handler(
 
 export const config = {
     api: {
-        bodyParser: true,
+        // Critical: disable Next body parsing to keep request bodies intact
+        // (multipart, binary downloads, etc). We forward raw bytes to the backend.
+        bodyParser: false,
     },
 };
+
+function readRawBody(req: NextApiRequest): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        req.on('data', (chunk: Buffer) => {
+            chunks.push(chunk);
+        });
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+    });
+}
