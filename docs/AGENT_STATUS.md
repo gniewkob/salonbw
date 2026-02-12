@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-12 (Warehouse: zamówienia/dostawy parity updates + delivery submit flow fix; dashboard deployed to production)_
+_Last updated: 2026-02-12 (Warehouse: secondnav DOSTAWY extended with low-stock and manufacturers; dashboard deployed to production)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-12** – Warehouse secondnav (`DOSTAWY`) extended on production:
+  - commit: `831b9f9e`
+  - deploy run: Dashboard `21965674611`
+  - changes:
+    - added `niski stan magazynowy` route (`/stock-alerts`),
+    - added `producenci` route (`/manufacturers`),
+    - both routes render in VersumShell and use warehouse table layout.
 - **2026-02-12** – Warehouse magazyn updates shipped to production:
   - commits: `90847948`, `e2b6b937`
   - deploy runs: Dashboard `21965037142`, `21965343231`
