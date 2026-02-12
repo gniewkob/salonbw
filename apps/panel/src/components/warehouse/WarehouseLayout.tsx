@@ -4,8 +4,9 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
-import DashboardLayout from '@/components/DashboardLayout';
+import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
+import { useAuth } from '@/contexts/AuthContext';
 
 type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
 
@@ -39,38 +40,37 @@ export default function WarehouseLayout({
     actions,
     children,
 }: WarehouseLayoutProps) {
+    const { role } = useAuth();
+    if (!role) return null;
+
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
             <Head>
                 <title>{pageTitle}</title>
             </Head>
             <VersumCustomersVendorCss />
-            <DashboardLayout>
+            <VersumShell role={role}>
                 <div className="products_index" id="products_main">
-                    <header className="products-header">
-                        <h1>{heading}</h1>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>{heading}</li>
+                    </ul>
 
                     <div className="products-top-tabs">
-                        <nav>
-                            {tabConfig.map((tab) => (
-                                <Link
-                                    key={tab.id}
-                                    href={tab.href}
-                                    className={
-                                        activeTab === tab.id ? 'active' : ''
-                                    }
-                                >
-                                    {tab.label}
-                                </Link>
-                            ))}
+                        {tabConfig.map((tab) => (
                             <Link
-                                href="/inventory"
-                                className={`${inventoryActive ? 'active' : ''} products-top-tabs__right`}
+                                key={tab.id}
+                                href={tab.href}
+                                className={activeTab === tab.id ? 'active' : ''}
                             >
-                                Inwentaryzacja
+                                {tab.label}
                             </Link>
-                        </nav>
+                        ))}
+                        <Link
+                            href="/inventory"
+                            className={`${inventoryActive ? 'active' : ''} products-top-tabs__right`}
+                        >
+                            Inwentaryzacja
+                        </Link>
                         {actions ? (
                             <div className="products-toolbar__actions">
                                 {actions}
@@ -80,7 +80,7 @@ export default function WarehouseLayout({
 
                     {children}
                 </div>
-            </DashboardLayout>
+            </VersumShell>
         </RouteGuard>
     );
 }
