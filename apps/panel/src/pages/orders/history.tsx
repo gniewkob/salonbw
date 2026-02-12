@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import {
     useWarehouseOrders,
@@ -10,10 +11,26 @@ import {
 } from '@/hooks/useWarehouseViews';
 
 export default function WarehouseOrdersHistoryPage() {
+    const router = useRouter();
     const { data: orders = [], isLoading } = useWarehouseOrders();
     const sendMutation = useSendWarehouseOrder();
     const cancelMutation = useCancelWarehouseOrder();
     const receiveMutation = useReceiveWarehouseOrder();
+    const statusFilter = Array.isArray(router.query.status)
+        ? router.query.status[0]
+        : router.query.status;
+
+    const filteredOrders = statusFilter
+        ? orders.filter((order) => order.status === statusFilter)
+        : orders;
+
+    const statusLabel: Record<string, string> = {
+        draft: 'robocze',
+        sent: 'wysłane',
+        partially_received: 'częściowo przyjęte',
+        received: 'przyjęte',
+        cancelled: 'anulowane',
+    };
 
     return (
         <WarehouseLayout
@@ -35,17 +52,23 @@ export default function WarehouseOrdersHistoryPage() {
                             <tr>
                                 <th>nr zamówienia</th>
                                 <th>dostawca</th>
+                                <th>data utworzenia</th>
                                 <th>status</th>
                                 <th>pozycje</th>
                                 <th>akcje</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orders.map((order) => (
+                            {filteredOrders.map((order) => (
                                 <tr key={order.id}>
                                     <td>{order.orderNumber}</td>
                                     <td>{order.supplier?.name ?? '-'}</td>
-                                    <td>{order.status}</td>
+                                    <td>
+                                        {new Date(
+                                            order.createdAt,
+                                        ).toLocaleDateString('pl-PL')}
+                                    </td>
+                                    <td>{statusLabel[order.status]}</td>
                                     <td>{order.items?.length ?? 0}</td>
                                     <td>
                                         {order.status === 'draft' ? (
@@ -110,6 +133,9 @@ export default function WarehouseOrdersHistoryPage() {
                     </table>
                 </div>
             )}
+            <div className="products-pagination">
+                Pozycje od 1 do {filteredOrders.length} | na stronie 20
+            </div>
         </WarehouseLayout>
     );
 }

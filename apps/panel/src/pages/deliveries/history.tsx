@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import {
     useDeliveries,
@@ -9,9 +10,24 @@ import {
 } from '@/hooks/useWarehouse';
 
 export default function WarehouseDeliveriesHistoryPage() {
+    const router = useRouter();
     const { data: deliveries = [], isLoading } = useDeliveries();
     const receiveMutation = useReceiveDelivery();
     const cancelMutation = useCancelDelivery();
+    const statusFilter = Array.isArray(router.query.status)
+        ? router.query.status[0]
+        : router.query.status;
+
+    const filteredDeliveries = statusFilter
+        ? deliveries.filter((delivery) => delivery.status === statusFilter)
+        : deliveries;
+
+    const statusLabel: Record<string, string> = {
+        draft: 'robocza',
+        pending: 'oczekująca',
+        received: 'przyjęta',
+        cancelled: 'anulowana',
+    };
 
     const receive = async (id: number) => {
         await receiveMutation.mutateAsync({ id });
@@ -48,7 +64,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {deliveries.map((delivery) => (
+                            {filteredDeliveries.map((delivery) => (
                                 <tr key={delivery.id}>
                                     <td>{delivery.deliveryNumber}</td>
                                     <td>{delivery.supplier?.name ?? '-'}</td>
@@ -59,7 +75,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                               ).toLocaleDateString('pl-PL')
                                             : '-'}
                                     </td>
-                                    <td>{delivery.status}</td>
+                                    <td>{statusLabel[delivery.status]}</td>
                                     <td>
                                         {Number(
                                             delivery.totalCost ?? 0,
@@ -102,6 +118,9 @@ export default function WarehouseDeliveriesHistoryPage() {
                     </table>
                 </div>
             )}
+            <div className="products-pagination">
+                Pozycje od 1 do {filteredDeliveries.length} | na stronie 20
+            </div>
         </WarehouseLayout>
     );
 }

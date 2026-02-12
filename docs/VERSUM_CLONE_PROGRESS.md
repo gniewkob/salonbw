@@ -103,6 +103,23 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-12 - Magazyn: historia dostaw i zamówień + poprawa flow dodawania dostawy
+- `/orders/new`:
+  - układ pozycji rozszerzony do `lp`, `nazwa`, `jednostka`, `ilość`, `usuń`
+  - dodane akcje: `dodaj nowy produkt`, `dodaj dostawcę`, `dodaj uwagi`, `anuluj`
+  - payload zamówienia wysyła `unit` dla pozycji
+- `/deliveries/new`:
+  - poprawiona logika: `wprowadź dostawę` tworzy dostawę i od razu wykonuje przyjęcie na stan (`/deliveries/:id/receive`)
+  - dodana akcja `zapisz jako roboczą` (create draft bez przyjęcia na stan)
+  - rozszerzony układ tabeli: `lp`, `jednostka`, `wartość (netto)` + podsumowanie `Łącznie (netto)`
+  - dodane akcje: `dodaj nowy produkt`, `dodaj dostawcę`, `anuluj`
+- `/orders/history` i `/deliveries/history`:
+  - dopięte etykiety statusów PL i paginacyjny footer `Pozycje od 1 do ... | na stronie 20`
+  - dodane filtrowanie po statusie przez query string (`?status=draft`) dla zgodności z linkami secondnav
+- secondnav magazynu (`DOSTAWY`/`ZAMÓWIENIA`):
+  - dodane pozycje `wersje robocze`
+  - dodana pozycja `dostawcy` + strona `/suppliers`
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
