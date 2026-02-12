@@ -9,11 +9,27 @@ interface NewCustomerNavProps {
 const tabs: Array<{
     id: NewCustomerTab;
     label: string;
+    href: string;
     iconClass: string;
 }> = [
-    { id: 'basic', label: 'dane podstawowe', iconClass: 'fa-list-alt' },
-    { id: 'extended', label: 'dane rozszerzone', iconClass: 'fa-table' },
-    { id: 'advanced', label: 'zaawansowane', iconClass: 'fa-cogs' },
+    {
+        id: 'basic',
+        label: 'dane podstawowe',
+        href: '#customer-form-basic',
+        iconClass: 'fa-list-alt',
+    },
+    {
+        id: 'extended',
+        label: 'dane rozszerzone',
+        href: '#customer-form-extended',
+        iconClass: 'fa-table',
+    },
+    {
+        id: 'advanced',
+        label: 'zaawansowane',
+        href: '#customer-form-advanced',
+        iconClass: 'fa-cogs',
+    },
 ];
 
 export default function NewCustomerNav({
@@ -22,25 +38,27 @@ export default function NewCustomerNav({
     title = 'NOWY KLIENT',
 }: NewCustomerNavProps) {
     return (
-        <div className="sidebar-inner client-detail-nav">
-            <div className="nav-header client-nav-header">{title}</div>
-            <ul className="nav nav-list client-nav-tabs client-nav-tabs--flat">
+        <div className="sidebar-inner">
+            <div className="nav-header">{title}</div>
+            <ul className="nav nav-list">
                 {tabs.map((tab) => (
                     <li
                         key={tab.id}
                         className={activeTab === tab.id ? 'active' : undefined}
                     >
-                        <button
-                            type="button"
-                            className="client-nav-button"
-                            onClick={() => onSelect(tab.id)}
+                        <a
+                            href={tab.href}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onSelect(tab.id);
+                            }}
                         >
                             <i
-                                className={`fa ${tab.iconClass} client-nav-icon`}
+                                className={`fa ${tab.iconClass}`}
                                 aria-hidden="true"
                             />
                             {tab.label}
-                        </button>
+                        </a>
                     </li>
                 ))}
             </ul>
