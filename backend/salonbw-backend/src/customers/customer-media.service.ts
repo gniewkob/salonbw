@@ -250,6 +250,30 @@ export class CustomerMediaService {
                     ? String((err as { code?: unknown }).code)
                     : null;
 
+            // Keep the log free of secrets/paths; only include size + magic bytes.
+            try {
+                const buf = await fs.readFile(fullOriginal);
+                const sig = Buffer.from(buf.subarray(0, 12)).toString('hex');
+                const msg =
+                    typeof err === 'object' && err && 'message' in err
+                        ? String((err as { message?: unknown }).message).slice(
+                              0,
+                              180,
+                          )
+                        : 'unknown';
+                // eslint-disable-next-line no-console
+                console.warn('[gallery-thumbnail] decode failed', {
+                    customerId: params.customerId,
+                    mimeType: params.mimeType,
+                    bytes: buf.byteLength,
+                    sig,
+                    code,
+                    msg,
+                });
+            } catch {
+                // ignore
+            }
+
             await this.safeUnlink(fullOriginal);
             await this.safeUnlink(fullThumb);
             if (code === 'ENOENT' || code === 'EACCES') {
