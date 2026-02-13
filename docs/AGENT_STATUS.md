@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-13 (Warehouse: module routing stabilization + inventory parity pass deployed)_
+_Last updated: 2026-02-13 (Global secondnav rerender stabilization prepared)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-13** – Global `secondnav` rerender stabilization prepared (panel):
+  - change: `VersumShell` now resolves module using `router.asPath` and forces `secondnav` remount on route transitions via render key (`module + pathname + asPath`),
+  - intent: eliminate stale `secondnav` state/content after cross-module navigation (`calendar` / `customers` / `products`),
+  - local verification:
+    - `pnpm eslint src/components/versum/VersumShell.tsx` ✅
+    - `pnpm tsc --noEmit` ✅
+    - prod smoke (`customers` + `warehouse`) ✅ (`3 passed`).
 - **2026-02-13** – Warehouse routing stabilization + inventory parity pass deployed to production:
   - commit: `a8fd83ec`
   - deploy run: Dashboard `21992031686`

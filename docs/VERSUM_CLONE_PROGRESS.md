@@ -167,6 +167,15 @@
 - smoke:
   - `tests/e2e/prod-warehouse-smoke.spec.ts` na produkcji: **PASS** po deployu.
 
+### 2026-02-13 - Globalny fix secondnav (calendar/customers/products)
+- `VersumShell`:
+  - rozpoznawanie aktywnego modułu opiera się na `router.asPath` (nie tylko `pathname`),
+  - `secondnav` dostaje stabilny klucz renderu (`module + pathname + asPath`) wymuszający poprawny remount przy zmianie trasy.
+- cel:
+  - usunięcie zjawiska „starego” secondnav po przejściach między modułami i podstronami.
+- weryfikacja:
+  - `prod-customers-smoke.spec.ts` + `prod-warehouse-smoke.spec.ts` na produkcji: **PASS (3/3)**.
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
