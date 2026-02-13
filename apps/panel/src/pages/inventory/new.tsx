@@ -34,26 +34,29 @@ export default function InventoryNewPage() {
                 </Link>
             }
         >
-            <div className="warehouse-form-grid">
-                <label>
-                    <span>Data inwentaryzacji</span>
-                    <input
-                        type="date"
-                        value={stocktakingDate}
-                        onChange={(event) =>
-                            setStocktakingDate(event.target.value)
-                        }
-                        className="form-control"
-                    />
-                </label>
-                <label className="warehouse-full">
-                    <span>Notatki</span>
-                    <textarea
-                        value={notes}
-                        onChange={(event) => setNotes(event.target.value)}
-                        className="form-control"
-                    />
-                </label>
+            <h3 className="warehouse-subtitle">Nowa inwentaryzacja</h3>
+            <div className="warehouse-form-card">
+                <div className="warehouse-form-grid">
+                    <label>
+                        <span>Data inwentaryzacji</span>
+                        <input
+                            type="date"
+                            value={stocktakingDate}
+                            onChange={(event) =>
+                                setStocktakingDate(event.target.value)
+                            }
+                            className="form-control"
+                        />
+                    </label>
+                    <label className="warehouse-full">
+                        <span>Notatki</span>
+                        <textarea
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                            className="form-control"
+                        />
+                    </label>
+                </div>
             </div>
 
             <div className="warehouse-actions-row">

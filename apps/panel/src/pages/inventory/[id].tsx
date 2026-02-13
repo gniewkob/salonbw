@@ -73,11 +73,16 @@ export default function InventoryDetailsPage() {
                 <p className="products-empty">Ładowanie inwentaryzacji...</p>
             ) : (
                 <div>
-                    <div className="products-pagination">
-                        status: <strong>{data.status}</strong> | data:{' '}
-                        {new Date(data.stocktakingDate).toLocaleDateString(
-                            'pl-PL',
-                        )}
+                    <h3 className="warehouse-subtitle">
+                        Szczegóły inwentaryzacji
+                    </h3>
+                    <div className="warehouse-form-card">
+                        <div className="products-pagination">
+                            status: <strong>{data.status}</strong> | data:{' '}
+                            {new Date(data.stocktakingDate).toLocaleDateString(
+                                'pl-PL',
+                            )}
+                        </div>
                     </div>
                     <div className="products-table-wrap">
                         <table className="products-table">
