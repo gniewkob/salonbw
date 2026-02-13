@@ -120,6 +120,9 @@ export function resolveVersumModule(pathname: string): VersumModule {
         path.startsWith('/use') ||
         path.startsWith('/deliveries') ||
         path.startsWith('/orders') ||
+        path.startsWith('/stock-alerts') ||
+        path.startsWith('/suppliers') ||
+        path.startsWith('/manufacturers') ||
         path.startsWith('/admin/warehouse')
     ) {
         return VERSUM_MODULES[2];

@@ -99,6 +99,14 @@ const nextConfig = {
                 source: '/graphql',
                 destination: '/api/graphql',
             },
+            {
+                source: '/fresh_chat_user',
+                destination: '/api/fresh_chat_user',
+            },
+            {
+                source: '/todo/alerts',
+                destination: '/api/todo/alerts',
+            },
             // API requests now go through /pages/api/[...path].ts
             // which injects Authorization header from accessToken cookie
         ];
