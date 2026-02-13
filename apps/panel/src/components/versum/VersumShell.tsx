@@ -21,8 +21,10 @@ export default function VersumShell({
     secondaryNav,
 }: VersumShellProps) {
     const router = useRouter();
-    const activeModule = resolveVersumModule(router.pathname);
+    const routeForModuleResolution = router.asPath || router.pathname;
+    const activeModule = resolveVersumModule(routeForModuleResolution);
     const modules = visibleVersumModules(role);
+    const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
 
     // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
     const mainContentClass = activeModule.key;
@@ -75,8 +77,13 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    {secondaryNav || (
-                        <VersumSecondaryNav module={activeModule} />
+                    {secondaryNav ? (
+                        <div key={secondNavRenderKey}>{secondaryNav}</div>
+                    ) : (
+                        <VersumSecondaryNav
+                            key={secondNavRenderKey}
+                            module={activeModule}
+                        />
                     )}
                 </div>
                 <div
