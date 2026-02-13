@@ -176,6 +176,17 @@
 - weryfikacja:
   - `prod-customers-smoke.spec.ts` + `prod-warehouse-smoke.spec.ts` na produkcji: **PASS (3/3)**.
 
+### 2026-02-13 - Klienci: komunikacja (communication_preferences) rozszerzona
+- zakładka `komunikacja` na karcie klienta:
+  - dodana historia komunikacji per klient z przełącznikiem kanału `SMS` / `Email`,
+  - dodana sekcja `Historia zmian zgód` (placeholder na backendowe logi zmian),
+  - dopracowany układ informacji kontaktowych (ikony + układ zgodny z kartą komunikacji).
+- źródła danych:
+  - SMS: `GET /sms/history?recipientId=:customerId`
+  - Email: `GET /emails/history?recipientId=:customerId`
+- weryfikacja:
+  - `prod-customers-smoke.spec.ts` na produkcji: **PASS (2/2)**.
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)

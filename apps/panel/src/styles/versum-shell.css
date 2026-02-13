@@ -1460,6 +1460,18 @@ textarea.form-control {
     text-decoration: none;
 }
 
+.customer-communication-contact__value.with-icon {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.customer-communication-contact__value.with-icon > i {
+    color: #9aa3ab;
+    font-size: 12px;
+    width: 12px;
+}
+
 .customer-communication-contact__value a:hover {
     text-decoration: underline;
 }
@@ -1539,6 +1551,30 @@ textarea.form-control {
     font-size: 12px;
     color: #4f585f;
     line-height: 1.45;
+}
+
+.customer-communication-history-switcher {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: inline-flex;
+    gap: 4px;
+}
+
+.customer-communication-history-table {
+    margin-top: 0;
+}
+
+.customer-communication-table__empty {
+    color: #8b949d;
+    text-align: center;
+    font-size: 12px;
+}
+
+.customer-communication-history-table .ellipsis-cell {
+    max-width: 420px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .customer-stats-grid {

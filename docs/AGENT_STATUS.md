@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-13 (Global secondnav rerender stabilization prepared)_
+_Last updated: 2026-02-13 (Customers communication history parity update prepared)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-13** – Customers `communication_preferences` parity extension prepared (panel):
+  - added customer-scoped communication history view (SMS/Email toggle) in customer card communication tab,
+  - added consent-change history section placeholder and improved contact row iconography/layout,
+  - local verification:
+    - `pnpm eslint src/components/customers/CustomerCommunicationTab.tsx` ✅
+    - `pnpm tsc --noEmit` ✅
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
 - **2026-02-13** – Global `secondnav` rerender stabilization prepared (panel):
   - change: `VersumShell` now resolves module using `router.asPath` and forces `secondnav` remount on route transitions via render key (`module + pathname + asPath`),
   - intent: eliminate stale `secondnav` state/content after cross-module navigation (`calendar` / `customers` / `products`),
