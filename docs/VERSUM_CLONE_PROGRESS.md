@@ -154,6 +154,19 @@
 - CSS:
   - dodane klasy wspólne dla formularzy magazynu (`warehouse-subtitle`, `warehouse-form-card`, `warehouse-validation-error`).
 
+### 2026-02-13 - Magazyn: stabilizacja routingu modułu + cleanup legacy console 404
+- poprawione mapowanie modułu w `VersumShell` (`resolveVersumModule`) dla tras:
+  - `/stock-alerts`, `/suppliers`, `/manufacturers` -> moduł `products`
+  - efekt: brak przypadkowego fallbacku do `calendar` (`body#calendar`) na podstronach magazynu.
+- dodane kompatybilne endpointy dla legacy skryptów Versum:
+  - `GET /fresh_chat_user` -> rewrite do `/api/fresh_chat_user` (200 `{}`)
+  - `GET /todo/alerts` -> rewrite do `/api/todo/alerts` (200 `[]`)
+  - cel: redukcja szumu 404 w konsoli podczas pracy w panelu.
+- `inventory` parity pass:
+  - `/inventory/new` i `/inventory/[id]` ujednolicone wizualnie do stylu formularzy magazynu (sekcje/cardy/nagłówki).
+- smoke:
+  - `tests/e2e/prod-warehouse-smoke.spec.ts` na produkcji: **PASS** po deployu.
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)
