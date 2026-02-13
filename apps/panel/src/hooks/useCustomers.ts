@@ -87,6 +87,22 @@ export function useUpdateCustomer() {
     });
 }
 
+export function useDeleteCustomer() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch<{ success: boolean }>(`/customers/${id}`, {
+                method: 'DELETE',
+            }),
+        onSuccess: (_result, id) => {
+            void queryClient.invalidateQueries({ queryKey: ['customers'] });
+            void queryClient.removeQueries({ queryKey: ['customer', id] });
+        },
+    });
+}
+
 // ==================== STATISTICS ====================
 
 export function useCustomerStatistics(

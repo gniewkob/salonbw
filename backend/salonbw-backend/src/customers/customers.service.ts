@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { User } from '../users/user.entity';
@@ -366,6 +370,21 @@ export class CustomersService {
         }
 
         return this.usersRepo.save(customer);
+    }
+
+    async delete(id: number) {
+        const customer = await this.findOne(id);
+        const appointmentsCount = await this.appointmentsRepo.count({
+            where: { clientId: id },
+        });
+        if (appointmentsCount > 0) {
+            throw new BadRequestException(
+                'Cannot delete customer with appointment history',
+            );
+        }
+
+        await this.usersRepo.delete({ id: customer.id, role: Role.Client });
+        return { success: true };
     }
 
     // ==================== GROUPS ====================

@@ -101,6 +101,13 @@ export class CustomersController {
         return this.customersService.update(id, dto);
     }
 
+    @Delete(':id')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Delete customer' })
+    delete(@Param('id', ParseIntPipe) id: number) {
+        return this.customersService.delete(id);
+    }
+
     // ==================== STATISTICS ====================
 
     @Get(':id/statistics')
