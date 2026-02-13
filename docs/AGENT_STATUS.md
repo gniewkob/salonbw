@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-12 (Warehouse: delivery draft flow refinement deployed to production dashboard)_
+_Last updated: 2026-02-13 (Warehouse: order/delivery form parity pass deployed to production dashboard)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-13** – Warehouse forms parity pass deployed to production:
+  - commit: `4a76ee45`
+  - deploy run: Dashboard `21979553797`
+  - changes:
+    - `/orders/new`: validation + draft-focused redirect (`/orders/history?status=draft`),
+    - `/deliveries/new`: visual structure aligned (form cards/section subtitles/error styling),
+    - shared CSS parity helpers added for warehouse forms.
 - **2026-02-12** – Warehouse delivery draft flow refinement deployed to production:
   - commit: `d13ca98a`
   - deploy run: Dashboard `21967469175`
