@@ -37,6 +37,9 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
 
     const [from, setFrom] = useState(defaultFrom);
     const [to, setTo] = useState(defaultTo);
+    const [activeList, setActiveList] = useState<'services' | 'products'>(
+        'services',
+    );
 
     const {
         data: stats,
@@ -69,6 +72,10 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
         stats.totalVisits > 0
             ? Math.round((stats.completedVisits / stats.totalVisits) * 100)
             : 0;
+    const servicesShare = 100;
+    const productsShare = 0;
+    const favoriteRows =
+        activeList === 'services' ? stats.favoriteServices : [];
 
     return (
         <div className="customer-statistics-tab">
@@ -145,6 +152,41 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                 </div>
             </div>
 
+            <div className="customer-stats-share">
+                <div className="customer-stats-share__head">
+                    <div>
+                        <div className="customer-stats-subtitle">
+                            wykonane usługi: {stats.completedVisits}
+                        </div>
+                        <div className="customer-stats-share__amount">
+                            {formatCurrency(stats.totalSpent)}
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="customer-stats-subtitle">
+                            zakupione produkty: 0
+                        </div>
+                        <div className="customer-stats-share__amount customer-stats-share__amount--red">
+                            {formatCurrency(0)}
+                        </div>
+                    </div>
+                </div>
+                <div className="customer-stats-share__bar">
+                    <div
+                        className="customer-stats-share__bar-services"
+                        style={{ width: `${servicesShare}%` }}
+                    />
+                    <div
+                        className="customer-stats-share__bar-products"
+                        style={{ width: `${productsShare}%` }}
+                    />
+                </div>
+                <div className="customer-stats-share__foot">
+                    <span>{servicesShare}% udziałów</span>
+                    <span>{productsShare}% udziałów</span>
+                </div>
+            </div>
+
             <div className="customer-stats-panels">
                 <div className="customer-stats-panel">
                     <div className="customer-stats-panel__header">
@@ -212,77 +254,59 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                 </div>
             </div>
 
-            <div className="customer-stats-favorites">
-                <div className="customer-stats-favorites__col">
-                    <div className="customer-stats-favorites__header">
-                        wykonane usługi
-                    </div>
-                    <div className="customer-stats-favorites__content">
-                        {stats.favoriteServices.length === 0 ? (
-                            <div className="customer-empty-state">
-                                Brak danych.
-                            </div>
-                        ) : (
-                            <table className="customers-history-table table">
-                                <thead>
-                                    <tr>
-                                        <th>Usługa</th>
-                                        <th className="text-right">
-                                            Popularność
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {stats.favoriteServices.map((row) => (
-                                        <tr key={row.serviceId}>
-                                            <td>
-                                                <Link
-                                                    href={`/services/${row.serviceId}`}
-                                                    className="link-more"
-                                                >
-                                                    {row.serviceName}
-                                                </Link>
-                                            </td>
-                                            <td className="text-right">
-                                                {row.count}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+            <div className="customer-stats-lists">
+                <div className="customer-stats-lists__tabs">
+                    <button
+                        type="button"
+                        className={`btn btn-default btn-xs ${activeList === 'services' ? 'active' : ''}`}
+                        onClick={() => setActiveList('services')}
+                    >
+                        wykonane usługi {stats.favoriteServices.length}
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-default btn-xs ${activeList === 'products' ? 'active' : ''}`}
+                        onClick={() => setActiveList('products')}
+                    >
+                        zakupione produkty 0
+                    </button>
                 </div>
-
-                <div className="customer-stats-favorites__col">
-                    <div className="customer-stats-favorites__header">
-                        obsługiwany przez
-                    </div>
-                    <div className="customer-stats-favorites__content">
-                        {stats.favoriteEmployees.length === 0 ? (
-                            <div className="customer-empty-state">
-                                Brak danych.
-                            </div>
-                        ) : (
-                            <table className="customers-history-table table">
-                                <thead>
-                                    <tr>
-                                        <th>Pracownik</th>
-                                        <th className="text-right">Wizyty</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {stats.favoriteEmployees.map((row) => (
-                                        <tr key={row.employeeId}>
-                                            <td>{row.employeeName}</td>
-                                            <td className="text-right">
-                                                {row.count}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                <div className="customer-stats-lists__content">
+                    {favoriteRows.length === 0 ? (
+                        <div className="customer-empty-state">Brak danych.</div>
+                    ) : (
+                        <div className="customer-stats-rows">
+                            {favoriteRows.map((row) => (
+                                <div
+                                    key={row.serviceId}
+                                    className="customer-stats-row"
+                                >
+                                    <div>
+                                        <div className="customer-stats-row__title">
+                                            <Link
+                                                href={`/services/${row.serviceId}`}
+                                            >
+                                                {row.serviceName}
+                                            </Link>
+                                        </div>
+                                        <div className="customer-stats-row__meta">
+                                            popularność {row.count} razy
+                                        </div>
+                                    </div>
+                                    <div className="customer-stats-row__right">
+                                        ostatnio wykonano{' '}
+                                        {formatDate(stats.lastVisitDate)}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className="versum-pagination-footer">
+                        <span>
+                            Pozycje od 1 do {Math.max(1, favoriteRows.length)} z{' '}
+                            {Math.max(1, favoriteRows.length)}
+                        </span>
+                        <span>1 z 1</span>
                     </div>
                 </div>
             </div>
