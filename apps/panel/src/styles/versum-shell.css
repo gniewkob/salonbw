@@ -978,11 +978,26 @@ textarea.form-control {
     font-weight: 300;
 }
 
+.warehouse-subtitle {
+    margin: 0 0 8px;
+    font-size: 14px;
+    line-height: 1.3;
+    color: #4d565e;
+    font-weight: 700;
+}
+
+.warehouse-form-card {
+    border: 1px solid #d7dde3;
+    background: #fff;
+    padding: 10px 12px;
+    margin-top: 10px;
+}
+
 .warehouse-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px 16px;
-    margin-top: 14px;
+    margin-top: 0;
 }
 
 .warehouse-form-grid label {
@@ -1008,6 +1023,10 @@ textarea.form-control {
 
 .warehouse-actions-row {
     margin-top: 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .warehouse-summary {
@@ -1052,6 +1071,12 @@ textarea.form-control {
 
 .warehouse-inline-field .form-control {
     max-width: 280px;
+}
+
+.warehouse-validation-error {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: #c0392b;
 }
 
 .customer-new-form {

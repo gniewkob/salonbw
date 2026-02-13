@@ -143,6 +143,17 @@
   - przy pustej liście pozycji pokazywany jest jawny komunikat błędu zamiast cichego braku akcji,
   - `zapisz jako roboczą` po zapisie przekierowuje do listy `?status=draft` (czytelny flow dalszej pracy na wersjach roboczych).
 
+### 2026-02-12 - Magazyn: parity pass UI dla formularzy (dodaj zamówienie / dodaj dostawę)
+- `/orders/new`:
+  - dodana walidacja pozycji zamówienia + komunikat błędu,
+  - zapis przekierowuje do `historia zamówień` z filtrem `?status=draft`,
+  - ujednolicone nazewnictwo akcji (`zapisz zamówienie`) i układ sekcji formularza.
+- `/deliveries/new`:
+  - sekcje formularza i nagłówki wyrównane wizualnie (wrapper `warehouse-form-card`, spójne odstępy i hierarchia),
+  - komunikaty walidacyjne przeniesione do dedykowanego stylu błędu.
+- CSS:
+  - dodane klasy wspólne dla formularzy magazynu (`warehouse-subtitle`, `warehouse-form-card`, `warehouse-validation-error`).
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)

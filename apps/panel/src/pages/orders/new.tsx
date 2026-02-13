@@ -28,6 +28,7 @@ export default function WarehouseOrderCreatePage() {
     const [supplierId, setSupplierId] = useState('');
     const [notes, setNotes] = useState('');
     const [notesEnabled, setNotesEnabled] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [lines, setLines] = useState<OrderLineForm[]>([
         { productId: '', productName: '', quantity: '1', unit: 'op.' },
     ]);
@@ -48,6 +49,7 @@ export default function WarehouseOrderCreatePage() {
     };
 
     const submit = async () => {
+        setFormError(null);
         const items = lines
             .map((line) => ({
                 productId: line.productId ? Number(line.productId) : undefined,
@@ -60,7 +62,12 @@ export default function WarehouseOrderCreatePage() {
                     line.quantity > 0 && (line.productId || line.productName),
             );
 
-        if (items.length === 0) return;
+        if (items.length === 0) {
+            setFormError(
+                'Dodaj co najmniej jedną pozycję zamówienia z ilością większą od 0.',
+            );
+            return;
+        }
 
         await createMutation.mutateAsync({
             supplierId: supplierId ? Number(supplierId) : undefined,
@@ -68,7 +75,7 @@ export default function WarehouseOrderCreatePage() {
             items,
         });
 
-        await router.push('/orders/history');
+        await router.push('/orders/history?status=draft');
     };
 
     return (
@@ -82,37 +89,42 @@ export default function WarehouseOrderCreatePage() {
                 </Link>
             }
         >
-            <div className="warehouse-form-grid">
-                <label>
-                    <span>Dostawca</span>
-                    <div className="warehouse-inline-field">
-                        <select
-                            value={supplierId}
-                            onChange={(event) =>
-                                setSupplierId(event.target.value)
-                            }
-                            className="versum-select"
-                        >
-                            <option value="">
-                                wpisz nazwę lub wybierz z listy
-                            </option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
+            <div className="warehouse-form-card">
+                <div className="warehouse-form-grid">
+                    <label>
+                        <span>Dostawca</span>
+                        <div className="warehouse-inline-field">
+                            <select
+                                value={supplierId}
+                                onChange={(event) =>
+                                    setSupplierId(event.target.value)
+                                }
+                                className="versum-select"
+                            >
+                                <option value="">
+                                    wpisz nazwę lub wybierz z listy
                                 </option>
-                            ))}
-                        </select>
-                        <Link
-                            href="/suppliers"
-                            className="btn btn-default btn-xs"
-                        >
-                            dodaj dostawcę
-                        </Link>
-                    </div>
-                </label>
+                                {suppliers.map((supplier) => (
+                                    <option
+                                        key={supplier.id}
+                                        value={supplier.id}
+                                    >
+                                        {supplier.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <Link
+                                href="/suppliers"
+                                className="btn btn-default btn-xs"
+                            >
+                                dodaj dostawcę
+                            </Link>
+                        </div>
+                    </label>
+                </div>
             </div>
 
-            <h2 className="warehouse-section-title">Pozycje zamówienia</h2>
+            <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
             <div className="products-table-wrap">
                 <table className="products-table">
                     <thead>
@@ -267,9 +279,12 @@ export default function WarehouseOrderCreatePage() {
                 >
                     {createMutation.isPending
                         ? 'zapisywanie...'
-                        : 'wyślij zamówienie'}
+                        : 'zapisz zamówienie'}
                 </button>
             </div>
+            {formError ? (
+                <p className="warehouse-validation-error">{formError}</p>
+            ) : null}
         </WarehouseLayout>
     );
 }

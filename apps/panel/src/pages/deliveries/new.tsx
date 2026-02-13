@@ -124,6 +124,7 @@ export default function WarehouseDeliveryCreatePage() {
                 </Link>
             }
         >
+            <h3 className="warehouse-subtitle">Pozycje dostawy</h3>
             <div className="products-table-wrap">
                 <table className="products-table">
                     <thead>
@@ -240,64 +241,69 @@ export default function WarehouseDeliveryCreatePage() {
                 </p>
             </div>
 
-            <div className="warehouse-form-grid">
-                <label>
-                    <span>Dostawca</span>
-                    <div className="warehouse-inline-field">
-                        <select
-                            value={supplierId}
-                            onChange={(event) =>
-                                setSupplierId(event.target.value)
-                            }
-                            className="versum-select"
-                        >
-                            <option value="">
-                                wpisz nazwę lub wybierz z listy
-                            </option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
+            <div className="warehouse-form-card">
+                <div className="warehouse-form-grid">
+                    <label>
+                        <span>Dostawca</span>
+                        <div className="warehouse-inline-field">
+                            <select
+                                value={supplierId}
+                                onChange={(event) =>
+                                    setSupplierId(event.target.value)
+                                }
+                                className="versum-select"
+                            >
+                                <option value="">
+                                    wpisz nazwę lub wybierz z listy
                                 </option>
-                            ))}
-                        </select>
-                        <Link
-                            href="/suppliers"
-                            className="btn btn-default btn-xs"
-                        >
-                            dodaj dostawcę
-                        </Link>
-                    </div>
-                </label>
-                <label>
-                    <span>Numer faktury</span>
-                    <input
-                        type="text"
-                        value={invoiceNumber}
-                        onChange={(event) =>
-                            setInvoiceNumber(event.target.value)
-                        }
-                        className="form-control"
-                    />
-                </label>
-                <label>
-                    <span>Wystawiono</span>
-                    <input
-                        type="date"
-                        value={deliveryDate}
-                        onChange={(event) =>
-                            setDeliveryDate(event.target.value)
-                        }
-                        className="form-control"
-                    />
-                </label>
-                <label className="warehouse-full">
-                    <span>Uwagi</span>
-                    <textarea
-                        value={notes}
-                        onChange={(event) => setNotes(event.target.value)}
-                        className="form-control"
-                    />
-                </label>
+                                {suppliers.map((supplier) => (
+                                    <option
+                                        key={supplier.id}
+                                        value={supplier.id}
+                                    >
+                                        {supplier.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <Link
+                                href="/suppliers"
+                                className="btn btn-default btn-xs"
+                            >
+                                dodaj dostawcę
+                            </Link>
+                        </div>
+                    </label>
+                    <label>
+                        <span>Numer faktury</span>
+                        <input
+                            type="text"
+                            value={invoiceNumber}
+                            onChange={(event) =>
+                                setInvoiceNumber(event.target.value)
+                            }
+                            className="form-control"
+                        />
+                    </label>
+                    <label>
+                        <span>Wystawiono</span>
+                        <input
+                            type="date"
+                            value={deliveryDate}
+                            onChange={(event) =>
+                                setDeliveryDate(event.target.value)
+                            }
+                            className="form-control"
+                        />
+                    </label>
+                    <label className="warehouse-full">
+                        <span>Uwagi</span>
+                        <textarea
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                            className="form-control"
+                        />
+                    </label>
+                </div>
             </div>
 
             <div className="warehouse-actions-row">
@@ -332,7 +338,9 @@ export default function WarehouseDeliveryCreatePage() {
                         : 'wprowadź dostawę'}
                 </button>
             </div>
-            {formError ? <p className="products-empty">{formError}</p> : null}
+            {formError ? (
+                <p className="warehouse-validation-error">{formError}</p>
+            ) : null}
         </WarehouseLayout>
     );
 }
