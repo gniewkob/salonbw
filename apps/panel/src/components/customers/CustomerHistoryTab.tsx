@@ -10,22 +10,13 @@ interface Props {
 
 const PAGE_SIZE = 20;
 
+type StatusFilter = 'all' | 'upcoming' | 'completed' | 'cancelled' | 'no_show';
+
 function toIsoDate(d: Date) {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
-}
-
-function formatDate(dateStr: string) {
-    // dateStr is YYYY-MM-DD from API
-    try {
-        const [y, m, d] = dateStr.split('-').map((p) => Number(p));
-        if (!y || !m || !d) return dateStr;
-        return new Date(y, m - 1, d).toLocaleDateString('pl-PL');
-    } catch {
-        return dateStr;
-    }
 }
 
 function formatCurrency(amount: number) {
@@ -48,15 +39,42 @@ function monthLabel(yyyyMm: string) {
     return `${cap} ${y}`;
 }
 
-type StatusFilter = 'all' | 'upcoming' | 'completed' | 'cancelled' | 'no_show';
+function formatWeekdayDate(dateStr: string) {
+    try {
+        const [y, m, d] = dateStr.split('-').map((p) => Number(p));
+        if (!y || !m || !d) return dateStr;
+        return new Date(y, m - 1, d).toLocaleDateString('pl-PL', {
+            weekday: 'long',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    } catch {
+        return dateStr;
+    }
+}
 
 function statusQuery(filter: StatusFilter): string | undefined {
     if (filter === 'all') return undefined;
-    if (filter === 'upcoming')
+    if (filter === 'upcoming') {
         return ['scheduled', 'confirmed', 'in_progress'].join(',');
+    }
     if (filter === 'completed') return 'completed';
     if (filter === 'cancelled') return 'cancelled';
     return 'no_show';
+}
+
+function visitStatusMeta(status: string) {
+    switch (status) {
+        case 'completed':
+            return { text: 'zapłacono', icon: 'ok' as const };
+        case 'cancelled':
+            return { text: 'anulowano', icon: 'cancelled' as const };
+        case 'no_show':
+            return { text: 'nieobecność', icon: 'cancelled' as const };
+        default:
+            return { text: 'do zapłaty', icon: 'pending' as const };
+    }
 }
 
 export default function CustomerHistoryTab({ customerId }: Props) {
@@ -96,6 +114,8 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     }
 
     const totalPages = Math.max(1, Math.ceil((data.total || 0) / PAGE_SIZE));
+    const fromItem = data.total > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
+    const toItem = Math.min(page * PAGE_SIZE, data.total);
 
     const itemsByMonth = (() => {
         const map = new Map<string, typeof data.items>();
@@ -110,11 +130,17 @@ export default function CustomerHistoryTab({ customerId }: Props) {
 
     const counts = data.counts;
     const fmtCount = (n: number | undefined) =>
-        typeof n === 'number' ? ` (${n})` : '';
+        typeof n === 'number' ? ` ${n}` : '';
 
     return (
-        <div className="customer-history-tab">
+        <div className="customer-history-tab customer-history-tab--versum">
             <div className="customer-history-toolbar">
+                <button type="button" className="btn btn-default btn-xs">
+                    filtruj
+                </button>
+            </div>
+
+            <div className="customer-history-toolbar customer-history-toolbar--tight">
                 <div className="customer-history-filters">
                     <button
                         type="button"
@@ -204,41 +230,53 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                 {monthLabel(yyyyMm)}
                             </div>
                             <div className="customer-history-month__items">
-                                {items.map((visit) => (
-                                    <div
-                                        key={visit.id}
-                                        className="customer-history-row"
-                                    >
-                                        <div className="customer-history-row__left">
-                                            <div className="customer-history-row__service">
-                                                {visit.service ? (
-                                                    <Link
-                                                        href={`/services/${visit.service.id}`}
-                                                        className="link-more"
-                                                    >
-                                                        {visit.service.name}
-                                                    </Link>
-                                                ) : (
-                                                    <span>-</span>
-                                                )}
+                                {items.map((visit) => {
+                                    const statusMeta = visitStatusMeta(
+                                        visit.status,
+                                    );
+                                    return (
+                                        <div
+                                            key={visit.id}
+                                            className="customer-history-row"
+                                        >
+                                            <div
+                                                className={`customer-history-row__status customer-history-row__status--${statusMeta.icon}`}
+                                            />
+                                            <div className="customer-history-row__left">
+                                                <div className="customer-history-row__service">
+                                                    {visit.service ? (
+                                                        <Link
+                                                            href={`/services/${visit.service.id}`}
+                                                            className="link-more"
+                                                        >
+                                                            {visit.service.name}
+                                                        </Link>
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
+                                                </div>
+                                                <div className="customer-history-row__meta">
+                                                    {formatWeekdayDate(
+                                                        visit.date,
+                                                    )}
+                                                    {visit.time
+                                                        ? ` od ${visit.time}`
+                                                        : ''}
+                                                </div>
                                             </div>
-                                            <div className="customer-history-row__meta">
-                                                {formatDate(visit.date)}{' '}
-                                                {visit.time
-                                                    ? ` ${visit.time}`
-                                                    : ''}
+                                            <div className="customer-history-row__right">
+                                                <div className="customer-history-row__price">
+                                                    {formatCurrency(
+                                                        visit.price,
+                                                    )}
+                                                </div>
+                                                <div className="customer-history-row__employee">
+                                                    {statusMeta.text}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="customer-history-row__right">
-                                            <div className="customer-history-row__price">
-                                                {formatCurrency(visit.price)}
-                                            </div>
-                                            <div className="customer-history-row__employee">
-                                                {visit.employee?.name || '-'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}
@@ -246,9 +284,9 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             )}
 
             {totalPages > 1 && (
-                <div className="customers-history-pagination">
+                <div className="customers-history-pagination customers-history-pagination--versum">
                     <span>
-                        Strona {page} z {totalPages}
+                        Pozycje od {fromItem} do {toItem} z {data.total}
                     </span>
                     <div className="btn-group">
                         <button
@@ -257,7 +295,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                             disabled={page <= 1}
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                         >
-                            poprzednia
+                            &lt;
                         </button>
                         <button
                             type="button"
@@ -267,7 +305,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                 setPage((p) => Math.min(totalPages, p + 1))
                             }
                         >
-                            następna
+                            &gt;
                         </button>
                     </div>
                 </div>

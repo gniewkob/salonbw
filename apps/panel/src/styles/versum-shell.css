@@ -1960,6 +1960,148 @@ textarea.form-control {
     margin-top: 30px;
 }
 
+/* Customer statistics/history parity refinements */
+.customer-stats-share {
+    margin-bottom: 14px;
+}
+
+.customer-stats-share__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.customer-stats-share__amount {
+    margin-top: 2px;
+    font-size: 20px;
+    line-height: 1.1;
+    color: #2aa0cf;
+}
+
+.customer-stats-share__amount--red {
+    color: #e36b5d;
+}
+
+.customer-stats-share__bar {
+    height: 10px;
+    width: 100%;
+    background: #edf0f3;
+    border: 1px solid #d9dfe5;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+}
+
+.customer-stats-share__bar-services {
+    background: #2aa0cf;
+    min-width: 0;
+}
+
+.customer-stats-share__bar-products {
+    background: #e36b5d;
+    min-width: 0;
+}
+
+.customer-stats-share__foot {
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    color: #8b949d;
+    font-size: 11px;
+}
+
+.customer-stats-lists {
+    border-top: 1px solid #d9dfe5;
+    margin-top: 6px;
+}
+
+.customer-stats-lists__tabs {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+.customer-stats-lists__tabs .btn.active {
+    background: #f7fbff;
+    border-color: #8dcaf0;
+    color: #2b7bbd;
+}
+
+.customer-stats-rows {
+    border: 1px solid #d9dfe5;
+    background: #fff;
+}
+
+.customer-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.customer-stats-row:last-child {
+    border-bottom: 0;
+}
+
+.customer-stats-row__title a {
+    color: #2b7bbd;
+    text-decoration: none;
+}
+
+.customer-stats-row__title a:hover {
+    text-decoration: underline;
+}
+
+.customer-stats-row__meta {
+    margin-top: 2px;
+    font-size: 11px;
+    color: #8b949d;
+}
+
+.customer-stats-row__right {
+    font-size: 11px;
+    color: #6a737c;
+}
+
+.customer-history-toolbar--tight {
+    margin-top: -2px;
+}
+
+.customer-history-row__status {
+    width: 12px;
+    height: 12px;
+    margin-top: 3px;
+    border-radius: 50%;
+    border: 1px solid #c7d0d9;
+    background: #fff;
+    flex: 0 0 12px;
+}
+
+.customer-history-row__status--ok {
+    border-color: #83c69a;
+    background: #e7f7ec;
+}
+
+.customer-history-row__status--cancelled {
+    border-color: #e2a4a4;
+    background: #fceeee;
+}
+
+.customer-history-row__status--pending {
+    border-color: #9ec7e5;
+    background: #eef7ff;
+}
+
+.customers-history-pagination--versum {
+    margin-top: 10px;
+    border-top: 1px solid #edf0f3;
+    padding-top: 10px;
+}
+
 /* ========================================
    Navbar (Topbar) - Matching Original Versum
    ======================================== */

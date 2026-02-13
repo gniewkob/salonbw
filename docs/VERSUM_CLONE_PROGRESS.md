@@ -187,6 +187,18 @@
 - weryfikacja:
   - `prod-customers-smoke.spec.ts` na produkcji: **PASS (2/2)**.
 
+### 2026-02-13 - Klienci: statistics + events_history (układ bliżej Versum)
+- `statistics`:
+  - dodany pasek udziału usług/produktów,
+  - dodane przełączane listy podsumowań (`wykonane usługi` / `zakupione produkty`) i układ wierszy bardziej zbliżony do Versum.
+- `events_history`:
+  - dodany górny przycisk `filtruj`,
+  - poprawiony układ listy wizyt (status marker, metadane wizyty, etykieta statusu płatności),
+  - pagination footer w stylu Versum (`Pozycje od ... do ...` + nawigacja strzałkami).
+- weryfikacja:
+  - `pnpm tsc --noEmit` ✅
+  - `prod-customers-smoke.spec.ts` na produkcji (po zmianach lokalnych): **PASS (2/2)**.
+
 ### 2026-02-10 - Klienci 100% (Versum 1:1) domknięte
 - Dodano `/clients/[id]/edit` (edycja danych osobowych)
 - Karta klienta: komunikacja (SMS + Email history), galeria zdjęć (upload + miniatury + delete), załączone pliki (upload/download/delete)

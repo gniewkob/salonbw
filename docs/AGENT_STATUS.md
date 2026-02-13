@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-13 (Customers communication history parity update prepared)_
+_Last updated: 2026-02-13 (Customers statistics/events_history parity refinement prepared)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-13** – Customers `statistics` + `events_history` parity refinement prepared (panel):
+  - `statistics`: service/product share block + Versum-like summary list layout,
+  - `events_history`: filter action row, status marker in rows, Versum-like footer pagination text and arrows,
+  - local verification:
+    - `pnpm eslint src/components/customers/CustomerStatisticsTab.tsx src/components/customers/CustomerHistoryTab.tsx` ✅
+    - `pnpm tsc --noEmit` ✅
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
 - **2026-02-13** – Customers `communication_preferences` parity extension prepared (panel):
   - added customer-scoped communication history view (SMS/Email toggle) in customer card communication tab,
   - added consent-change history section placeholder and improved contact row iconography/layout,
