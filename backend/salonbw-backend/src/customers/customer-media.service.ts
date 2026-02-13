@@ -261,7 +261,7 @@ export class CustomerMediaService {
                               180,
                           )
                         : 'unknown';
-                // eslint-disable-next-line no-console
+
                 console.warn('[gallery-thumbnail] decode failed', {
                     customerId: params.customerId,
                     mimeType: params.mimeType,

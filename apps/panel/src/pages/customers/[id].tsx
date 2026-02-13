@@ -10,6 +10,7 @@ import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorC
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
+    useDeleteCustomer,
     useTagsForCustomer,
     useCustomerStatistics,
     useCustomerEventHistory,
@@ -106,6 +107,7 @@ export default function CustomerDetailPage() {
         isLoading: isCustomerLoading,
         error,
     } = useCustomer(customerId);
+    const deleteCustomer = useDeleteCustomer();
     const { data: customerTags } = useTagsForCustomer(customerId);
     const { data: stats } = useCustomerStatistics(customerId);
     const { data: history } = useCustomerEventHistory(customerId, {
@@ -206,8 +208,42 @@ export default function CustomerDetailPage() {
                                             <li>
                                                 <button
                                                     type="button"
-                                                    disabled
-                                                    title="Usuwanie klienta będzie podłączone po endpointzie DELETE /customers/:id"
+                                                    disabled={
+                                                        role !== 'admin' ||
+                                                        deleteCustomer.isPending
+                                                    }
+                                                    title={
+                                                        role !== 'admin'
+                                                            ? 'Tylko administrator może usunąć klienta'
+                                                            : undefined
+                                                    }
+                                                    onClick={() => {
+                                                        if (
+                                                            !customer ||
+                                                            !confirm(
+                                                                'Czy na pewno chcesz usunąć klienta?',
+                                                            )
+                                                        ) {
+                                                            return;
+                                                        }
+                                                        void deleteCustomer
+                                                            .mutateAsync(
+                                                                customer.id,
+                                                            )
+                                                            .then(() =>
+                                                                router.push(
+                                                                    '/customers',
+                                                                ),
+                                                            )
+                                                            .catch((err) => {
+                                                                const message =
+                                                                    err instanceof
+                                                                    Error
+                                                                        ? err.message
+                                                                        : 'Nie udało się usunąć klienta';
+                                                                alert(message);
+                                                            });
+                                                    }}
                                                 >
                                                     usuń klienta
                                                 </button>
