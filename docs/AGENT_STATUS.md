@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-13 (Warehouse: order/delivery form parity pass deployed to production dashboard)_
+_Last updated: 2026-02-13 (Warehouse: module routing stabilization + inventory parity pass deployed)_
 
 ## Platform Architecture
 
@@ -87,6 +87,15 @@ Verification:
 
 ## What's Working
 
+- **2026-02-13** – Warehouse routing stabilization + inventory parity pass deployed to production:
+  - commit: `a8fd83ec`
+  - deploy run: Dashboard `21992031686`
+  - changes:
+    - fixed module resolution for `/stock-alerts`, `/suppliers`, `/manufacturers` (no fallback to `calendar` module/body class),
+    - added compatibility endpoints for legacy navbar calls: `/fresh_chat_user`, `/todo/alerts`,
+    - aligned `inventory` create/details screens to warehouse form parity style.
+  - verification:
+    - prod smoke `tests/e2e/prod-warehouse-smoke.spec.ts` passed (`1 passed`, desktop-1366).
 - **2026-02-13** – Warehouse forms parity pass deployed to production:
   - commit: `4a76ee45`
   - deploy run: Dashboard `21979553797`
