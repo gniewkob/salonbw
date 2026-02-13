@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useEmailHistory } from '@/hooks/useEmails';
+import { useSmsHistory } from '@/hooks/useSms';
 import type { Customer } from '@/types';
 
 type Props = {
@@ -19,6 +21,20 @@ type MessageTypeRow = {
 };
 
 export default function CustomerCommunicationTab({ customer }: Props) {
+    const [historyChannel, setHistoryChannel] = useState<'sms' | 'email'>(
+        'sms',
+    );
+    const smsHistory = useSmsHistory({
+        recipientId: customer.id,
+        page: 1,
+        limit: 20,
+    });
+    const emailHistory = useEmailHistory({
+        recipientId: customer.id,
+        page: 1,
+        limit: 20,
+    });
+
     const rows: MessageTypeRow[] = useMemo(
         () => [
             { key: 'notifications', label: 'Powiadomienia' },
@@ -32,6 +48,24 @@ export default function CustomerCommunicationTab({ customer }: Props) {
         ],
         [],
     );
+
+    const mapStatus = (value?: string | null) => {
+        const status = (value || '').toLowerCase();
+        if (status === 'sent' || status === 'delivered') return 'wysłano';
+        if (status === 'failed' || status === 'rejected') return 'błąd';
+        if (status === 'pending') return 'oczekuje';
+        return status || '-';
+    };
+
+    const fmtDateTime = (value?: string | null) => {
+        if (!value) return '-';
+        return new Date(value).toLocaleString('pl-PL');
+    };
+
+    const historyLoading =
+        historyChannel === 'sms' ? smsHistory.loading : emailHistory.loading;
+    const historyError =
+        historyChannel === 'sms' ? smsHistory.error : emailHistory.error;
 
     return (
         <div className="customer-tab-content customer-communication-tab">
@@ -63,7 +97,11 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         <div className="customer-communication-contact__label">
                             Email
                         </div>
-                        <div className="customer-communication-contact__value">
+                        <div className="customer-communication-contact__value with-icon">
+                            <i
+                                className="glyphicon glyphicon-envelope"
+                                aria-hidden="true"
+                            />
                             {customer.email ? (
                                 <a href={`mailto:${customer.email}`}>
                                     {customer.email}
@@ -77,7 +115,11 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         <div className="customer-communication-contact__label">
                             Telefon
                         </div>
-                        <div className="customer-communication-contact__value">
+                        <div className="customer-communication-contact__value with-icon">
+                            <i
+                                className="glyphicon glyphicon-earphone"
+                                aria-hidden="true"
+                            />
                             {customer.phone ? (
                                 <a href={`tel:${customer.phone}`}>
                                     {customer.phone}
@@ -191,6 +233,125 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="customer-communication-section mt-20">
+                <div className="customer-communication-title">
+                    Historia zmian zgód
+                </div>
+                <table className="customer-communication-table customer-communication-history-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Zgoda</th>
+                            <th>Zmiana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td
+                                colSpan={3}
+                                className="customer-communication-table__empty"
+                            >
+                                Brak zapisanej historii
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="customer-communication-section mt-20">
+                <div className="customer-communication-title">
+                    Historia komunikacji
+                </div>
+                <div className="customer-communication-history-switcher">
+                    <button
+                        type="button"
+                        className={`btn btn-xs ${historyChannel === 'sms' ? 'btn-primary' : 'btn-default'}`}
+                        onClick={() => setHistoryChannel('sms')}
+                    >
+                        SMS
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-xs ${historyChannel === 'email' ? 'btn-primary' : 'btn-default'}`}
+                        onClick={() => setHistoryChannel('email')}
+                    >
+                        Email
+                    </button>
+                </div>
+
+                {historyLoading ? (
+                    <div className="customer-empty-state">
+                        Ładowanie historii...
+                    </div>
+                ) : historyError ? (
+                    <div className="customer-inline-error">
+                        Nie udało się załadować historii komunikacji.
+                    </div>
+                ) : historyChannel === 'sms' ? (
+                    smsHistory.data.items.length === 0 ? (
+                        <div className="customer-empty-state">
+                            Brak wysłanych SMS do tego klienta.
+                        </div>
+                    ) : (
+                        <table className="customer-communication-table customer-communication-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                    <th>Wiadomość</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {smsHistory.data.items.map((item) => (
+                                    <tr key={`sms-${item.id}`}>
+                                        <td>
+                                            {fmtDateTime(
+                                                item.sentAt || item.createdAt,
+                                            )}
+                                        </td>
+                                        <td>{mapStatus(item.status)}</td>
+                                        <td className="ellipsis-cell">
+                                            {item.content || '-'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )
+                ) : emailHistory.data.items.length === 0 ? (
+                    <div className="customer-empty-state">
+                        Brak wysłanych emaili do tego klienta.
+                    </div>
+                ) : (
+                    <table className="customer-communication-table customer-communication-history-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Temat</th>
+                                <th>Odbiorca</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {emailHistory.data.items.map((item) => (
+                                <tr key={`email-${item.id}`}>
+                                    <td>
+                                        {fmtDateTime(
+                                            item.sentAt || item.createdAt,
+                                        )}
+                                    </td>
+                                    <td>{mapStatus(item.status)}</td>
+                                    <td className="ellipsis-cell">
+                                        {item.subject || '-'}
+                                    </td>
+                                    <td>{item.to || '-'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );
