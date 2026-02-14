@@ -7,6 +7,7 @@ Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)
 Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
 - If a transfer stalls, the job now fails instead of hanging indefinitely; re-run the workflow after failure.
+- Frontend deploy bundles are transfer-lean (no `node_modules`, no `.next/cache` in tarball); production dependencies are installed on the FreeBSD host after extract (`npm22` fallback to `npm`).
 
 ## 0. Recommended: targeted deploys (GitHub Actions)
 

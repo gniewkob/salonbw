@@ -526,8 +526,8 @@ jobs:
              cp -r packages/api "$BUNDLE_DIR/packages/"
           fi
 
-          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
-          echo "Installing dependencies in bundle..."
+          # Rewrite workspace links to local file paths for remote npm install
+          echo "Rewriting package links for remote install..."
           cd "$BUNDLE_DIR"
 
           # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
@@ -536,14 +536,12 @@ jobs:
           sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
           sed -i '/workspace:/d' package.json
 
-          # Use npm for flat install (pnpm is not needed for runtime)
-          # ignore-scripts avoids non-runtime hooks (e.g. husky/prepare) and makes bundle deterministic
-          npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          # Reduce transfer payload: cache is not required at runtime
+          rm -rf .next/cache
           cd ..
 
           test -d "$BUNDLE_DIR/.next"
           test -d "$BUNDLE_DIR/public"
-          test -d "$BUNDLE_DIR/node_modules"
 
           # Create Tarball
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
@@ -568,7 +566,7 @@ jobs:
           # 3. Extract and Clean (robust against NFS/.nfs* leftovers)
           # Use atomic-ish rename instead of rm -rf (can fail with "Directory not empty").
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; test -d '$REMOTE_DEST/node_modules'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
 
       - name: Upload frontend bundle (landing)
         if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
@@ -639,8 +637,8 @@ jobs:
              cp -r packages/api "$BUNDLE_DIR/packages/"
           fi
 
-          # Install Production Dependencies Fresh (Avoids symlink/hoisting issues)
-          echo "Installing dependencies in bundle..."
+          # Rewrite workspace links to local file paths for remote npm install
+          echo "Rewriting package links for remote install..."
           cd "$BUNDLE_DIR"
 
           # Fix: Remove local workspace links (e.g. "link:../../packages/api") from package.json
@@ -649,13 +647,12 @@ jobs:
           sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
           sed -i '/workspace:/d' package.json
 
-          # Use npm for flat install (pnpm is not needed for runtime)
-          npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          # Reduce transfer payload: cache is not required at runtime
+          rm -rf .next/cache
           cd ..
 
           test -d "$BUNDLE_DIR/.next"
           test -d "$BUNDLE_DIR/public"
-          test -d "$BUNDLE_DIR/node_modules"
 
           # Create Tarball
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
@@ -676,7 +673,35 @@ jobs:
 
           # Extract and Clean (robust against NFS/.nfs* leftovers)
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; test -d '$REMOTE_DEST/node_modules'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+
+      - name: Install dependencies (frontend panel)
+        if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          if command -v npm22 >/dev/null 2>&1; then
+            npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          else
+            npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          fi
+          test -d node_modules
+          SSH
+
+      - name: Install dependencies (frontend landing)
+        if: ${{ github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true') }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          if command -v npm22 >/dev/null 2>&1; then
+            npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          else
+            npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+          fi
+          test -d node_modules
+          SSH
 
       - name: Prepare standalone runtime (set node version) (panel)
         if: ${{ github.event.inputs.target == 'panel' || github.event.inputs.target == 'dashboard' || (github.event_name == 'push' && steps.changes.outputs.panel == 'true') }}
