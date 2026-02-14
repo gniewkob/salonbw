@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `1cbf7ab6` | `21924858375` | 2026-02-11 22:06 | production | Warehouse hotfix: `@SkipThrottle()` for `GET /products` and `GET /product-categories/tree` to remove 429 pressure on magazyn views |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `1cbf7ab6` | `21924708353` | 2026-02-11 22:04 | production | Warehouse hotfix: `/inventory` CTA `nowa inwentaryzacja` now routes to dedicated page `/inventory/new` (no in-place modal) |
+| Dashboard (`panel.salon-bw.pl`) | `13192a3b` | `22024361812` | 2026-02-14 21:17 | production | Deploy payload minimization: frontend tarballs ship without `node_modules`/`.next/cache`; dependencies installed remotely on FreeBSD host after extract |
 
 Verification:
 
