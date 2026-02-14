@@ -90,10 +90,11 @@ Verification:
 - **2026-02-14** – Warehouse `SPRZEDAŻ` parity refinement prepared:
   - `/sales/new`: added line-level discount support, payment summary (`do zapłaty` / `reszta`) and explicit empty-form validation,
   - `/sales/history`: added Versum-like table footer with range + page-size info,
+  - `/sales/history/[id]`: extended metadata block, line discount column, financial summary, and notes section,
   - verification:
     - `pnpm eslint src/pages/sales/new.tsx src/pages/sales/history/index.tsx --fix` ✅
     - `pnpm tsc --noEmit` ✅
-    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` ⚠️ (`1/2` stable, second test intermittently failing in login helper with `expect.not.toHaveURL` timeout / closed page).
 - **2026-02-14** – Deploy transfer timeout hardening prepared:
   - `.github/workflows/deploy.yml` now applies explicit transfer timeouts for `scp` and `rsync` in deploy steps,
   - intent: prevent indefinite hangs on `Upload frontend bundle` and fail fast for retry,
