@@ -89,6 +89,7 @@ Mental mapping:
 - GitHub Actions workflow: Deploy (MyDevil) (see deploy.yml)
 - Supported targets: public|dashboard|admin|api|probe
 - Supports environments: staging|production
+- Transfer safety: workflow deploy steps enforce timeouts for `scp`/`rsync` so stalled uploads fail fast and can be retried.
 
 ### Default order (when you need a full rollout)
 1. api

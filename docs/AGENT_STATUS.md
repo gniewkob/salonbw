@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-13 (Customers statistics/events_history parity refinement prepared)_
+_Last updated: 2026-02-14 (Deploy transfer timeout hardening + warehouse parity smoke)_
 
 ## Platform Architecture
 
@@ -87,6 +87,12 @@ Verification:
 
 ## What's Working
 
+- **2026-02-14** – Deploy transfer timeout hardening prepared:
+  - `.github/workflows/deploy.yml` now applies explicit transfer timeouts for `scp` and `rsync` in deploy steps,
+  - intent: prevent indefinite hangs on `Upload frontend bundle` and fail fast for retry,
+  - local verification:
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` ✅ (`1 passed`),
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
 - **2026-02-14** – Warehouse top-tabs + customers nav parity refinement prepared:
   - vendored calendar main-nav `klienci` link switched from `/clients` to `/customers`,
   - warehouse top tabs (`sprzedaż`, `zużycie`, `dostawy`, `zamówienia`) now route to history/list views (`/sales/history`, `/use/history`, `/deliveries/history`, `/orders/history`) to match Versum navigation flow,

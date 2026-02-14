@@ -4,6 +4,10 @@ This document describes how to deploy the Salon Black & White stack to the mydev
 
 Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)` at `.github/workflows/deploy.yml` (see [`docs/CI_CD.md`](./CI_CD.md)). The steps below are a manual fallback and a useful reference when debugging.
 
+Operational note (2026-02-14):
+- Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
+- If a transfer stalls, the job now fails instead of hanging indefinitely; re-run the workflow after failure.
+
 ## 0. Recommended: targeted deploys (GitHub Actions)
 
 Use the workflow inputs to deploy only the app that changed and restart only that domain:

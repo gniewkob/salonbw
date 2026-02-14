@@ -15,6 +15,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).
 - Order: API first, then frontends.
+- Deploy transfers are timeout-guarded (scp/rsync) to prevent indefinite hangs during bundle upload.
 
 ```bash
 # API (deploy first)
