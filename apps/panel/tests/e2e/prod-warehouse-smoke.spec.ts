@@ -75,4 +75,38 @@ test.describe('PROD smoke: warehouse layout parity', () => {
             await expect(page.locator('.products-top-tabs')).toBeVisible();
         }
     });
+
+    test('warehouse secondnav switches context per submodule', async ({ page }) => {
+        await login(page);
+        const sidebar = page.locator('#sidebar');
+        const secondNav = sidebar.locator('.sidenav');
+
+        await page.goto('/use/new');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(secondNav).toContainText('ZUŻYCIE');
+        await expect(secondNav).toContainText('planowane zużycie');
+
+        await page.goto('/deliveries/new');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(secondNav).toContainText('DOSTAWY');
+        await expect(secondNav).toContainText('dodaj dostawę');
+        await expect(secondNav).toContainText('historia dostaw');
+        await expect(secondNav).toContainText('wersje robocze');
+        await expect(secondNav).toContainText('niski stan magazynowy');
+        await expect(secondNav).toContainText('dostawcy');
+        await expect(secondNav).toContainText('producenci');
+
+        await page.goto('/orders/new');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(secondNav).toContainText('ZAMÓWIENIA');
+        await expect(secondNav).toContainText('dodaj zamówienie');
+        await expect(secondNav).toContainText('historia zamówień');
+        await expect(secondNav).toContainText('wersje robocze');
+
+        await page.goto('/inventory');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(secondNav).toContainText('INWENTARYZACJA');
+        await expect(secondNav).toContainText('nowa inwentaryzacja');
+        await expect(secondNav).toContainText('historia inwentaryzacji');
+    });
 });
