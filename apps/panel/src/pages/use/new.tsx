@@ -73,9 +73,20 @@ export default function WarehouseUsageCreatePage() {
             heading="Magazyn / Dodaj zużycie"
             activeTab="use"
             actions={
-                <Link href="/use/history" className="btn btn-default btn-xs">
-                    historia zużycia
-                </Link>
+                <>
+                    <Link
+                        href="/use/history"
+                        className="btn btn-default btn-xs"
+                    >
+                        historia zużycia
+                    </Link>
+                    <Link
+                        href="/use/planned"
+                        className="btn btn-default btn-xs"
+                    >
+                        planowane zużycie
+                    </Link>
+                </>
             }
         >
             <div className="products-table-wrap">
