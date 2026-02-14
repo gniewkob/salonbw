@@ -14,6 +14,7 @@ interface SaleLineForm {
     productId: string;
     quantity: string;
     unitPrice: string;
+    discount: string;
     unit: string;
     vatRate: string;
 }
@@ -31,6 +32,7 @@ export default function WarehouseSaleCreatePage() {
             productId: '',
             quantity: '1',
             unitPrice: '',
+            discount: '0',
             unit: 'op.',
             vatRate: '23',
         },
@@ -40,12 +42,29 @@ export default function WarehouseSaleCreatePage() {
     const [soldAt, setSoldAt] = useState(new Date().toISOString().slice(0, 10));
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [amountPaid, setAmountPaid] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
 
     const totalGross = useMemo(() => {
         return lines.reduce((sum, line) => {
             const price = Number(line.unitPrice || 0);
             const qty = Number(line.quantity || 0);
-            return sum + Math.max(0, price * qty);
+            const discount = Number(line.discount || 0);
+            const rowGross = Math.max(0, price * qty - discount);
+            return sum + rowGross;
+        }, 0);
+    }, [lines]);
+
+    const totalDiscount = useMemo(() => {
+        return lines.reduce((sum, line) => {
+            const price = Number(line.unitPrice || 0);
+            const qty = Number(line.quantity || 0);
+            const maxDiscount = Math.max(0, price * qty);
+            const discount = Math.max(
+                0,
+                Math.min(maxDiscount, Number(line.discount || 0)),
+            );
+            return sum + discount;
         }, 0);
     }, [lines]);
 
@@ -54,7 +73,8 @@ export default function WarehouseSaleCreatePage() {
             const priceGross = Number(line.unitPrice || 0);
             const qty = Number(line.quantity || 0);
             const vatRate = Number(line.vatRate || 23);
-            const gross = priceGross * qty;
+            const discount = Number(line.discount || 0);
+            const gross = Math.max(0, priceGross * qty - discount);
             return sum + gross / (1 + vatRate / 100);
         }, 0);
     }, [lines]);
@@ -71,6 +91,7 @@ export default function WarehouseSaleCreatePage() {
                 productId: '',
                 quantity: '1',
                 unitPrice: '',
+                discount: '0',
                 unit: 'op.',
                 vatRate: '23',
             },
@@ -92,17 +113,23 @@ export default function WarehouseSaleCreatePage() {
     };
 
     const submit = async () => {
+        setFormError(null);
         const payloadItems = lines
             .filter((line) => line.productId)
             .map((line) => ({
                 productId: Number(line.productId),
                 quantity: Number(line.quantity || 0),
                 unitPrice: Number(line.unitPrice || 0),
-                discount: 0,
+                discount: Number(line.discount || 0),
             }))
             .filter((item) => item.quantity > 0);
 
-        if (payloadItems.length === 0) return;
+        if (payloadItems.length === 0) {
+            setFormError(
+                'Dodaj co najmniej jedną pozycję sprzedaży z produktem i ilością większą od 0.',
+            );
+            return;
+        }
 
         const created = await createMutation.mutateAsync({
             soldAt: soldAt
@@ -133,10 +160,12 @@ export default function WarehouseSaleCreatePage() {
                 <table className="products-table">
                     <thead>
                         <tr>
+                            <th>lp</th>
                             <th>nazwa</th>
                             <th>jednostka</th>
                             <th>ilość</th>
                             <th>cena op. (brutto)</th>
+                            <th>rabat</th>
                             <th>VAT</th>
                             <th>wartość (brutto)</th>
                             <th>usuń</th>
@@ -145,6 +174,7 @@ export default function WarehouseSaleCreatePage() {
                     <tbody>
                         {lines.map((line, index) => (
                             <tr key={`${index}-${line.productId}`}>
+                                <td>{index + 1}</td>
                                 <td>
                                     <select
                                         value={line.productId}
@@ -208,11 +238,27 @@ export default function WarehouseSaleCreatePage() {
                                         className="form-control"
                                     />
                                 </td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="0.01"
+                                        value={line.discount}
+                                        onChange={(event) =>
+                                            updateLine(index, {
+                                                discount: event.target.value,
+                                            })
+                                        }
+                                        className="form-control"
+                                    />
+                                </td>
                                 <td>{line.vatRate}%</td>
                                 <td>
-                                    {(
+                                    {Math.max(
+                                        0,
                                         Number(line.unitPrice || 0) *
-                                        Number(line.quantity || 0)
+                                            Number(line.quantity || 0) -
+                                            Number(line.discount || 0),
                                     ).toFixed(2)}{' '}
                                     zł
                                 </td>
@@ -239,77 +285,97 @@ export default function WarehouseSaleCreatePage() {
                 >
                     dodaj kolejną pozycję
                 </button>
+                <Link href="/products/new" className="btn btn-default btn-xs">
+                    dodaj nowy produkt
+                </Link>
             </div>
 
-            <div className="warehouse-form-grid">
-                <label>
-                    <span>Klient</span>
-                    <div className="warehouse-inline-field">
-                        <input
-                            type="text"
-                            value={clientName}
+            <div className="warehouse-form-card">
+                <div className="warehouse-form-grid">
+                    <label>
+                        <span>Klient</span>
+                        <div className="warehouse-inline-field">
+                            <input
+                                type="text"
+                                value={clientName}
+                                onChange={(event) =>
+                                    setClientName(event.target.value)
+                                }
+                                className="form-control"
+                                placeholder="wpisz nazwisko lub numer telefonu"
+                            />
+                            <Link
+                                href="/customers/new"
+                                className="btn btn-default btn-xs"
+                            >
+                                nowy klient
+                            </Link>
+                        </div>
+                    </label>
+                    <label>
+                        <span>Polecający pracownik</span>
+                        <select
+                            value={employeeId}
                             onChange={(event) =>
-                                setClientName(event.target.value)
+                                setEmployeeId(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
+                            </option>
+                            {employees?.map((employee) => (
+                                <option key={employee.id} value={employee.id}>
+                                    {employee.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Data sprzedaży</span>
+                        <input
+                            type="date"
+                            value={soldAt}
+                            onChange={(event) => setSoldAt(event.target.value)}
+                            className="form-control"
+                        />
+                    </label>
+                    <label>
+                        <span>Płatność</span>
+                        <select
+                            value={paymentMethod}
+                            onChange={(event) =>
+                                setPaymentMethod(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="cash">gotówka</option>
+                            <option value="card">karta</option>
+                            <option value="transfer">przelew</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Wpłata klienta</span>
+                        <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={amountPaid}
+                            onChange={(event) =>
+                                setAmountPaid(event.target.value)
                             }
                             className="form-control"
-                            placeholder="wpisz nazwisko lub numer telefonu"
                         />
-                        <Link
-                            href="/customers/new"
-                            className="btn btn-default btn-xs"
-                        >
-                            nowy klient
-                        </Link>
-                    </div>
-                </label>
-                <label>
-                    <span>Polecający pracownik</span>
-                    <select
-                        value={employeeId}
-                        onChange={(event) => setEmployeeId(event.target.value)}
-                        className="versum-select"
-                    >
-                        <option value="">
-                            wpisz nazwę lub wybierz z listy
-                        </option>
-                        {employees?.map((employee) => (
-                            <option key={employee.id} value={employee.id}>
-                                {employee.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label>
-                    <span>Data sprzedaży</span>
-                    <input
-                        type="date"
-                        value={soldAt}
-                        onChange={(event) => setSoldAt(event.target.value)}
-                        className="form-control"
-                    />
-                </label>
-                <label>
-                    <span>Płatność</span>
-                    <select
-                        value={paymentMethod}
-                        onChange={(event) =>
-                            setPaymentMethod(event.target.value)
-                        }
-                        className="versum-select"
-                    >
-                        <option value="cash">gotówka</option>
-                        <option value="card">karta</option>
-                        <option value="transfer">przelew</option>
-                    </select>
-                </label>
-                <label className="warehouse-full">
-                    <span>Opis</span>
-                    <textarea
-                        value={note}
-                        onChange={(event) => setNote(event.target.value)}
-                        className="form-control"
-                    />
-                </label>
+                    </label>
+                    <label className="warehouse-full">
+                        <span>Opis</span>
+                        <textarea
+                            value={note}
+                            onChange={(event) => setNote(event.target.value)}
+                            className="form-control"
+                        />
+                    </label>
+                </div>
             </div>
 
             <div className="warehouse-summary">
@@ -317,8 +383,21 @@ export default function WarehouseSaleCreatePage() {
                     Wartość sprzedaży: {totalGross.toFixed(2)} zł
                 </div>
                 <div className="warehouse-summary-meta">
+                    rabat: {totalDiscount.toFixed(2)} zł
+                </div>
+                <div className="warehouse-summary-meta">
                     netto: {totalNet.toFixed(2)} zł (VAT: {totalVat.toFixed(2)}{' '}
                     zł)
+                </div>
+                <div className="warehouse-summary-meta">
+                    do zapłaty: {totalGross.toFixed(2)} zł
+                </div>
+                <div className="warehouse-summary-meta">
+                    reszta:{' '}
+                    {Math.max(0, Number(amountPaid || 0) - totalGross).toFixed(
+                        2,
+                    )}{' '}
+                    zł
                 </div>
                 <div className="warehouse-actions-row">
                     <Link
@@ -339,6 +418,9 @@ export default function WarehouseSaleCreatePage() {
                     </button>
                 </div>
             </div>
+            {formError ? (
+                <p className="warehouse-validation-error">{formError}</p>
+            ) : null}
         </WarehouseLayout>
     );
 }
