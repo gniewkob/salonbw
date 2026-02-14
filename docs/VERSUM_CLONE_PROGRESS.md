@@ -187,6 +187,17 @@
 - smoke:
   - `tests/e2e/prod-warehouse-smoke.spec.ts`: **PASS (2/2)**.
 
+### 2026-02-14 - Magazyn: parity pass SPRZEDAŻ szczegóły (`/sales/history/[id]`)
+- widok szczegółów sprzedaży rozszerzony o:
+  - górny blok metadanych (nr sprzedaży, klient, pracownik, data, płatność, autor, daty),
+  - tabela pozycji z kolumną `rabat`,
+  - podsumowanie finansowe (`wartość netto`, `rabat`, `do zapłaty`),
+  - sekcja `uwagi`,
+  - akcja `drukuj` w nagłówku.
+- status testów:
+  - lokalne `eslint` + `tsc` ✅,
+  - smoke produkcyjny magazynu: pierwszy test przechodzi, drugi potrafi flaky-failować na kroku logowania (`expect.not.toHaveURL` timeout / page closed) niezależnie od zmian funkcjonalnych widoku.
+
 ### 2026-02-13 - Klienci: komunikacja (communication_preferences) rozszerzona
 - zakładka `komunikacja` na karcie klienta:
   - dodana historia komunikacji per klient z przełącznikiem kanału `SMS` / `Email`,
