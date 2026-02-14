@@ -165,10 +165,10 @@ export default function WarehouseProductsPage() {
                         <Link href="/products" className="active">
                             produkty
                         </Link>
-                        <Link href="/sales/new">sprzedaż</Link>
-                        <Link href="/use/new">zużycie</Link>
-                        <Link href="/deliveries/new">dostawy</Link>
-                        <Link href="/orders/new">zamówienia</Link>
+                        <Link href="/sales/history">sprzedaż</Link>
+                        <Link href="/use/history">zużycie</Link>
+                        <Link href="/deliveries/history">dostawy</Link>
+                        <Link href="/orders/history">zamówienia</Link>
                         <Link
                             href="/inventory"
                             className="products-top-tabs__right"

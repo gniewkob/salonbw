@@ -87,6 +87,10 @@ Verification:
 
 ## What's Working
 
+- **2026-02-14** – Warehouse top-tabs + customers nav parity refinement prepared:
+  - vendored calendar main-nav `klienci` link switched from `/clients` to `/customers`,
+  - warehouse top tabs (`sprzedaż`, `zużycie`, `dostawy`, `zamówienia`) now route to history/list views (`/sales/history`, `/use/history`, `/deliveries/history`, `/orders/history`) to match Versum navigation flow,
+  - operational finding reaffirmed: `secondnav` must be treated as route-contextual content (rendered per submodule path), not a static sidebar.
 - **2026-02-13** – Customers `statistics` + `events_history` parity refinement prepared (panel):
   - `statistics`: service/product share block + Versum-like summary list layout,
   - `events_history`: filter action row, status marker in rows, Versum-like footer pagination text and arrows,
