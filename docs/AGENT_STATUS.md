@@ -87,6 +87,10 @@ Verification:
 
 ## What's Working
 
+- **2026-02-14** – Deploy payload minimization for FreeBSD prepared:
+  - `.github/workflows/deploy.yml` now ships frontend tarballs without `node_modules` and prunes `.next/cache` before packaging,
+  - frontend `npm install --omit=dev --ignore-scripts` moved to remote host after extract (uses `npm22` when available, fallback `npm`),
+  - intent: reduce `scp` transfer size and lower timeout risk on MyDevil/FreeBSD.
 - **2026-02-14** – Warehouse `SPRZEDAŻ` parity refinement prepared:
   - `/sales/new`: added line-level discount support, payment summary (`do zapłaty` / `reszta`) and explicit empty-form validation,
   - `/sales/history`: added Versum-like table footer with range + page-size info,
