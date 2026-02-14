@@ -90,8 +90,10 @@ Verification:
 - **2026-02-14** – Deploy transfer timeout hardening prepared:
   - `.github/workflows/deploy.yml` now applies explicit transfer timeouts for `scp` and `rsync` in deploy steps,
   - intent: prevent indefinite hangs on `Upload frontend bundle` and fail fast for retry,
+  - warehouse smoke expanded with explicit `secondnav` context checks (`ZUŻYCIE` / `DOSTAWY` / `ZAMÓWIENIA` / `INWENTARYZACJA`),
   - local verification:
     - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` ✅ (`1 passed`),
+    - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`, extended suite),
     - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
 - **2026-02-14** – Warehouse top-tabs + customers nav parity refinement prepared:
   - vendored calendar main-nav `klienci` link switched from `/clients` to `/customers`,
