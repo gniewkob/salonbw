@@ -6,6 +6,10 @@ import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 
 export default function WarehouseSalesHistoryPage() {
     const { data: sales = [], isLoading } = useWarehouseSales();
+    const pageSize = 20;
+    const visibleSales = sales.slice(0, pageSize);
+    const from = sales.length ? 1 : 0;
+    const to = sales.length ? Math.min(pageSize, sales.length) : 0;
 
     return (
         <WarehouseLayout
@@ -36,7 +40,7 @@ export default function WarehouseSalesHistoryPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {sales.map((sale) => (
+                            {visibleSales.map((sale) => (
                                 <tr key={sale.id}>
                                     <td>{sale.saleNumber}</td>
                                     <td>
@@ -73,6 +77,17 @@ export default function WarehouseSalesHistoryPage() {
                             ))}
                         </tbody>
                     </table>
+                    <div className="products-table-footer">
+                        <span>
+                            Pozycje od {from} do {to} z {sales.length}
+                        </span>
+                        <div className="products-table-footer__controls">
+                            <span>na stronie</span>
+                            <span className="products-table-footer__page-size">
+                                {pageSize}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             )}
         </WarehouseLayout>

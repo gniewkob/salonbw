@@ -176,6 +176,17 @@
 - weryfikacja:
   - `prod-customers-smoke.spec.ts` + `prod-warehouse-smoke.spec.ts` na produkcji: **PASS (3/3)**.
 
+### 2026-02-14 - Magazyn: parity pass SPRZEDAŻ (`/sales/new`, `/sales/history`)
+- `/sales/new`:
+  - rozszerzony formularz o logikę rabatu per pozycja (`discount`) i przekazywanie rabatu do API,
+  - dodane wyliczenia: `rabat`, `wartość sprzedaży`, `do zapłaty`, `reszta` (na bazie wpłaty klienta),
+  - dodana walidacja pustej sprzedaży z jawnym komunikatem błędu,
+  - tabela pozycji dopięta wizualnie (`lp`, akcja `dodaj nowy produkt`).
+- `/sales/history`:
+  - dodany footer tabeli w stylu Versum (`Pozycje od ... do ...`, `na stronie 20`).
+- smoke:
+  - `tests/e2e/prod-warehouse-smoke.spec.ts`: **PASS (2/2)**.
+
 ### 2026-02-13 - Klienci: komunikacja (communication_preferences) rozszerzona
 - zakładka `komunikacja` na karcie klienta:
   - dodana historia komunikacji per klient z przełącznikiem kanału `SMS` / `Email`,
