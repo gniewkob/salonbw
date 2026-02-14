@@ -13,9 +13,17 @@ export default function WarehouseUsageHistoryPage() {
             heading="Magazyn / Historia zużycia"
             activeTab="use"
             actions={
-                <Link href="/use/new" className="btn btn-primary btn-xs">
-                    dodaj zużycie
-                </Link>
+                <>
+                    <Link href="/use/new" className="btn btn-primary btn-xs">
+                        dodaj zużycie
+                    </Link>
+                    <Link
+                        href="/use/planned"
+                        className="btn btn-default btn-xs"
+                    >
+                        planowane zużycie
+                    </Link>
+                </>
             }
         >
             {isLoading ? (
