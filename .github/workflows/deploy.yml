@@ -554,13 +554,8 @@ jobs:
           # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          timeout 900 scp \
-            -i ~/.ssh/mydevil \
-            -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
-            -o ConnectTimeout=20 \
-            -o ServerAliveInterval=15 \
-            -o ServerAliveCountMax=4 \
+          timeout 900 rsync -az --timeout=120 --contimeout=20 \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # 3. Extract and Clean (robust against NFS/.nfs* leftovers)
@@ -662,13 +657,8 @@ jobs:
           # Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          timeout 900 scp \
-            -i ~/.ssh/mydevil \
-            -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=no \
-            -o ConnectTimeout=20 \
-            -o ServerAliveInterval=15 \
-            -o ServerAliveCountMax=4 \
+          timeout 900 rsync -az --timeout=120 --contimeout=20 \
+            -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # Extract and Clean (robust against NFS/.nfs* leftovers)
