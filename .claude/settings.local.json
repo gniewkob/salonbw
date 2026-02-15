@@ -32,7 +32,12 @@
       "Bash(pnpm up)",
       "Bash(pnpm up merge diff xlsx systeminformation)",
       "Bash(pnpm up merge@2.1.1)",
-      "Bash(pnpm up xlsx@latest)"
+      "Bash(pnpm up xlsx@latest)",
+      "mcp__Desktop_Commander__list_directory",
+      "WebFetch(domain:salon-bw.pl)",
+      "Bash(curl:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
