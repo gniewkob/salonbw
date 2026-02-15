@@ -61,7 +61,14 @@ export default function WarehouseOrdersHistoryPage() {
                         <tbody>
                             {filteredOrders.map((order) => (
                                 <tr key={order.id}>
-                                    <td>{order.orderNumber}</td>
+                                    <td>
+                                        <Link
+                                            href={`/orders/${order.id}`}
+                                            className="products-link"
+                                        >
+                                            {order.orderNumber}
+                                        </Link>
+                                    </td>
                                     <td>{order.supplier?.name ?? '-'}</td>
                                     <td>
                                         {new Date(
