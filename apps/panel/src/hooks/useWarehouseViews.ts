@@ -341,11 +341,12 @@ export function useCreateWarehouseUsage() {
     });
 }
 
-export function useWarehouseOrders() {
+export function useWarehouseOrders(enabled = true) {
     const { apiFetch } = useAuth();
     return useQuery<WarehouseOrder[]>({
         queryKey: ['warehouse-orders'],
         queryFn: () => apiFetch<WarehouseOrder[]>('/orders'),
+        enabled,
     });
 }
 
