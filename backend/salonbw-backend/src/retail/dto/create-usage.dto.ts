@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsArray,
+    IsDateString,
     IsInt,
+    IsIn,
     IsOptional,
     IsString,
     Min,
@@ -51,4 +53,20 @@ export class CreateUsageDto {
     @IsOptional()
     @IsString()
     note?: string;
+
+    @ApiPropertyOptional({
+        enum: ['planned', 'completed'],
+        default: 'completed',
+    })
+    @IsOptional()
+    @IsIn(['planned', 'completed'])
+    scope?: 'planned' | 'completed';
+
+    @ApiPropertyOptional({
+        description:
+            'Planned usage date (used when scope=planned). ISO 8601 datetime.',
+    })
+    @IsOptional()
+    @IsDateString()
+    plannedFor?: string;
 }

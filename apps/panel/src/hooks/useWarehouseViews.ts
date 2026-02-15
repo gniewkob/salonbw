@@ -285,11 +285,16 @@ export function useCreateWarehouseSale() {
     });
 }
 
-export function useWarehouseUsage() {
+export function useWarehouseUsage(
+    scope: 'all' | 'planned' | 'completed' = 'all',
+) {
     const { apiFetch } = useAuth();
     return useQuery<WarehouseUsage[]>({
-        queryKey: ['warehouse-usage'],
-        queryFn: () => apiFetch<WarehouseUsage[]>('/usage'),
+        queryKey: ['warehouse-usage', scope],
+        queryFn: () =>
+            apiFetch<WarehouseUsage[]>(
+                `/usage${scope === 'all' ? '' : `?scope=${scope}`}`,
+            ),
     });
 }
 
@@ -311,6 +316,8 @@ export function useCreateWarehouseUsage() {
             employeeId?: number;
             appointmentId?: number;
             note?: string;
+            scope?: 'planned' | 'completed';
+            plannedFor?: string;
             items: Array<{
                 productId: number;
                 quantity: number;

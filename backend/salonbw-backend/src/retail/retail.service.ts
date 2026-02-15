@@ -478,6 +478,7 @@ export class RetailService {
             products.map((product) => [product.id, product]),
         );
 
+        const isPlanned = dto.scope === 'planned';
         for (const item of dto.items) {
             const product = productsById.get(item.productId);
             if (!product) {
@@ -488,7 +489,7 @@ export class RetailService {
             if (item.quantity < 1) {
                 throw new BadRequestException('quantity must be >= 1');
             }
-            if (product.stock < item.quantity) {
+            if (!isPlanned && product.stock < item.quantity) {
                 throw new BadRequestException(
                     `Insufficient stock for product ${item.productId}`,
                 );
@@ -502,7 +503,10 @@ export class RetailService {
         const usage = await this.dataSource.transaction(async (manager) => {
             const created = manager.create(WarehouseUsage, {
                 usageNumber: await this.generateUsageNumber(manager),
-                usedAt: new Date(),
+                usedAt:
+                    isPlanned && dto.plannedFor
+                        ? new Date(dto.plannedFor)
+                        : new Date(),
                 clientName: dto.clientName ?? null,
                 clientId: null,
                 employeeId: dto.employeeId ?? null,
@@ -523,14 +527,18 @@ export class RetailService {
                 }
 
                 const stockBefore = product.stock;
-                if (stockBefore < item.quantity) {
+                if (!isPlanned && stockBefore < item.quantity) {
                     throw new BadRequestException(
                         `Insufficient stock for product ${item.productId}`,
                     );
                 }
-
-                product.stock -= item.quantity;
-                await manager.save(product);
+                const stockAfter = isPlanned
+                    ? stockBefore
+                    : stockBefore - item.quantity;
+                if (!isPlanned) {
+                    product.stock = stockAfter;
+                    await manager.save(product);
+                }
 
                 const usageItem = manager.create(WarehouseUsageItem, {
                     usageId: created.id,
@@ -539,11 +547,11 @@ export class RetailService {
                     quantity: item.quantity,
                     unit: item.unit ?? product.unit ?? 'op.',
                     stockBefore,
-                    stockAfter: product.stock,
+                    stockAfter,
                 });
                 await manager.save(usageItem);
 
-                if (writeInventoryMovements) {
+                if (writeInventoryMovements && !isPlanned) {
                     await this.insertInventoryMovement(
                         manager,
                         product.id,
@@ -574,15 +582,26 @@ export class RetailService {
         return this.getUsageDetails(usage.id);
     }
 
-    async listUsage() {
+    async listUsage(scope: 'all' | 'planned' | 'completed' = 'all') {
         if (!(await this.hasTable('public.warehouse_usages'))) {
             return [];
         }
+        const query = this.warehouseUsages
+            .createQueryBuilder('usage')
+            .leftJoinAndSelect('usage.items', 'items')
+            .leftJoinAndSelect('items.product', 'product')
+            .leftJoinAndSelect('usage.employee', 'employee')
+            .leftJoinAndSelect('usage.createdBy', 'createdBy')
+            .orderBy('usage.usedAt', 'DESC')
+            .addOrderBy('usage.id', 'DESC');
 
-        return this.warehouseUsages.find({
-            relations: ['items', 'items.product', 'employee', 'createdBy'],
-            order: { usedAt: 'DESC', id: 'DESC' },
-        });
+        if (scope === 'planned') {
+            query.andWhere('usage.usedAt > NOW()');
+        } else if (scope === 'completed') {
+            query.andWhere('usage.usedAt <= NOW()');
+        }
+
+        return query.getMany();
     }
 
     async getUsageDetails(id: number) {
