@@ -37,7 +37,8 @@
       "WebFetch(domain:salon-bw.pl)",
       "Bash(curl:*)",
       "Bash(pnpm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(pnpm eslint:*)"
     ],
     "deny": [],
     "ask": []

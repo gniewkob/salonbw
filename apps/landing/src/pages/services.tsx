@@ -6,6 +6,8 @@ import { useEffect, useMemo } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
+import { BUSINESS_INFO } from '@/config/content';
+import { getPanelUrl } from '@/utils/panelUrl';
 
 interface ServiceCategory {
     id: number | null;
@@ -96,67 +98,128 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     return (
         <PublicLayout>
             <Head>
-                <title>Our Services | Salon Black &amp; White</title>
+                <title>
+                    Usługi fryzjerskie, barber i pielęgnacja -{' '}
+                    {BUSINESS_INFO.name}
+                </title>
                 <meta
                     name="description"
-                    content="Browse the full list of hair and beauty services offered at Salon Black &amp; White."
+                    content={`Profesjonalne usługi fryzjerskie dla kobiet i mężczyzn w ${BUSINESS_INFO.address.city}. Fryzjer damski, barber, pielęgnacja włosów (Botox, Złote proteiny, Sauna-SPA), przedłużanie włosów metodą HairTalk.`}
+                />
+                <meta
+                    name="keywords"
+                    content="usługi fryzjerskie bytom, barber bytom, pielęgnacja włosów, przedłużanie włosów, salon fryzjerski bytom"
                 />
             </Head>
-            <div className="p-4 space-y-6">
-                <h1 className="text-2xl font-bold">Our Services</h1>
-                {categories.map((cat) => (
-                    <div key={cat.id ?? 'uncategorized'} className="space-y-2">
-                        <h2 className="text-xl font-semibold">{cat.name}</h2>
-                        <ul className="space-y-1">
-                            {cat.services.map((s) => (
-                                <li
-                                    key={s.id}
-                                    className="flex justify-between border-b pb-1"
-                                >
-                                    <span>
-                                        {(() => {
-                                            const href = resolveServiceRoute(
-                                                s.name,
-                                            );
-                                            if (!href) return s.name;
-                                            return (
-                                                <Link
-                                                    href={href}
-                                                    onClick={() =>
-                                                        trackEvent(
-                                                            'select_item',
-                                                            {
-                                                                item_list_name:
-                                                                    'services',
-                                                                items: [
-                                                                    {
-                                                                        item_id:
-                                                                            s.id,
-                                                                        item_name:
-                                                                            s.name,
-                                                                        item_category:
-                                                                            cat.name,
-                                                                    },
-                                                                ],
-                                                            },
-                                                        )
-                                                    }
-                                                    className="underline"
-                                                >
-                                                    {s.name}
-                                                </Link>
-                                            );
-                                        })()}
-                                    </span>
-                                    <span className="text-sm text-gray-600">
-                                        {getServiceDuration(s)} -{' '}
-                                        {getServicePrice(s).label}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+            <div className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                            Nasze Usługi
+                        </h1>
+                        <p className="text-gray-600 mb-6">
+                            Oferujemy szeroki zakres usług fryzjerskich i
+                            kosmetycznych dla kobiet i mężczyzn. Sprawdź naszą
+                            ofertę i umów się na wizytę!
+                        </p>
+                        <a
+                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                            className="inline-block bg-brand-gold text-white px-8 py-3 rounded-md hover:bg-yellow-700 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                        >
+                            {BUSINESS_INFO.booking.text}
+                        </a>
                     </div>
-                ))}
+                </div>
+
+                <div className="max-w-5xl mx-auto space-y-12">
+                    {categories.map((cat) => (
+                        <div
+                            key={cat.id ?? 'uncategorized'}
+                            className="bg-white rounded-lg shadow-md p-6"
+                        >
+                            <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b border-gray-200 pb-3">
+                                {cat.name}
+                            </h2>
+                            <div className="space-y-4">
+                                {cat.services.map((s) => (
+                                    <div
+                                        key={s.id}
+                                        className="flex justify-between items-start border-b border-gray-100 pb-4 last:border-b-0 last:pb-0"
+                                    >
+                                        <div className="flex-1">
+                                            <span className="text-lg">
+                                                {(() => {
+                                                    const href =
+                                                        resolveServiceRoute(
+                                                            s.name,
+                                                        );
+                                                    if (!href) return s.name;
+                                                    return (
+                                                        <Link
+                                                            href={href}
+                                                            onClick={() =>
+                                                                trackEvent(
+                                                                    'select_item',
+                                                                    {
+                                                                        item_list_name:
+                                                                            'services',
+                                                                        items: [
+                                                                            {
+                                                                                item_id:
+                                                                                    s.id,
+                                                                                item_name:
+                                                                                    s.name,
+                                                                                item_category:
+                                                                                    cat.name,
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                )
+                                                            }
+                                                            className="text-black hover:text-brand-gold transition focus:outline-none focus:underline"
+                                                        >
+                                                            {s.name}
+                                                        </Link>
+                                                    );
+                                                })()}
+                                            </span>
+                                            {s.description && (
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {s.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="ml-4 text-right flex flex-col items-end">
+                                            <span className="text-lg font-semibold text-brand-gold">
+                                                {getServicePrice(s).label}
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                                {getServiceDuration(s)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* CTA Section */}
+                    <div className="text-center mt-12 p-8 bg-gray-50 rounded-lg">
+                        <h3 className="text-2xl font-bold mb-4">
+                            Gotowy/a na metamorfozę?
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            Umów się na wizytę i ciesz się profesjonalną obsługą
+                            w naszym salonie.
+                        </p>
+                        <a
+                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                            className="inline-block bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                        >
+                            {BUSINESS_INFO.booking.text}
+                        </a>
+                    </div>
+                </div>
             </div>
         </PublicLayout>
     );
@@ -174,12 +237,17 @@ export const getServerSideProps: GetServerSideProps<
     const fallbackCategories: ServiceCategory[] = [
         {
             id: null,
-            name: 'Popular Services',
+            name: 'Usługi fryzjerskie',
             services: [
-                { id: 1, name: 'Haircut', duration: 45, price: 120 } as Service,
+                {
+                    id: 1,
+                    name: 'Strzyżenie damskie',
+                    duration: 45,
+                    price: 120,
+                } as Service,
                 {
                     id: 2,
-                    name: 'Coloring',
+                    name: 'Koloryzacja',
                     duration: 90,
                     price: 240,
                 } as Service,
@@ -188,6 +256,48 @@ export const getServerSideProps: GetServerSideProps<
                     name: 'Balayage',
                     duration: 120,
                     price: 320,
+                } as Service,
+            ],
+        },
+        {
+            id: null,
+            name: 'Barber',
+            services: [
+                {
+                    id: 4,
+                    name: 'Strzyżenie męskie',
+                    duration: 30,
+                    price: 80,
+                } as Service,
+                {
+                    id: 5,
+                    name: 'Strzyżenie brody',
+                    duration: 20,
+                    price: 50,
+                } as Service,
+            ],
+        },
+        {
+            id: null,
+            name: 'Pielęgnacja',
+            services: [
+                {
+                    id: 6,
+                    name: 'Botox na włosy',
+                    duration: 60,
+                    price: 200,
+                } as Service,
+                {
+                    id: 7,
+                    name: 'Złote proteiny',
+                    duration: 45,
+                    price: 150,
+                } as Service,
+                {
+                    id: 8,
+                    name: 'Sauna - SPA dla włosów',
+                    duration: 30,
+                    price: 100,
                 } as Service,
             ],
         },
