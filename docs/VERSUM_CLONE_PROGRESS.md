@@ -103,6 +103,14 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-15 - Magazyn: odchudzenie payloadu list (`sprzedaż` / `zużycie`)
+- Backend (`RetailService`):
+  - `GET /sales` nie ładuje już relacji `items.product` (lista zostaje z `items`, `employee`, `createdBy`),
+  - `GET /usage` nie ładuje już relacji `items.product` (lista zostaje z `items`, `employee`, `createdBy`).
+- Cel:
+  - mniejszy payload JSON i mniej zapytań/relacji dla widoków listowych magazynu,
+  - szybsze renderowanie na hostingu docelowym (FreeBSD/MyDevil) bez zmiany API kontraktu dla widoków szczegółowych.
+
 ### 2026-02-12 - Magazyn: historia dostaw i zamówień + poprawa flow dodawania dostawy
 - `/orders/new`:
   - układ pozycji rozszerzony do `lp`, `nazwa`, `jednostka`, `ilość`, `usuń`
