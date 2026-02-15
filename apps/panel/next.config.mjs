@@ -125,6 +125,16 @@ const nextConfig = {
                 permanent: false,
             },
             {
+                source: '/usage',
+                destination: '/use/history',
+                permanent: false,
+            },
+            {
+                source: '/usage/:path*',
+                destination: '/use/:path*',
+                permanent: false,
+            },
+            {
                 source: '/admin/clients',
                 destination: '/customers',
                 permanent: false,

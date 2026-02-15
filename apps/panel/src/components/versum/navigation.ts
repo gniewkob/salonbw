@@ -118,6 +118,7 @@ export function resolveVersumModule(pathname: string): VersumModule {
         path.startsWith('/inventory') ||
         path.startsWith('/sales') ||
         path.startsWith('/use') ||
+        path.startsWith('/usage') ||
         path.startsWith('/deliveries') ||
         path.startsWith('/orders') ||
         path.startsWith('/stock-alerts') ||

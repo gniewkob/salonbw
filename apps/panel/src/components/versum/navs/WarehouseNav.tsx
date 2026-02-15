@@ -17,14 +17,19 @@ export default function WarehouseNav() {
         path.startsWith('/suppliers') ||
         path.startsWith('/stock-alerts') ||
         path.startsWith('/manufacturers');
+    const ordersNavActive = path.startsWith('/orders');
+    const usageNavActive = path.startsWith('/use') || path.startsWith('/usage');
     const { data: categories } = useProductCategories();
-    const { data: draftDeliveries = [] } = useDeliveries({ status: 'draft' });
+    const { data: draftDeliveries = [] } = useDeliveries(
+        { status: 'draft' },
+        deliveriesNavActive,
+    );
     const { data: pendingDeliveries = [] } = useDeliveries(
         { status: 'pending' },
         deliveriesNavActive,
     );
-    const { data: orders = [] } = useWarehouseOrders();
-    const { data: stockSummary } = useStockSummary();
+    const { data: orders = [] } = useWarehouseOrders(ordersNavActive);
+    const { data: stockSummary } = useStockSummary(deliveriesNavActive);
     const { data: draftStocktakings = [] } = useStocktakings(
         {
             status: 'draft',
@@ -159,7 +164,7 @@ export default function WarehouseNav() {
         ]);
     }
 
-    if (isSubmodulePath('/use')) {
+    if (usageNavActive) {
         return renderModuleNav('ZUŻYCIE', [
             { label: 'dodaj zużycie', href: '/use/new' },
             { label: 'historia zużycia', href: '/use/history' },
