@@ -44,6 +44,7 @@ import { BranchesModule } from './branches/branches.module';
 import { GiftCardsModule } from './gift-cards/gift-cards.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { VersumCompatModule } from './versum-compat/versum-compat.module';
+import { ContentModule } from './content/content.module';
 
 @Module({
     imports: [
@@ -126,6 +127,7 @@ import { VersumCompatModule } from './versum-compat/versum-compat.module';
         GiftCardsModule,
         LoyaltyModule,
         VersumCompatModule,
+        ContentModule,
     ],
     controllers: [AppController, HealthController, DatabaseController],
     providers: [
