@@ -68,10 +68,11 @@ export class StocktakingService {
         return qb.getMany();
     }
 
-    async findHistorySummary(): Promise<
+    async findHistorySummary(status?: StocktakingStatus): Promise<
         Array<{
             id: number;
             stocktakingNumber: string;
+            status: StocktakingStatus;
             stocktakingDate: string;
             productsCount: number;
             shortageCount: number;
@@ -79,11 +80,19 @@ export class StocktakingService {
             matchedCount: number;
         }>
     > {
+        const params: unknown[] = [];
+        let whereClause = '';
+        if (status) {
+            params.push(status);
+            whereClause = 'WHERE st.status = $1';
+        }
+
         const rows = await this.dataSource.query(
             `
             SELECT
                 st.id,
                 st."stocktakingNumber",
+                st.status,
                 st."stocktakingDate",
                 COUNT(si.id)::int AS "productsCount",
                 SUM(CASE WHEN COALESCE(si.difference, 0) < 0 THEN 1 ELSE 0 END)::int AS "shortageCount",
@@ -91,9 +100,11 @@ export class StocktakingService {
                 SUM(CASE WHEN COALESCE(si.difference, 0) = 0 THEN 1 ELSE 0 END)::int AS "matchedCount"
             FROM stocktakings st
             LEFT JOIN stocktaking_items si ON si."stocktakingId" = st.id
+            ${whereClause}
             GROUP BY st.id
             ORDER BY st."stocktakingDate" DESC, st.id DESC
             `,
+            params,
         );
 
         return rows.map((row: Record<string, unknown>) => ({
@@ -103,6 +114,10 @@ export class StocktakingService {
                 typeof row.stocktakingNumber === 'number'
                     ? String(row.stocktakingNumber)
                     : '',
+            status:
+                typeof row.status === 'string'
+                    ? (row.status as StocktakingStatus)
+                    : StocktakingStatus.Draft,
             stocktakingDate:
                 row.stocktakingDate instanceof Date
                     ? row.stocktakingDate.toISOString()

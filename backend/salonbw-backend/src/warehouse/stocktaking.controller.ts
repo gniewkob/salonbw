@@ -59,8 +59,9 @@ export class StocktakingController {
     @Get('history')
     @Roles(Role.Admin, Role.Employee)
     @ApiOperation({ summary: 'Historia inwentaryzacji (agregaty)' })
-    findHistorySummary() {
-        return this.stocktakingService.findHistorySummary();
+    @ApiQuery({ name: 'status', required: false, enum: StocktakingStatus })
+    findHistorySummary(@Query('status') status?: StocktakingStatus) {
+        return this.stocktakingService.findHistorySummary(status);
     }
 
     @Get(':id')

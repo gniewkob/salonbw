@@ -1,11 +1,33 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useStocktakingHistory } from '@/hooks/useWarehouseViews';
 
 export default function InventoryHistoryPage() {
-    const { data: rows = [], isLoading } = useStocktakingHistory();
+    const router = useRouter();
+    const statusFilter = Array.isArray(router.query.status)
+        ? router.query.status[0]
+        : router.query.status;
+    const normalizedStatus =
+        statusFilter === 'draft' ||
+        statusFilter === 'in_progress' ||
+        statusFilter === 'completed' ||
+        statusFilter === 'cancelled'
+            ? statusFilter
+            : undefined;
+    const { data: rows = [], isLoading } =
+        useStocktakingHistory(normalizedStatus);
+    const statusLabels: Record<
+        'draft' | 'in_progress' | 'completed' | 'cancelled',
+        string
+    > = {
+        draft: 'robocza',
+        in_progress: 'w toku',
+        completed: 'zakończona',
+        cancelled: 'anulowana',
+    };
 
     return (
         <WarehouseLayout
@@ -30,6 +52,7 @@ export default function InventoryHistoryPage() {
                         <thead>
                             <tr>
                                 <th>data i nazwa inwentaryzacji</th>
+                                <th>status</th>
                                 <th>liczba produktów</th>
                                 <th>
                                     liczba produktów z niedoborem w magazynie
@@ -52,6 +75,7 @@ export default function InventoryHistoryPage() {
                                             {row.stocktakingNumber}
                                         </Link>
                                     </td>
+                                    <td>{statusLabels[row.status]}</td>
                                     <td>{row.productsCount}</td>
                                     <td>{row.shortageCount}</td>
                                     <td>{row.overageCount}</td>

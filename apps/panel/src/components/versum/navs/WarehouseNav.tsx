@@ -6,15 +6,44 @@ import type { ProductCategory } from '@/types';
 import { useDeliveries } from '@/hooks/useWarehouse';
 import { useWarehouseOrders } from '@/hooks/useWarehouseViews';
 import { useStockSummary } from '@/hooks/useStockAlerts';
+import { useStocktakings } from '@/hooks/useWarehouse';
 
 export default function WarehouseNav() {
     const router = useRouter();
+    const path = router.pathname;
+    const inventoryNavActive = path.startsWith('/inventory');
+    const deliveriesNavActive =
+        path.startsWith('/deliveries') ||
+        path.startsWith('/suppliers') ||
+        path.startsWith('/stock-alerts') ||
+        path.startsWith('/manufacturers');
     const { data: categories } = useProductCategories();
     const { data: draftDeliveries = [] } = useDeliveries({ status: 'draft' });
+    const { data: pendingDeliveries = [] } = useDeliveries(
+        { status: 'pending' },
+        deliveriesNavActive,
+    );
     const { data: orders = [] } = useWarehouseOrders();
     const { data: stockSummary } = useStockSummary();
+    const { data: draftStocktakings = [] } = useStocktakings(
+        {
+            status: 'draft',
+        },
+        inventoryNavActive,
+    );
+    const { data: inProgressStocktakings = [] } = useStocktakings(
+        {
+            status: 'in_progress',
+        },
+        inventoryNavActive,
+    );
+    const { data: completedStocktakings = [] } = useStocktakings(
+        {
+            status: 'completed',
+        },
+        inventoryNavActive,
+    );
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-    const path = router.pathname;
     const draftOrdersCount = orders.filter(
         (order) => order.status === 'draft',
     ).length;
@@ -153,6 +182,11 @@ export default function WarehouseNav() {
                 query: { status: 'draft' },
             },
             {
+                label: `oczekujące (${pendingDeliveries.length})`,
+                href: '/deliveries/history',
+                query: { status: 'pending' },
+            },
+            {
                 label: `niski stan magazynowy (${lowStockCount})`,
                 href: '/stock-alerts',
             },
@@ -177,6 +211,21 @@ export default function WarehouseNav() {
         return renderModuleNav('INWENTARYZACJA', [
             { label: 'nowa inwentaryzacja', href: '/inventory/new' },
             { label: 'historia inwentaryzacji', href: '/inventory' },
+            {
+                label: `wersje robocze (${draftStocktakings.length})`,
+                href: '/inventory',
+                query: { status: 'draft' },
+            },
+            {
+                label: `w toku (${inProgressStocktakings.length})`,
+                href: '/inventory',
+                query: { status: 'in_progress' },
+            },
+            {
+                label: `zakończone (${completedStocktakings.length})`,
+                href: '/inventory',
+                query: { status: 'completed' },
+            },
         ]);
     }
 
