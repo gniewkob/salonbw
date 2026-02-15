@@ -115,6 +115,14 @@
   - nowy widok szczegółów `/deliveries/[id]` (meta + pozycje + akcje przyjęcia/anulowania),
   - numer dostawy w `historia dostaw` linkuje do szczegółów.
 
+### 2026-02-15 - Magazyn: szczegóły zamówienia (`/orders/[id]`)
+- `historia zamówień`:
+  - numer zamówienia linkuje do szczegółów (`/orders/[id]`).
+- nowy widok `/orders/[id]`:
+  - metadane zamówienia (nr, status, dostawca, data),
+  - tabela pozycji (`produkt`, `ilość`, `jednostka`, `przyjęto`),
+  - akcje statusowe (`wyślij`, `przyjmij`, `anuluj`) zgodnie ze statusem.
+
 ### 2026-02-15 - Magazyn: odchudzenie payloadu list (`sprzedaż` / `zużycie`)
 - Backend (`RetailService`):
   - `GET /sales` nie ładuje już relacji `items.product` (lista zostaje z `items`, `employee`, `createdBy`),
