@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-15 (Warehouse nav parity + delivery details deployed)_
+_Last updated: 2026-02-15 (Warehouse usage aliases + secondnav fetch optimization deployed)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `e28df290` | `22037709514` | 2026-02-15 14:58 | production | Stocktaking history now supports `?status`; inventory filters/counts enabled in panel secondnav |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `e28df290` | `22037709514` | 2026-02-15 14:58 | production | Magazyn parity: `DOSTAWY`/`INWENTARYZACJA` secondnav counts + nowy widok `/deliveries/[id]` |
+| Dashboard (`panel.salon-bw.pl`) | `78a29948` | `22037999007` | 2026-02-15 15:16 | production | Magazyn: aliasy `/usage* -> /use*` + ograniczenie zbędnych zapytań secondnav (mniejszy transfer) |
 
 Verification:
 
