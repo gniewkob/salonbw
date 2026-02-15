@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-15 (Landing: Polish content sections implemented)_
+_Last updated: 2026-02-15 (Content CMS API deployed, landing deploying)_
 
 ## Platform Architecture
 
@@ -19,14 +19,15 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `e28df290` | `22037709514` | 2026-02-15 14:58 | production | Stocktaking history now supports `?status`; inventory filters/counts enabled in panel secondnav |
-| Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
+| API (`api.salon-bw.pl`) | `fc840dc3` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
+| Public site (`dev.salon-bw.pl`) | `fc840dc3` | `22043366264` | 🔄 in progress | production | Landing Phase 1: Polish content sections (HeroSlider, FounderMessage, HistoryAccordion, ValuesSection, SalonGallery) |
 | Dashboard (`panel.salon-bw.pl`) | `58b09877` | `22041078513` | 2026-02-15 18:49 | production | Magazyn: dodane redirecty indeksów `/sales|/use|/deliveries|/orders` do widoków `history` (stabilizacja tras) |
 
 Verification:
 
-- `curl -I https://api.salon-bw.pl/healthz` → `200 OK`
-- `curl -s -X POST https://api.salon-bw.pl/emails/send …` → `{"status":"ok"}` (SMTP: kontakt@salon-bw.pl on `mail0.mydevil.net`)
+- `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
+- `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
+- `curl https://api.salon-bw.pl/content/sections/hero_slides` → Returns 3 Polish hero slides with titles and descriptions
 
 ## Recent Incidents
 
@@ -87,13 +88,23 @@ Verification:
 
 ## What's Working
 
-- **2026-02-15** – Landing page (apps/landing) Polish content sections implemented:
-  - 5 new components: HeroSlider (3 Polish slides with auto-play), FounderMessage (Aleksandra Bodora quote with Tangerine font), HistoryAccordion (3 salon history sections), ValuesSection (6 core values tabs), SalonGallery (8 interior photos with lightbox)
-  - Homepage redesigned: replaced English placeholder content with Polish sections
-  - Full keyboard navigation (arrow keys, Tab, Enter, Escape)
-  - ARIA-compliant (roles, labels, focus indicators)
-  - Commits: `9ed0b2ec` (Phase 1 core: navbar, footer, contact) + `c23ce958` (Phase 1 advanced components)
-  - TypeScript + ESLint clean, ready for testing
+- **2026-02-15** – Content CMS system deployed (API + Database):
+  - New `/content/sections` API endpoints (GET only, public access)
+  - `content_sections` table created with jsonb data column
+  - Migration auto-applied with seed data: business_info, hero_slides, founder_message, history_items
+  - API verified working: `curl https://api.salon-bw.pl/content/sections` returns 4 sections
+  - Ready for Panel CRUD integration (future work)
+  - Docs: `docs/CONTENT_CMS_PLAN.md`
+- **2026-02-15** – Landing page (apps/landing) Polish content sections implemented (Phase 1 complete):
+  - 5 new components: HeroSlider, FounderMessage, HistoryAccordion, ValuesSection, SalonGallery
+  - Services page with Polish categories, improved design, booking CTAs
+  - Mobile hamburger menu with Polish navigation
+  - Expanded footer (3 columns: navigation, business info, social)
+  - Contact page with Bytom address and map
+  - Full keyboard navigation + ARIA-compliant
+  - Content API client with fallback to local config (contentApi.ts)
+  - Commits: `9ed0b2ec`, `c23ce958`, `8e8dc4f4`, `8ae01aa3`, `40e24733`, `fc840dc3`
+  - Deploy in progress: run #22043366264
 - **2026-02-14** – Warehouse `ZUŻYCIE` planned-flow implemented (API + panel):
   - API: `GET /usage?scope=planned|completed|all` + `GET /usage/planned`; create payload accepts `scope` and `plannedFor`,
   - planned usage records do not decrement stock on creation (no immediate inventory movement),
