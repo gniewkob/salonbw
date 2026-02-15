@@ -554,7 +554,7 @@ jobs:
           # 2. Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          timeout 900 rsync -az --timeout=120 --contimeout=20 \
+          timeout 900 rsync -az --timeout=120 \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
@@ -657,7 +657,7 @@ jobs:
           # Upload Tarball
           echo "Uploading Bundle to $DEST..."
           ls -la "$TAR_NAME"
-          timeout 900 rsync -az --timeout=120 --contimeout=20 \
+          timeout 900 rsync -az --timeout=120 \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" \
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
@@ -803,13 +803,13 @@ jobs:
       - name: Upload backend bundle
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
-          rsync -az --delete --timeout=300 --contimeout=20 \
+          rsync -az --delete --timeout=300 \
             --exclude='.git' \
             -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/dist/ \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/dist/
-          rsync -az --timeout=300 --contimeout=20 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/package.json \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/package.json \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
-          rsync -az --timeout=300 --contimeout=20 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/app.js \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" backend/salonbw-backend/app.js \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/
 
       - name: Install dependencies (backend)
@@ -1006,7 +1006,7 @@ jobs:
 
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
-          rsync -az --timeout=300 --contimeout=20 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
+          rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .env.production \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }}:${{ steps.dest.outputs.remote_path_api }}/.env.generated
 
           # Merge server-side to avoid moving SMTP credentials through CI/CD.
