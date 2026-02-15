@@ -106,6 +106,11 @@
 ### 2026-02-15 - Magazyn: aliasy `/usage*` + optymalizacja transferu danych secondnav
 - routing panel:
   - dodane aliasy tras: `/usage` -> `/use/history`, `/usage/:path*` -> `/use/:path*` (eliminuje 404 przy legacy/nawykowych URL).
+  - dodane indeksowe redirecty stron magazynu:
+    - `/sales` -> `/sales/history`
+    - `/use` -> `/use/history`
+    - `/deliveries` -> `/deliveries/history`
+    - `/orders` -> `/orders/history`
 - nawigacja modułu magazynu:
   - `WarehouseNav` rozpoznaje teraz zarówno `/use*`, jak i `/usage*` dla sekcji `ZUŻYCIE`.
 - wydajność/transfer:
