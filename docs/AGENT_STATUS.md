@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-15 (Warehouse index route redirects deployed)_
+_Last updated: 2026-02-15 (Landing: Polish content sections implemented)_
 
 ## Platform Architecture
 
@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-15** – Landing page (apps/landing) Polish content sections implemented:
+  - 5 new components: HeroSlider (3 Polish slides with auto-play), FounderMessage (Aleksandra Bodora quote with Tangerine font), HistoryAccordion (3 salon history sections), ValuesSection (6 core values tabs), SalonGallery (8 interior photos with lightbox)
+  - Homepage redesigned: replaced English placeholder content with Polish sections
+  - Full keyboard navigation (arrow keys, Tab, Enter, Escape)
+  - ARIA-compliant (roles, labels, focus indicators)
+  - Commits: `9ed0b2ec` (Phase 1 core: navbar, footer, contact) + `c23ce958` (Phase 1 advanced components)
+  - TypeScript + ESLint clean, ready for testing
 - **2026-02-14** – Warehouse `ZUŻYCIE` planned-flow implemented (API + panel):
   - API: `GET /usage?scope=planned|completed|all` + `GET /usage/planned`; create payload accepts `scope` and `plannedFor`,
   - planned usage records do not decrement stock on creation (no immediate inventory movement),
