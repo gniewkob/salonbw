@@ -198,6 +198,16 @@
   - lokalne `eslint` + `tsc` ✅,
   - smoke produkcyjny magazynu: pierwszy test przechodzi, drugi potrafi flaky-failować na kroku logowania (`expect.not.toHaveURL` timeout / page closed) niezależnie od zmian funkcjonalnych widoku.
 
+### 2026-02-14 - Magazyn: planowane zużycie (flow end-to-end, bez migracji DB)
+- Backend (`/usage`):
+  - dodane parametry wejściowe: `scope` (`planned|completed`) i `plannedFor`,
+  - `GET /usage?scope=planned|completed|all` oraz `GET /usage/planned`,
+  - wpisy `planned` nie zdejmują stanu magazynowego podczas tworzenia (ruch magazynowy powstaje dopiero dla zużycia wykonanego).
+- Panel:
+  - `/use/planned` przestało być placeholderem: działa lista planowanego zużycia z tabelą i przejściem do szczegółów,
+  - `/use/new?scope=planned` zapisuje planowane zużycie z datą/czasem planowanym,
+  - `/use/history` pokazuje tylko zużycie wykonane (`scope=completed`).
+
 ### 2026-02-13 - Klienci: komunikacja (communication_preferences) rozszerzona
 - zakładka `komunikacja` na karcie klienta:
   - dodana historia komunikacji per klient z przełącznikiem kanału `SMS` / `Email`,

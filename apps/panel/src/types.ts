@@ -615,6 +615,7 @@ export interface WarehouseUsage {
     id: number;
     usageNumber: string;
     usedAt: string;
+    scope?: 'planned' | 'completed';
     clientName?: string | null;
     clientId?: number | null;
     employeeId?: number | null;

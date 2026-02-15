@@ -87,6 +87,13 @@ Verification:
 
 ## What's Working
 
+- **2026-02-14** – Warehouse `ZUŻYCIE` planned-flow implemented (API + panel):
+  - API: `GET /usage?scope=planned|completed|all` + `GET /usage/planned`; create payload accepts `scope` and `plannedFor`,
+  - planned usage records do not decrement stock on creation (no immediate inventory movement),
+  - panel:
+    - `/use/planned` now renders real list/table,
+    - `/use/new?scope=planned` saves planned usage with datetime,
+    - `/use/history` constrained to completed usage only.
 - **2026-02-14** – Deploy payload minimization for FreeBSD prepared:
   - `.github/workflows/deploy.yml` now ships frontend tarballs without `node_modules` and prunes `.next/cache` before packaging,
   - frontend `npm install --omit=dev --ignore-scripts` moved to remote host after extract (uses `npm22` when available, fallback `npm`),

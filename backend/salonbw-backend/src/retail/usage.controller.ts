@@ -7,6 +7,7 @@ import {
     Param,
     ParseIntPipe,
     Post,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -43,14 +44,27 @@ export class UsageController {
         return this.retail.createUsage(dto, { id: user.userId } as User);
     }
 
+    @Get('planned')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List planned product usage records' })
+    @ApiResponse({ status: 200, description: 'Planned usage records' })
+    findPlannedUsage() {
+        return this.retail.listUsage('planned');
+    }
+
     @Get()
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Employee, Role.Admin)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List product usage records' })
     @ApiResponse({ status: 200, description: 'Usage records' })
-    findUsage() {
-        return this.retail.listUsage();
+    findUsageByScope(
+        @Query('scope')
+        scope?: 'all' | 'planned' | 'completed',
+    ) {
+        return this.retail.listUsage(scope ?? 'all');
     }
 
     @Get(':id')

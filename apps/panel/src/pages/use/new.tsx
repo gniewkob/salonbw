@@ -17,6 +17,9 @@ interface UsageLineForm {
 
 export default function WarehouseUsageCreatePage() {
     const router = useRouter();
+    const usageScope =
+        router.query.scope === 'planned' ? 'planned' : 'completed';
+    const isPlanned = usageScope === 'planned';
     const { data: products = [] } = useWarehouseProducts({
         includeInactive: false,
     });
@@ -28,6 +31,10 @@ export default function WarehouseUsageCreatePage() {
     ]);
     const [clientName, setClientName] = useState('');
     const [employeeId, setEmployeeId] = useState('');
+    const [plannedFor, setPlannedFor] = useState(
+        new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+    );
+    const [formError, setFormError] = useState<string | null>(null);
 
     const addLine = () => {
         setLines((current) => [...current, { productId: '', quantity: '1' }]);
@@ -48,6 +55,7 @@ export default function WarehouseUsageCreatePage() {
     };
 
     const submit = async () => {
+        setFormError(null);
         const items = lines
             .filter((line) => line.productId)
             .map((line) => ({
@@ -56,21 +64,34 @@ export default function WarehouseUsageCreatePage() {
             }))
             .filter((line) => line.quantity > 0);
 
-        if (items.length === 0) return;
+        if (items.length === 0) {
+            setFormError(
+                'Dodaj co najmniej jedną pozycję z produktem i ilością większą od 0.',
+            );
+            return;
+        }
+        if (isPlanned && !plannedFor) {
+            setFormError('Ustaw datę i godzinę planowanego zużycia.');
+            return;
+        }
 
         await createMutation.mutateAsync({
             clientName: clientName || undefined,
             employeeId: employeeId ? Number(employeeId) : undefined,
+            scope: usageScope,
+            plannedFor: isPlanned
+                ? new Date(plannedFor).toISOString()
+                : undefined,
             items,
         });
 
-        await router.push('/use/history');
+        await router.push(isPlanned ? '/use/planned' : '/use/history');
     };
 
     return (
         <WarehouseLayout
-            pageTitle="Magazyn / Dodaj zużycie | SalonBW"
-            heading="Magazyn / Dodaj zużycie"
+            pageTitle={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'} | SalonBW`}
+            heading={`Magazyn / ${isPlanned ? 'Dodaj planowane zużycie' : 'Dodaj zużycie'}`}
             activeTab="use"
             actions={
                 <>
@@ -190,6 +211,19 @@ export default function WarehouseUsageCreatePage() {
                         ))}
                     </select>
                 </label>
+                {isPlanned ? (
+                    <label>
+                        <span>Planowana data i godzina</span>
+                        <input
+                            type="datetime-local"
+                            value={plannedFor}
+                            onChange={(event) =>
+                                setPlannedFor(event.target.value)
+                            }
+                            className="form-control"
+                        />
+                    </label>
+                ) : null}
             </div>
 
             <div className="warehouse-actions-row">
@@ -201,9 +235,14 @@ export default function WarehouseUsageCreatePage() {
                 >
                     {createMutation.isPending
                         ? 'zapisywanie...'
-                        : 'wprowadź zużycie'}
+                        : isPlanned
+                          ? 'zapisz planowane zużycie'
+                          : 'wprowadź zużycie'}
                 </button>
             </div>
+            {formError ? (
+                <p className="warehouse-validation-error">{formError}</p>
+            ) : null}
         </WarehouseLayout>
     );
 }

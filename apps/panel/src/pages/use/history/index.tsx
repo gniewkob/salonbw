@@ -5,7 +5,7 @@ import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseUsage } from '@/hooks/useWarehouseViews';
 
 export default function WarehouseUsageHistoryPage() {
-    const { data: usage = [], isLoading } = useWarehouseUsage();
+    const { data: usage = [], isLoading } = useWarehouseUsage('completed');
 
     return (
         <WarehouseLayout
@@ -18,10 +18,10 @@ export default function WarehouseUsageHistoryPage() {
                         dodaj zużycie
                     </Link>
                     <Link
-                        href="/use/planned"
+                        href="/use/new?scope=planned"
                         className="btn btn-default btn-xs"
                     >
-                        planowane zużycie
+                        dodaj planowane zużycie
                     </Link>
                 </>
             }
