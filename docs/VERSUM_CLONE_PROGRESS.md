@@ -103,6 +103,17 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-15 - Magazyn: aliasy `/usage*` + optymalizacja transferu danych secondnav
+- routing panel:
+  - dodane aliasy tras: `/usage` -> `/use/history`, `/usage/:path*` -> `/use/:path*` (eliminuje 404 przy legacy/nawykowych URL).
+- nawigacja modułu magazynu:
+  - `WarehouseNav` rozpoznaje teraz zarówno `/use*`, jak i `/usage*` dla sekcji `ZUŻYCIE`.
+- wydajność/transfer:
+  - secondnav przestał pobierać zbędne dane globalnie:
+    - dostawy (`draft/pending`) i `stock-summary` tylko w kontekście `DOSTAWY`,
+    - zamówienia tylko w kontekście `ZAMÓWIENIA`.
+  - efekt: mniej requestów i mniejszy ruch na hostingu docelowym (FreeBSD/MyDevil).
+
 ### 2026-02-15 - Magazyn: secondnav `DOSTAWY`/`INWENTARYZACJA` + szczegóły dostawy
 - `DOSTAWY` secondnav:
   - dodany status `oczekujące (N)` (`/deliveries/history?status=pending`).
