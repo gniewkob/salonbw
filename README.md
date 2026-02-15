@@ -45,7 +45,7 @@ This README summarises the essentials. For deep dives, see the living documentat
    Visit <http://localhost:3000>. The frontend proxies the backend using `NEXT_PUBLIC_API_URL`.
 
 5. **Optional: connect to production DB via tunnel**
-   - Configure `.env.development.local` (mydevil host/user/db) and run:
+   - Configure `.env.development.local` (hosting host/user/db) and run:
 
      ```bash
      pnpm tunnel:start
@@ -80,7 +80,7 @@ The legacy Laravel frontend has been removed; the repo now contains only the Nex
 - Operational status dashboard: [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md)
 - Operations runbook (deployments, restarts, CI): [`docs/AGENT_OPERATIONS.md`](docs/AGENT_OPERATIONS.md)
 - CI/CD overview + secrets: [`docs/CI_CD.md`](docs/CI_CD.md)
-- Deployment runbook for mydevil: [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md)
+- Deployment runbook for hosting: [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md)
 - Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
 
 ## Common scripts
@@ -102,14 +102,14 @@ Husky hooks ensure lint + typecheck run before commits.
 - Public marketing pages: `/`, `/services`, `/gallery`, `/contact`.
 - Auth (`/auth/login`, `/auth/register`) redirects to `/dashboard`.
 - Dashboards vary per role (`client`, `employee`, `receptionist`, `admin`) with RBAC enforced via shared utilities.
-- Contact form submits to the backend `/emails/send` endpoint which relays via the `kontakt@salon-bw.pl` mailbox.
+- Contact form submits to the backend `/emails/send` endpoint which relays via the `kontakt@hosting domain` mailbox.
 - Backend health endpoint: `/healthz` (used by CI and deployment smoke tests).
 
 Swagger is disabled by default; set `ENABLE_SWAGGER=true` in the backend environment to expose `/api/docs` (only recommended outside production).
 
 ## Deployment
 
-Production deploys use a single consolidated workflow: `Deploy (MyDevil)` at `.github/workflows/deploy.yml`.
+Production deploys use a single consolidated workflow: `Deploy (hosting)` at `.github/workflows/deploy.yml`.
 
 - Targets: `api`, `public`, `dashboard`, `admin`
 - Inputs: `ref` (branch/tag/SHA), optional `api_url`, optional `remote_path`, optional `app_name`
@@ -129,19 +129,19 @@ gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=a
 
 Defaults can be supplied via repository variables (production):
 
-- `MYDEVIL_API_REMOTE_PATH_PRODUCTION`, `MYDEVIL_API_APP_NAME_PRODUCTION`
-- `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`, `MYDEVIL_PUBLIC_APP_NAME_PRODUCTION`
-- `MYDEVIL_DASHBOARD_REMOTE_PATH_PRODUCTION`, `MYDEVIL_DASHBOARD_APP_NAME_PRODUCTION` (dashboard uses `panel.salon-bw.pl`)
-- `MYDEVIL_ADMIN_REMOTE_PATH_PRODUCTION`, `MYDEVIL_ADMIN_APP_NAME_PRODUCTION`
-- Generic fallbacks: `MYDEVIL_REMOTE_PATH_PRODUCTION`, `MYDEVIL_APP_NAME_PRODUCTION`
+- `hosting_API_REMOTE_PATH_PRODUCTION`, `hosting_API_APP_NAME_PRODUCTION`
+- `hosting_PUBLIC_REMOTE_PATH_PRODUCTION`, `hosting_PUBLIC_APP_NAME_PRODUCTION`
+- `hosting_DASHBOARD_REMOTE_PATH_PRODUCTION`, `hosting_DASHBOARD_APP_NAME_PRODUCTION` (dashboard uses `panel.hosting domain`)
+- `hosting_ADMIN_REMOTE_PATH_PRODUCTION`, `hosting_ADMIN_APP_NAME_PRODUCTION`
+- Generic fallbacks: `hosting_REMOTE_PATH_PRODUCTION`, `hosting_APP_NAME_PRODUCTION`
 
-Manual instructions and infrastructure quirks (e.g. Passenger wrappers touching `tmp/restart.txt`) are in [`docs/DEPLOYMENT_MYDEVIL.md`](docs/DEPLOYMENT_MYDEVIL.md). CI/CD details and required secrets are in [`docs/CI_CD.md`](docs/CI_CD.md).
+Manual instructions and infrastructure quirks (e.g. Passenger wrappers touching `tmp/restart.txt`) are in [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md). CI/CD details and required secrets are in [`docs/CI_CD.md`](docs/CI_CD.md).
 
 Post-deploy checks (also executed by the workflow):
 
 ```bash
-curl -I https://api.salon-bw.pl/healthz
-curl -s -X POST https://api.salon-bw.pl/emails/send -H 'Content-Type: application/json' -d '{"to":"kontakt@salon-bw.pl","subject":"Smoke","template":"Hello","data":{}}'
+curl -I https://api.hosting domain/healthz
+curl -s -X POST https://api.hosting domain/emails/send -H 'Content-Type: application/json' -d '{"to":"kontakt@hosting domain","subject":"Smoke","template":"Hello","data":{}}'
 ```
 
 Current deployment history and known issues are tracked in [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md).
