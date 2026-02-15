@@ -423,7 +423,7 @@ export class RetailService {
         }
 
         return this.warehouseSales.find({
-            relations: ['items', 'items.product', 'employee', 'createdBy'],
+            relations: ['items', 'employee', 'createdBy'],
             order: { soldAt: 'DESC', id: 'DESC' },
         });
     }
@@ -589,7 +589,6 @@ export class RetailService {
         const query = this.warehouseUsages
             .createQueryBuilder('usage')
             .leftJoinAndSelect('usage.items', 'items')
-            .leftJoinAndSelect('items.product', 'product')
             .leftJoinAndSelect('usage.employee', 'employee')
             .leftJoinAndSelect('usage.createdBy', 'createdBy')
             .orderBy('usage.usedAt', 'DESC')
