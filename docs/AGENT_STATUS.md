@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-14 (Deploy transfer timeout hardening + warehouse parity smoke)_
+_Last updated: 2026-02-15 (Deploy rsync compatibility fix + production api/dashboard rollout)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `1cbf7ab6` | `21924858375` | 2026-02-11 22:06 | production | Warehouse hotfix: `@SkipThrottle()` for `GET /products` and `GET /product-categories/tree` to remove 429 pressure on magazyn views |
+| API (`api.salon-bw.pl`) | `a84610a7` | `22037034756` | 2026-02-15 14:08 | production | Deploy workflow rsync compatibility fix (`--contimeout` removed); API deploy + smoke passed |
 | Public site (`dev.salon-bw.pl`) | `1a3e0f1d` | `21765504919` | 2026-02-06 20:55 | production | Auto-deploy with deps fix |
-| Dashboard (`panel.salon-bw.pl`) | `13192a3b` | `22024361812` | 2026-02-14 21:17 | production | Deploy payload minimization: frontend tarballs ship without `node_modules`/`.next/cache`; dependencies installed remotely on FreeBSD host after extract |
+| Dashboard (`panel.salon-bw.pl`) | `a84610a7` | `22037065572` | 2026-02-15 14:12 | production | Dashboard deploy successful after rsync flag fix; frontend static chunk smoke passed |
 
 Verification:
 
