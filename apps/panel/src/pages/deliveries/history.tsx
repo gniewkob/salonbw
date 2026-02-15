@@ -66,7 +66,14 @@ export default function WarehouseDeliveriesHistoryPage() {
                         <tbody>
                             {filteredDeliveries.map((delivery) => (
                                 <tr key={delivery.id}>
-                                    <td>{delivery.deliveryNumber}</td>
+                                    <td>
+                                        <Link
+                                            href={`/deliveries/${delivery.id}`}
+                                            className="products-link"
+                                        >
+                                            {delivery.deliveryNumber}
+                                        </Link>
+                                    </td>
                                     <td>{delivery.supplier?.name ?? '-'}</td>
                                     <td>
                                         {delivery.deliveryDate

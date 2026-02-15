@@ -103,6 +103,18 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-15 - Magazyn: secondnav `DOSTAWY`/`INWENTARYZACJA` + szczegóły dostawy
+- `DOSTAWY` secondnav:
+  - dodany status `oczekujące (N)` (`/deliveries/history?status=pending`).
+- `INWENTARYZACJA` secondnav:
+  - dodane pozycje z licznikami: `wersje robocze (N)`, `w toku (N)`, `zakończone (N)`.
+- inwentaryzacja:
+  - `GET /stocktaking/history` wspiera filtr `?status=...`,
+  - tabela `/inventory` pokazuje kolumnę `status` i respektuje filtr statusu z query.
+- dostawy:
+  - nowy widok szczegółów `/deliveries/[id]` (meta + pozycje + akcje przyjęcia/anulowania),
+  - numer dostawy w `historia dostaw` linkuje do szczegółów.
+
 ### 2026-02-15 - Magazyn: odchudzenie payloadu list (`sprzedaż` / `zużycie`)
 - Backend (`RetailService`):
   - `GET /sales` nie ładuje już relacji `items.product` (lista zostaje z `items`, `employee`, `createdBy`),

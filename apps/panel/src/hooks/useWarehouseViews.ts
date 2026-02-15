@@ -20,6 +20,7 @@ interface ProductQuery {
 interface StocktakingHistoryRow {
     id: number;
     stocktakingNumber: string;
+    status: 'draft' | 'in_progress' | 'completed' | 'cancelled';
     stocktakingDate: string;
     productsCount: number;
     shortageCount: number;
@@ -424,11 +425,15 @@ export function useReceiveWarehouseOrder() {
     return useOrderAction('receive');
 }
 
-export function useStocktakingHistory() {
+export function useStocktakingHistory(
+    status?: 'draft' | 'in_progress' | 'completed' | 'cancelled',
+) {
     const { apiFetch } = useAuth();
     return useQuery<StocktakingHistoryRow[]>({
-        queryKey: ['stocktaking-history'],
+        queryKey: ['stocktaking-history', status ?? 'all'],
         queryFn: () =>
-            apiFetch<StocktakingHistoryRow[]>('/stocktaking/history'),
+            apiFetch<StocktakingHistoryRow[]>(
+                `/stocktaking/history${status ? `?status=${status}` : ''}`,
+            ),
     });
 }

@@ -84,7 +84,7 @@ export interface DeliveryFilters {
     to?: string;
 }
 
-export function useDeliveries(filters?: DeliveryFilters) {
+export function useDeliveries(filters?: DeliveryFilters, enabled = true) {
     const { apiFetch } = useAuth();
     const params = new URLSearchParams();
     if (filters?.supplierId)
@@ -100,6 +100,7 @@ export function useDeliveries(filters?: DeliveryFilters) {
             apiFetch<Delivery[]>(
                 `/deliveries${queryStr ? `?${queryStr}` : ''}`,
             ),
+        enabled,
     });
 }
 
@@ -256,7 +257,7 @@ export interface StocktakingFilters {
     to?: string;
 }
 
-export function useStocktakings(filters?: StocktakingFilters) {
+export function useStocktakings(filters?: StocktakingFilters, enabled = true) {
     const { apiFetch } = useAuth();
     const params = new URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
@@ -270,6 +271,7 @@ export function useStocktakings(filters?: StocktakingFilters) {
             apiFetch<Stocktaking[]>(
                 `/stocktaking${queryStr ? `?${queryStr}` : ''}`,
             ),
+        enabled,
     });
 }
 
