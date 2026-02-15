@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Tangerine:wght@700&display=swap');
 
 :root {
     --background: #ffffff;
@@ -16,4 +17,53 @@ body {
     background: var(--background);
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Skip to content link for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.sr-only:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background-color: #000;
+    color: #fff;
+    z-index: 100;
+    border-radius: 0.25rem;
+    box-shadow: 0 0 0 2px #c5a880;
+}
+
+/* Global focus styles for accessibility */
+*:focus-visible {
+    outline: 2px solid #c5a880;
+    outline-offset: 2px;
+}
+
+/* Ensure buttons and links are keyboard accessible */
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid #c5a880;
+    outline-offset: 2px;
+}
+
+/* Smooth scrolling for skip links */
+html {
+    scroll-behavior: smooth;
 }

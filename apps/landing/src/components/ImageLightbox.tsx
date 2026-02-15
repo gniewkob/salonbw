@@ -160,7 +160,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Previous image"
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-2xl"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-gold"
                         onClick={(props as CarouselProps).onPrev}
                     >
                         ‹
@@ -168,7 +168,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label="Next image"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-2xl"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-gold"
                         onClick={(props as CarouselProps).onNext}
                     >
                         ›
@@ -178,7 +178,7 @@ export default function ImageLightbox(props: Props) {
             <button
                 type="button"
                 aria-label="Close"
-                className="absolute top-3 right-3 text-white text-2xl"
+                className="absolute top-3 right-3 text-white text-2xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-gold"
                 onClick={handleClose}
                 ref={closeRef}
             >
@@ -188,7 +188,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Share image"
                 title="Share image"
-                className="absolute top-3 right-12 text-white text-xl"
+                className="absolute top-3 right-12 text-white text-xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-gold"
                 onClick={(e) => {
                     e.stopPropagation();
                     void onShare();
@@ -200,7 +200,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label="Download image"
                 title="Download image"
-                className="absolute top-3 right-24 text-white text-xl"
+                className="absolute top-3 right-24 text-white text-xl p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-brand-gold"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDownload();
