@@ -571,7 +571,8 @@ jobs:
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           TARGET_APP="apps/landing"
           REMOTE_ROOT="/usr/home/vetternkraft"
-          REMOTE_DEST="${REMOTE_ROOT}/${DEST}"
+          # DEST is already absolute path, use as-is
+          REMOTE_DEST="$DEST"
           echo "Targeting LANDING: $DEST"
 
           BUNDLE_DIR="deploy_bundle_landing"
