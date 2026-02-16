@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-15 (Content CMS API deployed, landing deploying)_
+_Last updated: 2026-02-16 (Landing Phase 1 LIVE on dev.salon-bw.pl)_
 
 ## Platform Architecture
 
@@ -19,15 +19,15 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `fc840dc3` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
-| Public site (`dev.salon-bw.pl`) | `fc840dc3` | `22043366264` | 🔄 in progress | production | Landing Phase 1: Polish content sections (HeroSlider, FounderMessage, HistoryAccordion, ValuesSection, SalonGallery) |
+| API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
+| Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
 | Dashboard (`panel.salon-bw.pl`) | `58b09877` | `22041078513` | 2026-02-15 18:49 | production | Magazyn: dodane redirecty indeksów `/sales|/use|/deliveries|/orders` do widoków `history` (stabilizacja tras) |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
-- `curl https://api.salon-bw.pl/content/sections/hero_slides` → Returns 3 Polish hero slides with titles and descriptions
+- `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
 
 ## Recent Incidents
 
