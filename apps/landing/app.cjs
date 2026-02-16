@@ -1,7 +1,14 @@
+/**
+ * Production server for Landing (dev.salon-bw.pl)
+ * Uses standard Next.js build (not standalone)
+ * Compatible with Passenger/MyDevil hosting
+ */
+
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 
-// Load environment from .env files if present (server-side only)
+// Load environment from .env files if present
 function loadDotEnvFiles() {
     const files = ['.env.production', '.env.local', '.env'];
     for (const file of files) {
@@ -27,246 +34,90 @@ function loadDotEnvFiles() {
 loadDotEnvFiles();
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-process.env.PORT =
-    process.env.PORT ||
-    process.env.PASSENGER_PORT ||
-    process.env.APP_PORT ||
-    '3000';
+const PORT =
+    parseInt(process.env.PORT || process.env.PASSENGER_PORT || '3000', 10);
+const HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
 
-const standaloneDir = path.join(__dirname, '.next', 'standalone');
-const server = path.join(standaloneDir, 'server.js');
+console.log('[landing] Starting Next.js server');
+console.log('[landing] Node version:', process.version);
+console.log('[landing] Working directory:', __dirname);
+console.log('[landing] PORT:', PORT);
+console.log('[landing] HOSTNAME:', HOSTNAME);
 
-const staticSource = path.join(__dirname, '.next', 'static');
-const standaloneNextDir = path.join(standaloneDir, '.next');
-const staticTarget = path.join(standaloneNextDir, 'static');
-const publicSource = path.join(__dirname, 'public');
-const publicTarget = path.join(standaloneDir, 'public');
-const isStandaloneRuntime = fs.existsSync(server);
-const standaloneNodeModules = path.join(standaloneDir, 'node_modules');
-
-function configureModuleResolution() {
-    if (!isStandaloneRuntime) return;
-    const Module = require('module');
-    const extraNodePaths = [
-        path.join(standaloneDir, 'node_modules'),
-        path.join(__dirname, 'node_modules'),
-    ];
-    const existingNodePath = process.env.NODE_PATH
-        ? process.env.NODE_PATH.split(path.delimiter)
-        : [];
-    const nodePathSet = new Set(
-        [...extraNodePaths, ...existingNodePath].filter(Boolean),
-    );
-    process.env.NODE_PATH = Array.from(nodePathSet).join(path.delimiter);
-    Module._initPaths();
-    for (const p of extraNodePaths) {
-        if (!Module.globalPaths.includes(p)) {
-            Module.globalPaths.push(p);
-        }
-        if (require.main && !require.main.paths.includes(p)) {
-            require.main.paths.push(p);
-        }
-    }
+// Verify Next.js build exists
+const nextDir = path.join(__dirname, '.next');
+if (!fs.existsSync(nextDir)) {
+    console.error('[landing] ERROR: .next directory not found. Run `next build` first.');
+    process.exit(1);
 }
 
-configureModuleResolution();
-
-function ensureStandaloneDependency(packageName) {
-    if (!isStandaloneRuntime) return;
-    let resolvedDir;
-    try {
-        const resolved = require.resolve(`${packageName}/package.json`, {
-            paths: [__dirname],
-        });
-        resolvedDir = path.dirname(resolved);
-    } catch {
-        try {
-            const nextPkg = require.resolve('next/package.json', {
-                paths: [__dirname],
-            });
-            const nextRequire = require('module').createRequire(nextPkg);
-            resolvedDir = path.dirname(
-                nextRequire.resolve(`${packageName}/package.json`),
-            );
-        } catch {
-            return;
-        }
-    }
-    const source = resolvedDir;
-    const target = path.join(standaloneNodeModules, packageName);
-    if (!fs.existsSync(source)) return;
-    try {
-        fs.mkdirSync(path.dirname(target), { recursive: true });
-        if (fs.existsSync(target)) return;
-        if (process.env.NODE_DEBUG?.includes('standalone')) {
-            console.log('[standalone] linking dependency', packageName, '->', target);
-        }
-        try {
-            fs.symlinkSync(source, target, 'junction');
-        } catch {
-            fs.cpSync(source, target, { recursive: true });
-        }
-    } catch (error) {
-        console.warn(
-            `Unable to link ${packageName} into standalone bundle (${error.message}).`,
-        );
-    }
+const buildManifest = path.join(nextDir, 'build-manifest.json');
+if (!fs.existsSync(buildManifest)) {
+    console.error('[landing] ERROR: build-manifest.json not found. Build may be incomplete.');
+    process.exit(1);
 }
 
-function syncNextRuntimeArtifacts() {
-    if (!isStandaloneRuntime) return;
-    let nextDir;
-    try {
-        const nextPkg = require.resolve('next/package.json', {
-            paths: [__dirname],
-        });
-        nextDir = path.dirname(nextPkg);
-    } catch {
-        return;
-    }
-    const source = path.join(nextDir, 'dist');
-    const target = path.join(standaloneNodeModules, 'next', 'dist');
-    try {
-        if (!fs.existsSync(source)) return;
-        fs.mkdirSync(path.dirname(target), { recursive: true });
-        if (process.env.NODE_DEBUG?.includes('standalone')) {
-            console.log('[standalone] syncing Next dist to', target);
-        }
-        fs.cpSync(source, target, { recursive: true });
-    } catch (error) {
-        console.warn(
-            `Unable to synchronise Next.js runtime assets (${error.message}).`,
-        );
-    }
-}
+console.log('[landing] Next.js build directory found');
 
-ensureStandaloneDependency('@next/env');
-ensureStandaloneDependency('@swc/helpers');
-ensureStandaloneDependency('styled-jsx');
-ensureStandaloneDependency('picocolors');
-syncNextRuntimeArtifacts();
-
-// Ensure the standalone server can resolve hashed assets even if the deployment
-// environment does not pre-create the expected symlink.
-function ensureStaticAssets() {
-    if (!isStandaloneRuntime) return;
-    if (!fs.existsSync(staticSource)) {
-        console.warn(
-            `Next.js static assets directory not found at ${staticSource}.`,
-        );
-        return;
-    }
-
-    fs.mkdirSync(standaloneNextDir, { recursive: true });
-
-    let needsLink = true;
-    if (fs.existsSync(staticTarget)) {
-        try {
-            const targetStat = fs.lstatSync(staticTarget);
-            if (targetStat.isSymbolicLink()) {
-                try {
-                    const resolved = fs.realpathSync(staticTarget);
-                    if (resolved === staticSource) {
-                        needsLink = false;
-                    } else {
-                        fs.rmSync(staticTarget, { recursive: true, force: true });
-                    }
-                } catch {
-                    fs.rmSync(staticTarget, { recursive: true, force: true });
-                }
-            } else if (targetStat.isDirectory()) {
-                needsLink = false;
-            } else {
-                fs.rmSync(staticTarget, { recursive: true, force: true });
-            }
-        } catch {
-            fs.rmSync(staticTarget, { recursive: true, force: true });
-        }
-    }
-
-    if (needsLink) {
-        const relative = path.relative(standaloneNextDir, staticSource) || '.';
-        try {
-            fs.symlinkSync(relative, staticTarget, 'junction');
-            needsLink = false;
-        } catch (error) {
-            console.warn(
-                `Unable to create symlink for Next.js static assets: ${error.message}`,
-            );
-        }
-    }
-
-    if (needsLink) {
-        try {
-            fs.cpSync(staticSource, staticTarget, { recursive: true });
-        } catch (error) {
-            console.error(
-                `Failed to copy Next.js static assets into standalone bundle: ${error.message}`,
-            );
-        }
-    }
-}
-
-function ensurePublicAssets() {
-    if (!isStandaloneRuntime) return;
-    if (!fs.existsSync(publicSource)) return;
-
-    try {
-        if (fs.existsSync(publicTarget)) {
-            const targetStat = fs.lstatSync(publicTarget);
-            if (targetStat.isSymbolicLink()) {
-                try {
-                    const resolved = fs.realpathSync(publicTarget);
-                    if (resolved === publicSource) {
-                        return;
-                    }
-                } catch {
-                    // fall through to recreate link/copy
-                }
-            } else if (targetStat.isDirectory()) {
-                return;
-            }
-            fs.rmSync(publicTarget, { recursive: true, force: true });
-        }
-
-        const relative = path.relative(standaloneDir, publicSource) || '.';
-        try {
-            fs.symlinkSync(relative, publicTarget, 'junction');
-            return;
-        } catch {
-            // fall through to copy
-        }
-
-        fs.cpSync(publicSource, publicTarget, { recursive: true });
-    } catch (error) {
-        console.warn(
-            `Unable to prepare public assets for standalone runtime (${error.message}).`,
-        );
-    }
-}
-
-ensureStaticAssets();
-ensurePublicAssets();
-
-if (process.env.NODE_DEBUG?.includes('standalone')) {
-    console.log('[standalone] NODE_PATH', process.env.NODE_PATH);
-    if (require.main) {
-        console.log('[standalone] main paths', require.main.paths);
-    }
-}
-
+// Initialize webcrypto polyfill if needed
 if (typeof globalThis.crypto === 'undefined') {
     try {
         globalThis.crypto = require('node:crypto').webcrypto;
+        console.log('[landing] Initialized webcrypto polyfill');
     } catch (error) {
-        console.warn('Unable to initialise webcrypto', error);
+        console.warn('[landing] Unable to initialize webcrypto:', error.message);
     }
 }
 
-if (!isStandaloneRuntime) {
-    throw new Error(
-        'Missing Next.js standalone server. Run `next build` before starting.',
-    );
-}
+// Start Next.js server
+try {
+    const next = require('next');
+    const app = next({
+        dev: false,
+        dir: __dirname,
+        hostname: HOSTNAME,
+        port: PORT,
+    });
 
-require(server);
+    const handle = app.getRequestHandler();
+
+    console.log('[landing] Preparing Next.js application...');
+
+    app.prepare().then(() => {
+        const server = http.createServer((req, res) => {
+            handle(req, res);
+        });
+
+        server.listen(PORT, HOSTNAME, (err) => {
+            if (err) {
+                console.error('[landing] Failed to start server:', err);
+                throw err;
+            }
+            console.log(`[landing] Server ready on http://${HOSTNAME}:${PORT}`);
+            console.log('[landing] Build ID:', app.buildId);
+        });
+
+        // Graceful shutdown
+        process.on('SIGTERM', () => {
+            console.log('[landing] SIGTERM received, closing server...');
+            server.close(() => {
+                console.log('[landing] Server closed');
+                process.exit(0);
+            });
+        });
+
+        process.on('SIGINT', () => {
+            console.log('[landing] SIGINT received, closing server...');
+            server.close(() => {
+                console.log('[landing] Server closed');
+                process.exit(0);
+            });
+        });
+    }).catch((err) => {
+        console.error('[landing] Failed to prepare Next.js app:', err);
+        process.exit(1);
+    });
+} catch (error) {
+    console.error('[landing] Fatal error starting server:', error);
+    process.exit(1);
+}
