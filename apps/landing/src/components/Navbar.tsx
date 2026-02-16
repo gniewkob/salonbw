@@ -3,32 +3,20 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
-import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 
 export default function Navbar() {
-    const { role, initialized, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [servicesOpen, setServicesOpen] = useState(false);
 
     const linkClass =
         'transition duration-150 hover:text-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2';
     const mobileLinkClass = 'block py-2 px-4 hover:bg-gray-100';
 
-    const panelDashboard = getPanelUrl('/dashboard');
-    const panelLogin = getPanelUrl('/auth/login');
-
-    // During SSR and initial hydration, treat role as null to avoid mismatch
-    const effectiveRole = initialized ? role : null;
-    const dashboardRoute = effectiveRole ? panelDashboard : undefined;
-
-    const handleLogout = async () => {
-        await logout();
-        if (typeof window !== 'undefined') {
-            window.location.href = '/';
-        }
-    };
+    // Booking requires login - redirect to panel with return URL
+    const bookingUrl = getPanelUrl(
+        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+    );
 
     // Close mobile menu on route change
     useEffect(() => {
@@ -66,12 +54,6 @@ export default function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6">
-                        {/* Opening Hours */}
-                        <div className="text-sm text-gray-600">
-                            <div>Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
-                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
-                        </div>
-
                         <ul className="flex items-center space-x-6">
                             <li>
                                 <Link
@@ -81,82 +63,20 @@ export default function Navbar() {
                                     Start
                                 </Link>
                             </li>
-                            <li className="relative group">
-                                <button
-                                    className={linkClass}
-                                    aria-haspopup="true"
-                                    aria-expanded={servicesOpen}
-                                    onMouseEnter={() => setServicesOpen(true)}
-                                    onMouseLeave={() => setServicesOpen(false)}
-                                    onFocus={() => setServicesOpen(true)}
-                                    onBlur={() =>
-                                        setTimeout(
-                                            () => setServicesOpen(false),
-                                            200
-                                        )
-                                    }
-                                >
-                                    Usługi ▾
-                                </button>
-                                {servicesOpen && (
-                                    <ul
-                                        className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md py-2"
-                                        onMouseEnter={() =>
-                                            setServicesOpen(true)
-                                        }
-                                        onMouseLeave={() =>
-                                            setServicesOpen(false)
-                                        }
-                                    >
-                                        <li>
-                                            <Link
-                                                href={'/services' as Route}
-                                                className={mobileLinkClass}
-                                            >
-                                                Wszystkie usługi
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/services' as Route}
-                                                className={mobileLinkClass}
-                                            >
-                                                Usługi fryzjerskie
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/services' as Route}
-                                                className={mobileLinkClass}
-                                            >
-                                                Barber
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/services' as Route}
-                                                className={mobileLinkClass}
-                                            >
-                                                Pielęgnacja
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href={'/services' as Route}
-                                                className={mobileLinkClass}
-                                            >
-                                                Przedłużanie włosów
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                )}
-                            </li>
                             <li>
                                 <Link
                                     href={'/services' as Route}
                                     className={linkClass}
                                 >
-                                    Cennik
+                                    Usługi
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href={'/gallery' as Route}
+                                    className={linkClass}
+                                >
+                                    Galeria
                                 </Link>
                             </li>
                             <li>
@@ -167,40 +87,11 @@ export default function Navbar() {
                                     Kontakt
                                 </Link>
                             </li>
-                            {dashboardRoute ? (
-                                <>
-                                    <li>
-                                        <a
-                                            href={dashboardRoute}
-                                            className={linkClass}
-                                        >
-                                            Panel
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <button
-                                            onClick={() => {
-                                                void handleLogout();
-                                            }}
-                                            className={linkClass}
-                                            type="button"
-                                        >
-                                            Wyloguj
-                                        </button>
-                                    </li>
-                                </>
-                            ) : (
-                                <li>
-                                    <a href={panelLogin} className={linkClass}>
-                                        Zaloguj
-                                    </a>
-                                </li>
-                            )}
                         </ul>
 
-                        {/* Book Appointment Button */}
+                        {/* Book Appointment Button - requires login */}
                         <a
-                            href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                            href={bookingUrl}
                             className="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
                             onClick={() =>
                                 trackEvent('begin_checkout', { cta: 'navbar' })
@@ -249,15 +140,6 @@ export default function Navbar() {
                         id="mobile-menu"
                         className="md:hidden border-t border-gray-200 py-4"
                     >
-                        {/* Opening Hours */}
-                        <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-200 mb-2">
-                            <div>
-                                Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}
-                            </div>
-                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
-                            <div>Niedz: {BUSINESS_INFO.hours.sunday}</div>
-                        </div>
-
                         <ul className="space-y-2">
                             <li>
                                 <Link
@@ -279,11 +161,11 @@ export default function Navbar() {
                             </li>
                             <li>
                                 <Link
-                                    href={'/services' as Route}
+                                    href={'/gallery' as Route}
                                     className={mobileLinkClass}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
-                                    Cennik
+                                    Galeria
                                 </Link>
                             </li>
                             <li>
@@ -295,45 +177,12 @@ export default function Navbar() {
                                     Kontakt
                                 </Link>
                             </li>
-                            {dashboardRoute ? (
-                                <>
-                                    <li>
-                                        <a
-                                            href={dashboardRoute}
-                                            className={mobileLinkClass}
-                                        >
-                                            Panel
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <button
-                                            onClick={() => {
-                                                void handleLogout();
-                                                setMobileMenuOpen(false);
-                                            }}
-                                            className={`${mobileLinkClass} w-full text-left`}
-                                            type="button"
-                                        >
-                                            Wyloguj
-                                        </button>
-                                    </li>
-                                </>
-                            ) : (
-                                <li>
-                                    <a
-                                        href={panelLogin}
-                                        className={mobileLinkClass}
-                                    >
-                                        Zaloguj
-                                    </a>
-                                </li>
-                            )}
                         </ul>
 
-                        {/* Book Appointment Button - Mobile */}
+                        {/* Book Appointment Button - Mobile (requires login) */}
                         <div className="px-4 mt-4">
                             <a
-                                href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                                href={bookingUrl}
                                 className="block w-full text-center bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
                                 onClick={() => {
                                     setMobileMenuOpen(false);
