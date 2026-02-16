@@ -151,7 +151,9 @@ export default function HomePage() {
                             </div>
                             <div className="pt-2">
                                 <a
-                                    href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                                    href={getPanelUrl(
+                                        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+                                    )}
                                     className="inline-block bg-brand-gold text-white px-6 py-3 rounded-md hover:bg-yellow-700 transition focus:outline-none focus:ring-2 focus:ring-brand-gold"
                                 >
                                     {BUSINESS_INFO.booking.text}

@@ -13,17 +13,20 @@ export default function BookNowFab() {
 
     if (hidden) return null;
 
-    const panelAppointments = getPanelUrl('/appointments');
+    // Booking requires login - redirect to panel with return URL
+    const bookingUrl = getPanelUrl(
+        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+    );
 
     return (
         <div className="fixed bottom-4 right-4 z-50 md:hidden">
             <a
-                href={panelAppointments}
+                href={bookingUrl}
                 onClick={() => trackEvent('begin_checkout', { cta: 'fab' })}
                 className="px-4 py-3 rounded-full shadow-lg bg-blue-600 text-white font-semibold"
-                aria-label="Book an appointment"
+                aria-label="Umów wizytę"
             >
-                Book Now
+                Umów wizytę
             </a>
         </div>
     );
