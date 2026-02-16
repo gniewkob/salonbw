@@ -133,7 +133,9 @@ export default function Footer() {
                         {/* Booking Button */}
                         <div className="mt-6">
                             <a
-                                href={getPanelUrl(BUSINESS_INFO.booking.url)}
+                                href={getPanelUrl(
+                                    `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+                                )}
                                 className="inline-block bg-white text-black px-6 py-2 rounded-md hover:bg-brand-gold hover:text-white transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 focus:ring-offset-black"
                             >
                                 {BUSINESS_INFO.booking.text}
