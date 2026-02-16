@@ -3,20 +3,36 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
+import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 
 export default function Navbar() {
+    const { role, initialized, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const linkClass =
         'transition duration-150 hover:text-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2';
     const mobileLinkClass = 'block py-2 px-4 hover:bg-gray-100';
 
+    const panelDashboard = getPanelUrl('/dashboard');
+    const panelLogin = getPanelUrl('/auth/login');
+
     // Booking requires login - redirect to panel with return URL
     const bookingUrl = getPanelUrl(
         `/auth/login?redirect=${encodeURIComponent('/appointments')}`
     );
+
+    // During SSR and initial hydration, treat role as null to avoid mismatch
+    const effectiveRole = initialized ? role : null;
+    const dashboardRoute = effectiveRole ? panelDashboard : undefined;
+
+    const handleLogout = async () => {
+        await logout();
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
+    };
 
     // Close mobile menu on route change
     useEffect(() => {
@@ -54,6 +70,12 @@ export default function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6">
+                        {/* Opening Hours */}
+                        <div className="text-sm text-gray-600">
+                            <div>Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
+                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
+                        </div>
+
                         <ul className="flex items-center space-x-6">
                             <li>
                                 <Link
@@ -87,6 +109,35 @@ export default function Navbar() {
                                     Kontakt
                                 </Link>
                             </li>
+                            {dashboardRoute ? (
+                                <>
+                                    <li>
+                                        <a
+                                            href={dashboardRoute}
+                                            className={linkClass}
+                                        >
+                                            Panel
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                void handleLogout();
+                                            }}
+                                            className={linkClass}
+                                            type="button"
+                                        >
+                                            Wyloguj
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <li>
+                                    <a href={panelLogin} className={linkClass}>
+                                        Zaloguj
+                                    </a>
+                                </li>
+                            )}
                         </ul>
 
                         {/* Book Appointment Button - requires login */}
@@ -140,6 +191,15 @@ export default function Navbar() {
                         id="mobile-menu"
                         className="md:hidden border-t border-gray-200 py-4"
                     >
+                        {/* Opening Hours */}
+                        <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-200 mb-2">
+                            <div>
+                                Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}
+                            </div>
+                            <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
+                            <div>Niedz: {BUSINESS_INFO.hours.sunday}</div>
+                        </div>
+
                         <ul className="space-y-2">
                             <li>
                                 <Link
@@ -177,6 +237,39 @@ export default function Navbar() {
                                     Kontakt
                                 </Link>
                             </li>
+                            {dashboardRoute ? (
+                                <>
+                                    <li>
+                                        <a
+                                            href={dashboardRoute}
+                                            className={mobileLinkClass}
+                                        >
+                                            Panel
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
+                                                void handleLogout();
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            className={`${mobileLinkClass} w-full text-left`}
+                                            type="button"
+                                        >
+                                            Wyloguj
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <li>
+                                    <a
+                                        href={panelLogin}
+                                        className={mobileLinkClass}
+                                    >
+                                        Zaloguj
+                                    </a>
+                                </li>
+                            )}
                         </ul>
 
                         {/* Book Appointment Button - Mobile (requires login) */}
