@@ -131,32 +131,49 @@ export default function GalleryPage({
     return (
         <PublicLayout>
             <Head>
-                <title>Gallery | Salon Black &amp; White</title>
+                <title>Galeria | Salon Black &amp; White</title>
                 <meta
                     name="description"
-                    content="See examples of our work in the Salon Black &amp; White gallery."
+                    content="Zobacz przykłady naszych realizacji w galerii Salon Black &amp; White - profesjonalne fryzjerstwo i stylizacje z Bytomia."
+                />
+                <meta
+                    property="og:title"
+                    content="Galeria realizacji - Salon Black &amp; White"
+                />
+                <meta
+                    property="og:description"
+                    content="Zobacz przykłady naszych realizacji w galerii Salon Black &amp; White - profesjonalne fryzjerstwo i stylizacje z Bytomia."
                 />
             </Head>
-            <div className="p-4 space-y-4">
-                <h1 className="text-2xl font-bold">Gallery</h1>
+            <div className="p-4 space-y-4 max-w-6xl mx-auto">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                        Galeria Naszych Realizacji
+                    </h1>
+                    <p className="text-gray-600 max-w-2xl mx-auto">
+                        Zobacz efekty pracy naszego zespołu - profesjonalne
+                        fryzury, stylizacje i koloryzacje wykonane w Salonie
+                        Black &amp; White.
+                    </p>
+                </div>
                 {isFallback && (
-                    <div className="space-y-2">
-                        <p className="text-sm text-gray-600">
-                            Showing sample images. Connect Instagram to display
-                            the latest media.
+                    <div className="space-y-2 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-700">
+                            Wyświetlamy przykładowe zdjęcia. Połącz konto
+                            Instagram, aby wyświetlić najnowsze realizacje.
                         </p>
                         <button
                             type="button"
-                            className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
+                            className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition"
                             onClick={() => {
                                 void handleRetry();
                             }}
                             disabled={retrying}
                         >
-                            {retrying ? 'Retrying…' : 'Try again'}
+                            {retrying ? 'Ładowanie…' : 'Spróbuj ponownie'}
                         </button>
                         {error && (
-                            <p className="text-xs text-red-500">{error}</p>
+                            <p className="text-xs text-red-600">{error}</p>
                         )}
                     </div>
                 )}
@@ -217,14 +234,16 @@ export default function GalleryPage({
                                         });
                                     } catch {}
                                 }}
-                                aria-label={`Open image ${i + 1}`}
+                                aria-label={`Otwórz zdjęcie ${i + 1}`}
                             >
                                 <Image
                                     src={item.imageUrl!}
-                                    alt={item.caption ?? 'Gallery image'}
+                                    alt={
+                                        item.caption ?? 'Zdjęcie z galerii salonu'
+                                    }
                                     width={500}
                                     height={500}
-                                    className="w-full h-auto object-cover"
+                                    className="w-full h-auto object-cover rounded-lg hover:opacity-90 transition"
                                     sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 50vw"
                                 />
                             </button>
@@ -238,21 +257,21 @@ export default function GalleryPage({
                     >
                         {loading ? (
                             <span className="text-sm text-gray-500">
-                                Loading…
+                                Ładowanie…
                             </span>
                         ) : nextCursor ? (
                             <span className="text-sm text-gray-400">
-                                Scroll for more
+                                Przewiń, aby zobaczyć więcej
                             </span>
                         ) : (
                             <span className="text-sm text-gray-400">
-                                No more items
+                                Koniec galerii
                             </span>
                         )}
                     </div>
                 )}
                 {!isFallback && error && (
-                    <p className="text-xs text-red-500">{error}</p>
+                    <p className="text-xs text-red-600">{error}</p>
                 )}
                 {lightboxIndex !== null && (
                     <ImageLightbox
@@ -260,7 +279,7 @@ export default function GalleryPage({
                         index={lightboxIndex}
                         alt={
                             imageItems[lightboxIndex]?.caption ||
-                            'Gallery preview'
+                            'Podgląd realizacji'
                         }
                         onPrev={() =>
                             setLightboxIndex((idx) =>
