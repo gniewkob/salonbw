@@ -1,14 +1,17 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import type { Route } from 'next';
 import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+    // Booking requires login - redirect to panel with return URL
+    const bookingUrl = getPanelUrl(
+        `/auth/login?redirect=${encodeURIComponent('/appointments')}`
+    );
 
     const nextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
@@ -85,16 +88,12 @@ export default function HeroSlider() {
                                     <p className="text-lg md:text-xl mb-8">
                                         {slide.description}
                                     </p>
-                                    <Link
-                                        href={
-                                            getPanelUrl(
-                                                BUSINESS_INFO.booking.url,
-                                            ) as Route
-                                        }
+                                    <a
+                                        href={bookingUrl}
                                         className="inline-block bg-brand-gold text-white px-8 py-3 rounded-md hover:bg-yellow-600 transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
                                     >
                                         {BUSINESS_INFO.booking.text}
-                                    </Link>
+                                    </a>
                                 </div>
                             </div>
                         </div>
