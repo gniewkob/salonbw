@@ -130,6 +130,15 @@
   - `/orders/history`: toolbar (wyszukiwarka + filtr statusu), rozszerzona tabela, paginacja w stylu Versum,
   - secondnav `DOSTAWY`: układ drzewka z nested pozycjami `dostawcy` i `producenci` pod `niski stan magazynowy`.
 
+### 2026-02-17 - Magazyn: `dodaj dostawę` + `dodaj zamówienie` (deploy)
+- commit/deploy:
+  - commit: `7f1a568b`
+  - run: `22120344947` (production, success)
+- zmiany UI:
+  - formularze `new` przebudowane na bardziej Versum-like układ sekcji,
+  - numerowane wiersze danych wejściowych,
+  - dopięte podsumowania w sekcji akcji (`do zapłaty łącznie`, `pozycje`).
+
 ### 2026-02-17 - Customers: pełny audyt produkcyjny (panel vs versum)
 - nowy test audytowy:
   - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`
