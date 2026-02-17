@@ -103,6 +103,19 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-17 - Customers: pełny audyt produkcyjny (panel vs versum)
+- nowy test audytowy:
+  - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`
+- artefakty:
+  - `output/parity/2026-02-17-customers-prod-full/REPORT.md`
+  - `output/parity/2026-02-17-customers-prod-full/checklist.json`
+  - screenshoty `panel-*.png` i `versum-*.png`
+  - `output/parity/2026-02-17-customers-prod-full/pixel-diff.json`
+- wynik:
+  - parity funkcjonalne (YES/NO per ekran/akcja): **YES**
+  - parity wizualne strict 1:1 (pixel diff): **NO** (największe odchylenia: `gallery`, `statistics`)
+  - uwaga: diff wizualny zależy od danych (panel i versum mają inny stan danych klienta referencyjnego).
+
 ### 2026-02-17 - Magazyn: deploy `zużycie` footer + potwierdzenie smoke na produkcji
 - deploy dashboard:
   - commit: `bd538e9a`

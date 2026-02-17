@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-17 (warehouse usage footer deploy + prod smoke pass)_
+_Last updated: 2026-02-17 (customers full parity audit: functional YES, visual deltas captured)_
 
 ## Platform Architecture
 
@@ -47,6 +47,16 @@ Verification:
   - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 passed` (gallery/files upload/download flow),
   - combined `tests/e2e/prod-*.spec.ts` -> `4 passed`.
 - **Status:** stable for current smoke scope; no regression detected in warehouse secondnav routing.
+
+### 2026-02-17: Customers full production parity audit (completed)
+
+- **Scope:** Full customers module sweep on production (`/customers`, card tabs, edit, new) against Versum reference routes.
+- **Automation:** `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`.
+- **Artifacts:** `output/parity/2026-02-17-customers-prod-full/`.
+- **Result:**
+  - functional checklist YES/NO (per screen/action): **YES** for all audited entries,
+  - strict visual parity (pixel diff): **NO** (highest deltas on `gallery` and `statistics` views).
+- **Interpretation:** current functional flow is green; remaining 1:1 work is visual tuning + data-normalized visual baselines.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
