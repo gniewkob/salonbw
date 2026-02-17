@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-17 (customers full parity audit: functional YES, visual deltas captured)_
+_Last updated: 2026-02-17 (warehouse full parity audit: functional YES, visual deltas captured)_
 
 ## Platform Architecture
 
@@ -57,6 +57,16 @@ Verification:
   - functional checklist YES/NO (per screen/action): **YES** for all audited entries,
   - strict visual parity (pixel diff): **NO** (highest deltas on `gallery` and `statistics` views).
 - **Interpretation:** current functional flow is green; remaining 1:1 work is visual tuning + data-normalized visual baselines.
+
+### 2026-02-17: Warehouse full production parity audit (completed)
+
+- **Scope:** Full warehouse module sweep on production (`products`, `sales`, `use`, `deliveries`, `orders`, `inventory`, plus `stock-alerts`/`suppliers`/`manufacturers`) against Versum reference routes.
+- **Automation:** `apps/panel/tests/e2e/prod-warehouse-parity-audit.spec.ts`.
+- **Artifacts:** `output/parity/2026-02-17-warehouse-prod-full/`.
+- **Result:**
+  - functional checklist YES/NO (per screen/action): **YES** (`16/16`),
+  - strict visual parity (pixel diff): **NO** (highest deltas on `deliveries-history`, `products`, `sales-history`).
+- **Interpretation:** routing/flow and secondnav context are functionally aligned; remaining gap is visual 1:1 tuning.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
