@@ -116,6 +116,18 @@
   - parity wizualne strict 1:1 (pixel diff): **NO** (największe odchylenia: `gallery`, `statistics`)
   - uwaga: diff wizualny zależy od danych (panel i versum mają inny stan danych klienta referencyjnego).
 
+### 2026-02-17 - Magazyn: pełny audyt produkcyjny (panel vs versum)
+- nowy test audytowy:
+  - `apps/panel/tests/e2e/prod-warehouse-parity-audit.spec.ts`
+- artefakty:
+  - `output/parity/2026-02-17-warehouse-prod-full/REPORT.md`
+  - `output/parity/2026-02-17-warehouse-prod-full/checklist.json`
+  - screenshoty `panel-*.png` i `versum-*.png`
+  - `output/parity/2026-02-17-warehouse-prod-full/pixel-diff.json`
+- wynik:
+  - parity funkcjonalne (YES/NO per ekran/akcja): **YES** (16/16 akcji),
+  - parity wizualne strict 1:1 (pixel diff): **NO** (największe odchylenia: `deliveries-history`, `products`, `sales-history`).
+
 ### 2026-02-17 - Magazyn: deploy `zużycie` footer + potwierdzenie smoke na produkcji
 - deploy dashboard:
   - commit: `bd538e9a`
