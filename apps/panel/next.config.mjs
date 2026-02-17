@@ -41,7 +41,6 @@ const nextConfig = {
             },
         ],
     },
-    typedRoutes: false,
     async rewrites() {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         const rules = [
