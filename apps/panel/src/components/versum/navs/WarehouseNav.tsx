@@ -11,6 +11,7 @@ import { useStocktakings } from '@/hooks/useWarehouse';
 export default function WarehouseNav() {
     const router = useRouter();
     const path = router.pathname;
+    const productsNavActive = path.startsWith('/products');
     const inventoryNavActive = path.startsWith('/inventory');
     const deliveriesNavActive =
         path.startsWith('/deliveries') ||
@@ -19,7 +20,7 @@ export default function WarehouseNav() {
         path.startsWith('/manufacturers');
     const ordersNavActive = path.startsWith('/orders');
     const usageNavActive = path.startsWith('/use') || path.startsWith('/usage');
-    const { data: categories } = useProductCategories();
+    const { data: categories } = useProductCategories(productsNavActive);
     const { data: draftDeliveries = [] } = useDeliveries(
         { status: 'draft' },
         deliveriesNavActive,

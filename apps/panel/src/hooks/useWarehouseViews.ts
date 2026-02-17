@@ -56,12 +56,13 @@ export function useWarehouseProducts(filters: ProductQuery) {
     });
 }
 
-export function useProductCategories() {
+export function useProductCategories(enabled = true) {
     const { apiFetch } = useAuth();
     return useQuery<ProductCategory[]>({
         queryKey: ['product-categories-tree'],
         staleTime: 5 * 60_000,
         queryFn: () => apiFetch<ProductCategory[]>('/product-categories/tree'),
+        enabled,
     });
 }
 
