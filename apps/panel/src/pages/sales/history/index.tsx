@@ -8,6 +8,7 @@ import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 export default function WarehouseSalesHistoryPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
+    const [page, setPage] = useState(1);
     const { data: sales = [], isLoading } = useWarehouseSales();
     const pageSize = 20;
 
@@ -33,10 +34,13 @@ export default function WarehouseSalesHistoryPage() {
         [sales, search, typeFilter],
     );
 
-    const visibleSales = filteredSales.slice(0, pageSize);
-    const from = filteredSales.length ? 1 : 0;
+    const totalPages = Math.max(1, Math.ceil(filteredSales.length / pageSize));
+    const safePage = Math.min(Math.max(page, 1), totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    const visibleSales = filteredSales.slice(startIndex, startIndex + pageSize);
+    const from = filteredSales.length ? startIndex + 1 : 0;
     const to = filteredSales.length
-        ? Math.min(pageSize, filteredSales.length)
+        ? Math.min(startIndex + pageSize, filteredSales.length)
         : 0;
 
     return (
@@ -62,12 +66,18 @@ export default function WarehouseSalesHistoryPage() {
                             className="versum-input"
                             placeholder="wyszukaj w historii sprzedaży..."
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
                         />
                         <select
                             className="versum-select"
                             value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
+                            onChange={(e) => {
+                                setTypeFilter(e.target.value);
+                                setPage(1);
+                            }}
                         >
                             <option value="all">wszystkie</option>
                             <option value="sprzedaż">sprzedaż</option>
@@ -138,6 +148,34 @@ export default function WarehouseSalesHistoryPage() {
                                 <span className="products-table-footer__page-size">
                                     {pageSize}
                                 </span>
+                                <div className="products-pagination-nav">
+                                    <input
+                                        type="text"
+                                        value={safePage}
+                                        onChange={(e) => {
+                                            const next = Number(e.target.value);
+                                            if (
+                                                Number.isFinite(next) &&
+                                                next >= 1 &&
+                                                next <= totalPages
+                                            ) {
+                                                setPage(next);
+                                            }
+                                        }}
+                                    />
+                                    <span>z {totalPages}</span>
+                                    <button
+                                        type="button"
+                                        disabled={safePage >= totalPages}
+                                        onClick={() =>
+                                            setPage((prev) =>
+                                                Math.min(prev + 1, totalPages),
+                                            )
+                                        }
+                                    >
+                                        {'>'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
