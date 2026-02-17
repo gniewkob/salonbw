@@ -12,7 +12,7 @@ export default function HistoryAccordion() {
     };
 
     return (
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-950">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
                     Nasza Historia
@@ -23,12 +23,12 @@ export default function HistoryAccordion() {
                         return (
                             <div
                                 key={item.id}
-                                className="border border-gray-200 rounded-lg overflow-hidden"
+                                className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                             >
                                 <button
                                     type="button"
                                     onClick={() => toggleItem(item.id)}
-                                    className="w-full px-6 py-4 flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-inset"
+                                    className="w-full px-6 py-4 flex justify-between items-center bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-inset"
                                     aria-expanded={isOpen}
                                     aria-controls={`history-content-${item.id}`}
                                 >
@@ -54,11 +54,11 @@ export default function HistoryAccordion() {
                                 {isOpen && (
                                     <div
                                         id={`history-content-${item.id}`}
-                                        className="px-6 py-4 bg-white"
+                                        className="px-6 py-4 bg-white dark:bg-gray-900"
                                         role="region"
                                         aria-labelledby={`history-button-${item.id}`}
                                     >
-                                        <p className="text-gray-700 leading-relaxed">
+                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                                             {item.content}
                                         </p>
                                     </div>

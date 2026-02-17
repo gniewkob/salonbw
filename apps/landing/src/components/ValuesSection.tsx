@@ -45,7 +45,7 @@ export default function ValuesSection() {
     const activeValue = CORE_VALUES.find((v) => v.id === activeTab);
 
     return (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-gray-50 dark:bg-gray-900">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
                     Nasze Wartości
@@ -72,7 +72,7 @@ export default function ValuesSection() {
                                 className={`px-4 py-2 rounded-full transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 ${
                                     isActive
                                         ? 'bg-brand-gold text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                             >
                                 <span className="mr-2">{value.icon}</span>
@@ -90,7 +90,7 @@ export default function ValuesSection() {
                         id={`tabpanel-${activeValue.id}`}
                         role="tabpanel"
                         aria-labelledby={`tab-${activeValue.id}`}
-                        className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8"
+                        className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-8"
                     >
                         <div className="flex items-center mb-4">
                             <span className="text-4xl mr-4">
@@ -100,14 +100,14 @@ export default function ValuesSection() {
                                 {activeValue.title}
                             </h3>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                             {activeValue.description}
                         </p>
                     </div>
                 )}
 
                 {/* Hint */}
-                <p className="text-center text-sm text-gray-500 mt-6">
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
                     Użyj strzałek ← → do nawigacji lub kliknij zakładkę
                 </p>
             </div>

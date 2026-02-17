@@ -4,7 +4,7 @@ import { FOUNDER_MESSAGE } from '@/config/content';
 
 export default function FounderMessage() {
     return (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-gray-50 dark:bg-gray-900">
             <div className="container mx-auto px-4">
                 <div className="max-w-4xl mx-auto">
                     <blockquote className="text-center">
@@ -20,7 +20,7 @@ export default function FounderMessage() {
                                     />
                                 </div>
                             )}
-                            <p className="text-lg md:text-xl text-gray-700 italic leading-relaxed mb-6">
+                            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 italic leading-relaxed mb-6">
                                 &ldquo;{FOUNDER_MESSAGE.quote}&rdquo;
                             </p>
                         </div>
@@ -31,7 +31,7 @@ export default function FounderMessage() {
                             >
                                 {FOUNDER_MESSAGE.name}
                             </cite>
-                            <span className="text-sm text-gray-500 mt-2">
+                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                 Założycielka Salon Black & White
                             </span>
                         </footer>

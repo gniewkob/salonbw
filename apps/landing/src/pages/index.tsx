@@ -1,13 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import Head from 'next/head';
 import Script from 'next/script';
 import { jsonLd, absUrl } from '@/utils/seo';
-import Image from 'next/image';
 import Link from 'next/link';
-import FAQAccordion, { FAQItem } from '@/components/FAQAccordion';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
-import ImageLightbox from '@/components/ImageLightbox';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 import HeroSlider from '@/components/HeroSlider';
@@ -17,14 +14,6 @@ import ValuesSection from '@/components/ValuesSection';
 import SalonGallery from '@/components/SalonGallery';
 
 export default function HomePage() {
-    const galleryImages = [
-        '/assets/img/slider/slider1.jpg',
-        '/assets/img/slider/slider2.jpg',
-        '/assets/img/slider/slider3.jpg',
-    ];
-
-    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
     // Analytics: page view
     useEffect(() => {
         try {
@@ -119,7 +108,7 @@ export default function HomePage() {
                         <div className="space-y-3">
                             <div>
                                 <h3 className="font-semibold text-lg">Adres</h3>
-                                <p className="text-gray-700">
+                                <p className="text-gray-700 dark:text-gray-300">
                                     {BUSINESS_INFO.address.street}
                                     <br />
                                     {BUSINESS_INFO.address.postalCode}{' '}
@@ -130,7 +119,7 @@ export default function HomePage() {
                                 <h3 className="font-semibold text-lg">
                                     Godziny otwarcia
                                 </h3>
-                                <p className="text-gray-700">
+                                <p className="text-gray-700 dark:text-gray-300">
                                     <strong>Poniedziałek - Piątek:</strong>{' '}
                                     {BUSINESS_INFO.hours.mondayFriday}
                                     <br />

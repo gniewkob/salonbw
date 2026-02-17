@@ -150,21 +150,21 @@ export default function GalleryPage({
                     <h1 className="text-3xl md:text-4xl font-bold mb-4">
                         Galeria Naszych Realizacji
                     </h1>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                         Zobacz efekty pracy naszego zespołu - profesjonalne
                         fryzury, stylizacje i koloryzacje wykonane w Salonie
                         Black &amp; White.
                     </p>
                 </div>
                 {isFallback && (
-                    <div className="space-y-2 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <p className="text-sm text-gray-700">
+                    <div className="space-y-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                             Wyświetlamy przykładowe zdjęcia. Połącz konto
                             Instagram, aby wyświetlić najnowsze realizacje.
                         </p>
                         <button
                             type="button"
-                            className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition"
+                            className="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition dark:text-gray-200"
                             onClick={() => {
                                 void handleRetry();
                             }}
@@ -256,15 +256,15 @@ export default function GalleryPage({
                         className="h-10 flex items-center justify-center"
                     >
                         {loading ? (
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
                                 Ładowanie…
                             </span>
                         ) : nextCursor ? (
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-gray-400 dark:text-gray-500">
                                 Przewiń, aby zobaczyć więcej
                             </span>
                         ) : (
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-gray-400 dark:text-gray-500">
                                 Koniec galerii
                             </span>
                         )}
