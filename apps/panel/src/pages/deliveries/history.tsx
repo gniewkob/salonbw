@@ -9,6 +9,7 @@ import { useDeliveries } from '@/hooks/useWarehouse';
 export default function WarehouseDeliveriesHistoryPage() {
     const router = useRouter();
     const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
     const { data: deliveries = [], isLoading } = useDeliveries();
     const statusFilter = Array.isArray(router.query.status)
         ? router.query.status[0]
@@ -42,6 +43,21 @@ export default function WarehouseDeliveriesHistoryPage() {
             `${delivery.deliveryNumber} ${delivery.supplier?.name ?? ''} ${delivery.invoiceNumber ?? ''}`.toLowerCase();
         return haystack.includes(search.toLowerCase());
     });
+    const pageSize = 20;
+    const totalPages = Math.max(
+        1,
+        Math.ceil(visibleDeliveries.length / pageSize),
+    );
+    const safePage = Math.min(Math.max(page, 1), totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    const pagedDeliveries = visibleDeliveries.slice(
+        startIndex,
+        startIndex + pageSize,
+    );
+    const from = visibleDeliveries.length ? startIndex + 1 : 0;
+    const to = visibleDeliveries.length
+        ? Math.min(startIndex + pageSize, visibleDeliveries.length)
+        : 0;
 
     return (
         <WarehouseLayout
@@ -64,13 +80,17 @@ export default function WarehouseDeliveriesHistoryPage() {
                             className="versum-input"
                             placeholder="wyszukaj w historii dostaw..."
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
                         />
                         <select
                             className="versum-select"
                             value={statusFilter ?? ''}
                             onChange={(e) => {
                                 const status = e.target.value;
+                                setPage(1);
                                 void router.push({
                                     pathname: '/deliveries/history',
                                     query: status ? { status } : {},
@@ -98,7 +118,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleDeliveries.map((delivery) => {
+                                {pagedDeliveries.map((delivery) => {
                                     const date = delivery.deliveryDate
                                         ? new Date(delivery.deliveryDate)
                                         : new Date(delivery.createdAt);
@@ -163,10 +183,33 @@ export default function WarehouseDeliveriesHistoryPage() {
                 </>
             )}
             <div className="products-pagination">
-                Pozycje od 1 do {visibleDeliveries.length} | na stronie 20
+                Pozycje od {from} do {to} z {visibleDeliveries.length} | na
+                stronie {pageSize}
                 <div className="products-pagination-nav">
-                    <input type="text" value={1} readOnly />
-                    <button type="button">{'>'}</button>
+                    <input
+                        type="text"
+                        value={safePage}
+                        onChange={(e) => {
+                            const next = Number(e.target.value);
+                            if (
+                                Number.isFinite(next) &&
+                                next >= 1 &&
+                                next <= totalPages
+                            ) {
+                                setPage(next);
+                            }
+                        }}
+                    />
+                    <span>z {totalPages}</span>
+                    <button
+                        type="button"
+                        disabled={safePage >= totalPages}
+                        onClick={() =>
+                            setPage((prev) => Math.min(prev + 1, totalPages))
+                        }
+                    >
+                        {'>'}
+                    </button>
                 </div>
             </div>
         </WarehouseLayout>
