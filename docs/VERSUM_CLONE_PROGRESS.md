@@ -103,6 +103,16 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-17 - Magazyn: paginacja `historia sprzedaży` + `historia dostaw` (deploy)
+- commit/deploy:
+  - commit: `ce5c1a56`
+  - run: `22119280341` (production, success)
+- zmiany UI:
+  - `/sales/history`: dodana paginacja w stylu Versum (`Pozycje od ... do ... z ...`, numer strony, `>`),
+  - `/deliveries/history`: dodana analogiczna paginacja i zakres pozycji.
+- zachowanie:
+  - reset strony do `1` przy zmianie filtra i wyszukiwania.
+
 ### 2026-02-17 - Customers: pełny audyt produkcyjny (panel vs versum)
 - nowy test audytowy:
   - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`

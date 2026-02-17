@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `bd538e9a` | `22114587195` | 2026-02-17 20:34 | production | Magazyn: dodany Versum-like footer tabeli dla `zużycie` (`/use/history`, `/use/planned`); panel stable po hotfixie runtime Next 14.2.32 |
+| Dashboard (`panel.salon-bw.pl`) | `ce5c1a56` | `22119280341` | 2026-02-17 23:09 | production | Magazyn: `historia sprzedaży` i `historia dostaw` z paginacją w stylu Versum (zakres pozycji + kontrolka strony) |
 
 Verification:
 
@@ -67,6 +67,15 @@ Verification:
   - functional checklist YES/NO (per screen/action): **YES** (`16/16`),
   - strict visual parity (pixel diff): **NO** (highest deltas on `deliveries-history`, `products`, `sales-history`).
 - **Interpretation:** routing/flow and secondnav context are functionally aligned; remaining gap is visual 1:1 tuning.
+
+### 2026-02-17: Warehouse history pagination parity refinement (deployed)
+
+- **Scope:** `Magazyn / Historia sprzedaży` i `Magazyn / Historia dostaw` (UI parity polish).
+- **Deploy:** Dashboard run `22119280341` (`success`), commit `ce5c1a56`.
+- **Change:**
+  - dodano kontrolki paginacji zgodne z układem Versum (`Pozycje od ... do ... z ...`, numer strony, strzałka `>`),
+  - paginacja działa po filtrowaniu i wyszukiwaniu (reset do strony 1 przy zmianie filtra/tekstu).
+- **Status:** deployed to production; dalsze odchylenia strict 1:1 pozostają głównie w fine-tuningu wizualnym.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
