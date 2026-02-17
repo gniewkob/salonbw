@@ -6,6 +6,10 @@ import { useWarehouseUsage } from '@/hooks/useWarehouseViews';
 
 export default function WarehouseUsageHistoryPage() {
     const { data: usage = [], isLoading } = useWarehouseUsage('completed');
+    const pageSize = 20;
+    const visibleUsage = usage.slice(0, pageSize);
+    const from = usage.length ? 1 : 0;
+    const to = usage.length ? Math.min(pageSize, usage.length) : 0;
 
     return (
         <WarehouseLayout
@@ -42,7 +46,7 @@ export default function WarehouseUsageHistoryPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {usage.map((entry) => (
+                            {visibleUsage.map((entry) => (
                                 <tr key={entry.id}>
                                     <td>{entry.usageNumber}</td>
                                     <td>
@@ -74,6 +78,17 @@ export default function WarehouseUsageHistoryPage() {
                             ))}
                         </tbody>
                     </table>
+                    <div className="products-table-footer">
+                        <span>
+                            Pozycje od {from} do {to} z {usage.length}
+                        </span>
+                        <div className="products-table-footer__controls">
+                            <span>na stronie</span>
+                            <span className="products-table-footer__page-size">
+                                {pageSize}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             )}
         </WarehouseLayout>
