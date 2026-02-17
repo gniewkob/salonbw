@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `6678127c` | `22120126171` | 2026-02-17 23:40 | production | Magazyn: `historia zamówień` (toolbar+filtry+paginacja) + secondnav `DOSTAWY` jako drzewko (nested `dostawcy/producenci`) |
+| Dashboard (`panel.salon-bw.pl`) | `7f1a568b` | `22120344947` | 2026-02-17 23:49 | production | Magazyn: przebudowa formularzy `dodaj dostawę` i `dodaj zamówienie` (układ sekcji, numerowane wiersze, podsumowania) |
 
 Verification:
 
@@ -85,6 +85,16 @@ Verification:
   - `/orders/history`: dodane wyszukiwanie, filtrowanie po statusie, paginacja w stylu Versum i rozszerzone kolumny tabeli,
   - secondnav `DOSTAWY`: przebudowany na drzewko z zagnieżdżeniem (`dostawcy`, `producenci`) pod `niski stan magazynowy`.
 - **Status:** deployed to production; remaining work is visual/detail parity on `new` forms and actions layout.
+
+### 2026-02-17: Warehouse new-forms parity refinement (deployed)
+
+- **Scope:** `Magazyn / Dodaj dostawę` and `Magazyn / Dodaj zamówienie`.
+- **Deploy:** Dashboard run `22120344947` (`success`), commit `7f1a568b`.
+- **Change:**
+  - reordered and normalized form sections toward Versum structure,
+  - introduced numbered entry rows (`1..n`) for key fields,
+  - added explicit summary in actions area (`do zapłaty łącznie` / `pozycje`),
+  - preserved existing business logic (create draft / submit / redirects).
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
