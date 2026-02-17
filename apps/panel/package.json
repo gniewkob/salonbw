@@ -64,7 +64,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3",
         "@jest/globals": "^30.0.1",
-        "@playwright/test": "^1.52.0",
+        "@playwright/test": "^1.58.2",
         "@suchipi/cypress-plugin-snapshots": "^1.4.5",
         "@tailwindcss/postcss": "^4",
         "@testing-library/jest-dom": "^6",
