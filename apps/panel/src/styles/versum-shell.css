@@ -585,7 +585,7 @@ textarea.form-control {
    ======================================== */
 
 .products_index {
-    max-width: 1100px;
+    max-width: var(--versum-content-max);
 }
 
 .products-top-tabs {
@@ -673,7 +673,7 @@ textarea.form-control {
     padding: 8px 8px;
     color: #5e6872;
     border-bottom: 1px solid #dfe5ea;
-    background: #f4f6f8;
+    background: #eef2f5;
     font-weight: 700;
     text-align: left;
     white-space: nowrap;
