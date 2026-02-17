@@ -28,12 +28,12 @@ export default function SalonGallery() {
     }, []);
 
     return (
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-950">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
                     Nasz Salon
                 </h2>
-                <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+                <p className="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
                     Zobacz wnętrza naszego salonu - nowoczesne, komfortowe
                     przestrzenie stworzone z myślą o Twoim relaksie i
                     zadowoleniu.

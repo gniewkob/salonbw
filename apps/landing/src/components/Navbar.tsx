@@ -13,7 +13,7 @@ export default function Navbar() {
 
     const linkClass =
         'transition duration-150 hover:text-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2';
-    const mobileLinkClass = 'block py-2 px-4 hover:bg-gray-100';
+    const mobileLinkClass = 'block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200';
 
     const panelDashboard = getPanelUrl('/dashboard');
     const panelLogin = getPanelUrl('/auth/login');
@@ -55,7 +55,7 @@ export default function Navbar() {
     return (
         <nav
             aria-label="Nawigacja główna"
-            className="bg-white shadow-md sticky top-0 z-50"
+            className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50"
         >
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center py-4">
@@ -71,7 +71,7 @@ export default function Navbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6">
                         {/* Opening Hours */}
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                             <div>Pn-Pt: {BUSINESS_INFO.hours.mondayFriday}</div>
                             <div>Sob: {BUSINESS_INFO.hours.saturday}</div>
                         </div>

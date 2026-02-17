@@ -117,7 +117,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <h1 className="text-3xl md:text-4xl font-bold mb-4">
                             Nasze Usługi
                         </h1>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
                             Oferujemy szeroki zakres usług fryzjerskich i
                             kosmetycznych dla kobiet i mężczyzn. Sprawdź naszą
                             ofertę i umów się na wizytę!
@@ -135,16 +135,16 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     {categories.map((cat) => (
                         <div
                             key={cat.id ?? 'uncategorized'}
-                            className="bg-white rounded-lg shadow-md p-6"
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
                         >
-                            <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b border-gray-200 pb-3">
+                            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-3">
                                 {cat.name}
                             </h2>
                             <div className="space-y-4">
                                 {cat.services.map((s) => (
                                     <div
                                         key={s.id}
-                                        className="flex justify-between items-start border-b border-gray-100 pb-4 last:border-b-0 last:pb-0"
+                                        className="flex justify-between items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
                                     >
                                         <div className="flex-1">
                                             <span className="text-lg">
@@ -184,7 +184,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                 })()}
                                             </span>
                                             {s.description && (
-                                                <p className="text-sm text-gray-600 mt-1">
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                     {s.description}
                                                 </p>
                                             )}
@@ -193,7 +193,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                             <span className="text-lg font-semibold text-brand-gold">
                                                 {getServicePrice(s).label}
                                             </span>
-                                            <span className="text-sm text-gray-500">
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">
                                                 {getServiceDuration(s)}
                                             </span>
                                         </div>
@@ -204,11 +204,11 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     ))}
 
                     {/* CTA Section */}
-                    <div className="text-center mt-12 p-8 bg-gray-50 rounded-lg">
+                    <div className="text-center mt-12 p-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <h3 className="text-2xl font-bold mb-4">
                             Gotowy/a na metamorfozę?
                         </h3>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
                             Umów się na wizytę i ciesz się profesjonalną obsługą
                             w naszym salonie.
                         </p>

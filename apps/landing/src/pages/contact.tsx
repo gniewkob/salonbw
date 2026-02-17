@@ -33,7 +33,7 @@ export default function ContactPage() {
                                     <h3 className="font-semibold text-lg">
                                         Adres
                                     </h3>
-                                    <p className="text-gray-700">
+                                    <p className="text-gray-700 dark:text-gray-300">
                                         {BUSINESS_INFO.address.street}
                                         <br />
                                         {BUSINESS_INFO.address.postalCode}{' '}
@@ -45,7 +45,7 @@ export default function ContactPage() {
                                     <h3 className="font-semibold text-lg">
                                         Godziny otwarcia
                                     </h3>
-                                    <p className="text-gray-700">
+                                    <p className="text-gray-700 dark:text-gray-300">
                                         <strong>Poniedziałek - Piątek:</strong>{' '}
                                         {BUSINESS_INFO.hours.mondayFriday}
                                         <br />
@@ -88,11 +88,11 @@ export default function ContactPage() {
                         </div>
 
                         {/* Book Appointment CTA */}
-                        <div className="bg-gray-100 p-6 rounded-lg">
+                        <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
                             <h3 className="text-xl font-bold mb-3">
                                 Umów wizytę online
                             </h3>
-                            <p className="text-gray-700 mb-4">
+                            <p className="text-gray-700 dark:text-gray-300 mb-4">
                                 Zarezerwuj wizytę w naszym salonie w wygodny
                                 sposób przez nasz panel online.
                             </p>
@@ -115,7 +115,7 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Facebook"
-                                    className="text-gray-700 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
+                                    className="text-gray-700 dark:text-gray-300 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
                                 >
                                     <svg
                                         className="w-8 h-8"
@@ -130,7 +130,7 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Instagram"
-                                    className="text-gray-700 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
+                                    className="text-gray-700 dark:text-gray-300 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
                                 >
                                     <svg
                                         className="w-8 h-8"
@@ -145,7 +145,7 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="Twitter"
-                                    className="text-gray-700 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
+                                    className="text-gray-700 dark:text-gray-300 hover:text-brand-gold transition focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
                                 >
                                     <svg
                                         className="w-8 h-8"
@@ -173,7 +173,7 @@ export default function ContactPage() {
                             <h2 className="text-2xl font-bold mb-4 text-brand-gold">
                                 Jak do nas trafić
                             </h2>
-                            <div className="w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
+                            <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
                                 <iframe
                                     src={mapEmbedUrl}
                                     width="100%"
