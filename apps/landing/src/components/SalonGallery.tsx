@@ -4,7 +4,14 @@ import Image from 'next/image';
 import { SALON_GALLERY } from '@/config/content';
 import ImageLightbox from './ImageLightbox';
 
-export default function SalonGallery() {
+type GalleryImage = { id: number; image: string; caption: string; alt: string };
+
+interface SalonGalleryProps {
+    images?: GalleryImage[];
+}
+
+export default function SalonGallery({ images }: SalonGalleryProps) {
+    const data = images ?? (SALON_GALLERY as unknown as GalleryImage[]);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -19,13 +26,13 @@ export default function SalonGallery() {
 
     const goToPrev = useCallback(() => {
         setLightboxIndex(
-            (prev) => (prev - 1 + SALON_GALLERY.length) % SALON_GALLERY.length,
+            (prev) => (prev - 1 + data.length) % data.length,
         );
-    }, []);
+    }, [data.length]);
 
     const goToNext = useCallback(() => {
-        setLightboxIndex((prev) => (prev + 1) % SALON_GALLERY.length);
-    }, []);
+        setLightboxIndex((prev) => (prev + 1) % data.length);
+    }, [data.length]);
 
     return (
         <section className="py-16 bg-white dark:bg-gray-950">
@@ -41,7 +48,7 @@ export default function SalonGallery() {
 
                 {/* Gallery Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {SALON_GALLERY.map((image, index) => (
+                    {data.map((image, index) => (
                         <div
                             key={image.id}
                             className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer"
@@ -78,9 +85,9 @@ export default function SalonGallery() {
             {/* Lightbox */}
             {lightboxOpen && (
                 <ImageLightbox
-                    sources={SALON_GALLERY.map((img) => img.image)}
+                    sources={data.map((img) => img.image)}
                     index={lightboxIndex}
-                    alt={SALON_GALLERY[lightboxIndex]?.alt}
+                    alt={data[lightboxIndex]?.alt}
                     onClose={closeLightbox}
                     onPrev={goToPrev}
                     onNext={goToNext}

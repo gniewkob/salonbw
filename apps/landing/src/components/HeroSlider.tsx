@@ -4,7 +4,14 @@ import Image from 'next/image';
 import { HERO_SLIDES, BUSINESS_INFO } from '@/config/content';
 import { getPanelUrl } from '@/utils/panelUrl';
 
-export default function HeroSlider() {
+type HeroSlide = { id: number; title: string; description: string; image: string; alt: string };
+
+interface HeroSliderProps {
+    slides?: HeroSlide[];
+}
+
+export default function HeroSlider({ slides }: HeroSliderProps) {
+    const data = slides ?? (HERO_SLIDES as unknown as HeroSlide[]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -14,14 +21,14 @@ export default function HeroSlider() {
     );
 
     const nextSlide = useCallback(() => {
-        setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, []);
+        setCurrentSlide((prev) => (prev + 1) % data.length);
+    }, [data.length]);
 
     const prevSlide = useCallback(() => {
         setCurrentSlide(
-            (prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
+            (prev) => (prev - 1 + data.length) % data.length,
         );
-    }, []);
+    }, [data.length]);
 
     const goToSlide = useCallback((index: number) => {
         setCurrentSlide(index);
@@ -57,7 +64,7 @@ export default function HeroSlider() {
         >
             {/* Slides */}
             <div className="relative w-full h-full">
-                {HERO_SLIDES.map((slide, index) => (
+                {data.map((slide, index) => (
                     <div
                         key={slide.id}
                         className={`absolute inset-0 transition-opacity duration-700 ${
@@ -152,7 +159,7 @@ export default function HeroSlider() {
 
             {/* Dots Navigation */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-                {HERO_SLIDES.map((slide, index) => (
+                {data.map((slide, index) => (
                     <button
                         key={slide.id}
                         type="button"
