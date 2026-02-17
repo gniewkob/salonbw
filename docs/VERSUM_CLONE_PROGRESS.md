@@ -113,6 +113,15 @@
 - zachowanie:
   - reset strony do `1` przy zmianie filtra i wyszukiwania.
 
+### 2026-02-17 - Magazyn: doszlifowanie wizualne `historia sprzedaży` + `historia dostaw` (deploy)
+- commit/deploy:
+  - commit: `2371ad63`
+  - run: `22119599831` (production, success)
+- zmiany UI:
+  - `na stronie` jako select inline (parity z Versum),
+  - delikatny zebra background dla wierszy tabel,
+  - hover wiersza w kolorze zbliżonym do referencyjnego.
+
 ### 2026-02-17 - Customers: pełny audyt produkcyjny (panel vs versum)
 - nowy test audytowy:
   - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`
