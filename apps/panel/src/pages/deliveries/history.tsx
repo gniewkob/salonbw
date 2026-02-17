@@ -10,6 +10,7 @@ export default function WarehouseDeliveriesHistoryPage() {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [pageSize] = useState(20);
     const { data: deliveries = [], isLoading } = useDeliveries();
     const statusFilter = Array.isArray(router.query.status)
         ? router.query.status[0]
@@ -43,7 +44,6 @@ export default function WarehouseDeliveriesHistoryPage() {
             `${delivery.deliveryNumber} ${delivery.supplier?.name ?? ''} ${delivery.invoiceNumber ?? ''}`.toLowerCase();
         return haystack.includes(search.toLowerCase());
     });
-    const pageSize = 20;
     const totalPages = Math.max(
         1,
         Math.ceil(visibleDeliveries.length / pageSize),
@@ -184,7 +184,14 @@ export default function WarehouseDeliveriesHistoryPage() {
             )}
             <div className="products-pagination">
                 Pozycje od {from} do {to} z {visibleDeliveries.length} | na
-                stronie {pageSize}
+                stronie
+                <select
+                    className="versum-select versum-select--inline"
+                    value={String(pageSize)}
+                    disabled
+                >
+                    <option value="20">20</option>
+                </select>
                 <div className="products-pagination-nav">
                     <input
                         type="text"

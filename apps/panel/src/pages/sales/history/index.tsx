@@ -9,8 +9,8 @@ export default function WarehouseSalesHistoryPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
     const [page, setPage] = useState(1);
+    const [pageSize] = useState(20);
     const { data: sales = [], isLoading } = useWarehouseSales();
-    const pageSize = 20;
 
     const filteredSales = useMemo(
         () =>
@@ -145,9 +145,13 @@ export default function WarehouseSalesHistoryPage() {
                             </span>
                             <div className="products-table-footer__controls">
                                 <span>na stronie</span>
-                                <span className="products-table-footer__page-size">
-                                    {pageSize}
-                                </span>
+                                <select
+                                    className="versum-select versum-select--inline"
+                                    value={String(pageSize)}
+                                    disabled
+                                >
+                                    <option value="20">20</option>
+                                </select>
                                 <div className="products-pagination-nav">
                                     <input
                                         type="text"

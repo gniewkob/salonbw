@@ -650,6 +650,13 @@ textarea.form-control {
     gap: 6px;
 }
 
+.versum-select--inline {
+    min-width: 52px;
+    height: 24px;
+    padding: 0 20px 0 6px;
+    font-size: 11px;
+}
+
 .products-header h1 {
     margin: 0 0 8px;
     font-size: 27px;
@@ -686,8 +693,12 @@ textarea.form-control {
     vertical-align: middle;
 }
 
+.products-table tbody tr:nth-child(even) td {
+    background: #f6f8fa;
+}
+
 .products-table tbody tr:hover td {
-    background: #f8fafc;
+    background: #e6f7f7;
 }
 
 .products-table .col-checkbox {
