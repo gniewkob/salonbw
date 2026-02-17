@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `ce5c1a56` | `22119280341` | 2026-02-17 23:09 | production | Magazyn: `historia sprzedaży` i `historia dostaw` z paginacją w stylu Versum (zakres pozycji + kontrolka strony) |
+| Dashboard (`panel.salon-bw.pl`) | `2371ad63` | `22119599831` | 2026-02-17 23:20 | production | Magazyn: doszlifowany wygląd `historia sprzedaży` i `historia dostaw` (zebra-row, hover, select `na stronie`) |
 
 Verification:
 
