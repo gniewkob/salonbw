@@ -2,9 +2,16 @@
 import { useState } from 'react';
 import { HISTORY_ITEMS } from '@/config/content';
 
-export default function HistoryAccordion() {
+type HistoryItem = { id: string; title: string; content: string };
+
+interface HistoryAccordionProps {
+    items?: HistoryItem[];
+}
+
+export default function HistoryAccordion({ items }: HistoryAccordionProps) {
+    const data = items ?? (HISTORY_ITEMS as unknown as HistoryItem[]);
     const [openItem, setOpenItem] = useState<string | null>(
-        HISTORY_ITEMS[0]?.id || null,
+        data[0]?.id || null,
     );
 
     const toggleItem = (id: string) => {
@@ -18,7 +25,7 @@ export default function HistoryAccordion() {
                     Nasza Historia
                 </h2>
                 <div className="max-w-3xl mx-auto space-y-4">
-                    {HISTORY_ITEMS.map((item) => {
+                    {data.map((item) => {
                         const isOpen = openItem === item.id;
                         return (
                             <div

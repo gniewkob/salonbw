@@ -2,15 +2,27 @@
 import { useState, useEffect } from 'react';
 import { CORE_VALUES } from '@/config/content';
 
-export default function ValuesSection() {
+type CoreValue = {
+    id: string;
+    title: string;
+    icon: string;
+    description: string;
+};
+
+interface ValuesSectionProps {
+    values?: CoreValue[];
+}
+
+export default function ValuesSection({ values }: ValuesSectionProps) {
+    const data = values ?? (CORE_VALUES as unknown as CoreValue[]);
     const [activeTab, setActiveTab] = useState<string>(
-        CORE_VALUES[0]?.id || '',
+        data[0]?.id || '',
     );
 
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            const currentIndex = CORE_VALUES.findIndex(
+            const currentIndex = data.findIndex(
                 (v) => v.id === activeTab,
             );
             if (currentIndex === -1) return;
@@ -18,13 +30,13 @@ export default function ValuesSection() {
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const prevIndex =
-                    (currentIndex - 1 + CORE_VALUES.length) %
-                    CORE_VALUES.length;
-                setActiveTab(CORE_VALUES[prevIndex].id);
+                    (currentIndex - 1 + data.length) %
+                    data.length;
+                setActiveTab(data[prevIndex].id);
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                const nextIndex = (currentIndex + 1) % CORE_VALUES.length;
-                setActiveTab(CORE_VALUES[nextIndex].id);
+                const nextIndex = (currentIndex + 1) % data.length;
+                setActiveTab(data[nextIndex].id);
             }
         };
 
@@ -40,9 +52,9 @@ export default function ValuesSection() {
                     handleKeyDown as EventListener,
                 );
         }
-    }, [activeTab]);
+    }, [activeTab, data]);
 
-    const activeValue = CORE_VALUES.find((v) => v.id === activeTab);
+    const activeValue = data.find((v) => v.id === activeTab);
 
     return (
         <section className="py-16 bg-gray-50 dark:bg-gray-900">
@@ -58,7 +70,7 @@ export default function ValuesSection() {
                     aria-label="Core values"
                     className="flex flex-wrap justify-center gap-2 mb-8"
                 >
-                    {CORE_VALUES.map((value) => {
+                    {data.map((value) => {
                         const isActive = activeTab === value.id;
                         return (
                             <button

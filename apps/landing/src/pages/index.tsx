@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Script from 'next/script';
 import { jsonLd, absUrl } from '@/utils/seo';
@@ -12,8 +13,35 @@ import FounderMessage from '@/components/FounderMessage';
 import HistoryAccordion from '@/components/HistoryAccordion';
 import ValuesSection from '@/components/ValuesSection';
 import SalonGallery from '@/components/SalonGallery';
+import {
+    getHeroSlides,
+    getFounderMessage,
+    getHistoryItems,
+    getCoreValues,
+    getSalonGallery,
+} from '@/utils/contentApi';
 
-export default function HomePage() {
+type HeroSlide = { id: number; title: string; description: string; image: string; alt: string };
+type FounderData = { name: string; quote: string; photo?: string };
+type HistoryItem = { id: string; title: string; content: string };
+type CoreValue = { id: string; title: string; icon: string; description: string };
+type GalleryImage = { id: number; image: string; caption: string; alt: string };
+
+interface HomePageProps {
+    slides: HeroSlide[];
+    founder: FounderData;
+    historyItems: HistoryItem[];
+    coreValues: CoreValue[];
+    galleryImages: GalleryImage[];
+}
+
+export default function HomePage({
+    slides,
+    founder,
+    historyItems,
+    coreValues,
+    galleryImages,
+}: HomePageProps) {
     // Analytics: page view
     useEffect(() => {
         try {
@@ -87,19 +115,19 @@ export default function HomePage() {
             </Script>
             <div>
                 {/* Hero Slider */}
-                <HeroSlider />
+                <HeroSlider slides={slides} />
 
                 {/* Founder Message */}
-                <FounderMessage />
+                <FounderMessage founder={founder} />
 
                 {/* History Accordion */}
-                <HistoryAccordion />
+                <HistoryAccordion items={historyItems} />
 
                 {/* Core Values */}
-                <ValuesSection />
+                <ValuesSection values={coreValues} />
 
                 {/* Salon Gallery */}
-                <SalonGallery />
+                <SalonGallery images={galleryImages} />
 
                 {/* Contact Section with Map */}
                 <section className="p-4 space-y-4 max-w-4xl mx-auto">
@@ -165,3 +193,25 @@ export default function HomePage() {
         </PublicLayout>
     );
 }
+
+export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
+    const [slides, founder, historyItems, coreValues, galleryImages] =
+        await Promise.all([
+            getHeroSlides(),
+            getFounderMessage(),
+            getHistoryItems(),
+            getCoreValues(),
+            getSalonGallery(),
+        ]);
+
+    return {
+        props: {
+            slides: slides as unknown as HeroSlide[],
+            founder: founder as unknown as FounderData,
+            historyItems: historyItems as unknown as HistoryItem[],
+            coreValues: coreValues as unknown as CoreValue[],
+            galleryImages: galleryImages as unknown as GalleryImage[],
+        },
+        revalidate: 3600, // ISR: regenerate every 1 hour
+    };
+};

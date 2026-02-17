@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import TestDataSeed from '../src/database/seeds/test-data.seed';
+import ContentSectionsSeed from '../src/database/seeds/content-sections.seed';
 
 // Import entities directly
 import { User } from '../src/users/user.entity';
@@ -9,6 +10,7 @@ import { Service } from '../src/services/service.entity';
 import { ServiceCategory } from '../src/services/entities/service-category.entity';
 import { EmployeeService } from '../src/services/entities/employee-service.entity';
 import { Appointment } from '../src/appointments/appointment.entity';
+import { ContentSection } from '../src/content/entities/content-section.entity';
 
 loadEnv();
 
@@ -38,7 +40,7 @@ async function runSeed() {
     const dataSource = new DataSource({
         type: 'postgres',
         ...dbConfig,
-        entities: [User, Service, ServiceCategory, EmployeeService, Appointment],
+        entities: [User, Service, ServiceCategory, EmployeeService, Appointment, ContentSection],
         ssl: process.env.PGSSL === '1' ? true : undefined,
     });
 
@@ -49,6 +51,9 @@ async function runSeed() {
 
         const seed = new TestDataSeed();
         await seed.run(dataSource);
+
+        const contentSeed = new ContentSectionsSeed();
+        await contentSeed.run(dataSource);
 
         console.log('\n✓ Seed completed successfully!');
         process.exit(0);
