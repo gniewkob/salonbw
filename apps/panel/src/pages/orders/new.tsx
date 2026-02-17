@@ -89,41 +89,6 @@ export default function WarehouseOrderCreatePage() {
                 </Link>
             }
         >
-            <div className="warehouse-form-card">
-                <div className="warehouse-form-grid">
-                    <label>
-                        <span>Dostawca</span>
-                        <div className="warehouse-inline-field">
-                            <select
-                                value={supplierId}
-                                onChange={(event) =>
-                                    setSupplierId(event.target.value)
-                                }
-                                className="versum-select"
-                            >
-                                <option value="">
-                                    wpisz nazwę lub wybierz z listy
-                                </option>
-                                {suppliers.map((supplier) => (
-                                    <option
-                                        key={supplier.id}
-                                        value={supplier.id}
-                                    >
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <Link
-                                href="/suppliers"
-                                className="btn btn-default btn-xs"
-                            >
-                                dodaj dostawcę
-                            </Link>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
             <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
             <div className="products-table-wrap">
                 <table className="products-table">
@@ -246,41 +211,79 @@ export default function WarehouseOrderCreatePage() {
                 </Link>
             </div>
 
-            {notesEnabled ? (
-                <label className="warehouse-full">
-                    <span>Uwagi</span>
-                    <textarea
-                        value={notes}
-                        onChange={(event) => setNotes(event.target.value)}
-                        className="form-control"
-                    />
-                </label>
-            ) : (
-                <div className="warehouse-actions-row">
+            <div className="warehouse-entry-form">
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">1.</span>
+                    <span className="warehouse-entry-row__label">dostawca</span>
+                    <div className="warehouse-inline-field">
+                        <select
+                            value={supplierId}
+                            onChange={(event) =>
+                                setSupplierId(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
+                            </option>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
+                                </option>
+                            ))}
+                        </select>
+                        <Link
+                            href="/suppliers"
+                            className="btn btn-default btn-xs"
+                        >
+                            dodaj dostawcę
+                        </Link>
+                    </div>
+                </div>
+                {notesEnabled ? (
+                    <div className="warehouse-entry-row">
+                        <span className="warehouse-entry-row__index">2.</span>
+                        <span className="warehouse-entry-row__label">opis</span>
+                        <textarea
+                            value={notes}
+                            onChange={(event) => setNotes(event.target.value)}
+                            className="form-control"
+                        />
+                    </div>
+                ) : (
+                    <div className="warehouse-entry-row">
+                        <span className="warehouse-entry-row__index">2.</span>
+                        <span className="warehouse-entry-row__label">opis</span>
+                        <button
+                            type="button"
+                            className="btn btn-default btn-xs"
+                            onClick={() => setNotesEnabled(true)}
+                        >
+                            dodaj uwagi
+                        </button>
+                    </div>
+                )}
+                <div className="warehouse-entry-actions">
+                    <Link
+                        href="/orders/history"
+                        className="btn btn-default btn-xs"
+                    >
+                        anuluj
+                    </Link>
                     <button
                         type="button"
-                        className="btn btn-default btn-xs"
-                        onClick={() => setNotesEnabled(true)}
+                        className="btn btn-primary btn-xs"
+                        onClick={() => void submit()}
+                        disabled={createMutation.isPending}
                     >
-                        dodaj uwagi
+                        {createMutation.isPending
+                            ? 'zapisywanie...'
+                            : 'zapisz zamówienie'}
                     </button>
+                    <span className="warehouse-entry-total">
+                        pozycje: {lines.length}
+                    </span>
                 </div>
-            )}
-
-            <div className="warehouse-actions-row">
-                <Link href="/orders/history" className="btn btn-default btn-xs">
-                    anuluj
-                </Link>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-xs"
-                    onClick={() => void submit()}
-                    disabled={createMutation.isPending}
-                >
-                    {createMutation.isPending
-                        ? 'zapisywanie...'
-                        : 'zapisz zamówienie'}
-                </button>
             </div>
             {formError ? (
                 <p className="warehouse-validation-error">{formError}</p>

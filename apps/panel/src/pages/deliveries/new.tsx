@@ -109,6 +109,7 @@ export default function WarehouseDeliveryCreatePage() {
         const unit = Number(line.unitCost || 0);
         return sum + qty * unit;
     }, 0);
+    const totalGross = totalNet * 1.23;
 
     return (
         <WarehouseLayout
@@ -241,72 +242,75 @@ export default function WarehouseDeliveryCreatePage() {
                 </p>
             </div>
 
-            <div className="warehouse-form-card">
-                <div className="warehouse-form-grid">
-                    <label>
-                        <span>Dostawca</span>
-                        <div className="warehouse-inline-field">
-                            <select
-                                value={supplierId}
-                                onChange={(event) =>
-                                    setSupplierId(event.target.value)
-                                }
-                                className="versum-select"
-                            >
-                                <option value="">
-                                    wpisz nazwę lub wybierz z listy
+            <div className="warehouse-entry-form">
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">1.</span>
+                    <span className="warehouse-entry-row__label">dostawca</span>
+                    <div className="warehouse-inline-field">
+                        <select
+                            value={supplierId}
+                            onChange={(event) =>
+                                setSupplierId(event.target.value)
+                            }
+                            className="versum-select"
+                        >
+                            <option value="">
+                                wpisz nazwę lub wybierz z listy
+                            </option>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
                                 </option>
-                                {suppliers.map((supplier) => (
-                                    <option
-                                        key={supplier.id}
-                                        value={supplier.id}
-                                    >
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <Link
-                                href="/suppliers"
-                                className="btn btn-default btn-xs"
-                            >
-                                dodaj dostawcę
-                            </Link>
-                        </div>
-                    </label>
-                    <label>
-                        <span>Numer faktury</span>
-                        <input
-                            type="text"
-                            value={invoiceNumber}
-                            onChange={(event) =>
-                                setInvoiceNumber(event.target.value)
-                            }
-                            className="form-control"
-                        />
-                    </label>
-                    <label>
-                        <span>Wystawiono</span>
-                        <input
-                            type="date"
-                            value={deliveryDate}
-                            onChange={(event) =>
-                                setDeliveryDate(event.target.value)
-                            }
-                            className="form-control"
-                        />
-                    </label>
-                    <label className="warehouse-full">
-                        <span>Uwagi</span>
-                        <textarea
-                            value={notes}
-                            onChange={(event) => setNotes(event.target.value)}
-                            className="form-control"
-                        />
-                    </label>
+                            ))}
+                        </select>
+                        <Link
+                            href="/suppliers"
+                            className="btn btn-default btn-xs"
+                        >
+                            dodaj dostawcę
+                        </Link>
+                    </div>
+                </div>
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">2.</span>
+                    <span className="warehouse-entry-row__label">
+                        numer faktury
+                    </span>
+                    <input
+                        type="text"
+                        value={invoiceNumber}
+                        onChange={(event) =>
+                            setInvoiceNumber(event.target.value)
+                        }
+                        className="form-control"
+                    />
+                </div>
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">3.</span>
+                    <span className="warehouse-entry-row__label">
+                        wystawiono
+                    </span>
+                    <input
+                        type="date"
+                        value={deliveryDate}
+                        onChange={(event) =>
+                            setDeliveryDate(event.target.value)
+                        }
+                        className="form-control"
+                    />
+                </div>
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">4.</span>
+                    <span className="warehouse-entry-row__label">opis</span>
+                    <textarea
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        className="form-control"
+                    />
                 </div>
             </div>
 
-            <div className="warehouse-actions-row">
+            <div className="warehouse-entry-actions">
                 <Link
                     href="/deliveries/history"
                     className="btn btn-default btn-xs"
@@ -337,6 +341,9 @@ export default function WarehouseDeliveryCreatePage() {
                         ? 'zapisywanie...'
                         : 'wprowadź dostawę'}
                 </button>
+                <span className="warehouse-entry-total">
+                    do zapłaty łącznie: {totalGross.toFixed(2)} zł brutto
+                </span>
             </div>
             {formError ? (
                 <p className="warehouse-validation-error">{formError}</p>

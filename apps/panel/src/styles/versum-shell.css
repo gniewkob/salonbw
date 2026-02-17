@@ -1117,6 +1117,58 @@ textarea.form-control {
     color: #c0392b;
 }
 
+.warehouse-entry-form {
+    margin-top: 14px;
+    border-top: 1px solid #dde3e8;
+    padding-top: 10px;
+}
+
+.warehouse-entry-row {
+    display: grid;
+    grid-template-columns: 28px 130px minmax(280px, 1fr);
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #5f6973;
+}
+
+.warehouse-entry-row__index {
+    color: #7a848d;
+    text-align: right;
+}
+
+.warehouse-entry-row__label {
+    color: #56606a;
+    font-weight: 700;
+}
+
+.warehouse-entry-row .form-control,
+.warehouse-entry-row .versum-select {
+    max-width: 380px;
+}
+
+.warehouse-entry-row textarea.form-control {
+    min-height: 78px;
+}
+
+.warehouse-entry-actions {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #dde3e8;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.warehouse-entry-total {
+    margin-left: auto;
+    color: #3e4852;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .customer-new-form {
     max-width: 840px;
     padding-bottom: 24px;
