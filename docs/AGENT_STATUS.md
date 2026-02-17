@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `2371ad63` | `22119599831` | 2026-02-17 23:20 | production | Magazyn: doszlifowany wygląd `historia sprzedaży` i `historia dostaw` (zebra-row, hover, select `na stronie`) |
+| Dashboard (`panel.salon-bw.pl`) | `6678127c` | `22120126171` | 2026-02-17 23:40 | production | Magazyn: `historia zamówień` (toolbar+filtry+paginacja) + secondnav `DOSTAWY` jako drzewko (nested `dostawcy/producenci`) |
 
 Verification:
 
@@ -76,6 +76,15 @@ Verification:
   - dodano kontrolki paginacji zgodne z układem Versum (`Pozycje od ... do ... z ...`, numer strony, strzałka `>`),
   - paginacja działa po filtrowaniu i wyszukiwaniu (reset do strony 1 przy zmianie filtra/tekstu).
 - **Status:** deployed to production; dalsze odchylenia strict 1:1 pozostają głównie w fine-tuningu wizualnym.
+
+### 2026-02-17: Warehouse orders-history + deliveries secondnav tree parity refinement (deployed)
+
+- **Scope:** `Magazyn / Historia zamówień` and deliveries section side navigation.
+- **Deploy:** Dashboard run `22120126171` (`success`), commit `6678127c`.
+- **Change:**
+  - `/orders/history`: dodane wyszukiwanie, filtrowanie po statusie, paginacja w stylu Versum i rozszerzone kolumny tabeli,
+  - secondnav `DOSTAWY`: przebudowany na drzewko z zagnieżdżeniem (`dostawcy`, `producenci`) pod `niski stan magazynowy`.
+- **Status:** deployed to production; remaining work is visual/detail parity on `new` forms and actions layout.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 

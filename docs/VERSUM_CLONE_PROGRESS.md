@@ -122,6 +122,14 @@
   - delikatny zebra background dla wierszy tabel,
   - hover wiersza w kolorze zbliżonym do referencyjnego.
 
+### 2026-02-17 - Magazyn: `historia zamówień` + drzewko secondnav `DOSTAWY` (deploy)
+- commit/deploy:
+  - commit: `6678127c`
+  - run: `22120126171` (production, success)
+- zmiany UI:
+  - `/orders/history`: toolbar (wyszukiwarka + filtr statusu), rozszerzona tabela, paginacja w stylu Versum,
+  - secondnav `DOSTAWY`: układ drzewka z nested pozycjami `dostawcy` i `producenci` pod `niski stan magazynowy`.
+
 ### 2026-02-17 - Customers: pełny audyt produkcyjny (panel vs versum)
 - nowy test audytowy:
   - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`
