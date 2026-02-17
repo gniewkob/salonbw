@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-17 (Panel 500 hotfix + warehouse nav optimization deployed)_
+_Last updated: 2026-02-17 (warehouse usage footer deploy + prod smoke pass)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `36354262` | `22113872213` | 2026-02-17 20:11 | production | Hotfix: panel global 500 usunięte przez unifikację runtime `next@14.2.32`; magazyn: lazy secondnav categories + top-tabs na trasy bazowe |
+| Dashboard (`panel.salon-bw.pl`) | `bd538e9a` | `22114587195` | 2026-02-17 20:34 | production | Magazyn: dodany Versum-like footer tabeli dla `zużycie` (`/use/history`, `/use/planned`); panel stable po hotfixie runtime Next 14.2.32 |
 
 Verification:
 
@@ -37,6 +37,16 @@ Verification:
 - **Root cause:** Rozjazd wersji Next.js między artefaktem build i runtime na serwerze.
 - **Mitigation:** Wyrównano runtime panelu do `next@14.2.32` i wykonano deploy dashboard (`22113872213`).
 - **Verification:** `GET /auth/login` -> `200`; trasy chronione panelu (`/products`, `/sales`, `/use`, `/deliveries`, `/orders`, `/inventory`) -> `307` do logowania; API `/healthz` -> `200`.
+
+### 2026-02-17: Warehouse smoke parity rerun (resolved, green)
+
+- **Scope:** Re-run production smoke for warehouse and customers after latest dashboard deploy.
+- **Runs:** local Playwright against `https://panel.salon-bw.pl` with auth env.
+- **Results:**
+  - `tests/e2e/prod-warehouse-smoke.spec.ts` -> `2 passed` (warehouse shell + secondnav context switching),
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 passed` (gallery/files upload/download flow),
+  - combined `tests/e2e/prod-*.spec.ts` -> `4 passed`.
+- **Status:** stable for current smoke scope; no regression detected in warehouse secondnav routing.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 

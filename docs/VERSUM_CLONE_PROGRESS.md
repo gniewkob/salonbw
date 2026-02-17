@@ -103,6 +103,20 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-02-17 - Magazyn: deploy `zużycie` footer + potwierdzenie smoke na produkcji
+- deploy dashboard:
+  - commit: `bd538e9a`
+  - run: `22114587195` (production, success)
+- zmiany UI:
+  - dodany footer tabeli w stylu Versum w:
+    - `/use/history`
+    - `/use/planned`
+  - footer: `Pozycje od ... do ... | na stronie 20`.
+- smoke produkcyjny (po deployu):
+  - `tests/e2e/prod-warehouse-smoke.spec.ts` -> `2 passed`,
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 passed`,
+  - łączny rerun `tests/e2e/prod-*.spec.ts` -> `4 passed`.
+
 ### 2026-02-15 - Magazyn: aliasy `/usage*` + optymalizacja transferu danych secondnav
 - routing panel:
   - dodane aliasy tras: `/usage` -> `/use/history`, `/usage/:path*` -> `/use/:path*` (eliminuje 404 przy legacy/nawykowych URL).
