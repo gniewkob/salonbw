@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-18 (warehouse sales/deliveries history visual parity tightened)_
+_Last updated: 2026-02-18 (warehouse sales/new structure aligned with Versum patterns)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `8062ccd6` | `22132637254` | 2026-02-18 08:45 | production | Magazyn: doszlifowanie `historia sprzedaży` + `historia dostaw` (format kwot PL, jednolity footer/paginacja Versum) |
+| Dashboard (`panel.salon-bw.pl`) | `9af86361` | `22132846978` | 2026-02-18 08:52 | production | Magazyn: `dodaj sprzedaż` przeniesione na wspólny układ Versum (`warehouse-new-screen`, tabela wejściowa, formatowanie kwot PL) |
 
 Verification:
 
@@ -129,6 +129,15 @@ Verification:
   - kwoty w obu widokach formatowane po polsku (`1 234,56 zł`),
   - `historia dostaw` przeszła na stopkę tabeli identyczną jak `historia sprzedaży` (`Pozycje od ...`, `na stronie`, pager),
   - ujednolicony układ i spacing footer/paginacji dla obu ekranów.
+
+### 2026-02-18: Warehouse sales/new form structure alignment (deployed)
+
+- **Scope:** `Magazyn / Dodaj sprzedaż` (`/sales/new`).
+- **Deploy:** Dashboard run `22132846978` (`success`), commit `9af86361`.
+- **Change:**
+  - strona korzysta z tych samych wrapperów layoutu co `dodaj dostawę`/`dodaj zamówienie`,
+  - tabela pozycji bez dodatkowej kolumny `lp` (układ bliżej Versum),
+  - kwoty pozycji i podsumowania renderowane w formacie PL (`1 234,56 zł`).
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 

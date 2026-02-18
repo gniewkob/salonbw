@@ -137,6 +137,15 @@
   - `historia dostaw` dostała stopkę `products-table-footer` jak w `historia sprzedaży`,
   - pager i sekcja `na stronie` ujednolicone wizualnie między oboma ekranami.
 
+### 2026-02-18 - Magazyn: `dodaj sprzedaż` (układ wspólny z Versum forms)
+- commit/deploy:
+  - commit: `9af86361`
+  - run: `22132846978` (production, success)
+- zmiany UI:
+  - `/sales/new` używa tych samych wrapperów co pozostałe formularze magazynu (`warehouse-new-screen`, `warehouse-lines-table`),
+  - usunięta nadmiarowa kolumna `lp` w tabeli pozycji, zgodnie z referencją,
+  - kwoty w wierszach/podsumowaniu formatowane po polsku (`1 234,56 zł`).
+
 ### 2026-02-17 - Magazyn: paginacja `historia sprzedaży` + `historia dostaw` (deploy)
 - commit/deploy:
   - commit: `ce5c1a56`
