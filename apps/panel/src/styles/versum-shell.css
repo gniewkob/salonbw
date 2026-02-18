@@ -1117,6 +1117,26 @@ textarea.form-control {
     color: #c0392b;
 }
 
+.warehouse-new-screen {
+    max-width: 980px;
+}
+
+.warehouse-lines-table .products-table th,
+.warehouse-lines-table .products-table td {
+    font-size: 11px;
+}
+
+.warehouse-lines-table .products-table td .form-control,
+.warehouse-lines-table .products-table td .versum-select {
+    height: 26px;
+    min-height: 26px;
+}
+
+.warehouse-lines-table .products-table td:first-child {
+    width: 36px;
+    text-align: center;
+}
+
 .warehouse-entry-form {
     margin-top: 14px;
     border-top: 1px solid #dde3e8;
@@ -1165,7 +1185,8 @@ textarea.form-control {
 .warehouse-entry-total {
     margin-left: auto;
     color: #3e4852;
-    font-size: 13px;
+    font-size: 24px;
+    line-height: 1.1;
     font-weight: 700;
 }
 

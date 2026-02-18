@@ -89,205 +89,230 @@ export default function WarehouseOrderCreatePage() {
                 </Link>
             }
         >
-            <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
-            <div className="products-table-wrap">
-                <table className="products-table">
-                    <thead>
-                        <tr>
-                            <th>lp</th>
-                            <th>nazwa</th>
-                            <th>jednostka</th>
-                            <th>ilość</th>
-                            <th>usuń</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {lines.map((line, index) => (
-                            <tr key={`${index}-${line.productId}`}>
-                                <td>{index + 1}</td>
-                                <td>
-                                    <select
-                                        value={line.productId}
-                                        onChange={(event) => {
-                                            const value = event.target.value;
-                                            const product = products.find(
-                                                (item) =>
-                                                    String(item.id) === value,
-                                            );
-                                            updateLine(index, {
-                                                productId: value,
-                                                productName:
-                                                    product?.name ?? '',
-                                                unit: product?.unit || 'op.',
-                                            });
-                                        }}
-                                        className="form-control"
-                                    >
-                                        <option value="">
-                                            wybierz produkt
-                                        </option>
-                                        {products.map((product) => (
-                                            <option
-                                                key={product.id}
-                                                value={product.id}
-                                            >
-                                                {product.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="text"
-                                        value={line.productName}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                productName: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                        placeholder="nazwa alternatywna"
-                                    />
-                                </td>
-                                <td>
-                                    <select
-                                        value={line.unit}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                unit: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                    >
-                                        <option value="op.">op.</option>
-                                        <option value="szt.">szt.</option>
-                                        <option value="ml">ml</option>
-                                        <option value="g">g</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={line.quantity}
-                                        onChange={(event) =>
-                                            updateLine(index, {
-                                                quantity: event.target.value,
-                                            })
-                                        }
-                                        className="form-control"
-                                    />
-                                </td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        className="btn btn-default btn-xs"
-                                        onClick={() =>
-                                            setLines((current) =>
-                                                current.filter(
-                                                    (_, lineIndex) =>
-                                                        lineIndex !== index,
-                                                ),
-                                            )
-                                        }
-                                    >
-                                        usuń
-                                    </button>
-                                </td>
+            <div className="warehouse-new-screen">
+                <h3 className="warehouse-subtitle">Pozycje zamówienia</h3>
+                <div className="products-table-wrap warehouse-lines-table">
+                    <table className="products-table">
+                        <thead>
+                            <tr>
+                                <th>lp</th>
+                                <th>nazwa</th>
+                                <th>jednostka</th>
+                                <th>ilość</th>
+                                <th>usuń</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="warehouse-actions-row">
-                <button
-                    type="button"
-                    className="btn btn-default btn-xs"
-                    onClick={addLine}
-                >
-                    dodaj kolejną pozycję
-                </button>
-                <Link href="/products/new" className="btn btn-default btn-xs">
-                    dodaj nowy produkt
-                </Link>
-            </div>
-
-            <div className="warehouse-entry-form">
-                <div className="warehouse-entry-row">
-                    <span className="warehouse-entry-row__index">1.</span>
-                    <span className="warehouse-entry-row__label">dostawca</span>
-                    <div className="warehouse-inline-field">
-                        <select
-                            value={supplierId}
-                            onChange={(event) =>
-                                setSupplierId(event.target.value)
-                            }
-                            className="versum-select"
-                        >
-                            <option value="">
-                                wpisz nazwę lub wybierz z listy
-                            </option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
+                        </thead>
+                        <tbody>
+                            {lines.map((line, index) => (
+                                <tr key={`${index}-${line.productId}`}>
+                                    <td>{index + 1}</td>
+                                    <td>
+                                        <select
+                                            value={line.productId}
+                                            onChange={(event) => {
+                                                const value =
+                                                    event.target.value;
+                                                const product = products.find(
+                                                    (item) =>
+                                                        String(item.id) ===
+                                                        value,
+                                                );
+                                                updateLine(index, {
+                                                    productId: value,
+                                                    productName:
+                                                        product?.name ?? '',
+                                                    unit:
+                                                        product?.unit || 'op.',
+                                                });
+                                            }}
+                                            className="form-control"
+                                        >
+                                            <option value="">
+                                                wybierz produkt
+                                            </option>
+                                            {products.map((product) => (
+                                                <option
+                                                    key={product.id}
+                                                    value={product.id}
+                                                >
+                                                    {product.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="text"
+                                            value={line.productName}
+                                            onChange={(event) =>
+                                                updateLine(index, {
+                                                    productName:
+                                                        event.target.value,
+                                                })
+                                            }
+                                            className="form-control"
+                                            placeholder="nazwa alternatywna"
+                                        />
+                                    </td>
+                                    <td>
+                                        <select
+                                            value={line.unit}
+                                            onChange={(event) =>
+                                                updateLine(index, {
+                                                    unit: event.target.value,
+                                                })
+                                            }
+                                            className="form-control"
+                                        >
+                                            <option value="op.">op.</option>
+                                            <option value="szt.">szt.</option>
+                                            <option value="ml">ml</option>
+                                            <option value="g">g</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={line.quantity}
+                                            onChange={(event) =>
+                                                updateLine(index, {
+                                                    quantity:
+                                                        event.target.value,
+                                                })
+                                            }
+                                            className="form-control"
+                                        />
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className="btn btn-default btn-xs"
+                                            onClick={() =>
+                                                setLines((current) =>
+                                                    current.filter(
+                                                        (_, lineIndex) =>
+                                                            lineIndex !== index,
+                                                    ),
+                                                )
+                                            }
+                                        >
+                                            usuń
+                                        </button>
+                                    </td>
+                                </tr>
                             ))}
-                        </select>
-                        <Link
-                            href="/suppliers"
-                            className="btn btn-default btn-xs"
-                        >
-                            dodaj dostawcę
-                        </Link>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
-                {notesEnabled ? (
-                    <div className="warehouse-entry-row">
-                        <span className="warehouse-entry-row__index">2.</span>
-                        <span className="warehouse-entry-row__label">opis</span>
-                        <textarea
-                            value={notes}
-                            onChange={(event) => setNotes(event.target.value)}
-                            className="form-control"
-                        />
-                    </div>
-                ) : (
-                    <div className="warehouse-entry-row">
-                        <span className="warehouse-entry-row__index">2.</span>
-                        <span className="warehouse-entry-row__label">opis</span>
-                        <button
-                            type="button"
-                            className="btn btn-default btn-xs"
-                            onClick={() => setNotesEnabled(true)}
-                        >
-                            dodaj uwagi
-                        </button>
-                    </div>
-                )}
-                <div className="warehouse-entry-actions">
-                    <Link
-                        href="/orders/history"
-                        className="btn btn-default btn-xs"
-                    >
-                        anuluj
-                    </Link>
+
+                <div className="warehouse-actions-row">
                     <button
                         type="button"
-                        className="btn btn-primary btn-xs"
-                        onClick={() => void submit()}
-                        disabled={createMutation.isPending}
+                        className="btn btn-default btn-xs"
+                        onClick={addLine}
                     >
-                        {createMutation.isPending
-                            ? 'zapisywanie...'
-                            : 'zapisz zamówienie'}
+                        dodaj kolejną pozycję
                     </button>
-                    <span className="warehouse-entry-total">
-                        pozycje: {lines.length}
-                    </span>
+                    <Link
+                        href="/products/new"
+                        className="btn btn-default btn-xs"
+                    >
+                        dodaj nowy produkt
+                    </Link>
                 </div>
+
+                <div className="warehouse-entry-form">
+                    <div className="warehouse-entry-row">
+                        <span className="warehouse-entry-row__index">1.</span>
+                        <span className="warehouse-entry-row__label">
+                            dostawca
+                        </span>
+                        <div className="warehouse-inline-field">
+                            <select
+                                value={supplierId}
+                                onChange={(event) =>
+                                    setSupplierId(event.target.value)
+                                }
+                                className="versum-select"
+                            >
+                                <option value="">
+                                    wpisz nazwę lub wybierz z listy
+                                </option>
+                                {suppliers.map((supplier) => (
+                                    <option
+                                        key={supplier.id}
+                                        value={supplier.id}
+                                    >
+                                        {supplier.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <Link
+                                href="/suppliers"
+                                className="btn btn-default btn-xs"
+                            >
+                                dodaj dostawcę
+                            </Link>
+                        </div>
+                    </div>
+                    {notesEnabled ? (
+                        <div className="warehouse-entry-row">
+                            <span className="warehouse-entry-row__index">
+                                2.
+                            </span>
+                            <span className="warehouse-entry-row__label">
+                                opis
+                            </span>
+                            <textarea
+                                value={notes}
+                                onChange={(event) =>
+                                    setNotes(event.target.value)
+                                }
+                                className="form-control"
+                            />
+                        </div>
+                    ) : (
+                        <div className="warehouse-entry-row">
+                            <span className="warehouse-entry-row__index">
+                                2.
+                            </span>
+                            <span className="warehouse-entry-row__label">
+                                opis
+                            </span>
+                            <button
+                                type="button"
+                                className="btn btn-default btn-xs"
+                                onClick={() => setNotesEnabled(true)}
+                            >
+                                dodaj uwagi
+                            </button>
+                        </div>
+                    )}
+                    <div className="warehouse-entry-actions">
+                        <Link
+                            href="/orders/history"
+                            className="btn btn-default btn-xs"
+                        >
+                            anuluj
+                        </Link>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-xs"
+                            onClick={() => void submit()}
+                            disabled={createMutation.isPending}
+                        >
+                            {createMutation.isPending
+                                ? 'zapisywanie...'
+                                : 'zapisz zamówienie'}
+                        </button>
+                        <span className="warehouse-entry-total">
+                            pozycje: {lines.length}
+                        </span>
+                    </div>
+                </div>
+                {formError ? (
+                    <p className="warehouse-validation-error">{formError}</p>
+                ) : null}
             </div>
-            {formError ? (
-                <p className="warehouse-validation-error">{formError}</p>
-            ) : null}
         </WarehouseLayout>
     );
 }
