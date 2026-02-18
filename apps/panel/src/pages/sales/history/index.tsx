@@ -5,6 +5,12 @@ import { useMemo, useState } from 'react';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 
+const formatCurrency = (value: number) =>
+    `${new Intl.NumberFormat('pl-PL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value)} zł`;
+
 export default function WarehouseSalesHistoryPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
@@ -119,10 +125,11 @@ export default function WarehouseSalesHistoryPage() {
                                             </td>
                                             <td>{saleType}</td>
                                             <td>
-                                                {Number(
-                                                    sale.totalGross ?? 0,
-                                                ).toFixed(2)}{' '}
-                                                zł
+                                                {formatCurrency(
+                                                    Number(
+                                                        sale.totalGross ?? 0,
+                                                    ),
+                                                )}
                                             </td>
                                             <td>
                                                 {new Date(

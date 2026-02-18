@@ -6,6 +6,12 @@ import { useMemo, useState } from 'react';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useDeliveries } from '@/hooks/useWarehouse';
 
+const formatCurrency = (value: number) =>
+    `${new Intl.NumberFormat('pl-PL', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value)} zł`;
+
 export default function WarehouseDeliveriesHistoryPage() {
     const router = useRouter();
     const [search, setSearch] = useState('');
@@ -149,8 +155,8 @@ export default function WarehouseDeliveriesHistoryPage() {
                                                 {delivery.invoiceNumber ?? '-'}
                                             </td>
                                             <td>
-                                                {net.toFixed(2)} zł netto (
-                                                {gross.toFixed(2)} zł brutto)
+                                                {formatCurrency(net)} netto (
+                                                {formatCurrency(gross)} brutto)
                                             </td>
                                             <td>
                                                 {delivery.supplier?.name ?? '-'}
@@ -179,46 +185,53 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 })}
                             </tbody>
                         </table>
+                        <div className="products-table-footer">
+                            <span>
+                                Pozycje od {from} do {to} z{' '}
+                                {visibleDeliveries.length}
+                            </span>
+                            <div className="products-table-footer__controls">
+                                <span>na stronie</span>
+                                <select
+                                    className="versum-select versum-select--inline"
+                                    value={String(pageSize)}
+                                    disabled
+                                >
+                                    <option value="20">20</option>
+                                </select>
+                                <div className="products-pagination-nav">
+                                    <input
+                                        type="text"
+                                        value={safePage}
+                                        onChange={(e) => {
+                                            const next = Number(e.target.value);
+                                            if (
+                                                Number.isFinite(next) &&
+                                                next >= 1 &&
+                                                next <= totalPages
+                                            ) {
+                                                setPage(next);
+                                            }
+                                        }}
+                                    />
+                                    <span>z {totalPages}</span>
+                                    <button
+                                        type="button"
+                                        disabled={safePage >= totalPages}
+                                        onClick={() =>
+                                            setPage((prev) =>
+                                                Math.min(prev + 1, totalPages),
+                                            )
+                                        }
+                                    >
+                                        {'>'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </>
             )}
-            <div className="products-pagination">
-                Pozycje od {from} do {to} z {visibleDeliveries.length} | na
-                stronie
-                <select
-                    className="versum-select versum-select--inline"
-                    value={String(pageSize)}
-                    disabled
-                >
-                    <option value="20">20</option>
-                </select>
-                <div className="products-pagination-nav">
-                    <input
-                        type="text"
-                        value={safePage}
-                        onChange={(e) => {
-                            const next = Number(e.target.value);
-                            if (
-                                Number.isFinite(next) &&
-                                next >= 1 &&
-                                next <= totalPages
-                            ) {
-                                setPage(next);
-                            }
-                        }}
-                    />
-                    <span>z {totalPages}</span>
-                    <button
-                        type="button"
-                        disabled={safePage >= totalPages}
-                        onClick={() =>
-                            setPage((prev) => Math.min(prev + 1, totalPages))
-                        }
-                    >
-                        {'>'}
-                    </button>
-                </div>
-            </div>
         </WarehouseLayout>
     );
 }
