@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-10
+> Data aktualizacji: 2026-02-18
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -102,6 +102,31 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-18 - Magazyn: deploy `dostawcy` w układzie Versum (bez Tailwind)
+- commit/deploy:
+  - commit: `fd7d1335`
+  - run: `22132335874` (production, success)
+- zmiany UI:
+  - `/suppliers`: przebudowa widoku na klasy Versum (`products-table`, `modal`, `btn`),
+  - tabela dostawców + akcje wiersza + modal dodawania/edycji w jednym standardzie wizualnym.
+
+### 2026-02-18 - Magazyn: parity `inwentaryzacja` (lista + new + details)
+- commit/deploy:
+  - commit: `10f4d1b3`
+  - run: `22132191552` (production, success)
+- zmiany UI:
+  - `/inventory`: toolbar filtrów + stopka/paginacja jak w Versum,
+  - `/inventory/new`: numerowane sekcje i uporządkowana sekcja akcji,
+  - `/inventory/[id]`: dopracowany blok metadanych i prezentacja tabeli pozycji.
+
+### 2026-02-18 - Magazyn: dopięcie layoutu formularzy `new` (dostawy/zamówienia)
+- commit/deploy:
+  - commit: `04885e6c`
+  - run: `22122413879` (production, success)
+- zmiany UI:
+  - uspójnienie wrapperów formularzy (`warehouse-new-screen`, `warehouse-lines-table`),
+  - lepsze wyrównanie sekcji podsumowania i spacingów tabel wejściowych.
 
 ### 2026-02-17 - Magazyn: paginacja `historia sprzedaży` + `historia dostaw` (deploy)
 - commit/deploy:

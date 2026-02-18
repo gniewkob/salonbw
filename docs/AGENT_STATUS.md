@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-17 (warehouse full parity audit: functional YES, visual deltas captured)_
+_Last updated: 2026-02-18 (warehouse suppliers + inventory parity refinements deployed)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `7f1a568b` | `22120344947` | 2026-02-17 23:49 | production | Magazyn: przebudowa formularzy `dodaj dostawę` i `dodaj zamówienie` (układ sekcji, numerowane wiersze, podsumowania) |
+| Dashboard (`panel.salon-bw.pl`) | `fd7d1335` | `22132335874` | 2026-02-18 08:35 | production | Magazyn: `dostawcy` przeniesieni na układ Versum (tabela + modal), po wcześniejszych deployach inventory parity (`10f4d1b3`) i formularzy (`04885e6c`) |
 
 Verification:
 
@@ -95,6 +95,31 @@ Verification:
   - introduced numbered entry rows (`1..n`) for key fields,
   - added explicit summary in actions area (`do zapłaty łącznie` / `pozycje`),
   - preserved existing business logic (create draft / submit / redirects).
+
+### 2026-02-18: Warehouse form/table visual parity refinement (deployed)
+
+- **Scope:** `Magazyn / Dodaj dostawę`, `Magazyn / Dodaj zamówienie` (szlif układu 1:1).
+- **Deploy:** Dashboard run `22122413879` (`success`), commit `04885e6c`.
+- **Change:**
+  - dopracowany układ formularzy (`warehouse-new-screen`, `warehouse-lines-table`),
+  - wyrównane sekcje podsumowania i spacing tabel wejściowych.
+
+### 2026-02-18: Inventory views parity refinement (deployed)
+
+- **Scope:** `Magazyn / Inwentaryzacja` (`/inventory`, `/inventory/new`, `/inventory/[id]`).
+- **Deploy:** Dashboard run `22132191552` (`success`), commit `10f4d1b3`.
+- **Change:**
+  - lista inwentaryzacji: toolbar filtrów + stopka/paginacja w układzie Versum,
+  - formularz `nowa inwentaryzacja`: numerowane wiersze i sekcja akcji,
+  - szczegóły inwentaryzacji: dopracowany blok metadanych i tabela pozycji.
+
+### 2026-02-18: Suppliers view migrated from Tailwind to Versum layout (deployed)
+
+- **Scope:** `Magazyn / Dostawcy` (`/suppliers`).
+- **Deploy:** Dashboard run `22132335874` (`success`), commit `fd7d1335`.
+- **Change:**
+  - usunięty tailwindowy układ komponentu,
+  - wdrożona tabela + akcje + modal formularza w klasach stylu Versum (`products-table`, `modal`, `btn`).
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
