@@ -128,6 +128,15 @@
   - uspójnienie wrapperów formularzy (`warehouse-new-screen`, `warehouse-lines-table`),
   - lepsze wyrównanie sekcji podsumowania i spacingów tabel wejściowych.
 
+### 2026-02-18 - Magazyn: doszlifowanie `historia sprzedaży` + `historia dostaw`
+- commit/deploy:
+  - commit: `8062ccd6`
+  - run: `22132637254` (production, success)
+- zmiany UI:
+  - kwoty w tabelach formatowane zgodnie z PL (`1 234,56 zł` zamiast `1234.56 zł`),
+  - `historia dostaw` dostała stopkę `products-table-footer` jak w `historia sprzedaży`,
+  - pager i sekcja `na stronie` ujednolicone wizualnie między oboma ekranami.
+
 ### 2026-02-17 - Magazyn: paginacja `historia sprzedaży` + `historia dostaw` (deploy)
 - commit/deploy:
   - commit: `ce5c1a56`

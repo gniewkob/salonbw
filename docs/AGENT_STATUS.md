@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-18 (warehouse suppliers + inventory parity refinements deployed)_
+_Last updated: 2026-02-18 (warehouse sales/deliveries history visual parity tightened)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `fd7d1335` | `22132335874` | 2026-02-18 08:35 | production | Magazyn: `dostawcy` przeniesieni na układ Versum (tabela + modal), po wcześniejszych deployach inventory parity (`10f4d1b3`) i formularzy (`04885e6c`) |
+| Dashboard (`panel.salon-bw.pl`) | `8062ccd6` | `22132637254` | 2026-02-18 08:45 | production | Magazyn: doszlifowanie `historia sprzedaży` + `historia dostaw` (format kwot PL, jednolity footer/paginacja Versum) |
 
 Verification:
 
@@ -120,6 +120,15 @@ Verification:
 - **Change:**
   - usunięty tailwindowy układ komponentu,
   - wdrożona tabela + akcje + modal formularza w klasach stylu Versum (`products-table`, `modal`, `btn`).
+
+### 2026-02-18: Warehouse sales/deliveries history visual parity tighten (deployed)
+
+- **Scope:** `Magazyn / Historia sprzedaży` i `Magazyn / Historia dostaw`.
+- **Deploy:** Dashboard run `22132637254` (`success`), commit `8062ccd6`.
+- **Change:**
+  - kwoty w obu widokach formatowane po polsku (`1 234,56 zł`),
+  - `historia dostaw` przeszła na stopkę tabeli identyczną jak `historia sprzedaży` (`Pozycje od ...`, `na stronie`, pager),
+  - ujednolicony układ i spacing footer/paginacji dla obu ekranów.
 
 ### 2026-02-10: SMTP credentials moved out of CI/CD
 
