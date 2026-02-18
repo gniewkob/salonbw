@@ -35,31 +35,33 @@ export default function InventoryNewPage() {
             }
         >
             <h3 className="warehouse-subtitle">Nowa inwentaryzacja</h3>
-            <div className="warehouse-form-card">
-                <div className="warehouse-form-grid">
-                    <label>
-                        <span>Data inwentaryzacji</span>
-                        <input
-                            type="date"
-                            value={stocktakingDate}
-                            onChange={(event) =>
-                                setStocktakingDate(event.target.value)
-                            }
-                            className="form-control"
-                        />
-                    </label>
-                    <label className="warehouse-full">
-                        <span>Notatki</span>
-                        <textarea
-                            value={notes}
-                            onChange={(event) => setNotes(event.target.value)}
-                            className="form-control"
-                        />
-                    </label>
+            <div className="warehouse-entry-form warehouse-new-screen">
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">1.</span>
+                    <span className="warehouse-entry-row__label">
+                        data inwentaryzacji
+                    </span>
+                    <input
+                        type="date"
+                        value={stocktakingDate}
+                        onChange={(event) =>
+                            setStocktakingDate(event.target.value)
+                        }
+                        className="form-control"
+                    />
+                </div>
+                <div className="warehouse-entry-row">
+                    <span className="warehouse-entry-row__index">2.</span>
+                    <span className="warehouse-entry-row__label">opis</span>
+                    <textarea
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        className="form-control"
+                    />
                 </div>
             </div>
 
-            <div className="warehouse-actions-row">
+            <div className="warehouse-entry-actions warehouse-new-screen">
                 <button
                     type="button"
                     className="btn btn-primary btn-xs"
