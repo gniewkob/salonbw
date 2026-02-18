@@ -1111,6 +1111,14 @@ textarea.form-control {
     max-width: 280px;
 }
 
+.warehouse-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #5f6973;
+}
+
 .warehouse-validation-error {
     margin: 8px 0 0;
     font-size: 12px;
