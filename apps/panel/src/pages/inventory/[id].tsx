@@ -11,6 +11,16 @@ import {
     useUpdateStocktakingItem,
 } from '@/hooks/useWarehouse';
 
+const inventoryStatusLabel: Record<
+    'draft' | 'in_progress' | 'completed' | 'cancelled',
+    string
+> = {
+    draft: 'robocza',
+    in_progress: 'w toku',
+    completed: 'zakończona',
+    cancelled: 'anulowana',
+};
+
 export default function InventoryDetailsPage() {
     const router = useRouter();
     const stocktakingId = useMemo(() => {
@@ -72,19 +82,35 @@ export default function InventoryDetailsPage() {
             {isLoading || !data ? (
                 <p className="products-empty">Ładowanie inwentaryzacji...</p>
             ) : (
-                <div>
+                <div className="warehouse-new-screen">
                     <h3 className="warehouse-subtitle">
                         Szczegóły inwentaryzacji
                     </h3>
                     <div className="warehouse-form-card">
-                        <div className="products-pagination">
-                            status: <strong>{data.status}</strong> | data:{' '}
-                            {new Date(data.stocktakingDate).toLocaleDateString(
-                                'pl-PL',
-                            )}
+                        <div className="warehouse-meta-grid">
+                            <div>
+                                numer: <strong>{data.stocktakingNumber}</strong>
+                            </div>
+                            <div>
+                                status:{' '}
+                                <strong>
+                                    {inventoryStatusLabel[data.status]}
+                                </strong>
+                            </div>
+                            <div>
+                                data:{' '}
+                                <strong>
+                                    {new Date(
+                                        data.stocktakingDate,
+                                    ).toLocaleDateString('pl-PL')}
+                                </strong>
+                            </div>
+                            <div>
+                                pozycji: <strong>{data.items.length}</strong>
+                            </div>
                         </div>
                     </div>
-                    <div className="products-table-wrap">
+                    <div className="products-table-wrap warehouse-lines-table">
                         <table className="products-table">
                             <thead>
                                 <tr>
