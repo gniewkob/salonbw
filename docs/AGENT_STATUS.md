@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-20 (warehouse copy-first cleanup deployed, probe green, strict visual parity audited)_
+_Last updated: 2026-02-20 (customers parity audit stabilized; dashboard deploy verified; customers runtime crash detected)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `d42a8615` | `22239708564` | 2026-02-20 20:22 | production | Magazyn: copy-first cleanup + strict visual parity audit (`pixel-diff.json`) dla `products`, `sales-history`, `deliveries-history` |
+| Dashboard (`panel.salon-bw.pl`) | `0642f399` | `22243239260` | 2026-02-20 22:16 | production | Klienci: stabilizacja audytu parity (dynamic customerId + strict visual diff + dated artifacts) |
 
 Verification:
 
@@ -29,19 +29,27 @@ Verification:
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
 - Dashboard post-deploy verification (2026-02-20):
-  - deploy run `22239708564` (`success`, target `dashboard`),
-  - probe run `22239861351` (`success`, target `probe`),
+  - deploy run `22243239260` (`success`, target `dashboard`),
+  - probe run `22243353266` (`success`, target `probe`),
   - `curl -I https://panel.salon-bw.pl/auth/login` → `200`,
-  - `curl -I https://panel.salon-bw.pl/products` → `307` to `/auth/login?redirectTo=%2Fproducts` (expected when unauthenticated),
-  - production Playwright smoke:
-    - `tests/e2e/prod-warehouse-smoke.spec.ts` → `2 passed`,
-  - production warehouse parity audit:
-    - `tests/e2e/prod-warehouse-parity-audit.spec.ts` → `1 passed`,
-    - functional parity: `YES` (`16/16`),
+  - `curl -I https://panel.salon-bw.pl/customers` → `307` to `/auth/login?redirectTo=%2Fcustomers` (expected when unauthenticated),
+  - production customers parity audit:
+    - `tests/e2e/prod-customers-parity-audit.spec.ts` → `1 passed` (runner),
+    - functional parity: `NO`,
     - strict visual parity (threshold `3.0%`): `NO`,
-    - mismatches: `products 9.314%`, `sales-history 7.367%`, `deliveries-history 5.731%`.
+    - mismatches (critical): `list 6.930%`, `summary 8.409%`, `gallery 6.474%`, `files 6.217%`,
+    - artifact: `output/parity/2026-02-20-customers-prod-full/`.
+  - production customers smoke:
+    - `tests/e2e/prod-customers-smoke.spec.ts` → `2 failed` (`gallery/files` tab selectors timeout).
 
 ## Recent Incidents
+
+### 2026-02-20: Customers module runtime crash on card routes (open)
+
+- **Impact:** customer card routes render client-side exception page instead of Versum shell/tab content.
+- **Affected routes:** `/customers/{id}`, `/customers/{id}?tab_name=*`, `/customers/{id}/edit`, `/customers/new`.
+- **Detection:** post-deploy customers smoke + parity audit screenshots show `Application error: a client-side exception has occurred`.
+- **Status:** open, blocks functional parity DONE for customers module.
 
 ### 2026-02-17: Panel global 500 after deploy (resolved)
 
