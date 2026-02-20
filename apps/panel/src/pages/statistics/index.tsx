@@ -47,6 +47,9 @@ function StatisticsPageContent() {
         };
     }, [dashboard]);
 
+    const formatMoney = (value: number): string =>
+        value.toFixed(2).replace('.', ',') + ' zł';
+
     const downloadCsvReport = () => {
         const escape = (value: unknown) =>
             `"${String(value ?? '').replaceAll('"', '""')}"`;
@@ -160,8 +163,7 @@ function StatisticsPageContent() {
                                         <tr>
                                             <td>Sprzedaż usług brutto</td>
                                             <td className="text-right">
-                                                {totals.dayRevenue.toFixed(2)}{' '}
-                                                zł
+                                                {formatMoney(totals.dayRevenue)}
                                             </td>
                                         </tr>
                                         <tr>
@@ -173,15 +175,17 @@ function StatisticsPageContent() {
                                         <tr>
                                             <td>Utarg za ten tydzień</td>
                                             <td className="text-right">
-                                                {totals.weekRevenue.toFixed(2)}{' '}
-                                                zł
+                                                {formatMoney(
+                                                    totals.weekRevenue,
+                                                )}
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Utarg za ten miesiąc</td>
                                             <td className="text-right">
-                                                {totals.totalRevenue.toFixed(2)}{' '}
-                                                zł
+                                                {formatMoney(
+                                                    totals.totalRevenue,
+                                                )}
                                             </td>
                                         </tr>
                                         <tr>
@@ -193,10 +197,9 @@ function StatisticsPageContent() {
                                         <tr>
                                             <td>Średnia wartość wizyty</td>
                                             <td className="text-right">
-                                                {totals.avgVisitValue.toFixed(
-                                                    2,
-                                                )}{' '}
-                                                zł
+                                                {formatMoney(
+                                                    totals.avgVisitValue,
+                                                )}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -204,32 +207,31 @@ function StatisticsPageContent() {
                             </div>
                         </div>
                         <div className="col-sm-6">
-                            <div className="row">
-                                <div className="col-xs-6">
-                                    <div className="versum-stat-tile">
-                                        <div className="versum-stat-tile__title">
-                                            Metody płatności
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="color-circle w-80 h-80 mx-auto mb-10 bg-green" />
-                                            <div className="versum-muted fz-11">
-                                                gotówka:{' '}
-                                                {totals.totalRevenue.toFixed(2)}{' '}
-                                                zł (100%)
+                            <div className="versum-widget">
+                                <div className="versum-widget__header">
+                                    Szybkie podsumowanie
+                                </div>
+                                <div className="versum-widget__content">
+                                    <div className="row">
+                                        <div className="col-xs-6 mb-10">
+                                            <div className="versum-tile">
+                                                <div className="versum-tile__label">
+                                                    Metody płatności
+                                                </div>
+                                                <div className="versum-tile__value text-success">
+                                                    gotówka 100%
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div className="col-xs-6">
-                                    <div className="versum-stat-tile">
-                                        <div className="versum-stat-tile__title">
-                                            Wizyty
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="color-circle w-80 h-80 mx-auto mb-10 bg-red" />
-                                            <p className="versum-muted fz-11">
-                                                na podstawie wizyt zakończonych
-                                            </p>
+                                        <div className="col-xs-6 mb-10">
+                                            <div className="versum-tile">
+                                                <div className="versum-tile__label">
+                                                    Wizyty zakończone
+                                                </div>
+                                                <div className="versum-tile__value text-accent">
+                                                    {totals.totalVisits}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
