@@ -338,12 +338,12 @@ export class CustomersService {
                 : dto.firstName || dto.lastName || 'New Customer';
 
         const customer = this.usersRepo.create({
+            ...dto,
             email,
             password,
             name,
             role: Role.Client,
             commissionBase: 0,
-            ...dto,
         });
 
         return this.usersRepo.save(customer);
