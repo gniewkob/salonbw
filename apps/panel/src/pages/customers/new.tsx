@@ -3,7 +3,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
@@ -81,12 +81,20 @@ export default function NewCustomerPage() {
         target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Must be called before any early return (Rules of Hooks)
-    useSetSecondaryNav(
-        <div className="sidenav secondarynav" id="sidenav">
-            <NewCustomerNav activeTab={activeTab} onSelect={handleSelectTab} />
-        </div>,
+    const secondaryNav = useMemo(
+        () => (
+            <div className="sidenav secondarynav" id="sidenav">
+                <NewCustomerNav
+                    activeTab={activeTab}
+                    onSelect={handleSelectTab}
+                />
+            </div>
+        ),
+        [activeTab],
     );
+
+    // Must be called before any early return (Rules of Hooks)
+    useSetSecondaryNav(secondaryNav);
 
     if (!role) return null;
 

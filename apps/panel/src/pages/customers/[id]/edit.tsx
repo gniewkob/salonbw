@@ -3,7 +3,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
@@ -108,16 +108,21 @@ export default function CustomerEditPage() {
         };
     }, [customer?.id]);
 
-    // Must be called before any early return (Rules of Hooks)
-    useSetSecondaryNav(
-        <div className="sidenav secondarynav" id="sidenav">
-            <NewCustomerNav
-                title="EDYCJA KLIENTA"
-                activeTab={activeTab}
-                onSelect={handleSelectTab}
-            />
-        </div>,
+    const secondaryNav = useMemo(
+        () => (
+            <div className="sidenav secondarynav" id="sidenav">
+                <NewCustomerNav
+                    title="EDYCJA KLIENTA"
+                    activeTab={activeTab}
+                    onSelect={handleSelectTab}
+                />
+            </div>
+        ),
+        [activeTab],
     );
+
+    // Must be called before any early return (Rules of Hooks)
+    useSetSecondaryNav(secondaryNav);
 
     if (!role) return null;
 
