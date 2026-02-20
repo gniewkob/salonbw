@@ -36,14 +36,12 @@ export function useSecondaryNavContext(): SecondaryNavContextValue | null {
 // Public — customer pages call this instead of passing secondaryNav prop to VersumShell
 export function useSetSecondaryNav(nav: ReactNode): void {
     const ctx = useContext(SecondaryNavContext);
-    // No dependency array: nav JSX is referentially unstable (inline objects).
-    // useLayoutEffect runs before paint → no flicker on first render.
-    // Cleanup on unmount clears stale nav when navigating away.
+    // Effect runs when memoized nav changes and on unmount clears stale nav.
     useLayoutEffect(() => {
         if (!ctx) return;
         ctx.setSecondaryNav(nav);
         return () => {
             ctx.setSecondaryNav(null);
         };
-    });
+    }, [ctx, nav]);
 }

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
+import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
@@ -115,19 +116,31 @@ export default function CustomerDetailPage() {
         limit: 3,
     });
 
-    // Push custom sidebar to persistent outer shell (must be before any early return)
-    useSetSecondaryNav(
-        customerId !== null ? (
-            <div className="sidenav secondarynav" id="sidenav">
-                <ClientDetailNav
-                    customerId={customerId}
-                    customerName={customer?.fullName || customer?.name || '...'}
-                    customerGender={customer?.gender}
-                    activeTab={activeTab}
-                />
-            </div>
-        ) : null,
+    const secondaryNav = useMemo(
+        () =>
+            customerId !== null ? (
+                <div className="sidenav secondarynav" id="sidenav">
+                    <ClientDetailNav
+                        customerId={customerId}
+                        customerName={
+                            customer?.fullName || customer?.name || '...'
+                        }
+                        customerGender={customer?.gender}
+                        activeTab={activeTab}
+                    />
+                </div>
+            ) : null,
+        [
+            customerId,
+            customer?.fullName,
+            customer?.name,
+            customer?.gender,
+            activeTab,
+        ],
     );
+
+    // Push custom sidebar to persistent outer shell (must be before any early return)
+    useSetSecondaryNav(secondaryNav);
 
     if (!role) return null;
 
