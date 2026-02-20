@@ -9,6 +9,7 @@ import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import NewCustomerNav from '@/components/versum/navs/NewCustomerNav';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import type { Customer } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
@@ -107,24 +108,25 @@ export default function CustomerEditPage() {
         };
     }, [customer?.id]);
 
-    if (!role) return null;
-
-    const secondNav = (
+    // Must be called before any early return (Rules of Hooks)
+    useSetSecondaryNav(
         <div className="sidenav secondarynav" id="sidenav">
             <NewCustomerNav
                 title="EDYCJA KLIENTA"
                 activeTab={activeTab}
                 onSelect={handleSelectTab}
             />
-        </div>
+        </div>,
     );
+
+    if (!role) return null;
 
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <VersumShell role={role} secondaryNav={secondNav}>
+            <VersumShell role={role}>
                 <VersumCustomersVendorCss />
                 <div className="show_customer" id="customers_main">
                     <ul className="breadcrumb">

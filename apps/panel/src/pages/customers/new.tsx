@@ -9,6 +9,7 @@ import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import NewCustomerNav from '@/components/versum/navs/NewCustomerNav';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCreateCustomer } from '@/hooks/useCustomers';
 import type { Gender } from '@/types';
 
@@ -69,6 +70,24 @@ export default function NewCustomerPage() {
         smsConsent: false,
     });
 
+    const handleSelectTab = (tab: 'basic' | 'extended' | 'advanced') => {
+        setActiveTab(tab);
+        const idMap: Record<typeof tab, string> = {
+            basic: 'customer-new-basic',
+            extended: 'customer-new-extended',
+            advanced: 'customer-new-advanced',
+        };
+        const target = document.getElementById(idMap[tab]);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Must be called before any early return (Rules of Hooks)
+    useSetSecondaryNav(
+        <div className="sidenav secondarynav" id="sidenav">
+            <NewCustomerNav activeTab={activeTab} onSelect={handleSelectTab} />
+        </div>,
+    );
+
     if (!role) return null;
 
     const onSubmit = async (e: FormEvent) => {
@@ -116,29 +135,12 @@ export default function NewCustomerPage() {
         void router.push(`/customers/${created.id}` as Route);
     };
 
-    const handleSelectTab = (tab: 'basic' | 'extended' | 'advanced') => {
-        setActiveTab(tab);
-        const idMap: Record<typeof tab, string> = {
-            basic: 'customer-new-basic',
-            extended: 'customer-new-extended',
-            advanced: 'customer-new-advanced',
-        };
-        const target = document.getElementById(idMap[tab]);
-        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
-    const secondNav = (
-        <div className="sidenav secondarynav" id="sidenav">
-            <NewCustomerNav activeTab={activeTab} onSelect={handleSelectTab} />
-        </div>
-    );
-
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <VersumShell role={role} secondaryNav={secondNav}>
+            <VersumShell role={role}>
                 <VersumCustomersVendorCss />
                 <div className="show_customer new_customer" id="customers_main">
                     <ul className="breadcrumb">
