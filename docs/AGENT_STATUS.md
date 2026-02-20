@@ -36,7 +36,8 @@ Verification:
   - production Playwright smoke:
     - `tests/e2e/prod-warehouse-smoke.spec.ts` → `2 passed`,
     - `tests/e2e/prod-customers-smoke.spec.ts` → `2 passed`,
-    - `tests/e2e/prod-services-smoke.spec.ts` → `2 passed`.
+    - `tests/e2e/prod-services-smoke.spec.ts` → `2 passed`,
+    - `tests/e2e/prod-statistics-smoke.spec.ts` → `2 passed`.
 
 ## Recent Incidents
 
