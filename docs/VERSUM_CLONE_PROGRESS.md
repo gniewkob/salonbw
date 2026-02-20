@@ -113,6 +113,16 @@
 - wynik uruchomienia:
   - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-services-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
 
+### 2026-02-20 - Statystyki: dodany smoke produkcyjny modułu
+- nowy test:
+  - `apps/panel/tests/e2e/prod-statistics-smoke.spec.ts`
+- zakres:
+  - logowanie do panelu produkcyjnego,
+  - render strony `/statistics` (raport finansowy),
+  - render `/statistics/employees` + nawigacja daty.
+- wynik uruchomienia:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-statistics-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
+
 ### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
 - commit/deploy:
   - commit: `0e93a771`
