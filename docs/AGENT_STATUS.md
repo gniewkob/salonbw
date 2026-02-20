@@ -35,7 +35,8 @@ Verification:
   - `curl -I https://panel.salon-bw.pl/services` → `307` to `/auth/login?redirectTo=%2Fservices` (expected when unauthenticated),
   - production Playwright smoke:
     - `tests/e2e/prod-warehouse-smoke.spec.ts` → `2 passed`,
-    - `tests/e2e/prod-customers-smoke.spec.ts` → `2 passed`.
+    - `tests/e2e/prod-customers-smoke.spec.ts` → `2 passed`,
+    - `tests/e2e/prod-services-smoke.spec.ts` → `2 passed`.
 
 ## Recent Incidents
 
