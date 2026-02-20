@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
@@ -29,9 +29,13 @@ export default function EmployeesPage() {
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
 
-    if (!role) return null;
+    useEffect(() => {
+        if (data && rows.length === 0) {
+            setRows(data);
+        }
+    }, [data, rows.length]);
 
-    if (data && rows.length === 0) setRows(data);
+    if (!role) return null;
 
     const columns: Column<Employee>[] = [
         { header: 'ID', accessor: 'id' },
