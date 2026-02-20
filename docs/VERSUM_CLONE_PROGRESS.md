@@ -79,20 +79,37 @@
 
 | Obszar | Status | % |
 |--------|--------|---|
-| Moduł Klienci - Sidebar | ✅ | 100% |
+| Moduł Klienci - Sidebar | 🟡 | 70% (runtime crash na kartach) |
 | Moduł Klienci - Filtrowanie | ✅ | 100% |
 | Moduł Klienci - Lista | ✅ | 100% |
-| Moduł Klienci - Szczegóły | ✅ | 100% |
+| Moduł Klienci - Szczegóły | 🟡 | 60% (functional NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 15% |
 | Moduł Statystyki | ❌ | 0% |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~41%** (2 moduły funkcjonalnie gotowe; magazyn nadal z wizualnymi odchyleniami strict)
+**Całkowity postęp: ~39%** (moduł klientów i magazyn mają otwarte delty strict/functional)
 
 ## Known deltas (strict 1:1)
 
+- Klienci po deploy `0642f399`:
+  - functional parity: **NO** (`0/11` parity YES w checklist),
+  - visual strict parity: **NO** (próg 3.0% niespełniony na ekranach krytycznych),
+  - krytyczny blocker runtime: `Application error: a client-side exception has occurred` na trasach:
+    - `/customers/{id}`
+    - `/customers/{id}?tab_name=*`
+    - `/customers/{id}/edit`
+    - `/customers/new`
+  - odchylenia pixel diff (produkcja 2026-02-20):
+    - `list`: `6.930%`
+    - `summary`: `8.409%`
+    - `gallery`: `6.474%`
+    - `files`: `6.217%`
+  - artefakty:
+    - `output/parity/2026-02-20-customers-prod-full/REPORT.md`
+    - `output/parity/2026-02-20-customers-prod-full/pixel-diff.json`
+    - `output/parity/2026-02-20-customers-visual-baseline/`
 - Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
 - Największe odchylenia pixel diff (próg 3.0%, produkcja 2026-02-20):
   - `products`: `9.314%`
@@ -114,6 +131,26 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
+- commit/deploy:
+  - commit: `0642f399`
+  - run dashboard: `22243239260` (production, success)
+  - run probe: `22243353266` (production, success)
+- zmiany testowe:
+  - `prod-customers-parity-audit.spec.ts`:
+    - dynamiczny `customerId` (bez hardcoded `2`),
+    - dynamiczny katalog artefaktów (`YYYY-MM-DD`),
+    - strict visual diff (`pixel-diff.json` + diff PNG),
+    - pre-check fallback (w tym runtime client exception).
+  - `prod-customers-smoke.spec.ts`:
+    - dynamiczne wyszukiwanie `customerId`,
+    - retry-safe wejście na zakładki `gallery/files`.
+- walidacja po deployu:
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed` (test runner),
+  - wynik audytu: functional parity `NO`, visual parity `NO`,
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 failed` (`.customer-gallery-tab` / `.customer-files-tab` timeout),
+  - zrzuty błędu pokazują: `Application error: a client-side exception has occurred`.
 
 ### 2026-02-20 - Magazyn: copy-first cleanup + strict visual parity audit (deploy)
 - commit/deploy:
