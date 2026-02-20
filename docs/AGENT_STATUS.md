@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-20 (services details audit fixes deployed and production smoke verified)_
+_Last updated: 2026-02-20 (warehouse copy-first cleanup deployed, probe green, strict visual parity audited)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `ebcaf1ac` | `22220487408` | 2026-02-20 10:30 | production | Usługi `/services/[id]`: poprawki po audycie (eslint, try/catch, confirm usuwania komentarza) + utrzymane zakładki `komentarze` i `prowizje` |
+| Dashboard (`panel.salon-bw.pl`) | `d42a8615` | `22239708564` | 2026-02-20 20:22 | production | Magazyn: copy-first cleanup + strict visual parity audit (`pixel-diff.json`) dla `products`, `sales-history`, `deliveries-history` |
 
 Verification:
 
@@ -29,15 +29,17 @@ Verification:
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
 - Dashboard post-deploy verification (2026-02-20):
-  - deploy run `22220487408` (`success`, target `dashboard`),
-  - probe run `22220711965` (`success`, target `probe`),
+  - deploy run `22239708564` (`success`, target `dashboard`),
+  - probe run `22239861351` (`success`, target `probe`),
   - `curl -I https://panel.salon-bw.pl/auth/login` → `200`,
-  - `curl -I https://panel.salon-bw.pl/services` → `307` to `/auth/login?redirectTo=%2Fservices` (expected when unauthenticated),
+  - `curl -I https://panel.salon-bw.pl/products` → `307` to `/auth/login?redirectTo=%2Fproducts` (expected when unauthenticated),
   - production Playwright smoke:
     - `tests/e2e/prod-warehouse-smoke.spec.ts` → `2 passed`,
-    - `tests/e2e/prod-customers-smoke.spec.ts` → `2 passed`,
-    - `tests/e2e/prod-services-smoke.spec.ts` → `2 passed`,
-    - `tests/e2e/prod-statistics-smoke.spec.ts` → `2 passed`.
+  - production warehouse parity audit:
+    - `tests/e2e/prod-warehouse-parity-audit.spec.ts` → `1 passed`,
+    - functional parity: `YES` (`16/16`),
+    - strict visual parity (threshold `3.0%`): `NO`,
+    - mismatches: `products 9.314%`, `sales-history 7.367%`, `deliveries-history 5.731%`.
 
 ## Recent Incidents
 

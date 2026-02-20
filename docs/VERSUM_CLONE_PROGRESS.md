@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-18
+> Data aktualizacji: 2026-02-20
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -83,13 +83,25 @@
 | Moduł Klienci - Filtrowanie | ✅ | 100% |
 | Moduł Klienci - Lista | ✅ | 100% |
 | Moduł Klienci - Szczegóły | ✅ | 100% |
-| Moduł Magazyn | ✅ | 100% |
+| Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 15% |
 | Moduł Statystyki | ❌ | 0% |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~42%** (2 moduły gotowe + Usługi w toku + Łączność w toku)
+**Całkowity postęp: ~41%** (2 moduły funkcjonalnie gotowe; magazyn nadal z wizualnymi odchyleniami strict)
+
+## Known deltas (strict 1:1)
+
+- Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
+- Największe odchylenia pixel diff (próg 3.0%, produkcja 2026-02-20):
+  - `products`: `9.314%`
+  - `sales-history`: `7.367%`
+  - `deliveries-history`: `5.731%`
+- Referencja artefaktów:
+  - `output/parity/2026-02-20-warehouse-prod-full/REPORT.md`
+  - `output/parity/2026-02-20-warehouse-prod-full/pixel-diff.json`
+  - `output/parity/2026-02-20-warehouse-visual-baseline/`
 
 ---
 
@@ -102,6 +114,30 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-20 - Magazyn: copy-first cleanup + strict visual parity audit (deploy)
+- commit/deploy:
+  - commit: `d42a8615`
+  - run dashboard: `22239708564` (production, success)
+  - run probe: `22239861351` (production, success)
+- zmiany:
+  - `/products` przepięte na `WarehouseLayout` (spójny układ top-tabs/toolbar/tabela/footer),
+  - usunięte nieużywane legacy komponenty magazynu:
+    - `StockAlertsTab.tsx`
+    - `DeliveriesTab.tsx`
+    - `StocktakingTab.tsx`
+    - `WarehouseCategoriesPanel.tsx`
+  - `prod-warehouse-parity-audit.spec.ts` rozszerzony o strict visual diff:
+    - krytyczne ekrany: `products`, `sales-history`, `deliveries-history`,
+    - próg: `3.0%`,
+    - nowe artefakty: `pixel-diff.json` + diff PNG.
+- walidacja:
+  - lokalnie: `eslint` + `tsc --noEmit` -> OK,
+  - po deployu:
+    - `tests/e2e/prod-warehouse-smoke.spec.ts` -> `2 passed` (rerun po flake timeout),
+    - `tests/e2e/prod-warehouse-parity-audit.spec.ts` -> `1 passed`,
+    - functional parity: `YES`,
+    - visual parity strict: `NO` (`9.314%`, `7.367%`, `5.731%`).
 
 ### 2026-02-20 - Usługi: dodany smoke produkcyjny dla `/services/[id]` (komentarze/prowizje)
 - nowy test:
