@@ -6,6 +6,8 @@
 - No code changes: short answer + checklist.
 - No emojis unless explicitly requested.
 - Markdown with monospace-friendly formatting.
+- Audit/review findings: tabular format `Problem | Naprawiony?` (category | file | status | risk).
+  Evidence: "user engaged positively with tabular format for fix verification"
 
 ## Code style
 - No over-engineering. Minimum complexity for the task.
