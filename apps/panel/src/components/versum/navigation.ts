@@ -148,7 +148,11 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[5];
     }
 
-    if (path.startsWith('/settings') || path.startsWith('/admin/settings')) {
+    if (
+        path.startsWith('/settings') ||
+        path.startsWith('/admin/settings') ||
+        path.startsWith('/employees')
+    ) {
         return VERSUM_MODULES[6];
     }
 
