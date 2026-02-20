@@ -8,6 +8,7 @@ import VersumShell from '@/components/versum/VersumShell';
 import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
     useCustomer,
     useDeleteCustomer,
@@ -114,10 +115,8 @@ export default function CustomerDetailPage() {
         limit: 3,
     });
 
-    if (!role) return null;
-
-    // Custom sidebar for client detail page (KARTA KLIENTA)
-    const clientDetailSidebar =
+    // Push custom sidebar to persistent outer shell (must be before any early return)
+    useSetSecondaryNav(
         customerId !== null ? (
             <div className="sidenav secondarynav" id="sidenav">
                 <ClientDetailNav
@@ -127,14 +126,17 @@ export default function CustomerDetailPage() {
                     activeTab={activeTab}
                 />
             </div>
-        ) : null;
+        ) : null,
+    );
+
+    if (!role) return null;
 
     return (
         <RouteGuard
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <VersumShell role={role} secondaryNav={clientDetailSidebar}>
+            <VersumShell role={role}>
                 <VersumCustomersVendorCss />
                 <div className="show_customer" id="customers_main">
                     {/* Breadcrumbs - Versum style */}

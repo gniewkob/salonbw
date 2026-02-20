@@ -16,10 +16,10 @@ const tabConfig: Array<{
     href: string;
 }> = [
     { id: 'products', label: 'Produkty', href: '/products' },
-    { id: 'sales', label: 'Sprzedaż', href: '/sales' },
-    { id: 'use', label: 'Zużycie', href: '/use' },
-    { id: 'deliveries', label: 'Dostawy', href: '/deliveries' },
-    { id: 'orders', label: 'Zamówienia', href: '/orders' },
+    { id: 'sales', label: 'Sprzedaż', href: '/sales/history' },
+    { id: 'use', label: 'Zużycie', href: '/use/history' },
+    { id: 'deliveries', label: 'Dostawy', href: '/deliveries/history' },
+    { id: 'orders', label: 'Zamówienia', href: '/orders/history' },
 ];
 
 interface WarehouseLayoutProps {

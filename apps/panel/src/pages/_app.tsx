@@ -1,10 +1,10 @@
 'use client';
 import type { AppProps, NextWebVitalsMetric } from 'next/app';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Script from 'next/script';
 import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -20,6 +20,32 @@ import {
     trackEvent,
 } from '@/utils/analytics';
 import { logClientError } from '@/utils/logClient';
+import {
+    SecondaryNavProvider,
+    useSecondaryNavContext,
+} from '@/contexts/SecondaryNavContext';
+import VersumShell from '@/components/versum/VersumShell';
+import { isPublicPage } from '@/components/Layout';
+
+function PersistentShellWrapper({ children }: { children: ReactNode }) {
+    const { role, initialized, isAuthenticated } = useAuth();
+    const ctx = useSecondaryNavContext();
+    const router = useRouter();
+
+    // Public routes and the calendar (which replaces the entire document) skip the shell.
+    if (
+        isPublicPage(router.pathname) ||
+        router.pathname.startsWith('/calendar')
+    )
+        return <>{children}</>;
+    if (!initialized || !isAuthenticated || !role) return <>{children}</>;
+
+    return (
+        <VersumShell role={role} secondaryNav={ctx?.secondaryNav ?? undefined}>
+            {children}
+        </VersumShell>
+    );
+}
 
 // Initialize Sentry once (no-op if DSN is not set)
 initSentry();
@@ -103,26 +129,33 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <ToastProvider>
-                    <VersumSvgSprites />
-                    {isAnalyticsEnabled() && (
-                        <>
-                            {/* GA4 loader */}
-                            <Script
-                                src={`https://www.googletagmanager.com/gtag/js?id=${getGAId()}`}
-                                strategy="afterInteractive"
-                            />
-                            <Script id="ga4-init" strategy="afterInteractive">
-                                {`
+                    <SecondaryNavProvider>
+                        <VersumSvgSprites />
+                        {isAnalyticsEnabled() && (
+                            <>
+                                {/* GA4 loader */}
+                                <Script
+                                    src={`https://www.googletagmanager.com/gtag/js?id=${getGAId()}`}
+                                    strategy="afterInteractive"
+                                />
+                                <Script
+                                    id="ga4-init"
+                                    strategy="afterInteractive"
+                                >
+                                    {`
                                     window.dataLayer = window.dataLayer || [];
                                     function gtag(){dataLayer.push(arguments);}
                                     gtag('js', new Date());
                                     gtag('config', '${getGAId()}', { send_page_view: false, anonymize_ip: true });
                                 `}
-                            </Script>
-                        </>
-                    )}
-                    <RouteProgress />
-                    <Component {...pageProps} />
+                                </Script>
+                            </>
+                        )}
+                        <RouteProgress />
+                        <PersistentShellWrapper>
+                            <Component {...pageProps} />
+                        </PersistentShellWrapper>
+                    </SecondaryNavProvider>
                 </ToastProvider>
             </AuthProvider>
         </QueryClientProvider>
