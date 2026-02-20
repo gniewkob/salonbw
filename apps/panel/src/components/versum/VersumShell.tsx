@@ -8,7 +8,6 @@ import VersumTopbar from './VersumTopbar';
 import FloatingHelpButton from './FloatingHelpButton';
 import PajaxLoader from './PajaxLoader';
 import { resolveVersumModule, visibleVersumModules } from './navigation';
-import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 
 interface VersumShellProps {
     role: Role;
@@ -21,9 +20,6 @@ export default function VersumShell({
     children,
     secondaryNav,
 }: VersumShellProps) {
-    const parentCtx = useSecondaryNavContext();
-
-    // All hooks must be called unconditionally (Rules of Hooks).
     const router = useRouter();
     const routeForModuleResolution = router.asPath || router.pathname;
     const activeModule = resolveVersumModule(routeForModuleResolution);
@@ -34,8 +30,6 @@ export default function VersumShell({
     const mainContentClass = activeModule.key;
 
     useEffect(() => {
-        // Nested shell: outer shell owns body classes; skip.
-        if (parentCtx !== null) return;
         if (typeof document === 'undefined') return;
         const body = document.body;
         const previousId = body.id;
@@ -70,13 +64,7 @@ export default function VersumShell({
             }
             body.id = previousId;
         };
-    }, [activeModule.key, parentCtx]);
-
-    // Nested call: a persistent outer shell already owns the chrome.
-    // Become a transparent pass-through — no duplicate DOM.
-    if (parentCtx !== null) {
-        return <>{children}</>;
-    }
+    }, [activeModule.key]);
 
     return (
         <div id="versum-shell-root">
