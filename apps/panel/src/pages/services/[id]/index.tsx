@@ -14,11 +14,17 @@ import {
     useServiceVariants,
     useServiceCategories,
     useUpdateService,
+    useServiceComments,
+    useAddServiceComment,
+    useDeleteServiceComment,
+    useServiceCommissions,
+    useUpdateServiceCommissions,
 } from '@/hooks/useServicesAdmin';
 import ServiceFormModal, {
     ServiceFormData,
 } from '@/components/services/ServiceFormModal';
 import ServiceVariantsModal from '@/components/services/ServiceVariantsModal';
+import { useEmployees } from '@/hooks/useEmployees';
 
 type TabKey =
     | 'summary'
@@ -173,6 +179,12 @@ export default function ServiceDetailsPage() {
     const serviceId = Number(router.query.id);
     const [activeTab, setActiveTab] = useState<TabKey>('summary');
     const [historyPage] = useState(1);
+    const [commentText, setCommentText] = useState('');
+    const [commentRating, setCommentRating] = useState(5);
+    const [commentAuthor, setCommentAuthor] = useState('');
+    const [commissionDraft, setCommissionDraft] = useState<
+        Record<number, number>
+    >({});
 
     // Modals
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -186,9 +198,15 @@ export default function ServiceDetailsPage() {
         limit: 20,
     });
     const employees = useServiceEmployeesDetails(serviceId);
+    const comments = useServiceComments(serviceId);
+    const commissions = useServiceCommissions(serviceId);
+    const allEmployees = useEmployees();
     const { data: categories = [] } = useServiceCategories();
 
     const updateService = useUpdateService();
+    const addComment = useAddServiceComment();
+    const deleteComment = useDeleteServiceComment();
+    const updateCommissions = useUpdateServiceCommissions();
 
     const summaryData = summary.data;
     const variantsData = variants.data ?? summaryData?.variants ?? [];
@@ -217,6 +235,38 @@ export default function ServiceDetailsPage() {
         return map;
     }, [employees]);
 
+    const employeeNameById = useMemo(() => {
+        const map = new Map<number, string>();
+        for (const employee of allEmployees.data ?? []) {
+            map.set(
+                employee.id,
+                employee.fullName ||
+                    employee.name ||
+                    [employee.firstName, employee.lastName]
+                        .filter(Boolean)
+                        .join(' ')
+                        .trim() ||
+                    `Pracownik #${employee.id}`,
+            );
+        }
+        return map;
+    }, [allEmployees.data]);
+
+    const commissionRows = useMemo(() => {
+        const rules = commissions.data ?? [];
+        const rows = rules.map((rule) => ({
+            employeeId: rule.employeeId,
+            employeeName:
+                employeeNameById.get(rule.employeeId) ??
+                `Pracownik #${rule.employeeId}`,
+            value:
+                commissionDraft[rule.employeeId] ?? rule.commissionPercent ?? 0,
+            ruleId: rule.id,
+        }));
+        rows.sort((a, b) => a.employeeName.localeCompare(b.employeeName));
+        return rows;
+    }, [commissions.data, commissionDraft, employeeNameById]);
+
     const handleUpdateService = async (data: ServiceFormData) => {
         try {
             await updateService.mutateAsync({
@@ -228,6 +278,32 @@ export default function ServiceDetailsPage() {
         } catch (error) {
             console.error('Failed to update service:', error);
         }
+    };
+
+    const handleAddComment = async () => {
+        if (!commentText.trim()) return;
+        await addComment.mutateAsync({
+            serviceId,
+            data: {
+                source: 'internal',
+                rating: Math.max(1, Math.min(5, commentRating)),
+                comment: commentText.trim(),
+                authorName: commentAuthor.trim() || undefined,
+            },
+        });
+        setCommentText('');
+        setCommentAuthor('');
+        setCommentRating(5);
+    };
+
+    const handleSaveCommissions = async () => {
+        const rules = (commissions.data ?? []).map((rule) => ({
+            id: rule.id,
+            employeeId: rule.employeeId,
+            commissionPercent:
+                commissionDraft[rule.employeeId] ?? rule.commissionPercent ?? 0,
+        }));
+        await updateCommissions.mutateAsync({ serviceId, rules });
     };
 
     if (!user || user.role !== 'admin') {
@@ -682,6 +758,218 @@ export default function ServiceDetailsPage() {
                                             })}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'comments' && (
+                            <div>
+                                <div className="mb-16 p-12 border border-gray-200 rounded">
+                                    <h3 className="text-sm font-semibold mb-8">
+                                        Dodaj komentarz
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                                        <input
+                                            className="form-control"
+                                            placeholder="Autor (opcjonalnie)"
+                                            value={commentAuthor}
+                                            onChange={(e) =>
+                                                setCommentAuthor(e.target.value)
+                                            }
+                                        />
+                                        <select
+                                            className="form-control"
+                                            value={commentRating}
+                                            onChange={(e) =>
+                                                setCommentRating(
+                                                    Number(e.target.value),
+                                                )
+                                            }
+                                        >
+                                            <option value={5}>5 / 5</option>
+                                            <option value={4}>4 / 5</option>
+                                            <option value={3}>3 / 5</option>
+                                            <option value={2}>2 / 5</option>
+                                            <option value={1}>1 / 5</option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            disabled={
+                                                addComment.isPending ||
+                                                !commentText.trim()
+                                            }
+                                            onClick={handleAddComment}
+                                        >
+                                            dodaj komentarz
+                                        </button>
+                                    </div>
+                                    <textarea
+                                        className="form-control"
+                                        rows={4}
+                                        placeholder="Treść komentarza"
+                                        value={commentText}
+                                        onChange={(e) =>
+                                            setCommentText(e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Źródło</th>
+                                                <th>Autor</th>
+                                                <th>Ocena</th>
+                                                <th>Komentarz</th>
+                                                <th>Akcje</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(comments.data ?? []).length ===
+                                                0 && (
+                                                <tr>
+                                                    <td
+                                                        colSpan={6}
+                                                        className="text-center text-gray-500"
+                                                    >
+                                                        Brak komentarzy dla tej
+                                                        usługi
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {(comments.data ?? []).map(
+                                                (comment) => (
+                                                    <tr key={comment.id}>
+                                                        <td>
+                                                            {comment.createdAt
+                                                                ? new Date(
+                                                                      comment.createdAt,
+                                                                  ).toLocaleString(
+                                                                      'pl-PL',
+                                                                  )
+                                                                : '—'}
+                                                        </td>
+                                                        <td>{comment.source}</td>
+                                                        <td>
+                                                            {comment.authorName ||
+                                                                '—'}
+                                                        </td>
+                                                        <td>
+                                                            {comment.rating}/5
+                                                        </td>
+                                                        <td>
+                                                            {comment.comment ||
+                                                                '—'}
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-default btn-sm"
+                                                                disabled={
+                                                                    deleteComment.isPending
+                                                                }
+                                                                onClick={() => {
+                                                                    void deleteComment.mutateAsync(
+                                                                        {
+                                                                            serviceId,
+                                                                            commentId:
+                                                                                comment.id,
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            >
+                                                                usuń
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'commissions' && (
+                            <div>
+                                <div className="mb-12 text-sm text-gray-600">
+                                    Ustaw procent prowizji przypisany do
+                                    pracownika dla tej usługi.
+                                </div>
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Prowizja (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {commissionRows.length === 0 && (
+                                                <tr>
+                                                    <td
+                                                        colSpan={2}
+                                                        className="text-center text-gray-500"
+                                                    >
+                                                        Brak reguł prowizji dla
+                                                        tej usługi
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            {commissionRows.map((row) => (
+                                                <tr key={row.employeeId}>
+                                                    <td>{row.employeeName}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            className="form-control"
+                                                            min={0}
+                                                            max={100}
+                                                            step={0.1}
+                                                            value={row.value}
+                                                            onChange={(e) => {
+                                                                const value =
+                                                                    Number(
+                                                                        e.target
+                                                                            .value,
+                                                                    );
+                                                                setCommissionDraft(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        [row.employeeId]:
+                                                                            Number.isFinite(
+                                                                                value,
+                                                                            )
+                                                                                ? value
+                                                                                : 0,
+                                                                    }),
+                                                                );
+                                                            }}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="mt-12">
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        disabled={
+                                            updateCommissions.isPending ||
+                                            commissionRows.length === 0
+                                        }
+                                        onClick={() => {
+                                            void handleSaveCommissions();
+                                        }}
+                                    >
+                                        zapisz prowizje
+                                    </button>
                                 </div>
                             </div>
                         )}
