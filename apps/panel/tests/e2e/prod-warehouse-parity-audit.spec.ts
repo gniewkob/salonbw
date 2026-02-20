@@ -1,6 +1,8 @@
 import { test } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import pixelmatch from 'pixelmatch';
+import { PNG } from 'pngjs';
 
 interface PageCheck {
     requiredTexts?: string[];
@@ -27,6 +29,27 @@ interface AuditResult {
     panelDetails: string;
     versumDetails: string;
 }
+
+interface PixelDiffResult {
+    actionId: string;
+    actionName: string;
+    panelScreenshot: string;
+    versumScreenshot: string;
+    diffScreenshot: string;
+    width: number;
+    height: number;
+    mismatchPixels: number;
+    mismatchPct: number;
+    thresholdPct: number;
+    pass: boolean;
+}
+
+const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
+const VISUAL_DIFF_ACTION_IDS = new Set([
+    '01-products',
+    '03-sales-history',
+    '08-deliveries-history',
+]);
 
 function requireEnv(name: string): string {
     const value = process.env[name];
@@ -170,6 +193,103 @@ function buildReport(results: AuditResult[]) {
     lines.push('## Artifacts');
     lines.push('- Screenshots: `panel-*.png`, `versum-*.png`');
     lines.push('- Raw checklist: `checklist.json`');
+    lines.push('');
+    return `${lines.join('\n')}\n`;
+}
+
+async function computePixelDiff(
+    panelPath: string,
+    versumPath: string,
+    diffPath: string,
+): Promise<{
+    width: number;
+    height: number;
+    mismatchPixels: number;
+    mismatchPct: number;
+}> {
+    const [panelBytes, versumBytes] = await Promise.all([
+        fs.readFile(panelPath),
+        fs.readFile(versumPath),
+    ]);
+    const panelPng = PNG.sync.read(panelBytes);
+    const versumPng = PNG.sync.read(versumBytes);
+
+    const width = Math.min(panelPng.width, versumPng.width);
+    const height = Math.min(panelPng.height, versumPng.height);
+
+    const panelCrop = new PNG({ width, height });
+    const versumCrop = new PNG({ width, height });
+    const diffPng = new PNG({ width, height });
+
+    for (let y = 0; y < height; y += 1) {
+        const srcOffsetPanel = y * panelPng.width * 4;
+        const srcOffsetVersum = y * versumPng.width * 4;
+        const dstOffset = y * width * 4;
+
+        panelPng.data.copy(
+            panelCrop.data,
+            dstOffset,
+            srcOffsetPanel,
+            srcOffsetPanel + width * 4,
+        );
+        versumPng.data.copy(
+            versumCrop.data,
+            dstOffset,
+            srcOffsetVersum,
+            srcOffsetVersum + width * 4,
+        );
+    }
+
+    const mismatchPixels = pixelmatch(
+        panelCrop.data,
+        versumCrop.data,
+        diffPng.data,
+        width,
+        height,
+        {
+            threshold: 0.1,
+            includeAA: true,
+        },
+    );
+    const mismatchPct =
+        Number(((mismatchPixels / (width * height)) * 100).toFixed(3)) || 0;
+
+    await fs.writeFile(diffPath, PNG.sync.write(diffPng));
+
+    return { width, height, mismatchPixels, mismatchPct };
+}
+
+function buildReportWithVisual(
+    results: AuditResult[],
+    pixelDiffResults: PixelDiffResult[],
+) {
+    const baseReport = buildReport(results).trimEnd();
+    const lines: string[] = [baseReport, '', '## Visual Parity (Strict)'];
+
+    if (!pixelDiffResults.length) {
+        lines.push('- No visual diff data generated.');
+    } else {
+        lines.push(
+            '| Action | Mismatch % | Threshold % | Pass | Diff Artifact |',
+        );
+        lines.push('|---|---:|---:|---|---|');
+        for (const diff of pixelDiffResults) {
+            lines.push(
+                `| ${diff.actionName} | ${diff.mismatchPct.toFixed(3)} | ${diff.thresholdPct.toFixed(1)} | ${diff.pass ? 'YES' : 'NO'} | ${diff.diffScreenshot} |`,
+            );
+        }
+    }
+
+    const visualParity =
+        pixelDiffResults.length > 0 && pixelDiffResults.every((x) => x.pass)
+            ? 'YES'
+            : 'NO';
+    lines.push('');
+    lines.push('## Final Visual Verdict');
+    lines.push(`- Visual parity (critical screens): \`${visualParity}\``);
+    lines.push(
+        `- Threshold policy: each critical screen must be <= ${VISUAL_DIFF_THRESHOLD_PCT.toFixed(1)}% mismatch.`,
+    );
     lines.push('');
     return `${lines.join('\n')}\n`;
 }
@@ -416,11 +536,17 @@ test.describe('PROD audit: warehouse panel vs versum', () => {
         requireEnv('VERSUM_LOGIN_EMAIL');
         requireEnv('VERSUM_LOGIN_PASSWORD');
 
+        const runDate = new Date().toISOString().slice(0, 10);
         const outDir = path.resolve(
             process.cwd(),
-            '../../output/parity/2026-02-17-warehouse-prod-full',
+            `../../output/parity/${runDate}-warehouse-prod-full`,
+        );
+        const baselineDir = path.resolve(
+            process.cwd(),
+            `../../output/parity/${runDate}-warehouse-visual-baseline`,
         );
         await ensureDir(outDir);
+        await ensureDir(baselineDir);
 
         const panelContext = await browser.newContext({
             viewport: { width: 1366, height: 768 },
@@ -438,6 +564,7 @@ test.describe('PROD audit: warehouse panel vs versum', () => {
         await loginVersum(versumPage);
 
         const results: AuditResult[] = [];
+        const pixelDiffResults: PixelDiffResult[] = [];
 
         for (const [index, action] of actions.entries()) {
             const seq = String(index + 1).padStart(2, '0');
@@ -460,6 +587,48 @@ test.describe('PROD audit: warehouse panel vs versum', () => {
                 path: path.join(outDir, `versum-${seq}-${action.id}.png`),
                 fullPage: true,
             });
+
+            const panelShot = path.join(outDir, `panel-${seq}-${action.id}.png`);
+            const versumShot = path.join(
+                outDir,
+                `versum-${seq}-${action.id}.png`,
+            );
+            if (VISUAL_DIFF_ACTION_IDS.has(action.id)) {
+                const panelBaseline = path.join(
+                    baselineDir,
+                    `panel-${seq}-${action.id}.png`,
+                );
+                const versumBaseline = path.join(
+                    baselineDir,
+                    `versum-${seq}-${action.id}.png`,
+                );
+                await Promise.all([
+                    fs.copyFile(panelShot, panelBaseline),
+                    fs.copyFile(versumShot, versumBaseline),
+                ]);
+
+                const diffName = `diff-${seq}-${action.id}.png`;
+                const diffPath = path.join(outDir, diffName);
+                const diffStats = await computePixelDiff(
+                    panelShot,
+                    versumShot,
+                    diffPath,
+                );
+
+                pixelDiffResults.push({
+                    actionId: action.id,
+                    actionName: action.name,
+                    panelScreenshot: path.basename(panelShot),
+                    versumScreenshot: path.basename(versumShot),
+                    diffScreenshot: diffName,
+                    width: diffStats.width,
+                    height: diffStats.height,
+                    mismatchPixels: diffStats.mismatchPixels,
+                    mismatchPct: diffStats.mismatchPct,
+                    thresholdPct: VISUAL_DIFF_THRESHOLD_PCT,
+                    pass: diffStats.mismatchPct <= VISUAL_DIFF_THRESHOLD_PCT,
+                });
+            }
 
             const panelCheck = await runChecks(panelPage, action.panelCheck);
             const versumCheck = await runChecks(versumPage, action.versumCheck);
@@ -486,7 +655,12 @@ test.describe('PROD audit: warehouse panel vs versum', () => {
         );
         await fs.writeFile(
             path.join(outDir, 'REPORT.md'),
-            buildReport(results),
+            buildReportWithVisual(results, pixelDiffResults),
+            'utf8',
+        );
+        await fs.writeFile(
+            path.join(outDir, 'pixel-diff.json'),
+            JSON.stringify(pixelDiffResults, null, 2),
             'utf8',
         );
 
