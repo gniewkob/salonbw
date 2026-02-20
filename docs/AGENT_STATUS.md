@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-20 (customers parity audit stabilized; dashboard deploy verified; customers runtime crash detected)_
+_Last updated: 2026-02-20 (customers/new runtime + create flow fixed on production)_
 
 ## Platform Architecture
 
@@ -19,9 +19,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
+| API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `0642f399` | `22243239260` | 2026-02-20 22:16 | production | Klienci: stabilizacja audytu parity (dynamic customerId + strict visual diff + dated artifacts) |
+| Dashboard (`panel.salon-bw.pl`) | `e319e03a` | `22243806900` | 2026-02-20 22:36 | production | Klienci: fix pętli renderów secondary nav w widokach `/customers/new`, `/customers/[id]`, `/customers/[id]/edit` |
 
 Verification:
 
