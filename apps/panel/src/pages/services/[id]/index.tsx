@@ -240,13 +240,7 @@ export default function ServiceDetailsPage() {
         for (const employee of allEmployees.data ?? []) {
             map.set(
                 employee.id,
-                employee.fullName ||
-                    employee.name ||
-                    [employee.firstName, employee.lastName]
-                        .filter(Boolean)
-                        .join(' ')
-                        .trim() ||
-                    `Pracownik #${employee.id}`,
+                employee.name.trim() || `Pracownik #${employee.id}`,
             );
         }
         return map;
@@ -274,7 +268,7 @@ export default function ServiceDetailsPage() {
                 data,
             });
             setIsEditModalOpen(false);
-            summary.refetch();
+            void summary.refetch();
         } catch (error) {
             console.error('Failed to update service:', error);
         }
@@ -282,18 +276,37 @@ export default function ServiceDetailsPage() {
 
     const handleAddComment = async () => {
         if (!commentText.trim()) return;
-        await addComment.mutateAsync({
-            serviceId,
-            data: {
-                source: 'internal',
-                rating: Math.max(1, Math.min(5, commentRating)),
-                comment: commentText.trim(),
-                authorName: commentAuthor.trim() || undefined,
-            },
-        });
-        setCommentText('');
-        setCommentAuthor('');
-        setCommentRating(5);
+        try {
+            await addComment.mutateAsync({
+                serviceId,
+                data: {
+                    source: 'internal',
+                    rating: Math.max(1, Math.min(5, commentRating)),
+                    comment: commentText.trim(),
+                    authorName: commentAuthor.trim() || undefined,
+                },
+            });
+            setCommentText('');
+            setCommentAuthor('');
+            setCommentRating(5);
+        } catch (error) {
+            console.error('Failed to add service comment:', error);
+        }
+    };
+
+    const handleDeleteComment = async (commentId: number) => {
+        const shouldDelete = window.confirm(
+            'Czy na pewno chcesz usunąć ten komentarz?',
+        );
+        if (!shouldDelete) return;
+        try {
+            await deleteComment.mutateAsync({
+                serviceId,
+                commentId,
+            });
+        } catch (error) {
+            console.error('Failed to delete service comment:', error);
+        }
     };
 
     const handleSaveCommissions = async () => {
@@ -303,7 +316,11 @@ export default function ServiceDetailsPage() {
             commissionPercent:
                 commissionDraft[rule.employeeId] ?? rule.commissionPercent ?? 0,
         }));
-        await updateCommissions.mutateAsync({ serviceId, rules });
+        try {
+            await updateCommissions.mutateAsync({ serviceId, rules });
+        } catch (error) {
+            console.error('Failed to save commissions:', error);
+        }
     };
 
     if (!user || user.role !== 'admin') {
@@ -799,7 +816,9 @@ export default function ServiceDetailsPage() {
                                                 addComment.isPending ||
                                                 !commentText.trim()
                                             }
-                                            onClick={handleAddComment}
+                                            onClick={() =>
+                                                void handleAddComment()
+                                            }
                                         >
                                             dodaj komentarz
                                         </button>
@@ -852,7 +871,9 @@ export default function ServiceDetailsPage() {
                                                                   )
                                                                 : '—'}
                                                         </td>
-                                                        <td>{comment.source}</td>
+                                                        <td>
+                                                            {comment.source}
+                                                        </td>
                                                         <td>
                                                             {comment.authorName ||
                                                                 '—'}
@@ -871,15 +892,11 @@ export default function ServiceDetailsPage() {
                                                                 disabled={
                                                                     deleteComment.isPending
                                                                 }
-                                                                onClick={() => {
-                                                                    void deleteComment.mutateAsync(
-                                                                        {
-                                                                            serviceId,
-                                                                            commentId:
-                                                                                comment.id,
-                                                                        },
-                                                                    );
-                                                                }}
+                                                                onClick={() =>
+                                                                    void handleDeleteComment(
+                                                                        comment.id,
+                                                                    )
+                                                                }
                                                             >
                                                                 usuń
                                                             </button>
