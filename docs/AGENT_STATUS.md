@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-18 (warehouse sales/new structure aligned with Versum patterns)_
+_Last updated: 2026-02-20 (services details audit fixes deployed and production smoke verified)_
 
 ## Platform Architecture
 
@@ -21,13 +21,21 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `3c88809d` | `22043301144` | 2026-02-15 21:23 | production | Content CMS module + migration with seed data (business_info, hero_slides, founder_message, history_items) |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `0e93a771` | `22205400049` | 2026-02-20 00:05 | production | Usługi: wdrożone zakładki `komentarze` i `prowizje` na `/services/[id]` |
+| Dashboard (`panel.salon-bw.pl`) | `ebcaf1ac` | `22220487408` | 2026-02-20 10:30 | production | Usługi `/services/[id]`: poprawki po audycie (eslint, try/catch, confirm usuwania komentarza) + utrzymane zakładki `komentarze` i `prowizje` |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- Dashboard post-deploy verification (2026-02-20):
+  - deploy run `22220487408` (`success`, target `dashboard`),
+  - probe run `22220711965` (`success`, target `probe`),
+  - `curl -I https://panel.salon-bw.pl/auth/login` → `200`,
+  - `curl -I https://panel.salon-bw.pl/services` → `307` to `/auth/login?redirectTo=%2Fservices` (expected when unauthenticated),
+  - production Playwright smoke:
+    - `tests/e2e/prod-warehouse-smoke.spec.ts` → `2 passed`,
+    - `tests/e2e/prod-customers-smoke.spec.ts` → `2 passed`.
 
 ## Recent Incidents
 
