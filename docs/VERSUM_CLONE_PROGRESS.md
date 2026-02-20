@@ -84,12 +84,12 @@
 | Moduł Klienci - Lista | ✅ | 100% |
 | Moduł Klienci - Szczegóły | ✅ | 100% |
 | Moduł Magazyn | ✅ | 100% |
-| Moduł Usługi | ❌ | 0% |
+| Moduł Usługi | 🟡 | 15% |
 | Moduł Statystyki | ❌ | 0% |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~40%** (2 z 8 modułów gotowe + Łączność w toku)
+**Całkowity postęp: ~42%** (2 moduły gotowe + Usługi w toku + Łączność w toku)
 
 ---
 
@@ -102,6 +102,14 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
+- zmiany UI:
+  - `/services/[id]`: wdrożony render dla zakładek `komentarze` i `prowizje` (wcześniej obecne w tabach bez zawartości),
+  - `komentarze`: lista + dodawanie + usuwanie komentarzy oparta o istniejące endpointy `/services/:id/comments`,
+  - `prowizje`: edycja i zapis reguł prowizyjnych oparta o `/services/:id/commissions`.
+- walidacja:
+  - `pnpm --filter @salonbw/panel typecheck` -> OK.
 
 ### 2026-02-18 - Magazyn: deploy `dostawcy` w układzie Versum (bez Tailwind)
 - commit/deploy:
