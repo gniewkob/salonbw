@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
 import VersumShell from '@/components/versum/VersumShell';
@@ -25,29 +25,28 @@ export default function EmployeeActivityPage() {
     const [selectedDate, setSelectedDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
-    const [activeTab, setActiveTab] = useState<'table' | 'chart'>('table');
     const [data, setData] = useState<EmployeeActivitySummary | null>(null);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        fetchData();
-    }, [selectedDate]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch(
                 `/api/statistics/employees/activity?date=${selectedDate}`,
             );
             if (res.ok) {
-                const json = await res.json();
+                const json = (await res.json()) as EmployeeActivitySummary;
                 setData(json);
             }
         } catch (error) {
             console.error('Failed to fetch employee activity:', error);
         }
         setLoading(false);
-    };
+    }, [selectedDate]);
+
+    useEffect(() => {
+        void fetchData();
+    }, [fetchData]);
 
     const navigateDate = (direction: 'prev' | 'next') => {
         const current = new Date(selectedDate);
@@ -104,7 +103,7 @@ export default function EmployeeActivityPage() {
                         className="versum-toolbar-btn btn btn-default"
                         onClick={() => window.print()}
                     >
-                        🖨️
+                        drukuj
                     </button>
                 </div>
 
@@ -112,97 +111,73 @@ export default function EmployeeActivityPage() {
                     <div className="p-4 text-sm versum-muted">Ładowanie...</div>
                 ) : (
                     <div className="inner">
-                        {/* Tabs */}
-                        <div className="nav-tabs mb-4">
-                            <button
-                                type="button"
-                                className={`${activeTab === 'table' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('table')}
-                            >
-                                Tabela
-                            </button>
-                            <button
-                                type="button"
-                                className={`${activeTab === 'chart' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('chart')}
-                            >
-                                Wykres
-                            </button>
-                        </div>
-
-                        {activeTab === 'table' && data && (
-                            <>
-                                <div className="versum-table-wrap">
-                                    <table className="versum-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Pracownik</th>
-                                                <th>Przepracowany czas</th>
-                                                <th>Liczba wizyt</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {data.employees.map((employee) => (
-                                                <tr key={employee.employeeId}>
-                                                    <td>
-                                                        <Link
-                                                            href={`/employees/${employee.employeeId}`}
-                                                            className="versum-link"
-                                                        >
-                                                            {
-                                                                employee.employeeName
-                                                            }
-                                                        </Link>
-                                                    </td>
-                                                    <td>
-                                                        {formatWorkTime(
-                                                            employee.workTimeMinutes,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {
-                                                            employee.appointmentsCount
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            <tr className="bg-gray-100">
-                                                <td
-                                                    colSpan={3}
-                                                    className="font-bold"
-                                                >
-                                                    Podsumowanie
-                                                </td>
-                                            </tr>
-                                            <tr className="bg-gray-50">
-                                                <th></th>
-                                                <th>Przepracowany czas</th>
-                                                <th>Liczba wizyt</th>
-                                            </tr>
-                                            <tr className="bg-gray-50 font-bold">
-                                                <td>Łącznie</td>
-                                                <td>
-                                                    {formatWorkTime(
-                                                        data.totals
-                                                            .workTimeMinutes,
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    {
-                                                        data.totals
-                                                            .appointmentsCount
-                                                    }
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                        {data && (
+                            <div className="versum-widget">
+                                <div className="versum-widget__header">
+                                    Aktywność pracowników
                                 </div>
-                            </>
-                        )}
-
-                        {activeTab === 'chart' && (
-                            <div className="p-8 text-center text-gray-500">
-                                <p>Wykres aktywności pracowników - wkrótce</p>
+                                <div className="versum-widget__content p-0">
+                                    <div className="versum-table-wrap">
+                                        <table className="versum-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Pracownik</th>
+                                                    <th>Przepracowany czas</th>
+                                                    <th>Liczba wizyt</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.employees.map(
+                                                    (employee) => (
+                                                        <tr
+                                                            key={
+                                                                employee.employeeId
+                                                            }
+                                                        >
+                                                            <td>
+                                                                <Link
+                                                                    href={`/employees/${employee.employeeId}`}
+                                                                    className="versum-link"
+                                                                >
+                                                                    {
+                                                                        employee.employeeName
+                                                                    }
+                                                                </Link>
+                                                            </td>
+                                                            <td>
+                                                                {formatWorkTime(
+                                                                    employee.workTimeMinutes,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    employee.appointmentsCount
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Łącznie</th>
+                                                    <th>
+                                                        {formatWorkTime(
+                                                            data.totals
+                                                                .workTimeMinutes,
+                                                        )}
+                                                    </th>
+                                                    <th>
+                                                        {
+                                                            data.totals
+                                                                .appointmentsCount
+                                                        }
+                                                    </th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
