@@ -104,6 +104,9 @@
 ## 📝 HISTORIA ZMIAN
 
 ### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
+- commit/deploy:
+  - commit: `0e93a771`
+  - run: `22205400049` (production, success)
 - zmiany UI:
   - `/services/[id]`: wdrożony render dla zakładek `komentarze` i `prowizje` (wcześniej obecne w tabach bez zawartości),
   - `komentarze`: lista + dodawanie + usuwanie komentarzy oparta o istniejące endpointy `/services/:id/comments`,
