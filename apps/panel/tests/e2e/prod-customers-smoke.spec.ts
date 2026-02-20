@@ -9,6 +9,78 @@ function requireEnv(name: string): string {
     return v;
 }
 
+async function resolveCustomerId(page: any): Promise<number> {
+    await page.goto('/customers');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1200);
+    await expect(page).not.toHaveURL(
+        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
+    );
+    const hrefs = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => a.getAttribute('href') || ''),
+    );
+    for (const href of hrefs) {
+        if (!href) continue;
+        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        const id = Number(match[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
+
+    const html = await page.content();
+    const htmlMatch = html.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+    if (htmlMatch) {
+        const id = Number(htmlMatch[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
+
+    const firstRow = page
+        .locator(
+            '.clients-table tbody tr, table.clients-table tbody tr, .clients-list table tbody tr',
+        )
+        .first();
+    if ((await firstRow.count()) > 0) {
+        await firstRow.click({ timeout: 10_000 }).catch(() => null);
+        await page.waitForLoadState('domcontentloaded').catch(() => null);
+        const current = page.url();
+        const currentMatch = current.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
+        if (currentMatch) {
+            const id = Number(currentMatch[1]);
+            if (Number.isFinite(id) && id > 0) return id;
+        }
+    }
+    throw new Error(
+        'No valid customer ID found on /customers. Ensure at least one customer exists.',
+    );
+}
+
+async function gotoCustomerTab(
+    page: any,
+    customerId: number,
+    tabName: 'gallery' | 'files',
+    selector: string,
+) {
+    const target = `/customers/${customerId}?tab_name=${tabName}`;
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        await page.goto(target);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page).not.toHaveURL(
+            /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
+        );
+        try {
+            await page.waitForSelector(selector, { timeout: 20_000 });
+            return;
+        } catch (err) {
+            lastError = err;
+        }
+    }
+    throw lastError ?? new Error(`Failed to load tab ${tabName}`);
+}
+
 async function login(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
@@ -50,6 +122,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
 
     test('gallery: upload image -> thumbnail visible', async ({ page }, testInfo) => {
         await login(page);
+        const customerId = await resolveCustomerId(page);
 
         const pngPath = testInfo.outputPath('smoke-upload.png');
         fs.mkdirSync(path.dirname(pngPath), { recursive: true });
@@ -66,8 +139,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
         }
         fs.writeFileSync(pngPath, PNG.sync.write(png));
 
-        await page.goto('/customers/2?tab_name=gallery');
-        await page.waitForSelector('.customer-gallery-tab', { timeout: 20_000 });
+        await gotoCustomerTab(page, customerId, 'gallery', '.customer-gallery-tab');
 
         // Upload via hidden input inside the "dodaj zdjecie" button.
         const fileInput = page.locator(
@@ -85,13 +157,13 @@ test.describe('PROD smoke: customers gallery/files', () => {
 
     test('files: upload file -> row visible -> download returns 200', async ({ page }, testInfo) => {
         await login(page);
+        const customerId = await resolveCustomerId(page);
 
         const txtPath = testInfo.outputPath('smoke-upload.txt');
         fs.mkdirSync(path.dirname(txtPath), { recursive: true });
         fs.writeFileSync(txtPath, `smoke-${Date.now()}\n`, 'utf8');
 
-        await page.goto('/customers/2?tab_name=files');
-        await page.waitForSelector('.customer-files-tab', { timeout: 20_000 });
+        await gotoCustomerTab(page, customerId, 'files', '.customer-files-tab');
 
         const input = page.locator(
             'label:has-text("dodaj plik") input[type="file"]',

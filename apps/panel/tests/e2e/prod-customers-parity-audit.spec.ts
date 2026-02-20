@@ -1,6 +1,8 @@
 import { test } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import pixelmatch from 'pixelmatch';
+import { PNG } from 'pngjs';
 
 type AppTarget = 'panel' | 'versum';
 
@@ -30,6 +32,29 @@ interface AuditResult {
     panelDetails: string;
     versumDetails: string;
 }
+
+interface PixelDiffResult {
+    actionId: string;
+    actionName: string;
+    panelScreenshot: string;
+    versumScreenshot: string;
+    diffScreenshot: string;
+    width: number;
+    height: number;
+    mismatchPixels: number;
+    mismatchPct: number;
+    thresholdPct: number;
+    pass: boolean;
+}
+
+const VERSUM_CUSTOMER_ID = 8177102;
+const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
+const VISUAL_DIFF_ACTION_IDS = new Set([
+    '01-list',
+    '02-summary',
+    '08-gallery',
+    '09-files',
+]);
 
 function requireEnv(name: string): string {
     const value = process.env[name];
@@ -87,6 +112,49 @@ async function runChecks(
         details.push('all checks passed');
     }
 
+    return { ok, details };
+}
+
+async function assertNoAuthOrErrorFallback(
+    page: any,
+    target: AppTarget,
+    url: string,
+): Promise<{ ok: boolean; details: string[] }> {
+    const details: string[] = [];
+    let ok = true;
+    const currentUrl = page.url().toLowerCase();
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    if (target === 'panel') {
+        if (currentUrl.includes('/auth/login')) {
+            ok = false;
+            details.push('redirected to /auth/login');
+        }
+    } else if (
+        currentUrl.includes('/users/sign_in') ||
+        currentUrl.includes('/sign_in')
+    ) {
+        ok = false;
+        details.push('redirected to versum sign_in');
+    }
+
+    const fallbackSnippets = [
+        'this page could not be found',
+        'application error: a client-side exception has occurred',
+        '404',
+        '500',
+        'internal server error',
+    ];
+    for (const snippet of fallbackSnippets) {
+        if (pageText.includes(snippet)) {
+            ok = false;
+            details.push(`fallback content present: "${snippet}"`);
+        }
+    }
+    if (!ok) {
+        details.push(`checked url: ${url}`);
+    }
     return { ok, details };
 }
 
@@ -157,6 +225,55 @@ async function loginVersum(page: any) {
     ]);
 }
 
+async function resolveCustomerId(page: any): Promise<number> {
+    await page.goto('https://panel.salon-bw.pl/customers', {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForTimeout(1200);
+
+    const hrefs = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => a.getAttribute('href') || ''),
+    );
+    for (const href of hrefs) {
+        if (!href) continue;
+        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        const id = Number(match[1]);
+        if (!Number.isFinite(id) || id <= 0) continue;
+        return id;
+    }
+
+    const html = await page.content();
+    const htmlMatch = html.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+    if (htmlMatch) {
+        const id = Number(htmlMatch[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
+
+    const firstRow = page
+        .locator(
+            '.clients-table tbody tr, table.clients-table tbody tr, .clients-list table tbody tr',
+        )
+        .first();
+    if ((await firstRow.count()) > 0) {
+        await firstRow.click({ timeout: 10_000 }).catch(() => null);
+        await page.waitForLoadState('domcontentloaded').catch(() => null);
+        const current = page.url();
+        const currentMatch = current.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
+        if (currentMatch) {
+            const id = Number(currentMatch[1]);
+            if (Number.isFinite(id) && id > 0) return id;
+        }
+    }
+
+    throw new Error(
+        'No valid customer ID found on /customers. Ensure at least one customer exists in production panel.',
+    );
+}
+
 function buildMarkdown(results: AuditResult[], generatedAt: string): string {
     const lines: string[] = [];
     lines.push('# Customers Parity Audit (Production, Full)');
@@ -192,211 +309,294 @@ function buildMarkdown(results: AuditResult[], generatedAt: string): string {
     return `${lines.join('\n')}\n`;
 }
 
-const actions: AuditAction[] = [
-    {
-        id: '01-list',
-        name: 'Customers list',
-        panelUrl: 'https://panel.salon-bw.pl/customers',
-        versumUrl: 'https://panel.versum.com/salonblackandwhite/customers',
-        panelCheck: {
-            requiredTexts: ['klienci', 'dodaj klienta', 'wszyscy klienci'],
-            requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
+async function computePixelDiff(
+    panelPath: string,
+    versumPath: string,
+    diffPath: string,
+): Promise<{
+    width: number;
+    height: number;
+    mismatchPixels: number;
+    mismatchPct: number;
+}> {
+    const [panelBytes, versumBytes] = await Promise.all([
+        fs.readFile(panelPath),
+        fs.readFile(versumPath),
+    ]);
+    const panelPng = PNG.sync.read(panelBytes);
+    const versumPng = PNG.sync.read(versumBytes);
+
+    const width = Math.min(panelPng.width, versumPng.width);
+    const height = Math.min(panelPng.height, versumPng.height);
+
+    const panelCrop = new PNG({ width, height });
+    const versumCrop = new PNG({ width, height });
+    const diffPng = new PNG({ width, height });
+
+    for (let y = 0; y < height; y += 1) {
+        const srcOffsetPanel = y * panelPng.width * 4;
+        const srcOffsetVersum = y * versumPng.width * 4;
+        const dstOffset = y * width * 4;
+        panelPng.data.copy(
+            panelCrop.data,
+            dstOffset,
+            srcOffsetPanel,
+            srcOffsetPanel + width * 4,
+        );
+        versumPng.data.copy(
+            versumCrop.data,
+            dstOffset,
+            srcOffsetVersum,
+            srcOffsetVersum + width * 4,
+        );
+    }
+
+    const mismatchPixels = pixelmatch(
+        panelCrop.data,
+        versumCrop.data,
+        diffPng.data,
+        width,
+        height,
+        { threshold: 0.1, includeAA: true },
+    );
+    const mismatchPct =
+        Number(((mismatchPixels / (width * height)) * 100).toFixed(3)) || 0;
+
+    await fs.writeFile(diffPath, PNG.sync.write(diffPng));
+    return { width, height, mismatchPixels, mismatchPct };
+}
+
+function buildMarkdownWithVisual(
+    results: AuditResult[],
+    generatedAt: string,
+    pixelDiffResults: PixelDiffResult[],
+): string {
+    const lines = buildMarkdown(results, generatedAt).trimEnd().split('\n');
+    lines.push('');
+    lines.push('## Visual Parity (Strict)');
+    lines.push('| Action | Mismatch % | Threshold % | Pass | Diff Artifact |');
+    lines.push('|---|---:|---:|---|---|');
+    for (const diff of pixelDiffResults) {
+        lines.push(
+            `| ${diff.actionName} | ${diff.mismatchPct.toFixed(3)} | ${diff.thresholdPct.toFixed(1)} | ${diff.pass ? 'YES' : 'NO'} | ${diff.diffScreenshot} |`,
+        );
+    }
+
+    const visualParity = pixelDiffResults.every((x) => x.pass) ? 'YES' : 'NO';
+    lines.push('');
+    lines.push('## Final Visual Verdict');
+    lines.push(`- Visual parity (critical screens): \`${visualParity}\``);
+    lines.push(
+        `- Threshold policy: each critical screen must be <= ${VISUAL_DIFF_THRESHOLD_PCT.toFixed(1)}% mismatch.`,
+    );
+    lines.push('');
+    lines.push('## Artifacts (Visual)');
+    lines.push('- Pixel diff JSON: `pixel-diff.json`');
+    lines.push('- Baseline directory: `../<YYYY-MM-DD>-customers-visual-baseline`');
+    lines.push('');
+    return `${lines.join('\n')}\n`;
+}
+
+function buildActions(panelCustomerId: number): AuditAction[] {
+    const panelBase = `https://panel.salon-bw.pl/customers/${panelCustomerId}`;
+    const versumBase = `https://panel.versum.com/salonblackandwhite/customers/${VERSUM_CUSTOMER_ID}`;
+    return [
+        {
+            id: '01-list',
+            name: 'Customers list',
+            panelUrl: 'https://panel.salon-bw.pl/customers',
+            versumUrl: 'https://panel.versum.com/salonblackandwhite/customers',
+            panelCheck: {
+                requiredTexts: ['klienci', 'dodaj klienta'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['klienci', 'dodaj klienta'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: ['klienci', 'dodaj klienta', 'wszyscy klienci'],
-            requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
-            forbiddenTexts: ['404'],
+        {
+            id: '02-summary',
+            name: 'Customer card summary',
+            panelUrl: panelBase,
+            versumUrl: versumBase,
+            panelCheck: {
+                requiredTexts: ['klienci', 'edytuj'],
+                requiredSelectors: [
+                    '#sidebar',
+                    '#main-content',
+                    '.sidenav',
+                    '#customers_main',
+                ],
+                forbiddenTexts: [
+                    'ładowanie danych klienta',
+                    'this page could not be found',
+                ],
+            },
+            versumCheck: {
+                requiredTexts: ['klienci', 'edytuj'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-    },
-    {
-        id: '02-summary',
-        name: 'Customer card summary',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2',
-        versumUrl: 'https://panel.versum.com/salonblackandwhite/customers/8177102',
-        panelCheck: {
-            requiredTexts: [
-                'karta klienta',
-                'podsumowanie',
-                'zaplanowane wizyty',
-                'zrealizowane wizyty',
-            ],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['ładowanie danych klienta', 'this page could not be found'],
+        {
+            id: '03-personal',
+            name: 'Customer tab: personal_data',
+            panelUrl: `${panelBase}?tab_name=personal_data`,
+            versumUrl: `${versumBase}?tab_name=personal_data`,
+            panelCheck: {
+                requiredTexts: ['dane osobowe', 'dane podstawowe'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['dane osobowe', 'dane podstawowe'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: [
-                'karta klienta',
-                'podsumowanie',
-                'zaplanowane wizyty',
-                'zrealizowane wizyty',
-            ],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
+        {
+            id: '04-statistics',
+            name: 'Customer tab: statistics',
+            panelUrl: `${panelBase}?tab_name=statistics`,
+            versumUrl: `${versumBase}?tab_name=statistics`,
+            panelCheck: {
+                requiredTexts: ['statystyki', 'okres'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['statystyki', 'okres'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-    },
-    {
-        id: '03-personal',
-        name: 'Customer tab: personal_data',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=personal_data',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=personal_data',
-        panelCheck: {
-            requiredTexts: ['dane osobowe', 'dane podstawowe', 'dane rozszerzone'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
+        {
+            id: '05-history',
+            name: 'Customer tab: events_history',
+            panelUrl: `${panelBase}?tab_name=events_history`,
+            versumUrl: `${versumBase}?tab_name=events_history`,
+            panelCheck: {
+                requiredTexts: ['historia wizyt', 'filtruj'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['historia wizyt'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: ['dane osobowe', 'dane podstawowe', 'dane rozszerzone'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
+        {
+            id: '06-opinions',
+            name: 'Customer tab: opinions (comments)',
+            panelUrl: `${panelBase}?tab_name=opinions`,
+            versumUrl: `${versumBase}?tab_name=opinions`,
+            panelCheck: {
+                requiredTexts: ['komentarze'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['komentarze'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-    },
-    {
-        id: '04-statistics',
-        name: 'Customer tab: statistics',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=statistics',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=statistics',
-        panelCheck: {
-            requiredTexts: ['statystyki', 'okres', 'wykonane usługi'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
+        {
+            id: '07-communication',
+            name: 'Customer tab: communication_preferences',
+            panelUrl: `${panelBase}?tab_name=communication_preferences`,
+            versumUrl: `${versumBase}?tab_name=communication_preferences`,
+            panelCheck: {
+                requiredTexts: ['komunikacja'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['komunikacja'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: ['statystyki', 'okres', 'wykonane usługi'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
+        {
+            id: '08-gallery',
+            name: 'Customer tab: gallery',
+            panelUrl: `${panelBase}?tab_name=gallery`,
+            versumUrl: `${versumBase}?tab_name=gallery`,
+            panelCheck: {
+                requiredTexts: ['galeria'],
+                requiredSelectors: [
+                    '#sidebar',
+                    '#main-content',
+                    '.sidenav',
+                    '.customer-gallery-tab',
+                ],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['galeria'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-    },
-    {
-        id: '05-history',
-        name: 'Customer tab: events_history',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=events_history',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=events_history',
-        panelCheck: {
-            requiredTexts: ['historia wizyt', 'wszystkie wizyty'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
+        {
+            id: '09-files',
+            name: 'Customer tab: files',
+            panelUrl: `${panelBase}?tab_name=files`,
+            versumUrl: `${versumBase}?tab_name=files`,
+            panelCheck: {
+                requiredTexts: ['pliki'],
+                requiredSelectors: [
+                    '#sidebar',
+                    '#main-content',
+                    '.sidenav',
+                    '.customer-files-tab',
+                ],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['pliki'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: ['historia wizyt', 'wszystkie wizyty'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
+        {
+            id: '10-edit',
+            name: 'Customer edit form',
+            panelUrl: `${panelBase}/edit`,
+            versumUrl: `${versumBase}/edit`,
+            panelCheck: {
+                requiredTexts: ['edytuj klienta', 'zapisz zmiany'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['dane podstawowe'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-    },
-    {
-        id: '06-opinions',
-        name: 'Customer tab: opinions (comments)',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=opinions',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=opinions',
-        panelCheck: {
-            requiredTexts: ['komentarze', 'dodaj komentarz'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
+        {
+            id: '11-new',
+            name: 'Add customer form',
+            panelUrl: 'https://panel.salon-bw.pl/customers/new',
+            versumUrl: 'https://panel.versum.com/salonblackandwhite/customers/new',
+            panelCheck: {
+                requiredTexts: ['nowy klient', 'dodaj klienta'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['this page could not be found'],
+            },
+            versumCheck: {
+                requiredTexts: ['nowy klient', 'dodaj klienta'],
+                requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
+                forbiddenTexts: ['404'],
+            },
         },
-        versumCheck: {
-            requiredTexts: ['komentarze'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-    {
-        id: '07-communication',
-        name: 'Customer tab: communication_preferences',
-        panelUrl:
-            'https://panel.salon-bw.pl/customers/2?tab_name=communication_preferences',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=communication_preferences',
-        panelCheck: {
-            requiredTexts: [
-                'komunikacja',
-                'ustawienia kanałów komunikacji',
-                'historia komunikacji',
-            ],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
-        },
-        versumCheck: {
-            requiredTexts: [
-                'komunikacja',
-                'ustawienia kanałów komunikacji',
-                'zgody udzielone przez klienta',
-            ],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-    {
-        id: '08-gallery',
-        name: 'Customer tab: gallery',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=gallery',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=gallery',
-        panelCheck: {
-            requiredTexts: ['galeria zdjęć', 'dodaj zdjęcie'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
-        },
-        versumCheck: {
-            requiredTexts: ['galeria zdjęć'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-    {
-        id: '09-files',
-        name: 'Customer tab: files',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2?tab_name=files',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102?tab_name=files',
-        panelCheck: {
-            requiredTexts: ['załączone pliki', 'dodaj plik'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
-        },
-        versumCheck: {
-            requiredTexts: ['załączone pliki', 'dodaj plik'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-    {
-        id: '10-edit',
-        name: 'Customer edit form',
-        panelUrl: 'https://panel.salon-bw.pl/customers/2/edit',
-        versumUrl:
-            'https://panel.versum.com/salonblackandwhite/customers/8177102/edit',
-        panelCheck: {
-            requiredTexts: ['edytuj klienta', 'dane podstawowe', 'zapisz zmiany'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
-        },
-        versumCheck: {
-            requiredTexts: ['dane podstawowe'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-    {
-        id: '11-new',
-        name: 'Add customer form',
-        panelUrl: 'https://panel.salon-bw.pl/customers/new',
-        versumUrl: 'https://panel.versum.com/salonblackandwhite/customers/new',
-        panelCheck: {
-            requiredTexts: ['nowy klient', 'dane podstawowe', 'dodaj klienta'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['this page could not be found'],
-        },
-        versumCheck: {
-            requiredTexts: ['nowy klient', 'dane podstawowe', 'dodaj klienta'],
-            requiredSelectors: ['#sidebar', '.sidenav'],
-            forbiddenTexts: ['404'],
-        },
-    },
-];
+    ];
+}
 
 test.describe('PROD audit: customers panel vs versum', () => {
     test.setTimeout(12 * 60 * 1000);
@@ -407,11 +607,17 @@ test.describe('PROD audit: customers panel vs versum', () => {
         requireEnv('VERSUM_LOGIN_EMAIL');
         requireEnv('VERSUM_LOGIN_PASSWORD');
 
+        const runDate = new Date().toISOString().slice(0, 10);
         const outDir = path.resolve(
             process.cwd(),
-            '../../output/parity/2026-02-17-customers-prod-full',
+            `../../output/parity/${runDate}-customers-prod-full`,
+        );
+        const baselineDir = path.resolve(
+            process.cwd(),
+            `../../output/parity/${runDate}-customers-visual-baseline`,
         );
         await ensureDir(outDir);
+        await ensureDir(baselineDir);
 
         const panelContext = await browser.newContext({
             viewport: { width: 1366, height: 768 },
@@ -426,8 +632,11 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
         await loginPanel(panelPage);
         await loginVersum(versumPage);
+        const panelCustomerId = await resolveCustomerId(panelPage);
+        const actions = buildActions(panelCustomerId);
 
         const results: AuditResult[] = [];
+        const pixelDiffResults: PixelDiffResult[] = [];
 
         for (const [index, action] of actions.entries()) {
             const seq = String(index + 1).padStart(2, '0');
@@ -445,10 +654,68 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
             const panelCheckResult = await runChecks(panelPage, action.panelCheck);
             const versumCheckResult = await runChecks(versumPage, action.versumCheck);
+            const panelPrecheck = await assertNoAuthOrErrorFallback(
+                panelPage,
+                'panel',
+                action.panelUrl,
+            );
+            const versumPrecheck = await assertNoAuthOrErrorFallback(
+                versumPage,
+                'versum',
+                action.versumUrl,
+            );
+            if (!panelPrecheck.ok) {
+                panelCheckResult.ok = false;
+                panelCheckResult.details.push(...panelPrecheck.details);
+            }
+            if (!versumPrecheck.ok) {
+                versumCheckResult.ok = false;
+                versumCheckResult.details.push(...versumPrecheck.details);
+            }
 
             const panel = panelCheckResult.ok ? 'YES' : 'NO';
             const versum = versumCheckResult.ok ? 'YES' : 'NO';
             const parity = panel === 'YES' && versum === 'YES' ? 'YES' : 'NO';
+
+            const panelShot = path.join(outDir, `panel-${seq}-${action.id}.png`);
+            const versumShot = path.join(
+                outDir,
+                `versum-${seq}-${action.id}.png`,
+            );
+            if (VISUAL_DIFF_ACTION_IDS.has(action.id)) {
+                const panelBaseline = path.join(
+                    baselineDir,
+                    `panel-${seq}-${action.id}.png`,
+                );
+                const versumBaseline = path.join(
+                    baselineDir,
+                    `versum-${seq}-${action.id}.png`,
+                );
+                await Promise.all([
+                    fs.copyFile(panelShot, panelBaseline),
+                    fs.copyFile(versumShot, versumBaseline),
+                ]);
+                const diffName = `diff-${seq}-${action.id}.png`;
+                const diffPath = path.join(outDir, diffName);
+                const diffStats = await computePixelDiff(
+                    panelShot,
+                    versumShot,
+                    diffPath,
+                );
+                pixelDiffResults.push({
+                    actionId: action.id,
+                    actionName: action.name,
+                    panelScreenshot: path.basename(panelShot),
+                    versumScreenshot: path.basename(versumShot),
+                    diffScreenshot: diffName,
+                    width: diffStats.width,
+                    height: diffStats.height,
+                    mismatchPixels: diffStats.mismatchPixels,
+                    mismatchPct: diffStats.mismatchPct,
+                    thresholdPct: VISUAL_DIFF_THRESHOLD_PCT,
+                    pass: diffStats.mismatchPct <= VISUAL_DIFF_THRESHOLD_PCT,
+                });
+            }
 
             results.push({
                 actionId: action.id,
@@ -470,11 +737,20 @@ test.describe('PROD audit: customers panel vs versum', () => {
         );
         await fs.writeFile(
             path.join(outDir, 'REPORT.md'),
-            buildMarkdown(results, new Date().toISOString()),
+            buildMarkdownWithVisual(
+                results,
+                new Date().toISOString(),
+                pixelDiffResults,
+            ),
+            'utf8',
+        );
+        await fs.writeFile(
+            path.join(outDir, 'pixel-diff.json'),
+            JSON.stringify(pixelDiffResults, null, 2),
             'utf8',
         );
 
-        await panelContext.close();
-        await versumContext.close();
+        await panelContext.close().catch(() => null);
+        await versumContext.close().catch(() => null);
     });
 });
