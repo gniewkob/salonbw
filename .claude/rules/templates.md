@@ -55,6 +55,13 @@
 ```
 <type>(<scope>): <short description>
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 Types: fix, feat, chore, refactor, docs, test, ci
+
+## Codex audit table
+```markdown
+| Problem | Naprawiony? |
+|---------|-------------|
+| <lint/type error description> | Tak / Nie |
+```
