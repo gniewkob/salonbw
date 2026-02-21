@@ -3,7 +3,7 @@
     --versum-mainnav-w: 62px;
     --versum-mainnav-item-h: 57px;
     --versum-sidenav-w: 214px;
-    --versum-content-max: 1010px;
+    --versum-content-max: 1090px;
     --versum-content-pad: 20px;
     --versum-border: #cfd4da;
     --versum-bg: #eceff2;
@@ -15,6 +15,10 @@
     --versum-mainnav-bg: #24272b;
     --versum-mainnav-active: #181a1e;
     --versum-green: #2ecc71;
+}
+
+body.e2e-body {
+    font-size: 13px;
 }
 
 /* ========================================
@@ -2510,7 +2514,7 @@ textarea.form-control {
     justify-content: center;
     text-decoration: none;
     color: inherit;
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.1;
     gap: 4px;
     text-transform: lowercase;
@@ -2573,7 +2577,7 @@ textarea.form-control {
 .sidenav .nav-header {
     margin: 10px 0 5px;
     padding: 0 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     color: #7d848c;
     text-transform: uppercase;
@@ -2591,7 +2595,7 @@ textarea.form-control {
     display: flex;
     align-items: center;
     padding: 3px 10px;
-    font-size: 11px;
+    font-size: 12px;
     color: #616971;
     text-decoration: none;
 }

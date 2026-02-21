@@ -220,13 +220,7 @@ export default function CommissionsPage() {
                                                         <br />
                                                         <Link
                                                             href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                            className="btn btn-xs mt-5"
-                                                            style={{
-                                                                border: '1px solid #3aa1df',
-                                                                color: '#3aa1df',
-                                                                background:
-                                                                    '#fff',
-                                                            }}
+                                                            className="btn btn-default btn-xs mt-5"
                                                         >
                                                             🧾 szczegóły
                                                         </Link>
