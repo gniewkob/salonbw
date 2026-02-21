@@ -1,8 +1,10 @@
-import { useEffect, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
+import EmployeesNav from '@/components/versum/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -28,12 +30,21 @@ export default function EmployeesPage() {
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
+    const secondaryNav = useMemo(
+        () => (
+            <div className="sidenav secondarynav" id="sidenav">
+                <EmployeesNav />
+            </div>
+        ),
+        [],
+    );
 
     useEffect(() => {
         if (data && rows.length === 0) {
             setRows(data);
         }
     }, [data, rows.length]);
+    useSetSecondaryNav(secondaryNav);
 
     if (!role) return null;
 
