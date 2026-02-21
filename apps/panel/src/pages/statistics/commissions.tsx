@@ -171,7 +171,7 @@ export default function CommissionsPage() {
                         className="btn btn-default btn-xs"
                         onClick={() => window.print()}
                     >
-                        🖨
+                        drukuj
                     </button>
                 </div>
 
@@ -223,7 +223,7 @@ export default function CommissionsPage() {
                                                                     href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
                                                                     className="btn btn-default btn-xs mt-5"
                                                                 >
-                                                                    🧾 szczegóły
+                                                                    szczegóły
                                                                 </Link>
                                                             </td>
                                                             <td>
