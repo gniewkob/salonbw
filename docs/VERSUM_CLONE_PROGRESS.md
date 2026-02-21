@@ -756,3 +756,24 @@
   - największy drift na `dashboard` (layout/typografia/chart area),
   - `employees` blisko progu, ale nadal > `3.0%`,
   - `commissions` wymaga dalszego copy-first przepięcia markupu/tabeli 1:1.
+
+### 2026-02-21 - Statystyki: cleanup regresji CSS + poprawka akcji w prowizjach
+- commity:
+  - `b8394c61` (przywrócenie niebieskich przycisków akcji w `commissions`),
+  - `a6f941e2`, `6d0709fa`, `5b43276e` (reverty wcześniejszych zmian CSS powodujących regresję visual).
+- deploy:
+  - `dashboard` (production): run `22265073558` ✅
+  - `probe` (production): run `22265131511` ✅
+- smoke:
+  - `prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- parity:
+  - functional: `YES`
+  - visual strict (`<= 3.0%`): `NO`
+  - pixel diff:
+    - dashboard: `11.922%`
+    - employees: `3.921%`
+    - commissions: `6.715%`
+- wynik:
+  - utrzymana poprawa `commissions`,
+  - `employees` najbliżej progu, ale nadal ponad limit,
+  - `dashboard` pozostaje głównym blockerem visual parity.

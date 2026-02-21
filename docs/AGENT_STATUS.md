@@ -624,6 +624,27 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
     - employees: `4.139%`
     - commissions: `6.942%`
 
+## 2026-02-21 - Statistics parity iteration (commissions buttons + css cleanup reverts)
+
+- Code commits:
+  - `b8394c61` (`fix(statistics): restore versum blue action buttons on commissions`)
+  - `a6f941e2`, `6d0709fa`, `5b43276e` (reverty regresyjnych zmian CSS statystyk)
+- Deploy run (`dashboard`, production): `22265073558` ✅
+- Probe run (`probe`, production): `22265131511` ✅
+- Runtime checks:
+  - `https://api.salon-bw.pl/healthz` ✅
+  - `https://panel.salon-bw.pl/auth/login` -> `HTTP 200` ✅
+  - `https://panel.salon-bw.pl/statistics` -> `HTTP 307` to login ✅
+- Production smoke:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- Production parity audit:
+  - Functional parity: `YES`
+  - Visual parity: `NO` (threshold `<= 3.0%`)
+  - Mismatch:
+    - dashboard: `11.922%`
+    - employees: `3.921%`
+    - commissions: `6.715%`
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
