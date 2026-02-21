@@ -2675,28 +2675,6 @@ body.e2e-statistics .main-content .inner {
     padding: 0;
 }
 
-body#statistics .versum-table th,
-body.e2e-statistics .versum-table th {
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 20px;
-    color: #313140;
-}
-
-body#statistics .versum-table td,
-body.e2e-statistics .versum-table td {
-    font-size: 13px;
-    line-height: 20px;
-    color: #313140;
-}
-
-body#statistics .btn,
-body.e2e-statistics .btn {
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 20px;
-}
-
 .main-content .inner.inner--wide {
     max-width: none;
     margin: 0;
