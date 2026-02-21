@@ -229,7 +229,7 @@ function StatisticsPageContent() {
             {dashboardLoading ? (
                 <div className="versum-muted p-20">Ładowanie raportu...</div>
             ) : (
-                <div className="inner">
+                <div>
                     <h2 className="nav-header mt-20 mb-10">Salon ogółem</h2>
                     <div className="mb-10 fs-12">
                         Liczba sfinalizowanych wizyt: {totals.totalVisits}

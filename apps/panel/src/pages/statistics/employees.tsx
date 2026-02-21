@@ -128,7 +128,7 @@ export default function EmployeeActivityPage() {
                 {loading ? (
                     <div className="versum-muted p-20">Ładowanie...</div>
                 ) : (
-                    <div className="inner">
+                    <div>
                         <div>
                             <div
                                 className="mb-20"

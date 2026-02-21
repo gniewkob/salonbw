@@ -189,7 +189,7 @@ export default function CommissionsPage() {
                 {loading ? (
                     <div className="versum-muted p-20">Ładowanie...</div>
                 ) : (
-                    <div className="inner">
+                    <div>
                         <div className="versum-widget">
                             <div className="versum-widget__content p-0">
                                 <div className="versum-table-wrap">
