@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-21 (statistics layout refactor deployed + production verified)_
+_Last updated: 2026-02-21 (statistics visual-parity iteration deployed + production verified)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `24aba527` | `22258658561` | 2026-02-21 14:43 | production | Statystyki: refactor layoutu (`/statistics`, `/statistics/employees`, `/statistics/commissions`) + fallback pracowników przy zerowych raportach |
+| Dashboard (`panel.salon-bw.pl`) | `61402bd0` | `22258870671` | 2026-02-21 14:58 | production | Statystyki: copy-first visual parity iteration (dashboard/employees/commissions) + fallback rows when reports are empty |
 
 Verification:
 
@@ -61,6 +61,19 @@ Verification:
     - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
     - functional parity: `YES`,
     - strict visual parity (`<=3.0%`): `NO` (`dashboard 12.484%`, `employees 3.789%`, `commissions 5.562%`),
+    - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+- Dashboard post-deploy verification (2026-02-21):
+  - deploy run `22258870671` (`success`, target `dashboard`),
+  - probe run `22258923363` (`success`, target `probe`),
+  - runtime checks:
+    - `curl -fsS https://api.salon-bw.pl/healthz` -> `status=ok`,
+    - `curl -I https://panel.salon-bw.pl/auth/login` -> `200`,
+    - `curl -I https://panel.salon-bw.pl/statistics` -> `307` to `/auth/login?redirectTo=%2Fstatistics`.
+  - produkcyjne testy statystyk:
+    - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed`,
+    - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+    - functional parity: `YES`,
+    - strict visual parity (`<=3.0%`): `NO` (`dashboard 12.423%`, `employees 3.962%`, `commissions 6.143%`),
     - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
 
 ## Recent Incidents

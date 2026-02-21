@@ -217,6 +217,28 @@
     - `commissions 5.562%`
   - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
 
+### 2026-02-21 - Statystyki: copy-first visual parity iteration #2 (deploy)
+- commit/deploy:
+  - commit: `61402bd0`
+  - run: `22258870671` (production, success, target `dashboard`)
+  - probe: `22258923363` (production, success, target `probe`)
+- zmiany UI:
+  - dalsze dopięcie struktury copy-first na:
+    - `apps/panel/src/pages/statistics/index.tsx`
+    - `apps/panel/src/pages/statistics/employees.tsx`
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+  - dodane fallback rows dla pustych raportów (wizualna stabilizacja tabel),
+  - dodane brakujące sekcje układu Versum (m.in. tabs/podsumowanie na aktywności pracowników).
+- walidacja po deployu:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed`,
+  - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+  - functional parity: `YES`,
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `dashboard 12.423%`
+    - `employees 3.962%`
+    - `commissions 6.143%`
+  - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+
 ### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
 - commit/deploy:
   - commit: `0e93a771`
