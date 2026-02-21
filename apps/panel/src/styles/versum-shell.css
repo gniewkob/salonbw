@@ -2671,7 +2671,8 @@ body.e2e-statistics .sidenav {
 
 body#statistics .main-content .inner,
 body.e2e-statistics .main-content .inner {
-    margin: 33px auto 0;
+    max-width: none;
+    margin: 0;
 }
 
 .main-content .inner.inner--wide {
