@@ -200,6 +200,21 @@ function StatisticsPageContent() {
                         ▶
                     </button>
                 </div>
+                <div
+                    style={{
+                        marginLeft: 'auto',
+                        display: 'inline-flex',
+                        gap: 8,
+                    }}
+                >
+                    <button
+                        type="button"
+                        className="btn btn-default btn-xs"
+                        aria-label="Drukuj"
+                    >
+                        🖨
+                    </button>
+                </div>
                 <button
                     type="button"
                     className="btn btn-default versum-toolbar-btn"
@@ -317,6 +332,17 @@ function StatisticsPageContent() {
                                                             }}
                                                         />
                                                         <div className="fs-12">
+                                                            <span
+                                                                style={{
+                                                                    display:
+                                                                        'inline-block',
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    background:
+                                                                        '#86c92a',
+                                                                    marginRight: 6,
+                                                                }}
+                                                            />
                                                             gotówka: 0,00 zł
                                                             (100%)
                                                         </div>
@@ -460,6 +486,23 @@ function StatisticsPageContent() {
                             <div className="fs-12">
                                 {employeeRows.slice(0, 3).map((employee) => (
                                     <div key={employee.employeeId}>
+                                        <span
+                                            style={{
+                                                display: 'inline-block',
+                                                width: 8,
+                                                height: 8,
+                                                background:
+                                                    employee.employeeId ===
+                                                    employeeRows[0]?.employeeId
+                                                        ? '#86c92a'
+                                                        : employee.employeeId ===
+                                                            employeeRows[1]
+                                                                ?.employeeId
+                                                          ? '#2a9fd6'
+                                                          : '#e0552f',
+                                                marginRight: 6,
+                                            }}
+                                        />
                                         {employee.employeeName} (0%)
                                     </div>
                                 ))}

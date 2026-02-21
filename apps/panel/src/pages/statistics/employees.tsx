@@ -108,12 +108,13 @@ export default function EmployeeActivityPage() {
                             ▶
                         </button>
                     </div>
+                    <div style={{ marginLeft: 'auto' }} />
                     <button
                         type="button"
                         className="btn btn-default btn-xs"
                         onClick={() => window.print()}
                     >
-                        drukuj
+                        🖨
                     </button>
                 </div>
 

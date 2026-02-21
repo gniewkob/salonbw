@@ -163,6 +163,7 @@ export default function CommissionsPage() {
                             ▶
                         </button>
                     </div>
+                    <div style={{ marginLeft: 'auto' }} />
                     <button type="button" className="btn btn-default mr-10">
                         pobierz raport Excel
                     </button>
@@ -171,7 +172,7 @@ export default function CommissionsPage() {
                         className="btn btn-default btn-xs"
                         onClick={() => window.print()}
                     >
-                        drukuj
+                        🖨
                     </button>
                 </div>
 
@@ -221,9 +222,15 @@ export default function CommissionsPage() {
                                                                 <br />
                                                                 <Link
                                                                     href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                                    className="btn btn-default btn-xs mt-5"
+                                                                    className="btn btn-xs mt-5"
+                                                                    style={{
+                                                                        border: '1px solid #3aa1df',
+                                                                        color: '#3aa1df',
+                                                                        background:
+                                                                            '#fff',
+                                                                    }}
                                                                 >
-                                                                    szczegóły
+                                                                    🧾 szczegóły
                                                                 </Link>
                                                             </td>
                                                             <td>
