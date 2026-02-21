@@ -3,7 +3,7 @@
     --versum-mainnav-w: 62px;
     --versum-mainnav-item-h: 57px;
     --versum-sidenav-w: 214px;
-    --versum-content-max: 1090px;
+    --versum-content-max: 1010px;
     --versum-content-pad: 20px;
     --versum-border: #cfd4da;
     --versum-bg: #eceff2;
@@ -2605,6 +2605,13 @@ textarea.form-control {
     overflow-y: auto;
 }
 
+body#statistics #sidenav,
+body#statistics .sidenav,
+body.e2e-statistics #sidenav,
+body.e2e-statistics .sidenav {
+    align-self: flex-start;
+}
+
 #sidenav .nav-header,
 .sidenav .nav-header {
     margin: 10px 0 5px;
@@ -2660,6 +2667,11 @@ textarea.form-control {
     margin: 0 auto;
     padding: var(--versum-content-pad);
     min-height: 0;
+}
+
+body#statistics .main-content .inner,
+body.e2e-statistics .main-content .inner {
+    margin: 33px auto 0;
 }
 
 .main-content .inner.inner--wide {
