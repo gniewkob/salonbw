@@ -2660,6 +2660,28 @@ textarea.form-control {
     height: 26px;
 }
 
+.statistics-summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.statistics-summary-row__left {
+    flex: 0 0 37%;
+    min-width: 0;
+}
+
+.statistics-summary-row__right {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+@media (max-width: 1100px) {
+    .statistics-summary-row {
+        flex-direction: column;
+    }
+}
+
 body#customers,
 body.e2e-customers {
     font-family:
