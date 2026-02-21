@@ -2631,6 +2631,35 @@ textarea.form-control {
     margin: 0;
 }
 
+.versum-floating-help {
+    position: fixed;
+    right: 22px;
+    bottom: 18px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: 0;
+    background: #37a5e6;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(22, 79, 118, 0.25);
+    z-index: 70;
+    padding: 0;
+}
+
+.versum-floating-help:hover {
+    filter: brightness(0.97);
+}
+
+.versum-floating-help .versum-icon,
+.versum-floating-help svg {
+    width: 26px;
+    height: 26px;
+}
+
 body#customers,
 body.e2e-customers {
     font-family:
