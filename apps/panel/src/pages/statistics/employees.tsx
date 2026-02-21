@@ -76,7 +76,7 @@ export default function EmployeeActivityPage() {
                 </header>
 
                 <div className="versum-page__toolbar">
-                    <div className="flex items-center gap-2">
+                    <div className="btn-group mr-10" role="group">
                         <button
                             type="button"
                             className="versum-toolbar-btn btn btn-default"
@@ -108,7 +108,7 @@ export default function EmployeeActivityPage() {
                 </div>
 
                 {loading ? (
-                    <div className="p-4 text-sm versum-muted">Ładowanie...</div>
+                    <div className="versum-muted p-20">Ładowanie...</div>
                 ) : (
                     <div className="inner">
                         {data && (

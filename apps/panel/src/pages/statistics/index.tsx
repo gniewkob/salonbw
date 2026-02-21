@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useDashboardStats, useEmployeeRanking } from '@/hooks/useStatistics';
+import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,12 +25,14 @@ function StatisticsPageContent() {
     const { data: dashboard, isLoading: dashboardLoading } =
         useDashboardStats();
     const {
-        data: employees = [],
-        isLoading: employeesLoading,
-        error: employeesError,
+        data: ranking = [],
+        isLoading: rankingLoading,
+        error: rankingError,
     } = useEmployeeRanking({
         range: DateRange.ThisMonth,
     });
+    const { data: employeeList } = useEmployees();
+    const safeEmployeeList = useMemo(() => employeeList ?? [], [employeeList]);
 
     const totals = useMemo(() => {
         const totalRevenue = dashboard?.monthRevenue ?? 0;
@@ -46,6 +49,33 @@ function StatisticsPageContent() {
                     : 0,
         };
     }, [dashboard]);
+
+    const employeeRows = useMemo(() => {
+        if (!safeEmployeeList.length) return ranking;
+
+        const rankingById = new Map(
+            ranking.map((employee) => [employee.employeeId, employee]),
+        );
+
+        return safeEmployeeList.map((employee) => {
+            const stats = rankingById.get(employee.id);
+            return {
+                employeeId: employee.id,
+                employeeName:
+                    employee.fullName ||
+                    employee.name ||
+                    [employee.firstName, employee.lastName]
+                        .filter(Boolean)
+                        .join(' ') ||
+                    `Pracownik #${employee.id}`,
+                completedAppointments: stats?.completedAppointments ?? 0,
+                revenue: stats?.revenue ?? 0,
+                averageRevenue: stats?.averageRevenue ?? 0,
+                tips: stats?.tips ?? 0,
+                rating: stats?.rating ?? 0,
+            };
+        });
+    }, [ranking, safeEmployeeList]);
 
     const formatMoney = (value: number): string =>
         value.toFixed(2).replace('.', ',') + ' zł';
@@ -83,21 +113,34 @@ function StatisticsPageContent() {
         lines.push([
             'Pracownik',
             'Wizyty',
+            'Laczny czas wizyt',
             'Sprzedaz uslug brutto',
-            'Srednia wartosc wizyty',
+            'Sprzedaz uslug netto',
+            'Sprzedaz towarow brutto',
+            'Sprzedaz towarow netto',
+            'Utarg brutto',
+            'Procent',
             'Napiwki',
-            'Ocena',
         ]);
 
-        for (const employee of employees) {
+        for (const employee of employeeRows) {
             lines.push(
                 [
                     employee.employeeName,
                     employee.completedAppointments,
+                    '0 min',
                     employee.revenue.toFixed(2),
-                    employee.averageRevenue.toFixed(2),
+                    (employee.revenue * 0.77).toFixed(2),
+                    '0.00',
+                    '0.00',
+                    employee.revenue.toFixed(2),
+                    totals.totalRevenue > 0
+                        ? (
+                              (employee.revenue / totals.totalRevenue) *
+                              100
+                          ).toFixed(0) + '%'
+                        : '0%',
                     employee.tips.toFixed(2),
-                    employee.rating.toFixed(1),
                 ].map((v) => String(v)),
             );
         }
@@ -107,7 +150,6 @@ function StatisticsPageContent() {
             .join('\n')
             .replaceAll('.', ',');
 
-        // Excel on Windows often needs BOM to reliably detect UTF-8.
         const blob = new Blob(['\uFEFF' + csv], {
             type: 'text/csv;charset=utf-8',
         });
@@ -128,176 +170,244 @@ function StatisticsPageContent() {
             </header>
 
             <div className="versum-page__toolbar">
-                <input
-                    className="form-control versum-toolbar-search"
-                    type="date"
-                    value={reportDate}
-                    onChange={(e) => setReportDate(e.target.value)}
-                    aria-label="Data raportu"
-                />
+                <div className="btn-group mr-10" role="group">
+                    <button type="button" className="btn btn-default" disabled>
+                        ◀
+                    </button>
+                    <input
+                        id="report-date"
+                        className="form-control versum-toolbar-search"
+                        type="date"
+                        value={reportDate}
+                        onChange={(e) => setReportDate(e.target.value)}
+                        aria-label="Data raportu"
+                    />
+                    <button type="button" className="btn btn-default" disabled>
+                        ▶
+                    </button>
+                </div>
                 <button
                     type="button"
                     className="btn btn-default versum-toolbar-btn"
                     onClick={downloadCsvReport}
-                    disabled={dashboardLoading || employeesLoading}
+                    disabled={dashboardLoading || rankingLoading}
                 >
                     pobierz raport Excel
                 </button>
             </div>
 
             {dashboardLoading ? (
-                <div className="p-4 text-sm versum-muted">
-                    Ładowanie raportu...
-                </div>
+                <div className="versum-muted p-20">Ładowanie raportu...</div>
             ) : (
                 <div className="inner">
-                    <h2 className="nav-header mt-20 mb-10">SALON OGÓŁEM</h2>
-                    <div className="row">
-                        <div className="col-sm-6">
-                            <div className="versum-widget">
-                                <div className="versum-widget__header">
-                                    Podsumowanie finansowe
-                                </div>
-                                <table className="versum-table">
+                    <h2 className="nav-header mt-20 mb-10">Salon ogółem</h2>
+                    <div className="mb-10 fs-12">
+                        Liczba sfinalizowanych wizyt: {totals.totalVisits}
+                    </div>
+                    <div className="mb-20 fs-12">
+                        Łączny czas trwania sfinalizowanych wizyt: 0 min
+                    </div>
+
+                    <div className="row mb-20">
+                        <div className="col-sm-5">
+                            <div className="versum-table-wrap">
+                                <table className="versum-table fs-12">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>netto</th>
+                                            <th>brutto</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Sprzedaż usług brutto</td>
-                                            <td className="text-right">
+                                            <td>Sprzedaż usług</td>
+                                            <td>0,00 zł</td>
+                                            <td>
                                                 {formatMoney(totals.dayRevenue)}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Sprzedaż produktów brutto</td>
-                                            <td className="text-right">
-                                                0,00 zł
+                                            <td>Sprzedaż towarów</td>
+                                            <td>0,00 zł</td>
+                                            <td>0,00 zł</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={3}>
+                                                Utarg ze sprzedaży usług i
+                                                towarów brutto:{' '}
+                                                {formatMoney(totals.dayRevenue)}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Utarg za ten tydzień</td>
-                                            <td className="text-right">
-                                                {formatMoney(
-                                                    totals.weekRevenue,
-                                                )}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Utarg za ten miesiąc</td>
-                                            <td className="text-right">
-                                                {formatMoney(
-                                                    totals.totalRevenue,
-                                                )}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Łączna liczba wizyt</td>
-                                            <td className="text-right">
-                                                {totals.totalVisits}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Średnia wartość wizyty</td>
-                                            <td className="text-right">
-                                                {formatMoney(
-                                                    totals.avgVisitValue,
-                                                )}
-                                            </td>
+                                            <td>Napiwki</td>
+                                            <td></td>
+                                            <td>{formatMoney(0)}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
+                            <div className="mt-10 fs-12">
+                                <div>
+                                    Saldo gotówki w kasie:{' '}
+                                    {formatMoney(totals.dayRevenue)}
+                                </div>
+                                <div>
+                                    Wpływy: {formatMoney(totals.dayRevenue)}
+                                </div>
+                                <div>Wydatki: {formatMoney(0)}</div>
+                            </div>
                         </div>
-                        <div className="col-sm-6">
+                        <div className="col-sm-7">
                             <div className="versum-widget">
                                 <div className="versum-widget__header">
-                                    Szybkie podsumowanie
+                                    Udział metod płatności w utargu
                                 </div>
-                                <div className="versum-widget__content">
-                                    <div className="row">
-                                        <div className="col-xs-6 mb-10">
-                                            <div className="versum-tile">
-                                                <div className="versum-tile__label">
-                                                    Metody płatności
-                                                </div>
-                                                <div className="versum-tile__value text-success">
-                                                    gotówka 100%
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-xs-6 mb-10">
-                                            <div className="versum-tile">
-                                                <div className="versum-tile__label">
-                                                    Wizyty zakończone
-                                                </div>
-                                                <div className="versum-tile__value text-accent">
-                                                    {totals.totalVisits}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="versum-widget__content text-center">
+                                    <div
+                                        aria-hidden
+                                        style={{
+                                            width: 220,
+                                            height: 220,
+                                            borderRadius: '50%',
+                                            background: '#86c92a',
+                                            margin: '0 auto 10px',
+                                        }}
+                                    />
+                                    <div className="fs-12">gotówka: 100%</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="nav-header mt-20 mb-10">
-                        DANE W PODZIALE NA PRACOWNIKÓW
+                        Dane w podziale na pracowników
                     </div>
-                    {employeesLoading ? (
-                        <div className="p-3 text-sm versum-muted">
+                    {rankingLoading ? (
+                        <div className="versum-muted p-20">
                             Ładowanie pracowników...
                         </div>
-                    ) : employeesError ? (
-                        <div className="p-3 text-sm versum-muted">
+                    ) : rankingError ? (
+                        <div className="versum-muted p-20">
                             Nie udało się pobrać danych pracowników.
                         </div>
                     ) : (
-                        <div className="versum-table-wrap">
-                            <table className="versum-table">
-                                <thead>
-                                    <tr>
-                                        <th>Pracownik</th>
-                                        <th>Wizyty</th>
-                                        <th>Sprzedaż usług brutto</th>
-                                        <th>Średnia wartość wizyty</th>
-                                        <th>Napiwki</th>
-                                        <th>Ocena</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {employees.map((employee) => (
-                                        <tr key={employee.employeeId}>
-                                            <td>
-                                                <a
-                                                    href="javascript:;"
-                                                    className="versum-link"
-                                                >
-                                                    {employee.employeeName}
-                                                </a>
-                                            </td>
-                                            <td>
-                                                {employee.completedAppointments}
-                                            </td>
-                                            <td>
-                                                {employee.revenue.toFixed(2)} zł
-                                            </td>
-                                            <td>
-                                                {employee.averageRevenue.toFixed(
-                                                    2,
-                                                )}{' '}
-                                                zł
-                                            </td>
-                                            <td>
-                                                {employee.tips.toFixed(2)} zł
-                                            </td>
-                                            <td>
-                                                {employee.rating.toFixed(1)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="versum-widget">
+                            <div className="versum-widget__content p-0">
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table fs-12">
+                                        <thead>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Wizyty</th>
+                                                <th>Łączny czas wizyty</th>
+                                                <th>Sprzedaż usług brutto</th>
+                                                <th>Sprzedaż usług netto</th>
+                                                <th>Sprzedaż towarów brutto</th>
+                                                <th>Sprzedaż towarów netto</th>
+                                                <th>Utarg brutto</th>
+                                                <th>Procent</th>
+                                                <th>Napiwki</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {employeeRows.map((employee) => (
+                                                <tr key={employee.employeeId}>
+                                                    <td>
+                                                        {employee.employeeName}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            employee.completedAppointments
+                                                        }
+                                                    </td>
+                                                    <td>0 min</td>
+                                                    <td>
+                                                        {employee.revenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                    <td>
+                                                        {(
+                                                            employee.revenue *
+                                                            0.77
+                                                        ).toFixed(2)}{' '}
+                                                        zł
+                                                    </td>
+                                                    <td>0,00 zł</td>
+                                                    <td>0,00 zł</td>
+                                                    <td>
+                                                        {employee.revenue.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                    <td>
+                                                        {totals.totalRevenue > 0
+                                                            ? `${((employee.revenue / totals.totalRevenue) * 100).toFixed(0)}%`
+                                                            : '0%'}
+                                                    </td>
+                                                    <td>
+                                                        {employee.tips.toFixed(
+                                                            2,
+                                                        )}{' '}
+                                                        zł
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Łącznie</th>
+                                                <th>{totals.totalVisits}</th>
+                                                <th>0 min</th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.totalRevenue,
+                                                    )}
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.totalRevenue *
+                                                            0.77,
+                                                    )}
+                                                </th>
+                                                <th>0,00 zł</th>
+                                                <th>0,00 zł</th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.totalRevenue,
+                                                    )}
+                                                </th>
+                                                <th>100%</th>
+                                                <th>{formatMoney(0)}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     )}
+
+                    <div className="versum-widget mt-20">
+                        <div className="versum-widget__header">
+                            Udział pracowników w utargu
+                        </div>
+                        <div className="versum-widget__content text-center">
+                            <div
+                                aria-hidden
+                                style={{
+                                    width: 220,
+                                    height: 220,
+                                    borderRadius: '50%',
+                                    background:
+                                        'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
+                                    margin: '0 auto',
+                                }}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
