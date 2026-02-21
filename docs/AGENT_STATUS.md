@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-21 (statistics visual-parity iteration #6 deployed + production verified)_
+_Last updated: 2026-02-21 (statistics visual-parity iteration #7 deployed + production verified)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `f5d389e6` | `22261448267` | 2026-02-21 17:55 | production | Statystyki: dosunięcie akcji toolbar do prawej + icon-print i legenda wykresów w układzie bliższym Versum |
+| Dashboard (`panel.salon-bw.pl`) | `a338e107` | `22261775193` | 2026-02-21 18:16 | production | Statystyki: korekta spacing/layout (`min-height`, fallback render, toolbar) pod copy-first parity |
 
 Verification:
 
@@ -120,6 +120,17 @@ Verification:
     - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
     - functional parity: `YES`,
     - strict visual parity (`<=3.0%`): `NO` (`dashboard 11.835%`, `employees 3.687%`, `commissions 6.761%`),
+    - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+- Dashboard post-deploy verification (2026-02-21):
+  - deploy run `22261775193` (`success`, target `dashboard`),
+  - probe run `22261834814` (`success`, target `probe`),
+  - runtime check:
+    - `curl -fsS https://api.salon-bw.pl/healthz` -> `status=ok`.
+  - produkcyjne testy statystyk:
+    - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed`,
+    - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+    - functional parity: `YES`,
+    - strict visual parity (`<=3.0%`): `NO` (`dashboard 12.652%`, `employees 3.750%`, `commissions 5.946%`),
     - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
 
 ## Recent Incidents
