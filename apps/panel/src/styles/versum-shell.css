@@ -2623,12 +2623,41 @@ textarea.form-control {
     max-width: var(--versum-content-max);
     margin: 0 auto;
     padding: var(--versum-content-pad);
-    min-height: calc(100vh - var(--versum-topbar-h));
+    min-height: 0;
 }
 
 .main-content .inner.inner--wide {
     max-width: none;
     margin: 0;
+}
+
+body#statistics .versum-floating-help,
+body.e2e-statistics .versum-floating-help {
+    display: none;
+}
+
+.statistics-module {
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.statistics-module .versum-page__toolbar {
+    margin-bottom: 10px;
+}
+
+.statistics-module .versum-table th,
+.statistics-module .versum-table td {
+    padding: 6px 8px;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.statistics-module .fs-12 {
+    font-size: 12px;
+}
+
+.statistics-module .fz-11 {
+    font-size: 11px;
 }
 
 body#customers,

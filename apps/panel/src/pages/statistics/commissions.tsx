@@ -71,8 +71,7 @@ export default function CommissionsPage() {
     };
 
     const commissionRows = useMemo(() => {
-        if (!data) return [];
-        if (data.employees.length > 0) return data.employees;
+        if (data?.employees?.length) return data.employees;
 
         if (!safeEmployeeList.length) {
             return [
@@ -128,12 +127,23 @@ export default function CommissionsPage() {
             };
         });
     }, [data, safeEmployeeList]);
+    const totals = data?.totals ?? {
+        serviceRevenue: 0,
+        serviceCommission: 0,
+        productRevenue: 0,
+        productCommission: 0,
+        totalRevenue: 0,
+        totalCommission: 0,
+    };
 
     if (!role) return null;
 
     return (
         <VersumShell role={role}>
-            <div className="versum-page" data-testid="commissions-page">
+            <div
+                className="versum-page statistics-module"
+                data-testid="commissions-page"
+            >
                 <header className="versum-page__header">
                     <h1 className="versum-page__title">
                         Statystyki / Prowizje pracowników
@@ -180,210 +190,179 @@ export default function CommissionsPage() {
                     <div className="versum-muted p-20">Ładowanie...</div>
                 ) : (
                     <div className="inner">
-                        {data && (
-                            <div className="versum-widget">
-                                <div className="versum-widget__content p-0">
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Pracownik</th>
-                                                    <th>Obroty na usługach</th>
-                                                    <th>Prowizja od usług</th>
-                                                    <th>
-                                                        Obroty na produktach
-                                                    </th>
-                                                    <th>
-                                                        Prowizja z produktów
-                                                    </th>
-                                                    <th>
-                                                        Łącznie obroty brutto
-                                                    </th>
-                                                    <th>Łącznie prowizja</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {commissionRows.map(
-                                                    (employee) => (
-                                                        <tr
-                                                            key={
-                                                                employee.employeeId
-                                                            }
+                        <div className="versum-widget">
+                            <div className="versum-widget__content p-0">
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Obroty na usługach</th>
+                                                <th>Prowizja od usług</th>
+                                                <th>Obroty na produktach</th>
+                                                <th>Prowizja z produktów</th>
+                                                <th>Łącznie obroty brutto</th>
+                                                <th>Łącznie prowizja</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {commissionRows.map((employee) => (
+                                                <tr key={employee.employeeId}>
+                                                    <td>
+                                                        <Link
+                                                            href={`/employees/${employee.employeeId}`}
+                                                            className="versum-link"
                                                         >
-                                                            <td>
-                                                                <Link
-                                                                    href={`/employees/${employee.employeeId}`}
-                                                                    className="versum-link"
-                                                                >
-                                                                    {
-                                                                        employee.employeeName
-                                                                    }
-                                                                </Link>
-                                                                <br />
-                                                                <Link
-                                                                    href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                                    className="btn btn-xs mt-5"
-                                                                    style={{
-                                                                        border: '1px solid #3aa1df',
-                                                                        color: '#3aa1df',
-                                                                        background:
-                                                                            '#fff',
-                                                                    }}
-                                                                >
-                                                                    🧾 szczegóły
-                                                                </Link>
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.serviceRevenue,
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.serviceCommission,
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.productRevenue,
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.productCommission,
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.totalRevenue,
-                                                                )}{' '}
-                                                                brutto
-                                                            </td>
-                                                            <td>
-                                                                {formatMoney(
-                                                                    employee.totalCommission,
-                                                                )}{' '}
-                                                                brutto
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )}
-                                                <tr>
-                                                    <th
-                                                        colSpan={7}
-                                                        className="fs-28 fw-700"
-                                                    >
-                                                        Podsumowanie
-                                                    </th>
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </Link>
+                                                        <br />
+                                                        <Link
+                                                            href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                            className="btn btn-xs mt-5"
+                                                            style={{
+                                                                border: '1px solid #3aa1df',
+                                                                color: '#3aa1df',
+                                                                background:
+                                                                    '#fff',
+                                                            }}
+                                                        >
+                                                            🧾 szczegóły
+                                                        </Link>
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.serviceRevenue,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.serviceCommission,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.productRevenue,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.productCommission,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.totalRevenue,
+                                                        )}{' '}
+                                                        brutto
+                                                    </td>
+                                                    <td>
+                                                        {formatMoney(
+                                                            employee.totalCommission,
+                                                        )}{' '}
+                                                        brutto
+                                                    </td>
                                                 </tr>
-                                                <tr>
-                                                    <th></th>
-                                                    <th>Obroty na usługach</th>
-                                                    <th>Prowizja od usług</th>
-                                                    <th>
-                                                        Obroty na produktach
-                                                    </th>
-                                                    <th>
-                                                        Prowizja z produktów
-                                                    </th>
-                                                    <th>
-                                                        Łącznie obroty brutto
-                                                    </th>
-                                                    <th>Łącznie prowizja</th>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Łącznie</th>
-                                                    <th>
+                                            ))}
+                                            <tr>
+                                                <th
+                                                    colSpan={7}
+                                                    className="fs-28 fw-700"
+                                                >
+                                                    Podsumowanie
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th></th>
+                                                <th>Obroty na usługach</th>
+                                                <th>Prowizja od usług</th>
+                                                <th>Obroty na produktach</th>
+                                                <th>Prowizja z produktów</th>
+                                                <th>Łącznie obroty brutto</th>
+                                                <th>Łącznie prowizja</th>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Łącznie</th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.serviceRevenue,
+                                                    )}{' '}
+                                                    brutto
+                                                    <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            data.totals
-                                                                .serviceRevenue,
+                                                            totals.serviceRevenue *
+                                                                0.77,
                                                         )}{' '}
-                                                        brutto
-                                                        <div className="versum-muted fz-11">
-                                                            {formatMoney(
-                                                                data.totals
-                                                                    .serviceRevenue *
-                                                                    0.77,
-                                                            )}{' '}
-                                                            netto
-                                                        </div>
-                                                    </th>
-                                                    <th>
+                                                        netto
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.serviceCommission,
+                                                    )}{' '}
+                                                    brutto
+                                                    <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            data.totals
-                                                                .serviceCommission,
+                                                            totals.serviceCommission *
+                                                                0.77,
                                                         )}{' '}
-                                                        brutto
-                                                        <div className="versum-muted fz-11">
-                                                            {formatMoney(
-                                                                data.totals
-                                                                    .serviceCommission *
-                                                                    0.77,
-                                                            )}{' '}
-                                                            netto
-                                                        </div>
-                                                    </th>
-                                                    <th>
+                                                        netto
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.productRevenue,
+                                                    )}{' '}
+                                                    brutto
+                                                    <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            data.totals
-                                                                .productRevenue,
+                                                            totals.productRevenue *
+                                                                0.77,
                                                         )}{' '}
-                                                        brutto
-                                                        <div className="versum-muted fz-11">
-                                                            {formatMoney(
-                                                                data.totals
-                                                                    .productRevenue *
-                                                                    0.77,
-                                                            )}{' '}
-                                                            netto
-                                                        </div>
-                                                    </th>
-                                                    <th>
+                                                        netto
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.productCommission,
+                                                    )}{' '}
+                                                    brutto
+                                                    <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            data.totals
-                                                                .productCommission,
+                                                            totals.productCommission *
+                                                                0.77,
                                                         )}{' '}
-                                                        brutto
-                                                        <div className="versum-muted fz-11">
-                                                            {formatMoney(
-                                                                data.totals
-                                                                    .productCommission *
-                                                                    0.77,
-                                                            )}{' '}
-                                                            netto
-                                                        </div>
-                                                    </th>
-                                                    <th>
+                                                        netto
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.totalRevenue,
+                                                    )}{' '}
+                                                    brutto
+                                                    <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            data.totals
-                                                                .totalRevenue,
+                                                            totals.totalRevenue *
+                                                                0.77,
                                                         )}{' '}
-                                                        brutto
-                                                        <div className="versum-muted fz-11">
-                                                            {formatMoney(
-                                                                data.totals
-                                                                    .totalRevenue *
-                                                                    0.77,
-                                                            )}{' '}
-                                                            netto
-                                                        </div>
-                                                    </th>
-                                                    <th>
-                                                        {formatMoney(
-                                                            data.totals
-                                                                .totalCommission,
-                                                        )}{' '}
-                                                        brutto
-                                                    </th>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
+                                                        netto
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    {formatMoney(
+                                                        totals.totalCommission,
+                                                    )}{' '}
+                                                    brutto
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
             </div>

@@ -176,7 +176,10 @@ function StatisticsPageContent() {
     };
 
     return (
-        <div className="versum-page" data-testid="statistics-page">
+        <div
+            className="versum-page statistics-module"
+            data-testid="statistics-page"
+        >
             <header className="versum-page__header">
                 <h1 className="versum-page__title">
                     Statystyki / Raport finansowy
@@ -200,28 +203,26 @@ function StatisticsPageContent() {
                         ▶
                     </button>
                 </div>
-                <div
-                    style={{
-                        marginLeft: 'auto',
-                        display: 'inline-flex',
-                        gap: 8,
-                    }}
-                >
-                    <button
-                        type="button"
-                        className="btn btn-default btn-xs"
-                        aria-label="Drukuj"
-                    >
-                        🖨
-                    </button>
-                </div>
+                <div style={{ marginLeft: 'auto' }} />
                 <button
                     type="button"
-                    className="btn btn-default versum-toolbar-btn"
+                    className="btn btn-default mr-10"
                     onClick={downloadCsvReport}
                     disabled={dashboardLoading || rankingLoading}
+                    style={{
+                        borderColor: '#4ea4e0',
+                        color: '#2f9ae0',
+                        background: '#fff',
+                    }}
                 >
                     pobierz raport Excel
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-default btn-xs"
+                    aria-label="Drukuj"
+                >
+                    🖨
                 </button>
             </div>
 
