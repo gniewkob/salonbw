@@ -66,29 +66,6 @@ export default function EmployeeActivityPage() {
 
     if (!role) return null;
     const rows = data?.employees ?? [];
-    const visualRows =
-        rows.length > 0
-            ? rows
-            : [
-                  {
-                      employeeId: -1,
-                      employeeName: 'Recepcja',
-                      workTimeMinutes: 0,
-                      appointmentsCount: 0,
-                  },
-                  {
-                      employeeId: -2,
-                      employeeName: 'Gniewko Bodora',
-                      workTimeMinutes: 0,
-                      appointmentsCount: 0,
-                  },
-                  {
-                      employeeId: -3,
-                      employeeName: 'Aleksandra Bodora',
-                      workTimeMinutes: 0,
-                      appointmentsCount: 0,
-                  },
-              ];
 
     return (
         <VersumShell role={role}>
@@ -124,10 +101,10 @@ export default function EmployeeActivityPage() {
                     </div>
                     <button
                         type="button"
-                        className="versum-toolbar-btn btn btn-default"
+                        className="btn btn-default btn-xs"
                         onClick={() => window.print()}
                     >
-                        drukuj
+                        🖨
                     </button>
                 </div>
 
@@ -137,14 +114,27 @@ export default function EmployeeActivityPage() {
                     <div className="inner">
                         {data && (
                             <div>
-                                <ul className="nav nav-tabs mb-10">
-                                    <li className="active">
-                                        <a href="javascript:;">Tabela</a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:;">Wykres</a>
-                                    </li>
-                                </ul>
+                                <div
+                                    className="mb-20"
+                                    style={{
+                                        display: 'inline-flex',
+                                        borderBottom: '1px solid #cfd4da',
+                                        width: '100%',
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        className="btn btn-default mr-5"
+                                    >
+                                        Tabela
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-default"
+                                    >
+                                        Wykres
+                                    </button>
+                                </div>
                                 <div className="versum-table-wrap">
                                     <table className="versum-table">
                                         <thead>
@@ -155,22 +145,17 @@ export default function EmployeeActivityPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {visualRows.map((employee) => (
+                                            {rows.map((employee) => (
                                                 <tr key={employee.employeeId}>
                                                     <td>
-                                                        {employee.employeeId >
-                                                        0 ? (
-                                                            <Link
-                                                                href={`/employees/${employee.employeeId}`}
-                                                                className="versum-link"
-                                                            >
-                                                                {
-                                                                    employee.employeeName
-                                                                }
-                                                            </Link>
-                                                        ) : (
-                                                            employee.employeeName
-                                                        )}
+                                                        <Link
+                                                            href={`/employees/${employee.employeeId}`}
+                                                            className="versum-link"
+                                                        >
+                                                            {
+                                                                employee.employeeName
+                                                            }
+                                                        </Link>
                                                     </td>
                                                     <td>
                                                         {formatWorkTime(

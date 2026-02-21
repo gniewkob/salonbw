@@ -75,7 +75,7 @@ export default function CommissionsPage() {
         if (safeEmployeeList.length === 0 && data.employees.length === 0) {
             return [
                 {
-                    employeeId: -1,
+                    employeeId: 900001,
                     employeeName: 'Recepcja',
                     serviceRevenue: 0,
                     serviceCommission: 0,
@@ -85,7 +85,7 @@ export default function CommissionsPage() {
                     totalCommission: 0,
                 },
                 {
-                    employeeId: -2,
+                    employeeId: 900002,
                     employeeName: 'Gniewko Bodora',
                     serviceRevenue: 0,
                     serviceCommission: 0,
@@ -95,7 +95,7 @@ export default function CommissionsPage() {
                     totalCommission: 0,
                 },
                 {
-                    employeeId: -3,
+                    employeeId: 900003,
                     employeeName: 'Aleksandra Bodora',
                     serviceRevenue: 0,
                     serviceCommission: 0,
@@ -173,10 +173,10 @@ export default function CommissionsPage() {
                     </button>
                     <button
                         type="button"
-                        className="versum-toolbar-btn btn btn-default"
+                        className="btn btn-default btn-xs"
                         onClick={() => window.print()}
                     >
-                        drukuj
+                        🖨
                     </button>
                 </div>
 
@@ -215,29 +215,21 @@ export default function CommissionsPage() {
                                                             }
                                                         >
                                                             <td>
-                                                                {employee.employeeId >
-                                                                0 ? (
-                                                                    <>
-                                                                        <Link
-                                                                            href={`/employees/${employee.employeeId}`}
-                                                                            className="versum-link"
-                                                                        >
-                                                                            {
-                                                                                employee.employeeName
-                                                                            }
-                                                                        </Link>
-                                                                        <br />
-                                                                        <Link
-                                                                            href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                                            className="btn btn-default btn-xs mt-5"
-                                                                        >
-                                                                            🧾
-                                                                            szczegóły
-                                                                        </Link>
-                                                                    </>
-                                                                ) : (
-                                                                    employee.employeeName
-                                                                )}
+                                                                <Link
+                                                                    href={`/employees/${employee.employeeId}`}
+                                                                    className="versum-link"
+                                                                >
+                                                                    {
+                                                                        employee.employeeName
+                                                                    }
+                                                                </Link>
+                                                                <br />
+                                                                <Link
+                                                                    href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                                    className="btn btn-default btn-xs mt-5"
+                                                                >
+                                                                    🧾 szczegóły
+                                                                </Link>
                                                             </td>
                                                             <td>
                                                                 {formatMoney(
@@ -274,6 +266,29 @@ export default function CommissionsPage() {
                                                         </tr>
                                                     ),
                                                 )}
+                                                <tr>
+                                                    <th
+                                                        colSpan={7}
+                                                        className="fs-28 fw-700"
+                                                    >
+                                                        Podsumowanie
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Obroty na usługach</th>
+                                                    <th>Prowizja od usług</th>
+                                                    <th>
+                                                        Obroty na produktach
+                                                    </th>
+                                                    <th>
+                                                        Prowizja z produktów
+                                                    </th>
+                                                    <th>
+                                                        Łącznie obroty brutto
+                                                    </th>
+                                                    <th>Łącznie prowizja</th>
+                                                </tr>
                                             </tbody>
                                             <tfoot>
                                                 <tr>
