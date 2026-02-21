@@ -238,8 +238,8 @@ function StatisticsPageContent() {
                         Łączny czas trwania sfinalizowanych wizyt: 0 min
                     </div>
 
-                    <div className="row mb-20">
-                        <div className="col-sm-5">
+                    <div className="statistics-summary-row mb-20">
+                        <div className="statistics-summary-row__left">
                             <div className="versum-table-wrap">
                                 <table className="versum-table fs-12">
                                     <thead>
@@ -288,7 +288,7 @@ function StatisticsPageContent() {
                                 <div>Wydatki: {formatMoney(0)}</div>
                             </div>
                         </div>
-                        <div className="col-sm-7">
+                        <div className="statistics-summary-row__right">
                             <div className="versum-table-wrap">
                                 <table className="versum-table fs-12">
                                     <tbody>
