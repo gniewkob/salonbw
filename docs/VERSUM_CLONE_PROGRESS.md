@@ -278,6 +278,26 @@
     - `commissions 7.068%`
   - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
 
+### 2026-02-21 - Statystyki: copy-first visual parity iteration #5 (deploy)
+- commit/deploy:
+  - commit: `f01afdda`
+  - run: `22260531212` (production, success, target `dashboard`)
+  - probe: `22260588168` (production, success, target `probe`)
+- zmiany UI:
+  - `apps/panel/src/pages/statistics/index.tsx`
+  - `apps/panel/src/pages/statistics/employees.tsx`
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+  - poprawione pozycjonowanie legend wykresów i uproszczone elementy icon/button, by zmniejszyć drift pixelowy.
+- walidacja po deployu:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed`,
+  - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+  - functional parity: `YES`,
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `dashboard 11.979%`
+    - `employees 3.692%`
+    - `commissions 6.756%`
+  - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+
 ### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
 - commit/deploy:
   - commit: `0e93a771`
