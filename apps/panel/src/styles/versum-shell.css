@@ -2675,6 +2675,26 @@ body.e2e-statistics .main-content .inner {
     margin: 0;
 }
 
+body#statistics #versum-shell-root .versum-page__header,
+body.e2e-statistics #versum-shell-root .versum-page__header {
+    margin: 0 0 6px;
+    padding: 0;
+}
+
+body#statistics #versum-shell-root .versum-page__title,
+body.e2e-statistics #versum-shell-root .versum-page__title {
+    margin: 0;
+    font-size: 33px;
+    line-height: 1.2;
+    font-weight: 400;
+    color: #313140;
+}
+
+body#statistics #versum-shell-root .versum-page__toolbar,
+body.e2e-statistics #versum-shell-root .versum-page__toolbar {
+    margin-bottom: 10px;
+}
+
 .main-content .inner.inner--wide {
     max-width: none;
     margin: 0;
