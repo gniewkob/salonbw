@@ -308,7 +308,7 @@ function StatisticsPageContent() {
                                                     style={{
                                                         border: '1px solid #d9dee2',
                                                         padding: 10,
-                                                        minHeight: 262,
+                                                        minHeight: 196,
                                                     }}
                                                 >
                                                     <div
@@ -324,8 +324,8 @@ function StatisticsPageContent() {
                                                         <div
                                                             aria-hidden
                                                             style={{
-                                                                width: 240,
-                                                                height: 240,
+                                                                width: 176,
+                                                                height: 176,
                                                                 borderRadius:
                                                                     '50%',
                                                                 background:
@@ -462,7 +462,7 @@ function StatisticsPageContent() {
                         style={{
                             border: '1px solid #d9dee2',
                             padding: 10,
-                            width: 520,
+                            width: 440,
                             maxWidth: '100%',
                         }}
                     >
@@ -477,8 +477,8 @@ function StatisticsPageContent() {
                             <div
                                 aria-hidden
                                 style={{
-                                    width: 220,
-                                    height: 220,
+                                    width: 140,
+                                    height: 140,
                                     borderRadius: '50%',
                                     background:
                                         'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
