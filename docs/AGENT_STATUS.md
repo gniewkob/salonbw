@@ -564,6 +564,25 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
 - Environment variables: [`docs/ENV.md`](./ENV.md)
 - Agent runbook (commands, restarts, verification): [`docs/AGENT_OPERATIONS.md`](./AGENT_OPERATIONS.md)
 
+## 2026-02-21 - Statistics parity iteration (production)
+
+- Code commit: `472122e3` (`fix(statistics): align shell typography and chart geometry closer to versum`)
+- Deploy run (`dashboard`, production): `22263291948` ✅
+- Probe run (`probe`, production): `22263347044` ✅
+- Runtime checks:
+  - `https://api.salon-bw.pl/healthz` ✅
+  - `https://panel.salon-bw.pl/auth/login` -> `HTTP 200` ✅
+  - `https://panel.salon-bw.pl/statistics` -> `HTTP 307` to login (expected unauth redirect) ✅
+- Production smoke:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- Production parity audit:
+  - Functional parity: `YES`
+  - Visual parity: `NO` (threshold `<= 3.0%`)
+  - Mismatch:
+    - dashboard: `11.130%`
+    - employees: `4.054%`
+    - commissions: `7.237%`
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:

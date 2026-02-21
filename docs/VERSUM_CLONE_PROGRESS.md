@@ -693,3 +693,25 @@
 ### 2026-02-06 - Sprint 1 zakończony
 - Zaimplementowano grupy klientów w sidebarze
 - Dodano wyświetlanie grup w szczegółach klienta
+
+### 2026-02-21 - Statystyki: produkcyjna iteracja parity (dashboard + employees + commissions)
+- commit: `472122e3`
+- zakres:
+  - dopasowanie geometrii wykresów na `statistics/dashboard`,
+  - korekty typografii i szerokości shella Versum (`versum-shell.css`),
+  - korekty renderu podsumowania czasu pracy i przycisków szczegółów.
+- deploy:
+  - `dashboard` (production): run `22263291948` ✅
+  - `probe` (production): run `22263347044` ✅
+- smoke produkcyjny:
+  - `prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- parity produkcyjne:
+  - functional: `YES`
+  - visual strict (`<= 3.0%`): `NO`
+  - pixel diff:
+    - dashboard: `11.130%`
+    - employees: `4.054%`
+    - commissions: `7.237%`
+- known deltas (otwarte):
+  - nadal widoczny drift layoutu/typografii względem referencji Versum na ekranach krytycznych statystyk,
+  - szczególnie `commissions` oraz pionowa kompozycja `dashboard`.
