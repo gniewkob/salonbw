@@ -230,7 +230,7 @@ function StatisticsPageContent() {
                 <div className="versum-muted p-20">Ładowanie raportu...</div>
             ) : (
                 <div>
-                    <h2 className="nav-header mt-20 mb-10">Salon ogółem</h2>
+                    <h2 className="statistics-dashboard-title">Salon ogółem</h2>
                     <div className="mb-10 fs-12">
                         Liczba sfinalizowanych wizyt: {totals.totalVisits}
                     </div>
@@ -289,71 +289,20 @@ function StatisticsPageContent() {
                             </div>
                         </div>
                         <div className="statistics-summary-row__right">
-                            <div className="versum-table-wrap">
-                                <table className="versum-table fs-12">
-                                    <tbody>
-                                        <tr>
-                                            <td
-                                                style={{
-                                                    verticalAlign: 'top',
-                                                    width: '100%',
-                                                }}
-                                            >
-                                                <strong>
-                                                    Udział metod płatności w
-                                                    utargu
-                                                </strong>
-                                                <div
-                                                    className="mt-10"
-                                                    style={{
-                                                        border: '1px solid #d9dee2',
-                                                        padding: 10,
-                                                        minHeight: 196,
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems:
-                                                                'center',
-                                                            justifyContent:
-                                                                'space-between',
-                                                            gap: 20,
-                                                        }}
-                                                    >
-                                                        <div
-                                                            aria-hidden
-                                                            style={{
-                                                                width: 176,
-                                                                height: 176,
-                                                                borderRadius:
-                                                                    '50%',
-                                                                background:
-                                                                    '#86c92a',
-                                                                flexShrink: 0,
-                                                            }}
-                                                        />
-                                                        <div className="fs-12">
-                                                            <span
-                                                                style={{
-                                                                    display:
-                                                                        'inline-block',
-                                                                    width: 8,
-                                                                    height: 8,
-                                                                    background:
-                                                                        '#86c92a',
-                                                                    marginRight: 6,
-                                                                }}
-                                                            />
-                                                            gotówka: 0,00 zł
-                                                            (100%)
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div className="statistics-payment-title fs-20 fw-600">
+                                Udział metod płatności w utargu
+                            </div>
+                            <div className="statistics-payment-box mt-10">
+                                <div className="statistics-payment-row">
+                                    <div
+                                        aria-hidden
+                                        className="statistics-payment-pie"
+                                    />
+                                    <div className="fs-12">
+                                        <span className="statistics-payment-dot" />
+                                        gotówka: 0,00 zł (100%)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -368,7 +317,7 @@ function StatisticsPageContent() {
                         Sprzedaż towarów brutto: 0,00 zł
                     </div>
 
-                    <div className="nav-header mt-20 mb-10">
+                    <div className="statistics-dashboard-section-title">
                         Dane w podziale na pracowników
                     </div>
                     {rankingLoading ? (
