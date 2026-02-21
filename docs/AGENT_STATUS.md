@@ -602,6 +602,28 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
     - employees: `4.086%`
     - commissions: `6.969%`
 
+## 2026-02-21 - Statistics parity iteration (shell offset + dashboard rollback)
+
+- Code commits:
+  - `0722edde` (`fix(statistics-shell): align content width/offset and sidenav height with versum`)
+  - `bff3334a` (`fix(statistics): increase dashboard chart geometry and stabilize parity screenshots`)
+  - `4e9fbb26` (`fix(statistics): rollback oversized dashboard charts`)
+- Deploy run (`dashboard`, production): `22264023168` ✅
+- Probe run (`probe`, production): `22264084604` ✅
+- Runtime checks:
+  - `https://api.salon-bw.pl/healthz` ✅
+  - `https://panel.salon-bw.pl/auth/login` -> `HTTP 200` ✅
+  - `https://panel.salon-bw.pl/statistics` -> `HTTP 307` to login ✅
+- Production smoke:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- Production parity audit:
+  - Functional parity: `YES`
+  - Visual parity: `NO` (threshold `<= 3.0%`)
+  - Mismatch:
+    - dashboard: `11.922%`
+    - employees: `4.139%`
+    - commissions: `6.942%`
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:

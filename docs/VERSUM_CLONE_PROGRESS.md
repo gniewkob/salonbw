@@ -734,3 +734,25 @@
   - lekka poprawa `commissions` względem poprzedniej iteracji,
   - regres względem poprzedniej iteracji na `dashboard` i `employees`,
   - moduł `statistics` pozostaje `in progress` (brak visual PASS).
+
+### 2026-02-21 - Statystyki: seria iteracji shell/layout + rollback wykresów dashboard
+- commity:
+  - `0722edde` (szerokość/offset content + zachowanie sidenav),
+  - `bff3334a` (powiększenie geometrii wykresów dashboard + stabilizacja screenshotów parity),
+  - `4e9fbb26` (rollback geometrii wykresów po regresji visual diff).
+- deploy:
+  - `dashboard` (production): run `22264023168` ✅
+  - `probe` (production): run `22264084604` ✅
+- smoke:
+  - `prod-statistics-smoke.spec.ts` -> `2/2 PASS`
+- parity:
+  - functional: `YES`
+  - visual strict (`<= 3.0%`): `NO`
+  - pixel diff:
+    - dashboard: `11.922%`
+    - employees: `4.139%`
+    - commissions: `6.942%`
+- known deltas:
+  - największy drift na `dashboard` (layout/typografia/chart area),
+  - `employees` blisko progu, ale nadal > `3.0%`,
+  - `commissions` wymaga dalszego copy-first przepięcia markupu/tabeli 1:1.
