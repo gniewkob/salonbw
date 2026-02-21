@@ -57,7 +57,11 @@ function StatisticsPageContent() {
     }, [dashboard]);
 
     const employeeRows = useMemo(() => {
-        if (!safeEmployeeList.length && ranking.length === 0) {
+        if (ranking.length > 0) {
+            return ranking;
+        }
+
+        if (!safeEmployeeList.length) {
             return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
                 employeeId: employee.id,
                 employeeName: employee.name,
@@ -68,14 +72,7 @@ function StatisticsPageContent() {
                 rating: 0,
             }));
         }
-        if (!safeEmployeeList.length) return ranking;
-
-        const rankingById = new Map(
-            ranking.map((employee) => [employee.employeeId, employee]),
-        );
-
-        return safeEmployeeList.map((employee) => {
-            const stats = rankingById.get(employee.id);
+        return safeEmployeeList.slice(0, 3).map((employee) => {
             return {
                 employeeId: employee.id,
                 employeeName:
@@ -85,11 +82,11 @@ function StatisticsPageContent() {
                         .filter(Boolean)
                         .join(' ') ||
                     `Pracownik #${employee.id}`,
-                completedAppointments: stats?.completedAppointments ?? 0,
-                revenue: stats?.revenue ?? 0,
-                averageRevenue: stats?.averageRevenue ?? 0,
-                tips: stats?.tips ?? 0,
-                rating: stats?.rating ?? 0,
+                completedAppointments: 0,
+                revenue: 0,
+                averageRevenue: 0,
+                tips: 0,
+                rating: 0,
             };
         });
     }, [ranking, safeEmployeeList]);

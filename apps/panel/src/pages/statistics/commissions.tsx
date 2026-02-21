@@ -72,7 +72,9 @@ export default function CommissionsPage() {
 
     const commissionRows = useMemo(() => {
         if (!data) return [];
-        if (safeEmployeeList.length === 0 && data.employees.length === 0) {
+        if (data.employees.length > 0) return data.employees;
+
+        if (!safeEmployeeList.length) {
             return [
                 {
                     employeeId: 900001,
@@ -106,15 +108,8 @@ export default function CommissionsPage() {
                 },
             ];
         }
-        if (!safeEmployeeList.length) return data.employees;
 
-        const reportByEmployeeId = new Map(
-            data.employees.map((employee) => [employee.employeeId, employee]),
-        );
-
-        return safeEmployeeList.map((employee) => {
-            const existing = reportByEmployeeId.get(employee.id);
-            if (existing) return existing;
+        return safeEmployeeList.slice(0, 3).map((employee) => {
             return {
                 employeeId: employee.id,
                 employeeName:
