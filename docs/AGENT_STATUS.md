@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-20 (customers/new runtime + create flow fixed on production)_
+_Last updated: 2026-02-21 (employees secondarynav fixed and verified on production)_
 
 ## Platform Architecture
 
@@ -21,7 +21,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `e319e03a` | `22243806900` | 2026-02-20 22:36 | production | Klienci: fix pętli renderów secondary nav w widokach `/customers/new`, `/customers/[id]`, `/customers/[id]/edit` |
+| Dashboard (`panel.salon-bw.pl`) | `275de8de` | `22256130624` | 2026-02-21 11:41 | production | Pracownicy: dedykowany secondary nav dla `/employees` + render secondary nav z kontekstu w `VersumShell` |
 
 Verification:
 
@@ -41,6 +41,13 @@ Verification:
     - artifact: `output/parity/2026-02-20-customers-prod-full/`.
   - production customers smoke:
     - `tests/e2e/prod-customers-smoke.spec.ts` → `2 failed` (`gallery/files` tab selectors timeout).
+- Dashboard post-deploy verification (2026-02-21):
+  - deploy run `22256130624` (`success`, target `dashboard`),
+  - probe run `22256181044` (`success`, target `probe`),
+  - production `/employees` check after login:
+    - no client-side exception,
+    - `body id` = `settings`,
+    - `#sidenav` rendered with active `/employees` item and `/settings/employees/activity_logs` link.
 
 ## Recent Incidents
 
