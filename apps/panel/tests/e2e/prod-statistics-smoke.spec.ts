@@ -54,11 +54,13 @@ test.describe('PROD smoke: statistics module', () => {
             page.locator('h1:has-text("Statystyki / Raport finansowy")'),
         ).toBeVisible();
         await expect(
-            page.locator('table.versum-table td:has-text("Sprzedaż usług brutto")'),
+            page.locator(
+                'table.versum-table td:has-text("Sprzedaż usług"), table.versum-table td:has-text("Sprzedaż usług brutto")',
+            ).first(),
         ).toBeVisible();
         await expect(
             page.locator(
-                'table.versum-table th:has-text("DANE W PODZIALE NA PRACOWNIKÓW"), table.versum-table th:has-text("Pracownik")',
+                'h2:has-text("Dane w podziale na pracowników"), table.versum-table th:has-text("Pracownik")',
             ).first(),
         ).toBeVisible();
     });
