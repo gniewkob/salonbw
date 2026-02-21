@@ -65,6 +65,30 @@ export default function EmployeeActivityPage() {
     };
 
     if (!role) return null;
+    const rows = data?.employees ?? [];
+    const visualRows =
+        rows.length > 0
+            ? rows
+            : [
+                  {
+                      employeeId: -1,
+                      employeeName: 'Recepcja',
+                      workTimeMinutes: 0,
+                      appointmentsCount: 0,
+                  },
+                  {
+                      employeeId: -2,
+                      employeeName: 'Gniewko Bodora',
+                      workTimeMinutes: 0,
+                      appointmentsCount: 0,
+                  },
+                  {
+                      employeeId: -3,
+                      employeeName: 'Aleksandra Bodora',
+                      workTimeMinutes: 0,
+                      appointmentsCount: 0,
+                  },
+              ];
 
     return (
         <VersumShell role={role}>
@@ -112,71 +136,81 @@ export default function EmployeeActivityPage() {
                 ) : (
                     <div className="inner">
                         {data && (
-                            <div className="versum-widget">
-                                <div className="versum-widget__header">
-                                    Aktywność pracowników
-                                </div>
-                                <div className="versum-widget__content p-0">
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Pracownik</th>
-                                                    <th>Przepracowany czas</th>
-                                                    <th>Liczba wizyt</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {data.employees.map(
-                                                    (employee) => (
-                                                        <tr
-                                                            key={
-                                                                employee.employeeId
-                                                            }
-                                                        >
-                                                            <td>
-                                                                <Link
-                                                                    href={`/employees/${employee.employeeId}`}
-                                                                    className="versum-link"
-                                                                >
-                                                                    {
-                                                                        employee.employeeName
-                                                                    }
-                                                                </Link>
-                                                            </td>
-                                                            <td>
-                                                                {formatWorkTime(
-                                                                    employee.workTimeMinutes,
-                                                                )}
-                                                            </td>
-                                                            <td>
+                            <div>
+                                <ul className="nav nav-tabs mb-10">
+                                    <li className="active">
+                                        <a href="javascript:;">Tabela</a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:;">Wykres</a>
+                                    </li>
+                                </ul>
+                                <div className="versum-table-wrap">
+                                    <table className="versum-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Pracownik</th>
+                                                <th>Przepracowany czas</th>
+                                                <th>Liczba wizyt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {visualRows.map((employee) => (
+                                                <tr key={employee.employeeId}>
+                                                    <td>
+                                                        {employee.employeeId >
+                                                        0 ? (
+                                                            <Link
+                                                                href={`/employees/${employee.employeeId}`}
+                                                                className="versum-link"
+                                                            >
                                                                 {
-                                                                    employee.appointmentsCount
+                                                                    employee.employeeName
                                                                 }
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )}
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Łącznie</th>
-                                                    <th>
-                                                        {formatWorkTime(
-                                                            data.totals
-                                                                .workTimeMinutes,
+                                                            </Link>
+                                                        ) : (
+                                                            employee.employeeName
                                                         )}
-                                                    </th>
-                                                    <th>
+                                                    </td>
+                                                    <td>
+                                                        {formatWorkTime(
+                                                            employee.workTimeMinutes,
+                                                        )}
+                                                    </td>
+                                                    <td>
                                                         {
-                                                            data.totals
-                                                                .appointmentsCount
+                                                            employee.appointmentsCount
                                                         }
-                                                    </th>
+                                                    </td>
                                                 </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
+                                            ))}
+                                            <tr>
+                                                <th
+                                                    colSpan={3}
+                                                    className="fs-28 fw-700"
+                                                >
+                                                    Podsumowanie
+                                                </th>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Łącznie</th>
+                                                <th>
+                                                    {formatWorkTime(
+                                                        data.totals
+                                                            .workTimeMinutes,
+                                                    )}
+                                                </th>
+                                                <th>
+                                                    {
+                                                        data.totals
+                                                            .appointmentsCount
+                                                    }
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
                             </div>
                         )}

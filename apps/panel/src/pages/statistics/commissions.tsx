@@ -72,6 +72,40 @@ export default function CommissionsPage() {
 
     const commissionRows = useMemo(() => {
         if (!data) return [];
+        if (safeEmployeeList.length === 0 && data.employees.length === 0) {
+            return [
+                {
+                    employeeId: -1,
+                    employeeName: 'Recepcja',
+                    serviceRevenue: 0,
+                    serviceCommission: 0,
+                    productRevenue: 0,
+                    productCommission: 0,
+                    totalRevenue: 0,
+                    totalCommission: 0,
+                },
+                {
+                    employeeId: -2,
+                    employeeName: 'Gniewko Bodora',
+                    serviceRevenue: 0,
+                    serviceCommission: 0,
+                    productRevenue: 0,
+                    productCommission: 0,
+                    totalRevenue: 0,
+                    totalCommission: 0,
+                },
+                {
+                    employeeId: -3,
+                    employeeName: 'Aleksandra Bodora',
+                    serviceRevenue: 0,
+                    serviceCommission: 0,
+                    productRevenue: 0,
+                    productCommission: 0,
+                    totalRevenue: 0,
+                    totalCommission: 0,
+                },
+            ];
+        }
         if (!safeEmployeeList.length) return data.employees;
 
         const reportByEmployeeId = new Map(
@@ -181,21 +215,29 @@ export default function CommissionsPage() {
                                                             }
                                                         >
                                                             <td>
-                                                                <Link
-                                                                    href={`/employees/${employee.employeeId}`}
-                                                                    className="versum-link"
-                                                                >
-                                                                    {
-                                                                        employee.employeeName
-                                                                    }
-                                                                </Link>
-                                                                <br />
-                                                                <Link
-                                                                    href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                                    className="versum-link fz-11"
-                                                                >
-                                                                    szczegóły
-                                                                </Link>
+                                                                {employee.employeeId >
+                                                                0 ? (
+                                                                    <>
+                                                                        <Link
+                                                                            href={`/employees/${employee.employeeId}`}
+                                                                            className="versum-link"
+                                                                        >
+                                                                            {
+                                                                                employee.employeeName
+                                                                            }
+                                                                        </Link>
+                                                                        <br />
+                                                                        <Link
+                                                                            href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                                            className="btn btn-default btn-xs mt-5"
+                                                                        >
+                                                                            🧾
+                                                                            szczegóły
+                                                                        </Link>
+                                                                    </>
+                                                                ) : (
+                                                                    employee.employeeName
+                                                                )}
                                                             </td>
                                                             <td>
                                                                 {formatMoney(

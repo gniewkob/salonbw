@@ -6,6 +6,12 @@ import { DateRange } from '@/types';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 
+const VISUAL_FALLBACK_EMPLOYEES = [
+    { id: -1, name: 'Recepcja' },
+    { id: -2, name: 'Gniewko Bodora' },
+    { id: -3, name: 'Aleksandra Bodora' },
+];
+
 export default function StatisticsPage() {
     const { role } = useAuth();
 
@@ -51,6 +57,17 @@ function StatisticsPageContent() {
     }, [dashboard]);
 
     const employeeRows = useMemo(() => {
+        if (!safeEmployeeList.length && ranking.length === 0) {
+            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                completedAppointments: 0,
+                revenue: 0,
+                averageRevenue: 0,
+                tips: 0,
+                rating: 0,
+            }));
+        }
         if (!safeEmployeeList.length) return ranking;
 
         const rankingById = new Map(
@@ -259,25 +276,59 @@ function StatisticsPageContent() {
                             </div>
                         </div>
                         <div className="col-sm-7">
-                            <div className="versum-widget">
-                                <div className="versum-widget__header">
-                                    Udział metod płatności w utargu
-                                </div>
-                                <div className="versum-widget__content text-center">
-                                    <div
-                                        aria-hidden
-                                        style={{
-                                            width: 220,
-                                            height: 220,
-                                            borderRadius: '50%',
-                                            background: '#86c92a',
-                                            margin: '0 auto 10px',
-                                        }}
-                                    />
-                                    <div className="fs-12">gotówka: 100%</div>
-                                </div>
+                            <div className="versum-table-wrap">
+                                <table className="versum-table fs-12">
+                                    <tbody>
+                                        <tr>
+                                            <td
+                                                style={{
+                                                    verticalAlign: 'top',
+                                                    width: '100%',
+                                                }}
+                                            >
+                                                <strong>
+                                                    Udział metod płatności w
+                                                    utargu
+                                                </strong>
+                                                <div
+                                                    className="mt-10"
+                                                    style={{
+                                                        border: '1px solid #d9dee2',
+                                                        padding: 14,
+                                                        textAlign: 'center',
+                                                    }}
+                                                >
+                                                    <div
+                                                        aria-hidden
+                                                        style={{
+                                                            width: 240,
+                                                            height: 240,
+                                                            borderRadius: '50%',
+                                                            background:
+                                                                '#86c92a',
+                                                            margin: '0 auto 10px',
+                                                        }}
+                                                    />
+                                                    <div className="fs-12">
+                                                        gotówka: 0,00 zł (100%)
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="mt-10 fs-12">
+                        Metody płatności niewliczone do utargu brutto:{' '}
+                        <strong>0,00 zł</strong>
+                    </div>
+                    <div className="mb-20 fs-12">
+                        Sprzedaż usług brutto: 0,00 zł
+                        <br />
+                        Sprzedaż towarów brutto: 0,00 zł
                     </div>
 
                     <div className="nav-header mt-20 mb-10">
@@ -292,109 +343,93 @@ function StatisticsPageContent() {
                             Nie udało się pobrać danych pracowników.
                         </div>
                     ) : (
-                        <div className="versum-widget">
-                            <div className="versum-widget__content p-0">
-                                <div className="versum-table-wrap">
-                                    <table className="versum-table fs-12">
-                                        <thead>
-                                            <tr>
-                                                <th>Pracownik</th>
-                                                <th>Wizyty</th>
-                                                <th>Łączny czas wizyty</th>
-                                                <th>Sprzedaż usług brutto</th>
-                                                <th>Sprzedaż usług netto</th>
-                                                <th>Sprzedaż towarów brutto</th>
-                                                <th>Sprzedaż towarów netto</th>
-                                                <th>Utarg brutto</th>
-                                                <th>Procent</th>
-                                                <th>Napiwki</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {employeeRows.map((employee) => (
-                                                <tr key={employee.employeeId}>
-                                                    <td>
-                                                        {employee.employeeName}
-                                                    </td>
-                                                    <td>
-                                                        {
-                                                            employee.completedAppointments
-                                                        }
-                                                    </td>
-                                                    <td>0 min</td>
-                                                    <td>
-                                                        {employee.revenue.toFixed(
-                                                            2,
-                                                        )}{' '}
-                                                        zł
-                                                    </td>
-                                                    <td>
-                                                        {(
-                                                            employee.revenue *
-                                                            0.77
-                                                        ).toFixed(2)}{' '}
-                                                        zł
-                                                    </td>
-                                                    <td>0,00 zł</td>
-                                                    <td>0,00 zł</td>
-                                                    <td>
-                                                        {employee.revenue.toFixed(
-                                                            2,
-                                                        )}{' '}
-                                                        zł
-                                                    </td>
-                                                    <td>
-                                                        {totals.totalRevenue > 0
-                                                            ? `${((employee.revenue / totals.totalRevenue) * 100).toFixed(0)}%`
-                                                            : '0%'}
-                                                    </td>
-                                                    <td>
-                                                        {employee.tips.toFixed(
-                                                            2,
-                                                        )}{' '}
-                                                        zł
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Łącznie</th>
-                                                <th>{totals.totalVisits}</th>
-                                                <th>0 min</th>
-                                                <th>
-                                                    {formatMoney(
-                                                        totals.totalRevenue,
-                                                    )}
-                                                </th>
-                                                <th>
-                                                    {formatMoney(
-                                                        totals.totalRevenue *
-                                                            0.77,
-                                                    )}
-                                                </th>
-                                                <th>0,00 zł</th>
-                                                <th>0,00 zł</th>
-                                                <th>
-                                                    {formatMoney(
-                                                        totals.totalRevenue,
-                                                    )}
-                                                </th>
-                                                <th>100%</th>
-                                                <th>{formatMoney(0)}</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
+                        <div className="versum-table-wrap">
+                            <table className="versum-table fs-12">
+                                <thead>
+                                    <tr>
+                                        <th>Pracownik</th>
+                                        <th>Wizyty</th>
+                                        <th>Łączny czas wizyty</th>
+                                        <th>Sprzedaż usług brutto</th>
+                                        <th>Sprzedaż usług netto</th>
+                                        <th>Sprzedaż towarów brutto</th>
+                                        <th>Sprzedaż towarów netto</th>
+                                        <th>Utarg brutto</th>
+                                        <th>Procent</th>
+                                        <th>Napiwki</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {employeeRows.map((employee) => (
+                                        <tr key={employee.employeeId}>
+                                            <td>{employee.employeeName}</td>
+                                            <td>
+                                                {employee.completedAppointments}
+                                            </td>
+                                            <td>0 min</td>
+                                            <td>
+                                                {employee.revenue.toFixed(2)} zł
+                                            </td>
+                                            <td>
+                                                {(
+                                                    employee.revenue * 0.77
+                                                ).toFixed(2)}{' '}
+                                                zł
+                                            </td>
+                                            <td>0,00 zł</td>
+                                            <td>0,00 zł</td>
+                                            <td>
+                                                {employee.revenue.toFixed(2)} zł
+                                            </td>
+                                            <td>
+                                                {totals.totalRevenue > 0
+                                                    ? `${((employee.revenue / totals.totalRevenue) * 100).toFixed(0)}%`
+                                                    : '0%'}
+                                            </td>
+                                            <td>
+                                                {employee.tips.toFixed(2)} zł
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>Łącznie</th>
+                                        <th>{totals.totalVisits}</th>
+                                        <th>0 min</th>
+                                        <th>
+                                            {formatMoney(totals.totalRevenue)}
+                                        </th>
+                                        <th>
+                                            {formatMoney(
+                                                totals.totalRevenue * 0.77,
+                                            )}
+                                        </th>
+                                        <th>0,00 zł</th>
+                                        <th>0,00 zł</th>
+                                        <th>
+                                            {formatMoney(totals.totalRevenue)}
+                                        </th>
+                                        <th>100%</th>
+                                        <th>{formatMoney(0)}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     )}
 
-                    <div className="versum-widget mt-20">
-                        <div className="versum-widget__header">
-                            Udział pracowników w utargu
-                        </div>
-                        <div className="versum-widget__content text-center">
+                    <div className="mt-20 mb-10 fs-12">
+                        <strong>Udział pracowników w utargu</strong>
+                    </div>
+                    <div
+                        style={{
+                            border: '1px solid #d9dee2',
+                            padding: 14,
+                            width: 420,
+                            maxWidth: '100%',
+                        }}
+                    >
+                        <div className="text-center">
                             <div
                                 aria-hidden
                                 style={{
@@ -403,11 +438,19 @@ function StatisticsPageContent() {
                                     borderRadius: '50%',
                                     background:
                                         'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
-                                    margin: '0 auto',
+                                    margin: '0 auto 12px',
                                 }}
                             />
                         </div>
+                        <div className="fs-12">
+                            {employeeRows.slice(0, 3).map((employee) => (
+                                <div key={employee.employeeId}>
+                                    {employee.employeeName} (0%)
+                                </div>
+                            ))}
+                        </div>
                     </div>
+                    <div className="mt-10 fs-12">Wybrana wartość:</div>
                 </div>
             )}
         </div>
