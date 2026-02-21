@@ -196,6 +196,27 @@
 - wynik uruchomienia:
   - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-statistics-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
 
+### 2026-02-21 - Statystyki: copy-first refactor + deploy + audit produkcyjny
+- commit/deploy:
+  - commit: `24aba527`
+  - run: `22258658561` (production, success, target `dashboard`)
+  - probe: `22258712384` (production, success, target `probe`)
+- zmiany UI:
+  - `apps/panel/src/pages/statistics/index.tsx`
+  - `apps/panel/src/pages/statistics/employees.tsx`
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+  - uprzątnięcie utility-class drift (`flex/gap/bg-gray/text-xs`) i normalizacja toolbar/table/widget do wzorca Versum,
+  - fallback listy pracowników na `/statistics` i `/statistics/commissions` (wiersze z zerami, gdy raport zwraca pustą listę).
+- walidacja po deployu:
+  - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed` (po selektor fix w `16883c89`),
+  - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+  - functional parity: `YES`,
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `dashboard 12.484%`
+    - `employees 3.789%`
+    - `commissions 5.562%`
+  - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+
 ### 2026-02-19 - Usługi: uruchomienie batcha parity dla zakładek szczegółów
 - commit/deploy:
   - commit: `0e93a771`
