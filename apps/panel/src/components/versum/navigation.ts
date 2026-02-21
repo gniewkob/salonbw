@@ -57,7 +57,6 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-statistics-nav',
         permission: 'nav:statistics',
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'communication',
