@@ -416,7 +416,7 @@ test.describe('PROD audit: statistics panel vs versum', () => {
             await panelPage.waitForTimeout(1200);
             await panelPage.screenshot({
                 path: path.join(outDir, `panel-${seq}-${action.id}.png`),
-                fullPage: true,
+                fullPage: false,
             });
 
             await versumPage.goto(action.versumUrl, {
@@ -426,7 +426,7 @@ test.describe('PROD audit: statistics panel vs versum', () => {
             await versumPage.waitForTimeout(1200);
             await versumPage.screenshot({
                 path: path.join(outDir, `versum-${seq}-${action.id}.png`),
-                fullPage: true,
+                fullPage: false,
             });
 
             const panelShot = path.join(outDir, `panel-${seq}-${action.id}.png`);
