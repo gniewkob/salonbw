@@ -21,6 +21,38 @@ body.e2e-body {
     font-size: 13px;
 }
 
+#versum-shell-root .versum-link {
+    color: #2f82bf;
+    text-decoration: none;
+}
+
+#versum-shell-root .versum-link:hover {
+    text-decoration: underline;
+}
+
+#versum-shell-root .versum-table th {
+    padding: 6px 10px;
+    border: 1px solid #cfd4da;
+    background: #edf1f4;
+    color: #3f4852;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+#versum-shell-root .versum-table td {
+    padding: 6px 10px;
+    border: 1px solid #d4d9de;
+    color: #3f4852;
+    font-size: 12px;
+    line-height: 1.35;
+    background: transparent;
+}
+
+#versum-shell-root .versum-table tr:hover {
+    background: transparent;
+}
+
 /* ========================================
    Generic UI helpers (Versum-like)
    ======================================== */
