@@ -194,9 +194,7 @@ export default function EmployeeActivityPage() {
                                         <tr>
                                             <th>Łącznie</th>
                                             <th>
-                                                {formatWorkTime(
-                                                    totals.workTimeMinutes,
-                                                )}
+                                                {totals.workTimeMinutes} min
                                             </th>
                                             <th>{totals.appointmentsCount}</th>
                                         </tr>
