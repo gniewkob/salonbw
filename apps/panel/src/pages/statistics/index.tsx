@@ -292,22 +292,34 @@ function StatisticsPageContent() {
                                                     style={{
                                                         border: '1px solid #d9dee2',
                                                         padding: 14,
-                                                        textAlign: 'center',
                                                     }}
                                                 >
                                                     <div
-                                                        aria-hidden
                                                         style={{
-                                                            width: 240,
-                                                            height: 240,
-                                                            borderRadius: '50%',
-                                                            background:
-                                                                '#86c92a',
-                                                            margin: '0 auto 10px',
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            justifyContent:
+                                                                'space-between',
+                                                            gap: 20,
                                                         }}
-                                                    />
-                                                    <div className="fs-12">
-                                                        gotówka: 0,00 zł (100%)
+                                                    >
+                                                        <div
+                                                            aria-hidden
+                                                            style={{
+                                                                width: 240,
+                                                                height: 240,
+                                                                borderRadius:
+                                                                    '50%',
+                                                                background:
+                                                                    '#86c92a',
+                                                                flexShrink: 0,
+                                                            }}
+                                                        />
+                                                        <div className="fs-12">
+                                                            gotówka: 0,00 zł
+                                                            (100%)
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -422,11 +434,18 @@ function StatisticsPageContent() {
                         style={{
                             border: '1px solid #d9dee2',
                             padding: 14,
-                            width: 420,
+                            width: 520,
                             maxWidth: '100%',
                         }}
                     >
-                        <div className="text-center">
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 20,
+                            }}
+                        >
                             <div
                                 aria-hidden
                                 style={{
@@ -435,16 +454,16 @@ function StatisticsPageContent() {
                                     borderRadius: '50%',
                                     background:
                                         'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
-                                    margin: '0 auto 12px',
+                                    flexShrink: 0,
                                 }}
                             />
-                        </div>
-                        <div className="fs-12">
-                            {employeeRows.slice(0, 3).map((employee) => (
-                                <div key={employee.employeeId}>
-                                    {employee.employeeName} (0%)
-                                </div>
-                            ))}
+                            <div className="fs-12">
+                                {employeeRows.slice(0, 3).map((employee) => (
+                                    <div key={employee.employeeId}>
+                                        {employee.employeeName} (0%)
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                     <div className="mt-10 fs-12">Wybrana wartość:</div>
