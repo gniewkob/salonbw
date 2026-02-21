@@ -174,7 +174,15 @@ export default function CommissionsPage() {
                         </button>
                     </div>
                     <div style={{ marginLeft: 'auto' }} />
-                    <button type="button" className="btn btn-default mr-10">
+                    <button
+                        type="button"
+                        className="btn btn-default mr-10"
+                        style={{
+                            borderColor: '#4ea4e0',
+                            color: '#2f9ae0',
+                            background: '#fff',
+                        }}
+                    >
                         pobierz raport Excel
                     </button>
                     <button
@@ -220,7 +228,13 @@ export default function CommissionsPage() {
                                                         <br />
                                                         <Link
                                                             href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                            className="btn btn-default btn-xs mt-5"
+                                                            className="btn btn-xs mt-5"
+                                                            style={{
+                                                                border: '1px solid #3aa1df',
+                                                                color: '#3aa1df',
+                                                                background:
+                                                                    '#fff',
+                                                            }}
                                                         >
                                                             🧾 szczegóły
                                                         </Link>
