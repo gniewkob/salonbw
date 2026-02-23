@@ -58,7 +58,7 @@ interface NamedCustomer {
 }
 
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
-const DEFAULT_PANEL_CUSTOMER_ID = 2;
+const DEFAULT_PANEL_CUSTOMER_ID = 12;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
@@ -669,6 +669,17 @@ async function pickPanelParityCustomerId(
     candidates: NamedCustomer[],
     fallbackId: number,
 ): Promise<number> {
+    if (await isHealthyPanelCustomer(page, fallbackId)) {
+        const fallbackCoreReady = await isPanelCustomerCoreReady(page, fallbackId);
+        const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(
+            page,
+            fallbackId,
+        );
+        if (fallbackCoreReady && fallbackEmptyMedia) {
+            return fallbackId;
+        }
+    }
+
     const uniqueCandidates: number[] = [];
     const seen = new Set<number>();
     for (const candidate of candidates) {
