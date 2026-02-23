@@ -141,6 +141,20 @@
 - artefakty:
   - `output/parity/2026-02-23-customers-prod-full/`
 
+### 2026-02-23 - Klienci: parity rerun po rozszerzeniu smoke testu tras karty
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - functional parity (panel): `YES` (bez zmian),
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `list 7.333%`
+    - `summary 5.363%`
+    - `gallery 33.584%`
+    - `files 8.707%`
+  - `versum` fallback `500` na ekranach referencyjnych `list` i `statistics` pozostaje.
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T13:49:53.872Z`)
+
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
   - commit: `0642f399`
