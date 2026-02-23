@@ -675,7 +675,7 @@ async function pickPanelParityCustomerId(
         if (seen.has(candidate.id)) continue;
         seen.add(candidate.id);
         uniqueCandidates.push(candidate.id);
-        if (uniqueCandidates.length >= 10) break;
+        if (uniqueCandidates.length >= 30) break;
     }
     for (const id of uniqueCandidates) {
         if (!(await isHealthyPanelCustomer(page, id))) continue;
