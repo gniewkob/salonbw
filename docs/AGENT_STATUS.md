@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-21 (statistics visual-parity iteration #8 deployed + production verified)_
+_Last updated: 2026-02-23 (customers production smoke + full parity rerun)_
 
 ## Platform Architecture
 
@@ -143,15 +143,22 @@ Verification:
     - functional parity: `YES`,
     - strict visual parity (`<=3.0%`): `NO` (`dashboard 11.828%`, `employees 3.968%`, `commissions 6.761%`),
     - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
+- Dashboard production verification rerun (2026-02-23, customers):
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 passed` (`gallery/files` upload+download flow),
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - panel functional checks: `YES` for all audited customers routes (`/customers`, card tabs, `/edit`, `/new`),
+  - client-side exception on customers card routes: **not reproduced**,
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 30.136%`, `files 8.707%`),
+  - artifact: `output/parity/2026-02-23-customers-prod-full/`.
 
 ## Recent Incidents
 
-### 2026-02-20: Customers module runtime crash on card routes (open)
+### 2026-02-20: Customers module runtime crash on card routes (monitoring)
 
 - **Impact:** customer card routes render client-side exception page instead of Versum shell/tab content.
 - **Affected routes:** `/customers/{id}`, `/customers/{id}?tab_name=*`, `/customers/{id}/edit`, `/customers/new`.
 - **Detection:** post-deploy customers smoke + parity audit screenshots show `Application error: a client-side exception has occurred`.
-- **Status:** open, blocks functional parity DONE for customers module.
+- **Status:** monitoring. On 2026-02-23 production smoke+parity rerun the crash was not reproduced on audited customers routes.
 
 ### 2026-02-17: Panel global 500 after deploy (resolved)
 

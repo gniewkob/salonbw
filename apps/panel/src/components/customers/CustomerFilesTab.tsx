@@ -51,9 +51,13 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function CustomerFilesTab({ customerId }: Props) {
-    const { data: files = [], isLoading, error } = useCustomerFiles(customerId);
+    const { data: filesRaw, isLoading, error } = useCustomerFiles(customerId);
     const upload = useUploadCustomerFile(customerId);
     const del = useDeleteCustomerFile(customerId);
+    const files = useMemo(
+        () => (Array.isArray(filesRaw) ? filesRaw : []),
+        [filesRaw],
+    );
 
     const [filterCategory, setFilterCategory] = useState<
         CustomerFileCategory | 'all'

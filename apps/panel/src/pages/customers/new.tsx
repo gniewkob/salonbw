@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCreateCustomer } from '@/hooks/useCustomers';
 import type { Gender } from '@/types';
+import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
 type Draft = {
     firstName: string;
@@ -150,469 +151,489 @@ export default function NewCustomerPage() {
         >
             <VersumShell role={role}>
                 <VersumCustomersVendorCss />
-                <div className="show_customer new_customer" id="customers_main">
-                    <ul className="breadcrumb">
-                        <li>Klienci / Dodaj klienta</li>
-                    </ul>
-
-                    <form
-                        onSubmit={(e) => void onSubmit(e)}
-                        className="customer-new-form customer-form-legacy"
-                    >
+                <CustomerErrorBoundary
+                    fallback={
                         <div
-                            className="customer-new-section"
-                            id="customer-new-basic"
+                            className="show_customer new_customer"
+                            id="customers_main"
                         >
-                            <h4>dane podstawowe</h4>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-first-name">
-                                    1. Imię
-                                </label>
-                                <input
-                                    id="customer-new-first-name"
-                                    className="form-control"
-                                    value={form.firstName}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            firstName: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                    autoFocus
-                                />
+                            <div className="customer-error">
+                                Wystąpił błąd podczas renderowania formularza
+                                nowego klienta.
                             </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-last-name">
-                                    2. Nazwisko
-                                </label>
-                                <input
-                                    id="customer-new-last-name"
-                                    className="form-control"
-                                    value={form.lastName}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            lastName: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-email">
-                                    3. Email
-                                </label>
-                                <input
-                                    id="customer-new-email"
-                                    className="form-control"
-                                    value={form.email}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            email: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-phone">
-                                    4. Telefon
-                                </label>
-                                <input
-                                    id="customer-new-phone"
-                                    className="form-control"
-                                    value={form.phone}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            phone: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-gender">
-                                    5. Płeć
-                                </label>
-                                <select
-                                    id="customer-new-gender"
-                                    className="form-control"
-                                    value={form.gender}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            gender: e.target
-                                                .value as Draft['gender'],
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                >
-                                    <option value="">Nie podano</option>
-                                    <option value="female">Kobieta</option>
-                                    <option value="male">Mężczyzna</option>
-                                    <option value="other">Inna</option>
-                                </select>
-                            </div>
-                            <div className="customer-new-row customer-new-row--consent">
-                                <label>7. Zgody udzielone przez klienta</label>
-                                <div className="customer-consent-box">
-                                    Pamiętaj o dopełnieniu obowiązku
-                                    informacyjnego w zakresie realizacji umowy.
+                        </div>
+                    }
+                >
+                    <div
+                        className="show_customer new_customer"
+                        id="customers_main"
+                    >
+                        <ul className="breadcrumb">
+                            <li>Klienci / Dodaj klienta</li>
+                        </ul>
+
+                        <form
+                            onSubmit={(e) => void onSubmit(e)}
+                            className="customer-new-form customer-form-legacy"
+                        >
+                            <div
+                                className="customer-new-section"
+                                id="customer-new-basic"
+                            >
+                                <h4>dane podstawowe</h4>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-first-name">
+                                        1. Imię
+                                    </label>
+                                    <input
+                                        id="customer-new-first-name"
+                                        className="form-control"
+                                        value={form.firstName}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                firstName: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-last-name">
+                                        2. Nazwisko
+                                    </label>
+                                    <input
+                                        id="customer-new-last-name"
+                                        className="form-control"
+                                        value={form.lastName}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                lastName: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-email">
+                                        3. Email
+                                    </label>
+                                    <input
+                                        id="customer-new-email"
+                                        className="form-control"
+                                        value={form.email}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                email: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-phone">
+                                        4. Telefon
+                                    </label>
+                                    <input
+                                        id="customer-new-phone"
+                                        className="form-control"
+                                        value={form.phone}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                phone: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-gender">
+                                        5. Płeć
+                                    </label>
+                                    <select
+                                        id="customer-new-gender"
+                                        className="form-control"
+                                        value={form.gender}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                gender: e.target
+                                                    .value as Draft['gender'],
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    >
+                                        <option value="">Nie podano</option>
+                                        <option value="female">Kobieta</option>
+                                        <option value="male">Mężczyzna</option>
+                                        <option value="other">Inna</option>
+                                    </select>
+                                </div>
+                                <div className="customer-new-row customer-new-row--consent">
+                                    <label>
+                                        7. Zgody udzielone przez klienta
+                                    </label>
+                                    <div className="customer-consent-box">
+                                        Pamiętaj o dopełnieniu obowiązku
+                                        informacyjnego w zakresie realizacji
+                                        umowy.
+                                    </div>
+                                </div>
+                                <div className="customer-new-row customer-new-row--checkbox">
+                                    <label htmlFor="customer-new-consent">
+                                        Wyrażam zgodę na przetwarzanie danych
+                                        osobowych
+                                    </label>
+                                    <input
+                                        id="customer-new-consent"
+                                        type="checkbox"
+                                        checked={
+                                            form.emailConsent || form.smsConsent
+                                        }
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                emailConsent: e.target.checked,
+                                                smsConsent: e.target.checked,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
                                 </div>
                             </div>
-                            <div className="customer-new-row customer-new-row--checkbox">
-                                <label htmlFor="customer-new-consent">
-                                    Wyrażam zgodę na przetwarzanie danych
-                                    osobowych
-                                </label>
-                                <input
-                                    id="customer-new-consent"
-                                    type="checkbox"
-                                    checked={
-                                        form.emailConsent || form.smsConsent
-                                    }
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            emailConsent: e.target.checked,
-                                            smsConsent: e.target.checked,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                        </div>
 
-                        <div
-                            className="customer-new-section"
-                            id="customer-new-extended"
-                        >
-                            <h4>dane rozszerzone</h4>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-birth-date">
-                                    8. Data urodzenia
-                                </label>
-                                <input
-                                    id="customer-new-birth-date"
-                                    className="form-control"
-                                    type="date"
-                                    value={form.birthDate}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            birthDate: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
+                            <div
+                                className="customer-new-section"
+                                id="customer-new-extended"
+                            >
+                                <h4>dane rozszerzone</h4>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-birth-date">
+                                        8. Data urodzenia
+                                    </label>
+                                    <input
+                                        id="customer-new-birth-date"
+                                        className="form-control"
+                                        type="date"
+                                        value={form.birthDate}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                birthDate: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-address">
+                                        9. Ulica
+                                    </label>
+                                    <input
+                                        id="customer-new-address"
+                                        className="form-control"
+                                        value={form.address}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                address: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-postal-code">
+                                        10. Nr domu
+                                    </label>
+                                    <input
+                                        id="customer-new-building-no"
+                                        className="form-control"
+                                        value={form.buildingNo}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                buildingNo: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-apartment-no">
+                                        11. Nr lokalu
+                                    </label>
+                                    <input
+                                        id="customer-new-apartment-no"
+                                        className="form-control"
+                                        value={form.apartmentNo}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                apartmentNo: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-postal-code">
+                                        12. Kod pocztowy
+                                    </label>
+                                    <input
+                                        id="customer-new-postal-code"
+                                        className="form-control"
+                                        value={form.postalCode}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                postalCode: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-city">
+                                        13. Miasto
+                                    </label>
+                                    <input
+                                        id="customer-new-city"
+                                        className="form-control"
+                                        value={form.city}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                city: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-country">
+                                        14. Kraj
+                                    </label>
+                                    <input
+                                        id="customer-new-country"
+                                        className="form-control"
+                                        value={form.country}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                country: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-name-day">
+                                        15. Data imienin
+                                    </label>
+                                    <input
+                                        id="customer-new-name-day"
+                                        className="form-control"
+                                        value={form.nameDay}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                nameDay: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-groups">
+                                        16. Grupy
+                                    </label>
+                                    <input
+                                        id="customer-new-groups"
+                                        className="form-control"
+                                        value={form.groups}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                groups: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                        placeholder="kliknij, aby dodać do grupy"
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-origin">
+                                        17. Pochodzenie klienta
+                                    </label>
+                                    <input
+                                        id="customer-new-origin"
+                                        className="form-control"
+                                        value={form.origin}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                origin: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-pesel">
+                                        18. PESEL
+                                    </label>
+                                    <input
+                                        id="customer-new-pesel"
+                                        className="form-control"
+                                        value={form.pesel}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                pesel: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-nip">
+                                        19. NIP
+                                    </label>
+                                    <input
+                                        id="customer-new-nip"
+                                        className="form-control"
+                                        value={form.nip}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                nip: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-card-number">
+                                        20. Numer karty
+                                    </label>
+                                    <input
+                                        id="customer-new-card-number"
+                                        className="form-control"
+                                        value={form.cardNumber}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                cardNumber: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row">
+                                    <label htmlFor="customer-new-description">
+                                        21. Opis
+                                    </label>
+                                    <textarea
+                                        id="customer-new-description"
+                                        className="form-control"
+                                        value={form.description}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                description: e.target.value,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
                             </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-address">
-                                    9. Ulica
-                                </label>
-                                <input
-                                    id="customer-new-address"
-                                    className="form-control"
-                                    value={form.address}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            address: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-postal-code">
-                                    10. Nr domu
-                                </label>
-                                <input
-                                    id="customer-new-building-no"
-                                    className="form-control"
-                                    value={form.buildingNo}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            buildingNo: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-apartment-no">
-                                    11. Nr lokalu
-                                </label>
-                                <input
-                                    id="customer-new-apartment-no"
-                                    className="form-control"
-                                    value={form.apartmentNo}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            apartmentNo: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-postal-code">
-                                    12. Kod pocztowy
-                                </label>
-                                <input
-                                    id="customer-new-postal-code"
-                                    className="form-control"
-                                    value={form.postalCode}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            postalCode: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-city">
-                                    13. Miasto
-                                </label>
-                                <input
-                                    id="customer-new-city"
-                                    className="form-control"
-                                    value={form.city}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            city: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-country">
-                                    14. Kraj
-                                </label>
-                                <input
-                                    id="customer-new-country"
-                                    className="form-control"
-                                    value={form.country}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            country: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-name-day">
-                                    15. Data imienin
-                                </label>
-                                <input
-                                    id="customer-new-name-day"
-                                    className="form-control"
-                                    value={form.nameDay}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            nameDay: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-groups">
-                                    16. Grupy
-                                </label>
-                                <input
-                                    id="customer-new-groups"
-                                    className="form-control"
-                                    value={form.groups}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            groups: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                    placeholder="kliknij, aby dodać do grupy"
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-origin">
-                                    17. Pochodzenie klienta
-                                </label>
-                                <input
-                                    id="customer-new-origin"
-                                    className="form-control"
-                                    value={form.origin}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            origin: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-pesel">
-                                    18. PESEL
-                                </label>
-                                <input
-                                    id="customer-new-pesel"
-                                    className="form-control"
-                                    value={form.pesel}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            pesel: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-nip">
-                                    19. NIP
-                                </label>
-                                <input
-                                    id="customer-new-nip"
-                                    className="form-control"
-                                    value={form.nip}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            nip: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-card-number">
-                                    20. Numer karty
-                                </label>
-                                <input
-                                    id="customer-new-card-number"
-                                    className="form-control"
-                                    value={form.cardNumber}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            cardNumber: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                            <div className="customer-new-row">
-                                <label htmlFor="customer-new-description">
-                                    21. Opis
-                                </label>
-                                <textarea
-                                    id="customer-new-description"
-                                    className="form-control"
-                                    value={form.description}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            description: e.target.value,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                        </div>
 
-                        <div
-                            className="customer-new-section"
-                            id="customer-new-advanced"
-                        >
-                            <h4>
-                                Zaawansowane{' '}
-                                <span className="customer-advanced-hint">
-                                    Pokaż
-                                </span>
-                            </h4>
-                            <div className="customer-new-row customer-new-row--checkbox">
-                                <label htmlFor="customer-new-email-consent">
-                                    Zgoda na kontakt email
-                                </label>
-                                <input
-                                    id="customer-new-email-consent"
-                                    type="checkbox"
-                                    checked={form.emailConsent}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            emailConsent: e.target.checked,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
+                            <div
+                                className="customer-new-section"
+                                id="customer-new-advanced"
+                            >
+                                <h4>
+                                    Zaawansowane{' '}
+                                    <span className="customer-advanced-hint">
+                                        Pokaż
+                                    </span>
+                                </h4>
+                                <div className="customer-new-row customer-new-row--checkbox">
+                                    <label htmlFor="customer-new-email-consent">
+                                        Zgoda na kontakt email
+                                    </label>
+                                    <input
+                                        id="customer-new-email-consent"
+                                        type="checkbox"
+                                        checked={form.emailConsent}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                emailConsent: e.target.checked,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
+                                <div className="customer-new-row customer-new-row--checkbox">
+                                    <label htmlFor="customer-new-sms-consent">
+                                        Zgoda na kontakt SMS
+                                    </label>
+                                    <input
+                                        id="customer-new-sms-consent"
+                                        type="checkbox"
+                                        checked={form.smsConsent}
+                                        onChange={(e) =>
+                                            setForm((p) => ({
+                                                ...p,
+                                                smsConsent: e.target.checked,
+                                            }))
+                                        }
+                                        disabled={create.isPending}
+                                    />
+                                </div>
                             </div>
-                            <div className="customer-new-row customer-new-row--checkbox">
-                                <label htmlFor="customer-new-sms-consent">
-                                    Zgoda na kontakt SMS
-                                </label>
-                                <input
-                                    id="customer-new-sms-consent"
-                                    type="checkbox"
-                                    checked={form.smsConsent}
-                                    onChange={(e) =>
-                                        setForm((p) => ({
-                                            ...p,
-                                            smsConsent: e.target.checked,
-                                        }))
-                                    }
-                                    disabled={create.isPending}
-                                />
-                            </div>
-                        </div>
 
-                        <div className="customer-new-actions customer-new-actions--sticky">
-                            <button
-                                type="submit"
-                                className="btn btn-primary btn-xs"
-                                onClick={() => setSubmitMode('view')}
-                                disabled={
-                                    create.isPending ||
-                                    (!form.firstName.trim() &&
-                                        !form.lastName.trim() &&
-                                        !form.email.trim() &&
-                                        !form.phone.trim())
-                                }
-                            >
-                                {create.isPending
-                                    ? 'Zapisywanie...'
-                                    : 'dodaj klienta'}
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn btn-default btn-xs"
-                                onClick={() => setSubmitMode('next')}
-                                disabled={create.isPending}
-                            >
-                                zapisz i dodaj kolejnego
-                            </button>
-                            <Link
-                                href={'/customers' as Route}
-                                className="btn btn-default btn-xs"
-                            >
-                                wróć do listy
-                            </Link>
-                        </div>
-                    </form>
-                </div>
+                            <div className="customer-new-actions customer-new-actions--sticky">
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary btn-xs"
+                                    onClick={() => setSubmitMode('view')}
+                                    disabled={
+                                        create.isPending ||
+                                        (!form.firstName.trim() &&
+                                            !form.lastName.trim() &&
+                                            !form.email.trim() &&
+                                            !form.phone.trim())
+                                    }
+                                >
+                                    {create.isPending
+                                        ? 'Zapisywanie...'
+                                        : 'dodaj klienta'}
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-default btn-xs"
+                                    onClick={() => setSubmitMode('next')}
+                                    disabled={create.isPending}
+                                >
+                                    zapisz i dodaj kolejnego
+                                </button>
+                                <Link
+                                    href={'/customers' as Route}
+                                    className="btn btn-default btn-xs"
+                                >
+                                    wróć do listy
+                                </Link>
+                            </div>
+                        </form>
+                    </div>
+                </CustomerErrorBoundary>
             </VersumShell>
         </RouteGuard>
     );

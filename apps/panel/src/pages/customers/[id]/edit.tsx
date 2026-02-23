@@ -13,6 +13,7 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import type { Customer } from '@/types';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
+import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
 type EditTab = 'basic' | 'extended' | 'advanced';
 
@@ -133,41 +134,55 @@ export default function CustomerEditPage() {
         >
             <VersumShell role={role}>
                 <VersumCustomersVendorCss />
-                <div className="show_customer" id="customers_main">
-                    <ul className="breadcrumb">
-                        <li>
-                            Klienci / {customer?.name || '...'} / Edytuj klienta
-                        </li>
-                    </ul>
-
-                    {isLoading ? (
-                        <div className="customer-loading">Ładowanie...</div>
-                    ) : error ? (
-                        <div className="customer-error">
-                            Nie udało się załadować klienta.
-                        </div>
-                    ) : customer ? (
-                        <>
-                            <div className="customer-actions-bar">
-                                <div className="customer-actions-bar__spacer" />
-                                <Link
-                                    href={`/customers/${customer.id}` as Route}
-                                    className="btn btn-default btn-xs"
-                                >
-                                    wróć do karty klienta
-                                </Link>
+                <CustomerErrorBoundary
+                    fallback={
+                        <div className="show_customer" id="customers_main">
+                            <div className="customer-error">
+                                Wystąpił błąd podczas renderowania formularza
+                                edycji klienta.
                             </div>
-                            <CustomerPersonalDataTab
-                                customer={customer}
-                                onUpdate={handleUpdate}
-                            />
-                        </>
-                    ) : (
-                        <div className="customer-error">
-                            Nie znaleziono klienta.
                         </div>
-                    )}
-                </div>
+                    }
+                >
+                    <div className="show_customer" id="customers_main">
+                        <ul className="breadcrumb">
+                            <li>
+                                Klienci / {customer?.name || '...'} / Edytuj
+                                klienta
+                            </li>
+                        </ul>
+
+                        {isLoading ? (
+                            <div className="customer-loading">Ładowanie...</div>
+                        ) : error ? (
+                            <div className="customer-error">
+                                Nie udało się załadować klienta.
+                            </div>
+                        ) : customer ? (
+                            <>
+                                <div className="customer-actions-bar">
+                                    <div className="customer-actions-bar__spacer" />
+                                    <Link
+                                        href={
+                                            `/customers/${customer.id}` as Route
+                                        }
+                                        className="btn btn-default btn-xs"
+                                    >
+                                        wróć do karty klienta
+                                    </Link>
+                                </div>
+                                <CustomerPersonalDataTab
+                                    customer={customer}
+                                    onUpdate={handleUpdate}
+                                />
+                            </>
+                        ) : (
+                            <div className="customer-error">
+                                Nie znaleziono klienta.
+                            </div>
+                        )}
+                    </div>
+                </CustomerErrorBoundary>
             </VersumShell>
         </RouteGuard>
     );

@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-20
+> Data aktualizacji: 2026-02-23
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -79,37 +79,34 @@
 
 | Obszar | Status | % |
 |--------|--------|---|
-| Moduł Klienci - Sidebar | 🟡 | 70% (runtime crash na kartach) |
+| Moduł Klienci - Sidebar | 🟡 | 80% (functional YES, visual strict NO) |
 | Moduł Klienci - Filtrowanie | ✅ | 100% |
 | Moduł Klienci - Lista | ✅ | 100% |
-| Moduł Klienci - Szczegóły | 🟡 | 60% (functional NO) |
+| Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 15% |
 | Moduł Statystyki | ❌ | 0% |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~39%** (moduł klientów i magazyn mają otwarte delty strict/functional)
+**Całkowity postęp: ~43%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
 
 ## Known deltas (strict 1:1)
 
 - Klienci po deploy `0642f399`:
-  - functional parity: **NO** (`0/11` parity YES w checklist),
+  - functional parity (panel): **YES** na rerun produkcyjnym 2026-02-23 (`11/11` screen/action checks po stronie panelu),
   - visual strict parity: **NO** (próg 3.0% niespełniony na ekranach krytycznych),
-  - krytyczny blocker runtime: `Application error: a client-side exception has occurred` na trasach:
-    - `/customers/{id}`
-    - `/customers/{id}?tab_name=*`
-    - `/customers/{id}/edit`
-    - `/customers/new`
-  - odchylenia pixel diff (produkcja 2026-02-20):
-    - `list`: `6.930%`
-    - `summary`: `8.409%`
-    - `gallery`: `6.474%`
-    - `files`: `6.217%`
+  - runtime crash `Application error: a client-side exception has occurred` na trasach karty klienta: **nieodtworzony** na rerun 2026-02-23,
+  - odchylenia pixel diff (produkcja 2026-02-23):
+    - `list`: `7.333%`
+    - `summary`: `5.363%`
+    - `gallery`: `30.136%`
+    - `files`: `8.707%`
+  - uwaga porównawcza: `versum` zwraca fallback `500` na części ekranów referencyjnych (`list`, `statistics`), co obniża wynik parity całościowy mimo panel=YES.
   - artefakty:
-    - `output/parity/2026-02-20-customers-prod-full/REPORT.md`
-    - `output/parity/2026-02-20-customers-prod-full/pixel-diff.json`
-    - `output/parity/2026-02-20-customers-visual-baseline/`
+    - `output/parity/2026-02-23-customers-prod-full/REPORT.md`
+    - `output/parity/2026-02-23-customers-prod-full/pixel-diff.json`
+    - `output/parity/2026-02-23-customers-visual-baseline/`
 - Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
 - Największe odchylenia pixel diff (próg 3.0%, produkcja 2026-02-20):
   - `products`: `9.314%`
@@ -131,6 +128,18 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-23 - Klienci: produkcyjny rerun smoke + parity (po fixach anty-crash lokalnie)
+- uruchomienia:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` -> `2 passed`
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` na wszystkich audytowanych trasach customers,
+  - `Application error: a client-side exception has occurred` na karcie klienta: **nieodtworzony**,
+  - visual parity strict (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 30.136%`, `files 8.707%`),
+  - `versum` fallback `500` na ekranach `list` i `statistics` (wpływa na parity ogólne).
+- artefakty:
+  - `output/parity/2026-02-23-customers-prod-full/`
 
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
