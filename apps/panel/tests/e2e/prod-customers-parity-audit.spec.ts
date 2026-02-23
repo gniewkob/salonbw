@@ -52,7 +52,13 @@ interface CustomerSeed {
     name: string;
 }
 
+interface NamedCustomer {
+    id: number;
+    name: string;
+}
+
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
+const DEFAULT_PANEL_CUSTOMER_ID = 2;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
@@ -432,6 +438,67 @@ async function resolvePanelCustomerSeed(page: any): Promise<CustomerSeed | null>
     return { id, name: first.text };
 }
 
+async function collectNamedCustomers(
+    page: any,
+    target: AppTarget,
+): Promise<NamedCustomer[]> {
+    const url =
+        target === 'panel'
+            ? 'https://panel.salon-bw.pl/customers'
+            : 'https://panel.versum.com/salonblackandwhite/customers';
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1200);
+
+    const hrefPattern =
+        target === 'panel'
+            ? /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/
+            : /\/customers\/(\d+)(?:[/?#]|$|\/)/;
+    const rows = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => ({
+            href: a.getAttribute('href') || '',
+            text: (a.textContent || '').replace(/\s+/g, ' ').trim(),
+        })),
+    );
+    const seen = new Set<string>();
+    const out: NamedCustomer[] = [];
+    for (const row of rows) {
+        if (!row.text || row.text.length < 3) continue;
+        const match = row.href.match(hrefPattern);
+        if (!match) continue;
+        const id = Number(match[1]);
+        if (!Number.isFinite(id) || id <= 0) continue;
+        const key = `${id}:${row.text}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ id, name: row.text });
+    }
+    return out;
+}
+
+function findSharedCustomer(
+    panelCustomers: NamedCustomer[],
+    versumCustomers: NamedCustomer[],
+): { panel: NamedCustomer; versum: NamedCustomer } | null {
+    const versumByName = new Map<string, NamedCustomer>();
+    for (const customer of versumCustomers) {
+        const key = normalizeText(customer.name);
+        if (!key) continue;
+        if (!versumByName.has(key)) versumByName.set(key, customer);
+    }
+    for (const panelCustomer of panelCustomers) {
+        const key = normalizeText(panelCustomer.name);
+        const versumCustomer = versumByName.get(key);
+        if (versumCustomer) {
+            return { panel: panelCustomer, versum: versumCustomer };
+        }
+    }
+    return null;
+}
+
 async function resolveVersumCustomerIdByName(
     page: any,
     fullName: string,
@@ -462,6 +529,33 @@ async function resolveVersumCustomerIdByName(
         if (Number.isFinite(id) && id > 0) return id;
     }
     return null;
+}
+
+async function isHealthyPanelCustomer(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    await page.goto(`https://panel.salon-bw.pl/customers/${customerId}`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1000);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    if (
+        pageText.includes('ładowanie danych klienta') ||
+        pageText.includes('ładowanie...')
+    ) {
+        return false;
+    }
+    const shellCount = await page
+        .locator(
+            '#customers_main, .customer-summary, .customer-personal-view, .customer-gallery-tab, .customer-files-tab',
+        )
+        .count();
+    return shellCount > 0;
 }
 
 function buildMarkdown(results: AuditResult[], generatedAt: string): string {
@@ -828,13 +922,29 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
         await loginPanel(panelPage);
         await loginVersum(versumPage);
+        let panelCustomers = await collectNamedCustomers(panelPage, 'panel');
+        if (panelCustomers.length === 0) {
+            await loginPanel(panelPage);
+            panelCustomers = await collectNamedCustomers(panelPage, 'panel');
+        }
+        let versumCustomers = await collectNamedCustomers(versumPage, 'versum');
+        if (versumCustomers.length === 0) {
+            await loginVersum(versumPage);
+            versumCustomers = await collectNamedCustomers(versumPage, 'versum');
+        }
+        const sharedCustomer = findSharedCustomer(panelCustomers, versumCustomers);
         const panelSeed = await resolvePanelCustomerSeed(panelPage);
-        const candidateName = parityCustomerNameHint ?? panelSeed?.name ?? null;
+        const candidateName =
+            parityCustomerNameHint ??
+            sharedCustomer?.panel.name ??
+            panelSeed?.name ??
+            null;
         const versumIdByName = candidateName
             ? await resolveVersumCustomerIdByName(versumPage, candidateName)
             : null;
         const versumCustomerId =
             explicitVersumCustomerId ??
+            sharedCustomer?.versum.id ??
             versumIdByName ??
             DEFAULT_VERSUM_CUSTOMER_ID;
         const versumCustomerName =
@@ -843,11 +953,26 @@ test.describe('PROD audit: customers panel vs versum', () => {
         const panelCustomerIdByName = versumCustomerName
             ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
             : null;
-        const panelCustomerId =
+        let panelCustomerId =
             explicitPanelCustomerId ??
+            sharedCustomer?.panel.id ??
             panelCustomerIdByName ??
             panelSeed?.id ??
-            (await resolvePanelCustomerId(panelPage, versumCustomerId));
+            null;
+        if (panelCustomerId === null) {
+            panelCustomerId = await resolvePanelCustomerId(
+                panelPage,
+                versumCustomerId,
+            ).catch(() => DEFAULT_PANEL_CUSTOMER_ID);
+        }
+        if (!(await isHealthyPanelCustomer(panelPage, panelCustomerId))) {
+            for (const candidate of panelCustomers) {
+                if (await isHealthyPanelCustomer(panelPage, candidate.id)) {
+                    panelCustomerId = candidate.id;
+                    break;
+                }
+            }
+        }
         const actions = buildActions(panelCustomerId, versumCustomerId);
 
         const results: AuditResult[] = [];
