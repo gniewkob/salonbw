@@ -131,7 +131,7 @@
 
 ### 2026-02-23 - Klienci: produkcyjny rerun smoke + parity (po fixach anty-crash lokalnie)
 - uruchomienia:
-  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` -> `2 passed`
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` -> `3 passed` (w tym pełny sweep tras `/customers/:id`, taby, `/edit`, `/new`)
   - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
 - wynik:
   - panel functional checks: `YES` na wszystkich audytowanych trasach customers,
