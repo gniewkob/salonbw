@@ -175,6 +175,27 @@
 - artefakty:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T14:13:15.481Z`)
 
+### 2026-02-23 - Klienci: parity resolver `name-first` (panel->versum) + rerun
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - dodany `resolvePanelCustomerSeed` (pierwszy klient z listy panelu),
+    - dodany `resolveVersumCustomerIdByName` (lookup klienta w versum po nazwie),
+    - fallback dla `PANEL_PARITY_CUSTOMER_ID` rozszerzony o detekcję stanu `ładowanie danych klienta` (żeby nie akceptować niedostępnego ID),
+    - priorytet wyboru rekordów: env IDs -> name lookup -> seed/fallback.
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` (`11/11`),
+  - `versum` functional checks: `NO` na `list` i `statistics` (fallback `500`),
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `list 7.333%`
+    - `summary 5.363%`
+    - `gallery 39.152%`
+    - `files 8.707%`
+  - obserwacja danych: brak w 100% wspólnego klienta między listami panel/versum w bieżącym środowisku, więc parity pozostaje data-dependent.
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T15:29:48.826Z`)
+
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
   - commit: `0642f399`

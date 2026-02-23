@@ -47,6 +47,11 @@ interface PixelDiffResult {
     pass: boolean;
 }
 
+interface CustomerSeed {
+    id: number;
+    name: string;
+}
+
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
@@ -300,6 +305,7 @@ async function resolvePanelCustomerId(
             .toLowerCase()
             .replace(/\s+/g, ' ');
         const fallbackSnippets = [
+            'ładowanie danych klienta',
             'this page could not be found',
             'application error: a client-side exception has occurred',
             '404',
@@ -321,6 +327,141 @@ async function resolvePanelCustomerId(
         }
     }
     return resolveCustomerId(page);
+}
+
+function normalizeText(value: string): string {
+    return value
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+async function resolveVersumCustomerName(
+    page: any,
+    versumCustomerId: number,
+): Promise<string | null> {
+    await page.goto(
+        `https://panel.versum.com/salonblackandwhite/customers/${versumCustomerId}`,
+        {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        },
+    );
+    await page.waitForTimeout(1200);
+
+    const headingText = await page
+        .locator('#main-content h2, #main-content h1, h2, h1')
+        .first()
+        .textContent()
+        .catch(() => null);
+    if (headingText) {
+        const normalizedHeading = headingText.replace(/\s+/g, ' ').trim();
+        const fromBreadcrumb = normalizedHeading.split('/').pop()?.trim();
+        if (fromBreadcrumb) return fromBreadcrumb;
+        if (normalizedHeading) return normalizedHeading;
+    }
+
+    const bodyText = await page.locator('body').innerText();
+    const match = bodyText.match(/Klienci\s*\/\s*([^\n]+)/i);
+    if (match?.[1]) {
+        return match[1].replace(/\s+/g, ' ').trim();
+    }
+    return null;
+}
+
+async function resolvePanelCustomerIdByName(
+    page: any,
+    fullName: string,
+): Promise<number | null> {
+    await page.goto('https://panel.salon-bw.pl/customers', {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1200);
+
+    const target = normalizeText(fullName);
+    const rows = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => ({
+            href: a.getAttribute('href') || '',
+            text: (a.textContent || '').replace(/\s+/g, ' ').trim(),
+        })),
+    );
+    for (const row of rows) {
+        const href = row.href;
+        const text = row.text;
+        if (!href || !text) continue;
+        if (!/\/(?:customers|clients)\//.test(href)) continue;
+        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        if (!normalizeText(text).includes(target)) continue;
+        const id = Number(match[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
+    return null;
+}
+
+async function resolvePanelCustomerSeed(page: any): Promise<CustomerSeed | null> {
+    await page.goto('https://panel.salon-bw.pl/customers', {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1200);
+
+    const rows = await page.$$eval('a[href]', (anchors) =>
+        anchors
+            .map((a) => ({
+                href: a.getAttribute('href') || '',
+                text: (a.textContent || '').replace(/\s+/g, ' ').trim(),
+            }))
+            .filter(
+                (x) =>
+                    /\/(?:customers|clients)\/\d+/.test(x.href) &&
+                    x.text.length > 0,
+            ),
+    );
+    const first = rows[0];
+    if (!first) return null;
+    const match = first.href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+    if (!match) return null;
+    const id = Number(match[1]);
+    if (!Number.isFinite(id) || id <= 0) return null;
+    return { id, name: first.text };
+}
+
+async function resolveVersumCustomerIdByName(
+    page: any,
+    fullName: string,
+): Promise<number | null> {
+    await page.goto('https://panel.versum.com/salonblackandwhite/customers', {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(1200);
+
+    const target = normalizeText(fullName);
+    const rows = await page.$$eval('a[href]', (anchors) =>
+        anchors.map((a) => ({
+            href: a.getAttribute('href') || '',
+            text: (a.textContent || '').replace(/\s+/g, ' ').trim(),
+        })),
+    );
+    for (const row of rows) {
+        const href = row.href;
+        const text = row.text;
+        if (!href || !text) continue;
+        if (!/\/customers\/\d+/.test(href)) continue;
+        const match = href.match(/\/customers\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        if (!normalizeText(text).includes(target)) continue;
+        const id = Number(match[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
+    return null;
 }
 
 function buildMarkdown(results: AuditResult[], generatedAt: string): string {
@@ -658,12 +799,9 @@ test.describe('PROD audit: customers panel vs versum', () => {
         requireEnv('PANEL_LOGIN_PASSWORD');
         requireEnv('VERSUM_LOGIN_EMAIL');
         requireEnv('VERSUM_LOGIN_PASSWORD');
-        const versumCustomerId =
-            optionalNumericEnv('VERSUM_CUSTOMER_ID') ??
-            DEFAULT_VERSUM_CUSTOMER_ID;
-        const panelCustomerIdHint =
-            optionalNumericEnv('PANEL_PARITY_CUSTOMER_ID') ??
-            versumCustomerId;
+        const explicitVersumCustomerId = optionalNumericEnv('VERSUM_CUSTOMER_ID');
+        const explicitPanelCustomerId = optionalNumericEnv('PANEL_PARITY_CUSTOMER_ID');
+        const parityCustomerNameHint = process.env.PARITY_CUSTOMER_NAME?.trim() || null;
 
         const runDate = new Date().toISOString().slice(0, 10);
         const outDir = path.resolve(
@@ -690,10 +828,26 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
         await loginPanel(panelPage);
         await loginVersum(versumPage);
-        const panelCustomerId = await resolvePanelCustomerId(
-            panelPage,
-            panelCustomerIdHint,
-        );
+        const panelSeed = await resolvePanelCustomerSeed(panelPage);
+        const candidateName = parityCustomerNameHint ?? panelSeed?.name ?? null;
+        const versumIdByName = candidateName
+            ? await resolveVersumCustomerIdByName(versumPage, candidateName)
+            : null;
+        const versumCustomerId =
+            explicitVersumCustomerId ??
+            versumIdByName ??
+            DEFAULT_VERSUM_CUSTOMER_ID;
+        const versumCustomerName =
+            candidateName ??
+            (await resolveVersumCustomerName(versumPage, versumCustomerId));
+        const panelCustomerIdByName = versumCustomerName
+            ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
+            : null;
+        const panelCustomerId =
+            explicitPanelCustomerId ??
+            panelCustomerIdByName ??
+            panelSeed?.id ??
+            (await resolvePanelCustomerId(panelPage, versumCustomerId));
         const actions = buildActions(panelCustomerId, versumCustomerId);
 
         const results: AuditResult[] = [];
