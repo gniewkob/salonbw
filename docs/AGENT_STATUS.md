@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity rerun on shared customer ID)_
+_Last updated: 2026-02-23 (customers parity resolver name-first + rerun)_
 
 ## Platform Architecture
 
@@ -162,6 +162,13 @@ Verification:
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 4.216%`, `gallery 2.307%`, `files 2.083%`),
   - `versum` fallback `500` remains on `list` and `statistics`,
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T14:13:15.481Z`).
+- Dashboard production parity rerun (2026-02-23, customers, resolver `name-first`):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - resolver strategy updated to prefer panel seed + name lookup in versum, with env override support (`PANEL_PARITY_CUSTOMER_ID`, `VERSUM_CUSTOMER_ID`, `PARITY_CUSTOMER_NAME`),
+  - panel functional checks: `YES` (`11/11`),
+  - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 39.152%`, `files 8.707%`),
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T15:29:48.826Z`).
 
 ## Recent Incidents
 
