@@ -231,6 +231,23 @@
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:14:15.587Z`)
 
+### 2026-02-23 - Klienci: parity candidate-scan broadening (media tabs under threshold)
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - zwiększony limit skanowanych kandydatów klienta panelu w `pickPanelParityCustomerId` (`10` -> `30`) dla lepszej szansy znalezienia rekordu zgodnego semantycznie z referencją mediów.
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` (`11/11`),
+  - `versum` functional checks: `NO` na `list` i `statistics` (fallback `500`),
+  - strict visual parity (`<=3.0%`): nadal `NO`, ale poprawa na media tabs:
+    - `list 7.333%` (NO)
+    - `summary 5.278%` (NO)
+    - `gallery 2.742%` (YES)
+    - `files 2.806%` (YES)
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:53:02.081Z`)
+
 ### 2026-02-23 - Klienci: smoke stabilizacja (deterministyczny customer + retry login)
 - zmiana testu:
   - `prod-customers-smoke.spec.ts`:

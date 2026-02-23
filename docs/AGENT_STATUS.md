@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers smoke stabilization + parity stable rerun)_
+_Last updated: 2026-02-23 (customers parity media-tabs improvement)_
 
 ## Platform Architecture
 
@@ -187,6 +187,17 @@ Verification:
   - `tests/e2e/prod-customers-smoke.spec.ts` -> `3 passed`,
   - stabilization changes: deterministic customer pick via `PANEL_SMOKE_CUSTOMER_ID` (default `2`), login retry (`3x`), best-effort upload cleanup (warn on non-2xx/3xx instead of hard fail),
   - addressed flake where `/customers` transiently rendered empty/loading list and broke ID resolution in smoke.
+- Dashboard production parity rerun (2026-02-23, customers, broader candidate scan):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - `pickPanelParityCustomerId` candidate scan increased (`10` -> `30`) to find better panel parity customer for media tabs,
+  - panel functional checks: `YES` (`11/11`),
+  - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
+  - strict visual parity (`<=3.0%`): `NO`, but media tabs now under threshold:
+    - `list 7.333%` (NO)
+    - `summary 5.278%` (NO)
+    - `gallery 2.742%` (YES)
+    - `files 2.806%` (YES)
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:53:02.081Z`).
 
 ## Recent Incidents
 
