@@ -144,7 +144,7 @@ Verification:
     - strict visual parity (`<=3.0%`): `NO` (`dashboard 11.828%`, `employees 3.968%`, `commissions 6.761%`),
     - artifact: `output/parity/2026-02-21-statistics-prod-full/`.
 - Dashboard production verification rerun (2026-02-23, customers):
-  - `tests/e2e/prod-customers-smoke.spec.ts` -> `2 passed` (`gallery/files` upload+download flow),
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `3 passed` (`gallery/files` upload+download + full card-routes sweep bez client-side exception),
   - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
   - panel functional checks: `YES` for all audited customers routes (`/customers`, card tabs, `/edit`, `/new`),
   - client-side exception on customers card routes: **not reproduced**,

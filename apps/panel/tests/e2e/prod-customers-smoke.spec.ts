@@ -81,6 +81,39 @@ async function gotoCustomerTab(
     throw lastError ?? new Error(`Failed to load tab ${tabName}`);
 }
 
+async function gotoCustomerRoute(
+    page: any,
+    customerId: number,
+    path: string,
+    requiredSelector: string,
+) {
+    const target = path.replace(':id', String(customerId));
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        await page.goto(target);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
+        await expect(page).not.toHaveURL(
+            /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
+        );
+        try {
+            await page.waitForSelector(`${requiredSelector}, .customer-error`, {
+                timeout: 20_000,
+            });
+            lastError = null;
+            break;
+        } catch (err) {
+            lastError = err;
+        }
+    }
+    if (lastError) {
+        throw lastError;
+    }
+    await expect(page.locator('body')).not.toContainText(
+        'Application error: a client-side exception has occurred',
+    );
+}
+
 async function login(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
@@ -195,6 +228,54 @@ test.describe('PROD smoke: customers gallery/files', () => {
                 expect(resp.status()).toBeLessThan(400);
             }
             await popup.close().catch(() => null);
+        }
+    });
+
+    test('customer card routes: all tabs render without client-side exception', async ({ page }) => {
+        await login(page);
+        const customerId = await resolveCustomerId(page);
+
+        const routes: Array<{ path: string; selector: string }> = [
+            { path: '/customers/:id', selector: '.customer-summary' },
+            {
+                path: '/customers/:id?tab_name=personal_data',
+                selector: '.customer-personal-view',
+            },
+            {
+                path: '/customers/:id?tab_name=statistics',
+                selector: '.customer-statistics-tab',
+            },
+            {
+                path: '/customers/:id?tab_name=events_history',
+                selector: '.customer-history-tab',
+            },
+            {
+                path: '/customers/:id?tab_name=opinions',
+                selector: '.customer-comments-tab',
+            },
+            {
+                path: '/customers/:id?tab_name=communication_preferences',
+                selector: '.customer-communication-tab',
+            },
+            {
+                path: '/customers/:id?tab_name=gallery',
+                selector: '.customer-gallery-tab',
+            },
+            {
+                path: '/customers/:id?tab_name=files',
+                selector: '.customer-files-tab',
+            },
+            { path: '/customers/:id/edit', selector: '.customer-personal-form' },
+            { path: '/customers/new', selector: '.customer-new-form' },
+        ];
+
+        for (const route of routes) {
+            await gotoCustomerRoute(
+                page,
+                customerId,
+                route.path,
+                route.selector,
+            );
         }
     });
 });
