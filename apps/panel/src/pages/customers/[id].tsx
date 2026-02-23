@@ -27,6 +27,7 @@ import {
     CustomerFilesTab,
     CustomerCommunicationTab,
 } from '@/components/customers';
+import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
 type TabId =
     | 'summary'
@@ -151,185 +152,209 @@ export default function CustomerDetailPage() {
         >
             <VersumShell role={role}>
                 <VersumCustomersVendorCss />
-                <div className="show_customer" id="customers_main">
-                    {/* Breadcrumbs - Versum style */}
-                    <ul className="breadcrumb">
-                        <li>
-                            <i
-                                className="icon sprite-breadcrumbs_customers"
-                                aria-hidden="true"
-                            />{' '}
-                            Klienci / {customer?.name || '...'}
-                        </li>
-                    </ul>
+                <CustomerErrorBoundary
+                    fallback={
+                        <div className="show_customer" id="customers_main">
+                            <div className="customer-error">
+                                <p>
+                                    Wystąpił błąd podczas renderowania karty
+                                    klienta.
+                                </p>
+                                <Link
+                                    href={'/customers' as Route}
+                                    className="versum-btn versum-btn--default"
+                                >
+                                    Wróć do listy klientów
+                                </Link>
+                            </div>
+                        </div>
+                    }
+                >
+                    <div className="show_customer" id="customers_main">
+                        {/* Breadcrumbs - Versum style */}
+                        <ul className="breadcrumb">
+                            <li>
+                                <i
+                                    className="icon sprite-breadcrumbs_customers"
+                                    aria-hidden="true"
+                                />{' '}
+                                Klienci / {customer?.name || '...'}
+                            </li>
+                        </ul>
 
-                    {!router.isReady || isCustomerLoading ? (
-                        <div className="customer-loading">
-                            Ładowanie danych klienta...
-                        </div>
-                    ) : hasInvalidCustomerId ? (
-                        <div className="customer-error">
-                            <p>Nieprawidłowy identyfikator klienta</p>
-                            <Link
-                                href={'/customers' as Route}
-                                className="versum-btn versum-btn--default"
-                            >
-                                Wróć do listy klientów
-                            </Link>
-                        </div>
-                    ) : error ? (
-                        <div className="customer-error">
-                            <p>Nie udało się załadować danych klienta</p>
-                            <Link
-                                href={'/customers' as Route}
-                                className="versum-btn versum-btn--default"
-                            >
-                                Wróć do listy klientów
-                            </Link>
-                        </div>
-                    ) : customer ? (
-                        <>
-                            <div className="customer-actions-bar customer_actions">
-                                <div className="customer-actions-bar__spacer" />
-                                <div className="btn-group customer-actions-group">
-                                    <Link
-                                        href={`/customers/${customer.id}/edit`}
-                                        className="button button-light-blue button-small"
-                                    >
-                                        edytuj
-                                    </Link>
-                                    <details className="customer-more-dropdown">
-                                        <summary className="button button-light-blue button-small customer-more-dropdown__trigger">
-                                            więcej <span className="caret" />
-                                        </summary>
-                                        <ul className="customer-more-dropdown__menu">
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        window.print()
-                                                    }
-                                                >
-                                                    drukuj
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <Link
-                                                    href={`/customers/${customer.id}?tab_name=personal_data`}
-                                                >
-                                                    historia zmian
-                                                </Link>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    disabled={
-                                                        role !== 'admin' ||
-                                                        deleteCustomer.isPending
-                                                    }
-                                                    title={
-                                                        role !== 'admin'
-                                                            ? 'Tylko administrator może usunąć klienta'
-                                                            : undefined
-                                                    }
-                                                    onClick={() => {
-                                                        if (
-                                                            !customer ||
-                                                            !confirm(
-                                                                'Czy na pewno chcesz usunąć klienta?',
-                                                            )
-                                                        ) {
-                                                            return;
+                        {!router.isReady || isCustomerLoading ? (
+                            <div className="customer-loading">
+                                Ładowanie danych klienta...
+                            </div>
+                        ) : hasInvalidCustomerId ? (
+                            <div className="customer-error">
+                                <p>Nieprawidłowy identyfikator klienta</p>
+                                <Link
+                                    href={'/customers' as Route}
+                                    className="versum-btn versum-btn--default"
+                                >
+                                    Wróć do listy klientów
+                                </Link>
+                            </div>
+                        ) : error ? (
+                            <div className="customer-error">
+                                <p>Nie udało się załadować danych klienta</p>
+                                <Link
+                                    href={'/customers' as Route}
+                                    className="versum-btn versum-btn--default"
+                                >
+                                    Wróć do listy klientów
+                                </Link>
+                            </div>
+                        ) : customer ? (
+                            <>
+                                <div className="customer-actions-bar customer_actions">
+                                    <div className="customer-actions-bar__spacer" />
+                                    <div className="btn-group customer-actions-group">
+                                        <Link
+                                            href={`/customers/${customer.id}/edit`}
+                                            className="button button-light-blue button-small"
+                                        >
+                                            edytuj
+                                        </Link>
+                                        <details className="customer-more-dropdown">
+                                            <summary className="button button-light-blue button-small customer-more-dropdown__trigger">
+                                                więcej{' '}
+                                                <span className="caret" />
+                                            </summary>
+                                            <ul className="customer-more-dropdown__menu">
+                                                <li>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            window.print()
                                                         }
-                                                        void deleteCustomer
-                                                            .mutateAsync(
-                                                                customer.id,
-                                                            )
-                                                            .then(() =>
-                                                                router.push(
-                                                                    '/customers',
-                                                                ),
-                                                            )
-                                                            .catch((err) => {
-                                                                const message =
-                                                                    err instanceof
-                                                                    Error
-                                                                        ? err.message
-                                                                        : 'Nie udało się usunąć klienta';
-                                                                alert(message);
-                                                            });
-                                                    }}
-                                                >
-                                                    usuń klienta
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </details>
+                                                    >
+                                                        drukuj
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <Link
+                                                        href={`/customers/${customer.id}?tab_name=personal_data`}
+                                                    >
+                                                        historia zmian
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            role !== 'admin' ||
+                                                            deleteCustomer.isPending
+                                                        }
+                                                        title={
+                                                            role !== 'admin'
+                                                                ? 'Tylko administrator może usunąć klienta'
+                                                                : undefined
+                                                        }
+                                                        onClick={() => {
+                                                            if (
+                                                                !customer ||
+                                                                !confirm(
+                                                                    'Czy na pewno chcesz usunąć klienta?',
+                                                                )
+                                                            ) {
+                                                                return;
+                                                            }
+                                                            void deleteCustomer
+                                                                .mutateAsync(
+                                                                    customer.id,
+                                                                )
+                                                                .then(() =>
+                                                                    router.push(
+                                                                        '/customers',
+                                                                    ),
+                                                                )
+                                                                .catch(
+                                                                    (err) => {
+                                                                        const message =
+                                                                            err instanceof
+                                                                            Error
+                                                                                ? err.message
+                                                                                : 'Nie udało się usunąć klienta';
+                                                                        alert(
+                                                                            message,
+                                                                        );
+                                                                    },
+                                                                );
+                                                        }}
+                                                    >
+                                                        usuń klienta
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Content */}
-                            <div
-                                className="customer-card-content customers_main_show_customer"
-                                id="pjax_container"
-                            >
-                                {activeTab === 'summary' && (
-                                    <CustomerSummaryView
-                                        customer={customer}
-                                        tags={customerTags ?? []}
-                                        stats={stats}
-                                        history={history}
-                                    />
-                                )}
-                                {activeTab === 'personal' && (
-                                    <CustomerPersonalDataView
-                                        customer={customer}
-                                    />
-                                )}
-                                {activeTab === 'statistics' && (
-                                    <CustomerStatisticsTab
-                                        customerId={customer.id}
-                                    />
-                                )}
-                                {activeTab === 'history' && (
-                                    <CustomerHistoryTab
-                                        customerId={customer.id}
-                                    />
-                                )}
-                                {activeTab === 'comments' && (
-                                    <CustomerNotesTab
-                                        customerId={customer.id}
-                                    />
-                                )}
-                                {activeTab === 'communication' && (
-                                    <CustomerCommunicationTab
-                                        customer={customer}
-                                    />
-                                )}
-                                {activeTab === 'gallery' && (
-                                    <CustomerGalleryTab
-                                        customerId={customer.id}
-                                    />
-                                )}
-                                {activeTab === 'files' && (
-                                    <CustomerFilesTab
-                                        customerId={customer.id}
-                                    />
-                                )}
+                                {/* Content */}
+                                <div
+                                    className="customer-card-content customers_main_show_customer"
+                                    id="pjax_container"
+                                >
+                                    {activeTab === 'summary' && (
+                                        <CustomerSummaryView
+                                            customer={customer}
+                                            tags={customerTags ?? []}
+                                            stats={stats}
+                                            history={history}
+                                        />
+                                    )}
+                                    {activeTab === 'personal' && (
+                                        <CustomerPersonalDataView
+                                            customer={customer}
+                                        />
+                                    )}
+                                    {activeTab === 'statistics' && (
+                                        <CustomerStatisticsTab
+                                            customerId={customer.id}
+                                        />
+                                    )}
+                                    {activeTab === 'history' && (
+                                        <CustomerHistoryTab
+                                            customerId={customer.id}
+                                        />
+                                    )}
+                                    {activeTab === 'comments' && (
+                                        <CustomerNotesTab
+                                            customerId={customer.id}
+                                        />
+                                    )}
+                                    {activeTab === 'communication' && (
+                                        <CustomerCommunicationTab
+                                            customer={customer}
+                                        />
+                                    )}
+                                    {activeTab === 'gallery' && (
+                                        <CustomerGalleryTab
+                                            customerId={customer.id}
+                                        />
+                                    )}
+                                    {activeTab === 'files' && (
+                                        <CustomerFilesTab
+                                            customerId={customer.id}
+                                        />
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="customer-error">
+                                <p>Nie znaleziono klienta</p>
+                                <Link
+                                    href={'/customers' as Route}
+                                    className="versum-btn versum-btn--default"
+                                >
+                                    Wróć do listy klientów
+                                </Link>
                             </div>
-                        </>
-                    ) : (
-                        <div className="customer-error">
-                            <p>Nie znaleziono klienta</p>
-                            <Link
-                                href={'/customers' as Route}
-                                className="versum-btn versum-btn--default"
-                            >
-                                Wróć do listy klientów
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                </CustomerErrorBoundary>
             </VersumShell>
         </RouteGuard>
     );
@@ -347,8 +372,10 @@ function CustomerSummaryView({
     stats: CustomerSummaryStats | null | undefined;
     history: CustomerHistory | null | undefined;
 }) {
-    const upcomingVisits = stats?.upcomingVisits ?? [];
-    const historyItems = history?.items ?? [];
+    const upcomingVisits = Array.isArray(stats?.upcomingVisits)
+        ? stats.upcomingVisits
+        : [];
+    const historyItems = Array.isArray(history?.items) ? history.items : [];
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('pl-PL', {
