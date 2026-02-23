@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers production smoke + full parity rerun)_
+_Last updated: 2026-02-23 (customers parity rerun on shared customer ID)_
 
 ## Platform Architecture
 
@@ -155,6 +155,13 @@ Verification:
   - panel functional checks: `YES` (stable),
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 33.584%`, `files 8.707%`),
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T13:49:53.872Z`).
+- Dashboard production parity rerun (2026-02-23, customers, shared `customerId=8177102`):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - parity URLs aligned: `panel /customers/8177102` vs `versum /customers/8177102`,
+  - panel functional checks: `NO` on this shared customer (missing expected selectors/texts on multiple tabs),
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 4.216%`, `gallery 2.307%`, `files 2.083%`),
+  - `versum` fallback `500` remains on `list` and `statistics`,
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T14:13:15.481Z`).
 
 ## Recent Incidents
 
