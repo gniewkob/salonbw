@@ -248,6 +248,24 @@
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:53:02.081Z`)
 
+### 2026-02-23 - Klienci: parity fallback tuning (prefer empty-media + core-ready)
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - fallback klienta panelu jest akceptowany tylko gdy spełnia jednocześnie `core-ready` i puste `gallery/files`,
+    - w przeciwnym razie selektor przechodzi do pełnego skanu kandydatów.
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` (`11/11`),
+  - `versum` functional checks: `NO` na `list` i `statistics` (fallback `500`),
+  - strict visual parity (`<=3.0%`):
+    - `list 7.333%` (NO)
+    - `summary 5.379%` (NO)
+    - `gallery 2.767%` (YES)
+    - `files 2.830%` (YES)
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T22:44:09.222Z`)
+
 ### 2026-02-23 - Klienci: smoke stabilizacja (deterministyczny customer + retry login)
 - zmiana testu:
   - `prod-customers-smoke.spec.ts`:
