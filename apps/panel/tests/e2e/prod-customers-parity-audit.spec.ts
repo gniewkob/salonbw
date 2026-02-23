@@ -184,8 +184,6 @@ async function assertNoAuthOrErrorFallback(
     const fallbackSnippets = [
         'this page could not be found',
         'application error: a client-side exception has occurred',
-        '404',
-        '500',
         'internal server error',
     ];
     for (const snippet of fallbackSnippets) {
@@ -193,6 +191,15 @@ async function assertNoAuthOrErrorFallback(
             ok = false;
             details.push(`fallback content present: "${snippet}"`);
         }
+    }
+    const looksLikeHttpError =
+        /\b(?:error|błąd)\s*(?:404|500)\b/.test(pageText) ||
+        /\b(?:404|500)\s*(?:error|błąd|internal server error|page not found)\b/.test(
+            pageText,
+        );
+    if (looksLikeHttpError) {
+        ok = false;
+        details.push('fallback content present: "http error page text"');
     }
     if (!ok) {
         details.push(`checked url: ${url}`);
@@ -410,12 +417,33 @@ async function resolvePanelCustomerIdByName(
     await page.waitForTimeout(1200);
 
     const target = normalizeText(fullName);
+    const searchInput = page.locator(
+        '#query:visible, input[name="query"]:visible, input[placeholder*="wyszukaj"]:visible, input[placeholder*="szukaj"]:visible',
+    );
+    if ((await searchInput.count()) > 0) {
+        await searchInput.first().fill(fullName);
+        await page.keyboard.press('Enter').catch(() => null);
+        await page.waitForLoadState('networkidle').catch(() => null);
+        await page.waitForTimeout(900);
+    }
+
     const rows = await page.$$eval('a[href]', (anchors) =>
         anchors.map((a) => ({
             href: a.getAttribute('href') || '',
             text: (a.textContent || '').replace(/\s+/g, ' ').trim(),
         })),
     );
+    for (const row of rows) {
+        const href = row.href;
+        const text = row.text;
+        if (!href || !text) continue;
+        if (!/\/(?:customers|clients)\//.test(href)) continue;
+        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        if (!match) continue;
+        if (normalizeText(text) !== target) continue;
+        const id = Number(match[1]);
+        if (Number.isFinite(id) && id > 0) return id;
+    }
     for (const row of rows) {
         const href = row.href;
         const text = row.text;
@@ -668,13 +696,25 @@ async function pickPanelParityCustomerId(
     page: any,
     candidates: NamedCustomer[],
     fallbackId: number,
+    preferredId: number | null = null,
 ): Promise<number> {
+    const preferredIds: number[] = [];
+    if (preferredId !== null && Number.isFinite(preferredId) && preferredId > 0) {
+        preferredIds.push(preferredId);
+    }
+    if (!preferredIds.includes(fallbackId)) {
+        preferredIds.push(fallbackId);
+    }
+
+    for (const id of preferredIds) {
+        if (!(await isHealthyPanelCustomer(page, id))) continue;
+        if (!(await isPanelCustomerCoreReady(page, id))) continue;
+        return id;
+    }
+
     if (await isHealthyPanelCustomer(page, fallbackId)) {
         const fallbackCoreReady = await isPanelCustomerCoreReady(page, fallbackId);
-        const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(
-            page,
-            fallbackId,
-        );
+        const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(page, fallbackId);
         if (fallbackCoreReady && fallbackEmptyMedia) {
             return fallbackId;
         }
@@ -1111,6 +1151,7 @@ test.describe('PROD audit: customers panel vs versum', () => {
             panelPage,
             panelCustomers,
             panelFallbackId,
+            panelCustomerId,
         );
         await loginPanel(panelPage);
         await loginVersum(versumPage);

@@ -939,3 +939,19 @@
   - utrzymana poprawa `commissions`,
   - `employees` najbliżej progu, ale nadal ponad limit,
   - `dashboard` pozostaje głównym blockerem visual parity.
+
+### 2026-02-23 - Klienci: parity precheck fix (`500` false-positive) + stabilizacja wyboru klienta
+- zmiana testu:
+  - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts`
+  - fallback/error precheck nie traktuje już samego wystąpienia `500`/`404` jako błędu (usuwa false-positive na ekranach z danymi liczbowymi),
+  - dodany precyzyjniejszy regex dla stron błędów HTTP (`error/błąd + 404/500`),
+  - selekcja klienta parity respektuje `preferredId` (nie nadpisuje wyniku name-match fallback scanem).
+- wynik rerun (prod):
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+  - functional parity: `YES` (`11/11`) po stronie panel + versum,
+  - strict visual parity (`<=3.0%`): `NO`:
+    - `list 7.338%`
+    - `summary 5.278%`
+    - `gallery 2.742%`
+    - `files 2.806%`
+  - artefakt: `output/parity/2026-02-23-customers-prod-full/`.
