@@ -150,6 +150,11 @@ Verification:
   - client-side exception on customers card routes: **not reproduced**,
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 30.136%`, `files 8.707%`),
   - artifact: `output/parity/2026-02-23-customers-prod-full/`.
+- Dashboard production parity rerun (2026-02-23, customers, post smoke-extension):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - panel functional checks: `YES` (stable),
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 33.584%`, `files 8.707%`),
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T13:49:53.872Z`).
 
 ## Recent Incidents
 
