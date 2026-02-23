@@ -94,15 +94,15 @@
 ## Known deltas (strict 1:1)
 
 - Klienci po deploy `0642f399`:
-  - functional parity (panel): **YES** na rerun produkcyjnym 2026-02-23 (`11/11` screen/action checks po stronie panelu),
+  - functional parity (panel): **NO** na rerun produkcyjnym 2026-02-23 po wyrównaniu `customerId` (wspólny `8177102`),
   - visual strict parity: **NO** (próg 3.0% niespełniony na ekranach krytycznych),
   - runtime crash `Application error: a client-side exception has occurred` na trasach karty klienta: **nieodtworzony** na rerun 2026-02-23,
   - odchylenia pixel diff (produkcja 2026-02-23):
     - `list`: `7.333%`
-    - `summary`: `5.363%`
-    - `gallery`: `30.136%`
-    - `files`: `8.707%`
-  - uwaga porównawcza: `versum` zwraca fallback `500` na części ekranów referencyjnych (`list`, `statistics`), co obniża wynik parity całościowy mimo panel=YES.
+    - `summary`: `4.216%`
+    - `gallery`: `2.307%`
+    - `files`: `2.083%`
+  - uwaga porównawcza: `versum` zwraca fallback `500` na części ekranów referencyjnych (`list`, `statistics`), co obniża wynik parity całościowy.
   - artefakty:
     - `output/parity/2026-02-23-customers-prod-full/REPORT.md`
     - `output/parity/2026-02-23-customers-prod-full/pixel-diff.json`
@@ -154,6 +154,26 @@
   - `versum` fallback `500` na ekranach referencyjnych `list` i `statistics` pozostaje.
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T13:49:53.872Z`)
+
+### 2026-02-23 - Klienci: parity rerun na wspólnym `customerId` panel/versum
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - nowy resolver `resolvePanelCustomerId` (preferuje `PANEL_PARITY_CUSTOMER_ID`, fallback do `VERSUM_CUSTOMER_ID`, a dopiero potem pierwszy rekord z listy),
+    - `VERSUM_CUSTOMER_ID` jako opcjonalny env (domyślnie `8177102`),
+    - budowanie URL parity na wspólnym `customerId` dla panel + versum.
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - potwierdzenie porównania na tym samym rekordzie: `panel /customers/8177102` vs `versum /customers/8177102`,
+  - strict visual parity (`<=3.0%`):
+    - `list 7.333%` (NO)
+    - `summary 4.216%` (NO)
+    - `gallery 2.307%` (YES)
+    - `files 2.083%` (YES)
+  - panel functional checks: `NO` (na tym konkretnym `customerId` brak części oczekiwanych elementów/tekstów),
+  - `versum` fallback `500` na ekranach `list` i `statistics` utrzymany.
+- artefakty:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T14:13:15.481Z`)
 
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:

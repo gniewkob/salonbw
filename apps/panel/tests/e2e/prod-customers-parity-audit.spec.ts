@@ -47,7 +47,7 @@ interface PixelDiffResult {
     pass: boolean;
 }
 
-const VERSUM_CUSTOMER_ID = 8177102;
+const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
@@ -62,6 +62,16 @@ function requireEnv(name: string): string {
         throw new Error(`Missing required env var: ${name}`);
     }
     return value;
+}
+
+function optionalNumericEnv(name: string): number | null {
+    const value = process.env[name];
+    if (!value) return null;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        throw new Error(`Invalid numeric env var: ${name}=${value}`);
+    }
+    return parsed;
 }
 
 async function ensureDir(dir: string) {
@@ -274,6 +284,45 @@ async function resolveCustomerId(page: any): Promise<number> {
     );
 }
 
+async function resolvePanelCustomerId(
+    page: any,
+    preferredId: number | null,
+): Promise<number> {
+    if (preferredId !== null) {
+        const preferredUrl = `https://panel.salon-bw.pl/customers/${preferredId}`;
+        await page.goto(preferredUrl, {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        });
+        await page.waitForTimeout(1200);
+        const currentUrl = page.url().toLowerCase();
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const fallbackSnippets = [
+            'this page could not be found',
+            'application error: a client-side exception has occurred',
+            '404',
+            '500',
+            'internal server error',
+        ];
+        const hasFallback = fallbackSnippets.some((snippet) =>
+            pageText.includes(snippet),
+        );
+        const isLoginRedirect = currentUrl.includes('/auth/login');
+        const hasCustomerShell =
+            (await page
+                .locator(
+                    '#customers_main, .customer-summary, .customer-personal-view, .customer-gallery-tab, .customer-files-tab',
+                )
+                .count()) > 0;
+        if (!isLoginRedirect && !hasFallback && hasCustomerShell) {
+            return preferredId;
+        }
+    }
+    return resolveCustomerId(page);
+}
+
 function buildMarkdown(results: AuditResult[], generatedAt: string): string {
     const lines: string[] = [];
     lines.push('# Customers Parity Audit (Production, Full)');
@@ -397,9 +446,12 @@ function buildMarkdownWithVisual(
     return `${lines.join('\n')}\n`;
 }
 
-function buildActions(panelCustomerId: number): AuditAction[] {
+function buildActions(
+    panelCustomerId: number,
+    versumCustomerId: number,
+): AuditAction[] {
     const panelBase = `https://panel.salon-bw.pl/customers/${panelCustomerId}`;
-    const versumBase = `https://panel.versum.com/salonblackandwhite/customers/${VERSUM_CUSTOMER_ID}`;
+    const versumBase = `https://panel.versum.com/salonblackandwhite/customers/${versumCustomerId}`;
     return [
         {
             id: '01-list',
@@ -606,6 +658,12 @@ test.describe('PROD audit: customers panel vs versum', () => {
         requireEnv('PANEL_LOGIN_PASSWORD');
         requireEnv('VERSUM_LOGIN_EMAIL');
         requireEnv('VERSUM_LOGIN_PASSWORD');
+        const versumCustomerId =
+            optionalNumericEnv('VERSUM_CUSTOMER_ID') ??
+            DEFAULT_VERSUM_CUSTOMER_ID;
+        const panelCustomerIdHint =
+            optionalNumericEnv('PANEL_PARITY_CUSTOMER_ID') ??
+            versumCustomerId;
 
         const runDate = new Date().toISOString().slice(0, 10);
         const outDir = path.resolve(
@@ -632,8 +690,11 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
         await loginPanel(panelPage);
         await loginVersum(versumPage);
-        const panelCustomerId = await resolveCustomerId(panelPage);
-        const actions = buildActions(panelCustomerId);
+        const panelCustomerId = await resolvePanelCustomerId(
+            panelPage,
+            panelCustomerIdHint,
+        );
+        const actions = buildActions(panelCustomerId, versumCustomerId);
 
         const results: AuditResult[] = [];
         const pixelDiffResults: PixelDiffResult[] = [];
