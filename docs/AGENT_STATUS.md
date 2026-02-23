@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity anti-flake stabilization)_
+_Last updated: 2026-02-23 (customers parity runtime settle stabilization)_
 
 ## Platform Architecture
 
@@ -176,6 +176,13 @@ Verification:
   - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 27.400%`, `files 8.707%`),
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T17:16:47.900Z`).
+- Dashboard production parity stabilization rerun (2026-02-23, customers, runtime settle):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - added per-action panel stabilization (`stabilizePanelActionPage`) with reload retry until loading placeholders are gone,
+  - panel functional checks: `YES` (`11/11`) on rerun,
+  - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 4.216%`, `gallery 30.137%`, `files 8.707%`),
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:14:15.587Z`).
 
 ## Recent Incidents
 

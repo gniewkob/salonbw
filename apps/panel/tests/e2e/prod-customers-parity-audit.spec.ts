@@ -136,6 +136,27 @@ async function runChecks(
     return { ok, details };
 }
 
+async function stabilizePanelActionPage(
+    page: any,
+    url: string,
+    check: PageCheck,
+): Promise<void> {
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+        await page.waitForLoadState('networkidle').catch(() => null);
+        await waitForPanelCustomerContent(page, url);
+        const res = await runChecks(page, check);
+        if (res.ok) return;
+        const text = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const looksLoading =
+            text.includes('ładowanie danych klienta') || text.includes('ładowanie...');
+        if (!looksLoading && attempt >= 1) return;
+        await page.waitForTimeout(1000);
+    }
+}
+
 async function assertNoAuthOrErrorFallback(
     page: any,
     target: AppTarget,
@@ -558,6 +579,115 @@ async function isHealthyPanelCustomer(
     return shellCount > 0;
 }
 
+async function waitForPanelCustomerContent(page: any, url: string) {
+    if (!/\/customers\/\d+/.test(url)) return;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const isLoading =
+            pageText.includes('ładowanie danych klienta') ||
+            pageText.includes('ładowanie...');
+        if (!isLoading) return;
+        await page.waitForTimeout(800);
+        if (attempt === 3) {
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+        }
+    }
+}
+
+async function hasPanelEmptyGalleryAndFiles(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    await page.goto(
+        `https://panel.salon-bw.pl/customers/${customerId}?tab_name=gallery`,
+        {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        },
+    );
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(800);
+    const galleryText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    const galleryEmpty = galleryText.includes('brak wgranych zdjęć');
+
+    await page.goto(
+        `https://panel.salon-bw.pl/customers/${customerId}?tab_name=files`,
+        {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        },
+    );
+    await page.waitForLoadState('networkidle').catch(() => null);
+    await page.waitForTimeout(800);
+    const filesText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    const filesEmpty = filesText.includes('brak załączonych plików');
+    return galleryEmpty && filesEmpty;
+}
+
+async function isPanelCustomerCoreReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const checks: Array<{ url: string; needle: string }> = [
+        { url: `https://panel.salon-bw.pl/customers/${customerId}`, needle: 'edytuj' },
+        {
+            url: `https://panel.salon-bw.pl/customers/${customerId}?tab_name=personal_data`,
+            needle: 'dane podstawowe',
+        },
+        {
+            url: `https://panel.salon-bw.pl/customers/${customerId}?tab_name=statistics`,
+            needle: 'okres',
+        },
+        {
+            url: `https://panel.salon-bw.pl/customers/${customerId}?tab_name=events_history`,
+            needle: 'filtruj',
+        },
+    ];
+    for (const check of checks) {
+        await page.goto(check.url, {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        });
+        await waitForPanelCustomerContent(page, check.url);
+        await page.waitForTimeout(800);
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        if (!pageText.includes(check.needle)) return false;
+    }
+    return true;
+}
+
+async function pickPanelParityCustomerId(
+    page: any,
+    candidates: NamedCustomer[],
+    fallbackId: number,
+): Promise<number> {
+    const uniqueCandidates: number[] = [];
+    const seen = new Set<number>();
+    for (const candidate of candidates) {
+        if (seen.has(candidate.id)) continue;
+        seen.add(candidate.id);
+        uniqueCandidates.push(candidate.id);
+        if (uniqueCandidates.length >= 10) break;
+    }
+    for (const id of uniqueCandidates) {
+        if (!(await isHealthyPanelCustomer(page, id))) continue;
+        if (!(await isPanelCustomerCoreReady(page, id))) continue;
+        if (await hasPanelEmptyGalleryAndFiles(page, id)) return id;
+    }
+    for (const id of uniqueCandidates) {
+        if (await isHealthyPanelCustomer(page, id)) return id;
+    }
+    return fallbackId;
+}
+
 function buildMarkdown(results: AuditResult[], generatedAt: string): string {
     const lines: string[] = [];
     lines.push('# Customers Parity Audit (Production, Full)');
@@ -965,14 +1095,13 @@ test.describe('PROD audit: customers panel vs versum', () => {
                 versumCustomerId,
             ).catch(() => DEFAULT_PANEL_CUSTOMER_ID);
         }
-        if (!(await isHealthyPanelCustomer(panelPage, panelCustomerId))) {
-            for (const candidate of panelCustomers) {
-                if (await isHealthyPanelCustomer(panelPage, candidate.id)) {
-                    panelCustomerId = candidate.id;
-                    break;
-                }
-            }
-        }
+        panelCustomerId = await pickPanelParityCustomerId(
+            panelPage,
+            panelCustomers,
+            panelCustomerId,
+        );
+        await loginPanel(panelPage);
+        await loginVersum(versumPage);
         const actions = buildActions(panelCustomerId, versumCustomerId);
 
         const results: AuditResult[] = [];
@@ -984,7 +1113,15 @@ test.describe('PROD audit: customers panel vs versum', () => {
             for (const target of ['panel', 'versum'] as AppTarget[]) {
                 const page = target === 'panel' ? panelPage : versumPage;
                 const url = target === 'panel' ? action.panelUrl : action.versumUrl;
-                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+                if (target === 'panel') {
+                    await stabilizePanelActionPage(page, url, action.panelCheck);
+                } else {
+                    await page.goto(url, {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 45_000,
+                    });
+                    await page.waitForLoadState('networkidle').catch(() => null);
+                }
                 await page.waitForTimeout(1500);
                 await page.screenshot({
                     path: path.join(outDir, `${target}-${seq}-${action.id}.png`),

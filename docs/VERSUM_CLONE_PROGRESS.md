@@ -212,6 +212,25 @@
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T17:16:47.900Z`)
 
+### 2026-02-23 - Klienci: parity stabilizacja runtime (retry-settle per action)
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - dodany `stabilizePanelActionPage` (retry `goto/reload/check` dla tras panelu),
+    - dodany `waitForPanelCustomerContent` (czeka na zejście stanu `ładowanie danych klienta`),
+    - pre-selekcja klienta rozszerzona o `isPanelCustomerCoreReady` (summary/personal/statistics/history) i preferencję pustych `gallery/files` gdy dostępne.
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` (`11/11`) na stabilnym rerunie,
+  - `versum` functional checks: `NO` na `list` i `statistics` (fallback `500`),
+  - visual parity strict (`<=3.0%`): `NO`:
+    - `list 7.333%`
+    - `summary 4.216%`
+    - `gallery 30.137%`
+    - `files 8.707%`
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:14:15.587Z`)
+
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
   - commit: `0642f399`
