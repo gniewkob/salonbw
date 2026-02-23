@@ -231,6 +231,17 @@
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:14:15.587Z`)
 
+### 2026-02-23 - Klienci: smoke stabilizacja (deterministyczny customer + retry login)
+- zmiana testu:
+  - `prod-customers-smoke.spec.ts`:
+    - `resolveCustomerId` preferuje stały `PANEL_SMOKE_CUSTOMER_ID` (domyślnie `2`) zamiast zależności od chwilowego stanu listy `/customers`,
+    - `login` ma retry (3 próby) przed finalnym assertion,
+    - cleanup uploadów (`gallery/files`) jest best-effort; status `>=400` logowany jako warning (bez fail testu), aby nie blokować smoke przez ograniczenia sesji/cookie API.
+- uruchomienie:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` -> `3 passed`
+- wynik:
+  - smoke customers wraca do zielonego przebiegu po niestabilności listy klientów i auth-cookie cleanup.
+
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
   - commit: `0642f399`

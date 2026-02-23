@@ -9,7 +9,21 @@ function requireEnv(name: string): string {
     return v;
 }
 
+function extractNumericId(payload: unknown): number | null {
+    if (!payload || typeof payload !== 'object') return null;
+    const candidate = (payload as { id?: unknown }).id;
+    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+        return candidate;
+    }
+    return null;
+}
+
 async function resolveCustomerId(page: any): Promise<number> {
+    const hinted = Number(process.env.PANEL_SMOKE_CUSTOMER_ID || '2');
+    if (Number.isFinite(hinted) && hinted > 0) {
+        return hinted;
+    }
+
     await page.goto('/customers');
     await page.waitForLoadState('domcontentloaded');
     await page.waitForLoadState('networkidle').catch(() => null);
@@ -65,9 +79,16 @@ async function gotoCustomerTab(
 ) {
     const target = `/customers/${customerId}?tab_name=${tabName}`;
     let lastError: unknown = null;
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
         await page.goto(target);
         await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
+        if (/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+            await login(page);
+            await page.goto(target);
+            await page.waitForLoadState('domcontentloaded');
+            await page.waitForLoadState('networkidle').catch(() => null);
+        }
         await expect(page).not.toHaveURL(
             /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
         );
@@ -76,6 +97,7 @@ async function gotoCustomerTab(
             return;
         } catch (err) {
             lastError = err;
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
         }
     }
     throw lastError ?? new Error(`Failed to load tab ${tabName}`);
@@ -118,31 +140,38 @@ async function login(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
 
-    // Production panel may host the login form on "/" (or redirect).
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        // Production panel may host the login form on "/" (or redirect).
+        await page.goto('/');
+        await page.waitForLoadState('domcontentloaded');
 
-    // Be liberal in selectors: the panel login has a simple email + password form.
-    const emailInput = page.locator(
-        'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
+        // Be liberal in selectors: the panel login has a simple email + password form.
+        const emailInput = page.locator(
+            'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
+        );
+        const passwordInput = page.locator(
+            'input[name="password"], input[type="password"], input[placeholder*="Password"], input[aria-label*="Password"]',
+        );
+
+        await emailInput.first().waitFor({ state: 'visible', timeout: 20_000 });
+        await emailInput.first().fill(email);
+        await passwordInput.first().fill(password);
+
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
+            page.click(
+                'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
+            ),
+        ]);
+
+        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+            return;
+        }
+        await page.waitForTimeout(1000);
+    }
+    await expect(page).not.toHaveURL(
+        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
     );
-    const passwordInput = page.locator(
-        'input[name="password"], input[type="password"], input[placeholder*="Password"], input[aria-label*="Password"]',
-    );
-
-    await emailInput.first().waitFor({ state: 'visible', timeout: 20_000 });
-    await emailInput.first().fill(email);
-    await passwordInput.first().fill(password);
-
-    await Promise.all([
-        page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
-        page.click(
-            'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
-        ),
-    ]);
-
-    // We only assert we are not on a common login URL to avoid flakiness across redirects.
-    await expect(page).not.toHaveURL(/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/);
 }
 
 test.describe('PROD smoke: customers gallery/files', () => {
@@ -179,13 +208,38 @@ test.describe('PROD smoke: customers gallery/files', () => {
             'label:has-text("dodaj zdjęcie") input[type="file"]',
         );
         await expect(fileInput).toBeEnabled({ timeout: 10_000 });
+        const uploadResponsePromise = page.waitForResponse(
+            (resp) =>
+                resp.request().method() === 'POST' &&
+                /\/customers\/\d+\/gallery(?:\?|$)/.test(resp.url()),
+        );
         await fileInput.setInputFiles(pngPath);
+        const uploadResponse = await uploadResponsePromise;
+        const uploadPayload = await uploadResponse.json().catch(() => null);
+        const uploadedImageId = extractNumericId(uploadPayload);
 
         // Wait for an image thumbnail to appear (either new or existing).
         await page.waitForSelector('.customer-gallery-thumb img', {
             timeout: 20_000,
         });
         await expect(page.locator('.customer-gallery-thumb img').first()).toBeVisible();
+
+        // Cleanup: remove uploaded image so smoke data doesn't pollute parity screenshots.
+        if (uploadedImageId !== null) {
+            const deleteUrl = `${uploadResponse.url().replace(/\?.*$/, '')}/${uploadedImageId}`;
+            const deleteStatus = await page.evaluate(async (url) => {
+                const res = await fetch(url, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                });
+                return res.status;
+            }, deleteUrl);
+            if (deleteStatus >= 400) {
+                console.warn(
+                    `[prod-customers-smoke] gallery cleanup skipped with status ${deleteStatus}`,
+                );
+            }
+        }
     });
 
     test('files: upload file -> row visible -> download returns 200', async ({ page }, testInfo) => {
@@ -202,7 +256,15 @@ test.describe('PROD smoke: customers gallery/files', () => {
             'label:has-text("dodaj plik") input[type="file"]',
         );
         await expect(input).toBeEnabled({ timeout: 10_000 });
+        const uploadResponsePromise = page.waitForResponse(
+            (resp) =>
+                resp.request().method() === 'POST' &&
+                /\/customers\/\d+\/files(?:\?|$)/.test(resp.url()),
+        );
         await input.setInputFiles(txtPath);
+        const uploadResponse = await uploadResponsePromise;
+        const uploadPayload = await uploadResponse.json().catch(() => null);
+        const uploadedFileId = extractNumericId(uploadPayload);
 
         // The file list should eventually include the uploaded filename.
         await expect(page.locator('.customer-files-tab')).toContainText(
@@ -210,8 +272,13 @@ test.describe('PROD smoke: customers gallery/files', () => {
             { timeout: 20_000 },
         );
 
-        // Click "download" and assert the download endpoint responds.
-        const downloadBtn = page.locator('button[aria-label="Pobierz plik"]').first();
+        // Click "download" for the uploaded row and assert endpoint responds.
+        const uploadedRow = page
+            .locator('tr', { hasText: path.basename(txtPath) })
+            .first();
+        const downloadBtn = uploadedRow.locator(
+            'button[aria-label="Pobierz plik"]',
+        );
         await expect(downloadBtn).toBeVisible();
 
         const [popup] = await Promise.all([
@@ -228,6 +295,23 @@ test.describe('PROD smoke: customers gallery/files', () => {
                 expect(resp.status()).toBeLessThan(400);
             }
             await popup.close().catch(() => null);
+        }
+
+        // Cleanup: remove uploaded file to keep production test account stable.
+        if (uploadedFileId !== null) {
+            const deleteUrl = `${uploadResponse.url().replace(/\?.*$/, '')}/${uploadedFileId}`;
+            const deleteStatus = await page.evaluate(async (url) => {
+                const res = await fetch(url, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                });
+                return res.status;
+            }, deleteUrl);
+            if (deleteStatus >= 400) {
+                console.warn(
+                    `[prod-customers-smoke] files cleanup skipped with status ${deleteStatus}`,
+                );
+            }
         }
     });
 

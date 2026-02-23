@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity runtime settle stabilization)_
+_Last updated: 2026-02-23 (customers smoke stabilization + parity stable rerun)_
 
 ## Platform Architecture
 
@@ -183,6 +183,10 @@ Verification:
   - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 4.216%`, `gallery 30.137%`, `files 8.707%`),
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T19:14:15.587Z`).
+- Dashboard production smoke stabilization (2026-02-23, customers):
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `3 passed`,
+  - stabilization changes: deterministic customer pick via `PANEL_SMOKE_CUSTOMER_ID` (default `2`), login retry (`3x`), best-effort upload cleanup (warn on non-2xx/3xx instead of hard fail),
+  - addressed flake where `/customers` transiently rendered empty/loading list and broke ID resolution in smoke.
 
 ## Recent Incidents
 
