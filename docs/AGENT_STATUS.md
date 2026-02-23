@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity fallback tuning)_
+_Last updated: 2026-02-23 (customers parity fallback baseline preference)_
 
 ## Platform Architecture
 
@@ -209,6 +209,16 @@ Verification:
     - `gallery 2.767%` (YES)
     - `files 2.830%` (YES)
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T22:44:09.222Z`).
+- Dashboard production parity rerun (2026-02-23, customers, fallback baseline preference):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - fallback selection stabilized with explicit baseline preference and validation (`healthy + core-ready + empty media`) before candidate scan,
+  - panel functional checks: `YES` (`11/11`),
+  - strict visual parity (`<=3.0%`): `NO`:
+    - `list 7.333%` (NO)
+    - `summary 5.287%` (NO)
+    - `gallery 2.741%` (YES)
+    - `files 2.804%` (YES)
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T22:56:03.422Z`).
 
 ## Recent Incidents
 

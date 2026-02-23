@@ -1094,6 +1094,7 @@ test.describe('PROD audit: customers panel vs versum', () => {
         const panelCustomerIdByName = versumCustomerName
             ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
             : null;
+        const panelFallbackId = explicitPanelCustomerId ?? DEFAULT_PANEL_CUSTOMER_ID;
         let panelCustomerId =
             explicitPanelCustomerId ??
             sharedCustomer?.panel.id ??
@@ -1104,12 +1105,12 @@ test.describe('PROD audit: customers panel vs versum', () => {
             panelCustomerId = await resolvePanelCustomerId(
                 panelPage,
                 versumCustomerId,
-            ).catch(() => DEFAULT_PANEL_CUSTOMER_ID);
+            ).catch(() => panelFallbackId);
         }
         panelCustomerId = await pickPanelParityCustomerId(
             panelPage,
             panelCustomers,
-            panelCustomerId,
+            panelFallbackId,
         );
         await loginPanel(panelPage);
         await loginVersum(versumPage);
