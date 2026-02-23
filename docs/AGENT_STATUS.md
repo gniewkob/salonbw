@@ -258,6 +258,23 @@ Verification:
 
 ### 2026-02-17: Warehouse full production parity audit (completed)
 
+### 2026-02-23: Customers parity audit precheck hardening + rerun
+
+- scope:
+  - hardened prod customers parity audit precheck to avoid `500`/`404` false positives from ordinary numeric content,
+  - stabilized preferred customer selection in parity resolver.
+- run:
+  - `apps/panel/tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`.
+- result:
+  - functional checks: `YES` (panel + versum),
+  - strict visual parity (`<=3.0%`): `NO`:
+    - `list 7.338%`,
+    - `summary 5.278%`,
+    - `gallery 2.742%`,
+    - `files 2.806%`.
+- artifacts:
+  - `output/parity/2026-02-23-customers-prod-full/`.
+
 - **Scope:** Full warehouse module sweep on production (`products`, `sales`, `use`, `deliveries`, `orders`, `inventory`, plus `stock-alerts`/`suppliers`/`manufacturers`) against Versum reference routes.
 - **Automation:** `apps/panel/tests/e2e/prod-warehouse-parity-audit.spec.ts`.
 - **Artifacts:** `output/parity/2026-02-17-warehouse-prod-full/`.
