@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity resolver name-first + rerun)_
+_Last updated: 2026-02-23 (customers parity anti-flake stabilization)_
 
 ## Platform Architecture
 
@@ -169,6 +169,13 @@ Verification:
   - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
   - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 39.152%`, `files 8.707%`),
   - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T15:29:48.826Z`).
+- Dashboard production parity stabilization rerun (2026-02-23, customers, anti-flake):
+  - `tests/e2e/prod-customers-parity-audit.spec.ts` -> `1 passed`,
+  - added retry/health guards for customer selection (`collectNamedCustomers` + relogin retry + `isHealthyPanelCustomer` + panel default fallback id),
+  - panel functional checks: `YES` (`11/11`) restored after transient empty/loading list state,
+  - `versum` functional checks: `NO` on `list` and `statistics` (`500` fallback),
+  - strict visual parity (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 27.400%`, `files 8.707%`),
+  - artifact refreshed: `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T17:16:47.900Z`).
 
 ## Recent Incidents
 

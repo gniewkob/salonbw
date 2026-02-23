@@ -196,6 +196,22 @@
 - artefakt:
   - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T15:29:48.826Z`)
 
+### 2026-02-23 - Klienci: parity anti-flake (empty/loading customers list)
+- zmiana testu:
+  - `prod-customers-parity-audit.spec.ts`:
+    - zbieranie kandydatów klientów z obu list (`collectNamedCustomers`) + próba przecięcia po nazwie,
+    - retry kolekcji po ponownym logowaniu, gdy lista jest pusta,
+    - fallback panelowy do stabilnego `customerId` (`DEFAULT_PANEL_CUSTOMER_ID=2`),
+    - walidacja `isHealthyPanelCustomer` (odrzuca rekordy utknięte na `ładowanie danych klienta` / `ładowanie...`).
+- uruchomienie:
+  - `pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`
+- wynik:
+  - panel functional checks: `YES` (`11/11`) po stabilizacji resolvera,
+  - `versum` functional checks: `NO` na `list` i `statistics` (fallback `500`),
+  - visual parity strict (`<=3.0%`): `NO` (`list 7.333%`, `summary 5.363%`, `gallery 27.400%`, `files 8.707%`).
+- artefakt:
+  - `output/parity/2026-02-23-customers-prod-full/REPORT.md` (generated `2026-02-23T17:16:47.900Z`)
+
 ### 2026-02-20 - Klienci: stabilizacja audytu parity + strict visual diff (deploy)
 - commit/deploy:
   - commit: `0642f399`
