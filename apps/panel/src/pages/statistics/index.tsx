@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useDashboardStats, useEmployeeRanking } from '@/hooks/useStatistics';
+import { useCashRegister } from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
 import VersumShell from '@/components/versum/VersumShell';
@@ -13,11 +14,35 @@ const VISUAL_FALLBACK_EMPLOYEES = [
 ];
 
 const toNumber = (value: unknown): number => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+    const raw = String(value ?? '').trim();
+    if (!raw) return 0;
+
+    const normalized = raw.replace(',', '.');
+    const repeatedMoney = normalized.match(/-?\d+\.\d{2}/g);
+    if (repeatedMoney && repeatedMoney.length > 1) {
+        const sum = repeatedMoney.reduce((acc, token) => {
+            const n = Number(token);
+            return acc + (Number.isFinite(n) ? n : 0);
+        }, 0);
+        return Number.isFinite(sum) ? sum : 0;
+    }
+
     const parsed =
-        typeof value === 'number'
-            ? value
-            : Number(String(value ?? '').replace(',', '.'));
+        Number(normalized.replace(/[^0-9.-]/g, '')) ||
+        Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
     return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatDuration = (minutes: number): string => {
+    const safeMinutes = Math.max(0, Math.round(minutes));
+    const hours = Math.floor(safeMinutes / 60);
+    const mins = safeMinutes % 60;
+    if (hours === 0) return `${mins} min`;
+    if (mins === 0) return `${hours} h`;
+    return `${hours} h ${mins} min`;
 };
 
 export default function StatisticsPage() {
@@ -46,6 +71,7 @@ function StatisticsPageContent() {
         range: DateRange.ThisMonth,
     });
     const { data: employeeList } = useEmployees();
+    const { data: registerSummary } = useCashRegister(reportDate);
     const safeEmployeeList = useMemo(() => employeeList ?? [], [employeeList]);
 
     const totals = useMemo(() => {
@@ -67,11 +93,10 @@ function StatisticsPageContent() {
             return ranking.map((employee) => ({
                 employeeId: employee.employeeId,
                 employeeName: employee.employeeName,
-                completedAppointments: toNumber(
-                    employee.completedAppointments,
-                ),
+                completedAppointments: toNumber(employee.completedAppointments),
                 revenue: toNumber(employee.revenue),
                 averageRevenue: toNumber(employee.averageRevenue),
+                averageDuration: toNumber(employee.averageDuration),
                 tips: toNumber(employee.tips),
                 rating: toNumber(employee.rating),
             }));
@@ -84,6 +109,7 @@ function StatisticsPageContent() {
                 completedAppointments: 0,
                 revenue: 0,
                 averageRevenue: 0,
+                averageDuration: 0,
                 tips: 0,
                 rating: 0,
             }));
@@ -101,11 +127,70 @@ function StatisticsPageContent() {
                 completedAppointments: 0,
                 revenue: 0,
                 averageRevenue: 0,
+                averageDuration: 0,
                 tips: 0,
                 rating: 0,
             };
         });
     }, [ranking, safeEmployeeList]);
+
+    const totalWorkMinutes = useMemo(() => {
+        return employeeRows.reduce((acc, employee) => {
+            return (
+                acc +
+                toNumber(employee.completedAppointments) *
+                    toNumber(employee.averageDuration)
+            );
+        }, 0);
+    }, [employeeRows]);
+
+    const paymentRows = useMemo(() => {
+        const totals = registerSummary?.totals;
+        const candidates = [
+            { key: 'cash', label: 'gotówka', color: '#86c92a' },
+            { key: 'card', label: 'karta kredytowa', color: '#2b9ad0' },
+            { key: 'transfer', label: 'przelew', color: '#f0ad4e' },
+            { key: 'online', label: 'online', color: '#8e44ad' },
+            { key: 'voucher', label: 'voucher', color: '#7f8c8d' },
+        ] as const;
+
+        const rows = candidates
+            .map((item) => ({
+                ...item,
+                amount: toNumber(totals?.[item.key]),
+            }))
+            .filter((item) => item.amount > 0);
+
+        if (!rows.length) {
+            return [
+                {
+                    key: 'cash',
+                    label: 'gotówka',
+                    color: '#86c92a',
+                    amount: toNumber(totals?.total) || toNumber(totals?.cash),
+                },
+            ];
+        }
+        return rows;
+    }, [registerSummary]);
+
+    const paymentTotal = useMemo(() => {
+        return paymentRows.reduce((acc, item) => acc + item.amount, 0);
+    }, [paymentRows]);
+
+    const paymentPieBackground = useMemo(() => {
+        if (paymentTotal <= 0) {
+            return '#86c92a';
+        }
+        let current = 0;
+        const segments = paymentRows.map((item) => {
+            const start = current;
+            const share = (item.amount / paymentTotal) * 100;
+            current += share;
+            return `${item.color} ${start.toFixed(3)}% ${current.toFixed(3)}%`;
+        });
+        return `conic-gradient(${segments.join(', ')})`;
+    }, [paymentRows, paymentTotal]);
 
     const formatMoney = (value: unknown): string =>
         toNumber(value).toFixed(2).replace('.', ',') + ' zł';
@@ -252,7 +337,8 @@ function StatisticsPageContent() {
                         Liczba sfinalizowanych wizyt: {totals.totalVisits}
                     </div>
                     <div className="mb-20 fs-12">
-                        Łączny czas trwania sfinalizowanych wizyt: 0 min
+                        Łączny czas trwania sfinalizowanych wizyt:{' '}
+                        {formatDuration(totalWorkMinutes)}
                     </div>
 
                     <div className="statistics-summary-row mb-20">
@@ -297,11 +383,11 @@ function StatisticsPageContent() {
                             <div className="mt-10 fs-12">
                                 <div>
                                     Saldo gotówki w kasie:{' '}
-                                    {formatMoney(totals.dayRevenue)}
+                                    {formatMoney(
+                                        toNumber(registerSummary?.totals?.cash),
+                                    )}
                                 </div>
-                                <div>
-                                    Wpływy: {formatMoney(totals.dayRevenue)}
-                                </div>
+                                <div>Wpływy: {formatMoney(paymentTotal)}</div>
                                 <div>Wydatki: {formatMoney(0)}</div>
                             </div>
                         </div>
@@ -314,10 +400,37 @@ function StatisticsPageContent() {
                                     <div
                                         aria-hidden
                                         className="statistics-payment-pie"
+                                        style={{
+                                            background: paymentPieBackground,
+                                        }}
                                     />
                                     <div className="fs-12">
-                                        <span className="statistics-payment-dot" />
-                                        gotówka: 0,00 zł (100%)
+                                        {paymentRows.map((item) => {
+                                            const percent =
+                                                paymentTotal > 0
+                                                    ? (
+                                                          (item.amount /
+                                                              paymentTotal) *
+                                                          100
+                                                      ).toFixed(1)
+                                                    : '0,0';
+                                            return (
+                                                <div key={item.key}>
+                                                    <span
+                                                        className="statistics-payment-dot"
+                                                        style={{
+                                                            background:
+                                                                item.color,
+                                                            borderColor:
+                                                                item.color,
+                                                        }}
+                                                    />
+                                                    {item.label}:{' '}
+                                                    {formatMoney(item.amount)} (
+                                                    {percent}%)
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -369,7 +482,16 @@ function StatisticsPageContent() {
                                             <td>
                                                 {employee.completedAppointments}
                                             </td>
-                                            <td>0 min</td>
+                                            <td>
+                                                {formatDuration(
+                                                    toNumber(
+                                                        employee.completedAppointments,
+                                                    ) *
+                                                        toNumber(
+                                                            employee.averageDuration,
+                                                        ),
+                                                )}
+                                            </td>
                                             <td>
                                                 {toNumber(
                                                     employee.revenue,
@@ -378,9 +500,8 @@ function StatisticsPageContent() {
                                             </td>
                                             <td>
                                                 {(
-                                                    toNumber(
-                                                        employee.revenue,
-                                                    ) * 0.77
+                                                    toNumber(employee.revenue) *
+                                                    0.77
                                                 ).toFixed(2)}{' '}
                                                 zł
                                             </td>
@@ -398,9 +519,9 @@ function StatisticsPageContent() {
                                                     : '0%'}
                                             </td>
                                             <td>
-                                                {toNumber(employee.tips).toFixed(
-                                                    2,
-                                                )}{' '}
+                                                {toNumber(
+                                                    employee.tips,
+                                                ).toFixed(2)}{' '}
                                                 zł
                                             </td>
                                         </tr>
@@ -410,7 +531,9 @@ function StatisticsPageContent() {
                                     <tr>
                                         <th>Łącznie</th>
                                         <th>{totals.totalVisits}</th>
-                                        <th>0 min</th>
+                                        <th>
+                                            {formatDuration(totalWorkMinutes)}
+                                        </th>
                                         <th>
                                             {formatMoney(totals.totalRevenue)}
                                         </th>

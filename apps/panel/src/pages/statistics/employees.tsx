@@ -20,6 +20,20 @@ interface EmployeeActivitySummary {
     };
 }
 
+const toNumber = (value: unknown): number => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+    const raw = String(value ?? '').trim();
+    if (!raw) return 0;
+
+    const normalized = raw.replace(',', '.');
+    const parsed =
+        Number(normalized.replace(/[^0-9.-]/g, '')) ||
+        Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export default function EmployeeActivityPage() {
     const { role } = useAuth();
     const [selectedDate, setSelectedDate] = useState(
@@ -56,9 +70,10 @@ export default function EmployeeActivityPage() {
     };
 
     const formatWorkTime = (minutes: number): string => {
-        if (minutes === 0) return 'brak aktywności';
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
+        const safeMinutes = Math.max(0, Math.round(toNumber(minutes)));
+        if (safeMinutes === 0) return 'brak aktywności';
+        const hours = Math.floor(safeMinutes / 60);
+        const mins = safeMinutes % 60;
         if (hours === 0) return `${mins} min`;
         if (mins === 0) return `${hours} h`;
         return `${hours} h ${mins} min`;
@@ -79,6 +94,8 @@ export default function EmployeeActivityPage() {
         workTimeMinutes: 0,
         appointmentsCount: 0,
     };
+    const totalWorkMinutes = toNumber(totals.workTimeMinutes);
+    const totalAppointments = toNumber(totals.appointmentsCount);
 
     return (
         <VersumShell role={role}>
@@ -173,11 +190,15 @@ export default function EmployeeActivityPage() {
                                                 </td>
                                                 <td>
                                                     {formatWorkTime(
-                                                        employee.workTimeMinutes,
+                                                        toNumber(
+                                                            employee.workTimeMinutes,
+                                                        ),
                                                     )}
                                                 </td>
                                                 <td>
-                                                    {employee.appointmentsCount}
+                                                    {toNumber(
+                                                        employee.appointmentsCount,
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -194,9 +215,11 @@ export default function EmployeeActivityPage() {
                                         <tr>
                                             <th>Łącznie</th>
                                             <th>
-                                                {totals.workTimeMinutes} min
+                                                {formatWorkTime(
+                                                    totalWorkMinutes,
+                                                )}
                                             </th>
-                                            <th>{totals.appointmentsCount}</th>
+                                            <th>{totalAppointments}</th>
                                         </tr>
                                     </tfoot>
                                 </table>
