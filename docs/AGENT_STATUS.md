@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-23 (customers parity fallback baseline preference)_
+_Last updated: 2026-02-24 (statistics runtime crash fixed on production)_
 
 ## Platform Architecture
 
@@ -21,13 +21,20 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `ad3e2531` | `22262457706` | 2026-02-21 19:02 | production | Statystyki: usunięcie lokalnych compact-override CSS, które zawężały układ i zwiększały drift 1:1 |
+| Dashboard (`panel.salon-bw.pl`) | `2db195f2` | `22353303778` | 2026-02-24 13:42 | production | Statystyki: normalizacja payloadów liczbowych (string/number) i usunięcie client-side exception na `/statistics` i `/statistics/commissions` |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- Dashboard post-deploy verification (2026-02-24):
+  - deploy run `22353303778` (`success`, target `dashboard`, sha `2db195f2`),
+  - production statistics parity audit:
+    - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+    - functional parity: `YES` (`dashboard/employees/commissions/services`),
+    - strict visual parity (`<=3.0%`): `NO` (`dashboard 12.040%`, `employees 4.050%`, `commissions 6.391%`),
+    - artifact: `output/parity/2026-02-24-statistics-prod-full/`.
 - Dashboard post-deploy verification (2026-02-20):
   - deploy run `22243239260` (`success`, target `dashboard`),
   - probe run `22243353266` (`success`, target `probe`),

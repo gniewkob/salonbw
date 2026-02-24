@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-23
+> Data aktualizacji: 2026-02-24
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -85,11 +85,11 @@
 | Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 15% |
-| Moduł Statystyki | ❌ | 0% |
+| Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO) |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
 
-**Całkowity postęp: ~43%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
+**Całkowity postęp: ~50%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
 
 ## Known deltas (strict 1:1)
 
@@ -108,6 +108,14 @@
     - `output/parity/2026-02-23-customers-prod-full/pixel-diff.json`
     - `output/parity/2026-02-23-customers-visual-baseline/`
 - Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
+- Statystyki po deploy `2db195f2`:
+  - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
+  - strict visual parity: **NO** (`dashboard 12.040%`, `employees 4.050%`, `commissions 6.391%`),
+  - runtime crash `Application error: a client-side exception has occurred` na `/statistics` i `/statistics/commissions`: **naprawiony** (nieodtworzony na rerun 2026-02-24),
+  - artefakty:
+    - `output/parity/2026-02-24-statistics-prod-full/REPORT.md`
+    - `output/parity/2026-02-24-statistics-prod-full/pixel-diff.json`
+    - `output/parity/2026-02-24-statistics-visual-baseline/`
 - Największe odchylenia pixel diff (próg 3.0%, produkcja 2026-02-20):
   - `products`: `9.314%`
   - `sales-history`: `7.367%`
@@ -128,6 +136,25 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-24 - Statystyki: production runtime-fix + parity rerun
+- zmiana kodu:
+  - `apps/panel/src/pages/statistics/index.tsx`
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+  - dodana defensywna normalizacja wartości liczbowych (`string|number -> number`) przed `toFixed` i obliczeniami.
+- deploy:
+  - run `22353303778` (`success`, production, dashboard, sha `2db195f2`).
+- uruchomienie testu:
+  - `pnpm exec playwright test tests/e2e/prod-statistics-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik:
+  - functional parity: `YES` (`4/4`),
+  - strict visual parity (`<=3.0%`): `NO`:
+    - `dashboard 12.040%`
+    - `employees 4.050%`
+    - `commissions 6.391%`
+  - runtime `Application error: a client-side exception has occurred` dla `dashboard/commissions`: **nieodtworzony** po deployu.
+- artefakty:
+  - `output/parity/2026-02-24-statistics-prod-full/`
 
 ### 2026-02-23 - Klienci: produkcyjny rerun smoke + parity (po fixach anty-crash lokalnie)
 - uruchomienia:
