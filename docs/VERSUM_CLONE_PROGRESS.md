@@ -154,6 +154,15 @@
   - functional smoke (panel): `YES` (lista -> szczegóły, zakładki komentarze/prowizje),
   - strict visual parity: `NO` (wymaga osobnego audytu pixel-diff i dalszego dopieszczenia).
 
+### 2026-02-24 - Usługi: hotfix selektora testowego + deploy produkcyjny
+- zmiana kodu:
+  - `apps/panel/src/pages/services/[id]/index.tsx`
+    - przywrócony nagłówek formularza komentarzy jako `h3` (kompatybilność ze smoke testem).
+- deploy:
+  - run `22369903825` (`success`, production, `dashboard`, sha `5e9aa654`).
+- walidacja po deploy:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-services-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
+
 ### 2026-02-24 - Statystyki: production deploy `api+dashboard` + parity rerun
 - zmiana kodu:
   - `backend/salonbw-backend/src/statistics/statistics.service.ts`
