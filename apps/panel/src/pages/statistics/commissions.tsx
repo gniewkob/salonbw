@@ -29,6 +29,14 @@ interface CommissionReportSummary {
     };
 }
 
+const toNumber = (value: unknown): number => {
+    const parsed =
+        typeof value === 'number'
+            ? value
+            : Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export default function CommissionsPage() {
     const { role } = useAuth();
     const { data: employeeList } = useEmployees();
@@ -66,12 +74,23 @@ export default function CommissionsPage() {
         setSelectedDate(format(newDate, 'yyyy-MM-dd'));
     };
 
-    const formatMoney = (value: number): string => {
-        return value.toFixed(2).replace('.', ',') + ' zł';
+    const formatMoney = (value: unknown): string => {
+        return toNumber(value).toFixed(2).replace('.', ',') + ' zł';
     };
 
     const commissionRows = useMemo(() => {
-        if (data?.employees?.length) return data.employees;
+        if (data?.employees?.length) {
+            return data.employees.map((employee) => ({
+                employeeId: employee.employeeId,
+                employeeName: employee.employeeName,
+                serviceRevenue: toNumber(employee.serviceRevenue),
+                serviceCommission: toNumber(employee.serviceCommission),
+                productRevenue: toNumber(employee.productRevenue),
+                productCommission: toNumber(employee.productCommission),
+                totalRevenue: toNumber(employee.totalRevenue),
+                totalCommission: toNumber(employee.totalCommission),
+            }));
+        }
 
         if (!safeEmployeeList.length) {
             return [
@@ -134,6 +153,14 @@ export default function CommissionsPage() {
         productCommission: 0,
         totalRevenue: 0,
         totalCommission: 0,
+    };
+    const safeTotals = {
+        serviceRevenue: toNumber(totals.serviceRevenue),
+        serviceCommission: toNumber(totals.serviceCommission),
+        productRevenue: toNumber(totals.productRevenue),
+        productCommission: toNumber(totals.productCommission),
+        totalRevenue: toNumber(totals.totalRevenue),
+        totalCommission: toNumber(totals.totalCommission),
     };
 
     if (!role) return null;
@@ -296,12 +323,12 @@ export default function CommissionsPage() {
                                                 <th>Łącznie</th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.serviceRevenue,
+                                                        safeTotals.serviceRevenue,
                                                     )}{' '}
                                                     brutto
                                                     <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            totals.serviceRevenue *
+                                                            safeTotals.serviceRevenue *
                                                                 0.77,
                                                         )}{' '}
                                                         netto
@@ -309,12 +336,12 @@ export default function CommissionsPage() {
                                                 </th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.serviceCommission,
+                                                        safeTotals.serviceCommission,
                                                     )}{' '}
                                                     brutto
                                                     <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            totals.serviceCommission *
+                                                            safeTotals.serviceCommission *
                                                                 0.77,
                                                         )}{' '}
                                                         netto
@@ -322,12 +349,12 @@ export default function CommissionsPage() {
                                                 </th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.productRevenue,
+                                                        safeTotals.productRevenue,
                                                     )}{' '}
                                                     brutto
                                                     <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            totals.productRevenue *
+                                                            safeTotals.productRevenue *
                                                                 0.77,
                                                         )}{' '}
                                                         netto
@@ -335,12 +362,12 @@ export default function CommissionsPage() {
                                                 </th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.productCommission,
+                                                        safeTotals.productCommission,
                                                     )}{' '}
                                                     brutto
                                                     <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            totals.productCommission *
+                                                            safeTotals.productCommission *
                                                                 0.77,
                                                         )}{' '}
                                                         netto
@@ -348,12 +375,12 @@ export default function CommissionsPage() {
                                                 </th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.totalRevenue,
+                                                        safeTotals.totalRevenue,
                                                     )}{' '}
                                                     brutto
                                                     <div className="versum-muted fz-11">
                                                         {formatMoney(
-                                                            totals.totalRevenue *
+                                                            safeTotals.totalRevenue *
                                                                 0.77,
                                                         )}{' '}
                                                         netto
@@ -361,7 +388,7 @@ export default function CommissionsPage() {
                                                 </th>
                                                 <th>
                                                     {formatMoney(
-                                                        totals.totalCommission,
+                                                        safeTotals.totalCommission,
                                                     )}{' '}
                                                     brutto
                                                 </th>
