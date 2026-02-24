@@ -84,7 +84,7 @@
 | Moduł Klienci - Lista | ✅ | 100% |
 | Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
-| Moduł Usługi | 🟡 | 15% |
+| Moduł Usługi | 🟡 | 30% (functional smoke YES, visual strict NO) |
 | Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO) |
 | Moduł Łączność | 🟡 | 40% |
 | Moduł Ustawienia | ❌ | 0% |
@@ -137,6 +137,22 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-24 - Usługi: refactor widoku szczegółu (copy-first CSS/classes) + smoke
+- zmiana kodu:
+  - `apps/panel/src/pages/services/[id]/index.tsx`
+    - usunięcie Tailwindowego layoutu z warstwy prezentacji,
+    - przebudowa widoku na klasy i strukturę zgodną z Versum (`breadcrumb`, `nav-tabs`, tabele, akcje, sekcje),
+    - zachowanie dotychczasowych akcji/modali i integracji API (`summary`, `stats`, `history`, `employees`, `comments`, `commissions`).
+  - `apps/panel/src/styles/versum-shell.css`
+    - dodane style modułu `Usługi` dla karty szczegółów (tabele meta, stat cards, formularz komentarzy, sekcja prowizji).
+- walidacja:
+  - `pnpm eslint src --fix` (panel) ✅
+  - `pnpm tsc --noEmit` (panel) ✅
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-services-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
+- wynik:
+  - functional smoke (panel): `YES` (lista -> szczegóły, zakładki komentarze/prowizje),
+  - strict visual parity: `NO` (wymaga osobnego audytu pixel-diff i dalszego dopieszczenia).
 
 ### 2026-02-24 - Statystyki: production deploy `api+dashboard` + parity rerun
 - zmiana kodu:
