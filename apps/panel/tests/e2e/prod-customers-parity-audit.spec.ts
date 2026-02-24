@@ -58,7 +58,7 @@ interface NamedCustomer {
 }
 
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
-const DEFAULT_PANEL_CUSTOMER_ID = 12;
+const DEFAULT_PANEL_CUSTOMER_ID = 10;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
@@ -1115,21 +1115,17 @@ test.describe('PROD audit: customers panel vs versum', () => {
         }
         const sharedCustomer = findSharedCustomer(panelCustomers, versumCustomers);
         const panelSeed = await resolvePanelCustomerSeed(panelPage);
-        const candidateName =
-            parityCustomerNameHint ??
-            sharedCustomer?.panel.name ??
-            panelSeed?.name ??
-            null;
+        const candidateName = parityCustomerNameHint ?? panelSeed?.name ?? null;
         const versumIdByName = candidateName
             ? await resolveVersumCustomerIdByName(versumPage, candidateName)
             : null;
         const versumCustomerId =
             explicitVersumCustomerId ??
-            sharedCustomer?.versum.id ??
             versumIdByName ??
-            DEFAULT_VERSUM_CUSTOMER_ID;
+            DEFAULT_VERSUM_CUSTOMER_ID ??
+            sharedCustomer?.versum.id;
         const versumCustomerName =
-            candidateName ??
+            parityCustomerNameHint ??
             (await resolveVersumCustomerName(versumPage, versumCustomerId));
         const panelCustomerIdByName = versumCustomerName
             ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
@@ -1137,8 +1133,8 @@ test.describe('PROD audit: customers panel vs versum', () => {
         const panelFallbackId = explicitPanelCustomerId ?? DEFAULT_PANEL_CUSTOMER_ID;
         let panelCustomerId =
             explicitPanelCustomerId ??
-            sharedCustomer?.panel.id ??
             panelCustomerIdByName ??
+            sharedCustomer?.panel.id ??
             panelSeed?.id ??
             null;
         if (panelCustomerId === null) {
@@ -1147,12 +1143,16 @@ test.describe('PROD audit: customers panel vs versum', () => {
                 versumCustomerId,
             ).catch(() => panelFallbackId);
         }
-        panelCustomerId = await pickPanelParityCustomerId(
-            panelPage,
-            panelCustomers,
-            panelFallbackId,
-            panelCustomerId,
-        );
+        if (explicitPanelCustomerId !== null) {
+            panelCustomerId = explicitPanelCustomerId;
+        } else {
+            panelCustomerId = await pickPanelParityCustomerId(
+                panelPage,
+                panelCustomers,
+                panelFallbackId,
+                panelCustomerId,
+            );
+        }
         await loginPanel(panelPage);
         await loginVersum(versumPage);
         const actions = buildActions(panelCustomerId, versumCustomerId);
