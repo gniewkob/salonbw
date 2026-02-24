@@ -2955,3 +2955,169 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
 .floating-help:hover {
     background: #3a7ab0;
 }
+
+/* ========================================
+   Services module details parity
+   ======================================== */
+
+.service-details-page {
+    max-width: 980px;
+}
+
+.service-details-tabs {
+    margin-bottom: 10px;
+}
+
+.service-details-content {
+    border: 1px solid #d9dfe5;
+    background: #fff;
+    padding: 12px;
+}
+
+.service-details-card {
+    min-height: 120px;
+}
+
+.service-empty {
+    padding: 10px 0;
+    color: #7e8791;
+}
+
+.service-empty-cell {
+    text-align: center;
+    color: #8a939b;
+}
+
+.service-summary-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.service-summary-head__title {
+    font-size: 20px;
+    color: #3f4852;
+    line-height: 1.2;
+}
+
+.service-summary-head__meta {
+    color: #8a939b;
+    font-size: 12px;
+}
+
+.service-details-meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+.service-details-meta th,
+.service-details-meta td {
+    border: 1px solid #d4d9de;
+    padding: 7px 10px;
+    vertical-align: top;
+}
+
+.service-details-meta th {
+    width: 180px;
+    background: #edf1f4;
+    font-size: 11px;
+    color: #59626b;
+    text-align: left;
+}
+
+.service-details-meta td {
+    color: #3f4852;
+    font-size: 12px;
+}
+
+.service-stats-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.service-stats-card {
+    border: 1px solid #d9dfe5;
+    background: #f8fafc;
+    padding: 10px;
+}
+
+.service-stats-card__label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #8a939b;
+}
+
+.service-stats-card__value {
+    margin-top: 3px;
+    font-size: 20px;
+    color: #3f4852;
+}
+
+.service-chart-wrap {
+    border: 1px solid #d9dfe5;
+    padding: 10px;
+}
+
+.service-variant-name {
+    font-weight: 700;
+    color: #3f4852;
+}
+
+.service-assignment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 4px 0;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.service-assignment-row:last-child {
+    border-bottom: 0;
+}
+
+.service-comments-form {
+    margin-bottom: 12px;
+    border: 1px solid #d9dfe5;
+    padding: 10px;
+    background: #f9fbfd;
+}
+
+.service-comments-form__title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4d565e;
+}
+
+.service-comments-form__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 160px 170px;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.service-commissions-intro {
+    margin: 0 0 10px;
+    color: #6d7680;
+    font-size: 12px;
+}
+
+.service-commissions-actions {
+    margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+    .service-stats-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .service-comments-form__row {
+        grid-template-columns: 1fr;
+    }
+}
