@@ -108,9 +108,9 @@
     - `output/parity/2026-02-23-customers-prod-full/pixel-diff.json`
     - `output/parity/2026-02-23-customers-visual-baseline/`
 - Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
-- Statystyki po deploy `2db195f2`:
+- Statystyki po deploy `9ec696ac`:
   - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
-  - strict visual parity: **NO** (`dashboard 12.040%`, `employees 4.050%`, `commissions 6.391%`),
+  - strict visual parity: **NO** (`dashboard 13.473%`, `employees 4.005%`, `commissions 6.250%`),
   - runtime crash `Application error: a client-side exception has occurred` na `/statistics` i `/statistics/commissions`: **naprawiony** (nieodtworzony na rerun 2026-02-24),
   - artefakty:
     - `output/parity/2026-02-24-statistics-prod-full/REPORT.md`
@@ -136,6 +136,28 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-24 - Statystyki: production deploy `api+dashboard` + parity rerun
+- zmiana kodu:
+  - `backend/salonbw-backend/src/statistics/statistics.service.ts`
+    - normalizacja wartości `decimal/string` przy kalkulacji kwot (fix konkatenacji typu `"0350.00350.00"`),
+    - `Aktywność pracowników`: czas pracy liczony na podstawie ukończonych wizyt (`endTime-startTime`), nie tylko grafiku.
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+  - `apps/panel/src/pages/statistics/employees.tsx`
+  - `apps/panel/src/pages/statistics/index.tsx`
+- deploy:
+  - run `22366598647` (`success`, production, `api`, sha `9ec696ac`),
+  - run `22366678740` (`success`, production, `dashboard`, sha `9ec696ac`).
+- uruchomienie testu:
+  - `pnpm exec playwright test tests/e2e/prod-statistics-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik:
+  - functional parity: `YES` (`4/4`),
+  - strict visual parity (`<=3.0%`): `NO`:
+    - `dashboard 13.473%`
+    - `employees 4.005%`
+    - `commissions 6.250%`
+- artefakty:
+  - `output/parity/2026-02-24-statistics-prod-full/`
 
 ### 2026-02-24 - Statystyki: production runtime-fix + parity rerun
 - zmiana kodu:

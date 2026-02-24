@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-24 (statistics runtime crash fixed on production)_
+_Last updated: 2026-02-24 (statistics monetary/activity normalization deployed to production)_
 
 ## Platform Architecture
 
@@ -19,15 +19,23 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `f0c9aaaf` | `22244148008` | 2026-02-20 22:48 | production | Fix customer creation: preserve generated email fallback when `email` is empty in `POST /customers` |
+| API (`api.salon-bw.pl`) | `9ec696ac` | `22366598647` | 2026-02-24 19:28 | production | Statystyki: poprawione parsowanie kwot (decimal/string) i stabilne sumowanie revenue bez konkatenacji stringów |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `2db195f2` | `22353303778` | 2026-02-24 13:42 | production | Statystyki: normalizacja payloadów liczbowych (string/number) i usunięcie client-side exception na `/statistics` i `/statistics/commissions` |
+| Dashboard (`panel.salon-bw.pl`) | `9ec696ac` | `22366678740` | 2026-02-24 19:32 | production | Statystyki: dynamiczne metody płatności + normalizacja liczb + czas pracy liczony z ukończonych wizyt |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- Dashboard/API post-deploy verification (2026-02-24):
+  - deploy run `22366598647` (`success`, target `api`, sha `9ec696ac`),
+  - deploy run `22366678740` (`success`, target `dashboard`, sha `9ec696ac`),
+  - production statistics parity audit:
+    - `tests/e2e/prod-statistics-parity-audit.spec.ts` -> `1 passed`,
+    - functional parity: `YES` (`dashboard/employees/commissions/services`),
+    - strict visual parity (`<=3.0%`): `NO` (`dashboard 13.473%`, `employees 4.005%`, `commissions 6.250%`),
+    - artifact: `output/parity/2026-02-24-statistics-prod-full/`.
 - Dashboard post-deploy verification (2026-02-24):
   - deploy run `22353303778` (`success`, target `dashboard`, sha `2db195f2`),
   - production statistics parity audit:
