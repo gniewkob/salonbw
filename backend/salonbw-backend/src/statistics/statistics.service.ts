@@ -514,8 +514,6 @@ export class StatisticsService {
     async getEmployeeActivity(date: Date): Promise<EmployeeActivitySummary> {
         const dayStart = startOfDay(date);
         const dayEnd = endOfDay(date);
-        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const dayOfWeekVersum = dayOfWeek === 0 ? 7 : dayOfWeek; // Versum uses 1-7 (Mon-Sun)
 
         const employees = await this.userRepository.find({
             where: { role: Role.Employee },
@@ -526,85 +524,40 @@ export class StatisticsService {
         let totalAppointments = 0;
 
         for (const employee of employees) {
-            // Get timetable for employee
-            const timetable = await this.timetableRepository.findOne({
-                where: {
-                    employeeId: employee.id,
-                    isActive: true,
-                    validFrom: LessThanOrEqual(date),
-                },
-                relations: ['slots', 'exceptions'],
-                order: { validFrom: 'DESC' },
-            });
-
-            // Calculate work time from timetable
-            let workTimeMinutes = 0;
-
-            if (timetable) {
-                // Check for exceptions first
-                const exception = timetable.exceptions?.find(
-                    (e) =>
-                        new Date(e.date) >= dayStart &&
-                        new Date(e.date) <= dayEnd,
-                );
-
-                if (exception) {
-                    // Use exception hours - check if it's not a day off
-                    if (
-                        exception.type !== ExceptionType.DayOff &&
-                        exception.customStartTime &&
-                        exception.customEndTime
-                    ) {
-                        // Parse time strings (HH:mm:ss)
-                        const [startHour, startMin] = exception.customStartTime
-                            .split(':')
-                            .map(Number);
-                        const [endHour, endMin] = exception.customEndTime
-                            .split(':')
-                            .map(Number);
-                        workTimeMinutes =
-                            endHour * 60 + endMin - (startHour * 60 + startMin);
-                    }
-                } else {
-                    // Use regular slot for this day
-                    // Versum uses 1-7 (Mon-Sun), our DayOfWeek uses 0-6 (Mon-Sun)
-                    const targetDayOfWeek = (dayOfWeekVersum - 1) as DayOfWeek;
-                    const slot = timetable.slots?.find(
-                        (s) => s.dayOfWeek === targetDayOfWeek,
-                    );
-
-                    if (slot) {
-                        // Parse time strings (HH:mm:ss)
-                        const [startHour, startMin] = slot.startTime
-                            .split(':')
-                            .map(Number);
-                        const [endHour, endMin] = slot.endTime
-                            .split(':')
-                            .map(Number);
-                        workTimeMinutes =
-                            endHour * 60 + endMin - (startHour * 60 + startMin);
-                    }
-                }
-            }
-
-            // Count appointments for this employee on this date
-            const appointments = await this.appointmentRepository.count({
+            const appointments = await this.appointmentRepository.find({
                 where: {
                     employeeId: employee.id,
                     startTime: Between(dayStart, dayEnd),
                     status: AppointmentStatus.Completed,
                 },
+                select: {
+                    id: true,
+                    startTime: true,
+                    endTime: true,
+                },
             });
+
+            const workTimeMinutes = appointments.reduce((sum, appointment) => {
+                const durationMs =
+                    new Date(appointment.endTime).getTime() -
+                    new Date(appointment.startTime).getTime();
+                const durationMinutes = Math.max(
+                    0,
+                    Math.round(durationMs / (60 * 1000)),
+                );
+                return sum + durationMinutes;
+            }, 0);
+            const appointmentsCount = appointments.length;
 
             employeesActivity.push({
                 employeeId: employee.id,
                 employeeName: employee.name,
                 workTimeMinutes: Math.round(workTimeMinutes),
-                appointmentsCount: appointments,
+                appointmentsCount,
             });
 
             totalWorkTime += workTimeMinutes;
-            totalAppointments += appointments;
+            totalAppointments += appointmentsCount;
         }
 
         return {
@@ -618,14 +571,40 @@ export class StatisticsService {
     }
 
     private resolveAppointmentPrice(appointment: Appointment): number {
-        return (
+        return this.parseMoney(
             appointment.paidAmount ??
-            Number(
                 appointment.serviceVariant?.price ??
-                    appointment.service?.price ??
-                    0,
-            )
+                appointment.service?.price ??
+                0,
         );
+    }
+
+    private parseMoney(value: unknown): number {
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : 0;
+        }
+        if (typeof value !== 'string') {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : 0;
+        }
+
+        const raw = value.trim();
+        if (!raw) return 0;
+
+        const normalized = raw.replace(',', '.');
+        const repeatedMoney = normalized.match(/-?\d+\.\d{2}/g);
+        if (repeatedMoney && repeatedMoney.length > 1) {
+            const sum = repeatedMoney.reduce((acc, token) => {
+                const amount = Number(token);
+                return acc + (Number.isFinite(amount) ? amount : 0);
+            }, 0);
+            return Number.isFinite(sum) ? sum : 0;
+        }
+
+        const amount =
+            Number(normalized.replace(/[^0-9.-]/g, '')) ||
+            Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
+        return Number.isFinite(amount) ? amount : 0;
     }
 
     async getCommissionReport(

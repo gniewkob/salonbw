@@ -30,10 +30,25 @@ interface CommissionReportSummary {
 }
 
 const toNumber = (value: unknown): number => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+    const raw = String(value ?? '').trim();
+    if (!raw) return 0;
+
+    const normalized = raw.replace(',', '.');
+    const repeatedMoney = normalized.match(/-?\d+\.\d{2}/g);
+    if (repeatedMoney && repeatedMoney.length > 1) {
+        const sum = repeatedMoney.reduce((acc, token) => {
+            const n = Number(token);
+            return acc + (Number.isFinite(n) ? n : 0);
+        }, 0);
+        return Number.isFinite(sum) ? sum : 0;
+    }
+
     const parsed =
-        typeof value === 'number'
-            ? value
-            : Number(String(value ?? '').replace(',', '.'));
+        Number(normalized.replace(/[^0-9.-]/g, '')) ||
+        Number((normalized.match(/-?\d+(?:\.\d+)?/) || ['0'])[0]);
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
