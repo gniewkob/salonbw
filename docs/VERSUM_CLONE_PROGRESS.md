@@ -955,3 +955,10 @@
     - `gallery 2.742%`
     - `files 2.806%`
   - artefakt: `output/parity/2026-02-23-customers-prod-full/`.
+
+### 2026-02-24 - Klienci: zamknięcie zadania (decyzja)
+- status modułu klienci dla tego zakresu parity: **zamknięte decyzją** (akceptacja użytkownika).
+- kryterium funkcjonalne: `YES` (`11/11`) utrzymane.
+- known delta (zaakceptowane na zamknięcie):
+  - strict visual `list`: `7.338%` (próg `<=3.0%`),
+  - strict visual `summary`: `5.278%` (próg `<=3.0%`).

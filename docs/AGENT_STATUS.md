@@ -275,6 +275,14 @@ Verification:
 - artifacts:
   - `output/parity/2026-02-23-customers-prod-full/`.
 
+### 2026-02-24: Customers parity scope closed by decision
+
+- decision: scope closed on user request despite remaining strict visual drift.
+- functional parity: `YES` (11/11).
+- accepted strict visual deltas:
+  - `list 7.338%` (threshold `<=3.0%`),
+  - `summary 5.278%` (threshold `<=3.0%`).
+
 - **Scope:** Full warehouse module sweep on production (`products`, `sales`, `use`, `deliveries`, `orders`, `inventory`, plus `stock-alerts`/`suppliers`/`manufacturers`) against Versum reference routes.
 - **Automation:** `apps/panel/tests/e2e/prod-warehouse-parity-audit.spec.ts`.
 - **Artifacts:** `output/parity/2026-02-17-warehouse-prod-full/`.
