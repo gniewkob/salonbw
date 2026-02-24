@@ -568,9 +568,9 @@ export default function ServiceDetailsPage() {
                             {activeTab === 'comments' && (
                                 <div>
                                     <div className="service-comments-form">
-                                        <div className="service-comments-form__title">
+                                        <h3 className="service-comments-form__title">
                                             Dodaj komentarz
-                                        </div>
+                                        </h3>
                                         <div className="service-comments-form__row">
                                             <input
                                                 className="form-control"
