@@ -112,6 +112,7 @@
   - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
   - strict visual parity: **NO** (`dashboard 13.473%`, `employees 4.005%`, `commissions 6.250%`),
   - runtime crash `Application error: a client-side exception has occurred` na `/statistics` i `/statistics/commissions`: **naprawiony** (nieodtworzony na rerun 2026-02-24),
+  - decyzja: **odłożone do dopieszczenia po module o wyższym priorytecie** (strict visual polish + synchronizacja danych parity),
   - artefakty:
     - `output/parity/2026-02-24-statistics-prod-full/REPORT.md`
     - `output/parity/2026-02-24-statistics-prod-full/pixel-diff.json`
