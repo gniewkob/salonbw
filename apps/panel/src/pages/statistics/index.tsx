@@ -12,6 +12,14 @@ const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -3, name: 'Aleksandra Bodora' },
 ];
 
+const toNumber = (value: unknown): number => {
+    const parsed =
+        typeof value === 'number'
+            ? value
+            : Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export default function StatisticsPage() {
     const { role } = useAuth();
 
@@ -41,24 +49,32 @@ function StatisticsPageContent() {
     const safeEmployeeList = useMemo(() => employeeList ?? [], [employeeList]);
 
     const totals = useMemo(() => {
-        const totalRevenue = dashboard?.monthRevenue ?? 0;
-        const dayRevenue = dashboard?.todayRevenue ?? 0;
-        const weekRevenue = dashboard?.weekRevenue ?? 0;
+        const totalRevenue = toNumber(dashboard?.monthRevenue);
+        const dayRevenue = toNumber(dashboard?.todayRevenue);
+        const weekRevenue = toNumber(dashboard?.weekRevenue);
+        const totalVisits = toNumber(dashboard?.monthAppointments);
         return {
             totalRevenue,
             dayRevenue,
             weekRevenue,
-            totalVisits: dashboard?.monthAppointments ?? 0,
-            avgVisitValue:
-                (dashboard?.monthAppointments ?? 0) > 0
-                    ? totalRevenue / (dashboard?.monthAppointments ?? 1)
-                    : 0,
+            totalVisits,
+            avgVisitValue: totalVisits > 0 ? totalRevenue / totalVisits : 0,
         };
     }, [dashboard]);
 
     const employeeRows = useMemo(() => {
         if (ranking.length > 0) {
-            return ranking;
+            return ranking.map((employee) => ({
+                employeeId: employee.employeeId,
+                employeeName: employee.employeeName,
+                completedAppointments: toNumber(
+                    employee.completedAppointments,
+                ),
+                revenue: toNumber(employee.revenue),
+                averageRevenue: toNumber(employee.averageRevenue),
+                tips: toNumber(employee.tips),
+                rating: toNumber(employee.rating),
+            }));
         }
 
         if (!safeEmployeeList.length) {
@@ -91,8 +107,8 @@ function StatisticsPageContent() {
         });
     }, [ranking, safeEmployeeList]);
 
-    const formatMoney = (value: number): string =>
-        value.toFixed(2).replace('.', ',') + ' zł';
+    const formatMoney = (value: unknown): string =>
+        toNumber(value).toFixed(2).replace('.', ',') + ' zł';
 
     const downloadCsvReport = () => {
         const escape = (value: unknown) =>
@@ -106,21 +122,21 @@ function StatisticsPageContent() {
         lines.push(['Salon ogolem']);
         lines.push([
             'Sprzedaz uslug brutto',
-            `${totals.dayRevenue.toFixed(2)}`,
+            `${toNumber(totals.dayRevenue).toFixed(2)}`,
         ]);
         lines.push(['Sprzedaz produktow brutto', '0.00']);
         lines.push([
             'Utarg za ten tydzien',
-            `${totals.weekRevenue.toFixed(2)}`,
+            `${toNumber(totals.weekRevenue).toFixed(2)}`,
         ]);
         lines.push([
             'Utarg za ten miesiac',
-            `${totals.totalRevenue.toFixed(2)}`,
+            `${toNumber(totals.totalRevenue).toFixed(2)}`,
         ]);
         lines.push(['Laczna liczba wizyt', `${totals.totalVisits}`]);
         lines.push([
             'Srednia wartosc wizyty',
-            `${totals.avgVisitValue.toFixed(2)}`,
+            `${toNumber(totals.avgVisitValue).toFixed(2)}`,
         ]);
         lines.push([]);
         lines.push(['Dane w podziale na pracownikow']);
@@ -143,18 +159,19 @@ function StatisticsPageContent() {
                     employee.employeeName,
                     employee.completedAppointments,
                     '0 min',
-                    employee.revenue.toFixed(2),
-                    (employee.revenue * 0.77).toFixed(2),
+                    toNumber(employee.revenue).toFixed(2),
+                    (toNumber(employee.revenue) * 0.77).toFixed(2),
                     '0.00',
                     '0.00',
-                    employee.revenue.toFixed(2),
+                    toNumber(employee.revenue).toFixed(2),
                     totals.totalRevenue > 0
                         ? (
-                              (employee.revenue / totals.totalRevenue) *
+                              (toNumber(employee.revenue) /
+                                  toNumber(totals.totalRevenue)) *
                               100
                           ).toFixed(0) + '%'
                         : '0%',
-                    employee.tips.toFixed(2),
+                    toNumber(employee.tips).toFixed(2),
                 ].map((v) => String(v)),
             );
         }
@@ -354,26 +371,37 @@ function StatisticsPageContent() {
                                             </td>
                                             <td>0 min</td>
                                             <td>
-                                                {employee.revenue.toFixed(2)} zł
+                                                {toNumber(
+                                                    employee.revenue,
+                                                ).toFixed(2)}{' '}
+                                                zł
                                             </td>
                                             <td>
                                                 {(
-                                                    employee.revenue * 0.77
+                                                    toNumber(
+                                                        employee.revenue,
+                                                    ) * 0.77
                                                 ).toFixed(2)}{' '}
                                                 zł
                                             </td>
                                             <td>0,00 zł</td>
                                             <td>0,00 zł</td>
                                             <td>
-                                                {employee.revenue.toFixed(2)} zł
+                                                {toNumber(
+                                                    employee.revenue,
+                                                ).toFixed(2)}{' '}
+                                                zł
                                             </td>
                                             <td>
                                                 {totals.totalRevenue > 0
-                                                    ? `${((employee.revenue / totals.totalRevenue) * 100).toFixed(0)}%`
+                                                    ? `${((toNumber(employee.revenue) / toNumber(totals.totalRevenue)) * 100).toFixed(0)}%`
                                                     : '0%'}
                                             </td>
                                             <td>
-                                                {employee.tips.toFixed(2)} zł
+                                                {toNumber(employee.tips).toFixed(
+                                                    2,
+                                                )}{' '}
+                                                zł
                                             </td>
                                         </tr>
                                     ))}
