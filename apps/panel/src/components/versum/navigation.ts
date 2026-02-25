@@ -57,6 +57,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         iconId: 'svg-statistics-nav',
         permission: 'nav:statistics',
         secondaryNav: true,
+        wideContent: true,
     },
     {
         key: 'communication',
@@ -82,7 +83,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'ustawienia',
         iconId: 'svg-settings-nav',
         permission: 'nav:settings',
-        secondaryNav: true,
+        secondaryNav: false,
     },
     {
         key: 'extension',
@@ -147,11 +148,7 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[5];
     }
 
-    if (
-        path.startsWith('/settings') ||
-        path.startsWith('/admin/settings') ||
-        path.startsWith('/employees')
-    ) {
+    if (path.startsWith('/settings') || path.startsWith('/admin/settings')) {
         return VERSUM_MODULES[6];
     }
 

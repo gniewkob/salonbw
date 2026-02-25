@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { useProductCategories } from '@/hooks/useWarehouseViews';
 import ManageCategoriesModal from '../modals/ManageCategoriesModal';
 import { useState } from 'react';
@@ -12,7 +11,6 @@ import { useStocktakings } from '@/hooks/useWarehouse';
 export default function WarehouseNav() {
     const router = useRouter();
     const path = router.pathname;
-    const productsNavActive = path.startsWith('/products');
     const inventoryNavActive = path.startsWith('/inventory');
     const deliveriesNavActive =
         path.startsWith('/deliveries') ||
@@ -21,7 +19,7 @@ export default function WarehouseNav() {
         path.startsWith('/manufacturers');
     const ordersNavActive = path.startsWith('/orders');
     const usageNavActive = path.startsWith('/use') || path.startsWith('/usage');
-    const { data: categories } = useProductCategories(productsNavActive);
+    const { data: categories } = useProductCategories();
     const { data: draftDeliveries = [] } = useDeliveries(
         { status: 'draft' },
         deliveriesNavActive,
@@ -104,29 +102,6 @@ export default function WarehouseNav() {
         ));
 
     const isSubmodulePath = (prefix: string) => path.startsWith(prefix);
-    const isNavItemActive = (href: string, query?: Record<string, string>) => {
-        const queryMatches = query
-            ? Object.entries(query).every(([key, value]) => {
-                  const queryValue = router.query[key];
-                  return Array.isArray(queryValue)
-                      ? queryValue[0] === value
-                      : queryValue === value;
-              })
-            : true;
-        const hasStatusFilter = typeof router.query.status === 'string';
-        const plainHistoryItem = !query && href.endsWith('/history');
-        const plainHistoryBlocked = plainHistoryItem && hasStatusFilter;
-
-        return (
-            ((path === href && queryMatches && !plainHistoryBlocked) ||
-                path.startsWith(`${href}/`) ||
-                (href.endsWith('/history') &&
-                    path.startsWith(
-                        `${href.replace('/history', '/history/')}`,
-                    ))) &&
-            queryMatches
-        );
-    };
     const renderModuleNav = (
         header: string,
         items: Array<{
@@ -141,11 +116,31 @@ export default function WarehouseNav() {
                 {items.map((item) => (
                     <li
                         key={`${item.href}:${item.query ? JSON.stringify(item.query) : ''}`}
-                        className={
-                            isNavItemActive(item.href, item.query)
+                        className={(() => {
+                            const queryMatches = item.query
+                                ? Object.entries(item.query).every(
+                                      ([key, value]) =>
+                                          router.query[key] === value,
+                                  )
+                                : true;
+                            const hasStatusFilter =
+                                typeof router.query.status === 'string';
+                            const plainHistoryItem =
+                                !item.query && item.href.endsWith('/history');
+                            const plainHistoryBlocked =
+                                plainHistoryItem && hasStatusFilter;
+
+                            return (path === item.href &&
+                                queryMatches &&
+                                !plainHistoryBlocked) ||
+                                path.startsWith(`${item.href}/`) ||
+                                (item.href.endsWith('/history') &&
+                                    path.startsWith(
+                                        `${item.href.replace('/history', '/history/')}`,
+                                    ))
                                 ? 'active'
-                                : undefined
-                        }
+                                : undefined;
+                        })()}
                     >
                         <a
                             href={
@@ -183,88 +178,26 @@ export default function WarehouseNav() {
         isSubmodulePath('/stock-alerts') ||
         isSubmodulePath('/manufacturers')
     ) {
-        return (
-            <>
-                <div className="nav-header">DOSTAWY</div>
-                <ul className="nav nav-list tree">
-                    <li
-                        className={
-                            isNavItemActive('/deliveries/new')
-                                ? 'active'
-                                : undefined
-                        }
-                    >
-                        <Link href="/deliveries/new">dodaj dostawę</Link>
-                    </li>
-                    <li
-                        className={
-                            isNavItemActive('/deliveries/history')
-                                ? 'active'
-                                : undefined
-                        }
-                    >
-                        <Link href="/deliveries/history">historia dostaw</Link>
-                    </li>
-                    <li
-                        className={
-                            isNavItemActive('/deliveries/history', {
-                                status: 'draft',
-                            })
-                                ? 'active'
-                                : undefined
-                        }
-                    >
-                        <Link href="/deliveries/history?status=draft">
-                            wersje robocze ({draftDeliveries.length})
-                        </Link>
-                    </li>
-                    <li
-                        className={
-                            isNavItemActive('/deliveries/history', {
-                                status: 'pending',
-                            })
-                                ? 'active'
-                                : undefined
-                        }
-                    >
-                        <Link href="/deliveries/history?status=pending">
-                            oczekujące ({pendingDeliveries.length})
-                        </Link>
-                    </li>
-                    <li
-                        className={
-                            isNavItemActive('/stock-alerts')
-                                ? 'active'
-                                : undefined
-                        }
-                    >
-                        <Link href="/stock-alerts">
-                            niski stan magazynowy ({lowStockCount})
-                        </Link>
-                        <ul>
-                            <li
-                                className={
-                                    isNavItemActive('/suppliers')
-                                        ? 'active'
-                                        : undefined
-                                }
-                            >
-                                <Link href="/suppliers">dostawcy</Link>
-                            </li>
-                            <li
-                                className={
-                                    isNavItemActive('/manufacturers')
-                                        ? 'active'
-                                        : undefined
-                                }
-                            >
-                                <Link href="/manufacturers">producenci</Link>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </>
-        );
+        return renderModuleNav('DOSTAWY', [
+            { label: 'dodaj dostawę', href: '/deliveries/new' },
+            { label: 'historia dostaw', href: '/deliveries/history' },
+            {
+                label: `wersje robocze (${draftDeliveries.length})`,
+                href: '/deliveries/history',
+                query: { status: 'draft' },
+            },
+            {
+                label: `oczekujące (${pendingDeliveries.length})`,
+                href: '/deliveries/history',
+                query: { status: 'pending' },
+            },
+            {
+                label: `niski stan magazynowy (${lowStockCount})`,
+                href: '/stock-alerts',
+            },
+            { label: 'dostawcy', href: '/suppliers' },
+            { label: 'producenci', href: '/manufacturers' },
+        ]);
     }
 
     if (isSubmodulePath('/orders')) {
