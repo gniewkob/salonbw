@@ -119,3 +119,6 @@ data/
 
 # Local audit/login credentials
 .env
+
+# Claude AI
+.claude/
