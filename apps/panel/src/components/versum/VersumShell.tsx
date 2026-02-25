@@ -8,7 +8,6 @@ import VersumTopbar from './VersumTopbar';
 import FloatingHelpButton from './FloatingHelpButton';
 import PajaxLoader from './PajaxLoader';
 import { resolveVersumModule, visibleVersumModules } from './navigation';
-import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 
 interface VersumShellProps {
     role: Role;
@@ -22,12 +21,10 @@ export default function VersumShell({
     secondaryNav,
 }: VersumShellProps) {
     const router = useRouter();
-    const secondaryNavCtx = useSecondaryNavContext();
     const routeForModuleResolution = router.asPath || router.pathname;
     const activeModule = resolveVersumModule(routeForModuleResolution);
     const modules = visibleVersumModules(role);
     const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
-    const resolvedSecondaryNav = secondaryNav ?? secondaryNavCtx?.secondaryNav;
 
     // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
     const mainContentClass = activeModule.key;
@@ -80,10 +77,8 @@ export default function VersumShell({
                         modules={modules}
                         activeModule={activeModule}
                     />
-                    {resolvedSecondaryNav ? (
-                        <div key={secondNavRenderKey}>
-                            {resolvedSecondaryNav}
-                        </div>
+                    {secondaryNav ? (
+                        <div key={secondNavRenderKey}>{secondaryNav}</div>
                     ) : (
                         <VersumSecondaryNav
                             key={secondNavRenderKey}

@@ -7,13 +7,49 @@ import ClientDetailNav from './navs/ClientDetailNav';
 import CalendarNav from './navs/CalendarNav';
 import WarehouseNav from './navs/WarehouseNav';
 import StatisticsNav from './navs/StatisticsNav';
-import CommunicationNav from './navs/CommunicationNav';
-import SettingsNav from './navs/SettingsNav';
+
+type SecondaryItem = {
+    label: string;
+    children?: string[];
+};
 
 // clientsSections moved to ClientsNav
 
+const communicationSections: SecondaryItem[] = [
+    {
+        label: 'ŁĄCZNOŚĆ',
+        children: [
+            'Wiadomości masowe',
+            'Szablony wiadomości',
+            'Grupa testowa',
+            'Facebook',
+            'Twitter',
+            'Komentarze',
+            'Szablony graficzne',
+            'Posty Facebook',
+        ],
+    },
+];
+
+// servicesSections moved to ServicesNav
+
 interface VersumSecondaryNavProps {
     module: VersumModule;
+}
+
+function renderSections(sections: SecondaryItem[]) {
+    return sections.map((section) => (
+        <div key={section.label}>
+            <div className="nav-header">{section.label}</div>
+            <ul className="nav nav-list">
+                {section.children?.map((child) => (
+                    <li key={child}>
+                        <a href="javascript:;">{child}</a>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    ));
 }
 
 function parseCustomerIdFromRoute(
@@ -88,11 +124,9 @@ export default function VersumSecondaryNav({
     } else if (module.key === 'statistics') {
         content = <StatisticsNav />;
     } else if (module.key === 'communication') {
-        content = <CommunicationNav />;
+        content = renderSections(communicationSections);
     } else if (module.key === 'services') {
         content = <ServicesNav />;
-    } else if (module.key === 'settings') {
-        content = <SettingsNav />;
     }
 
     return (
