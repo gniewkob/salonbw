@@ -86,7 +86,7 @@
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 30% (functional smoke YES, visual strict NO) |
 | Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO) |
-| Moduł Łączność | 🟡 | 40% |
+| Moduł Łączność | 🟡 | 50% (secondary nav + smoke YES, visual strict NO) |
 | Moduł Ustawienia | ❌ | 0% |
 
 **Całkowity postęp: ~50%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
@@ -162,6 +162,22 @@
   - run `22369903825` (`success`, production, `dashboard`, sha `5e9aa654`).
 - walidacja po deploy:
   - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-services-smoke.spec.ts --project=desktop-1366` -> `2 passed`.
+
+### 2026-02-25 - Łączność: real secondary nav + production smoke
+- zmiana kodu:
+  - `apps/panel/src/components/versum/navs/CommunicationNav.tsx`
+    - nowa, trasowana nawigacja boczna modułu `Łączność`.
+  - `apps/panel/src/components/versum/VersumSecondaryNav.tsx`
+    - podpięcie `CommunicationNav` zamiast statycznej listy placeholderów.
+  - `apps/panel/tests/e2e/prod-communication-smoke.spec.ts`
+    - nowy smoke test produkcyjny tras `/communication`, `/communication/mass`, `/communication/templates`, `/communication/reminders`.
+- deploy:
+  - run `22391043226` (`success`, production, `dashboard`, sha `e612ff7e`).
+- walidacja po deploy:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-communication-smoke.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik:
+  - functional smoke (panel): `YES` (nawigacja boczna + przejścia między podstronami),
+  - strict visual parity: `NO` (do osobnego etapu dopieszczenia).
 
 ### 2026-02-24 - Statystyki: production deploy `api+dashboard` + parity rerun
 - zmiana kodu:
