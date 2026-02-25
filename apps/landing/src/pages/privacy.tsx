@@ -30,10 +30,13 @@ export default function PrivacyPage() {
                     </h2>
                     <p className="text-gray-700 mb-4">
                         Administratorem Państwa danych osobowych jest{' '}
-                        <strong>Salon Fryzjerski Black & White</strong>{' '}
-                        [uzupełnić dokładne dane firmy: NIP, adres siedziby]. W
-                        sprawach związanych z ochroną danych osobowych prosimy o
-                        kontakt pod adresem e-mail:
+                        <strong>
+                            Salon Fryzjerski Black&White Aleksandra Bodora
+                        </strong>{' '}
+                        z siedzibą w Radzionkowie (41-922), ul. Mikołaja
+                        Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588 868.
+                        W sprawach związanych z ochroną danych osobowych prosimy
+                        o kontakt pod adresem e-mail:
                         <a
                             href="mailto:kontakt@salon-bw.pl"
                             className="text-blue-600 hover:underline"

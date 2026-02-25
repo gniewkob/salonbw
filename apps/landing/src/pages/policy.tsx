@@ -32,9 +32,12 @@ export default function PolicyPage() {
                         <li>
                             Właścicielem serwisu internetowego oraz systemu
                             rezerwacji jest{' '}
-                            <strong>Salon Fryzjerski Black & White</strong>{' '}
-                            [uzupełnić dane firmy, NIP, adres siedziby], zwany
-                            dalej "Usługodawcą".
+                            <strong>
+                                Salon Fryzjerski Black&White Aleksandra Bodora
+                            </strong>{' '}
+                            z siedzibą w Radzionkowie (41-922), ul. Mikołaja
+                            Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588
+                            868, zwany dalej "Usługodawcą".
                         </li>
                         <li>
                             Regulamin udostępniany jest nieprzerwanie na stronie
