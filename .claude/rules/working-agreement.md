@@ -27,7 +27,7 @@
 
 ## Scope
 
-- Pracuj w małych krokach ("small iterations"). Każdy większy cel biznesowy dziel na mniejsze, odizolowane zadania. Zamykaj każdy krok mergem do `master` (lub main), upewniając się, że aplikacja buduje się poprawnie, w celu zachowania wysokiej jakości i czystości kodu.
+- Work in small steps ("small iterations"). Divide every major business goal into smaller, isolated tasks. Close each step with a merge to `master` (or main), ensuring the application builds correctly, to maintain high code quality.
 - Working set: max 5 files at a time unless task requires more.
 - Do not create extra files unless necessary.
 - Do not add features/refactors beyond what was asked.
