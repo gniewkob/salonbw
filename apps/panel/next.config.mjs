@@ -108,8 +108,8 @@ const nextConfig = {
             // API requests now go through /pages/api/[...path].ts
             // which injects Authorization header from accessToken cookie
         ];
-        // Return object format required by Next.js 15 runtime
-        return { beforeFiles: [], afterFiles: rules, fallback: [] };
+        // Return array format instead of object to prevent Next.js 15.5.10 crash on empty beforeFiles
+        return rules;
     },
     async redirects() {
         return [
