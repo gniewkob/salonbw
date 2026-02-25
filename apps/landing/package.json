@@ -58,7 +58,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3",
         "@jest/globals": "^30.0.1",
-        "@next/env": "14.2.32",
+        "@next/env": "15.5.10",
         "@suchipi/cypress-plugin-snapshots": "^1.4.5",
         "@tailwindcss/postcss": "^4",
         "@testing-library/jest-dom": "^6",
@@ -70,7 +70,7 @@
         "@types/react-dom": "^18",
         "cypress": "^15.7.1",
         "eslint": "^8",
-        "eslint-config-next": "14.2.32",
+        "eslint-config-next": "15.5.10",
         "eslint-config-prettier": "^10.1.5",
         "eslint-plugin-prettier": "^5.5.1",
         "husky": "^9.0.11",
