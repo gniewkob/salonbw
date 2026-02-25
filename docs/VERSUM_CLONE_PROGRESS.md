@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-24
+> Data aktualizacji: 2026-02-25
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -87,7 +87,7 @@
 | Moduł Usługi | 🟡 | 30% (functional smoke YES, visual strict NO) |
 | Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO) |
 | Moduł Łączność | 🟡 | 50% (secondary nav + smoke YES, visual strict NO) |
-| Moduł Ustawienia | ❌ | 0% |
+| Moduł Ustawienia | 🟡 | 45% (secondary nav + smoke YES, visual strict NO) |
 
 **Całkowity postęp: ~50%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
 
@@ -177,6 +177,24 @@
   - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-communication-smoke.spec.ts --project=desktop-1366` -> `1 passed`.
 - wynik:
   - functional smoke (panel): `YES` (nawigacja boczna + przejścia między podstronami),
+  - strict visual parity: `NO` (do osobnego etapu dopieszczenia).
+
+### 2026-02-25 - Ustawienia: real secondary nav + production smoke
+- zmiana kodu:
+  - `apps/panel/src/components/versum/navs/SettingsNav.tsx`
+    - nowa, trasowana nawigacja boczna modułu `Ustawienia` (copy-first mapowanie sekcji Versum).
+  - `apps/panel/src/components/versum/VersumSecondaryNav.tsx`
+    - podpięcie `SettingsNav` dla modułu `settings`.
+  - `apps/panel/src/components/versum/navigation.ts`
+    - aktywacja secondary nav dla `settings` (`secondaryNav: true`).
+  - `apps/panel/tests/e2e/prod-settings-smoke.spec.ts`
+    - nowy smoke test produkcyjny dla `/settings` + kluczowych linków nawigacji bocznej.
+- deploy:
+  - run `22403045267` (`success`, production, `dashboard`, sha `a2fba7dd`).
+- walidacja po deploy:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-settings-smoke.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik:
+  - functional smoke (panel): `YES` (nawigacja boczna + render strony ustawień),
   - strict visual parity: `NO` (do osobnego etapu dopieszczenia).
 
 ### 2026-02-24 - Statystyki: production deploy `api+dashboard` + parity rerun
