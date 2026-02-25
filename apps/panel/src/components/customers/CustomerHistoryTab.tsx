@@ -113,21 +113,13 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         );
     }
 
-    const items = Array.isArray(data.items)
-        ? data.items.filter(
-              (item) =>
-                  item &&
-                  typeof item === 'object' &&
-                  typeof item.date === 'string',
-          )
-        : [];
     const totalPages = Math.max(1, Math.ceil((data.total || 0) / PAGE_SIZE));
     const fromItem = data.total > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
     const toItem = Math.min(page * PAGE_SIZE, data.total);
 
     const itemsByMonth = (() => {
-        const map = new Map<string, typeof items>();
-        for (const item of items) {
+        const map = new Map<string, typeof data.items>();
+        for (const item of data.items) {
             const key = item.date.slice(0, 7);
             const existing = map.get(key);
             if (existing) existing.push(item);
@@ -228,7 +220,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                 </div>
             </div>
 
-            {items.length === 0 ? (
+            {data.items.length === 0 ? (
                 <div className="customer-empty-state">Brak historii wizyt.</div>
             ) : (
                 <div className="customer-history-list">
