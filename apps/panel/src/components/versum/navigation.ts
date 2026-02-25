@@ -82,7 +82,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'ustawienia',
         iconId: 'svg-settings-nav',
         permission: 'nav:settings',
-        secondaryNav: false,
+        secondaryNav: true,
     },
     {
         key: 'extension',
