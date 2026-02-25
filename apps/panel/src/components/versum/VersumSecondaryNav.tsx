@@ -8,6 +8,7 @@ import CalendarNav from './navs/CalendarNav';
 import WarehouseNav from './navs/WarehouseNav';
 import StatisticsNav from './navs/StatisticsNav';
 import CommunicationNav from './navs/CommunicationNav';
+import SettingsNav from './navs/SettingsNav';
 
 // clientsSections moved to ClientsNav
 
@@ -90,6 +91,8 @@ export default function VersumSecondaryNav({
         content = <CommunicationNav />;
     } else if (module.key === 'services') {
         content = <ServicesNav />;
+    } else if (module.key === 'settings') {
+        content = <SettingsNav />;
     }
 
     return (
