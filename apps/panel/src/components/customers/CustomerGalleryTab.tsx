@@ -14,7 +14,7 @@ interface Props {
 
 export default function CustomerGalleryTab({ customerId }: Props) {
     const {
-        data: imagesRaw,
+        data: images = [],
         isLoading,
         error,
     } = useCustomerGallery(customerId);
@@ -22,10 +22,6 @@ export default function CustomerGalleryTab({ customerId }: Props) {
     const del = useDeleteCustomerGalleryImage(customerId);
 
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
-    const images = useMemo(
-        () => (Array.isArray(imagesRaw) ? imagesRaw : []),
-        [imagesRaw],
-    );
     const selectedImage = useMemo(() => {
         if (selectedImageId === null) return null;
         return images.find((img) => img.id === selectedImageId) ?? null;
