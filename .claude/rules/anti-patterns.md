@@ -14,7 +14,16 @@
 - DON'T call hooks after early returns (`if (!role) return null` etc.) — violates Rules of Hooks.
   Evidence: "useSetSecondaryNav hook placed after if (!role) return null early return → Rules of Hooks violation"
 
+## Next.js / next.config.mjs
+- DON'T return a flat array from `rewrites()` in next.config.mjs — always return `{beforeFiles, afterFiles, fallback}` object.
+  Evidence: "Crash `routesManifest.rewrites.beforeFiles.filter(...)` — beforeFiles undefined when `return rules` (array) used; fixed to object format"
+- DON'T upgrade workspace Next.js version without also updating `pnpm.overrides.next` in root package.json.
+  Evidence: "Commit `d56d2c26` changed panel/landing `package.json` to `next@15.5.10` but root `pnpm.overrides` still `14.2.32`; CI `--frozen-lockfile` installed 14.2.32"
+- DON'T run incremental `pnpm install` after a `pnpm.overrides` change — run clean install (`rm -rf node_modules && pnpm install`).
+  Evidence: "CI pnpm virtual store corruption traced to incremental install; clean install produced correct result"
+
 ## Process
+
 - DON'T commit with failing lint or typecheck.
 - DON'T skip pre-commit checks "to save time".
 - DON'T accept Codex commits without verifying lint — Codex (reasoning_effort=low) is known to skip checks.
@@ -24,6 +33,8 @@
 - DON'T retry a tool call that was explicitly denied; adjust approach instead.
 - DON'T use background shell scripts to monitor git changes on macOS — die when parent process exits; use polling instead.
   Evidence: "Background monitoring shell scripts for git changes — die on macOS when parent process exits"
+- DON'T diagnose Next.js runtime crashes without first checking `pnpm.overrides` in root package.json for version pins.
+  Evidence: "Multiple previous failing runs (22418435919, 22419261772) before root cause was found in overrides"
 
 ## Context & responses
 - DON'T paste whole files in responses.

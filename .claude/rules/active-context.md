@@ -1,12 +1,18 @@
 # Active Context
 
 ## Current focus
-- Post-deploy verification: persistent VersumShell white-screen fix for `/settings` and `/extension`
-  Evidence: "persistent shell fixes white screen for /settings and /extension as intended — not yet verified in production"
+
+- Landing CI broken: `@next/env/dist/index.js` missing in pnpm virtual store — not yet resolved
+  Assumption (confidence: med): caused by incremental lockfile commit before clean install. Verify: re-run push-triggered CI after verifying clean lockfile produces landing build success.
+- Post-deploy verification: persistent VersumShell white-screen fix for `/settings` and `/extension` — still pending full smoke test
 
 ## In-progress work
-- Branch: master (commit `19243f12` merged)
-- Last known state: VersumShell persistent shell shipped; services comments/commissions audit fix shipped
+
+- Branch: master (commit `0a1fde5f` — panel deploy succeeded, CI run 22436718672, 2m51s)
+- Panel production: Next.js 15.5.10 (panel.salon-bw.pl returns 307)
+  Assumption (confidence: high). Verify: check `startup_probe.txt` or panel diagnostic endpoint.
+- Landing production: still running prior build (Next 14 or earlier Next 15 attempt)
+  Assumption (confidence: high). Verify: check `dev.salon-bw.pl` or landing Passenger logs.
 
 ## Recent decisions
 - Adopted enterprise retro-memory-enterprise skill with Evidence Gate
@@ -18,8 +24,17 @@
   Evidence: "Fix: zmienić hrefs bezpośrednio na /sales/history etc." — user approved implicitly
 - Codex audit fix (`fix(panel): address services comments/commissions audit issues`) reviewed and approved
   Evidence: "Fix commit poprawny" confirmed after audit
+- Next.js upgraded to 15.5.10 on panel/landing + root pnpm.overrides updated (commit `d56d2c26` + fix `dc89aae8`)
+  Evidence: "Root override `\"next\": \"14.2.32\"` blocked panel/landing upgrade to 15.5.10 despite workspace package.json declaring 15.5.10"
+- next.config.mjs rewrites() changed from flat array to `{beforeFiles, afterFiles, fallback}` object (commit `dc89aae8`)
+  Evidence: "Crash `routesManifest.rewrites.beforeFiles.filter(...)` — beforeFiles undefined when `return rules` (array) used"
+- Panel deployed via `gh workflow run ... -F target=dashboard` (bypassed broken landing CI)
+  Evidence: "Landing build failed CI run 22436249501; panel never deployed; fix was manual `gh workflow run ... -F target=dashboard`"
 
 ## Blockers / watch items
+
+- Landing CI failure (`@next/env/dist/index.js` missing in next virtual store) — root cause unconfirmed
+  Assumption (confidence: med). Verify: trigger `target=public` deploy and observe landing build in CI after clean lockfile.
 - Verify `/settings` and `/extension` white screen fix in production after deploy
   Assumption (confidence: high). Verify: smoke test after deploy.
 - `if (!role) return null` guards in ~36 pages: now redundant (persistent shell handles auth) — cleanup deferred

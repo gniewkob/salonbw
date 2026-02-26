@@ -13,6 +13,10 @@
 - [ ] PR merged to master
 - [ ] API deployed first if backend changed
 - [ ] Frontends deployed after API
+- [ ] If `package.json` or `pnpm-lock.yaml` changed: verify root `pnpm.overrides` matches workspace versions
+  Evidence: "Root override `\"next\": \"14.2.32\"` blocked panel/landing upgrade to 15.5.10 despite workspace package.json declaring 15.5.10"
+- [ ] If `pnpm.overrides` changed: lockfile committed after `pnpm store prune && rm -rf node_modules && pnpm install` (not incremental)
+  Evidence: "Incremental pnpm install after override change resulted in CI pnpm virtual store corruption"
 
 ## After deploy (production verification)
 - [ ] `curl https://api.salon-bw.pl/healthz` → 200
