@@ -171,18 +171,19 @@ jobs:
 
       - name: Patch pnpm virtual store (@next/env dist)
         run: |
-          # pnpm v10 on Linux sometimes installs @next/env without dist/.
-          # Repair by re-extracting from npm if dist/index.js is missing.
-          ENV_DIR="node_modules/.pnpm/@next+env@15.5.10/node_modules/@next/env"
-          if [ -d "$ENV_DIR" ] && [ ! -f "$ENV_DIR/dist/index.js" ]; then
-            echo "Repairing @next/env@15.5.10: dist/index.js missing"
-            cd "$ENV_DIR"
-            npm pack @next/env@15.5.10 2>/dev/null | xargs -I{} tar --strip-components=2 -xzf {} package/dist
-            cd -
-            echo "Repair complete: $(ls $ENV_DIR/dist/)"
-          else
-            echo "@next/env dist OK"
-          fi
+          # pnpm v10 on Linux: inner node_modules/@next/env inside next's virtual
+          # store entry may have package.json but no dist/. Diagnose and repair.
+          echo "=== @next/env virtual store diagnostics ==="
+          find node_modules/.pnpm -maxdepth 4 -path '*/node_modules/@next/env' -print 2>/dev/null | while read dir; do
+            if [ -f "$dir/dist/index.js" ]; then
+              echo "OK:     $dir"
+            else
+              echo "BROKEN: $dir (no dist/index.js) — repairing"
+              # Download and extract dist/ directly into the broken location
+              (cd "$dir" && npm pack @next/env@15.5.10 --quiet 2>/dev/null | xargs -I{} tar --strip-components=2 -xzf {} package/dist && echo "  Fixed: $(ls dist/)")
+            fi
+          done
+          echo "=== done ==="
 
       - name: Resolve API URL
         if: ${{ github.event.inputs.target != 'api' }}
