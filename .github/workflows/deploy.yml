@@ -169,6 +169,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Patch pnpm virtual store (@next/env dist)
+        run: |
+          # pnpm v10 on Linux sometimes installs @next/env without dist/.
+          # Repair by re-extracting from npm if dist/index.js is missing.
+          ENV_DIR="node_modules/.pnpm/@next+env@15.5.10/node_modules/@next/env"
+          if [ -d "$ENV_DIR" ] && [ ! -f "$ENV_DIR/dist/index.js" ]; then
+            echo "Repairing @next/env@15.5.10: dist/index.js missing"
+            cd "$ENV_DIR"
+            npm pack @next/env@15.5.10 2>/dev/null | xargs -I{} tar --strip-components=2 -xzf {} package/dist
+            cd -
+            echo "Repair complete: $(ls $ENV_DIR/dist/)"
+          else
+            echo "@next/env dist OK"
+          fi
+
       - name: Resolve API URL
         if: ${{ github.event.inputs.target != 'api' }}
         id: api
