@@ -2,13 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
 // import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import type {
-    Express,
-    NextFunction,
-    Request,
-    RequestHandler,
-    Response,
-} from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 
 let initialized = false;
 
@@ -69,20 +63,10 @@ export async function setupSentry(app: INestApplication): Promise<boolean> {
         });
     }
 
+    // In v8+, HTTP tracing is handled automatically via OpenTelemetry.
+    // Only add request_id tag middleware for correlation.
     const adapter = app.getHttpAdapter();
     const httpServer = adapter.getInstance() as Express;
-    const sentryHandlers = (
-        Sentry as typeof Sentry & {
-            Handlers: {
-                requestHandler: () => unknown;
-                tracingHandler: () => unknown;
-            };
-        }
-    ).Handlers;
-    const requestHandler = sentryHandlers.requestHandler() as RequestHandler;
-    const tracingHandler = sentryHandlers.tracingHandler() as RequestHandler;
-    httpServer.use(requestHandler);
-    httpServer.use(tracingHandler);
     httpServer.use(
         (
             req: Request & { id?: string },
