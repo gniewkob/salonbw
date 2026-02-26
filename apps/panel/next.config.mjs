@@ -43,7 +43,6 @@ const nextConfig = {
     },
     typedRoutes: false,
     async rewrites() {
-        const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
         const rules = [
             // Legacy Versum compatibility aliases (vendored calendar runtime uses these in some flows)
             // Note: Next rewrites do not reliably chain, so map to `/api/*` directly.
@@ -108,8 +107,11 @@ const nextConfig = {
             // API requests now go through /pages/api/[...path].ts
             // which injects Authorization header from accessToken cookie
         ];
-        // Return array format instead of object to prevent Next.js 15.5.10 crash on empty beforeFiles
-        return rules;
+        return {
+            beforeFiles: [],
+            afterFiles: rules,
+            fallback: [],
+        };
     },
     async redirects() {
         return [
