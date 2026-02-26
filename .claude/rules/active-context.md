@@ -2,19 +2,21 @@
 
 ## Current focus
 
-- Landing CI broken: `@next/env/dist/index.js` missing in pnpm virtual store — not yet resolved
-  Assumption (confidence: med): caused by incremental lockfile commit before clean install. Verify: re-run push-triggered CI after verifying clean lockfile produces landing build success.
-- Post-deploy verification: persistent VersumShell white-screen fix for `/settings` and `/extension` — still pending full smoke test
+- Versum clone: strict visual parity open na klienci/statystyki/magazyn/usługi — deferred do decyzji kolejności
+- Next module priorytet do ustalenia: dashboard, employees, lub strict visual polish na istniejących
 
 ## In-progress work
 
-- Branch: master (commit `0a1fde5f` — panel deploy succeeded, CI run 22436718672, 2m51s)
-- Panel production: Next.js 15.5.10 (panel.salon-bw.pl returns 307)
-  Assumption (confidence: high). Verify: check `startup_probe.txt` or panel diagnostic endpoint.
-- Landing production: still running prior build (Next 14 or earlier Next 15 attempt)
-  Assumption (confidence: high). Verify: check `dev.salon-bw.pl` or landing Passenger logs.
+- Branch: master (commit `2cafe8fc` — aktualny HEAD)
+- Panel production: `0a1fde5f` | Next.js 15.5.10 | run `22436718672` | 2026-02-26 09:48
+  WarehouseNav + ServicesNav + CommunicationNav + SettingsNav + EmployeesNav — wszystkie zintegrowane.
+- Landing production: `e74331ee` | Next.js 15.5.10 | run `22456729340` | 2026-02-26 — DEPLOYED (vendor @next/env fix)
+- API production: `9ec696ac` | 2026-02-24 19:28 — bez zmian od statistics normalization deploy.
 
 ## Recent decisions
+
+- Landing CI fixed: `ensure-local-deps.js` vendor `@next/env` was `14.2.32` (no dist/); version mismatch caused it to delete+replace pnpm store entry → dist/index.js gone. Fix: update vendor to `15.5.10` with proper dist/ (commit `e74331ee`)
+  Evidence: `tryPackage` error with `path: package.json, requestPath: @next/env` proved package.json found but dist/index.js missing; vendor package.json confirmed `14.2.32` without dist/
 - Adopted enterprise retro-memory-enterprise skill with Evidence Gate
 - Subagent isolation via .claude/agents/retro-auditor.md
 - Rules stored in .claude/rules/*.md (versioned, team-shared)
@@ -24,24 +26,26 @@
   Evidence: "Fix: zmienić hrefs bezpośrednio na /sales/history etc." — user approved implicitly
 - Codex audit fix (`fix(panel): address services comments/commissions audit issues`) reviewed and approved
   Evidence: "Fix commit poprawny" confirmed after audit
-- Next.js upgraded to 15.5.10 on panel/landing + root pnpm.overrides updated (commit `d56d2c26` + fix `dc89aae8`)
+- Next.js upgraded to 15.5.10 on panel/landing + root pnpm.overrides updated (commit `d56d2c26` + fix `0a1fde5f`)
   Evidence: "Root override `\"next\": \"14.2.32\"` blocked panel/landing upgrade to 15.5.10 despite workspace package.json declaring 15.5.10"
-- next.config.mjs rewrites() changed from flat array to `{beforeFiles, afterFiles, fallback}` object (commit `dc89aae8`)
+- next.config.mjs rewrites() changed from flat array to `{beforeFiles, afterFiles, fallback}` object (commit `0a1fde5f`)
   Evidence: "Crash `routesManifest.rewrites.beforeFiles.filter(...)` — beforeFiles undefined when `return rules` (array) used"
 - Panel deployed via `gh workflow run ... -F target=dashboard` (bypassed broken landing CI)
   Evidence: "Landing build failed CI run 22436249501; panel never deployed; fix was manual `gh workflow run ... -F target=dashboard`"
+- WarehouseNav: pełny secondary nav dla wszystkich submodułów produkty/sprzedaż/zużycie/dostawy/zamówienia/inwentaryzacja (commits `28b0d53a`, `fe72d2d2`)
+  Evidence: "Steps 2 & 3 warehouse navigation integration — merged to master"
+- Versum clone postęp: ~60% — wszystkie moduły mają secondary nav; smoki PASS na settings/communication/services/extension/warehouse
+  Evidence: VERSUM_CLONE_PROGRESS.md 2026-02-26
 
 ## Blockers / watch items
 
-- Landing CI failure (`@next/env/dist/index.js` missing in next virtual store) — root cause unconfirmed
-  Assumption (confidence: med). Verify: trigger `target=public` deploy and observe landing build in CI after clean lockfile.
-- Verify `/settings` and `/extension` white screen fix in production after deploy
-  Assumption (confidence: high). Verify: smoke test after deploy.
+- `/settings` i `/extension` white screen fix: smoke PASS (`a2fba7dd`, `049ba6fa`) — RESOLVED
 - `if (!role) return null` guards in ~36 pages: now redundant (persistent shell handles auth) — cleanup deferred
 - DashboardLayout exists but is used by no page — dead code; safe to remove eventually
+- Strict visual parity open: klienci (~7%), statystyki (~11%), magazyn (~9%), usługi (niezmierzone) — deferred
 
 ## Stack reminders
-- Panel: Next.js 15, pnpm, TypeScript
+- Panel: Next.js 15.5.10, pnpm, TypeScript
 - Backend: Node.js, pnpm
 - Host: MyDevil (FreeBSD, Passenger)
 - CI: GitHub Actions (.github/workflows/deploy.yml)
