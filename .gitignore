@@ -103,7 +103,9 @@ static_preview/
 versum-*.png
 data/
 
-# Allow vendored Next env dist for panel fallback
+# Allow vendored Next env dist for landing and panel fallback
+!apps/landing/vendor/@next/env/dist/
+!apps/landing/vendor/@next/env/dist/**
 !apps/panel/vendor/@next/env/dist/
 !apps/panel/vendor/@next/env/dist/**
 # Allow vendored styled-jsx dist for standalone runtime
