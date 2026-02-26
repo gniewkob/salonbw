@@ -169,21 +169,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Patch pnpm virtual store (@next/env dist)
+      - name: Diagnose @next/env virtual store
         run: |
-          # pnpm v10 on Linux: inner node_modules/@next/env inside next's virtual
-          # store entry may have package.json but no dist/. Diagnose and repair.
-          echo "=== @next/env virtual store diagnostics ==="
-          find node_modules/.pnpm -maxdepth 4 -path '*/node_modules/@next/env' -print 2>/dev/null | while read dir; do
-            if [ -f "$dir/dist/index.js" ]; then
-              echo "OK:     $dir"
-            else
-              echo "BROKEN: $dir (no dist/index.js) — repairing"
-              # Download and extract dist/ directly into the broken location
-              (cd "$dir" && npm pack @next/env@15.5.10 --quiet 2>/dev/null | xargs -I{} tar --strip-components=2 -xzf {} package/dist && echo "  Fixed: $(ls dist/)")
-            fi
-          done
-          echo "=== done ==="
+          TARGET="node_modules/.pnpm/next@15.5.10_@babel+core@7.28.6_@opentelemetry+api@1.9.0_@playwright+test@1.58.2_react-_7a9adef0b5dd5836177b285c9d4b2d4b/node_modules/@next/env"
+          echo "=== type of @next/env in next virtual store ==="
+          ls -la "node_modules/.pnpm/next@15.5.10_@babel+core@7.28.6_@opentelemetry+api@1.9.0_@playwright+test@1.58.2_react-_7a9adef0b5dd5836177b285c9d4b2d4b/node_modules/@next/" || echo "dir missing"
+          echo "=== contents of @next/env ==="
+          ls -la "$TARGET/" 2>/dev/null || echo "dir missing"
+          echo "=== stat dist/index.js ==="
+          stat "$TARGET/dist/index.js" 2>/dev/null || echo "stat failed"
+          echo "=== realpath ==="
+          realpath "$TARGET/dist/index.js" 2>/dev/null || echo "realpath failed"
+          echo "=== node test ==="
+          node -e "try { require('$TARGET/dist/index.js'); console.log('OK'); } catch(e) { console.log('FAIL:', e.message); }"
 
       - name: Resolve API URL
         if: ${{ github.event.inputs.target != 'api' }}
