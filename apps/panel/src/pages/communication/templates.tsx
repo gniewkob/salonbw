@@ -149,44 +149,44 @@ export default function TemplatesPage() {
                             htmlFor="filter-channel"
                         >
                             Kanał:
-                            <select
-                                id="filter-channel"
-                                className="versum-select"
-                                value={filterChannel}
-                                onChange={(e) =>
-                                    setFilterChannel(
-                                        e.target.value as MessageChannel | '',
-                                    )
-                                }
-                            >
-                                <option value="">Wszystkie</option>
-                                {CHANNELS.map((c) => (
-                                    <option key={c.value} value={c.value}>
-                                        {c.icon} {c.label}
-                                    </option>
-                                ))}
-                            </select>
                         </label>
+                        <select
+                            id="filter-channel"
+                            className="versum-select"
+                            value={filterChannel}
+                            onChange={(e) =>
+                                setFilterChannel(
+                                    e.target.value as MessageChannel | '',
+                                )
+                            }
+                        >
+                            <option value="">Wszystkie</option>
+                            {CHANNELS.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                    {c.icon} {c.label}
+                                </option>
+                            ))}
+                        </select>
                         <label className="versum-label" htmlFor="filter-type">
                             Typ:
-                            <select
-                                id="filter-type"
-                                className="versum-select"
-                                value={filterType}
-                                onChange={(e) =>
-                                    setFilterType(
-                                        e.target.value as TemplateType | '',
-                                    )
-                                }
-                            >
-                                <option value="">Wszystkie</option>
-                                {TEMPLATE_TYPES.map((t) => (
-                                    <option key={t.value} value={t.value}>
-                                        {t.label}
-                                    </option>
-                                ))}
-                            </select>
                         </label>
+                        <select
+                            id="filter-type"
+                            className="versum-select"
+                            value={filterType}
+                            onChange={(e) =>
+                                setFilterType(
+                                    e.target.value as TemplateType | '',
+                                )
+                            }
+                        >
+                            <option value="">Wszystkie</option>
+                            {TEMPLATE_TYPES.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                    {t.label}
+                                </option>
+                            ))}
+                        </select>
                         <button
                             type="button"
                             className="versum-btn versum-btn--primary"
