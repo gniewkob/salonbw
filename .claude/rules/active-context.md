@@ -3,14 +3,14 @@
 ## Current focus
 
 - Versum clone: strict visual parity open na klienci/statystyki/magazyn/usługi — deferred do decyzji kolejności
-- Next module priorytet do ustalenia: dashboard, employees, lub strict visual polish na istniejących
-- CommunicationNav: wired into VersumSecondaryNav.tsx — replaced static `communicationSections` placeholder with `<CommunicationNav />` (commit pending)
+- Next module priorytet: Dodatki (50%) lub strict visual polish na istniejących
+- Session 2026-03-02: CommunicationNav wired + breadcrumb/a11y fixes na /communication/* + settings secondaryNav enabled + SettingsNav wired + tile CSS + breadcrumb w statistics/extension/services/employees/reviews/invoices
 
 ## In-progress work
 
-- Branch: master (commit `cacd861e` — aktualny HEAD per git status 2026-02-26T22)
-- Panel production: `0a1fde5f` | Next.js 15.5.10 | run `22436718672` | 2026-02-26 09:48
-  WarehouseNav + ServicesNav + CommunicationNav + SettingsNav + EmployeesNav — wszystkie zintegrowane.
+- Branch: master (commit `c3a25e0b` — aktualny HEAD 2026-03-02)
+- Panel production: `d09e8180` | Next.js 15.5.10 | run `22573596765` | 2026-03-02 11:21 (pending deploy of c3a25e0b)
+  CommunicationNav wired + breadcrumb/a11y na /communication/* — DEPLOYED. Settings/stats/extension breadcrumb — NOT YET DEPLOYED.
 - Landing production: `e74331ee` | Next.js 15.5.10 | run `22456729340` | 2026-02-26 — DEPLOYED (vendor @next/env fix)
 - API production: `9ec696ac` | 2026-02-24 19:28 — bez zmian od statistics normalization deploy.
 
