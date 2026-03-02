@@ -91,7 +91,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'dodatki',
         iconId: 'svg-extensions-nav',
         permission: 'nav:extension',
-        secondaryNav: false,
+        secondaryNav: true,
         pinBottom: true,
     },
 ];
@@ -159,7 +159,11 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[6];
     }
 
-    if (path.startsWith('/extension')) {
+    if (
+        path.startsWith('/extension') ||
+        path.startsWith('/admin/loyalty') ||
+        path.startsWith('/admin/gift-cards')
+    ) {
         return VERSUM_MODULES[7];
     }
 
