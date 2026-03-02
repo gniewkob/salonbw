@@ -49,7 +49,10 @@ export default function AdminDashboard() {
 
             {/* Stats Period Selector */}
             <div className="versum-dashboard__period">
-                <button className="versum-dashboard__period-btn active">
+                <button
+                    type="button"
+                    className="versum-dashboard__period-btn active"
+                >
                     bieżący miesiąc
                 </button>
                 <span className="versum-dashboard__period-label">
@@ -118,7 +121,10 @@ export default function AdminDashboard() {
                 <div className="versum-stat-card">
                     <h3 className="versum-stat-card__title">obroty salonu</h3>
                     <div className="versum-stat-card__value">
-                        <button className="versum-stat-card__toggle">
+                        <button
+                            type="button"
+                            className="versum-stat-card__toggle"
+                        >
                             pokaż obrót
                         </button>
                         <span className="versum-stat-card__change positive">
@@ -236,8 +242,12 @@ export default function AdminDashboard() {
                     <div className="versum-dashboard__section-header">
                         <h2>zadania</h2>
                         <div className="versum-dashboard__section-actions">
-                            <button className="versum-icon-btn">+</button>
-                            <button className="versum-icon-btn">🗑</button>
+                            <button type="button" className="versum-icon-btn">
+                                +
+                            </button>
+                            <button type="button" className="versum-icon-btn">
+                                🗑
+                            </button>
                         </div>
                     </div>
                     <div className="versum-tasks">
