@@ -282,11 +282,10 @@ function StatisticsPageContent() {
             className="versum-page statistics-module"
             data-testid="statistics-page"
         >
-            <header className="versum-page__header">
-                <h1 className="versum-page__title">
-                    Statystyki / Raport finansowy
-                </h1>
-            </header>
+            <ul className="breadcrumb">
+                <li>Statystyki</li>
+                <li>Raport finansowy</li>
+            </ul>
 
             <div className="versum-page__toolbar">
                 <div className="btn-group mr-10" role="group">

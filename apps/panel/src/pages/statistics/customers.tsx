@@ -25,9 +25,10 @@ export default function ClientsStatisticsPage() {
     return (
         <VersumShell role={role}>
             <div className="versum-page" data-testid="clients-statistics-page">
-                <header className="versum-page__header">
-                    <h1 className="versum-page__title">Statystyki / Klienci</h1>
-                </header>
+                <ul className="breadcrumb">
+                    <li>Statystyki</li>
+                    <li>Klienci</li>
+                </ul>
 
                 <div className="versum-page__toolbar">
                     <div className="flex items-center gap-2">

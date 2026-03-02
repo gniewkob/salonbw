@@ -103,11 +103,10 @@ export default function EmployeeActivityPage() {
                 className="versum-page statistics-module"
                 data-testid="employee-activity-page"
             >
-                <header className="versum-page__header">
-                    <h1 className="versum-page__title">
-                        Statystyki / Aktywność pracowników
-                    </h1>
-                </header>
+                <ul className="breadcrumb">
+                    <li>Statystyki</li>
+                    <li>Aktywność pracowników</li>
+                </ul>
 
                 <div className="versum-page__toolbar">
                     <div className="btn-group mr-10" role="group">

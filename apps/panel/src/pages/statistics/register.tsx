@@ -56,14 +56,13 @@ export default function CashRegisterPage() {
     return (
         <VersumShell role={role}>
             <div className="versum-page" data-testid="cash-register-page">
-                <header className="versum-page__header">
-                    <h1 className="versum-page__title">
-                        Statystyki / Stan kasy
-                    </h1>
-                </header>
+                <ul className="breadcrumb">
+                    <li>Statystyki</li>
+                    <li>Stan kasy</li>
+                </ul>
 
                 <div className="versum-page__toolbar">
-                    <div className="flex items-center gap-2">
+                    <div className="versum-actions">
                         <button
                             type="button"
                             className="versum-toolbar-btn btn btn-default"
