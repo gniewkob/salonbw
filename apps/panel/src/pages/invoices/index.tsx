@@ -18,9 +18,10 @@ export default function InvoicesPage() {
         <RouteGuard permission="nav:invoices">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="invoices-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">Faktury</h1>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>Ustawienia</li>
+                        <li>Faktury</li>
+                    </ul>
 
                     {loading ? (
                         <div className="versum-loading">Ładowanie...</div>

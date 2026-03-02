@@ -83,9 +83,13 @@ export default function EmployeesPage() {
         <RouteGuard roles={['admin']} permission="nav:employees">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="employees-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">Pracownicy</h1>
+                    <ul className="breadcrumb">
+                        <li>Ustawienia</li>
+                        <li>Pracownicy</li>
+                    </ul>
+                    <div className="versum-page__toolbar">
                         <button
+                            type="button"
                             className="versum-btn versum-btn--primary"
                             onClick={() => {
                                 setEditing(null);
@@ -94,7 +98,7 @@ export default function EmployeesPage() {
                         >
                             Dodaj pracownika
                         </button>
-                    </header>
+                    </div>
 
                     {rows && (
                         <DataTable
