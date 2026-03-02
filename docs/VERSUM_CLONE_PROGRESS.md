@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-25
+> Data aktualizacji: 2026-02-26
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -84,12 +84,14 @@
 | Moduł Klienci - Lista | ✅ | 100% |
 | Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
-| Moduł Usługi | 🟡 | 30% (functional smoke YES, visual strict NO) |
-| Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO) |
-| Moduł Łączność | 🟡 | 50% (secondary nav + smoke YES, visual strict NO) |
-| Moduł Ustawienia | 🟡 | 45% (secondary nav + smoke YES, visual strict NO) |
+| Moduł Usługi | 🟡 | 70% (ServicesNav + details view copy-first + smoke YES, visual strict NO) |
+| Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO, deferred) |
+| Moduł Łączność | 🟡 | 75% (CommunicationNav wired + copy-first breadcrumb/toolbar YES, visual strict NO) |
+| Moduł Ustawienia | 🟡 | 75% (SettingsNav wired + secondaryNav:true + tile CSS + breadcrumb YES, visual strict NO) |
+| Moduł Dodatki (Extension) | 🟡 | 50% (breadcrumb fix YES, visual strict NO) |
+| Infra: Next.js | ✅ | 15.5.10 na panel + landing (pnpm.overrides zaktualizowane) |
 
-**Całkowity postęp: ~50%** (moduły klienci/statystyki/magazyn mają otwarte delty strict visual)
+**Całkowity postęp: ~65%** (wszystkie moduły mają secondary nav + breadcrumb; otwarte delty strict visual na: klienci/statystyki/magazyn/usługi)
 
 ## Known deltas (strict 1:1)
 
@@ -137,6 +139,47 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-02-26 - Infra: Next.js 15.5.10 upgrade + rewrites fix + panel deploy
+
+- zmiana kodu:
+  - `apps/panel/next.config.mjs`: rewrites() zmienione na `{beforeFiles, afterFiles, fallback}` (był flat array → crash `routesManifest.rewrites.beforeFiles.filter`),
+  - `apps/panel/package.json` + `apps/landing/package.json`: `next@15.5.10`,
+  - `package.json` (root): `pnpm.overrides.next = "15.5.10"`,
+  - `apps/panel/next.config.mjs`: `typedRoutes: false` (wyłączone eksplicytnie aby uniknąć błędów TS).
+- walidacja:
+  - deploy run `22436718672` (`success`, target `dashboard`, sha `0a1fde5f`) — 2026-02-26 09:48 UTC.
+  - `curl -I https://panel.salon-bw.pl` → `307` (oczekiwane dla niezalogowanych).
+  - landing CI: nadal broken (`@next/env/dist/index.js` missing w pnpm virtual store) — landing NIE wdrożone.
+- commit: `0a1fde5f`
+
+---
+
+### 2026-02-25 - Magazyn: integracja WarehouseNav + zakładki feature (Steps 2-3)
+
+- zmiana kodu:
+  - `apps/panel/src/components/versum/navs/WarehouseNav.tsx`: pełny secondary nav dla wszystkich submodułów:
+    - `/products` → KATEGORIE PRODUKTÓW (drzewo kategorii z API, modal dodaj/edytuj/usuń),
+    - `/sales` → SPRZEDAŻ (dodaj sprzedaż, historia sprzedaży),
+    - `/use` → ZUŻYCIE (dodaj zużycie, historia, planowane),
+    - `/deliveries` + `/suppliers` + `/stock-alerts` + `/manufacturers` → DOSTAWY (z licznikami roboczych/oczekujących),
+    - `/orders` → ZAMÓWIENIA (z licznikiem wersji roboczych),
+    - `/inventory` → INWENTARYZACJA (z licznikami statusów).
+  - `apps/panel/src/pages/products/index.tsx` + powiązane strony: integracja zakładek feature (Produkty/Sprzedaż/Zużycie/Dostawy/Zamówienia/Inwentaryzacja).
+- walidacja:
+  - `pnpm eslint src --fix` (panel) ✅
+  - `pnpm tsc --noEmit` (panel) ✅
+- commit: `28b0d53a` (Step 2), `fe72d2d2` (Step 3)
+
+---
+
+### 2026-02-25 - Extension: smoke test produkcyjny
+
+- walidacja:
+  - `tests/e2e/prod-extension-smoke.spec.ts` → `1 passed`.
+- commit: `049ba6fa`
+
+---
 
 ### 2026-02-24 - Usługi: refactor widoku szczegółu (copy-first CSS/classes) + smoke
 - zmiana kodu:
