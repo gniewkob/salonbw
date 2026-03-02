@@ -47,6 +47,7 @@ export default function TipsPage() {
                     <div className="flex items-center gap-2">
                         <select
                             className="form-control versum-select"
+                            aria-label="Zakres czasu"
                             value={range}
                             onChange={(e) => {
                                 const next = e.target.value;

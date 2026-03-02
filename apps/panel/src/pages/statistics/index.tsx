@@ -304,17 +304,12 @@ function StatisticsPageContent() {
                         ▶
                     </button>
                 </div>
-                <div style={{ marginLeft: 'auto' }} />
+                <div className="ml-auto" />
                 <button
                     type="button"
-                    className="btn btn-default mr-10"
+                    className="btn btn-default mr-10 border-[#4ea4e0] text-[#2f9ae0] bg-white"
                     onClick={downloadCsvReport}
                     disabled={dashboardLoading || rankingLoading}
-                    style={{
-                        borderColor: '#4ea4e0',
-                        color: '#2f9ae0',
-                        background: '#fff',
-                    }}
                 >
                     pobierz raport Excel
                 </button>
@@ -399,8 +394,11 @@ function StatisticsPageContent() {
                                     <div
                                         aria-hidden
                                         className="statistics-payment-pie"
-                                        style={{
-                                            background: paymentPieBackground,
+                                        {...{
+                                            style: {
+                                                background:
+                                                    paymentPieBackground,
+                                            },
                                         }}
                                     />
                                     <div className="fs-12">
@@ -417,11 +415,13 @@ function StatisticsPageContent() {
                                                 <div key={item.key}>
                                                     <span
                                                         className="statistics-payment-dot"
-                                                        style={{
-                                                            background:
-                                                                item.color,
-                                                            borderColor:
-                                                                item.color,
+                                                        {...{
+                                                            style: {
+                                                                background:
+                                                                    item.color,
+                                                                borderColor:
+                                                                    item.color,
+                                                            },
                                                         }}
                                                     />
                                                     {item.label}:{' '}
@@ -557,51 +557,36 @@ function StatisticsPageContent() {
                     <div className="mt-20 mb-10 fs-12">
                         <strong>Udział pracowników w utargu</strong>
                     </div>
-                    <div
-                        style={{
-                            border: '1px solid #d9dee2',
-                            padding: 10,
-                            width: 440,
-                            maxWidth: '100%',
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                gap: 20,
-                            }}
-                        >
+                    <div className="border border-[#d9dee2] p-[10px] w-[440px] max-w-full">
+                        <div className="flex items-center justify-between gap-5">
                             <div
                                 aria-hidden
-                                style={{
-                                    width: 140,
-                                    height: 140,
-                                    borderRadius: '50%',
-                                    background:
-                                        'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
-                                    flexShrink: 0,
+                                className="w-[140px] h-[140px] rounded-full shrink-0"
+                                {...{
+                                    style: {
+                                        background:
+                                            'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
+                                    },
                                 }}
                             />
                             <div className="fs-12">
                                 {employeeRows.slice(0, 3).map((employee) => (
                                     <div key={employee.employeeId}>
                                         <span
-                                            style={{
-                                                display: 'inline-block',
-                                                width: 8,
-                                                height: 8,
-                                                background:
-                                                    employee.employeeId ===
-                                                    employeeRows[0]?.employeeId
-                                                        ? '#86c92a'
-                                                        : employee.employeeId ===
-                                                            employeeRows[1]
-                                                                ?.employeeId
-                                                          ? '#2a9fd6'
-                                                          : '#e0552f',
-                                                marginRight: 6,
+                                            className="inline-block w-2 h-2 mr-1.5"
+                                            {...{
+                                                style: {
+                                                    background:
+                                                        employee.employeeId ===
+                                                        employeeRows[0]
+                                                            ?.employeeId
+                                                            ? '#86c92a'
+                                                            : employee.employeeId ===
+                                                                employeeRows[1]
+                                                                    ?.employeeId
+                                                              ? '#2a9fd6'
+                                                              : '#e0552f',
+                                                },
                                             }}
                                         />
                                         {employee.employeeName} (0%)

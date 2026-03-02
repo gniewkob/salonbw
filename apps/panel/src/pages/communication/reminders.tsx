@@ -91,10 +91,7 @@ export default function RemindersPage() {
                                     </span>
                                 </div>
                                 <div className="versum-stat">
-                                    <span
-                                        className="versum-stat__value"
-                                        style={{ color: '#25B4C1' }}
-                                    >
+                                    <span className="versum-stat__value text-[#25B4C1]">
                                         {stats?.upcoming ?? '-'}
                                     </span>
                                     <span className="versum-stat__label">

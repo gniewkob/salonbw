@@ -202,6 +202,7 @@ export default function CommissionsPage() {
                         </button>
                         <input
                             type="date"
+                            aria-label="Wybierz datę"
                             className="form-control versum-toolbar-search"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
@@ -214,15 +215,10 @@ export default function CommissionsPage() {
                             ▶
                         </button>
                     </div>
-                    <div style={{ marginLeft: 'auto' }} />
+                    <div className="ml-auto" />
                     <button
                         type="button"
-                        className="btn btn-default mr-10"
-                        style={{
-                            borderColor: '#4ea4e0',
-                            color: '#2f9ae0',
-                            background: '#fff',
-                        }}
+                        className="btn btn-default mr-10 border-[#4ea4e0] text-[#2f9ae0] bg-white"
                     >
                         pobierz raport Excel
                     </button>

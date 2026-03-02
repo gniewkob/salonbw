@@ -332,8 +332,11 @@ export default function TemplatesPage() {
                                 <form onSubmit={(e) => void handleSubmit(e)}>
                                     <div className="versum-modal__body">
                                         <div className="versum-form-group">
-                                            <label>Nazwa *</label>
+                                            <label htmlFor="modal-name">
+                                                Nazwa *
+                                            </label>
                                             <input
+                                                id="modal-name"
                                                 type="text"
                                                 className="versum-input"
                                                 value={formData.name}
@@ -406,8 +409,11 @@ export default function TemplatesPage() {
 
                                         {formData.channel === 'email' && (
                                             <div className="versum-form-group">
-                                                <label>Temat</label>
+                                                <label htmlFor="modal-subject">
+                                                    Temat
+                                                </label>
                                                 <input
+                                                    id="modal-subject"
                                                     type="text"
                                                     className="versum-input"
                                                     value={formData.subject}
@@ -466,8 +472,11 @@ export default function TemplatesPage() {
                                         </div>
 
                                         <div className="versum-form-group">
-                                            <label>Opis (opcjonalny)</label>
+                                            <label htmlFor="modal-description">
+                                                Opis (opcjonalny)
+                                            </label>
                                             <input
+                                                id="modal-description"
                                                 type="text"
                                                 className="versum-input"
                                                 value={formData.description}

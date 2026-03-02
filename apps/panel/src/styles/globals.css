@@ -594,7 +594,7 @@ body {
     .fc-event {
         border: none !important;
         border-radius: 3px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
     }
 
     .fc-event-main {
@@ -676,12 +676,12 @@ body {
     /* ============================================
        HIDE FULLCALENDAR DEFAULT HEADER (Versum uses custom)
        ============================================ */
-    
+
     /* Hide FullCalendar's default toolbar - we use our custom Versum header */
     .fc .fc-toolbar {
         display: none !important;
     }
-    
+
     /* Also hide the second toolbar if present */
     .fc-toolbar.fc-header-toolbar {
         display: none !important;
@@ -760,7 +760,7 @@ body {
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         padding: 12px;
         min-width: 220px;
         pointer-events: none;
@@ -1344,7 +1344,7 @@ body {
     }
 
     .versum-activity-item__avatar {
-        @apply w-8 h-8 rounded-full bg-[#25b4c1] text-white text-xs flex items-center justify-center flex-shrink-0 font-semibold;
+        @apply w-8 h-8 rounded-full bg-[#25b4c1] text-white text-xs flex items-center justify-center shrink-0 font-semibold;
     }
 
     .versum-activity-item__content {
@@ -1365,7 +1365,7 @@ body {
     }
 
     .versum-appointment-item__time {
-        @apply text-sm font-semibold text-gray-800 w-12 flex-shrink-0;
+        @apply text-sm font-semibold text-gray-800 w-12 shrink-0;
     }
 
     .versum-appointment-item__details {
