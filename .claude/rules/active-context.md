@@ -4,10 +4,11 @@
 
 - Versum clone: strict visual parity open na klienci/statystyki/magazyn/usługi — deferred do decyzji kolejności
 - Next module priorytet do ustalenia: dashboard, employees, lub strict visual polish na istniejących
+- CommunicationNav: wired into VersumSecondaryNav.tsx — replaced static `communicationSections` placeholder with `<CommunicationNav />` (commit pending)
 
 ## In-progress work
 
-- Branch: master (commit `2cafe8fc` — aktualny HEAD)
+- Branch: master (commit `cacd861e` — aktualny HEAD per git status 2026-02-26T22)
 - Panel production: `0a1fde5f` | Next.js 15.5.10 | run `22436718672` | 2026-02-26 09:48
   WarehouseNav + ServicesNav + CommunicationNav + SettingsNav + EmployeesNav — wszystkie zintegrowane.
 - Landing production: `e74331ee` | Next.js 15.5.10 | run `22456729340` | 2026-02-26 — DEPLOYED (vendor @next/env fix)
@@ -17,6 +18,10 @@
 
 - Landing CI fixed: `ensure-local-deps.js` vendor `@next/env` was `14.2.32` (no dist/); version mismatch caused it to delete+replace pnpm store entry → dist/index.js gone. Fix: update vendor to `15.5.10` with proper dist/ (commit `e74331ee`)
   Evidence: `tryPackage` error with `path: package.json, requestPath: @next/env` proved package.json found but dist/index.js missing; vendor package.json confirmed `14.2.32` without dist/
+- Landing CI status must be verified from BOTH CI run results AND active-context.md landing line — not just git log
+  Evidence: "Initial doc update incorrectly stated 'landing CI broken' — active-context.md was corrected by retro-auditor to reflect actual state (landing DEPLOYED at e74331ee)"
+- AGENT_STATUS.md "Current Release" table requires cross-verification against git log on every documentation pass — stale entries (2+ days) have been observed
+  Evidence: "AGENT_STATUS.md showed `9ec696ac` from 2026-02-24 while actual panel production was `0a1fde5f` from 2026-02-26"
 - Adopted enterprise retro-memory-enterprise skill with Evidence Gate
 - Subagent isolation via .claude/agents/retro-auditor.md
 - Rules stored in .claude/rules/*.md (versioned, team-shared)
