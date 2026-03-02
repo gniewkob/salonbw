@@ -35,8 +35,30 @@ Niedozwolone:
 ## 3. Obowiązkowy proces (SOP)
 
 ### Krok A — Capture referencji
-- Zbieramy referencję modułu: screenshoty, HTML snapshot, flow kliknięć.
-- Zapisujemy artefakty w `docs/` lub `output/parity/<data-modul>/`.
+
+#### A1 — Enumeracja stanów (przed jakimkolwiek kodem)
+
+Dla każdego modułu zbuduj tabelę upfront:
+
+| Route          | Stan                                       | Interakcje                          |
+| -------------- | ------------------------------------------ | ----------------------------------- |
+| `/customers`   | pusty / ładowanie / wypełniony / błąd      | filtr, kliknięcie wiersza, modal    |
+| `...`          | `...`                                      | `...`                               |
+
+Screenshoty i kod weryfikują tę tabelę — nie zastępują jej.
+
+#### A2 — Network capture (przed HTML/CSS)
+
+- Otwórz DevTools → Network, wyczyść log.
+- Przejdź przez każdy workflow modułu (wszystkie taby, modale, akcje).
+- Zapisz: endpointy, metody HTTP, kształty payloadów i odpowiedzi.
+- To jest wejście do Kroku C (API adaptery) — bez tego integrujesz w ciemno.
+
+#### A3 — HTML/CSS/asset snapshot
+
+- Zbieramy HTML snapshot każdego stanu z A1.
+- Zapisujemy screenshoty per stan.
+- Artefakty: `docs/` lub `output/parity/<data-modul>/`.
 
 ### Krok B — Copy-first implementation
 - Odtwarzamy strukturę widoku 1:1 (layout, secondnav, tabele, modale, przyciski).
