@@ -1142,6 +1142,65 @@ body {
         background: #ffffff;
     }
 
+    /* Link utility */
+    .versum-link {
+        color: var(--versum-accent, #25b4c1);
+        text-decoration: none;
+    }
+
+    .versum-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Text utilities */
+    .versum-text-success {
+        color: #22c55e;
+    }
+
+    .versum-text-muted {
+        @apply text-gray-400;
+    }
+
+    /* Widget (stats sub-panel) */
+    .versum-widget {
+        @apply bg-white border border-gray-200 rounded-lg overflow-hidden mb-4;
+    }
+
+    .versum-widget__header {
+        @apply px-4 py-3 bg-gray-50 border-b border-gray-200 text-sm font-semibold text-gray-700;
+    }
+
+    .versum-widget__content {
+        @apply p-4;
+    }
+
+    /* Extension add-ons grid */
+    .versum-extension-grid {
+        @apply grid gap-4;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    .versum-extension-card {
+        @apply bg-white border border-gray-200 rounded-lg p-5;
+    }
+
+    .versum-extension-card h3 {
+        @apply text-base font-semibold text-gray-800 mb-2;
+    }
+
+    .versum-extension-card p {
+        @apply text-sm text-gray-600 mb-2;
+    }
+
+    .versum-extension-card__status {
+        @apply text-xs text-gray-500 mt-3;
+    }
+
+    /* Excel export link area */
+    .versum-excel-export {
+        @apply flex items-center gap-2 mt-4;
+    }
+
     /* Settings tile grid */
     .versum-grid {
         @apply grid gap-3 mb-6;
