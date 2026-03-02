@@ -108,34 +108,34 @@ export default function ReviewsPage() {
         <RouteGuard permission="nav:reviews">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="reviews-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">Opinie</h1>
-                        <div className="flex items-center gap-4">
-                            {isAdmin && (
-                                <label className="versum-label">
-                                    Employee
-                                    <input
-                                        className="versum-input versum-input--sm ml-2 w-20"
-                                        value={employeeId}
-                                        onChange={(e) =>
-                                            setEmployeeId(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                    />
-                                </label>
-                            )}
-                            <button
-                                className="versum-btn versum-btn--primary"
-                                onClick={() => {
-                                    setEditing(null);
-                                    setOpenForm(true);
-                                }}
-                            >
-                                Dodaj opinię
-                            </button>
-                        </div>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>Ustawienia</li>
+                        <li>Opinie</li>
+                    </ul>
+                    <div className="versum-page__toolbar">
+                        {isAdmin && (
+                            <label className="versum-label">
+                                Employee
+                                <input
+                                    className="versum-input versum-input--sm"
+                                    value={employeeId}
+                                    onChange={(e) =>
+                                        setEmployeeId(Number(e.target.value))
+                                    }
+                                />
+                            </label>
+                        )}
+                        <button
+                            type="button"
+                            className="versum-btn versum-btn--primary"
+                            onClick={() => {
+                                setEditing(null);
+                                setOpenForm(true);
+                            }}
+                        >
+                            Dodaj opinię
+                        </button>
+                    </div>
 
                     <DataTable
                         data={rows}
