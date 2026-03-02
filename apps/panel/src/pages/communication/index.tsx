@@ -89,38 +89,36 @@ export default function CommunicationPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="communication-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">
-                            Łączność / Nieprzeczytane wiadomości
-                        </h1>
-                        <div className="flex gap-2">
-                            <Link
-                                href="/communication/templates"
-                                className="versum-btn versum-btn--light"
-                            >
-                                Szablony
-                            </Link>
-                            <Link
-                                href="/communication/reminders"
-                                className="versum-btn versum-btn--light"
-                            >
-                                Przypomnienia
-                            </Link>
-                            <button
-                                type="button"
-                                className="versum-btn versum-btn--default"
-                                onClick={() => setIsModalOpen(true)}
-                            >
-                                wyślij wiadomość pojedynczą
-                            </button>
-                            <Link
-                                href="/communication/mass"
-                                className="versum-btn versum-btn--primary"
-                            >
-                                wyślij wiadomość masową
-                            </Link>
-                        </div>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>Łączność / Nieprzeczytane wiadomości</li>
+                    </ul>
+                    <div className="versum-page__toolbar">
+                        <Link
+                            href="/communication/templates"
+                            className="versum-btn versum-btn--light"
+                        >
+                            Szablony
+                        </Link>
+                        <Link
+                            href="/communication/reminders"
+                            className="versum-btn versum-btn--light"
+                        >
+                            Przypomnienia
+                        </Link>
+                        <button
+                            type="button"
+                            className="versum-btn versum-btn--default"
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            wyślij wiadomość pojedynczą
+                        </button>
+                        <Link
+                            href="/communication/mass"
+                            className="versum-btn versum-btn--primary"
+                        >
+                            wyślij wiadomość masową
+                        </Link>
+                    </div>
 
                     <div className="versum-page__toolbar">
                         <label className="versum-label">
@@ -209,7 +207,7 @@ export default function CommunicationPage() {
                                                                   {entry.subject ||
                                                                       'Wiadomość'}
                                                               </strong>
-                                                              <div className="versum-muted text-xs mt-1">
+                                                              <div className="versum-muted">
                                                                   {entry.content.slice(
                                                                       0,
                                                                       120,
@@ -248,7 +246,7 @@ export default function CommunicationPage() {
                                                                   {entry.subject ||
                                                                       'Email'}
                                                               </strong>
-                                                              <div className="versum-muted text-xs mt-1">
+                                                              <div className="versum-muted">
                                                                   {(
                                                                       entry.template ??
                                                                       ''
@@ -292,7 +290,7 @@ export default function CommunicationPage() {
                                     - {Math.min(page * data.limit, data.total)}{' '}
                                     z {data.total}
                                 </span>
-                                <div className="flex gap-2">
+                                <div className="versum-actions">
                                     <button
                                         type="button"
                                         className="versum-btn versum-btn--sm versum-btn--light"
@@ -379,8 +377,9 @@ export default function CommunicationPage() {
                                 )}
 
                                 <div className="versum-form-group">
-                                    <label>Treść</label>
+                                    <label htmlFor="comm-content">Treść</label>
                                     <textarea
+                                        id="comm-content"
                                         className="versum-textarea"
                                         rows={6}
                                         value={content}

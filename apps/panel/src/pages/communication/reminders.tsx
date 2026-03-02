@@ -46,17 +46,20 @@ export default function RemindersPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <VersumShell role={role}>
                 <div className="versum-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">
-                            Łączność / Automatyczne przypomnienia
-                        </h1>
+                    <ul className="breadcrumb">
+                        <li>
+                            <Link href="/communication">Łączność</Link>
+                        </li>
+                        <li>Automatyczne przypomnienia</li>
+                    </ul>
+                    <div className="versum-page__toolbar">
                         <Link
                             href="/communication"
                             className="versum-btn versum-btn--light"
                         >
                             ← Powrót
                         </Link>
-                    </header>
+                    </div>
 
                     {/* Stats */}
                     <div className="versum-mass-communication">
@@ -104,16 +107,19 @@ export default function RemindersPage() {
                         {/* Manual trigger */}
                         <div className="versum-mass-communication__section">
                             <h3>Ręczne wyzwalanie</h3>
-                            <p className="versum-muted mb-4">
+                            <p className="versum-muted">
                                 Wyślij przypomnienia do wszystkich klientów z
                                 wizytami w najbliższych godzinach.
                             </p>
                             <div className="versum-form-group">
-                                <label>Zakres godzin</label>
-                                <div className="flex gap-2 items-center">
+                                <label htmlFor="hours-input">
+                                    Zakres godzin
+                                </label>
+                                <div className="versum-actions">
                                     <input
+                                        id="hours-input"
                                         type="number"
-                                        className="versum-input w-32"
+                                        className="versum-input"
                                         value={hours}
                                         onChange={(e) =>
                                             setHours(
@@ -127,7 +133,7 @@ export default function RemindersPage() {
                                     <span>godzin</span>
                                     <button
                                         type="button"
-                                        className="versum-btn versum-btn--primary ml-4"
+                                        className="versum-btn versum-btn--primary"
                                         onClick={() => void handleTrigger()}
                                         disabled={
                                             isTriggering ||
@@ -220,7 +226,7 @@ export default function RemindersPage() {
                         {/* Info */}
                         <div className="versum-mass-communication__section">
                             <h3>Jak to działa?</h3>
-                            <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                            <ul>
                                 <li>
                                     System automatycznie wysyła przypomnienia{' '}
                                     <strong>24h przed wizytą</strong>

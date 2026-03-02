@@ -136,33 +136,22 @@ export default function TemplatesPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <VersumShell role={role}>
                 <div className="versum-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">
-                            Łączność / Szablony wiadomości
-                        </h1>
-                        <div className="flex gap-2">
-                            <Link
-                                href="/communication"
-                                className="versum-btn versum-btn--light"
-                            >
-                                ← Powrót
-                            </Link>
-                            <button
-                                type="button"
-                                className="versum-btn versum-btn--primary"
-                                onClick={openAddModal}
-                            >
-                                + Nowy szablon
-                            </button>
-                        </div>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>
+                            <Link href="/communication">Łączność</Link>
+                        </li>
+                        <li>Szablony wiadomości</li>
+                    </ul>
 
-                    {/* Filters */}
                     <div className="versum-page__toolbar">
-                        <label className="versum-label">
+                        <label
+                            className="versum-label"
+                            htmlFor="filter-channel"
+                        >
                             Kanał:
                             <select
-                                className="versum-select ml-2"
+                                id="filter-channel"
+                                className="versum-select"
                                 value={filterChannel}
                                 onChange={(e) =>
                                     setFilterChannel(
@@ -178,10 +167,11 @@ export default function TemplatesPage() {
                                 ))}
                             </select>
                         </label>
-                        <label className="versum-label ml-4">
+                        <label className="versum-label" htmlFor="filter-type">
                             Typ:
                             <select
-                                className="versum-select ml-2"
+                                id="filter-type"
+                                className="versum-select"
                                 value={filterType}
                                 onChange={(e) =>
                                     setFilterType(
@@ -197,6 +187,13 @@ export default function TemplatesPage() {
                                 ))}
                             </select>
                         </label>
+                        <button
+                            type="button"
+                            className="versum-btn versum-btn--primary"
+                            onClick={openAddModal}
+                        >
+                            + Nowy szablon
+                        </button>
                     </div>
 
                     {loading ? (
@@ -249,7 +246,7 @@ export default function TemplatesPage() {
                                             <td>
                                                 <div className="versum-template-preview">
                                                     {template.subject && (
-                                                        <div className="text-xs font-medium mb-1">
+                                                        <div className="versum-muted">
                                                             Temat:{' '}
                                                             {template.subject}
                                                         </div>
@@ -353,8 +350,11 @@ export default function TemplatesPage() {
 
                                         <div className="versum-form-row">
                                             <div className="versum-form-group">
-                                                <label>Typ *</label>
+                                                <label htmlFor="modal-type">
+                                                    Typ *
+                                                </label>
                                                 <select
+                                                    id="modal-type"
                                                     className="versum-select"
                                                     value={formData.type}
                                                     onChange={(e) =>
@@ -377,8 +377,11 @@ export default function TemplatesPage() {
                                             </div>
 
                                             <div className="versum-form-group">
-                                                <label>Kanał *</label>
+                                                <label htmlFor="modal-channel">
+                                                    Kanał *
+                                                </label>
                                                 <select
+                                                    id="modal-channel"
                                                     className="versum-select"
                                                     value={formData.channel}
                                                     onChange={(e) =>
@@ -421,8 +424,11 @@ export default function TemplatesPage() {
                                         )}
 
                                         <div className="versum-form-group">
-                                            <label>Treść *</label>
+                                            <label htmlFor="modal-content">
+                                                Treść *
+                                            </label>
                                             <textarea
+                                                id="modal-content"
                                                 className="versum-textarea"
                                                 value={formData.content}
                                                 onChange={(e) =>
