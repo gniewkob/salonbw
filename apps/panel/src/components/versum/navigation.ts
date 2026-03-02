@@ -83,7 +83,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'ustawienia',
         iconId: 'svg-settings-nav',
         permission: 'nav:settings',
-        secondaryNav: false,
+        secondaryNav: true,
     },
     {
         key: 'extension',
@@ -148,7 +148,14 @@ export function resolveVersumModule(pathname: string): VersumModule {
         return VERSUM_MODULES[5];
     }
 
-    if (path.startsWith('/settings') || path.startsWith('/admin/settings')) {
+    if (
+        path.startsWith('/settings') ||
+        path.startsWith('/admin/settings') ||
+        path.startsWith('/admin/timetables') ||
+        path.startsWith('/employees') ||
+        path.startsWith('/reviews') ||
+        path.startsWith('/invoices')
+    ) {
         return VERSUM_MODULES[6];
     }
 

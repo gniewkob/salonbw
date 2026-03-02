@@ -36,9 +36,9 @@ export default function SettingsPage() {
         <RouteGuard roles={['admin']} permission="nav:settings">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="settings-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">Ustawienia</h1>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>Ustawienia</li>
+                    </ul>
 
                     <div className="versum-grid">
                         {mainTiles.map((tile) => (

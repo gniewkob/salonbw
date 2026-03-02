@@ -1141,4 +1141,31 @@ body {
         overflow: hidden;
         background: #ffffff;
     }
+
+    /* Settings tile grid */
+    .versum-grid {
+        @apply grid gap-3 mb-6;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .versum-tile--clickable {
+        @apply flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-lg text-center no-underline text-gray-700 transition-colors;
+        min-height: 90px;
+    }
+
+    .versum-tile--clickable:hover {
+        @apply bg-gray-50 border-gray-300 text-gray-800;
+    }
+
+    .versum-tile__icon {
+        @apply text-2xl mb-1;
+    }
+
+    .versum-section {
+        @apply mt-6 mb-2;
+    }
+
+    .versum-section__title {
+        @apply text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3;
+    }
 }
