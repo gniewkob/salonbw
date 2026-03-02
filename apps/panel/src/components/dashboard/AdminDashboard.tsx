@@ -80,10 +80,14 @@ export default function AdminDashboard() {
                                 <div
                                     key={i}
                                     className="versum-mini-chart__bar"
-                                    style={{
-                                        height: `${Math.random() * 60 + 20}%`,
-                                        opacity:
-                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    {...{
+                                        style: {
+                                            height: `${Math.random() * 60 + 20}%`,
+                                            opacity:
+                                                i + 1 === today.getDate()
+                                                    ? 1
+                                                    : 0.6,
+                                        },
                                     }}
                                 />
                             ))}
@@ -106,10 +110,14 @@ export default function AdminDashboard() {
                                 <div
                                     key={i}
                                     className="versum-mini-chart__bar versum-mini-chart__bar--blue"
-                                    style={{
-                                        height: `${Math.random() * 40 + 10}%`,
-                                        opacity:
-                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    {...{
+                                        style: {
+                                            height: `${Math.random() * 40 + 10}%`,
+                                            opacity:
+                                                i + 1 === today.getDate()
+                                                    ? 1
+                                                    : 0.6,
+                                        },
                                     }}
                                 />
                             ))}
@@ -137,10 +145,14 @@ export default function AdminDashboard() {
                                 <div
                                     key={i}
                                     className="versum-mini-chart__bar versum-mini-chart__bar--green"
-                                    style={{
-                                        height: `${Math.random() * 80 + 20}%`,
-                                        opacity:
-                                            i + 1 === today.getDate() ? 1 : 0.6,
+                                    {...{
+                                        style: {
+                                            height: `${Math.random() * 80 + 20}%`,
+                                            opacity:
+                                                i + 1 === today.getDate()
+                                                    ? 1
+                                                    : 0.6,
+                                        },
                                     }}
                                 />
                             ))}

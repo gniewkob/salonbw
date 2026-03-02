@@ -265,6 +265,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                     <th>
                                         <input
                                             type="checkbox"
+                                            aria-label="Wybierz wszystkie usługi"
                                             checked={
                                                 selectedIds.length ===
                                                     paginatedServices.length &&
@@ -288,6 +289,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                             <td>
                                                 <input
                                                     type="checkbox"
+                                                    aria-label="Wybierz usługę"
                                                     checked={selectedIds.includes(
                                                         service.id,
                                                     )}
@@ -343,6 +345,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                         <span>na stronie</span>
                         <select
                             className="form-control versum-select-sm mx-2"
+                            aria-label="Liczba elementów na stronie"
                             value={itemsPerPage}
                             onChange={(e) => {
                                 setItemsPerPage(Number(e.target.value));
@@ -359,6 +362,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                             <input
                                 type="number"
                                 className="form-control versum-page-input"
+                                aria-label="Aktualna strona"
                                 value={currentPage}
                                 min={1}
                                 max={totalPages}

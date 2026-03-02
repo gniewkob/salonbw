@@ -40,23 +40,20 @@ function DraggableCustomerRow({
     const style = transform
         ? {
               transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-              opacity: isDragging ? 0.5 : 1,
-              cursor: 'grab',
           }
-        : {
-              cursor: 'grab',
-          };
+        : undefined;
 
     return (
         <tr
             ref={setNodeRef}
-            style={style}
-            className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50`}
+            {...{ style }}
+            className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50 cursor-grab`}
             onClick={() => onOpen(customer.id)}
         >
             <td className="col-checkbox">
                 <input
                     type="checkbox"
+                    aria-label="Wybierz klienta"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                 />
@@ -406,6 +403,7 @@ export default function ClientsPage() {
                                         type="text"
                                         value="1"
                                         className="versum-input versum-input--small"
+                                        aria-label="Aktualna strona"
                                         readOnly
                                     />
                                     <span>z</span>

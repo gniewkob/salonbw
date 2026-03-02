@@ -72,6 +72,7 @@ export default function CashRegisterPage() {
                         </button>
                         <input
                             type="date"
+                            aria-label="Wybierz datę"
                             className="form-control versum-toolbar-search"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
@@ -88,7 +89,7 @@ export default function CashRegisterPage() {
 
                 {/* Tabs */}
                 <div className="px-4 border-bottom">
-                    <div className="nav-tabs" style={{ borderBottom: 'none' }}>
+                    <div className="nav-tabs border-b-0">
                         <button
                             type="button"
                             className={activeTab === 'register' ? 'active' : ''}

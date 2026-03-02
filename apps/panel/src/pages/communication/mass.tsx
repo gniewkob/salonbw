@@ -258,10 +258,12 @@ export default function MassCommunicationPage() {
                                                     />
                                                     <span
                                                         className="versum-group-dot"
-                                                        style={{
-                                                            backgroundColor:
-                                                                group.color ||
-                                                                '#999',
+                                                        {...{
+                                                            style: {
+                                                                backgroundColor:
+                                                                    group.color ||
+                                                                    '#999',
+                                                            },
                                                         }}
                                                     />
                                                     <span>

@@ -119,6 +119,7 @@ export default function EmployeeActivityPage() {
                         </button>
                         <input
                             type="date"
+                            aria-label="Wybierz datę"
                             className="form-control versum-toolbar-search"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
@@ -131,7 +132,7 @@ export default function EmployeeActivityPage() {
                             ▶
                         </button>
                     </div>
-                    <div style={{ marginLeft: 'auto' }} />
+                    <div className="ml-auto" />
                     <button
                         type="button"
                         className="btn btn-default btn-xs"
@@ -146,14 +147,7 @@ export default function EmployeeActivityPage() {
                 ) : (
                     <div>
                         <div>
-                            <div
-                                className="mb-20"
-                                style={{
-                                    display: 'inline-flex',
-                                    borderBottom: '1px solid #cfd4da',
-                                    width: '100%',
-                                }}
-                            >
+                            <div className="mb-20 inline-flex w-full border-b border-[#cfd4da]">
                                 <button
                                     type="button"
                                     className="btn btn-default mr-5"
