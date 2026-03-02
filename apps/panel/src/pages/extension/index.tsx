@@ -62,9 +62,9 @@ export default function ExtensionPage() {
         <RouteGuard roles={['admin']} permission="nav:extension">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="extension-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">Dodatki</h1>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>Dodatki</li>
+                    </ul>
                     <div className="versum-extension-grid">
                         {cards.map((card) => (
                             <article
