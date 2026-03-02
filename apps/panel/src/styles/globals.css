@@ -1201,6 +1201,198 @@ body {
         @apply flex items-center gap-2 mt-4;
     }
 
+    /* Input modifiers */
+    .versum-input--sm {
+        @apply px-2 py-1 text-sm;
+    }
+
+    .versum-input--ghost {
+        @apply border-0 bg-transparent shadow-none focus:ring-0 px-0;
+    }
+
+    /* Icon button */
+    .versum-icon-btn {
+        @apply w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 cursor-pointer border-0 bg-transparent text-sm;
+    }
+
+    /* Dashboard layout */
+    .versum-dashboard {
+        @apply pb-8;
+    }
+
+    .versum-dashboard__loading,
+    .versum-dashboard__empty {
+        @apply py-16 text-center text-gray-500 text-sm;
+    }
+
+    .versum-dashboard__header {
+        @apply flex items-center justify-between mb-4;
+    }
+
+    .versum-dashboard__title {
+        @apply text-lg font-semibold text-gray-800;
+    }
+
+    .versum-dashboard__period {
+        @apply flex items-center gap-4 mb-5 pb-3 border-b border-gray-200;
+    }
+
+    .versum-dashboard__period-btn {
+        @apply px-3 py-1 text-sm rounded text-gray-600 bg-transparent border-0 cursor-pointer;
+    }
+
+    .versum-dashboard__period-btn.active {
+        background: var(--versum-accent, #25b4c1);
+        color: #fff;
+    }
+
+    .versum-dashboard__period-label {
+        @apply text-sm text-gray-500 ml-auto;
+    }
+
+    /* Stats cards row */
+    .versum-dashboard__stats {
+        @apply grid gap-4 mb-6;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .versum-stat-card {
+        @apply bg-white border border-gray-200 rounded-lg p-4;
+    }
+
+    .versum-stat-card__title {
+        @apply text-xs text-gray-500 uppercase tracking-wide mb-2;
+    }
+
+    .versum-stat-card__value {
+        @apply flex items-center gap-2 text-2xl font-bold text-gray-800 mb-3;
+    }
+
+    .versum-stat-card__change {
+        @apply text-xs font-normal text-gray-400;
+    }
+
+    .versum-stat-card__change.positive {
+        color: #22c55e;
+    }
+
+    .versum-stat-card__chart {
+        height: 50px;
+        overflow: hidden;
+    }
+
+    .versum-stat-card__toggle {
+        @apply text-sm font-normal text-gray-400 border-0 bg-transparent cursor-pointer p-0;
+    }
+
+    .versum-mini-chart {
+        @apply flex items-end gap-px h-full;
+    }
+
+    .versum-mini-chart__bar {
+        @apply flex-1 rounded-sm;
+        background: var(--versum-accent, #25b4c1);
+    }
+
+    .versum-mini-chart__bar--blue {
+        background: #3b82f6;
+    }
+
+    .versum-mini-chart__bar--green {
+        background: #22c55e;
+    }
+
+    /* Dashboard bottom grid */
+    .versum-dashboard__grid {
+        @apply grid gap-4;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .versum-dashboard__section {
+        @apply bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden;
+    }
+
+    .versum-dashboard__section-header {
+        @apply flex items-center justify-between px-4 py-3 border-b border-gray-100;
+    }
+
+    .versum-dashboard__section-header h2 {
+        @apply text-sm font-semibold text-gray-700;
+    }
+
+    .versum-dashboard__section-actions {
+        @apply flex gap-1;
+    }
+
+    .versum-dashboard__section-footer {
+        @apply block text-center text-xs text-[#25b4c1] py-2 border-t border-gray-100 no-underline hover:underline mt-auto;
+    }
+
+    /* Activity list */
+    .versum-activity-list,
+    .versum-appointments-list {
+        @apply flex-1 overflow-y-auto;
+    }
+
+    .versum-activity-item {
+        @apply flex items-start gap-3 px-4 py-3 border-b border-gray-50;
+    }
+
+    .versum-activity-item--empty,
+    .versum-appointment-item--empty {
+        @apply px-4 py-6 text-center text-sm text-gray-400;
+    }
+
+    .versum-activity-item__avatar {
+        @apply w-8 h-8 rounded-full bg-[#25b4c1] text-white text-xs flex items-center justify-center flex-shrink-0 font-semibold;
+    }
+
+    .versum-activity-item__content {
+        @apply flex-1 min-w-0;
+    }
+
+    .versum-activity-item__title {
+        @apply text-sm text-gray-800 truncate;
+    }
+
+    .versum-activity-item__meta {
+        @apply text-xs text-gray-500 mt-0.5;
+    }
+
+    /* Appointments list */
+    .versum-appointment-item {
+        @apply flex items-center gap-3 px-4 py-3 border-b border-gray-50;
+    }
+
+    .versum-appointment-item__time {
+        @apply text-sm font-semibold text-gray-800 w-12 flex-shrink-0;
+    }
+
+    .versum-appointment-item__details {
+        @apply flex-1 min-w-0;
+    }
+
+    .versum-appointment-item__client {
+        @apply text-sm text-gray-800 truncate;
+    }
+
+    .versum-appointment-item__service {
+        @apply text-xs text-gray-500 truncate;
+    }
+
+    /* Tasks widget */
+    .versum-tasks {
+        @apply flex-1 flex flex-col px-4 py-2;
+    }
+
+    .versum-tasks__input {
+        @apply mb-2;
+    }
+
+    .versum-tasks__empty {
+        @apply text-sm text-gray-400 text-center py-4;
+    }
+
     /* Settings tile grid */
     .versum-grid {
         @apply grid gap-3 mb-6;
