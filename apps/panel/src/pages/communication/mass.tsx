@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,11 +122,12 @@ export default function MassCommunicationPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <VersumShell role={role}>
                 <div className="versum-page">
-                    <header className="versum-page__header">
-                        <h1 className="versum-page__title">
-                            Łączność / Wyślij wiadomość masową
-                        </h1>
-                    </header>
+                    <ul className="breadcrumb">
+                        <li>
+                            <Link href="/communication">Łączność</Link>
+                        </li>
+                        <li>Wyślij wiadomość masową</li>
+                    </ul>
 
                     {/* Step indicator */}
                     <div className="versum-steps">
@@ -286,6 +288,7 @@ export default function MassCommunicationPage() {
                                     )}
                                 </span>
                                 <button
+                                    type="button"
                                     className="versum-btn versum-btn--primary"
                                     disabled={recipientCount === 0}
                                     onClick={() => setStep('message')}
@@ -398,12 +401,14 @@ export default function MassCommunicationPage() {
 
                             <div className="versum-mass-communication__footer">
                                 <button
+                                    type="button"
                                     className="versum-btn versum-btn--light"
                                     onClick={() => setStep('recipients')}
                                 >
                                     Wstecz
                                 </button>
                                 <button
+                                    type="button"
                                     className="versum-btn versum-btn--primary"
                                     disabled={
                                         !content.trim() ||
@@ -452,6 +457,7 @@ export default function MassCommunicationPage() {
                                 </div>
 
                                 <button
+                                    type="button"
                                     className="versum-btn versum-btn--primary"
                                     onClick={() => {
                                         setStep('recipients');
