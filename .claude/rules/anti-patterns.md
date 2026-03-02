@@ -21,6 +21,14 @@
   Evidence: "Commit `d56d2c26` changed panel/landing `package.json` to `next@15.5.10` but root `pnpm.overrides` still `14.2.32`; CI `--frozen-lockfile` installed 14.2.32"
 - DON'T run incremental `pnpm install` after a `pnpm.overrides` change — run clean install (`rm -rf node_modules && pnpm install`).
   Evidence: "CI pnpm virtual store corruption traced to incremental install; clean install produced correct result"
+- DON'T diagnose `MODULE_NOT_FOUND` in next build by checking pnpm virtual store before reading all `prebuild`/`preinstall` scripts in the affected package — prebuild hooks can delete/replace node_modules entries after install.
+  Evidence: "7+ CI runs checking pnpm virtual store (all confirmed present) while actual cause was in the `prebuild` hook; root cause found only after reading ensure-local-deps.js"
+- DON'T trust `stat`/`realpath`/`ls` confirming a file exists as proof that `require()` will succeed — hooks run between install and build and can delete the file.
+  Evidence: "`stat` confirmed dist/index.js existed before CI build; prebuild (ensure-local-deps.js) deleted it during the build step"
+- DON'T use `node -e "require('node_modules/.pnpm/...')"` with a relative path — Node.js treats it as a module name, not a file path, always returning MODULE_NOT_FOUND. Use `require(path.resolve('node_modules/.pnpm/...'))`.
+  Evidence: "Diagnostic node test with relative path → always MODULE_NOT_FOUND red herring; correct form uses path.resolve"
+- DON'T upgrade a dep that has a vendor copy in `apps/*/vendor/` without updating that vendor's `package.json` version AND `dist/` contents to match.
+  Evidence: "vendor @next/env@14.2.32 without dist/ caused ensure-local-deps.js to delete+replace pnpm store entry on every build; fix was updating vendor to 15.5.10 with proper dist/ (commit e74331ee)"
 
 ## Process
 
@@ -35,6 +43,12 @@
   Evidence: "Background monitoring shell scripts for git changes — die on macOS when parent process exits"
 - DON'T diagnose Next.js runtime crashes without first checking `pnpm.overrides` in root package.json for version pins.
   Evidence: "Multiple previous failing runs (22418435919, 22419261772) before root cause was found in overrides"
+- DON'T assess landing CI status from git log alone — verify from BOTH CI run results AND active-context.md landing line.
+  Evidence: "Initial doc update incorrectly stated 'landing CI broken' — active-context.md was corrected by retro-auditor to reflect actual state (landing DEPLOYED at e74331ee)"
+- DON'T update AGENT_STATUS.md or documentation with assumed-current values — always cross-verify against git log + source files first.
+  Evidence: "AGENT_STATUS.md 'Current Release' table was 2 days stale (showed `9ec696ac` 2026-02-24 while actual panel was `0a1fde5f` 2026-02-26)"
+- DON'T guess Versum module completion % — read VersumSecondaryNav.tsx to confirm which nav components are registered for each module key.
+  Evidence: "Moduł Usługi % was 30% in docs despite ServicesNav + copy-first details view already done; should have been ~70%"
 
 ## Context & responses
 - DON'T paste whole files in responses.

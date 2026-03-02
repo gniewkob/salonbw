@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-24 (statistics monetary/activity normalization deployed to production)_
+_Last updated: 2026-02-26 (Next.js 15.5.10 upgrade + warehouse navigation + services/communication/settings secondary navs deployed)_
 
 ## Platform Architecture
 
@@ -21,13 +21,21 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `9ec696ac` | `22366598647` | 2026-02-24 19:28 | production | Statystyki: poprawione parsowanie kwot (decimal/string) i stabilne sumowanie revenue bez konkatenacji stringów |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `9ec696ac` | `22366678740` | 2026-02-24 19:32 | production | Statystyki: dynamiczne metody płatności + normalizacja liczb + czas pracy liczony z ukończonych wizyt |
+| Dashboard (`panel.salon-bw.pl`) | `d09e8180` | `22573596765` | 2026-03-02 11:21 | production | CommunicationNav wired + copy-first breadcrumb/a11y na wszystkich stronach /communication/* |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- Dashboard post-deploy verification (2026-02-26):
+  - deploy run `22436718672` (`success`, target `dashboard` manual, sha `0a1fde5f`),
+  - Next.js upgraded to 15.5.10; rewrites format fixed (`{beforeFiles, afterFiles, fallback}` object),
+  - WarehouseNav: pełny secondary nav dla produktów/sprzedaży/zużycia/dostaw/zamówień/inwentaryzacji,
+  - ServicesNav, CommunicationNav, SettingsNav, EmployeesNav, NewCustomerNav: zaimplementowane i wdrożone,
+  - Extension: smoke test PASS (`049ba6fa`),
+  - `curl -I https://panel.salon-bw.pl` → `307` (oczekiwane dla niezalogowanych),
+  - landing CI nadal broken (`@next/env/dist/index.js` missing) — landing NIE wdrożone.
 - Dashboard/API post-deploy verification (2026-02-24):
   - deploy run `22366598647` (`success`, target `api`, sha `9ec696ac`),
   - deploy run `22366678740` (`success`, target `dashboard`, sha `9ec696ac`),

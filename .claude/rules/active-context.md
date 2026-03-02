@@ -8,9 +8,9 @@
 
 ## In-progress work
 
-- Branch: master (commit `c3a25e0b` — aktualny HEAD 2026-03-02)
-- Panel production: `d09e8180` | Next.js 15.5.10 | run `22573596765` | 2026-03-02 11:21 (pending deploy of c3a25e0b)
-  CommunicationNav wired + breadcrumb/a11y na /communication/* — DEPLOYED. Settings/stats/extension breadcrumb — NOT YET DEPLOYED.
+- Branch: master (commit `bdd3bbaf` — aktualny HEAD 2026-03-02)
+- Panel production: `bdd3bbaf` | Next.js 15.5.10 | run `22584915038` | 2026-03-02 — DEPLOYED
+  Settings secondaryNav+tile CSS + breadcrumb w 14 pages + versum-link/widget/extension CSS — DEPLOYED.
 - Landing production: `e74331ee` | Next.js 15.5.10 | run `22456729340` | 2026-02-26 — DEPLOYED (vendor @next/env fix)
 - API production: `9ec696ac` | 2026-02-24 19:28 — bez zmian od statistics normalization deploy.
 

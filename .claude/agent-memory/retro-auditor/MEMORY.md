@@ -23,6 +23,10 @@
 - next.config.mjs rewrites() must return `{beforeFiles, afterFiles, fallback}` object, not flat array.
 - macOS EPERM on node_modules/.modules.yaml: fix with `xattr -d com.apple.provenance node_modules/.modules.yaml`.
 - CI shared trigger: pushing package.json/pnpm-lock.yaml builds both landing and panel; use workflow_dispatch target=dashboard for panel-only deploy when landing is broken.
+- Landing CI status: verify from BOTH CI run results AND active-context.md landing line — git log alone is insufficient.
+- Versum clone status: read git log + VersumSecondaryNav.tsx simultaneously — VersumSecondaryNav.tsx is canonical for which navs are wired.
+- CommunicationNav: still uses inline static `communicationSections` in VersumSecondaryNav.tsx:126-127 (no dedicated component). Confirmed 2026-02-26.
+- AGENT_STATUS.md "Current Release" table goes stale — always cross-verify against git log when updating docs.
 
 ### Rules file ownership
 
@@ -33,9 +37,11 @@
 - style-and-tone.md: response format + audit table format
 - templates.md: reusable templates including Codex audit table
 
-### Open items as of 2026-02-26
+### Open items as of 2026-02-26T22
 
-- Landing CI failure (`@next/env/dist/index.js` missing) — unresolved; Assumption confidence: med
-- Verify /settings and /extension white screen fix in production (Assumption confidence: high)
+- Landing CI: RESOLVED — `e74331ee` vendor @next/env updated to 15.5.10; run `22456729340` DEPLOYED
+- /settings and /extension white screen fix: smoke PASS — RESOLVED
 - ~36 pages with redundant `if (!role) return null` guards — deferred cleanup
 - DashboardLayout dead code — safe to remove eventually
+- Next module priority (dashboard vs employees vs visual polish) — user decision pending
+- CommunicationNav: static sections only — no dedicated nav component; upgrade deferred

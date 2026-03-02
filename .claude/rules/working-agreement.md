@@ -8,6 +8,8 @@
 - No narrative, no restating plans, no rephrasing requests.
 - Parallel file reads for audits — read all affected files simultaneously to reduce round-trips.
   Evidence: "Parallel file reads for audits — read all affected files simultaneously to reduce round-trips" — effective pattern
+- For Versum clone status checks: read git log + VersumSecondaryNav.tsx simultaneously — git log alone misses which navs are actually wired up.
+  Evidence: "Read git log + VersumSecondaryNav.tsx simultaneously to get full picture of what's integrated" — effective pattern 2026-02-26
 
 ## Commit hygiene (mandatory pre-commit)
 
@@ -40,6 +42,15 @@
   Evidence: "Incremental pnpm install after override change resulted in CI pnpm virtual store corruption (`@next/env/dist/index.js` missing in CI)"
 - If macOS `EPERM` on `node_modules/.modules.yaml` during pnpm install: `xattr -d com.apple.provenance node_modules/.modules.yaml`.
   Evidence: "pnpm.stdout showed `EPERM: operation not permitted, open '.../node_modules/.modules.yaml'`; fixed with `xattr -d com.apple.provenance`"
+- When any dep has a vendor copy in `apps/*/vendor/` (ensure-local-deps.js pattern): keep vendor `package.json` version AND `dist/` in sync with workspace dep version. Version mismatch triggers destructive pnpm store replacement at build time.
+  Evidence: "vendor @next/env@14.2.32 without dist/ caused ensure-local-deps.js to delete+replace pnpm store entry on every build; fix: update vendor to 15.5.10 with proper dist/ (commit e74331ee)"
+
+## MODULE_NOT_FOUND diagnosis (next build)
+
+- Read `package.json` `prebuild`/`preinstall` scripts immediately when `next build` fails with MODULE_NOT_FOUND — before checking pnpm virtual store.
+  Evidence: "Read `package.json` scripts (especially `prebuild`) early when diagnosing next build failures — effective pattern from 2026-02-26 session"
+- `tryPackage` in Node.js MODULE_NOT_FOUND stack with `path: '.../package.json'` + `requestPath: 'package-name'` means: package.json was found but its `"main"` file is missing. Narrows cause to: (a) wrong `main` field, or (b) `main` file deleted after install.
+  Evidence: "`tryPackage` error with `path: package.json, requestPath: @next/env` proved package.json found but dist/index.js missing; vendor package.json confirmed 14.2.32 without dist/"
 
 ## Deployment
 
