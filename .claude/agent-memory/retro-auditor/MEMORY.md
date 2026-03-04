@@ -19,7 +19,7 @@
 - Parallel file reads reduce round-trips for audits.
 - Audit output format preferred by user: tabular `Problem | Naprawiony?`.
 - pnpm monorepo: always update `pnpm.overrides` in root package.json when upgrading workspace deps.
-- After pnpm.overrides change: `pnpm store prune && rm -rf node_modules && pnpm install` (never incremental).
+- After pnpm.overrides change (version pin altered): `rm -rf node_modules && pnpm install` (NOT pnpm store prune — wipes 1700+ cache, ~15min). For lockfile-only security fixes: `pnpm install --frozen-lockfile=false` (~49s, no prune, no rm -rf).
 - next.config.mjs rewrites() must return `{beforeFiles, afterFiles, fallback}` object, not flat array.
 - macOS EPERM on node_modules/.modules.yaml: fix with `xattr -d com.apple.provenance node_modules/.modules.yaml`.
 - CI shared trigger: pushing package.json/pnpm-lock.yaml builds both landing and panel; use workflow_dispatch target=dashboard for panel-only deploy when landing is broken.
@@ -37,11 +37,15 @@
 - style-and-tone.md: response format + audit table format
 - templates.md: reusable templates including Codex audit table
 
-### Open items as of 2026-02-26T22
+### Open items as of 2026-03-04T17
 
 - Landing CI: RESOLVED — `e74331ee` vendor @next/env updated to 15.5.10; run `22456729340` DEPLOYED
 - /settings and /extension white screen fix: smoke PASS — RESOLVED
 - ~36 pages with redundant `if (!role) return null` guards — deferred cleanup
 - DashboardLayout dead code — safe to remove eventually
-- Next module priority (dashboard vs employees vs visual polish) — user decision pending
+- Next module priority — user decision pending
 - CommunicationNav: static sections only — no dedicated nav component; upgrade deferred
+- Push-triggered CI runs failing (22595771187, 22595035009, 22594629944) — cause not investigated; workflow_dispatch succeeds
+- Dependabot: 37 vulns shown — expected to decrease after re-scan of new lockfile (check in 24h)
+- Security audit: `node_modules/.modules.yaml` existence = reliable install-complete polling sentinel
+- Security audit: when removing a shared devDep, always grep -r across ALL apps/ before removing

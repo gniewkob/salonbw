@@ -4,18 +4,23 @@
 
 - Versum clone: strict visual parity open na klienci/statystyki/magazyn/usługi — deferred do decyzji kolejności
 - Next module priorytet: Dodatki (50%) lub strict visual polish na istniejących
-- Session 2026-03-02: CommunicationNav wired + breadcrumb/a11y fixes na /communication/* + settings secondaryNav enabled + SettingsNav wired + tile CSS + breadcrumb w statistics/extension/services/employees/reviews/invoices
+- Session 2026-03-04: security audit — 29 of 35 vulnerabilities resolved via pnpm.overrides/upgrades/plugin removal; 6 remaining (2 high xlsx devDeps, 3 moderate dev tools, 1 low jimp chain)
 
 ## In-progress work
 
-- Branch: master (commit `bdd3bbaf` — aktualny HEAD 2026-03-02)
+- Branch: master (commits `cacd861e`, `944d8d72` — security dep upgrades 2026-03-04)
 - Panel production: `bdd3bbaf` | Next.js 15.5.10 | run `22584915038` | 2026-03-02 — DEPLOYED
   Settings secondaryNav+tile CSS + breadcrumb w 14 pages + versum-link/widget/extension CSS — DEPLOYED.
 - Landing production: `e74331ee` | Next.js 15.5.10 | run `22456729340` | 2026-02-26 — DEPLOYED (vendor @next/env fix)
 - API production: `9ec696ac` | 2026-02-24 19:28 — bez zmian od statistics normalization deploy.
+- Push-triggered CI runs failing (22595771187, 22595035009, 22594629944) — cause not yet investigated; workflow_dispatch runs succeed.
 
 ## Recent decisions
 
+- Security audit 2026-03-04: 29/35 vulnerabilities resolved — `@sentry/node` + `profiling-node` upgraded ^8→^10 (commit `cacd861e`), `@types/node` upgraded ^24→^25 (commit `944d8d72`), `@suchipi/cypress-plugin-snapshots` removed from landing + panel (zero usage), `xlsx` moved to devDeps (patched: <0.0.0). CI audit disabled in ci.yml — remaining 6 vulns do not block CI.
+  Evidence: "single pnpm install fixed 29 vulns after grouping; grep found no cy.snapshot() calls; patched: <0.0.0 for xlsx"
+- pnpm install strategy refined: `pnpm store prune` is too aggressive for lockfile-only changes; use `pnpm install --frozen-lockfile=false` instead (49s vs 15min)
+  Evidence: "za dlugo to trwa, czy instalacja sie nie zawiesza?" — user interrupted after ~15min; 49s on second run without store prune
 - Landing CI fixed: `ensure-local-deps.js` vendor `@next/env` was `14.2.32` (no dist/); version mismatch caused it to delete+replace pnpm store entry → dist/index.js gone. Fix: update vendor to `15.5.10` with proper dist/ (commit `e74331ee`)
   Evidence: `tryPackage` error with `path: package.json, requestPath: @next/env` proved package.json found but dist/index.js missing; vendor package.json confirmed `14.2.32` without dist/
 - Landing CI status must be verified from BOTH CI run results AND active-context.md landing line — not just git log
@@ -44,6 +49,10 @@
 
 ## Blockers / watch items
 
+- Push-triggered CI deploy runs failing (22595771187, 22595035009, 22594629944) — cause not investigated; workflow_dispatch works fine
+  Assumption (confidence: high). Verify: check CI logs for these runs; compare trigger conditions vs workflow_dispatch.
+- Dependabot: 37 vulnerabilities shown — expected to decrease after re-scan of new lockfile
+  Assumption (confidence: high). Verify: check GitHub security tab in 24h after last push.
 - `/settings` i `/extension` white screen fix: smoke PASS (`a2fba7dd`, `049ba6fa`) — RESOLVED
 - `if (!role) return null` guards in ~36 pages: now redundant (persistent shell handles auth) — cleanup deferred
 - DashboardLayout exists but is used by no page — dead code; safe to remove eventually
