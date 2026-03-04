@@ -1,5 +1,4 @@
 import { defineConfig } from 'cypress';
-import { initPlugin } from '@suchipi/cypress-plugin-snapshots/plugin';
 
 export default defineConfig({
     projectId: 'uzc2b3',
@@ -11,10 +10,6 @@ export default defineConfig({
         viewportHeight: 720,
         retries: 1,
         screenshotOnRunFailure: true,
-        setupNodeEvents(on, config) {
-            initPlugin(on, config);
-            return config;
-        },
     },
 
     video: true,

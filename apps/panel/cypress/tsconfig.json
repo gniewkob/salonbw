@@ -1,7 +1,7 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "types": ["cypress", "@suchipi/cypress-plugin-snapshots"],
+        "types": ["cypress"],
         "noEmit": true
     },
     "include": ["**/*"],

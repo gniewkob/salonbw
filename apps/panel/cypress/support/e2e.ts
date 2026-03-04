@@ -11,7 +11,6 @@ if (typeof globalThis.assert !== 'function') {
     };
 }
 
-import '@suchipi/cypress-plugin-snapshots/commands';
 import './commands';
 
 beforeEach(() => {
