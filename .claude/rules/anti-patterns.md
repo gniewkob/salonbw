@@ -19,8 +19,12 @@
   Evidence: "Crash `routesManifest.rewrites.beforeFiles.filter(...)` — beforeFiles undefined when `return rules` (array) used; fixed to object format"
 - DON'T upgrade workspace Next.js version without also updating `pnpm.overrides.next` in root package.json.
   Evidence: "Commit `d56d2c26` changed panel/landing `package.json` to `next@15.5.10` but root `pnpm.overrides` still `14.2.32`; CI `--frozen-lockfile` installed 14.2.32"
-- DON'T run incremental `pnpm install` after a `pnpm.overrides` change — run clean install (`rm -rf node_modules && pnpm install`).
+- DON'T run incremental `pnpm install` after a `pnpm.overrides` change that alters resolved versions — run clean install (`rm -rf node_modules && pnpm install`).
   Evidence: "CI pnpm virtual store corruption traced to incremental install; clean install produced correct result"
+- DON'T run `pnpm store prune` for routine lockfile updates — it wipes the entire local cache (1700+ packages) and forces full re-download (~15 min). Only run when you have a confirmed store-corruption.
+  Evidence: "pnpm store prune wiped 1733 packages; 15min install; user interrupted with 'za dlugo to trwa'"
+- DON'T assume only one workspace package contains a dependency being removed — always `grep -r` across all apps/ before removing.
+  Evidence: "`@suchipi/cypress-plugin-snapshots` was in both landing AND panel; only caught in second audit round — 'apps__panel>@suchipi/cypress-plugin-snapshots still in audit output'"
 - DON'T diagnose `MODULE_NOT_FOUND` in next build by checking pnpm virtual store before reading all `prebuild`/`preinstall` scripts in the affected package — prebuild hooks can delete/replace node_modules entries after install.
   Evidence: "7+ CI runs checking pnpm virtual store (all confirmed present) while actual cause was in the `prebuild` hook; root cause found only after reading ensure-local-deps.js"
 - DON'T trust `stat`/`realpath`/`ls` confirming a file exists as proof that `require()` will succeed — hooks run between install and build and can delete the file.

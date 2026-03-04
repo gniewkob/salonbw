@@ -38,12 +38,25 @@
 
 - When upgrading a workspace-wide dep (e.g. Next.js), update `pnpm.overrides` in root `package.json` to match.
   Evidence: "Root override `\"next\": \"14.2.32\"` blocked panel/landing upgrade to 15.5.10 despite workspace package.json declaring 15.5.10"
-- After any `pnpm.overrides` change, clean-install before committing lockfile: `pnpm store prune && rm -rf node_modules && pnpm install`.
-  Evidence: "Incremental pnpm install after override change resulted in CI pnpm virtual store corruption (`@next/env/dist/index.js` missing in CI)"
+- After any `pnpm.overrides` change that alters resolved versions, clean-install before committing lockfile: `rm -rf node_modules && pnpm install`. Do NOT run `pnpm store prune` unless you have a confirmed store-corruption — it wipes all cached packages (1700+) and forces full re-download (~15 min).
+  Evidence: "15min install vs 49s after store refilled — `pnpm store prune` wiped 1733 packages; user interrupted with 'za dlugo to trwa'"
+- For lockfile-only updates (e.g. security overrides without a version change to installed code): just run `pnpm install --frozen-lockfile=false` — completes in ~49s without wiping the store.
+  Evidence: "second `pnpm install --frozen-lockfile=false` after store already filled = Done in 49.4s"
 - If macOS `EPERM` on `node_modules/.modules.yaml` during pnpm install: `xattr -d com.apple.provenance node_modules/.modules.yaml`.
   Evidence: "pnpm.stdout showed `EPERM: operation not permitted, open '.../node_modules/.modules.yaml'`; fixed with `xattr -d com.apple.provenance`"
 - When any dep has a vendor copy in `apps/*/vendor/` (ensure-local-deps.js pattern): keep vendor `package.json` version AND `dist/` in sync with workspace dep version. Version mismatch triggers destructive pnpm store replacement at build time.
   Evidence: "vendor @next/env@14.2.32 without dist/ caused ensure-local-deps.js to delete+replace pnpm store entry on every build; fix: update vendor to 15.5.10 with proper dist/ (commit e74331ee)"
+
+## Security audit (pnpm audit)
+
+- Run audit first, group vulnerabilities by source (override/upgrade/remove) before fixing — saves multiple install cycles.
+  Evidence: "single pnpm install fixed 29 vulns after grouping by override/upgrade/remove"
+- When `patched: <0.0.0` appears in audit output → no upstream fix exists; move to devDeps if possible, or add to ignoreCves.
+  Evidence: "`xlsx` moved to devDependencies (patched: <0.0.0 = no upstream fix, only used in import scripts)"
+- When removing a shared devDep (e.g. unused Cypress plugin): `grep -r` across ALL workspace packages before removing — not just the one currently in scope.
+  Evidence: "`@suchipi/cypress-plugin-snapshots` was in both landing AND panel with same unused pattern; only caught in second audit round"
+- `node_modules/.modules.yaml` existence = reliable install-complete sentinel for polling.
+  Evidence: "used `until [ -f node_modules/.modules.yaml ]` to poll for completion"
 
 ## MODULE_NOT_FOUND diagnosis (next build)
 

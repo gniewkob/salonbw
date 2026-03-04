@@ -15,8 +15,10 @@
 - [ ] Frontends deployed after API
 - [ ] If `package.json` or `pnpm-lock.yaml` changed: verify root `pnpm.overrides` matches workspace versions
   Evidence: "Root override `\"next\": \"14.2.32\"` blocked panel/landing upgrade to 15.5.10 despite workspace package.json declaring 15.5.10"
-- [ ] If `pnpm.overrides` changed: lockfile committed after `pnpm store prune && rm -rf node_modules && pnpm install` (not incremental)
-  Evidence: "Incremental pnpm install after override change resulted in CI pnpm virtual store corruption"
+- [ ] If `pnpm.overrides` changed (version pin altered): lockfile committed after `rm -rf node_modules && pnpm install` (not incremental). Do NOT run `pnpm store prune` — wipes 1700+ cached packages, causes ~15 min install.
+  Evidence: "Incremental pnpm install after override change resulted in CI pnpm virtual store corruption; pnpm store prune wiped 1733 packages and took 15min"
+- [ ] If `pnpm.overrides` changed for lockfile-only update (security fix, no version change): `pnpm install --frozen-lockfile=false` is sufficient (~49s).
+  Evidence: "second `pnpm install --frozen-lockfile=false` after store already filled = Done in 49.4s"
 - [ ] If dep has a vendor copy in `apps/*/vendor/`: vendor `package.json` version + `dist/` match installed version
   Evidence: "vendor @next/env@14.2.32 without dist/ caused ensure-local-deps.js to delete+replace pnpm store entry on every build"
 
