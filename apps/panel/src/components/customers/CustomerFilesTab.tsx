@@ -174,12 +174,26 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                 <table className="versum-table fz-13">
                                     <thead>
                                         <tr>
-                                            <th style={{ width: 40 }}></th>
-                                            <th>Nazwa pliku</th>
-                                            <th>Kategoria</th>
-                                            <th>Rozmiar</th>
-                                            <th>Data dodania</th>
-                                            <th style={{ width: 80 }}>Opcje</th>
+                                            {(() => {
+                                                const w40Style: React.CSSProperties =
+                                                    { width: 40 };
+                                                const w80Style: React.CSSProperties =
+                                                    { width: 80 };
+                                                return (
+                                                    <>
+                                                        <th
+                                                            style={w40Style}
+                                                        ></th>
+                                                        <th>Nazwa pliku</th>
+                                                        <th>Kategoria</th>
+                                                        <th>Rozmiar</th>
+                                                        <th>Data dodania</th>
+                                                        <th style={w80Style}>
+                                                            Opcje
+                                                        </th>
+                                                    </>
+                                                );
+                                            })()}
                                         </tr>
                                     </thead>
                                     <tbody>

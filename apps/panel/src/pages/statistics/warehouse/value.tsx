@@ -166,10 +166,7 @@ export default function WarehouseValuePage() {
                                         <div className="versum-widget__header">
                                             Wartość wg kategorii
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 300 }}
-                                        >
+                                        <div className="versum-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -214,10 +211,7 @@ export default function WarehouseValuePage() {
                                         <div className="versum-widget__header">
                                             Ilość produktów wg kategorii
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 300 }}
-                                        >
+                                        <div className="versum-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byCategory}

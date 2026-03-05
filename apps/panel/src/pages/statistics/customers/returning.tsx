@@ -37,10 +37,10 @@ const DATE_RANGES = [
 
 const COLORS = {
     new: '#008bb4',
-    returning: '#5cb85c',
+    returning: '#11ce44',
 };
 
-export default function ClientReturningPage() {
+export default function CustomersReturning() {
     const { role, apiFetch } = useAuth();
     const [dateRange, setDateRange] = useState('this_month');
     const [stats, setStats] = useState<ReturningStats | null>(null);
@@ -134,10 +134,7 @@ export default function ClientReturningPage() {
                                         <div className="versum-tile__label">
                                             Powracający
                                         </div>
-                                        <div
-                                            className="versum-tile__value"
-                                            style={{ color: COLORS.returning }}
-                                        >
+                                        <div className="versum-tile__value text-[#11ce44]">
                                             {stats.returningClients}
                                             <span className="text-sm ml-8">
                                                 ({stats.returningPercentage}%)
@@ -164,10 +161,7 @@ export default function ClientReturningPage() {
                                         <div className="versum-widget__header">
                                             Nowi vs powracający (miesięcznie)
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 300 }}
-                                        >
+                                        <div className="versum-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byMonth}

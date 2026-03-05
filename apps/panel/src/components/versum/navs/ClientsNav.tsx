@@ -31,12 +31,7 @@ function DroppableGroupItem({
     return (
         <li
             ref={setNodeRef}
-            className={isActive ? 'active' : undefined}
-            style={{
-                backgroundColor: isOver ? 'rgba(0, 139, 180, 0.1)' : undefined,
-                borderRadius: 4,
-                transition: 'background-color 0.2s',
-            }}
+            className={`${isActive ? 'active ' : ''}${isOver ? 'bg-[#008bb4]/10 ' : ''}rounded transition-colors duration-200`}
         >
             <a
                 className="standard_group"
@@ -53,7 +48,7 @@ function DroppableGroupItem({
                 </div>
                 {group.name}
                 {isOver ? (
-                    <span style={{ marginLeft: 8, fontSize: 11 }}>↑ upuść</span>
+                    <span className="ml-2 text-[11px]">↑ upuść</span>
                 ) : null}
             </a>
         </li>
@@ -239,11 +234,9 @@ export default function ClientsNav() {
 
                                 <ul
                                     id="standard_groups"
-                                    style={{
-                                        display: showMoreGroups
-                                            ? undefined
-                                            : 'none',
-                                    }}
+                                    className={
+                                        showMoreGroups ? undefined : 'hidden'
+                                    }
                                 >
                                     {(groups ?? []).map((group) => (
                                         <DroppableGroupItem
@@ -288,13 +281,8 @@ export default function ClientsNav() {
                             </div>
 
                             <div
-                                className="tree_options"
+                                className={`tree_options ${showMoreGroups ? '' : 'hidden'}`}
                                 id="group_options"
-                                style={{
-                                    display: showMoreGroups
-                                        ? undefined
-                                        : 'none',
-                                }}
                             >
                                 <a
                                     data-enable-sortable=""
@@ -319,11 +307,8 @@ export default function ClientsNav() {
                         </div>
 
                         <div
-                            className="column_row"
+                            className={`column_row ${currentGroupId ? '' : 'hidden'}`}
                             id="filter_boxes_container"
-                            style={{
-                                display: currentGroupId ? undefined : 'none',
-                            }}
                         >
                             <h4>Kryteria wyszukiwania</h4>
                             <div id="filter_boxes">

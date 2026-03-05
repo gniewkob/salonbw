@@ -157,28 +157,35 @@ export default function CalendarNav() {
             {/* Employees Section */}
             <div className="nav-header">PRACOWNICY</div>
             <div className="versum-employee-filter">
-                {employees?.map((employee) => (
-                    <label
-                        key={employee.id}
-                        className="versum-employee-filter__item"
-                    >
-                        <input
-                            type="checkbox"
-                            checked={selectedEmployeeIds.includes(employee.id)}
-                            onChange={() => handleEmployeeToggle(employee.id)}
-                            className="versum-checkbox"
-                        />
-                        <span
-                            className="versum-employee-filter__color"
-                            style={{
-                                backgroundColor: employee.color || '#999',
-                            }}
-                        />
-                        <span className="versum-employee-filter__name">
-                            {employee.name}
-                        </span>
-                    </label>
-                ))}
+                {employees?.map((employee) => {
+                    const colorStyle: React.CSSProperties = {
+                        backgroundColor: employee.color || '#999',
+                    };
+                    return (
+                        <label
+                            key={employee.id}
+                            className="versum-employee-filter__item"
+                        >
+                            <input
+                                type="checkbox"
+                                checked={selectedEmployeeIds.includes(
+                                    employee.id,
+                                )}
+                                onChange={() =>
+                                    handleEmployeeToggle(employee.id)
+                                }
+                                className="versum-checkbox"
+                            />
+                            <span
+                                className="versum-employee-filter__color"
+                                style={colorStyle}
+                            />
+                            <span className="versum-employee-filter__name">
+                                {employee.name}
+                            </span>
+                        </label>
+                    );
+                })}
             </div>
         </>
     );

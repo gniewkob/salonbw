@@ -15,6 +15,9 @@ export default function WarehouseCategoriesPanel({
 }: WarehouseCategoriesPanelProps) {
     const renderNode = (category: ProductCategory, depth = 0) => {
         const isSelected = selectedCategoryId === category.id;
+        const buttonStyle: React.CSSProperties = {
+            paddingLeft: `${depth * 16 + 8}px`,
+        };
         return (
             <div key={category.id}>
                 <button
@@ -24,7 +27,7 @@ export default function WarehouseCategoriesPanel({
                             ? 'font-semibold text-sky-600'
                             : 'text-gray-700'
                     }`}
-                    style={{ paddingLeft: `${depth * 16 + 8}px` }}
+                    style={buttonStyle}
                     onClick={() => onSelect(category.id)}
                 >
                     {category.name}

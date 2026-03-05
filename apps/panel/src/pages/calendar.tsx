@@ -7,6 +7,26 @@ import { useEffect, useRef, useState } from 'react';
  * `/api/calendar-embed` (which injects runtime config and keeps script loading
  * isolated from Next.js hydration).
  */
+const containerStyle: React.CSSProperties = {
+    padding: 24,
+    fontFamily: 'system-ui, sans-serif',
+};
+const titleStyle: React.CSSProperties = { fontSize: 18, margin: 0 };
+const errorTextStyle: React.CSSProperties = {
+    marginTop: 12,
+    marginBottom: 0,
+    opacity: 0.8,
+};
+const actionsStyle: React.CSSProperties = { marginTop: 12, marginBottom: 0 };
+const buttonStyle: React.CSSProperties = {
+    appearance: 'none',
+    border: '1px solid #ddd',
+    padding: '6px 10px',
+    borderRadius: 6,
+    background: '#fff',
+    cursor: 'pointer',
+};
+
 export default function CalendarPage() {
     const didReplaceDocumentRef = useRef(false);
     const [error, setError] = useState<string | null>(null);
@@ -47,25 +67,14 @@ export default function CalendarPage() {
 
     if (error) {
         return (
-            <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-                <h1 style={{ fontSize: 18, margin: 0 }}>
-                    Calendar unavailable
-                </h1>
-                <p style={{ marginTop: 12, marginBottom: 0, opacity: 0.8 }}>
-                    {error}
-                </p>
-                <p style={{ marginTop: 12, marginBottom: 0 }}>
+            <main style={containerStyle}>
+                <h1 style={titleStyle}>Calendar unavailable</h1>
+                <p style={errorTextStyle}>{error}</p>
+                <p style={actionsStyle}>
                     <button
                         type="button"
                         onClick={() => window.location.reload()}
-                        style={{
-                            appearance: 'none',
-                            border: '1px solid #ddd',
-                            padding: '6px 10px',
-                            borderRadius: 6,
-                            background: '#fff',
-                            cursor: 'pointer',
-                        }}
+                        style={buttonStyle}
                     >
                         Reload
                     </button>
@@ -74,9 +83,5 @@ export default function CalendarPage() {
         );
     }
 
-    return (
-        <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-            Loading calendar...
-        </main>
-    );
+    return <main style={containerStyle}>Loading calendar...</main>;
 }

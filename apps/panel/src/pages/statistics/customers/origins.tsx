@@ -38,8 +38,7 @@ const COLORS = [
     '#d9534f',
     '#6f42c1',
     '#20c997',
-    '#fd7e14',
-    '#6c757d',
+    { name: 'Portal', color: '#f3c200' },
 ];
 
 export default function ClientOriginsPage() {
@@ -71,7 +70,11 @@ export default function ClientOriginsPage() {
         stats?.origins.map((o, index) => ({
             name: o.origin,
             value: o.count,
-            color: COLORS[index % COLORS.length],
+            color:
+                typeof COLORS[index % COLORS.length] === 'string'
+                    ? (COLORS[index % COLORS.length] as string)
+                    : (COLORS[index % COLORS.length] as { color: string })
+                          .color,
         })) || [];
 
     return (
@@ -143,10 +146,7 @@ export default function ClientOriginsPage() {
                                         <div className="versum-widget__header">
                                             Podział według źródła
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 350 }}
-                                        >
+                                        <div className="versum-widget__content h-[350px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -188,10 +188,7 @@ export default function ClientOriginsPage() {
                                         <div className="versum-widget__header">
                                             Szczegóły
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 350 }}
-                                        >
+                                        <div className="versum-widget__content h-[350px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.origins}

@@ -103,6 +103,11 @@ export default function ManageCategoriesModal({ type, onClose }: Props) {
     return <ManageProductCategoriesModal onClose={onClose} />;
 }
 
+const HR_STYLE: React.CSSProperties = {
+    margin: '14px 0',
+    borderColor: '#eef1f4',
+};
+
 function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
     const { data: tree = [], isLoading } = useProductCategories();
     const createCategory = useCreateProductCategory();
@@ -236,9 +241,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                             </button>
                         </form>
 
-                        <hr
-                            style={{ margin: '14px 0', borderColor: '#eef1f4' }}
-                        />
+                        <hr style={HR_STYLE} />
 
                         {isLoading ? (
                             <p className="text-muted">Ładowanie kategorii...</p>
@@ -308,15 +311,21 @@ function CategoryEditorRow({
         setState(draft);
     }, [draft]);
 
+    const rowStyle: React.CSSProperties = {
+        border: '1px solid #e6eaee',
+        borderRadius: 3,
+        padding: 10,
+        marginBottom: 10,
+    };
+    const gridStyle: React.CSSProperties = {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8,
+    };
+    const actionsStyle: React.CSSProperties = { display: 'flex', gap: 8 };
+
     return (
-        <div
-            style={{
-                border: '1px solid #e6eaee',
-                borderRadius: 3,
-                padding: 10,
-                marginBottom: 10,
-            }}
-        >
+        <div style={rowStyle}>
             <div className="form-group">
                 <label
                     className="control-label"
@@ -366,13 +375,7 @@ function CategoryEditorRow({
                         ))}
                 </select>
             </div>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: 8,
-                }}
-            >
+            <div style={gridStyle}>
                 <div className="form-group">
                     <label
                         className="control-label"
@@ -419,7 +422,7 @@ function CategoryEditorRow({
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={actionsStyle}>
                 <button
                     type="button"
                     className="btn btn-default btn-xs"

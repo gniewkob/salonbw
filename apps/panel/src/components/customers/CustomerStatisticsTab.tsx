@@ -172,14 +172,26 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     </div>
                 </div>
                 <div className="customer-stats-share__bar">
-                    <div
-                        className="customer-stats-share__bar-services"
-                        style={{ width: `${servicesShare}%` }}
-                    />
-                    <div
-                        className="customer-stats-share__bar-products"
-                        style={{ width: `${productsShare}%` }}
-                    />
+                    {(() => {
+                        const servicesStyle: React.CSSProperties = {
+                            width: `${servicesShare}%`,
+                        };
+                        const productsStyle: React.CSSProperties = {
+                            width: `${productsShare}%`,
+                        };
+                        return (
+                            <>
+                                <div
+                                    className="customer-stats-share__bar-services"
+                                    style={servicesStyle}
+                                />
+                                <div
+                                    className="customer-stats-share__bar-products"
+                                    style={productsStyle}
+                                />
+                            </>
+                        );
+                    })()}
                 </div>
                 <div className="customer-stats-share__foot">
                     <span>{servicesShare}% udziałów</span>
@@ -215,12 +227,18 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                             title={`${p.month}: ${formatCurrency(p.spent)} (${p.count} wizyt)`}
                                         >
                                             <div className="customer-bar-chart__barwrap">
-                                                <div
-                                                    className="customer-bar-chart__bar"
-                                                    style={{
-                                                        height: `${Math.max(2, h)}%`,
-                                                    }}
-                                                />
+                                                {(() => {
+                                                    const barStyle: React.CSSProperties =
+                                                        {
+                                                            height: `${Math.max(2, h)}%`,
+                                                        };
+                                                    return (
+                                                        <div
+                                                            className="customer-bar-chart__bar"
+                                                            style={barStyle}
+                                                        />
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="customer-bar-chart__label">
                                                 {label}

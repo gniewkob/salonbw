@@ -161,7 +161,11 @@ export default function WarehouseChangesPage() {
                                 </div>
                                 <div
                                     className="versum-widget__content"
-                                    style={{ height: 300 }}
+                                    style={(() => {
+                                        const chartContainerStyle: React.CSSProperties =
+                                            { height: 300 };
+                                        return chartContainerStyle;
+                                    })()}
                                 >
                                     <ResponsiveContainer>
                                         <BarChart data={chartData}>
@@ -215,19 +219,29 @@ export default function WarehouseChangesPage() {
                                                     </td>
                                                     <td>{m.productName}</td>
                                                     <td>
-                                                        <span
-                                                            className="badge"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    TYPE_COLORS[
+                                                        {(() => {
+                                                            const badgeStyle: React.CSSProperties =
+                                                                {
+                                                                    backgroundColor:
+                                                                        TYPE_COLORS[
+                                                                            m
+                                                                                .type
+                                                                        ] ||
+                                                                        '#999',
+                                                                };
+                                                            return (
+                                                                <span
+                                                                    className="badge"
+                                                                    style={
+                                                                        badgeStyle
+                                                                    }
+                                                                >
+                                                                    {TYPE_LABELS[
                                                                         m.type
-                                                                    ] || '#999',
-                                                            }}
-                                                        >
-                                                            {TYPE_LABELS[
-                                                                m.type
-                                                            ] || m.type}
-                                                        </span>
+                                                                    ] || m.type}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </td>
                                                     <td
                                                         className={`text-right ${

@@ -63,12 +63,18 @@ export default function ServiceRanking({ data, loading }: Props) {
                                     {service.serviceName}
                                 </div>
                                 <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
-                                    <div
-                                        className="bg-primary-500 h-1.5 rounded-full"
-                                        style={{
-                                            width: `${(service.bookingCount / maxBookings) * 100}%`,
-                                        }}
-                                    ></div>
+                                    {(() => {
+                                        const progressStyle: React.CSSProperties =
+                                            {
+                                                width: `${(service.bookingCount / maxBookings) * 100}%`,
+                                            };
+                                        return (
+                                            <div
+                                                className="bg-primary-500 h-1.5 rounded-full"
+                                                style={progressStyle}
+                                            ></div>
+                                        );
+                                    })()}
                                 </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">

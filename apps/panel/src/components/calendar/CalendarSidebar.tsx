@@ -102,30 +102,35 @@ export default function CalendarSidebar({
                     </div>
                 </div>
                 <div className="space-y-1 max-h-64 overflow-y-auto">
-                    {employees.map((emp) => (
-                        <label
-                            key={emp.id}
-                            className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedEmployeeIds.includes(emp.id)}
-                                onChange={() => onEmployeeToggle(emp.id)}
-                                className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                            />
-                            <div className="flex items-center gap-2">
-                                <div
-                                    className="w-3 h-3 rounded-full"
-                                    style={{
-                                        backgroundColor: emp.color || '#ccc',
-                                    }}
+                    {employees.map((emp) => {
+                        const colorStyle: React.CSSProperties = {
+                            backgroundColor: emp.color || '#ccc',
+                        };
+                        return (
+                            <label
+                                key={emp.id}
+                                className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedEmployeeIds.includes(
+                                        emp.id,
+                                    )}
+                                    onChange={() => onEmployeeToggle(emp.id)}
+                                    className="rounded border-gray-300 text-sky-600 focus:ring-sky-500"
                                 />
-                                <span className="text-gray-700">
-                                    {emp.name}
-                                </span>
-                            </div>
-                        </label>
-                    ))}
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="w-3 h-3 rounded-full"
+                                        style={colorStyle}
+                                    />
+                                    <span className="text-gray-700">
+                                        {emp.name}
+                                    </span>
+                                </div>
+                            </label>
+                        );
+                    })}
                 </div>
             </div>
         </div>

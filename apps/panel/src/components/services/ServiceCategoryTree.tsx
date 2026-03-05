@@ -39,6 +39,10 @@ export default function ServiceCategoryTree({
         const isExpanded = expandedIds.has(category.id);
         const isSelected = selectedCategoryId === category.id;
 
+        const containerStyle: React.CSSProperties = {
+            paddingLeft: `${12 + level * 16}px`,
+        };
+
         return (
             <div key={category.id}>
                 <div
@@ -47,7 +51,7 @@ export default function ServiceCategoryTree({
                             ? 'bg-primary-100 text-primary-700'
                             : 'hover:bg-gray-100'
                     }`}
-                    style={{ paddingLeft: `${12 + level * 16}px` }}
+                    style={containerStyle}
                     onClick={() => onSelectCategory(category.id)}
                 >
                     {hasChildren && (
@@ -77,12 +81,18 @@ export default function ServiceCategoryTree({
                     )}
                     {!hasChildren && <div className="w-6" />}
 
-                    {category.color && (
-                        <span
-                            className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: category.color }}
-                        />
-                    )}
+                    {category.color &&
+                        (() => {
+                            const colorStyle: React.CSSProperties = {
+                                backgroundColor: category.color,
+                            };
+                            return (
+                                <span
+                                    className="w-3 h-3 rounded-full flex-shrink-0"
+                                    style={colorStyle}
+                                />
+                            );
+                        })()}
 
                     <span className="flex-1 truncate font-medium">
                         {category.name}
