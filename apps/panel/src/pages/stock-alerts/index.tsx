@@ -20,7 +20,7 @@ export default function WarehouseLowStockPage() {
             }
         >
             {summary ? (
-                <div className="products-pagination" style={{ paddingTop: 0 }}>
+                <div className="products-pagination pt-0">
                     produkty: {summary.totalProducts} | niski stan:{' '}
                     {summary.lowStockCount} | brak na stanie:{' '}
                     {summary.outOfStockCount}

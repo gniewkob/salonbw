@@ -487,7 +487,7 @@ export default function ServiceDetailsPage() {
                                     <table className="versum-table">
                                         <thead>
                                             <tr>
-                                                <th style={{ width: 300 }}>
+                                                <th className="w-[300px]">
                                                     Nazwa wariantu
                                                 </th>
                                                 <th>

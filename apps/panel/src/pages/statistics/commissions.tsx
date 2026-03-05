@@ -263,18 +263,26 @@ export default function CommissionsPage() {
                                                             }
                                                         </Link>
                                                         <br />
-                                                        <Link
-                                                            href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                            className="btn btn-xs mt-5"
-                                                            style={{
-                                                                border: '1px solid #3aa1df',
-                                                                color: '#3aa1df',
-                                                                background:
-                                                                    '#fff',
-                                                            }}
-                                                        >
-                                                            🧾 szczegóły
-                                                        </Link>
+                                                        {(() => {
+                                                            const detailsBtnStyle: React.CSSProperties =
+                                                                {
+                                                                    border: '1px solid #3aa1df',
+                                                                    color: '#3aa1df',
+                                                                    background:
+                                                                        '#fff',
+                                                                };
+                                                            return (
+                                                                <Link
+                                                                    href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                                    className="btn btn-xs mt-5"
+                                                                    style={
+                                                                        detailsBtnStyle
+                                                                    }
+                                                                >
+                                                                    🧾 szczegóły
+                                                                </Link>
+                                                            );
+                                                        })()}
                                                     </td>
                                                     <td>
                                                         {formatMoney(

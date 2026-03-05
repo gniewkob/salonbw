@@ -29,6 +29,31 @@ const colorOptions = [
     '#64748b', // slate
 ];
 
+const HR_STYLE: React.CSSProperties = {
+    margin: '14px 0',
+    borderColor: '#eef1f4',
+};
+const ACTIONS_STYLE: React.CSSProperties = { display: 'flex', gap: 8 };
+const ROW_STYLE: React.CSSProperties = {
+    border: '1px solid #e6eaee',
+    borderRadius: 3,
+    padding: 10,
+    marginBottom: 10,
+};
+const ROW_HEADER_STYLE: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 8,
+};
+const ID_CONTAINER_STYLE: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+};
+const ID_STYLE: React.CSSProperties = { fontSize: 12 };
+
 export default function ManageCustomerGroupsModal({ onClose }: Props) {
     const { data: groups = [], isLoading } = useCustomerGroups();
     const create = useCreateCustomerGroup();
@@ -172,25 +197,30 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                             <div className="form-group">
                                 <label className="control-label">Kolor</label>
                                 <div className="versum-color-picker">
-                                    {colorOptions.map((color) => (
-                                        <button
-                                            key={color}
-                                            type="button"
-                                            onClick={() =>
-                                                setNewGroup((p) => ({
-                                                    ...p,
-                                                    color,
-                                                }))
-                                            }
-                                            style={{ backgroundColor: color }}
-                                            title={color}
-                                            aria-label={color}
-                                            disabled={isBusy}
-                                        />
-                                    ))}
+                                    {colorOptions.map((color) => {
+                                        const btnStyle: React.CSSProperties = {
+                                            backgroundColor: color,
+                                        };
+                                        return (
+                                            <button
+                                                key={color}
+                                                type="button"
+                                                onClick={() =>
+                                                    setNewGroup((p) => ({
+                                                        ...p,
+                                                        color,
+                                                    }))
+                                                }
+                                                style={btnStyle}
+                                                title={color}
+                                                aria-label={color}
+                                                disabled={isBusy}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            <div style={ACTIONS_STYLE}>
                                 <button
                                     type="submit"
                                     className="btn btn-primary btn-xs"
@@ -217,9 +247,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                             </div>
                         </form>
 
-                        <hr
-                            style={{ margin: '14px 0', borderColor: '#eef1f4' }}
-                        />
+                        <hr style={HR_STYLE} />
 
                         {isLoading ? (
                             <div className="text-muted">Ładowanie grup...</div>
@@ -236,51 +264,32 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                         color: g.color ?? '#06b6d4',
                                     };
                                     return (
-                                        <div
-                                            key={g.id}
-                                            style={{
-                                                border: '1px solid #e6eaee',
-                                                borderRadius: 3,
-                                                padding: 10,
-                                                marginBottom: 10,
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent:
-                                                        'space-between',
-                                                    gap: 10,
-                                                    marginBottom: 8,
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 10,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            width: 10,
-                                                            height: 10,
-                                                            borderRadius: 999,
-                                                            background:
-                                                                d.color ||
-                                                                '#06b6d4',
-                                                            display:
-                                                                'inline-block',
-                                                            boxShadow:
-                                                                '0 0 0 1px rgba(0,0,0,0.12)',
-                                                        }}
-                                                    />
-                                                    <strong
-                                                        style={{
-                                                            fontSize: 12,
-                                                        }}
-                                                    >
+                                        <div key={g.id} style={ROW_STYLE}>
+                                            <div style={ROW_HEADER_STYLE}>
+                                                <div style={ID_CONTAINER_STYLE}>
+                                                    {(() => {
+                                                        const colorDotStyle: React.CSSProperties =
+                                                            {
+                                                                width: 10,
+                                                                height: 10,
+                                                                borderRadius: 999,
+                                                                background:
+                                                                    d.color ||
+                                                                    '#06b6d4',
+                                                                display:
+                                                                    'inline-block',
+                                                                boxShadow:
+                                                                    '0 0 0 1px rgba(0,0,0,0.12)',
+                                                            };
+                                                        return (
+                                                            <span
+                                                                style={
+                                                                    colorDotStyle
+                                                                }
+                                                            />
+                                                        );
+                                                    })()}
+                                                    <strong style={ID_STYLE}>
                                                         #{g.id}
                                                     </strong>
                                                 </div>
@@ -373,36 +382,44 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 </label>
                                                 <div className="versum-color-picker">
                                                     {colorOptions.map(
-                                                        (color) => (
-                                                            <button
-                                                                key={color}
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setDrafts(
-                                                                        (
-                                                                            p,
-                                                                        ) => ({
-                                                                            ...p,
-                                                                            [g.id]: {
-                                                                                ...d,
-                                                                                color,
-                                                                            },
-                                                                        }),
-                                                                    )
-                                                                }
-                                                                style={{
+                                                        (color) => {
+                                                            const draftColorStyle: React.CSSProperties =
+                                                                {
                                                                     backgroundColor:
                                                                         color,
-                                                                }}
-                                                                title={color}
-                                                                aria-label={
-                                                                    color
-                                                                }
-                                                                disabled={
-                                                                    isBusy
-                                                                }
-                                                            />
-                                                        ),
+                                                                };
+                                                            return (
+                                                                <button
+                                                                    key={color}
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setDrafts(
+                                                                            (
+                                                                                p,
+                                                                            ) => ({
+                                                                                ...p,
+                                                                                [g.id]: {
+                                                                                    ...d,
+                                                                                    color,
+                                                                                },
+                                                                            }),
+                                                                        )
+                                                                    }
+                                                                    style={
+                                                                        draftColorStyle
+                                                                    }
+                                                                    title={
+                                                                        color
+                                                                    }
+                                                                    aria-label={
+                                                                        color
+                                                                    }
+                                                                    disabled={
+                                                                        isBusy
+                                                                    }
+                                                                />
+                                                            );
+                                                        },
                                                     )}
                                                 </div>
                                             </div>

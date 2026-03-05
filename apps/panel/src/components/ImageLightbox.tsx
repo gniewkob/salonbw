@@ -141,7 +141,7 @@ export default function ImageLightbox(props: Props) {
                     src={currentSrc}
                     alt={alt || 'Image preview'}
                     fill
-                    style={{ objectFit: 'contain' }}
+                    className="object-contain"
                     sizes="90vw"
                 />
             </div>

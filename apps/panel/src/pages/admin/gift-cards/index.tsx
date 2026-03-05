@@ -384,7 +384,11 @@ export default function GiftCardsManagementPage() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {cardsData?.data.map((card) => (
+                                {cardsData?.data.map((card) => {
+                                    const progressStyle: React.CSSProperties = {
+                                        width: `${(card.currentBalance / card.initialValue) * 100}%`,
+                                    };
+                                    return (
                                     <tr
                                         key={card.id}
                                         className="hover:bg-gray-50"
@@ -422,9 +426,7 @@ export default function GiftCardsManagementPage() {
                                                 <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                                                     <div
                                                         className="bg-primary-600 h-1.5 rounded-full"
-                                                        style={{
-                                                            width: `${(card.currentBalance / card.initialValue) * 100}%`,
-                                                        }}
+                                                        style={progressStyle}
                                                     />
                                                 </div>
                                             )}
@@ -538,10 +540,10 @@ export default function GiftCardsManagementPage() {
                                                         )}
                                                     </>
                                                 )}
-                                            </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     )}

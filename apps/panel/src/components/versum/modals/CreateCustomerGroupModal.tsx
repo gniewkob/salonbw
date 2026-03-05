@@ -108,21 +108,26 @@ export default function CreateCustomerGroupModal({
                         <div className="form-group">
                             <label className="control-label">Kolor</label>
                             <div className="versum-color-picker">
-                                {colorOptions.map((color) => (
-                                    <button
-                                        key={color}
-                                        type="button"
-                                        onClick={() =>
-                                            setForm((prev) => ({
-                                                ...prev,
-                                                color,
-                                            }))
-                                        }
-                                        data-color={color}
-                                        style={{ backgroundColor: color }}
-                                        title={color}
-                                    />
-                                ))}
+                                {colorOptions.map((color) => {
+                                    const btnStyle: React.CSSProperties = {
+                                        backgroundColor: color,
+                                    };
+                                    return (
+                                        <button
+                                            key={color}
+                                            type="button"
+                                            onClick={() =>
+                                                setForm((prev) => ({
+                                                    ...prev,
+                                                    color,
+                                                }))
+                                            }
+                                            data-color={color}
+                                            style={btnStyle}
+                                            title={color}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

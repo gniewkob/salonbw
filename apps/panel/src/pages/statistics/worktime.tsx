@@ -176,36 +176,42 @@ export default function WorkTimeReportPage() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {data.map((emp) => (
-                                                        <tr
-                                                            key={emp.employeeId}
-                                                            className={
-                                                                selectedEmployee ===
-                                                                emp.employeeId
-                                                                    ? 'active'
-                                                                    : ''
-                                                            }
-                                                            onClick={() =>
-                                                                setSelectedEmployee(
-                                                                    emp.employeeId,
-                                                                )
-                                                            }
-                                                            style={{
+                                                    {data.map((emp) => {
+                                                        const rowStyle: React.CSSProperties =
+                                                            {
                                                                 cursor: 'pointer',
-                                                            }}
-                                                        >
-                                                            <td>
-                                                                {
-                                                                    emp.employeeName
+                                                            };
+                                                        return (
+                                                            <tr
+                                                                key={
+                                                                    emp.employeeId
                                                                 }
-                                                            </td>
-                                                            <td className="text-right">
-                                                                {formatMinutes(
-                                                                    emp.totalWorkTimeMinutes,
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                                className={
+                                                                    selectedEmployee ===
+                                                                    emp.employeeId
+                                                                        ? 'active'
+                                                                        : ''
+                                                                }
+                                                                onClick={() =>
+                                                                    setSelectedEmployee(
+                                                                        emp.employeeId,
+                                                                    )
+                                                                }
+                                                                style={rowStyle}
+                                                            >
+                                                                <td>
+                                                                    {
+                                                                        emp.employeeName
+                                                                    }
+                                                                </td>
+                                                                <td className="text-right">
+                                                                    {formatMinutes(
+                                                                        emp.totalWorkTimeMinutes,
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -280,7 +286,11 @@ export default function WorkTimeReportPage() {
                                                 </div>
                                                 <div
                                                     className="versum-widget__content"
-                                                    style={{ height: 300 }}
+                                                    style={(() => {
+                                                        const chartContainerStyle: React.CSSProperties =
+                                                            { height: 300 };
+                                                        return chartContainerStyle;
+                                                    })()}
                                                 >
                                                     <ResponsiveContainer>
                                                         <BarChart
