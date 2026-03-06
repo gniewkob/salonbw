@@ -294,12 +294,26 @@ function StatisticsPageContent() {
                     </button>
                     <input
                         id="report-date"
-                        className="form-control versum-toolbar-search"
-                        type="date"
+                        className="form-control statistics-date-input"
+                        type="text"
+                        readOnly
                         value={reportDate}
-                        onChange={(e) => setReportDate(e.target.value)}
                         aria-label="Data raportu"
                     />
+                    <label
+                        htmlFor="report-date-picker"
+                        className="btn btn-default statistics-date-picker-btn"
+                        aria-label="Wybierz datę"
+                    >
+                        📅
+                        <input
+                            id="report-date-picker"
+                            type="date"
+                            className="statistics-date-picker-hidden"
+                            value={reportDate}
+                            onChange={(e) => setReportDate(e.target.value)}
+                        />
+                    </label>
                     <button type="button" className="btn btn-default" disabled>
                         ▶
                     </button>
@@ -387,7 +401,14 @@ function StatisticsPageContent() {
                         </div>
                         <div className="statistics-summary-row__right">
                             <div className="statistics-payment-title fs-20 fw-600">
-                                Udział metod płatności w utargu
+                                Udział metod płatności w utargu{' '}
+                                <span
+                                    className="statistics-info-icon"
+                                    title="Informacja o metodach płatności"
+                                    aria-label="Informacja"
+                                >
+                                    ℹ
+                                </span>
                             </div>
                             <div className="statistics-payment-box mt-10">
                                 <div className="statistics-payment-row">

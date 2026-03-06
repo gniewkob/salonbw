@@ -88,7 +88,6 @@ export default function StatisticsNav() {
 
     return (
         <div className="sidebar-inner nav-scroll-container">
-            <div className="nav-header">RAPORTY</div>
             <ul className="nav nav-list">
                 {REPORTS.map((item) => (
                     <li key={item.id}>
