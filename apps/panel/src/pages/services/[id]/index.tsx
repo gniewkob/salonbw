@@ -583,6 +583,8 @@ export default function ServiceDetailsPage() {
                                                 }
                                             />
                                             <select
+                                                title="Ocena"
+                                                aria-label="Wybierz ocenę"
                                                 className="form-control"
                                                 value={commentRating}
                                                 onChange={(e) =>
@@ -734,6 +736,8 @@ export default function ServiceDetailsPage() {
                                                         <td>
                                                             <input
                                                                 type="number"
+                                                                title="Wartość prowizji"
+                                                                placeholder="Wartość prowizji"
                                                                 className="form-control"
                                                                 min={0}
                                                                 max={100}

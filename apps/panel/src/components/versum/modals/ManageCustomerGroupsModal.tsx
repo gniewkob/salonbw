@@ -198,9 +198,6 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                 <label className="control-label">Kolor</label>
                                 <div className="versum-color-picker">
                                     {colorOptions.map((color) => {
-                                        const btnStyle: React.CSSProperties = {
-                                            backgroundColor: color,
-                                        };
                                         return (
                                             <button
                                                 key={color}
@@ -211,7 +208,11 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                         color,
                                                     }))
                                                 }
-                                                style={btnStyle}
+                                                {...({
+                                                    style: {
+                                                        backgroundColor: color,
+                                                    },
+                                                } as any)}
                                                 title={color}
                                                 aria-label={color}
                                                 disabled={isBusy}
@@ -220,7 +221,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                     })}
                                 </div>
                             </div>
-                            <div style={ACTIONS_STYLE}>
+                            <div className="flex gap-2">
                                 <button
                                     type="submit"
                                     className="btn btn-primary btn-xs"
@@ -247,7 +248,7 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                             </div>
                         </form>
 
-                        <hr style={HR_STYLE} />
+                        <hr className="my-[14px] border-[#eef1f4]" />
 
                         {isLoading ? (
                             <div className="text-muted">Ładowanie grup...</div>
@@ -264,9 +265,12 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                         color: g.color ?? '#06b6d4',
                                     };
                                     return (
-                                        <div key={g.id} style={ROW_STYLE}>
-                                            <div style={ROW_HEADER_STYLE}>
-                                                <div style={ID_CONTAINER_STYLE}>
+                                        <div
+                                            key={g.id}
+                                            className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]"
+                                        >
+                                            <div className="flex items-center justify-between gap-[10px] mb-2">
+                                                <div className="flex items-center gap-[10px]">
                                                     {(() => {
                                                         const colorDotStyle: React.CSSProperties =
                                                             {
@@ -283,13 +287,13 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                             };
                                                         return (
                                                             <span
-                                                                style={
-                                                                    colorDotStyle
-                                                                }
+                                                                {...({
+                                                                    style: colorDotStyle,
+                                                                } as any)}
                                                             />
                                                         );
                                                     })()}
-                                                    <strong style={ID_STYLE}>
+                                                    <strong className="text-[12px]">
                                                         #{g.id}
                                                     </strong>
                                                 </div>
@@ -383,11 +387,6 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 <div className="versum-color-picker">
                                                     {colorOptions.map(
                                                         (color) => {
-                                                            const draftColorStyle: React.CSSProperties =
-                                                                {
-                                                                    backgroundColor:
-                                                                        color,
-                                                                };
                                                             return (
                                                                 <button
                                                                     key={color}
@@ -405,9 +404,12 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                                             }),
                                                                         )
                                                                     }
-                                                                    style={
-                                                                        draftColorStyle
-                                                                    }
+                                                                    {...({
+                                                                        style: {
+                                                                            backgroundColor:
+                                                                                color,
+                                                                        },
+                                                                    } as any)}
                                                                     title={
                                                                         color
                                                                     }

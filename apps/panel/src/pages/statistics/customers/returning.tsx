@@ -87,6 +87,8 @@ export default function CustomersReturning() {
                         </h1>
                         <div className="flex gap-8">
                             <select
+                                title="Okres statystyk"
+                                aria-label="Wybierz okres"
                                 value={dateRange}
                                 onChange={(e) => setDateRange(e.target.value)}
                                 className="form-control"
@@ -211,10 +213,7 @@ export default function CustomersReturning() {
                                         <div className="versum-widget__header">
                                             Podział klientów
                                         </div>
-                                        <div
-                                            className="versum-widget__content"
-                                            style={{ height: 300 }}
-                                        >
+                                        <div className="versum-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie

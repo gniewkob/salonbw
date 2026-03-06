@@ -273,38 +273,34 @@ export default function CustomerSummaryTab({
                                             <div className="flex flex-wrap gap-4">
                                                 {customer.groups.map(
                                                     (group) => {
-                                                        const groupPillStyle: React.CSSProperties =
-                                                            {
-                                                                borderColor:
-                                                                    group.color ||
-                                                                    '#999',
-                                                                color:
-                                                                    group.color ||
-                                                                    '#666',
-                                                                backgroundColor:
-                                                                    group.color
-                                                                        ? `${group.color}15`
-                                                                        : '#f5f5f5',
-                                                            };
-                                                        const colorDotStyle: React.CSSProperties =
-                                                            {
-                                                                backgroundColor:
-                                                                    group.color ||
-                                                                    '#999',
-                                                            };
                                                         return (
                                                             <span
                                                                 key={group.id}
                                                                 className="inline-flex items-center px-8 py-2 rounded text-xs font-medium border group"
-                                                                style={
-                                                                    groupPillStyle
-                                                                }
+                                                                {...({
+                                                                    style: {
+                                                                        borderColor:
+                                                                            group.color ||
+                                                                            '#999',
+                                                                        color:
+                                                                            group.color ||
+                                                                            '#666',
+                                                                        backgroundColor:
+                                                                            group.color
+                                                                                ? `${group.color}15`
+                                                                                : '#f5f5f5',
+                                                                    },
+                                                                } as any)}
                                                             >
                                                                 <span
                                                                     className="w-6 h-6 rounded-full mr-4"
-                                                                    style={
-                                                                        colorDotStyle
-                                                                    }
+                                                                    {...({
+                                                                        style: {
+                                                                            backgroundColor:
+                                                                                group.color ||
+                                                                                '#999',
+                                                                        },
+                                                                    } as any)}
                                                                 />
                                                                 {group.name}
                                                                 <button
@@ -388,95 +384,86 @@ export default function CustomerSummaryTab({
             </div>
 
             {/* Modal dodawania do grupy */}
-            {showAddToGroupModal &&
-                (() => {
-                    const modalStyle: React.CSSProperties = {
-                        display: 'block',
-                    };
-                    return (
-                        <div className="modal fade in" style={modalStyle}>
-                            <div className="modal-dialog modal-sm">
-                                <div className="modal-content">
-                                    <div className="modal-header">
-                                        <button
-                                            type="button"
-                                            className="close"
-                                            onClick={() =>
-                                                setShowAddToGroupModal(false)
-                                            }
-                                        >
-                                            ×
-                                        </button>
-                                        <h4 className="modal-title">
-                                            Dodaj do grupy
-                                        </h4>
-                                    </div>
-                                    <div className="modal-body">
-                                        {availableGroups.length === 0 ? (
-                                            <p className="text-muted text-center">
-                                                Brak dostępnych grup
-                                            </p>
-                                        ) : (
-                                            <ul className="list-group">
-                                                {availableGroups.map(
-                                                    (group) => {
-                                                        const groupColorStyle: React.CSSProperties =
-                                                            {
+            {showAddToGroupModal && (
+                <div
+                    className="modal fade in"
+                    {...({ style: { display: 'block' } } as any)}
+                >
+                    <div className="modal-dialog modal-sm">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button
+                                    type="button"
+                                    className="close"
+                                    onClick={() =>
+                                        setShowAddToGroupModal(false)
+                                    }
+                                >
+                                    ×
+                                </button>
+                                <h4 className="modal-title">Dodaj do grupy</h4>
+                            </div>
+                            <div className="modal-body">
+                                {availableGroups.length === 0 ? (
+                                    <p className="text-muted text-center">
+                                        Brak dostępnych grup
+                                    </p>
+                                ) : (
+                                    <ul className="list-group">
+                                        {availableGroups.map((group) => {
+                                            return (
+                                                <li
+                                                    key={group.id}
+                                                    className="list-group-item cursor-pointer hover:bg-gray-50 flex items-center gap-8"
+                                                    onClick={() => {
+                                                        void handleAddToGroup(
+                                                            group.id,
+                                                        );
+                                                    }}
+                                                >
+                                                    <span
+                                                        className="w-12 h-12 rounded-full"
+                                                        {...({
+                                                            style: {
                                                                 backgroundColor:
                                                                     group.color ||
                                                                     '#999',
-                                                            };
-                                                        return (
-                                                            <li
-                                                                key={group.id}
-                                                                className="list-group-item cursor-pointer hover:bg-gray-50 flex items-center gap-8"
-                                                                onClick={() => {
-                                                                    void handleAddToGroup(
-                                                                        group.id,
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <span
-                                                                    className="w-12 h-12 rounded-full"
-                                                                    style={
-                                                                        groupColorStyle
-                                                                    }
-                                                                />
-                                                                <span className="flex-1">
-                                                                    {group.name}
-                                                                </span>
-                                                                {addToGroup.isPending && (
-                                                                    <span className="text-muted text-xs">
-                                                                        dodawanie...
-                                                                    </span>
-                                                                )}
-                                                            </li>
-                                                        );
-                                                    },
-                                                )}
-                                            </ul>
-                                        )}
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button
-                                            type="button"
-                                            className="btn btn-default"
-                                            onClick={() =>
-                                                setShowAddToGroupModal(false)
-                                            }
-                                        >
-                                            Anuluj
-                                        </button>
-                                    </div>
-                                </div>
+                                                            },
+                                                        } as any)}
+                                                    />
+                                                    <span className="flex-1">
+                                                        {group.name}
+                                                    </span>
+                                                    {addToGroup.isPending && (
+                                                        <span className="text-muted text-xs">
+                                                            dodawanie...
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                )}
                             </div>
-                            <div
-                                className="modal-backdrop fade in"
-                                onClick={() => setShowAddToGroupModal(false)}
-                            />
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-default"
+                                    onClick={() =>
+                                        setShowAddToGroupModal(false)
+                                    }
+                                >
+                                    Anuluj
+                                </button>
+                            </div>
                         </div>
-                    );
-                })}
+                    </div>
+                    <div
+                        className="modal-backdrop fade in"
+                        onClick={() => setShowAddToGroupModal(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 }
