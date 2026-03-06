@@ -613,6 +613,8 @@ export default function GiftCardsManagementPage() {
                                         type="number"
                                         required
                                         min={1}
+                                        title="Wartość karty (PLN)"
+                                        placeholder="100"
                                         value={createForm.initialValue}
                                         onChange={(e) =>
                                             setCreateForm((f) => ({
@@ -633,6 +635,7 @@ export default function GiftCardsManagementPage() {
                                         <input
                                             type="date"
                                             required
+                                            title="Ważna od"
                                             value={createForm.validFrom}
                                             onChange={(e) =>
                                                 setCreateForm((f) => ({
@@ -650,6 +653,7 @@ export default function GiftCardsManagementPage() {
                                         <input
                                             type="date"
                                             required
+                                            title="Ważna do"
                                             value={createForm.validUntil}
                                             onChange={(e) =>
                                                 setCreateForm((f) => ({
@@ -667,6 +671,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <input
                                         type="text"
+                                        title="Nazwa odbiorcy"
+                                        placeholder="Imię i nazwisko"
                                         value={createForm.recipientName ?? ''}
                                         onChange={(e) =>
                                             setCreateForm((f) => ({
@@ -683,6 +689,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <input
                                         type="email"
+                                        title="Email odbiorcy"
+                                        placeholder="adres@email.pl"
                                         value={createForm.recipientEmail ?? ''}
                                         onChange={(e) =>
                                             setCreateForm((f) => ({
@@ -755,6 +763,7 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <input
                                         type="date"
+                                        title="Ważna do"
                                         value={editForm.validUntil ?? ''}
                                         onChange={(e) =>
                                             setEditForm((f) => ({
@@ -771,6 +780,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <input
                                         type="text"
+                                        title="Nazwa odbiorcy"
+                                        placeholder="Imię i nazwisko"
                                         value={editForm.recipientName ?? ''}
                                         onChange={(e) =>
                                             setEditForm((f) => ({
@@ -787,6 +798,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <input
                                         type="email"
+                                        title="Email odbiorcy"
+                                        placeholder="adres@email.pl"
                                         value={editForm.recipientEmail ?? ''}
                                         onChange={(e) =>
                                             setEditForm((f) => ({
@@ -803,6 +816,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <textarea
                                         rows={3}
+                                        title="Wiadomość"
+                                        placeholder="Treść wiadomości"
                                         value={editForm.message ?? ''}
                                         onChange={(e) =>
                                             setEditForm((f) => ({
@@ -819,6 +834,8 @@ export default function GiftCardsManagementPage() {
                                     </label>
                                     <textarea
                                         rows={2}
+                                        title="Notatki wewnętrzne"
+                                        placeholder="Dodatkowe informacje..."
                                         value={editForm.notes ?? ''}
                                         onChange={(e) =>
                                             setEditForm((f) => ({
@@ -895,6 +912,8 @@ export default function GiftCardsManagementPage() {
                                         required
                                         min={0.01}
                                         step={0.01}
+                                        title="Kwota do pobrania (PLN)"
+                                        placeholder="0.00"
                                         value={redeemForm.amount}
                                         onChange={(e) =>
                                             setRedeemForm((f) => ({
@@ -1051,6 +1070,8 @@ export default function GiftCardsManagementPage() {
                             </h2>
                             <button
                                 type="button"
+                                title="Zamknij"
+                                aria-label="Zamknij okno"
                                 onClick={() => setModalType(null)}
                                 className="text-gray-400 hover:text-gray-600"
                             >
