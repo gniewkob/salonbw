@@ -277,7 +277,10 @@ export default function ServiceDetailsPage() {
                                             {summaryData.name}
                                         </div>
                                         <div className="service-summary-head__meta">
-                                            {variantsData.length} warianty
+                                            {variantsData.length}{' '}
+                                            {variantsData.length === 1
+                                                ? 'wariant'
+                                                : 'warianty'}
                                         </div>
                                     </div>
 
@@ -431,7 +434,7 @@ export default function ServiceDetailsPage() {
                                             {history.data?.items?.map(
                                                 (item) => (
                                                     <tr key={item.id}>
-                                                        <td className="versum-link">
+                                                        <td>
                                                             {new Date(
                                                                 item.startTime,
                                                             ).toLocaleString(
@@ -487,7 +490,7 @@ export default function ServiceDetailsPage() {
                                     <table className="versum-table">
                                         <thead>
                                             <tr>
-                                                <th className="w-[300px]">
+                                                <th className="service-employees-variant-col">
                                                     Nazwa wariantu
                                                 </th>
                                                 <th>
