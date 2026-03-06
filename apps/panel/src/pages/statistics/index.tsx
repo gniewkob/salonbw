@@ -307,7 +307,7 @@ function StatisticsPageContent() {
                 <div className="ml-auto" />
                 <button
                     type="button"
-                    className="btn btn-default mr-10 border-[#4ea4e0] text-[#2f9ae0] bg-white"
+                    className="btn btn-default btn-versum-blue mr-10"
                     onClick={downloadCsvReport}
                     disabled={dashboardLoading || rankingLoading}
                 >
@@ -557,11 +557,11 @@ function StatisticsPageContent() {
                     <div className="mt-20 mb-10 fs-12">
                         <strong>Udział pracowników w utargu</strong>
                     </div>
-                    <div className="border border-[#d9dee2] p-[10px] w-[440px] max-w-full">
-                        <div className="flex items-center justify-between gap-5">
+                    <div className="statistics-employee-box">
+                        <div className="statistics-payment-row">
                             <div
                                 aria-hidden
-                                className="w-[140px] h-[140px] rounded-full shrink-0"
+                                className="statistics-employee-pie"
                                 {...{
                                     style: {
                                         background:
@@ -573,7 +573,7 @@ function StatisticsPageContent() {
                                 {employeeRows.slice(0, 3).map((employee) => (
                                     <div key={employee.employeeId}>
                                         <span
-                                            className="inline-block w-2 h-2 mr-1.5"
+                                            className="statistics-payment-dot"
                                             {...{
                                                 style: {
                                                     background:

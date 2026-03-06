@@ -147,20 +147,14 @@ export default function EmployeeActivityPage() {
                 ) : (
                     <div>
                         <div>
-                            <div className="mb-20 inline-flex w-full border-b border-[#cfd4da]">
-                                <button
-                                    type="button"
-                                    className="btn btn-default mr-5"
-                                >
-                                    Tabela
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-default"
-                                >
-                                    Wykres
-                                </button>
-                            </div>
+                            <ul className="nav nav-tabs mb-20">
+                                <li className="active">
+                                    <a>Tabela</a>
+                                </li>
+                                <li>
+                                    <a>Wykres</a>
+                                </li>
+                            </ul>
                             <div className="versum-table-wrap">
                                 <table className="versum-table">
                                     <thead>

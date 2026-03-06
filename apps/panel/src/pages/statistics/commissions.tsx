@@ -218,7 +218,7 @@ export default function CommissionsPage() {
                     <div className="ml-auto" />
                     <button
                         type="button"
-                        className="btn btn-default mr-10 border-[#4ea4e0] text-[#2f9ae0] bg-white"
+                        className="btn btn-default btn-versum-blue mr-10"
                     >
                         pobierz raport Excel
                     </button>
@@ -263,26 +263,12 @@ export default function CommissionsPage() {
                                                             }
                                                         </Link>
                                                         <br />
-                                                        {(() => {
-                                                            const detailsBtnStyle: React.CSSProperties =
-                                                                {
-                                                                    border: '1px solid #3aa1df',
-                                                                    color: '#3aa1df',
-                                                                    background:
-                                                                        '#fff',
-                                                                };
-                                                            return (
-                                                                <Link
-                                                                    href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
-                                                                    className="btn btn-xs mt-5"
-                                                                    style={
-                                                                        detailsBtnStyle
-                                                                    }
-                                                                >
-                                                                    🧾 szczegóły
-                                                                </Link>
-                                                            );
-                                                        })()}
+                                                        <Link
+                                                            href={`/statistics/commissions/${employee.employeeId}?date=${selectedDate}`}
+                                                            className="btn btn-xs btn-versum-blue mt-5"
+                                                        >
+                                                            🧾 szczegóły
+                                                        </Link>
                                                     </td>
                                                     <td>
                                                         {formatMoney(
@@ -321,19 +307,10 @@ export default function CommissionsPage() {
                                             <tr>
                                                 <th
                                                     colSpan={7}
-                                                    className="fs-28 fw-700"
+                                                    className="statistics-payment-title"
                                                 >
                                                     Podsumowanie
                                                 </th>
-                                            </tr>
-                                            <tr>
-                                                <th></th>
-                                                <th>Obroty na usługach</th>
-                                                <th>Prowizja od usług</th>
-                                                <th>Obroty na produktach</th>
-                                                <th>Prowizja z produktów</th>
-                                                <th>Łącznie obroty brutto</th>
-                                                <th>Łącznie prowizja</th>
                                             </tr>
                                         </tbody>
                                         <tfoot>
