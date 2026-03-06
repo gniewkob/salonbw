@@ -196,19 +196,19 @@ export default function BranchesManagementPage() {
                 ) : activeTab === 'branches' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {branches?.map((branch) => {
-                            const bgStyle: React.CSSProperties = {
-                                backgroundImage: `url(${branch.coverImageUrl})`,
-                            };
                             return (
                                 <div
                                     key={branch.id}
                                     className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                                 >
                                     {branch.coverImageUrl && (
-                                        <div
-                                            className="h-32 bg-cover bg-center"
-                                            style={bgStyle}
-                                        />
+                                        <div className="h-32 overflow-hidden relative">
+                                            <img
+                                                src={branch.coverImageUrl}
+                                                alt={`Okładka salonu ${branch.name}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     )}
                                     <div className="p-4">
                                         <div className="flex items-start justify-between">
@@ -280,6 +280,7 @@ export default function BranchesManagementPage() {
                                             </button>
                                             <button
                                                 type="button"
+                                                title="Usuń salon"
                                                 onClick={() => {
                                                     void handleDelete(branch);
                                                 }}
@@ -334,6 +335,7 @@ export default function BranchesManagementPage() {
                                 Wybierz salon
                             </label>
                             <select
+                                title="Wybierz salon"
                                 value={selectedBranch?.id ?? ''}
                                 onChange={(e) => {
                                     const branch = branches?.find(
@@ -461,6 +463,8 @@ export default function BranchesManagementPage() {
                                     <input
                                         type="text"
                                         name="name"
+                                        title="Nazwa salonu"
+                                        placeholder="Nazwa salonu"
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
@@ -476,6 +480,8 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="text"
                                             name="city"
+                                            title="Miasto"
+                                            placeholder="Miasto"
                                             value={formData.city ?? ''}
                                             onChange={handleChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -488,6 +494,7 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="text"
                                             name="postalCode"
+                                            title="Kod pocztowy"
                                             value={formData.postalCode ?? ''}
                                             onChange={handleChange}
                                             placeholder="00-000"
@@ -504,6 +511,8 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="text"
                                             name="street"
+                                            title="Ulica"
+                                            placeholder="Ulica"
                                             value={formData.street ?? ''}
                                             onChange={handleChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -516,6 +525,8 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="text"
                                             name="buildingNumber"
+                                            title="Nr"
+                                            placeholder="Nr"
                                             value={
                                                 formData.buildingNumber ?? ''
                                             }
@@ -533,6 +544,8 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="tel"
                                             name="phone"
+                                            title="Telefon"
+                                            placeholder="Telefon"
                                             value={formData.phone ?? ''}
                                             onChange={handleChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -545,6 +558,8 @@ export default function BranchesManagementPage() {
                                         <input
                                             type="email"
                                             name="email"
+                                            title="Email"
+                                            placeholder="Email"
                                             value={formData.email ?? ''}
                                             onChange={handleChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -558,6 +573,8 @@ export default function BranchesManagementPage() {
                                     </label>
                                     <textarea
                                         name="description"
+                                        title="Opis"
+                                        placeholder="Opis"
                                         value={formData.description ?? ''}
                                         onChange={handleChange}
                                         rows={3}

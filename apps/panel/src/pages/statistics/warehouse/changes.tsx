@@ -100,6 +100,8 @@ export default function WarehouseChangesPage() {
                             Raport zmian magazynowych
                         </h1>
                         <select
+                            title="Zakres dat"
+                            aria-label="Wybierz zakres dat"
                             value={dateRange}
                             onChange={(e) => setDateRange(e.target.value)}
                             className="form-control"
@@ -159,14 +161,7 @@ export default function WarehouseChangesPage() {
                                 <div className="versum-widget__header">
                                     Ruchy magazynowe wg typu
                                 </div>
-                                <div
-                                    className="versum-widget__content"
-                                    style={(() => {
-                                        const chartContainerStyle: React.CSSProperties =
-                                            { height: 300 };
-                                        return chartContainerStyle;
-                                    })()}
-                                >
+                                <div className="versum-widget__content h-[300px]">
                                     <ResponsiveContainer>
                                         <BarChart data={chartData}>
                                             <CartesianGrid strokeDasharray="3 3" />
@@ -219,29 +214,23 @@ export default function WarehouseChangesPage() {
                                                     </td>
                                                     <td>{m.productName}</td>
                                                     <td>
-                                                        {(() => {
-                                                            const badgeStyle: React.CSSProperties =
-                                                                {
+                                                        <span
+                                                            className="badge"
+                                                            {...({
+                                                                style: {
                                                                     backgroundColor:
                                                                         TYPE_COLORS[
                                                                             m
                                                                                 .type
                                                                         ] ||
                                                                         '#999',
-                                                                };
-                                                            return (
-                                                                <span
-                                                                    className="badge"
-                                                                    style={
-                                                                        badgeStyle
-                                                                    }
-                                                                >
-                                                                    {TYPE_LABELS[
-                                                                        m.type
-                                                                    ] || m.type}
-                                                                </span>
-                                                            );
-                                                        })()}
+                                                                },
+                                                            } as any)}
+                                                        >
+                                                            {TYPE_LABELS[
+                                                                m.type
+                                                            ] || m.type}
+                                                        </span>
                                                     </td>
                                                     <td
                                                         className={`text-right ${

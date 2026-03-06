@@ -88,6 +88,8 @@ export default function ClientOriginsPage() {
                         </h1>
                         <div className="flex gap-8">
                             <select
+                                title="Okres statystyk"
+                                aria-label="Wybierz okres"
                                 value={dateRange}
                                 onChange={(e) => setDateRange(e.target.value)}
                                 className="form-control"

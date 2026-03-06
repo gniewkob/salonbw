@@ -98,6 +98,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
                         <span>załączone pliki</span>
                         <div className="flex-between gap-8">
                             <select
+                                title="Kategoria plików"
+                                aria-label="Kategoria plików do dodania"
                                 className="form-control input-sm"
                                 value={uploadCategory}
                                 onChange={(e) =>
@@ -174,26 +176,16 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                 <table className="versum-table fz-13">
                                     <thead>
                                         <tr>
-                                            {(() => {
-                                                const w40Style: React.CSSProperties =
-                                                    { width: 40 };
-                                                const w80Style: React.CSSProperties =
-                                                    { width: 80 };
-                                                return (
-                                                    <>
-                                                        <th
-                                                            style={w40Style}
-                                                        ></th>
-                                                        <th>Nazwa pliku</th>
-                                                        <th>Kategoria</th>
-                                                        <th>Rozmiar</th>
-                                                        <th>Data dodania</th>
-                                                        <th style={w80Style}>
-                                                            Opcje
-                                                        </th>
-                                                    </>
-                                                );
-                                            })()}
+                                            <>
+                                                <th className="w-[40px]"></th>
+                                                <th>Nazwa pliku</th>
+                                                <th>Kategoria</th>
+                                                <th>Rozmiar</th>
+                                                <th>Data dodania</th>
+                                                <th className="w-[80px]">
+                                                    Opcje
+                                                </th>
+                                            </>
                                         </tr>
                                     </thead>
                                     <tbody>

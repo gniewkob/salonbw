@@ -103,9 +103,6 @@ export default function CalendarSidebar({
                 </div>
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                     {employees.map((emp) => {
-                        const colorStyle: React.CSSProperties = {
-                            backgroundColor: emp.color || '#ccc',
-                        };
                         return (
                             <label
                                 key={emp.id}
@@ -122,7 +119,12 @@ export default function CalendarSidebar({
                                 <div className="flex items-center gap-2">
                                     <div
                                         className="w-3 h-3 rounded-full"
-                                        style={colorStyle}
+                                        {...({
+                                            style: {
+                                                backgroundColor:
+                                                    emp.color || '#ccc',
+                                            },
+                                        } as any)}
                                     />
                                     <span className="text-gray-700">
                                         {emp.name}

@@ -331,6 +331,8 @@ export default function GiftCardsManagementPage() {
                                 Status
                             </label>
                             <select
+                                title="Status karty"
+                                aria-label="Filtruj po statusie"
                                 value={statusFilter}
                                 onChange={(e) =>
                                     setStatusFilter(

@@ -98,6 +98,8 @@ export default function WorkTimeReportPage() {
                             Raport czasu pracy
                         </h1>
                         <select
+                            title="Okres statystyk"
+                            aria-label="Wybierz okres"
                             value={dateRange}
                             onChange={(e) => setDateRange(e.target.value)}
                             className="form-control"
@@ -177,27 +179,17 @@ export default function WorkTimeReportPage() {
                                                 </thead>
                                                 <tbody>
                                                     {data.map((emp) => {
-                                                        const rowStyle: React.CSSProperties =
-                                                            {
-                                                                cursor: 'pointer',
-                                                            };
                                                         return (
                                                             <tr
                                                                 key={
                                                                     emp.employeeId
                                                                 }
-                                                                className={
-                                                                    selectedEmployee ===
-                                                                    emp.employeeId
-                                                                        ? 'active'
-                                                                        : ''
-                                                                }
+                                                                className={`cursor-pointer ${selectedEmployee === emp.employeeId ? 'active' : ''}`}
                                                                 onClick={() =>
                                                                     setSelectedEmployee(
                                                                         emp.employeeId,
                                                                     )
                                                                 }
-                                                                style={rowStyle}
                                                             >
                                                                 <td>
                                                                     {
@@ -284,14 +276,7 @@ export default function WorkTimeReportPage() {
                                                 <div className="versum-widget__header">
                                                     Godziny pracy dzień po dniu
                                                 </div>
-                                                <div
-                                                    className="versum-widget__content"
-                                                    style={(() => {
-                                                        const chartContainerStyle: React.CSSProperties =
-                                                            { height: 300 };
-                                                        return chartContainerStyle;
-                                                    })()}
-                                                >
+                                                <div className="versum-widget__content h-[300px]">
                                                     <ResponsiveContainer>
                                                         <BarChart
                                                             data={chartData}

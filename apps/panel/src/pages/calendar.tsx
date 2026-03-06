@@ -7,25 +7,6 @@ import { useEffect, useRef, useState } from 'react';
  * `/api/calendar-embed` (which injects runtime config and keeps script loading
  * isolated from Next.js hydration).
  */
-const containerStyle: React.CSSProperties = {
-    padding: 24,
-    fontFamily: 'system-ui, sans-serif',
-};
-const titleStyle: React.CSSProperties = { fontSize: 18, margin: 0 };
-const errorTextStyle: React.CSSProperties = {
-    marginTop: 12,
-    marginBottom: 0,
-    opacity: 0.8,
-};
-const actionsStyle: React.CSSProperties = { marginTop: 12, marginBottom: 0 };
-const buttonStyle: React.CSSProperties = {
-    appearance: 'none',
-    border: '1px solid #ddd',
-    padding: '6px 10px',
-    borderRadius: 6,
-    background: '#fff',
-    cursor: 'pointer',
-};
 
 export default function CalendarPage() {
     const didReplaceDocumentRef = useRef(false);
@@ -67,14 +48,14 @@ export default function CalendarPage() {
 
     if (error) {
         return (
-            <main style={containerStyle}>
-                <h1 style={titleStyle}>Calendar unavailable</h1>
-                <p style={errorTextStyle}>{error}</p>
-                <p style={actionsStyle}>
+            <main className="p-6 font-sans">
+                <h1 className="text-[18px] m-0">Calendar unavailable</h1>
+                <p className="mt-3 mb-0 opacity-80">{error}</p>
+                <p className="mt-3 mb-0">
                     <button
                         type="button"
                         onClick={() => window.location.reload()}
-                        style={buttonStyle}
+                        className="appearance-none border border-gray-300 px-[10px] py-1.5 rounded-md bg-white cursor-pointer"
                     >
                         Reload
                     </button>
@@ -83,5 +64,5 @@ export default function CalendarPage() {
         );
     }
 
-    return <main style={containerStyle}>Loading calendar...</main>;
+    return <main className="p-6 font-sans">Loading calendar...</main>;
 }

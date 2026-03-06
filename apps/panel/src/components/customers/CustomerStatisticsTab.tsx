@@ -84,6 +84,8 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     <span className="customer-stats-period__label">okres</span>
                     <input
                         type="date"
+                        title="Data początkowa"
+                        aria-label="Od"
                         className="form-control input-sm"
                         value={from}
                         onChange={(e) => setFrom(e.target.value)}
@@ -91,6 +93,8 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     <span className="customer-stats-period__sep">-</span>
                     <input
                         type="date"
+                        title="Data końcowa"
+                        aria-label="Do"
                         className="form-control input-sm"
                         value={to}
                         onChange={(e) => setTo(e.target.value)}
@@ -172,26 +176,20 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     </div>
                 </div>
                 <div className="customer-stats-share__bar">
-                    {(() => {
-                        const servicesStyle: React.CSSProperties = {
-                            width: `${servicesShare}%`,
-                        };
-                        const productsStyle: React.CSSProperties = {
-                            width: `${productsShare}%`,
-                        };
-                        return (
-                            <>
-                                <div
-                                    className="customer-stats-share__bar-services"
-                                    style={servicesStyle}
-                                />
-                                <div
-                                    className="customer-stats-share__bar-products"
-                                    style={productsStyle}
-                                />
-                            </>
-                        );
-                    })()}
+                    <>
+                        <div
+                            className="customer-stats-share__bar-services"
+                            {...({
+                                style: { width: `${servicesShare}%` },
+                            } as any)}
+                        />
+                        <div
+                            className="customer-stats-share__bar-products"
+                            {...({
+                                style: { width: `${productsShare}%` },
+                            } as any)}
+                        />
+                    </>
                 </div>
                 <div className="customer-stats-share__foot">
                     <span>{servicesShare}% udziałów</span>
@@ -227,18 +225,14 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                             title={`${p.month}: ${formatCurrency(p.spent)} (${p.count} wizyt)`}
                                         >
                                             <div className="customer-bar-chart__barwrap">
-                                                {(() => {
-                                                    const barStyle: React.CSSProperties =
-                                                        {
+                                                <div
+                                                    className="customer-bar-chart__bar"
+                                                    {...({
+                                                        style: {
                                                             height: `${Math.max(2, h)}%`,
-                                                        };
-                                                    return (
-                                                        <div
-                                                            className="customer-bar-chart__bar"
-                                                            style={barStyle}
-                                                        />
-                                                    );
-                                                })()}
+                                                        },
+                                                    } as any)}
+                                                />
                                             </div>
                                             <div className="customer-bar-chart__label">
                                                 {label}

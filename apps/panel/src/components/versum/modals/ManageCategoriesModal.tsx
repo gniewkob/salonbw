@@ -241,7 +241,7 @@ function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
                             </button>
                         </form>
 
-                        <hr style={HR_STYLE} />
+                        <hr className="my-[14px] border-[#eef1f4]" />
 
                         {isLoading ? (
                             <p className="text-muted">Ładowanie kategorii...</p>
@@ -325,7 +325,7 @@ function CategoryEditorRow({
     const actionsStyle: React.CSSProperties = { display: 'flex', gap: 8 };
 
     return (
-        <div style={rowStyle}>
+        <div className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]">
             <div className="form-group">
                 <label
                     className="control-label"
@@ -375,7 +375,7 @@ function CategoryEditorRow({
                         ))}
                 </select>
             </div>
-            <div style={gridStyle}>
+            <div className="grid grid-cols-2 gap-2">
                 <div className="form-group">
                     <label
                         className="control-label"
@@ -422,7 +422,7 @@ function CategoryEditorRow({
                 </div>
             </div>
 
-            <div style={actionsStyle}>
+            <div className="flex gap-2">
                 <button
                     type="button"
                     className="btn btn-default btn-xs"
