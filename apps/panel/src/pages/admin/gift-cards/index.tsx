@@ -391,159 +391,165 @@ export default function GiftCardsManagementPage() {
                                         width: `${(card.currentBalance / card.initialValue) * 100}%`,
                                     };
                                     return (
-                                    <tr
-                                        key={card.id}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleOpenDetailsModal(card)
-                                                }
-                                                className="font-mono text-sm text-primary-600 hover:text-primary-700 font-medium"
-                                            >
-                                                {card.code}
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm">
-                                                <span className="font-medium">
-                                                    {formatCurrency(
-                                                        card.currentBalance,
-                                                        card.currency,
-                                                    )}
-                                                </span>
-                                                <span className="text-gray-400">
-                                                    {' '}
-                                                    /{' '}
-                                                    {formatCurrency(
-                                                        card.initialValue,
-                                                        card.currency,
-                                                    )}
-                                                </span>
-                                            </div>
-                                            {card.currentBalance <
-                                                card.initialValue && (
-                                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                                    <div
-                                                        className="bg-primary-600 h-1.5 rounded-full"
-                                                        style={progressStyle}
-                                                    />
+                                        <tr
+                                            key={card.id}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleOpenDetailsModal(
+                                                            card,
+                                                        )
+                                                    }
+                                                    className="font-mono text-sm text-primary-600 hover:text-primary-700 font-medium"
+                                                >
+                                                    {card.code}
+                                                </button>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm">
+                                                    <span className="font-medium">
+                                                        {formatCurrency(
+                                                            card.currentBalance,
+                                                            card.currency,
+                                                        )}
+                                                    </span>
+                                                    <span className="text-gray-400">
+                                                        {' '}
+                                                        /{' '}
+                                                        {formatCurrency(
+                                                            card.initialValue,
+                                                            card.currency,
+                                                        )}
+                                                    </span>
                                                 </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[card.status]}`}
-                                            >
-                                                {STATUS_LABELS[card.status]}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                            {card.recipientName ||
-                                                card.recipient?.name ||
-                                                '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                            {format(
-                                                new Date(card.validUntil),
-                                                'd MMM yyyy',
-                                                { locale: pl },
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end gap-2">
-                                                {card.status === 'active' && (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleOpenEditModal(
-                                                                    card,
-                                                                )
-                                                            }
-                                                            className="text-gray-600 hover:text-gray-900"
-                                                            title="Edytuj"
-                                                        >
-                                                            <svg
-                                                                className="w-5 h-5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                        2
-                                                                    }
-                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                        {user.role ===
-                                                            'admin' && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleOpenAdjustModal(
-                                                                        card,
-                                                                    )
-                                                                }
-                                                                className="text-blue-600 hover:text-blue-900"
-                                                                title="Korekta salda"
-                                                            >
-                                                                <svg
-                                                                    className="w-5 h-5"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={
-                                                                            2
-                                                                        }
-                                                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-                                                        {user.role ===
-                                                            'admin' && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    void handleCancel(
-                                                                        card,
-                                                                    )
-                                                                }
-                                                                className="text-red-600 hover:text-red-900"
-                                                                title="Anuluj"
-                                                            >
-                                                                <svg
-                                                                    className="w-5 h-5"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={
-                                                                            2
-                                                                        }
-                                                                        d="M6 18L18 6M6 6l12 12"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-                                                    </>
+                                                {card.currentBalance <
+                                                    card.initialValue && (
+                                                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                                        <div
+                                                            className="bg-primary-600 h-1.5 rounded-full"
+                                                            {...({
+                                                                style: progressStyle,
+                                                            } as any)}
+                                                        />
+                                                    </div>
                                                 )}
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[card.status]}`}
+                                                >
+                                                    {STATUS_LABELS[card.status]}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                {card.recipientName ||
+                                                    card.recipient?.name ||
+                                                    '-'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                {format(
+                                                    new Date(card.validUntil),
+                                                    'd MMM yyyy',
+                                                    { locale: pl },
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex justify-end gap-2">
+                                                    {card.status ===
+                                                        'active' && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleOpenEditModal(
+                                                                        card,
+                                                                    )
+                                                                }
+                                                                className="text-gray-600 hover:text-gray-900"
+                                                                title="Edytuj"
+                                                            >
+                                                                <svg
+                                                                    className="w-5 h-5"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                            {user.role ===
+                                                                'admin' && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        handleOpenAdjustModal(
+                                                                            card,
+                                                                        )
+                                                                    }
+                                                                    className="text-blue-600 hover:text-blue-900"
+                                                                    title="Korekta salda"
+                                                                >
+                                                                    <svg
+                                                                        className="w-5 h-5"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth={
+                                                                                2
+                                                                            }
+                                                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                            {user.role ===
+                                                                'admin' && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        void handleCancel(
+                                                                            card,
+                                                                        )
+                                                                    }
+                                                                    className="text-red-600 hover:text-red-900"
+                                                                    title="Anuluj"
+                                                                >
+                                                                    <svg
+                                                                        className="w-5 h-5"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth={
+                                                                                2
+                                                                            }
+                                                                            d="M6 18L18 6M6 6l12 12"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
                                     );
                                 })}
                             </tbody>
