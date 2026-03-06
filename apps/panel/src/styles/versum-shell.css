@@ -3169,3 +3169,43 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Extension / Dodatki --- */
+.versum-extension-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 15px;
+}
+
+.versum-extension-card {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    padding: 15px;
+}
+
+.versum-extension-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3f4852;
+    margin: 0 0 8px 0;
+}
+
+.versum-extension-card p {
+    font-size: 12px;
+    color: #59626b;
+    margin: 0 0 6px 0;
+}
+
+.versum-extension-card__status {
+    font-size: 11px;
+    color: #8a939b;
+    margin-top: 10px;
+}
+
+.versum-text-success {
+    color: #4cae4c;
+}
+
+.versum-text-muted {
+    color: #8a939b;
+}
