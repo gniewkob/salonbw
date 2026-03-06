@@ -3112,6 +3112,10 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     color: #3f4852;
 }
 
+.service-employees-variant-col {
+    width: 300px;
+}
+
 .service-assignment-row {
     display: flex;
     align-items: center;

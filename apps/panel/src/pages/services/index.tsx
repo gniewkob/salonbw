@@ -253,9 +253,7 @@ function ServicesPageContent({ role }: { role: Role }) {
             </div>
 
             {isLoading ? (
-                <div className="p-4 text-sm versum-muted">
-                    Ładowanie usług...
-                </div>
+                <div className="versum-muted p-20">Ładowanie usług...</div>
             ) : (
                 <>
                     <div className="versum-table-wrap">
@@ -325,7 +323,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                     <tr>
                                         <td
                                             colSpan={7}
-                                            className="p-4 text-center text-gray-500"
+                                            className="versum-muted p-20 text-center"
                                         >
                                             Brak usług spełniających kryteria
                                         </td>
@@ -341,10 +339,10 @@ function ServicesPageContent({ role }: { role: Role }) {
                             {Math.min(currentPage * itemsPerPage, totalItems)} z{' '}
                             {totalItems}
                         </span>
-                        <span className="mx-2">|</span>
+                        <span className="ml-10 mr-10">|</span>
                         <span>na stronie</span>
                         <select
-                            className="form-control versum-select-sm mx-2"
+                            className="form-control versum-select-sm ml-10"
                             aria-label="Liczba elementów na stronie"
                             value={itemsPerPage}
                             onChange={(e) => {
