@@ -2777,6 +2777,27 @@ body.e2e-statistics .main-content .inner {
     vertical-align: middle;
 }
 
+.btn-versum-blue {
+    border-color: #3aa1df;
+    color: #3aa1df;
+    background: #fff;
+}
+
+.statistics-employee-box {
+    border: 1px solid #d9dee2;
+    padding: 10px;
+    display: inline-block;
+    max-width: 440px;
+    width: 100%;
+}
+
+.statistics-employee-pie {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
 @media (max-width: 1100px) {
     .statistics-summary-row {
         flex-direction: column;
