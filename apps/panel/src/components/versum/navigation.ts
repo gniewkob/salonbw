@@ -91,7 +91,7 @@ export const VERSUM_MODULES: VersumModule[] = [
         label: 'dodatki',
         iconId: 'svg-extensions-nav',
         permission: 'nav:extension',
-        secondaryNav: false,
+        secondaryNav: true,
         pinBottom: true,
     },
 ];
