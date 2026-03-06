@@ -312,6 +312,15 @@ export default function CommissionsPage() {
                                                     Podsumowanie
                                                 </th>
                                             </tr>
+                                            <tr>
+                                                <th aria-label="Pracownik"></th>
+                                                <th>Obroty na usługach</th>
+                                                <th>Prowizja od usług</th>
+                                                <th>Obroty na produktach</th>
+                                                <th>Prowizja z produktów</th>
+                                                <th>Łącznie obroty brutto</th>
+                                                <th>Łącznie prowizja</th>
+                                            </tr>
                                         </tbody>
                                         <tfoot>
                                             <tr>

@@ -192,10 +192,15 @@ export default function EmployeeActivityPage() {
                                         <tr>
                                             <th
                                                 colSpan={3}
-                                                className="fs-28 fw-700"
+                                                className="statistics-payment-title"
                                             >
                                                 Podsumowanie
                                             </th>
+                                        </tr>
+                                        <tr>
+                                            <th aria-label="Pracownik"></th>
+                                            <th>Przepracowany czas</th>
+                                            <th>Liczba wizyt</th>
                                         </tr>
                                     </tbody>
                                     <tfoot>
