@@ -4,3 +4,4 @@ export { default as EmployeeRanking } from './EmployeeRanking';
 export { default as ServiceRanking } from './ServiceRanking';
 export { default as DateRangeSelector } from './DateRangeSelector';
 export { default as CashRegister } from './CashRegister';
+export { default as StatisticsPieChart } from './StatisticsPieChart';
