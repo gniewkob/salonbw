@@ -6,12 +6,15 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
+import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
 
 const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -1, name: 'Recepcja' },
     { id: -2, name: 'Gniewko Bodora' },
     { id: -3, name: 'Aleksandra Bodora' },
 ];
+
+const EMPLOYEE_COLORS = ['#88ca2a', '#169ddd', '#d95431'];
 
 const toNumber = (value: unknown): number => {
     if (typeof value === 'number') {
@@ -145,10 +148,10 @@ function StatisticsPageContent() {
     }, [employeeRows]);
 
     const paymentRows = useMemo(() => {
-        const totals = registerSummary?.totals;
+        const totalsData = registerSummary?.totals;
         const candidates = [
-            { key: 'cash', label: 'gotówka', color: '#86c92a' },
-            { key: 'card', label: 'karta kredytowa', color: '#2b9ad0' },
+            { key: 'cash', label: 'gotówka', color: '#88ca2a' },
+            { key: 'card', label: 'karta kredytowa', color: '#169ddd' },
             { key: 'transfer', label: 'przelew', color: '#f0ad4e' },
             { key: 'online', label: 'online', color: '#8e44ad' },
             { key: 'voucher', label: 'voucher', color: '#7f8c8d' },
@@ -157,17 +160,19 @@ function StatisticsPageContent() {
         const rows = candidates
             .map((item) => ({
                 ...item,
-                amount: toNumber(totals?.[item.key]),
+                amount: toNumber(totalsData?.[item.key]),
             }))
             .filter((item) => item.amount > 0);
 
         if (!rows.length) {
             return [
                 {
-                    key: 'cash',
+                    key: 'cash' as const,
                     label: 'gotówka',
-                    color: '#86c92a',
-                    amount: toNumber(totals?.total) || toNumber(totals?.cash),
+                    color: '#88ca2a',
+                    amount:
+                        toNumber(totalsData?.total) ||
+                        toNumber(totalsData?.cash),
                 },
             ];
         }
@@ -178,19 +183,19 @@ function StatisticsPageContent() {
         return paymentRows.reduce((acc, item) => acc + item.amount, 0);
     }, [paymentRows]);
 
-    const paymentPieBackground = useMemo(() => {
-        if (paymentTotal <= 0) {
-            return '#86c92a';
-        }
-        let current = 0;
-        const segments = paymentRows.map((item) => {
-            const start = current;
-            const share = (item.amount / paymentTotal) * 100;
-            current += share;
-            return `${item.color} ${start.toFixed(3)}% ${current.toFixed(3)}%`;
-        });
-        return `conic-gradient(${segments.join(', ')})`;
-    }, [paymentRows, paymentTotal]);
+    const employeeChartData = useMemo(() => {
+        return employeeRows.slice(0, 3).map((emp, i) => ({
+            label: emp.employeeName,
+            value: toNumber(emp.revenue),
+            color: EMPLOYEE_COLORS[i] ?? '#ccc',
+            percent:
+                totals.totalRevenue > 0
+                    ? Math.round(
+                          (toNumber(emp.revenue) / totals.totalRevenue) * 100,
+                      )
+                    : 0,
+        }));
+    }, [employeeRows, totals.totalRevenue]);
 
     const formatMoney = (value: unknown): string =>
         toNumber(value).toFixed(2).replace('.', ',') + ' zł';
@@ -287,14 +292,20 @@ function StatisticsPageContent() {
                 <li>Raport finansowy</li>
             </ul>
 
-            <div className="versum-page__toolbar">
-                <div className="btn-group mr-10" role="group">
-                    <button type="button" className="btn btn-default" disabled>
-                        ◀
-                    </button>
+            {/* Toolbar — matches Versum .actions structure */}
+            <div className="statistics-actions">
+                <div className="statistics-date-wrap">
+                    <a
+                        className="statistics-nav-btn"
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                        aria-label="Poprzedni dzień"
+                    >
+                        <span className="statistics-arrow">&#8249;</span>
+                    </a>
                     <input
                         id="report-date"
-                        className="form-control statistics-date-input"
+                        className="statistics-date-input"
                         type="text"
                         readOnly
                         value={reportDate}
@@ -302,10 +313,13 @@ function StatisticsPageContent() {
                     />
                     <label
                         htmlFor="report-date-picker"
-                        className="btn btn-default statistics-date-picker-btn"
+                        className="statistics-nav-btn statistics-cal-btn"
                         aria-label="Wybierz datę"
                     >
-                        📅
+                        <span
+                            className="statistics-cal-icon"
+                            aria-hidden="true"
+                        />
                         <input
                             id="report-date-picker"
                             type="date"
@@ -314,162 +328,155 @@ function StatisticsPageContent() {
                             onChange={(e) => setReportDate(e.target.value)}
                         />
                     </label>
-                    <button type="button" className="btn btn-default" disabled>
-                        ▶
-                    </button>
+                    <a
+                        className="statistics-nav-btn"
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                        aria-label="Następny dzień"
+                    >
+                        <span className="statistics-arrow">&#8250;</span>
+                    </a>
                 </div>
-                <div className="ml-auto" />
                 <button
                     type="button"
-                    className="btn btn-default btn-versum-blue mr-10"
+                    className="btn btn-default btn-versum-blue statistics-excel-btn"
                     onClick={downloadCsvReport}
                     disabled={dashboardLoading || rankingLoading}
                 >
+                    <span
+                        className="statistics-icon-excel"
+                        aria-hidden="true"
+                    />
                     pobierz raport Excel
                 </button>
                 <button
                     type="button"
-                    className="btn btn-default btn-xs"
+                    className="btn btn-default statistics-print-btn"
+                    onClick={() => window.print()}
                     aria-label="Drukuj"
                 >
-                    🖨
+                    <span
+                        className="statistics-icon-print"
+                        aria-hidden="true"
+                    />
                 </button>
             </div>
 
             {dashboardLoading ? (
                 <div className="versum-muted p-20">Ładowanie raportu...</div>
             ) : (
-                <div>
-                    <h2 className="statistics-dashboard-title">Salon ogółem</h2>
-                    <div className="mb-10 fs-12">
-                        Liczba sfinalizowanych wizyt: {totals.totalVisits}
-                    </div>
-                    <div className="mb-20 fs-12">
+                <div className="statistics-description">
+                    <h2>Salon ogółem</h2>
+                    <p>
+                        Liczba sfinalizowanych wizyt:{' '}
+                        <strong>{totals.totalVisits}</strong>
+                        <br />
                         Łączny czas trwania sfinalizowanych wizyt:{' '}
-                        {formatDuration(totalWorkMinutes)}
-                    </div>
+                        <strong>{formatDuration(totalWorkMinutes)}</strong>
+                    </p>
+                    <br />
 
-                    <div className="statistics-summary-row mb-20">
-                        <div className="statistics-summary-row__left">
-                            <div className="versum-table-wrap">
-                                <table className="versum-table fs-12">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>netto</th>
-                                            <th>brutto</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Sprzedaż usług</td>
-                                            <td>0,00 zł</td>
-                                            <td>
-                                                {formatMoney(totals.dayRevenue)}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Sprzedaż towarów</td>
-                                            <td>0,00 zł</td>
-                                            <td>0,00 zł</td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan={3}>
-                                                Utarg ze sprzedaży usług i
-                                                towarów brutto:{' '}
-                                                {formatMoney(totals.dayRevenue)}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Napiwki</td>
-                                            <td></td>
-                                            <td>{formatMoney(0)}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="mt-10 fs-12">
-                                <div>
-                                    Saldo gotówki w kasie:{' '}
+                    {/* Bootstrap-style float grid — col-lg-5 + col-lg-7 */}
+                    <div className="statistics-row">
+                        <div className="statistics-col-5">
+                            <div className="statistics-price-summary">
+                                <div className="statistics-data-table">
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td className="statistics-td-empty" />
+                                                <th>netto</th>
+                                                <th>brutto</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Sprzedaż usług</th>
+                                                <td>0,00&nbsp;zł</td>
+                                                <td>
+                                                    {formatMoney(
+                                                        totals.dayRevenue,
+                                                    )}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Sprzedaż towarów</th>
+                                                <td>0,00&nbsp;zł</td>
+                                                <td>0,00&nbsp;zł</td>
+                                            </tr>
+                                            <tr>
+                                                <td
+                                                    className="statistics-td-summary"
+                                                    colSpan={3}
+                                                >
+                                                    Utarg ze sprzedaży usług i
+                                                    towarów brutto:{' '}
+                                                    <strong>
+                                                        {formatMoney(
+                                                            totals.dayRevenue,
+                                                        )}
+                                                        <br />
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Napiwki</th>
+                                                <td className="statistics-td-no-right" />
+                                                <td className="statistics-td-no-left">
+                                                    0,00&nbsp;zł
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <br />
+                                Saldo gotówki w kasie:{' '}
+                                <strong>
                                     {formatMoney(
                                         toNumber(registerSummary?.totals?.cash),
                                     )}
-                                </div>
-                                <div>Wpływy: {formatMoney(paymentTotal)}</div>
-                                <div>Wydatki: {formatMoney(0)}</div>
+                                </strong>
+                                <br />
+                                Wpływy: {formatMoney(paymentTotal)}
+                                <br />
+                                Wydatki: {formatMoney(0)}
+                                <br />
+                                <br />
+                                Metody płatności niewliczone do utargu{' '}
+                                <small>brutto</small>:{' '}
+                                <strong>0,00&nbsp;zł</strong>
+                                <br />
+                                Sprzedaż usług <small>brutto</small>: 0,00&nbsp;
+                                zł
+                                <br />
+                                Sprzedaż towarów <small>brutto</small>: 0,00
+                                &nbsp;zł
+                                <br />
                             </div>
                         </div>
-                        <div className="statistics-summary-row__right">
-                            <div className="statistics-payment-title fs-20 fw-600">
-                                Udział metod płatności w utargu{' '}
-                                <span
-                                    className="statistics-info-icon"
-                                    title="Informacja o metodach płatności"
-                                    aria-label="Informacja"
-                                >
-                                    ℹ
-                                </span>
-                            </div>
-                            <div className="statistics-payment-box mt-10">
-                                <div className="statistics-payment-row">
-                                    <div
-                                        aria-hidden
-                                        className="statistics-payment-pie"
-                                        {...{
-                                            style: {
-                                                background:
-                                                    paymentPieBackground,
-                                            },
-                                        }}
+                        <div className="statistics-col-7">
+                            <div className="statistics-chart-wrap">
+                                <div className="statistics-chart-title">
+                                    Udział metod płatności w utargu
+                                    <span
+                                        className="statistics-info-tip"
+                                        title="Wykres nie uwzględnia kwot zwrotów"
+                                        aria-label="Informacja"
                                     />
-                                    <div className="fs-12">
-                                        {paymentRows.map((item) => {
-                                            const percent =
-                                                paymentTotal > 0
-                                                    ? (
-                                                          (item.amount /
-                                                              paymentTotal) *
-                                                          100
-                                                      ).toFixed(1)
-                                                    : '0,0';
-                                            return (
-                                                <div key={item.key}>
-                                                    <span
-                                                        className="statistics-payment-dot"
-                                                        {...{
-                                                            style: {
-                                                                background:
-                                                                    item.color,
-                                                                borderColor:
-                                                                    item.color,
-                                                            },
-                                                        }}
-                                                    />
-                                                    {item.label}:{' '}
-                                                    {formatMoney(item.amount)} (
-                                                    {percent}%)
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
                                 </div>
+                                <StatisticsPieChart
+                                    width={500}
+                                    height={300}
+                                    data={paymentRows.map((r) => ({
+                                        label: `${r.label}: ${formatMoney(r.amount)} (${paymentTotal > 0 ? ((r.amount / paymentTotal) * 100).toFixed(1) : '0,0'}%)`,
+                                        value: r.amount,
+                                        color: r.color,
+                                    }))}
+                                />
                             </div>
                         </div>
                     </div>
+                    <br className="statistics-clearfix" />
 
-                    <div className="mt-10 fs-12">
-                        Metody płatności niewliczone do utargu brutto:{' '}
-                        <strong>0,00 zł</strong>
-                    </div>
-                    <div className="mb-20 fs-12">
-                        Sprzedaż usług brutto: 0,00 zł
-                        <br />
-                        Sprzedaż towarów brutto: 0,00 zł
-                    </div>
-
-                    <div className="statistics-dashboard-section-title">
-                        Dane w podziale na pracowników
-                    </div>
+                    <h2>Dane w podziale na pracowników</h2>
                     {rankingLoading ? (
                         <div className="versum-muted p-20">
                             Ładowanie pracowników...
@@ -479,25 +486,41 @@ function StatisticsPageContent() {
                             Nie udało się pobrać danych pracowników.
                         </div>
                     ) : (
-                        <div className="versum-table-wrap">
-                            <table className="versum-table fs-12">
-                                <thead>
+                        <div className="statistics-employee-table-wrap">
+                            <table className="statistics-table-bordered">
+                                <tbody>
                                     <tr>
                                         <th>Pracownik</th>
                                         <th>Wizyty</th>
-                                        <th>Łączny czas wizyty</th>
-                                        <th>Sprzedaż usług brutto</th>
-                                        <th>Sprzedaż usług netto</th>
-                                        <th>Sprzedaż towarów brutto</th>
-                                        <th>Sprzedaż towarów netto</th>
-                                        <th>Utarg brutto</th>
+                                        <th>Łączny czas wizyt</th>
+                                        <th>
+                                            Sprzedaż usług <small>brutto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż usług <small>netto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż towarów{' '}
+                                            <small>brutto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż towarów{' '}
+                                            <small>netto</small>
+                                        </th>
+                                        <th>
+                                            Utarg <small>brutto</small>
+                                        </th>
                                         <th>Procent</th>
-                                        <th>Napiwki</th>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {employeeRows.map((employee) => (
-                                        <tr key={employee.employeeId}>
+                                    {employeeRows.map((employee, i) => (
+                                        <tr
+                                            key={employee.employeeId}
+                                            className={
+                                                i % 2 === 0
+                                                    ? 'statistics-row-even'
+                                                    : 'statistics-row-odd'
+                                            }
+                                        >
                                             <td>{employee.employeeName}</td>
                                             <td>
                                                 {employee.completedAppointments}
@@ -515,108 +538,107 @@ function StatisticsPageContent() {
                                             <td>
                                                 {toNumber(
                                                     employee.revenue,
-                                                ).toFixed(2)}{' '}
-                                                zł
+                                                ).toFixed(2)}
+                                                &nbsp;zł
                                             </td>
                                             <td>
                                                 {(
                                                     toNumber(employee.revenue) *
                                                     0.77
-                                                ).toFixed(2)}{' '}
-                                                zł
+                                                ).toFixed(2)}
+                                                &nbsp;zł
                                             </td>
-                                            <td>0,00 zł</td>
-                                            <td>0,00 zł</td>
+                                            <td>0,00&nbsp;zł</td>
+                                            <td>0,00&nbsp;zł</td>
                                             <td>
                                                 {toNumber(
                                                     employee.revenue,
-                                                ).toFixed(2)}{' '}
-                                                zł
+                                                ).toFixed(2)}
+                                                &nbsp;zł
                                             </td>
                                             <td>
                                                 {totals.totalRevenue > 0
                                                     ? `${((toNumber(employee.revenue) / toNumber(totals.totalRevenue)) * 100).toFixed(0)}%`
                                                     : '0%'}
                                             </td>
-                                            <td>
-                                                {toNumber(
-                                                    employee.tips,
-                                                ).toFixed(2)}{' '}
-                                                zł
-                                            </td>
                                         </tr>
                                     ))}
-                                </tbody>
-                                <tfoot>
                                     <tr>
-                                        <th>Łącznie</th>
-                                        <th>{totals.totalVisits}</th>
+                                        <td
+                                            colSpan={9}
+                                            className="statistics-summary-header"
+                                        >
+                                            <strong>Podsumowanie</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th />
+                                        <th>Wizyty</th>
+                                        <th>Łączny czas wizyt</th>
                                         <th>
+                                            Sprzedaż usług <small>brutto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż usług <small>netto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż towarów{' '}
+                                            <small>brutto</small>
+                                        </th>
+                                        <th>
+                                            Sprzedaż towarów{' '}
+                                            <small>netto</small>
+                                        </th>
+                                        <th>
+                                            Utarg <small>brutto</small>
+                                        </th>
+                                        <th>Procent</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Łącznie</strong>
+                                        </td>
+                                        <td>{totals.totalVisits}</td>
+                                        <td>
                                             {formatDuration(totalWorkMinutes)}
-                                        </th>
-                                        <th>
+                                        </td>
+                                        <td>
                                             {formatMoney(totals.totalRevenue)}
-                                        </th>
-                                        <th>
+                                        </td>
+                                        <td>
                                             {formatMoney(
                                                 totals.totalRevenue * 0.77,
                                             )}
-                                        </th>
-                                        <th>0,00 zł</th>
-                                        <th>0,00 zł</th>
-                                        <th>
+                                        </td>
+                                        <td>0,00&nbsp;zł</td>
+                                        <td>0,00&nbsp;zł</td>
+                                        <td>
                                             {formatMoney(totals.totalRevenue)}
-                                        </th>
-                                        <th>100%</th>
-                                        <th>{formatMoney(0)}</th>
+                                        </td>
+                                        <td>100%</td>
                                     </tr>
-                                </tfoot>
+                                </tbody>
                             </table>
                         </div>
                     )}
 
-                    <div className="mt-20 mb-10 fs-12">
-                        <strong>Udział pracowników w utargu</strong>
-                    </div>
-                    <div className="statistics-employee-box">
-                        <div className="statistics-payment-row">
-                            <div
-                                aria-hidden
-                                className="statistics-employee-pie"
-                                {...{
-                                    style: {
-                                        background:
-                                            'conic-gradient(#2a9fd6 0 33%, #e0552f 33% 66%, #86c92a 66% 100%)',
-                                    },
-                                }}
-                            />
-                            <div className="fs-12">
-                                {employeeRows.slice(0, 3).map((employee) => (
-                                    <div key={employee.employeeId}>
-                                        <span
-                                            className="statistics-payment-dot"
-                                            {...{
-                                                style: {
-                                                    background:
-                                                        employee.employeeId ===
-                                                        employeeRows[0]
-                                                            ?.employeeId
-                                                            ? '#86c92a'
-                                                            : employee.employeeId ===
-                                                                employeeRows[1]
-                                                                    ?.employeeId
-                                                              ? '#2a9fd6'
-                                                              : '#e0552f',
-                                                },
-                                            }}
-                                        />
-                                        {employee.employeeName} (0%)
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="statistics-employee-chart-wrap">
+                        <p className="statistics-chart-label">
+                            Udział pracowników w utargu
+                        </p>
+                        <StatisticsPieChart
+                            width={550}
+                            height={320}
+                            data={employeeChartData.map((e) => ({
+                                label: `${e.label} (${e.percent}%)`,
+                                value: e.value,
+                                color: e.color,
+                            }))}
+                        />
+                        <div className="statistics-wybrana">
+                            Wybrana wartość:
                         </div>
                     </div>
-                    <div className="mt-10 fs-12">Wybrana wartość:</div>
                 </div>
             )}
         </div>
