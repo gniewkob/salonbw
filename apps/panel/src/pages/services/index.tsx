@@ -233,34 +233,38 @@ function ServicesPageContent({ role }: { role: Role }) {
                 <li>Usługi</li>
             </ul>
 
-            <div className="versum-page__toolbar">
-                <input
-                    className="form-control versum-toolbar-search"
-                    placeholder="wyszukaj usługę"
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        setCurrentPage(1);
-                    }}
-                />
-                <button
-                    type="button"
-                    className="btn btn-primary versum-toolbar-btn"
-                    onClick={() => setIsCreateModalOpen(true)}
-                >
-                    dodaj usługę
-                </button>
+            <div className="row mb-xl">
+                <div className="col-sm-6">
+                    <input
+                        className="services-search-input"
+                        placeholder="wyszukaj usługę"
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+                <div className="col-sm-6 text-right mt-xs">
+                    <button
+                        type="button"
+                        className="button button-blue"
+                        onClick={() => setIsCreateModalOpen(true)}
+                    >
+                        dodaj usługę
+                    </button>
+                </div>
             </div>
 
             {isLoading ? (
                 <div className="versum-muted p-20">Ładowanie usług...</div>
             ) : (
                 <>
-                    <div className="versum-table-wrap">
-                        <table className="versum-table">
+                    <div className="table-scroll-wrap">
+                        <table className="table-bordered">
                             <thead>
                                 <tr>
-                                    <th>
+                                    <th className="pointer checkbox_container center_text">
                                         <input
                                             type="checkbox"
                                             aria-label="Wybierz wszystkie usługi"
@@ -272,19 +276,48 @@ function ServicesPageContent({ role }: { role: Role }) {
                                             onChange={toggleSelectAll}
                                         />
                                     </th>
-                                    <th>Nazwa</th>
-                                    <th>Kategoria</th>
-                                    <th>Czas trwania</th>
-                                    <th>Popularność</th>
-                                    <th>Cena brutto</th>
-                                    <th>VAT</th>
+                                    <th className="link_body py-0 sorting_asc">
+                                        <div className="pl-s py-m pr-l">
+                                            Nazwa
+                                        </div>
+                                    </th>
+                                    <th className="py-0 sorting">
+                                        <div className="pl-s py-m pr-l">
+                                            Kategoria
+                                        </div>
+                                    </th>
+                                    <th className="link_body py-0 sorting">
+                                        <div className="pl-s py-m pr-l">
+                                            Czas trwania
+                                        </div>
+                                    </th>
+                                    <th className="link_body py-0 sorting">
+                                        <div className="pl-s py-m pr-l">
+                                            Popularność
+                                        </div>
+                                    </th>
+                                    <th className="link_body py-0 sorting">
+                                        <div className="pl-s py-m pr-l">
+                                            Cena brutto
+                                        </div>
+                                    </th>
+                                    <th className="py-0 sorting">
+                                        <div className="pl-s py-m pr-l">
+                                            VAT
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {paginatedServices.length > 0 ? (
-                                    paginatedServices.map((service) => (
-                                        <tr key={service.id}>
-                                            <td>
+                                    paginatedServices.map((service, i) => (
+                                        <tr
+                                            key={service.id}
+                                            className={
+                                                i % 2 === 0 ? 'odd' : 'even'
+                                            }
+                                        >
+                                            <td className="pointer checkbox_container center_text">
                                                 <input
                                                     type="checkbox"
                                                     aria-label="Wybierz usługę"
@@ -296,26 +329,29 @@ function ServicesPageContent({ role }: { role: Role }) {
                                                     }
                                                 />
                                             </td>
-                                            <td>
+                                            <td className="wrap blue_text pointer link_body w-40p">
                                                 <Link
-                                                    className="versum-link"
                                                     href={`/services/${service.id}`}
                                                 >
                                                     {service.name}
                                                 </Link>
                                             </td>
-                                            <td>
+                                            <td className="wrap">
                                                 {service.categoryRelation
                                                     ?.name ??
                                                     'usługi bez kategorii'}
                                             </td>
-                                            <td>{service.displayDuration}</td>
-                                            <td>
+                                            <td className="wrap">
+                                                {service.displayDuration}
+                                            </td>
+                                            <td className="wrap">
                                                 {formatPopularity(
                                                     service.popularity,
                                                 )}
                                             </td>
-                                            <td>{service.displayPrice}</td>
+                                            <td className="text-right pr-m">
+                                                {service.displayPrice}
+                                            </td>
                                             <td>{service.vatRate ?? 23}%</td>
                                         </tr>
                                     ))
@@ -333,71 +369,86 @@ function ServicesPageContent({ role }: { role: Role }) {
                         </table>
                     </div>
 
-                    <div className="versum-pagination-footer">
-                        <span>
-                            Pozycje od {(currentPage - 1) * itemsPerPage + 1} do{' '}
-                            {Math.min(currentPage * itemsPerPage, totalItems)} z{' '}
-                            {totalItems}
-                        </span>
-                        <span className="ml-10 mr-10">|</span>
-                        <span>na stronie</span>
-                        <select
-                            className="form-control versum-select-sm ml-10"
-                            aria-label="Liczba elementów na stronie"
-                            value={itemsPerPage}
-                            onChange={(e) => {
-                                setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(1);
-                            }}
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                            <option value={100}>100</option>
-                        </select>
-                        <div className="versum-pagination-controls">
-                            <input
-                                type="number"
-                                className="form-control versum-page-input"
-                                aria-label="Aktualna strona"
-                                value={currentPage}
-                                min={1}
-                                max={totalPages}
-                                onChange={(e) => {
-                                    const page = Number(e.target.value);
-                                    if (page >= 1 && page <= totalPages) {
-                                        setCurrentPage(page);
-                                    }
-                                }}
-                            />
-                            <span>z {totalPages}</span>
-                            <button
-                                className="versum-pagination-btn"
-                                disabled={currentPage >= totalPages}
-                                onClick={() =>
-                                    setCurrentPage((p) =>
-                                        Math.min(totalPages, p + 1),
-                                    )
-                                }
-                            >
-                                ›
-                            </button>
+                    <div className="pagination_container">
+                        <div className="column_row">
+                            <div className="row">
+                                <div className="info col-xs-7">
+                                    Pozycje od{' '}
+                                    {(currentPage - 1) * itemsPerPage + 1} do{' '}
+                                    {Math.min(
+                                        currentPage * itemsPerPage,
+                                        totalItems,
+                                    )}{' '}
+                                    z <span id="total_found">{totalItems}</span>
+                                    <span>{' | na stronie '}</span>
+                                    <select
+                                        className="pagination-size-select"
+                                        aria-label="Liczba elementów na stronie"
+                                        value={itemsPerPage}
+                                        onChange={(e) => {
+                                            setItemsPerPage(
+                                                Number(e.target.value),
+                                            );
+                                            setCurrentPage(1);
+                                        }}
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
+                                <div className="form_pagination col-xs-5 text-right">
+                                    <input
+                                        type="text"
+                                        className="pagination-page-input"
+                                        aria-label="Aktualna strona"
+                                        value={currentPage}
+                                        onChange={(e) => {
+                                            const page = Number(e.target.value);
+                                            if (
+                                                page >= 1 &&
+                                                page <= totalPages
+                                            ) {
+                                                setCurrentPage(page);
+                                            }
+                                        }}
+                                    />
+                                    <span className="conjunction"> z </span>
+                                    <a className="pointer">{totalPages}</a>
+                                    <button
+                                        type="button"
+                                        className="button button_next ml-s"
+                                        aria-label="Następna strona"
+                                        disabled={currentPage >= totalPages}
+                                        onClick={() =>
+                                            setCurrentPage((p) =>
+                                                Math.min(totalPages, p + 1),
+                                            )
+                                        }
+                                    >
+                                        <span
+                                            className="fc-icon fc-icon-right-single-arrow"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="versum-excel-export">
-                        <Link
-                            href="#"
-                            className="versum-link"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                downloadCsvPriceList();
-                            }}
-                        >
-                            pobierz cennik w pliku Excel
-                        </Link>
-                    </div>
+                    <button
+                        type="button"
+                        className="button"
+                        onClick={downloadCsvPriceList}
+                    >
+                        <span
+                            className="icon sprite-exel_blue mr-xs"
+                            aria-hidden="true"
+                        />
+                        pobierz cennik w pliku Excel
+                    </button>
                 </>
             )}
 

@@ -221,13 +221,13 @@ export default function ServiceDetailsPage() {
                     </li>
                 </ul>
 
-                <div className="customer-actions-bar">
-                    <div className="customer-actions-bar__spacer" />
-                    <div className="btn-group customer-actions-group">
+                <div className="column_row row buttons-row">
+                    <div className="col-sm-6" />
+                    <div className="right-buttons col-sm-6">
                         <button
                             type="button"
                             onClick={() => setIsEditModalOpen(true)}
-                            className="button button-light-blue button-small"
+                            className="button"
                             disabled={!summaryData || user?.role !== 'admin'}
                         >
                             edytuj
@@ -235,7 +235,7 @@ export default function ServiceDetailsPage() {
                         <button
                             type="button"
                             onClick={() => setIsVariantsModalOpen(true)}
-                            className="button button-light-blue button-small"
+                            className="button button-blue ml-s"
                             disabled={!summaryData || user?.role !== 'admin'}
                         >
                             zarządzaj wariantami
@@ -272,103 +272,82 @@ export default function ServiceDetailsPage() {
                         <section className="service-details-card">
                             {activeTab === 'summary' && (
                                 <div>
-                                    <div className="service-summary-head">
-                                        <div className="service-summary-head__title">
-                                            {summaryData.name}
-                                        </div>
-                                        <div className="service-summary-head__meta">
-                                            {variantsData.length}{' '}
-                                            {variantsData.length === 1
-                                                ? 'wariant'
-                                                : 'warianty'}
-                                        </div>
-                                    </div>
+                                    <h2 className="column_row">
+                                        {summaryData.name}
+                                        {variantsData.length > 0 && (
+                                            <small>
+                                                {variantsData.length}{' '}
+                                                {variantsData.length === 1
+                                                    ? 'wariant'
+                                                    : 'warianty'}
+                                            </small>
+                                        )}
+                                    </h2>
 
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Wariant</th>
-                                                    <th>Czas trwania</th>
-                                                    <th>Cena</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {variantsData.length === 0 && (
-                                                    <tr>
-                                                        <td
-                                                            colSpan={3}
-                                                            className="service-empty-cell"
-                                                        >
-                                                            Brak wariantów
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                                {variantsData.map((variant) => (
-                                                    <tr key={variant.id}>
-                                                        <td>{variant.name}</td>
-                                                        <td>
+                                    {variantsData.length > 0 ? (
+                                        <ul className="list-group no-radius no-hover">
+                                            {variantsData.map((variant) => (
+                                                <li
+                                                    key={variant.id}
+                                                    className="list-group-item"
+                                                >
+                                                    <div className="row">
+                                                        <div className="col-xs-6">
+                                                            <span className="h4">
+                                                                {variant.name}
+                                                            </span>
+                                                        </div>
+                                                        <div className="col-xs-3">
                                                             {formatDuration(
                                                                 variant.duration,
                                                             )}
-                                                        </td>
-                                                        <td>
+                                                        </div>
+                                                        <div className="col-xs-3 text-right">
                                                             {formatCurrency(
                                                                 variant.price,
                                                             )}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="service-empty">
+                                            Brak wariantów
+                                        </p>
+                                    )}
 
-                                    <table className="service-details-meta">
-                                        <tbody>
-                                            <tr>
-                                                <th>Kategoria</th>
-                                                <td>
-                                                    {summaryData
-                                                        .categoryRelation
-                                                        ?.name ??
-                                                        summaryData.category ??
-                                                        'Bez kategorii'}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>VAT</th>
-                                                <td>
-                                                    {summaryData.vatRate ?? 23}%
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Rezerwacja online</th>
-                                                <td>
-                                                    {summaryData.onlineBooking
-                                                        ? 'Usługę można rezerwować online'
-                                                        : 'Usługa niedostępna online'}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Opis publiczny</th>
-                                                <td>
-                                                    {summaryData.publicDescription ??
-                                                        'Brak opisu'}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Opis prywatny</th>
-                                                <td>
-                                                    {summaryData.privateDescription ??
-                                                        'Brak opisu'}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Zdjęcia</th>
-                                                <td>Brak zdjęć</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <dl className="dl-horizontal">
+                                        <dt className="lbl">Kategoria</dt>
+                                        <dd>
+                                            {summaryData.categoryRelation
+                                                ?.name ??
+                                                summaryData.category ??
+                                                'Bez kategorii'}
+                                        </dd>
+                                        <dt className="lbl">VAT</dt>
+                                        <dd>{summaryData.vatRate ?? 23}%</dd>
+                                        <dt className="lbl">
+                                            Rezerwacja online
+                                        </dt>
+                                        <dd>
+                                            {summaryData.onlineBooking
+                                                ? 'Usługę można rezerwować online'
+                                                : 'Usługa niedostępna online'}
+                                        </dd>
+                                        <dt className="lbl">Opis publiczny</dt>
+                                        <dd>
+                                            {summaryData.publicDescription ??
+                                                'Brak opisu'}
+                                        </dd>
+                                        <dt className="lbl">Opis prywatny</dt>
+                                        <dd>
+                                            {summaryData.privateDescription ??
+                                                'Brak opisu'}
+                                        </dd>
+                                        <dt className="lbl">Zdjęcia</dt>
+                                        <dd>Brak zdjęć</dd>
+                                    </dl>
                                 </div>
                             )}
 
