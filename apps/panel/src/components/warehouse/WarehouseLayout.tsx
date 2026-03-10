@@ -14,12 +14,38 @@ const tabConfig: Array<{
     id: WarehouseMainTab;
     label: string;
     href: string;
+    icon: string;
 }> = [
-    { id: 'products', label: 'Produkty', href: '/products' },
-    { id: 'sales', label: 'Sprzedaż', href: '/sales/history' },
-    { id: 'use', label: 'Zużycie', href: '/use/history' },
-    { id: 'deliveries', label: 'Dostawy', href: '/deliveries/history' },
-    { id: 'orders', label: 'Zamówienia', href: '/orders/history' },
+    {
+        id: 'products',
+        label: 'PRODUKTY',
+        href: '/products',
+        icon: 'stock_products_on',
+    },
+    {
+        id: 'sales',
+        label: 'SPRZEDAŻ',
+        href: '/sales/history',
+        icon: 'stock_sale',
+    },
+    {
+        id: 'use',
+        label: 'ZUŻYCIE',
+        href: '/use/history',
+        icon: 'stock_consumption',
+    },
+    {
+        id: 'deliveries',
+        label: 'DOSTAWY',
+        href: '/deliveries/history',
+        icon: 'stock_delivery',
+    },
+    {
+        id: 'orders',
+        label: 'ZAMÓWIENIA',
+        href: '/orders/history',
+        icon: 'stock_new_order',
+    },
 ];
 
 interface WarehouseLayoutProps {
@@ -55,28 +81,51 @@ export default function WarehouseLayout({
                         <li>{heading}</li>
                     </ul>
 
-                    <div className="products-top-tabs">
-                        {tabConfig.map((tab) => (
-                            <Link
-                                key={tab.id}
-                                href={tab.href}
-                                className={activeTab === tab.id ? 'active' : ''}
-                            >
-                                {tab.label}
-                            </Link>
-                        ))}
-                        <Link
-                            href="/inventory"
-                            className={`${inventoryActive ? 'active' : ''} products-top-tabs__right`}
-                        >
-                            Inwentaryzacja
-                        </Link>
-                        {actions ? (
-                            <div className="products-toolbar__actions">
-                                {actions}
-                            </div>
-                        ) : null}
+                    <div className="column_row secondary_menu">
+                        <div className="pull_left">
+                            <ul className="simple-list">
+                                {tabConfig.map((tab) => (
+                                    <li
+                                        key={tab.id}
+                                        className={
+                                            activeTab === tab.id
+                                                ? 'active'
+                                                : undefined
+                                        }
+                                    >
+                                        <Link href={tab.href}>
+                                            <i
+                                                className={`icon sprite-${tab.icon}`}
+                                                aria-hidden="true"
+                                            />{' '}
+                                            {tab.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="pull_right">
+                            <ul className="simple-list">
+                                <li
+                                    className={
+                                        inventoryActive ? 'active' : undefined
+                                    }
+                                >
+                                    <Link href="/inventory">
+                                        <i
+                                            className="icon sprite-stock_stocktaking"
+                                            aria-hidden="true"
+                                        />{' '}
+                                        INWENTARYZACJA
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                        <br className="c" />
                     </div>
+                    {actions ? (
+                        <div className="d-flex jc-end mb-l">{actions}</div>
+                    ) : null}
 
                     {children}
                 </div>
