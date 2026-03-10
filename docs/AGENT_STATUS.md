@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-02-26 (Next.js 15.5.10 upgrade + warehouse navigation + services/communication/settings secondary navs deployed)_
+_Last updated: 2026-03-10 (Settings visual parity: tiles + sprite icons deployed on dashboard)_
 
 ## Platform Architecture
 
@@ -21,13 +21,18 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `9ec696ac` | `22366598647` | 2026-02-24 19:28 | production | Statystyki: poprawione parsowanie kwot (decimal/string) i stabilne sumowanie revenue bez konkatenacji stringów |
 | Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `d09e8180` | `22573596765` | 2026-03-02 11:21 | production | CommunicationNav wired + copy-first breadcrumb/a11y na wszystkich stronach /communication/* |
+| Dashboard (`panel.salon-bw.pl`) | `7e27aea0` | `22922758693` | 2026-03-10 20:29 | production | Ustawienia: kafle 1:1 z ikonami `sprite-settings_*` (emoji usunięte), retry po transient fail install deps |
 
 Verification:
 
 - `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
 - `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
 - `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- Dashboard post-deploy verification (2026-03-10):
+  - deploy run `22922605165` (`failure`, target `dashboard`, sha `7e27aea0`) — fail on remote deps install,
+  - deploy retry run `22922758693` (`success`, target `dashboard`, sha `7e27aea0`),
+  - `curl -I https://panel.salon-bw.pl` → `307` (expected for unauthenticated),
+  - `curl -I https://panel.salon-bw.pl/settings` → `307` to `/auth/login?redirectTo=%2Fsettings`.
 - Dashboard post-deploy verification (2026-02-26):
   - deploy run `22436718672` (`success`, target `dashboard` manual, sha `0a1fde5f`),
   - Next.js upgraded to 15.5.10; rewrites format fixed (`{beforeFiles, afterFiles, fallback}` object),
