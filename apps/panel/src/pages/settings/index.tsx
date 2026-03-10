@@ -10,21 +10,69 @@ type SettingsTile = {
 };
 
 const mainTiles: SettingsTile[] = [
-    { href: '/admin/timetables', label: 'grafiki pracy', icon: '🗂️' },
-    { href: '/admin/settings/company', label: 'dane salonu', icon: '🏢' },
-    { href: '/admin/settings/calendar', label: 'godziny otwarcia', icon: '🕒' },
-    { href: '/calendar', label: 'kalendarz', icon: '📅' },
-    { href: '/employees', label: 'pracownicy', icon: '🪪' },
-    { href: '/customers', label: 'klienci', icon: '👥' },
-    { href: '/communication', label: 'rezerwacja online', icon: '☁️' },
-    { href: '/reviews', label: 'komentarze', icon: '⭐' },
-    { href: '/communication', label: 'łączność', icon: '💬' },
-    { href: '/communication', label: 'komunikacja z klientem', icon: '📨' },
-    { href: '/communication', label: 'media społecznościowe', icon: '📘' },
-    { href: '/invoices', label: 'faktury i abonament', icon: '🧾' },
-    { href: '/statistics', label: 'płatności', icon: '💼' },
-    { href: '/extension', label: 'Premium', icon: '👑' },
-    { href: '/settings', label: 'inne ustawienia', icon: '⚙️' },
+    {
+        href: '/admin/timetables',
+        label: 'grafiki pracy',
+        icon: 'sprite-settings_work_schedule',
+    },
+    {
+        href: '/admin/settings/company',
+        label: 'dane salonu',
+        icon: 'sprite-settings_branch',
+    },
+    {
+        href: '/admin/settings/calendar',
+        label: 'godziny otwarcia',
+        icon: 'sprite-settings_opening_hours',
+    },
+    { href: '/calendar', label: 'kalendarz', icon: 'sprite-settings_calendar' },
+    {
+        href: '/employees',
+        label: 'pracownicy',
+        icon: 'sprite-settings_employees',
+    },
+    { href: '/customers', label: 'klienci', icon: 'sprite-settings_customers' },
+    {
+        href: '/communication',
+        label: 'rezerwacja online',
+        icon: 'sprite-settings_booking',
+    },
+    { href: '/reviews', label: 'komentarze', icon: 'sprite-settings_notice' },
+    {
+        href: '/communication',
+        label: 'łączność',
+        icon: 'sprite-settings_sms_nav',
+    },
+    {
+        href: '/communication',
+        label: 'komunikacja z klientem',
+        icon: 'sprite-settings_notifications_nav',
+    },
+    {
+        href: '/communication',
+        label: 'media społecznościowe',
+        icon: 'sprite-settings_social_media',
+    },
+    {
+        href: '/invoices',
+        label: 'faktury i abonament',
+        icon: 'sprite-settings_invoice',
+    },
+    {
+        href: '/statistics',
+        label: 'płatności',
+        icon: 'sprite-settings_payment_methods',
+    },
+    {
+        href: '/extension',
+        label: 'Premium',
+        icon: 'sprite-settings_subscription',
+    },
+    {
+        href: '/settings',
+        label: 'inne ustawienia',
+        icon: 'sprite-settings_blue',
+    },
 ];
 
 export default function SettingsPage() {
@@ -40,40 +88,20 @@ export default function SettingsPage() {
                         <li>Ustawienia</li>
                     </ul>
 
-                    <div className="versum-grid">
+                    <div className="settings-tiles-grid">
                         {mainTiles.map((tile) => (
                             <Link
                                 key={tile.label}
                                 href={tile.href}
-                                className="versum-tile versum-tile--clickable"
+                                className="settings-tile"
                             >
-                                <span
-                                    className="versum-tile__icon"
+                                <i
+                                    className={`icon ${tile.icon} settings-tile__icon`}
                                     aria-hidden="true"
-                                >
-                                    {tile.icon}
-                                </span>
+                                />
                                 <span>{tile.label}</span>
                             </Link>
                         ))}
-                    </div>
-
-                    <div className="versum-section">
-                        <h2 className="versum-section__title">
-                            Ustawienia dodatków
-                        </h2>
-                        <Link
-                            href="/extension"
-                            className="versum-tile versum-tile--clickable"
-                        >
-                            <span
-                                className="versum-tile__icon"
-                                aria-hidden="true"
-                            >
-                                🧲
-                            </span>
-                            <span>Marketing Automatyczny</span>
-                        </Link>
                     </div>
                 </div>
             </VersumShell>
