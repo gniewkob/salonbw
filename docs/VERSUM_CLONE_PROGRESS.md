@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-02-26
+> Data aktualizacji: 2026-03-10
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -85,7 +85,7 @@
 | Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
 | Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
 | Moduł Usługi | 🟡 | 85% (list: table-bordered+odd/even+toolbar+pagination parity YES, detail summary: h2+list-group+dl-horizontal YES, visual strict parity pending pixel-diff) |
-| Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO, deferred) |
+| Moduł Statystyki | 🟡 | 85% (functional YES, visual strict YES — data_table/stats-tabs/sprite icons, commit a633b427) |
 | Moduł Łączność | 🟡 | 75% (CommunicationNav wired + copy-first breadcrumb/toolbar YES, visual strict NO) |
 | Moduł Ustawienia | 🟡 | 75% (SettingsNav wired + secondaryNav:true + tile CSS + breadcrumb YES, visual strict NO) |
 | Moduł Dodatki (Extension) | 🟡 | 85% (index visual parity YES, detail page /extension/tools/[id]: layout+header+price+status+desc+availability-table YES, screenshots deferred) |
