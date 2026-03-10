@@ -3961,6 +3961,20 @@ h2.column_row small {
 }
 .buttons-row { margin: 0 -15px 30px; display: flex; }
 .right-buttons { padding: 0 15px; text-align: right; flex: 1; }
+.text-right { text-align: right; }
+
+/* Customer/detail Versum-native layout classes */
+.row-col_row { overflow: hidden; margin-bottom: 20px; }
+.row-col { display: block; }
+.row-col.single-detail-row { margin: 0 0 10px; }
+.details-row { margin: 0 0 20px; }
+.icon_box { display: inline-block; color: #636363; margin: 0 1px 0 0; vertical-align: middle; }
+.info-box { padding: 15px; border: 1px solid #c8c8c8; margin: 0 0 20px; background: #fff; }
+.box-title { font-weight: 700; font-size: 13px; margin: 0 0 8px; color: #3f464d; }
+.box-rows { padding: 0; color: #545454; font-size: 12px; }
+.lbl, .light_text { color: #b9b9c8; }
+.caret { display: inline-block; width: 0; height: 0; margin-left: 2px; vertical-align: middle; border-top: 4px dashed; border-right: 4px solid transparent; border-left: 4px solid transparent; }
+.button-small { padding: 2px 8px; font-size: 12px; }
 
 /* --- Extension / Dodatki --- */
 .versum-extension-grid {

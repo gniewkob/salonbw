@@ -208,17 +208,16 @@ export default function CustomerDetailPage() {
                             </div>
                         ) : customer ? (
                             <>
-                                <div className="customer-actions-bar customer_actions">
-                                    <div className="customer-actions-bar__spacer" />
-                                    <div className="btn-group customer-actions-group">
+                                <div className="buttons-row column_row">
+                                    <div className="text-right">
                                         <Link
                                             href={`/customers/${customer.id}/edit`}
-                                            className="button button-light-blue button-small"
+                                            className="button button-small"
                                         >
                                             edytuj
                                         </Link>
                                         <details className="customer-more-dropdown">
-                                            <summary className="button button-light-blue button-small customer-more-dropdown__trigger">
+                                            <summary className="button button-small customer-more-dropdown__trigger">
                                                 więcej{' '}
                                                 <span className="caret" />
                                             </summary>
@@ -409,174 +408,226 @@ function CustomerSummaryView({
     ].filter(Boolean);
 
     return (
-        <div className="customer-summary">
-            {/* Customer Info Card - Versum 1:1 */}
-            <div className="customer-info-card">
-                <div className="customer-info-main">
-                    <h1 className="customer-name">
-                        {customer.fullName || customer.name}
-                    </h1>
-                    <div className="customer-info-details">
-                        {customer.phone && (
-                            <div className="customer-info-item">
-                                <i
-                                    className="icon sprite-customer_telephone customer-info-icon"
-                                    aria-hidden="true"
-                                />
-                                <a href={`tel:${customer.phone}`}>
-                                    {customer.phone}
-                                </a>
-                            </div>
-                        )}
-                        <div className="customer-info-item">
-                            <i
-                                className="icon sprite-customer_email customer-info-icon"
-                                aria-hidden="true"
-                            />
-                            {customer.email ? (
-                                <a href={`mailto:${customer.email}`}>
-                                    {customer.email}
-                                </a>
-                            ) : (
-                                <span className="text-muted">nie podano</span>
-                            )}
+        <div className="customer-info-summary" id="summary">
+            <div className="row-col_row">
+                <div className="row">
+                    <div className="col-sm-6">
+                        <div className="row-col single-detail-row">
+                            <h2>{customer.fullName || customer.name}</h2>
                         </div>
-                        <div className="customer-info-item">
-                            <i
-                                className="icon sprite-group customer-info-icon"
-                                aria-hidden="true"
-                            />
-                            <span>
-                                {groupsOrTags.length
-                                    ? groupsOrTags.join(', ')
-                                    : 'nie podano'}
-                            </span>
-                        </div>
-                        <div className="customer-info-item">
-                            <i
-                                className="icon sprite-customer_description customer-info-icon"
-                                aria-hidden="true"
-                            />
-                            {customer.description ? (
-                                <span>{customer.description}</span>
-                            ) : (
-                                <>
-                                    <span className="text-muted">
-                                        brak opisu
+                        <div className="details-row">
+                            {customer.phone && (
+                                <div className="row-col single-detail-row">
+                                    <span className="icon_box">
+                                        <i
+                                            className="icon sprite-customer_telephone"
+                                            aria-hidden="true"
+                                        />
                                     </span>
-                                    <Link
-                                        href={`/customers/${customer.id}/edit`}
-                                        className="link-edit"
-                                    >
-                                        edytuj opis
-                                    </Link>
-                                </>
+                                    <a href={`tel:${customer.phone}`}>
+                                        {customer.phone}
+                                    </a>
+                                </div>
                             )}
+                            <div className="row-col single-detail-row">
+                                <span className="icon_box">
+                                    <i
+                                        className="icon sprite-customer_email"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                {customer.email ? (
+                                    <a href={`mailto:${customer.email}`}>
+                                        {customer.email}
+                                    </a>
+                                ) : (
+                                    <span className="light_text">
+                                        nie podano
+                                    </span>
+                                )}
+                            </div>
+                            <div className="row-col single-detail-row">
+                                <span className="icon_box">
+                                    <i
+                                        className="icon sprite-group"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                <span>
+                                    {groupsOrTags.length
+                                        ? groupsOrTags.join(', ')
+                                        : 'nie podano'}
+                                </span>
+                            </div>
+                            <div className="row-col single-detail-row">
+                                <span className="icon_box">
+                                    <i
+                                        className="icon sprite-customer_description"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                {customer.description ? (
+                                    <span>{customer.description}</span>
+                                ) : (
+                                    <>
+                                        <span className="light_text">
+                                            brak opisu
+                                        </span>
+                                        <Link
+                                            href={`/customers/${customer.id}/edit`}
+                                            className="link-edit"
+                                        >
+                                            edytuj opis
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
+                            <div className="row-col single-detail-row">
+                                <span className="lbl">płeć</span>
+                                <span>{genderLabel}</span>
+                            </div>
+                            <div className="row-col single-detail-row">
+                                <span className="lbl">data dodania</span>
+                                <span>{formatDate(customer.createdAt)}</span>
+                            </div>
                         </div>
-                        <div className="customer-info-item">
-                            <span className="customer-info-label">płeć</span>
-                            <span>{genderLabel}</span>
-                        </div>
-                        <div className="customer-info-item">
-                            <span className="customer-info-label">
-                                data dodania
-                            </span>
-                            <span>{formatDate(customer.createdAt)}</span>
+                    </div>
+                    <div className="col-sm-6">
+                        <div className="customer-avatar">
+                            <svg
+                                viewBox="0 0 120 120"
+                                className="avatar-placeholder"
+                            >
+                                <circle cx="60" cy="60" r="60" fill="#e8eaed" />
+                                <path
+                                    d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
+                                    fill="#bdc1c6"
+                                />
+                            </svg>
                         </div>
                     </div>
                 </div>
-                <div className="customer-avatar">
-                    <svg viewBox="0 0 120 120" className="avatar-placeholder">
-                        <circle cx="60" cy="60" r="60" fill="#e8eaed" />
-                        <path
-                            d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
-                            fill="#bdc1c6"
-                        />
-                    </svg>
-                </div>
-            </div>
-
-            {/* Visits Sections - Versum 1:1 */}
-            <div className="customer-visits">
-                {/* Upcoming visits */}
-                <div className="visits-section">
-                    <h3>zaplanowane wizyty: {upcomingVisits.length}</h3>
-                    {upcomingVisits.length > 0 ? (
-                        <div className="visits-list">
-                            {upcomingVisits.slice(0, 3).map((visit) => (
-                                <div key={visit.id} className="visit-item">
-                                    <div className="visit-service">
-                                        <Link
-                                            href={`/services/${visit.serviceId}`}
-                                        >
-                                            {visit.serviceName}
-                                        </Link>
-                                        <div className="visit-details">
-                                            {formatDateTime(
-                                                visit.date,
-                                                visit.time,
-                                            )}
-                                            , {visit.employeeName}
-                                        </div>
-                                    </div>
-                                    <div className="visit-price">
-                                        {formatCurrency(visit.price)}
-                                    </div>
-                                </div>
-                            ))}
-                            {upcomingVisits.length > 3 && (
-                                <a href="#" className="link-more">
-                                    więcej
-                                </a>
-                            )}
+                <div className="row">
+                    <div className="col-sm-6">
+                        <div className="info-box">
+                            <p className="box-title">
+                                zaplanowane wizyty: {upcomingVisits.length}
+                            </p>
+                            <div className="box-rows">
+                                {upcomingVisits.length > 0 ? (
+                                    <>
+                                        {upcomingVisits
+                                            .slice(0, 3)
+                                            .map((visit) => (
+                                                <div
+                                                    key={visit.id}
+                                                    className="row-col single-detail-row"
+                                                >
+                                                    <div className="visit-service">
+                                                        <Link
+                                                            href={`/services/${visit.serviceId}`}
+                                                        >
+                                                            {visit.serviceName}
+                                                        </Link>
+                                                        <div className="visit-details">
+                                                            {formatDateTime(
+                                                                visit.date,
+                                                                visit.time,
+                                                            )}
+                                                            ,{' '}
+                                                            {visit.employeeName}
+                                                        </div>
+                                                    </div>
+                                                    <div className="visit-price">
+                                                        {formatCurrency(
+                                                            visit.price,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        {upcomingVisits.length > 3 && (
+                                            <a href="#" className="link-more">
+                                                więcej
+                                            </a>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="light_text">
+                                        Brak zaplanowanych wizyt
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                    ) : (
-                        <p className="text-muted">Brak zaplanowanych wizyt</p>
-                    )}
-                </div>
-
-                {/* Completed visits */}
-                <div className="visits-section">
-                    <h3>zrealizowane wizyty: {stats?.completedVisits || 0}</h3>
-                    {historyItems.length > 0 ? (
-                        <div className="visits-list">
-                            {historyItems.slice(0, 3).map((visit) => (
-                                <div key={visit.id} className="visit-item">
-                                    <div className="visit-service">
-                                        <Link
-                                            href={`/services/${visit.service?.id}`}
-                                        >
-                                            {visit.service?.name}
-                                        </Link>
-                                        <div className="visit-details">
-                                            {formatDate(visit.date)}
-                                        </div>
-                                    </div>
-                                    <div className="visit-employee">
-                                        <Link
-                                            href={`/employees/${visit.employee?.id}`}
-                                        >
-                                            {visit.employee?.initials ||
-                                                visit.employee?.name
-                                                    ?.split(' ')
-                                                    .map((n: string) => n[0])
-                                                    .join('')}
-                                        </Link>
-                                    </div>
-                                    <div className="visit-price">
-                                        {formatCurrency(visit.price)}
-                                    </div>
-                                </div>
-                            ))}
-                            {(stats?.completedVisits || 0) > 3 && (
-                                <a href="#" className="link-more">
-                                    więcej
-                                </a>
-                            )}
+                    </div>
+                    <div className="col-sm-6">
+                        <div className="info-box">
+                            <p className="box-title">
+                                zrealizowane wizyty:{' '}
+                                {stats?.completedVisits || 0}
+                            </p>
+                            <div className="box-rows">
+                                {historyItems.length > 0 ? (
+                                    <>
+                                        {historyItems
+                                            .slice(0, 3)
+                                            .map((visit) => (
+                                                <div
+                                                    key={visit.id}
+                                                    className="row-col single-detail-row"
+                                                >
+                                                    <div className="visit-service">
+                                                        <Link
+                                                            href={`/services/${visit.service?.id}`}
+                                                        >
+                                                            {
+                                                                visit.service
+                                                                    ?.name
+                                                            }
+                                                        </Link>
+                                                        <div className="visit-details">
+                                                            {formatDate(
+                                                                visit.date,
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="visit-employee">
+                                                        <Link
+                                                            href={`/employees/${visit.employee?.id}`}
+                                                        >
+                                                            {visit.employee
+                                                                ?.initials ||
+                                                                visit.employee?.name
+                                                                    ?.split(' ')
+                                                                    .map(
+                                                                        (
+                                                                            n: string,
+                                                                        ) =>
+                                                                            n[0],
+                                                                    )
+                                                                    .join('')}
+                                                        </Link>
+                                                    </div>
+                                                    <div className="visit-price">
+                                                        {formatCurrency(
+                                                            visit.price,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        {(stats?.completedVisits || 0) > 3 && (
+                                            <a href="#" className="link-more">
+                                                więcej
+                                            </a>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="light_text">
+                                        Brak zrealizowanych wizyt
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                    ) : (
-                        <p className="text-muted">Brak zrealizowanych wizyt</p>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>
