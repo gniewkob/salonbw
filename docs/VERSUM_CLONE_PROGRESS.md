@@ -140,6 +140,59 @@
 
 ## 📝 HISTORIA ZMIAN
 
+### 2026-03-10 - Extension: copy-first z live HTML Versum + refactor markupu
+
+- capture referencji (przed dalszym kodem):
+  - live `#main-content.outerHTML` dla:
+    - `https://panel.versum.com/salonblackandwhite/extension/`,
+    - `https://panel.versum.com/salonblackandwhite/extension/tools/4`,
+  - zapis referencji: `docs/EXTENSION_VERSUM_HTML_REFERENCE_2026-03-10.md`.
+- zmiana kodu (copy-first):
+  - `apps/panel/src/pages/extension/index.tsx`
+    - przebudowa listy dodatków do układu Versum (`inner.extensions_boxes`, `row`, `col-md-6 reduced-padding`, `a.box-link`),
+    - status w karcie zgodny z Versum (`status:` + `sprite-active_green` + `state`),
+    - przejście na zgodne URL detali `tools/:numericId` (`1/3/4/5/6/7/8`).
+  - `apps/panel/src/pages/extension/tools/[id].tsx`
+    - aliasy tras `tools/:numericId` -> istniejące dane dodatków,
+    - struktura detalu zgodna z Versum (`container-fluid`, `disable_extension_link`, `description_more`, `availability-table` z ikoną `available-*.png`, prawa kolumna `slider/#gallery`).
+  - `apps/panel/src/styles/versum-shell.css`
+    - style wspierające strukturę copy-first (`extensions_boxes`, `box-link`, `row-no-padding`, `gthumbnail`).
+  - testy:
+    - `apps/panel/tests/e2e/prod-extension-smoke.spec.ts` -> detal przez `/extension/tools/4`,
+    - `apps/panel/tests/e2e/prod-extension-parity-audit.spec.ts` -> panel/versum detal przez `tools/4`.
+
+---
+
+### 2026-03-10 - Extension: parity audit scaffold (functional + visual)
+
+- zmiana kodu:
+  - `apps/panel/tests/e2e/prod-extension-parity-audit.spec.ts`
+    - nowy produkcyjny audyt parity panel vs versum dla modułu `Extension`,
+    - zakres: lista dodatków (`/extension`) + detal dodatku (`/extension/tools/automatic_marketing`),
+    - artefakty: `REPORT.md`, `checklist.json`, `pixel-diff.json`, screenshoty `panel-*`, `versum-*`, `diff-*`,
+    - strict visual threshold: `3.0%` dla ekranów krytycznych.
+- walidacja lokalna:
+  - przygotowanie testu zakończone; uruchomienie pełnego audytu wymaga sekretów:
+    - `PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD`,
+    - `VERSUM_LOGIN_EMAIL`, `VERSUM_LOGIN_PASSWORD`.
+
+---
+
+### 2026-03-10 - Extension: hardening smoke (lista + szczegóły dodatku)
+
+- zmiana kodu:
+  - `apps/panel/src/pages/extension/index.tsx`
+    - dodany stabilny selektor testowy `data-testid` dla kart dodatków (`extension-card-*`).
+  - `apps/panel/tests/e2e/prod-extension-smoke.spec.ts`
+    - smoke zaktualizowany do aktualnego DOM Versum (`.ext-col` + breadcrumb),
+    - dodany drugi scenariusz smoke dla widoku szczegółu (`/extension/tools/automatic_marketing`) z walidacją tabeli dostępności.
+- walidacja lokalna:
+  - `pnpm eslint src/pages/extension/index.tsx --fix` (panel) ✅
+  - `pnpm tsc --noEmit` (panel) ✅
+  - `pnpm exec playwright test tests/e2e/prod-extension-smoke.spec.ts --project=desktop-1366` -> `2 skipped` (brak `PANEL_LOGIN_EMAIL` / `PANEL_LOGIN_PASSWORD`).
+
+---
+
 ### 2026-03-10 - Ustawienia: settings tiles + sprite icons + deploy dashboard
 
 - zmiana kodu:

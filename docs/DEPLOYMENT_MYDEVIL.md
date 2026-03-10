@@ -8,6 +8,7 @@ Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
 - If a transfer stalls, the job now fails instead of hanging indefinitely; re-run the workflow after failure.
 - Frontend deploy bundles are transfer-lean (no `node_modules`, no `.next/cache` in tarball); production dependencies are installed on the FreeBSD host after extract (`npm22` fallback to `npm`).
+- Remote dependency install steps are retry-guarded in workflow (`3` attempts for panel/landing/api) to absorb transient npm/network failures.
 
 ## 0. Recommended: targeted deploys (GitHub Actions)
 

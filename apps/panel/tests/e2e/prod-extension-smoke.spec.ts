@@ -51,10 +51,37 @@ test.describe('PROD smoke: extension page', () => {
         await page.waitForLoadState('domcontentloaded');
 
         await expect(page.locator('[data-testid="extension-page"]')).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Dodatki' })).toBeVisible();
+        await expect(page.locator('.breadcrumb')).toContainText('Dodatki');
 
-        const cards = page.locator('.versum-extension-card');
+        const cards = page.locator('.ext-col');
         await expect(cards.first()).toBeVisible();
         await expect(cards).toHaveCount(7);
+    });
+
+    test('extension detail page loads and renders availability table', async ({
+        page,
+    }) => {
+        await login(page);
+
+        await page.goto('/extension/tools/4');
+        await page.waitForLoadState('domcontentloaded');
+        const notFoundText = page.getByText('Nie znaleziono dodatku.');
+        let notFoundVisible = false;
+        await notFoundText
+            .first()
+            .waitFor({ state: 'visible', timeout: 2500 })
+            .then(() => {
+                notFoundVisible = true;
+            })
+            .catch(() => {
+                notFoundVisible = false;
+            });
+        if (notFoundVisible) {
+            await page.goto('/extension/tools/automatic_marketing');
+            await page.waitForLoadState('domcontentloaded');
+        }
+
+        await expect(page.locator('[data-testid="extension-tool-page"]')).toBeVisible();
+        await expect(page.locator('.availability-table')).toBeVisible();
     });
 });

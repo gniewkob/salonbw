@@ -3,6 +3,7 @@
 
 DO $$
 DECLARE
+    v_owner_email TEXT := NULLIF(current_setting('app.admin_email', true), '');
     v_owner_id INTEGER;
     v_employee1_id INTEGER;
     v_employee2_id INTEGER;
@@ -14,8 +15,12 @@ DECLARE
     v_client2_id INTEGER;
     v_client3_id INTEGER;
 BEGIN
+    IF v_owner_email IS NULL THEN
+        RAISE EXCEPTION 'Missing admin email. Set app.admin_email before running this script.';
+    END IF;
+
     -- Znajdź właściciela
-    SELECT id INTO v_owner_id FROM users WHERE email = 'kontakt@bodora.pl' LIMIT 1;
+    SELECT id INTO v_owner_id FROM users WHERE email = v_owner_email LIMIT 1;
     
     -- Dodanie pracownika 1: Aleksandra Bodora
     INSERT INTO users (

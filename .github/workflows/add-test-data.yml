@@ -24,7 +24,12 @@ jobs:
       - name: Add test data via API
         env:
           API_URL: ${{ secrets.API_URL || 'https://api.salon-bw.pl' }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'kontakt@bodora.pl' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-        run: node scripts/add-test-data-api.js
+        run: |
+          if [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
+            echo "Missing required secrets: ADMIN_EMAIL and/or ADMIN_PASSWORD"
+            exit 1
+          fi
+          API_BASE="$API_URL" node scripts/add-test-data.js
         working-directory: backend/salonbw-backend

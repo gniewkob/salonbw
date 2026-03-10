@@ -1,6 +1,6 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-10 (Settings visual parity: tiles + sprite icons deployed on dashboard)_
+_Last updated: 2026-03-10 (Extension copy-first + smoke/parity on production; secret cleanup in add-test-data flows; production probe green)_
 
 ## Platform Architecture
 
@@ -33,6 +33,20 @@ Verification:
   - deploy retry run `22922758693` (`success`, target `dashboard`, sha `7e27aea0`),
   - `curl -I https://panel.salon-bw.pl` → `307` (expected for unauthenticated),
   - `curl -I https://panel.salon-bw.pl/settings` → `307` to `/auth/login?redirectTo=%2Fsettings`.
+- Deploy workflow status check (2026-03-10, after retry-hardening prep):
+  - latest runs for `Deploy (MyDevil)` are healthy (`success`); no active production outage detected,
+  - failed run `22922605165` diagnosed as transient remote deps-install flake, mitigated in workflow by install retry loop (`3` attempts).
+- Extension production verification (2026-03-10):
+  - `tests/e2e/prod-extension-smoke.spec.ts` -> `2 passed` against `https://panel.salon-bw.pl`,
+  - `tests/e2e/prod-extension-parity-audit.spec.ts` -> `1 passed` against `https://panel.salon-bw.pl`,
+  - detail smoke supports compatibility path fallback: `/extension/tools/4` -> `/extension/tools/automatic_marketing` when numeric alias is not yet deployed.
+- Security cleanup (2026-03-10):
+  - removed hardcoded admin fallback email from `.github/workflows/add-test-data.yml`,
+  - `backend/salonbw-backend/scripts/add-test-data.js` now requires `ADMIN_EMAIL` + `ADMIN_PASSWORD` from env (no hardcoded credentials),
+  - `backend/salonbw-backend/scripts/add-test-data.sql` now requires `app.admin_email` runtime setting (no hardcoded owner email in script body),
+  - removed local `apps/panel/test-results` artifacts generated during smoke runs.
+- Probe verification (2026-03-10):
+  - workflow_dispatch run `22925301519` (`target=probe`, `environment=production`) -> `success`.
 - Dashboard post-deploy verification (2026-02-26):
   - deploy run `22436718672` (`success`, target `dashboard` manual, sha `0a1fde5f`),
   - Next.js upgraded to 15.5.10; rewrites format fixed (`{beforeFiles, afterFiles, fallback}` object),
