@@ -3468,14 +3468,51 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     padding-right: 15px;
     box-sizing: border-box;
 }
-.col-xs-7 {
-    width: 58.33%;
+.col-xs-3 {
+    float: left;
+    width: 25%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+.col-xs-4 {
+    float: left;
+    width: 33.333%;
     padding-left: 15px;
     padding-right: 15px;
     box-sizing: border-box;
 }
 .col-xs-5 {
+    float: left;
     width: 41.67%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+.col-xs-6 {
+    float: left;
+    width: 50%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+.col-xs-7 {
+    float: left;
+    width: 58.33%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+.col-xs-9 {
+    float: left;
+    width: 75%;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+.col-xs-12 {
+    float: left;
+    width: 100%;
     padding-left: 15px;
     padding-right: 15px;
     box-sizing: border-box;
@@ -3746,4 +3783,104 @@ h2.column_row small {
 
 .ext-col.ext_active .activate {
     color: #4cae4c;
+}
+
+/* --- Extension detail page --- */
+.inner.extension_info {
+    padding: 20px;
+}
+
+.extension_icon svg {
+    width: 90px;
+    height: 90px;
+}
+
+.ext_title {
+    font-size: 30px;
+    font-weight: 400;
+    color: #313140;
+    padding-bottom: 3px;
+}
+
+.ext_price_title {
+    font-size: 13px;
+    color: #777;
+}
+
+.ext_price_title strong {
+    font-weight: 600;
+    color: #313140;
+}
+
+.status-info {
+    padding-top: 9px;
+}
+
+.state.active {
+    font-size: 13px;
+    font-weight: 600;
+    color: #17d38f;
+}
+
+.state.inactive {
+    font-size: 13px;
+    color: #313140;
+}
+
+.update_extension a {
+    color: #808080;
+    font-weight: 600;
+}
+
+.update_extension a:hover {
+    color: #555;
+    text-decoration: none;
+}
+
+.desc p {
+    font-size: 14.3px;
+    margin-bottom: 10px;
+}
+
+.extension_info h2 {
+    font-size: 22px;
+    font-weight: 400;
+    color: #313140;
+    margin: 20px 0 10px;
+}
+
+.availability-table th {
+    font-size: 13px;
+    font-weight: 400;
+    background: #f5f8fa;
+    padding: 9px 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.availability-table th.currently-active {
+    font-weight: 700;
+}
+
+.availability-table td {
+    font-size: 13px;
+    background: #fff;
+    padding: 7px 10px 6px;
+    border: 1px solid #ccd6dd;
+    text-align: center;
+}
+
+.availability-table td .small {
+    font-size: 11px;
+    display: block;
+}
+
+.availability-check {
+    color: #17d38f;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.availability-no {
+    color: #ccc;
 }

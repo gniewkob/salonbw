@@ -88,7 +88,7 @@
 | Moduł Statystyki | 🟡 | 70% (functional YES, visual strict NO, deferred) |
 | Moduł Łączność | 🟡 | 75% (CommunicationNav wired + copy-first breadcrumb/toolbar YES, visual strict NO) |
 | Moduł Ustawienia | 🟡 | 75% (SettingsNav wired + secondaryNav:true + tile CSS + breadcrumb YES, visual strict NO) |
-| Moduł Dodatki (Extension) | 🟡 | 70% (index visual parity YES, detail pages /extension/tools/[id] NOT YET) |
+| Moduł Dodatki (Extension) | 🟡 | 85% (index visual parity YES, detail page /extension/tools/[id]: layout+header+price+status+desc+availability-table YES, screenshots deferred) |
 | Infra: Next.js | ✅ | 15.5.10 na panel + landing (pnpm.overrides zaktualizowane) |
 
 **Całkowity postęp: ~65%** (wszystkie moduły mają secondary nav + breadcrumb; otwarte delty strict visual na: klienci/statystyki/magazyn/usługi)
