@@ -1,17 +1,21 @@
 /**
  * Skrypt dodający testowych pracowników i wizyt
  * Uruchomienie: node scripts/add-test-data.js
+ * Wymagane env: ADMIN_EMAIL, ADMIN_PASSWORD
  */
 
 const axios = require('axios');
 
-const API_BASE = 'http://localhost:3000'; // Lokalny backend
-const ADMIN_EMAIL = 'kontakt@bodora.pl';
-const ADMIN_PASSWORD = 'haslohaslo';
+const API_BASE = process.env.API_BASE || 'http://localhost:3000'; // Lokalny backend
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 let authToken = null;
 
 async function login() {
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+        throw new Error('Missing required env vars: ADMIN_EMAIL and ADMIN_PASSWORD');
+    }
     try {
         const response = await axios.post(`${API_BASE}/auth/login`, {
             email: ADMIN_EMAIL,

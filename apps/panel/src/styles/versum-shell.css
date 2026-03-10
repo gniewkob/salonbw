@@ -4121,10 +4121,24 @@ h2.column_row small {
 }
 
 /* --- Extension / Dodatki --- */
-.versum-extension-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+.extensions_boxes .row {
+    margin-left: -7px;
+    margin-right: -7px;
+}
+
+.extensions_boxes .reduced-padding {
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
+.extensions_boxes .box-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.extensions_boxes .box-link:hover {
+    text-decoration: none;
 }
 
 .ext-col {
@@ -4181,10 +4195,21 @@ h2.column_row small {
     margin-bottom: 10px;
     font-size: 12px;
     color: #8a939b;
+    text-transform: none;
 }
 
 .ext-col.ext_active .activate {
     color: #4cae4c;
+}
+
+.ext_info .activate .state {
+    display: inline-block;
+    margin-left: 2px;
+}
+
+.ext_info .activate .icon {
+    display: inline-block;
+    margin: 0 2px;
 }
 
 /* --- Extension detail page --- */
@@ -4244,6 +4269,10 @@ h2.column_row small {
     margin-bottom: 10px;
 }
 
+.description_more {
+    display: none;
+}
+
 .extension_info h2 {
     font-size: 22px;
     font-weight: 400;
@@ -4281,6 +4310,21 @@ h2.column_row small {
     color: #17d38f;
     font-size: 16px;
     font-weight: 600;
+}
+
+.row-no-padding {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+
+.row-no-padding > [class*='col-'] {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.gthumbnail {
+    display: block;
+    width: 100%;
 }
 
 .availability-no {

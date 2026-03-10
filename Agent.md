@@ -16,6 +16,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).
 - Order: API first, then frontends.
 - Deploy transfers are timeout-guarded (scp/rsync) to prevent indefinite hangs during bundle upload.
+- Remote dependency installation in deploy workflow is retry-guarded (up to 3 attempts) for transient npm/network failures on MyDevil.
 - Frontend bundle upload is optimized for FreeBSD transfer limits: no `node_modules` in tarball; dependencies are installed remotely post-extract (`npm22` preferred, fallback `npm`).
 
 ```bash

@@ -672,11 +672,21 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
+          install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
           if command -v npm22 >/dev/null 2>&1; then
-            npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
-          else
-            npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+            install_cmd="npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
           fi
+          for attempt in 1 2 3; do
+            if eval "$install_cmd"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Dependency install failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            echo "Dependency install attempt ${attempt} failed, retrying..." >&2
+            sleep $((attempt * 5))
+          done
           test -d node_modules
           SSH
 
@@ -686,11 +696,21 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
+          install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
           if command -v npm22 >/dev/null 2>&1; then
-            npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
-          else
-            npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error
+            install_cmd="npm22 install --omit=dev --ignore-scripts --no-package-lock --no-audit --loglevel=error"
           fi
+          for attempt in 1 2 3; do
+            if eval "$install_cmd"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Dependency install failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            echo "Dependency install attempt ${attempt} failed, retrying..." >&2
+            sleep $((attempt * 5))
+          done
           test -d node_modules
           SSH
 
@@ -817,14 +837,23 @@ jobs:
         if: ${{ github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true') }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
+          set -euo pipefail
           cd "$REMOTE_PATH"
+          install_cmd="npm install --omit=dev --ignore-scripts"
           if command -v npm22 >/dev/null 2>&1; then
-            echo "Using npm22..."
-            npm22 install --omit=dev --ignore-scripts
-          else
-             echo "npm22 not found, using default npm..."
-             npm install --omit=dev --ignore-scripts
+            install_cmd="npm22 install --omit=dev --ignore-scripts"
           fi
+          for attempt in 1 2 3; do
+            if eval "$install_cmd"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Backend dependency install failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            echo "Backend dependency install attempt ${attempt} failed, retrying..." >&2
+            sleep $((attempt * 5))
+          done
           SSH
 
       - name: "Diagnostic: Startup Probe (frontend)"
