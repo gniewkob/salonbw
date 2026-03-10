@@ -337,29 +337,35 @@ function StatisticsPageContent() {
                         <span className="statistics-arrow">&#8250;</span>
                     </a>
                 </div>
-                <button
-                    type="button"
-                    className="btn btn-default btn-versum-blue statistics-excel-btn"
-                    onClick={downloadCsvReport}
-                    disabled={dashboardLoading || rankingLoading}
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <a
+                    className="button"
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        downloadCsvReport();
+                    }}
                 >
-                    <span
-                        className="statistics-icon-excel"
+                    <div
+                        className="icon sprite-exel_blue mr-xs"
                         aria-hidden="true"
                     />
                     pobierz raport Excel
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-default statistics-print-btn"
-                    onClick={() => window.print()}
+                </a>
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <a
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        window.print();
+                    }}
                     aria-label="Drukuj"
                 >
-                    <span
-                        className="statistics-icon-print"
+                    <div
+                        className="icon sprite-print_blue"
                         aria-hidden="true"
                     />
-                </button>
+                </a>
             </div>
 
             {dashboardLoading ? (
@@ -486,8 +492,8 @@ function StatisticsPageContent() {
                             Nie udało się pobrać danych pracowników.
                         </div>
                     ) : (
-                        <div className="statistics-employee-table-wrap">
-                            <table className="statistics-table-bordered">
+                        <div className="data_table">
+                            <table className="table table-bordered">
                                 <tbody>
                                     <tr>
                                         <th>Pracownik</th>
@@ -516,9 +522,7 @@ function StatisticsPageContent() {
                                         <tr
                                             key={employee.employeeId}
                                             className={
-                                                i % 2 === 0
-                                                    ? 'statistics-row-even'
-                                                    : 'statistics-row-odd'
+                                                i % 2 === 0 ? 'even' : 'odd'
                                             }
                                         >
                                             <td>{employee.employeeName}</td>
@@ -564,10 +568,7 @@ function StatisticsPageContent() {
                                         </tr>
                                     ))}
                                     <tr>
-                                        <td
-                                            colSpan={9}
-                                            className="statistics-summary-header"
-                                        >
+                                        <td colSpan={9}>
                                             <strong>Podsumowanie</strong>
                                         </td>
                                     </tr>
