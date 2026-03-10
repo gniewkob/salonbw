@@ -260,7 +260,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                 <div className="versum-muted p-20">Ładowanie usług...</div>
             ) : (
                 <>
-                    <div className="table-scroll-wrap">
+                    <div className="column_row data_table">
                         <table className="table-bordered">
                             <thead>
                                 <tr>
@@ -276,36 +276,12 @@ function ServicesPageContent({ role }: { role: Role }) {
                                             onChange={toggleSelectAll}
                                         />
                                     </th>
-                                    <th className="link_body py-0 sorting_asc">
-                                        <div className="pl-s py-m pr-l">
-                                            Nazwa
-                                        </div>
-                                    </th>
-                                    <th className="py-0 sorting">
-                                        <div className="pl-s py-m pr-l">
-                                            Kategoria
-                                        </div>
-                                    </th>
-                                    <th className="link_body py-0 sorting">
-                                        <div className="pl-s py-m pr-l">
-                                            Czas trwania
-                                        </div>
-                                    </th>
-                                    <th className="link_body py-0 sorting">
-                                        <div className="pl-s py-m pr-l">
-                                            Popularność
-                                        </div>
-                                    </th>
-                                    <th className="link_body py-0 sorting">
-                                        <div className="pl-s py-m pr-l">
-                                            Cena brutto
-                                        </div>
-                                    </th>
-                                    <th className="py-0 sorting">
-                                        <div className="pl-s py-m pr-l">
-                                            VAT
-                                        </div>
-                                    </th>
+                                    <th>Nazwa</th>
+                                    <th>Kategoria</th>
+                                    <th>Czas trwania</th>
+                                    <th>Popularność</th>
+                                    <th>Cena brutto</th>
+                                    <th>VAT</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -438,17 +414,23 @@ function ServicesPageContent({ role }: { role: Role }) {
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        className="button"
-                        onClick={downloadCsvPriceList}
-                    >
-                        <span
-                            className="icon sprite-exel_blue mr-xs"
-                            aria-hidden="true"
-                        />
-                        pobierz cennik w pliku Excel
-                    </button>
+                    <div className="products-export">
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                downloadCsvPriceList();
+                            }}
+                            className="button"
+                        >
+                            <div
+                                className="icon sprite-exel_blue mr-xs"
+                                aria-hidden="true"
+                            />
+                            pobierz cennik w pliku Excel
+                        </a>
+                    </div>
                 </>
             )}
 
