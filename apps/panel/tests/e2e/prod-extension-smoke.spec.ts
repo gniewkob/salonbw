@@ -65,23 +65,9 @@ test.describe('PROD smoke: extension page', () => {
 
         await page.goto('/extension/tools/4');
         await page.waitForLoadState('domcontentloaded');
-        const notFoundText = page.getByText('Nie znaleziono dodatku.');
-        let notFoundVisible = false;
-        await notFoundText
-            .first()
-            .waitFor({ state: 'visible', timeout: 2500 })
-            .then(() => {
-                notFoundVisible = true;
-            })
-            .catch(() => {
-                notFoundVisible = false;
-            });
-        if (notFoundVisible) {
-            await page.goto('/extension/tools/automatic_marketing');
-            await page.waitForLoadState('domcontentloaded');
-        }
 
         await expect(page.locator('[data-testid="extension-tool-page"]')).toBeVisible();
+        await expect(page.getByText('Nie znaleziono dodatku.')).not.toBeVisible();
         await expect(page.locator('.availability-table')).toBeVisible();
     });
 });
