@@ -88,50 +88,36 @@ export default function CommunicationPage() {
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
             <VersumShell role={role}>
-                <div className="versum-page" data-testid="communication-page">
+                <div data-testid="communication-page">
                     <ul className="breadcrumb">
                         <li>Łączność / Nieprzeczytane wiadomości</li>
                     </ul>
-                    <div className="versum-page__toolbar">
-                        <Link
-                            href="/communication/templates"
-                            className="versum-btn versum-btn--light"
-                        >
-                            Szablony
-                        </Link>
-                        <Link
-                            href="/communication/reminders"
-                            className="versum-btn versum-btn--light"
-                        >
-                            Przypomnienia
-                        </Link>
-                        <button
-                            type="button"
-                            className="versum-btn versum-btn--default"
-                            onClick={() => setIsModalOpen(true)}
-                        >
-                            wyślij wiadomość pojedynczą
-                        </button>
-                        <Link
-                            href="/communication/mass"
-                            className="versum-btn versum-btn--primary"
-                        >
-                            wyślij wiadomość masową
-                        </Link>
-                    </div>
 
-                    <div className="versum-page__toolbar">
-                        <label className="versum-label">
-                            Status:
+                    <div className="row mb-l">
+                        <div className="col-sm-5 input-with-select-sm mb-s mb-md-0">
                             <select
-                                className="versum-select ml-2"
+                                value={kind}
+                                aria-label="Rodzaj wiadomości"
+                                onChange={(event) => {
+                                    setKind(
+                                        event.target.value as 'sms' | 'email',
+                                    );
+                                    setStatus('');
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="sms">SMS</option>
+                                <option value="email">Email</option>
+                            </select>
+                            <select
                                 value={status}
+                                aria-label="Status wiadomości"
                                 onChange={(event) => {
                                     setStatus(event.target.value);
                                     setPage(1);
                                 }}
                             >
-                                <option value="">wszystkie</option>
+                                <option value="">wszystkie statusy</option>
                                 {kind === 'sms' ? (
                                     <>
                                         <option value="sent">wysłane</option>
@@ -156,34 +142,46 @@ export default function CommunicationPage() {
                                     </>
                                 )}
                             </select>
-                        </label>
-                        <label className="versum-label">
-                            Rodzaj:
-                            <select
-                                className="versum-select ml-2"
-                                value={kind}
-                                onChange={(event) => {
-                                    setKind(
-                                        event.target.value as 'sms' | 'email',
-                                    );
-                                    setStatus('');
-                                    setPage(1);
-                                }}
-                            >
-                                <option value="sms">SMS</option>
-                                <option value="email">Email</option>
-                            </select>
-                        </label>
+                        </div>
+                        <div className="col-sm-7">
+                            <div className="d-flex flex-wrap jc-end">
+                                <Link
+                                    href="/communication/templates"
+                                    className="button ml-xs"
+                                >
+                                    szablony
+                                </Link>
+                                <Link
+                                    href="/communication/reminders"
+                                    className="button ml-xs"
+                                >
+                                    przypomnienia
+                                </Link>
+                                <button
+                                    type="button"
+                                    className="button ml-xs"
+                                    onClick={() => setIsModalOpen(true)}
+                                >
+                                    wyślij wiadomość
+                                </button>
+                                <Link
+                                    href="/communication/mass"
+                                    className="button button-blue ml-xs"
+                                >
+                                    wyślij masową
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     {loading ? (
-                        <div className="versum-loading">
+                        <div className="products-empty">
                             Ładowanie wiadomości...
                         </div>
                     ) : data ? (
                         <>
-                            <div className="versum-table-wrap">
-                                <table className="versum-table">
+                            <div className="column_row data_table">
+                                <table className="table-bordered">
                                     <thead>
                                         <tr>
                                             <th>Odbiorca</th>
@@ -195,9 +193,14 @@ export default function CommunicationPage() {
                                     <tbody>
                                         {kind === 'sms'
                                             ? smsHistory.data.items.map(
-                                                  (entry) => (
+                                                  (entry, i) => (
                                                       <tr
                                                           key={`sms-${entry.id}`}
+                                                          className={
+                                                              i % 2 === 0
+                                                                  ? 'odd'
+                                                                  : 'even'
+                                                          }
                                                       >
                                                           <td>
                                                               {entry.recipient}
@@ -207,7 +210,7 @@ export default function CommunicationPage() {
                                                                   {entry.subject ||
                                                                       'Wiadomość'}
                                                               </strong>
-                                                              <div className="versum-muted">
+                                                              <div className="light_text">
                                                                   {entry.content.slice(
                                                                       0,
                                                                       120,
@@ -220,11 +223,7 @@ export default function CommunicationPage() {
                                                               </div>
                                                           </td>
                                                           <td>
-                                                              <span className="versum-badge versum-badge--info">
-                                                                  {
-                                                                      entry.channel
-                                                                  }
-                                                              </span>
+                                                              {entry.channel}
                                                           </td>
                                                           <td>
                                                               {formatDateTime(
@@ -236,9 +235,14 @@ export default function CommunicationPage() {
                                                   ),
                                               )
                                             : emailHistory.data.items.map(
-                                                  (entry) => (
+                                                  (entry, i) => (
                                                       <tr
                                                           key={`email-${entry.id}`}
+                                                          className={
+                                                              i % 2 === 0
+                                                                  ? 'odd'
+                                                                  : 'even'
+                                                          }
                                                       >
                                                           <td>{entry.to}</td>
                                                           <td>
@@ -246,7 +250,7 @@ export default function CommunicationPage() {
                                                                   {entry.subject ||
                                                                       'Email'}
                                                               </strong>
-                                                              <div className="versum-muted">
+                                                              <div className="light_text">
                                                                   {(
                                                                       entry.template ??
                                                                       ''
@@ -262,11 +266,7 @@ export default function CommunicationPage() {
                                                                       : ''}
                                                               </div>
                                                           </td>
-                                                          <td>
-                                                              <span className="versum-badge versum-badge--info">
-                                                                  email
-                                                              </span>
-                                                          </td>
+                                                          <td>email</td>
                                                           <td>
                                                               {formatDateTime(
                                                                   entry.sentAt ||
@@ -280,46 +280,61 @@ export default function CommunicationPage() {
                                 </table>
                             </div>
 
-                            <div className="versum-pagination">
-                                <span className="versum-pagination__info">
-                                    Pozycje{' '}
-                                    {Math.min(
-                                        (page - 1) * data.limit + 1,
-                                        data.total,
-                                    )}{' '}
-                                    - {Math.min(page * data.limit, data.total)}{' '}
-                                    z {data.total}
-                                </span>
-                                <div className="versum-actions">
-                                    <button
-                                        type="button"
-                                        className="versum-btn versum-btn--sm versum-btn--light"
-                                        disabled={page <= 1}
-                                        onClick={() =>
-                                            setPage((current) =>
-                                                Math.max(1, current - 1),
-                                            )
-                                        }
-                                    >
-                                        poprzednia
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="versum-btn versum-btn--sm versum-btn--light"
-                                        disabled={
-                                            page * data.limit >= data.total
-                                        }
-                                        onClick={() =>
-                                            setPage((current) => current + 1)
-                                        }
-                                    >
-                                        następna
-                                    </button>
+                            <div className="pagination_container">
+                                <div className="column_row">
+                                    <div className="row">
+                                        <div className="info col-xs-7">
+                                            Pozycje{' '}
+                                            {Math.min(
+                                                (page - 1) * data.limit + 1,
+                                                data.total,
+                                            )}{' '}
+                                            -{' '}
+                                            {Math.min(
+                                                page * data.limit,
+                                                data.total,
+                                            )}{' '}
+                                            z {data.total}
+                                        </div>
+                                        <div className="form_pagination col-xs-5 text-right">
+                                            <button
+                                                type="button"
+                                                className="button ml-s"
+                                                disabled={page <= 1}
+                                                onClick={() =>
+                                                    setPage((current) =>
+                                                        Math.max(
+                                                            1,
+                                                            current - 1,
+                                                        ),
+                                                    )
+                                                }
+                                            >
+                                                poprzednia
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="button ml-s"
+                                                disabled={
+                                                    page * data.limit >=
+                                                    data.total
+                                                }
+                                                onClick={() =>
+                                                    setPage(
+                                                        (current) =>
+                                                            current + 1,
+                                                    )
+                                                }
+                                            >
+                                                następna
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <div className="versum-empty">Brak wiadomości</div>
+                        <div className="products-empty">Brak wiadomości</div>
                     )}
                 </div>
 
@@ -349,7 +364,6 @@ export default function CommunicationPage() {
                                             : '(email)'}
                                     </label>
                                     <input
-                                        className="versum-input"
                                         value={recipient}
                                         onChange={(e) =>
                                             setRecipient(e.target.value)
@@ -366,7 +380,6 @@ export default function CommunicationPage() {
                                     <div className="versum-form-group">
                                         <label>Temat</label>
                                         <input
-                                            className="versum-input"
                                             value={subject}
                                             onChange={(e) =>
                                                 setSubject(e.target.value)
@@ -380,7 +393,6 @@ export default function CommunicationPage() {
                                     <label htmlFor="comm-content">Treść</label>
                                     <textarea
                                         id="comm-content"
-                                        className="versum-textarea"
                                         rows={6}
                                         value={content}
                                         onChange={(e) =>
@@ -393,7 +405,7 @@ export default function CommunicationPage() {
                             <div className="versum-modal__footer">
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--light"
+                                    className="button"
                                     onClick={() => {
                                         setIsModalOpen(false);
                                         resetCompose();
@@ -403,7 +415,7 @@ export default function CommunicationPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--primary"
+                                    className="button button-blue ml-s"
                                     disabled={
                                         isSending ||
                                         !recipient.trim() ||
