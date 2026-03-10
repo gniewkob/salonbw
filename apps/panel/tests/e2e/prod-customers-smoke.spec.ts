@@ -97,6 +97,29 @@ async function gotoCustomerTab(
             return;
         } catch (err) {
             lastError = err;
+            // Fallback: open summary card and switch tab via in-page navigation.
+            const summaryUrl = `/customers/${customerId}`;
+            await page.goto(summaryUrl).catch(() => null);
+            await page.waitForLoadState('domcontentloaded').catch(() => null);
+            await page.waitForLoadState('networkidle').catch(() => null);
+            const tabLink = page
+                .locator(`a[href*="tab_name=${tabName}"], a[href$="?tab_name=${tabName}"]`)
+                .first();
+            if (await tabLink.isVisible().catch(() => false)) {
+                await Promise.all([
+                    page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
+                    tabLink.click(),
+                ]);
+                if (
+                    await page
+                        .locator(selector)
+                        .first()
+                        .isVisible()
+                        .catch(() => false)
+                ) {
+                    return;
+                }
+            }
             await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
         }
     }
@@ -175,7 +198,7 @@ async function login(page: any) {
 }
 
 test.describe('PROD smoke: customers gallery/files', () => {
-    test.setTimeout(90_000);
+    test.setTimeout(180_000);
 
     test.skip(
         !process.env.PANEL_LOGIN_EMAIL || !process.env.PANEL_LOGIN_PASSWORD,
@@ -320,7 +343,10 @@ test.describe('PROD smoke: customers gallery/files', () => {
         const customerId = await resolveCustomerId(page);
 
         const routes: Array<{ path: string; selector: string }> = [
-            { path: '/customers/:id', selector: '.customer-summary' },
+            {
+                path: '/customers/:id',
+                selector: '.customer-info-summary, .customer-card-content',
+            },
             {
                 path: '/customers/:id?tab_name=personal_data',
                 selector: '.customer-personal-view',

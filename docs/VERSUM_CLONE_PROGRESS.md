@@ -1,6 +1,6 @@
 # Postęp Klonowania Versum - Dokumentacja
 
-> Data aktualizacji: 2026-03-10
+> Data aktualizacji: 2026-03-11
 > Cel: 1:1 klon Versum (panel.versum.com/salonblackandwhite)
 > Sposób klonowania/kopiowania (obowiązujący SOP): `docs/VERSUM_CLONING_STANDARD.md`
 
@@ -95,20 +95,19 @@
 
 ## Known deltas (strict 1:1)
 
-- Klienci po deploy `0642f399`:
-  - functional parity (panel): **NO** na rerun produkcyjnym 2026-02-23 po wyrównaniu `customerId` (wspólny `8177102`),
-  - visual strict parity: **NO** (próg 3.0% niespełniony na ekranach krytycznych),
-  - runtime crash `Application error: a client-side exception has occurred` na trasach karty klienta: **nieodtworzony** na rerun 2026-02-23,
-  - odchylenia pixel diff (produkcja 2026-02-23):
-    - `list`: `7.333%`
-    - `summary`: `4.216%`
-    - `gallery`: `2.307%`
-    - `files`: `2.083%`
-  - uwaga porównawcza: `versum` zwraca fallback `500` na części ekranów referencyjnych (`list`, `statistics`), co obniża wynik parity całościowy.
+- Klienci (latest rerun 2026-03-10T23:51Z):
+  - functional parity: **NO** tylko na `Add customer form` (panel: brak tekstu `nowy klient`),
+  - visual strict parity: **NO** (próg 3.0% niespełniony na `list` i `summary`),
+  - odchylenia pixel diff (produkcja, latest):
+    - `list`: `7.382%`
+    - `summary`: `5.862%`
+    - `gallery`: `2.825%`
+    - `files`: `2.951%`
+  - runtime crash `Application error: a client-side exception has occurred` na trasach karty klienta: **nieodtworzony** (smoke `3/3` PASS),
   - artefakty:
-    - `output/parity/2026-02-23-customers-prod-full/REPORT.md`
-    - `output/parity/2026-02-23-customers-prod-full/pixel-diff.json`
-    - `output/parity/2026-02-23-customers-visual-baseline/`
+    - `output/parity/2026-03-10-customers-prod-full/REPORT.md`
+    - `output/parity/2026-03-10-customers-prod-full/pixel-diff.json`
+    - `output/parity/2026-03-10-customers-visual-baseline/`
 - Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
 - Statystyki po deploy `9ec696ac`:
   - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
@@ -139,6 +138,30 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-03-11 - Klienci: smoke hardening + produkcyjny parity rerun
+
+- zmiana kodu:
+  - `apps/panel/tests/e2e/prod-customers-smoke.spec.ts`
+    - update selektora dla `/customers/:id`: `.customer-info-summary, .customer-card-content` (zamiast `.customer-summary`),
+    - hardening nawigacji tabów `gallery/files`:
+      - fallback przez `/customers/:id` i klik w link `tab_name=...`, gdy direct URL nie renderuje zakładki,
+    - timeout smoke podniesiony do `180_000` dla stabilności flow upload/download na produkcji.
+- walidacja produkcyjna:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` -> `3 passed`,
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-customers-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik parity (raport `output/parity/2026-03-10-customers-prod-full/REPORT.md`, generated `2026-03-10T23:51:09.826Z`):
+  - functional:
+    - `YES` na list/card/taby/edit,
+    - `NO` na `Add customer form` (panel: brak tekstu `nowy klient`),
+  - visual strict (`<= 3.0%`):
+    - `list 7.382%` (`NO`),
+    - `summary 5.862%` (`NO`),
+    - `gallery 2.825%` (`YES`),
+    - `files 2.951%` (`YES`),
+  - final verdict: `NO` (functional + visual strict niespełnione dla części ekranów).
+
+---
 
 ### 2026-03-10 - Extension: copy-first z live HTML Versum + refactor markupu
 
