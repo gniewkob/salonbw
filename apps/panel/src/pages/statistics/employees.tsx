@@ -108,114 +108,131 @@ export default function EmployeeActivityPage() {
                     <li>Aktywność pracowników</li>
                 </ul>
 
-                <div className="versum-page__toolbar">
-                    <div className="btn-group mr-10" role="group">
-                        <button
-                            type="button"
-                            className="versum-toolbar-btn btn btn-default"
-                            onClick={() => navigateDate('prev')}
+                <div className="statistics-actions">
+                    <div className="statistics-date-wrap">
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                        <a
+                            className="button button-link button_prev mr-s"
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigateDate('prev');
+                            }}
+                            aria-label="Poprzedni dzień"
                         >
-                            ◀
-                        </button>
+                            <span className="fc-icon fc-icon-left-single-arrow" />
+                        </a>
                         <input
-                            type="date"
-                            aria-label="Wybierz datę"
-                            className="form-control versum-toolbar-search"
+                            type="text"
+                            id="date_range"
+                            className="statistics-date-input"
+                            readOnly
                             value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
+                            aria-label="Data"
                         />
-                        <button
-                            type="button"
-                            className="versum-toolbar-btn btn btn-default"
-                            onClick={() => navigateDate('next')}
+                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                        <a
+                            className="button button-link button_next ml-s"
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                navigateDate('next');
+                            }}
+                            aria-label="Następny dzień"
                         >
-                            ▶
-                        </button>
+                            <span className="fc-icon fc-icon-right-single-arrow" />
+                        </a>
                     </div>
-                    <div className="ml-auto" />
-                    <button
-                        type="button"
-                        className="btn btn-default btn-xs"
-                        onClick={() => window.print()}
+                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.print();
+                        }}
+                        aria-label="Drukuj"
                     >
-                        🖨
-                    </button>
+                        <div
+                            className="icon sprite-print_blue"
+                            aria-hidden="true"
+                        />
+                    </a>
                 </div>
 
                 {loading ? (
                     <div className="versum-muted p-20">Ładowanie...</div>
                 ) : (
-                    <div>
-                        <div>
-                            <ul className="nav nav-tabs mb-20">
-                                <li className="active">
-                                    <a>Tabela</a>
-                                </li>
-                                <li>
-                                    <a>Wykres</a>
-                                </li>
-                            </ul>
-                            <div className="versum-table-wrap">
-                                <table className="versum-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Pracownik</th>
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {rows.map((employee) => (
-                                            <tr key={employee.employeeId}>
-                                                <td>
-                                                    <Link
-                                                        href={`/employees/${employee.employeeId}`}
-                                                        className="versum-link"
-                                                    >
-                                                        {employee.employeeName}
-                                                    </Link>
-                                                </td>
-                                                <td>
-                                                    {formatWorkTime(
-                                                        toNumber(
-                                                            employee.workTimeMinutes,
-                                                        ),
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    {toNumber(
-                                                        employee.appointmentsCount,
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        <tr>
-                                            <th
-                                                colSpan={3}
-                                                className="statistics-payment-title"
-                                            >
-                                                Podsumowanie
-                                            </th>
-                                        </tr>
-                                        <tr>
-                                            <th aria-label="Pracownik"></th>
-                                            <th>Przepracowany czas</th>
-                                            <th>Liczba wizyt</th>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Łącznie</th>
-                                            <th>
+                    <div className="stats-tabs">
+                        <ul>
+                            <li className="ui-state-default active">
+                                <a className="stats-tab-link" href="#">
+                                    Tabela
+                                </a>
+                            </li>
+                            <li className="ui-state-default">
+                                <a className="stats-tab-link" href="#">
+                                    Wykres
+                                </a>
+                            </li>
+                        </ul>
+                        <div className="data_table">
+                            <table className="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Pracownik</th>
+                                        <th>Przepracowany czas</th>
+                                        <th>Liczba wizyt</th>
+                                    </tr>
+                                    {rows.map((employee, i) => (
+                                        <tr
+                                            key={employee.employeeId}
+                                            className={
+                                                i % 2 === 0 ? 'even' : 'odd'
+                                            }
+                                        >
+                                            <td>
+                                                <Link
+                                                    href={`/employees/${employee.employeeId}`}
+                                                    className="versum-link"
+                                                >
+                                                    {employee.employeeName}
+                                                </Link>
+                                            </td>
+                                            <td>
                                                 {formatWorkTime(
-                                                    totalWorkMinutes,
+                                                    toNumber(
+                                                        employee.workTimeMinutes,
+                                                    ),
                                                 )}
-                                            </th>
-                                            <th>{totalAppointments}</th>
+                                            </td>
+                                            <td>
+                                                {toNumber(
+                                                    employee.appointmentsCount,
+                                                )}
+                                            </td>
                                         </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                    ))}
+                                    <tr>
+                                        <td colSpan={3}>
+                                            <strong>Podsumowanie</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th aria-label="Pracownik" />
+                                        <th>Przepracowany czas</th>
+                                        <th>Liczba wizyt</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Łącznie</strong>
+                                        </td>
+                                        <td>
+                                            {formatWorkTime(totalWorkMinutes)}
+                                        </td>
+                                        <td>{totalAppointments}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
