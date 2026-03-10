@@ -87,7 +87,7 @@
 | Moduł Usługi | 🟡 | 90% (column_row data_table + nav-tabs CSS + export link, commit 8e1c08e2) |
 | Moduł Statystyki | 🟡 | 85% (functional YES, visual strict YES — data_table/stats-tabs/sprite icons, commit a633b427) |
 | Moduł Łączność | 🟡 | 80% (column_row data_table + odd/even + input-with-select-sm toolbar, commit 56ef1eb2) |
-| Moduł Ustawienia | 🟡 | 75% (SettingsNav wired + secondaryNav:true + tile CSS + breadcrumb YES, visual strict NO) |
+| Moduł Ustawienia | 🟡 | 80% (settings tiles + sprite-settings icons + breadcrumb YES, visual strict NO, commit 7e27aea0) |
 | Moduł Dodatki (Extension) | 🟡 | 85% (index visual parity YES, detail page /extension/tools/[id]: layout+header+price+status+desc+availability-table YES, screenshots deferred) |
 | Infra: Next.js | ✅ | 15.5.10 na panel + landing (pnpm.overrides zaktualizowane) |
 
@@ -139,6 +139,27 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-03-10 - Ustawienia: settings tiles + sprite icons + deploy dashboard
+
+- zmiana kodu:
+  - `apps/panel/src/pages/settings/index.tsx`
+    - przejście z emoji na ikony `sprite-settings_*` i spójny grid kafli ustawień,
+    - mapping ikon do klas obecnych w vendored sprite sheet (bez zależności od globalnego vendor CSS),
+    - wrapper strony utrzymany w `versum-page`.
+  - `apps/panel/src/styles/versum-shell.css`
+    - dodane definicje brakujących ikon `sprite-settings_*` (pozycje ze sprite sheet),
+    - dodane style kafli `settings-tiles-grid` / `settings-tile`.
+- walidacja:
+  - `pnpm eslint src/pages/settings/index.tsx --fix` (panel) ✅
+  - `pnpm tsc --noEmit` (panel) ✅
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-settings-smoke.spec.ts --project=desktop-1366` -> `1 skipped`.
+- deploy:
+  - run `22922605165` (`failure`, target `dashboard`, sha `7e27aea0`) — fail na kroku remote install deps,
+  - retry run `22922758693` (`success`, target `dashboard`, sha `7e27aea0`) — 2026-03-10 20:29 UTC.
+- commit: `7e27aea0`
+
+---
 
 ### 2026-02-26 - Infra: Next.js 15.5.10 upgrade + rewrites fix + panel deploy
 
