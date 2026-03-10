@@ -146,100 +146,109 @@ export default function WarehouseProductsPage() {
         URL.revokeObjectURL(url);
     };
 
-    const from = filteredProducts.length ? 1 : 0;
-    const to = filteredProducts.length;
-
     return (
         <WarehouseLayout
             pageTitle="Magazyn / Produkty | SalonBW"
             heading="Magazyn / Produkty"
             activeTab="products"
-            actions={
-                <>
-                    <Link href="/sales/new" className="btn btn-default btn-xs">
-                        dodaj sprzedaż
-                    </Link>
-                    <Link href="/use/new" className="btn btn-default btn-xs">
-                        dodaj zużycie
-                    </Link>
-                    <Link
-                        href="/products/new"
-                        className="btn btn-primary btn-xs"
-                    >
-                        dodaj produkt
-                    </Link>
-                </>
-            }
         >
-            <div className="products-toolbar">
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="wyszukaj produkt"
-                    className="versum-input"
-                />
-                <select
-                    value={productTypeFilter}
-                    onChange={(e) =>
-                        setProductTypeFilter(
-                            e.target.value as ProductTypeFilter,
-                        )
-                    }
-                    className="versum-select"
-                >
-                    {productTypeOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                        </option>
-                    ))}
-                </select>
+            <div className="row mb-l">
+                <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="wyszukaj produkt"
+                        className="right_space"
+                    />
+                    <select
+                        value={productTypeFilter}
+                        aria-label="Rodzaj produktu"
+                        onChange={(e) =>
+                            setProductTypeFilter(
+                                e.target.value as ProductTypeFilter,
+                            )
+                        }
+                    >
+                        {productTypeOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-sm-8 col-lg-7">
+                    <div className="d-flex flex-wrap jc-end">
+                        <Link href="/sales/new" className="button ml-xs">
+                            dodaj sprzedaż
+                        </Link>
+                        <Link href="/use/new" className="button ml-xs">
+                            dodaj zużycie
+                        </Link>
+                        <Link
+                            href="/products/new"
+                            className="button button-blue ml-xs"
+                        >
+                            dodaj produkt
+                        </Link>
+                    </div>
+                </div>
             </div>
 
-            <div className="products-table-wrap">
-                <table className="products-table">
+            <div className="column_row data_table">
+                <table className="table-bordered">
                     <thead>
                         <tr>
-                            <th className="col-checkbox">
-                                <input type="checkbox" />
+                            <th className="pointer checkbox_container center_text">
+                                <input
+                                    type="checkbox"
+                                    aria-label="zaznacz wszystkie"
+                                />
                             </th>
-                            <th className="col-name">Nazwa</th>
+                            <th>Nazwa</th>
                             <th>Kategoria</th>
                             <th>Rodzaj produktu</th>
                             <th>Kod wewnętrzny (SKU)</th>
                             <th>Stan magazynowy</th>
                             <th>Cena sprzedaży</th>
-                            <th className="col-actions"></th>
+                            <th className="col-actions-45" aria-label="Akcje" />
                         </tr>
                     </thead>
                     <tbody>
                         {isLoading ? (
-                            <tr>
+                            <tr className="odd">
                                 <td colSpan={8} className="products-empty">
                                     Ładowanie produktów...
                                 </td>
                             </tr>
                         ) : filteredProducts.length === 0 ? (
-                            <tr>
+                            <tr className="odd">
                                 <td colSpan={8} className="products-empty">
                                     Brak produktów spełniających kryteria
                                 </td>
                             </tr>
                         ) : (
-                            filteredProducts.map((product) => {
+                            filteredProducts.map((product, i) => {
                                 const volume =
                                     Number(product.volumeMl ?? 0) > 0
                                         ? product.stock *
                                           Number(product.volumeMl)
                                         : 0;
                                 return (
-                                    <tr key={product.id}>
-                                        <td className="col-checkbox">
-                                            <input type="checkbox" />
+                                    <tr
+                                        key={product.id}
+                                        className={i % 2 === 0 ? 'odd' : 'even'}
+                                    >
+                                        <td className="pointer checkbox_container center_text">
+                                            <input
+                                                type="checkbox"
+                                                aria-label={`zaznacz ${product.name}`}
+                                            />
                                         </td>
-                                        <td className="col-name">
+                                        <td className="wrap blue_text pointer link_body">
                                             <Link
                                                 href={`/products/${product.id}`}
+                                                className="inverse_decoration"
                                             >
                                                 {product.name}
                                             </Link>
@@ -260,39 +269,29 @@ export default function WarehouseProductsPage() {
                                                 : ' (0 ml)'}
                                         </td>
                                         <td>
-                                            {Number(
-                                                product.unitPrice ?? 0,
-                                            ).toFixed(2)}{' '}
-                                            zł
+                                            {Number(product.unitPrice ?? 0)
+                                                .toFixed(2)
+                                                .replace('.', ',')}
+                                            &nbsp;zł
                                         </td>
-                                        <td className="col-actions">
+                                        <td className="center_text">
                                             <Link
                                                 href={`/sales/new?product_id=${product.id}`}
-                                                title="dodaj sprzedaż"
-                                                className="products-action-link"
+                                                className="icon_link stockroom_sell"
+                                                title="sprzedaj"
                                             >
                                                 <i
-                                                    className="fa fa-shopping-cart"
+                                                    className="icon sprite-stock_action_sell"
                                                     aria-hidden="true"
                                                 />
                                             </Link>
                                             <Link
                                                 href={`/use/new?product_id=${product.id}`}
-                                                title="dodaj zużycie"
-                                                className="products-action-link"
+                                                className="icon_link stockroom_consumption"
+                                                title="zużyj"
                                             >
                                                 <i
-                                                    className="fa fa-download"
-                                                    aria-hidden="true"
-                                                />
-                                            </Link>
-                                            <Link
-                                                href={`/products/${product.id}/edit`}
-                                                title="edytuj produkt"
-                                                className="products-action-link"
-                                            >
-                                                <i
-                                                    className="fa fa-pencil"
+                                                    className="icon sprite-stock_action_consumption"
                                                     aria-hidden="true"
                                                 />
                                             </Link>
@@ -303,38 +302,24 @@ export default function WarehouseProductsPage() {
                         )}
                     </tbody>
                 </table>
-                <div className="products-table-footer">
-                    <span>
-                        Pozycje od {from} do {to} z {filteredProducts.length}
-                    </span>
-                    <div className="products-table-footer__controls">
-                        <span>na stronie</span>
-                        <select
-                            className="versum-select versum-select--inline"
-                            value="20"
-                            disabled
-                        >
-                            <option value="20">20</option>
-                        </select>
-                        <div className="products-pagination-nav">
-                            <input type="text" value="1" readOnly />
-                            <span>z 1</span>
-                            <button type="button" disabled>
-                                {'>'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div className="products-export">
-                <button
-                    type="button"
-                    onClick={exportProductsCsv}
-                    className="link-excel"
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                <a
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        exportProductsCsv();
+                    }}
+                    className="button"
                 >
+                    <div
+                        className="icon sprite-exel_blue mr-xs"
+                        aria-hidden="true"
+                    />
                     pobierz bazę produktów w pliku Excel
-                </button>
+                </a>
             </div>
         </WarehouseLayout>
     );
