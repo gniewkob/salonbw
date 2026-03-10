@@ -82,8 +82,8 @@
 | Moduł Klienci - Sidebar | 🟡 | 80% (functional YES, visual strict NO) |
 | Moduł Klienci - Filtrowanie | ✅ | 100% |
 | Moduł Klienci - Lista | ✅ | 100% |
-| Moduł Klienci - Szczegóły | 🟡 | 85% (functional YES, visual strict NO) |
-| Moduł Magazyn | 🟡 | 90% (functional YES, visual strict NO) |
+| Moduł Klienci - Szczegóły | 🟡 | 90% (functional YES, visual strict YES — buttons-row/info-box/row-col/icon_box, commit ff4cb8e4) |
+| Moduł Magazyn | 🟡 | 90% (functional YES, visual strict YES — secondary_menu/data_table/icon_link, commit 1dc796a6) |
 | Moduł Usługi | 🟡 | 85% (list: table-bordered+odd/even+toolbar+pagination parity YES, detail summary: h2+list-group+dl-horizontal YES, visual strict parity pending pixel-diff) |
 | Moduł Statystyki | 🟡 | 85% (functional YES, visual strict YES — data_table/stats-tabs/sprite icons, commit a633b427) |
 | Moduł Łączność | 🟡 | 75% (CommunicationNav wired + copy-first breadcrumb/toolbar YES, visual strict NO) |
