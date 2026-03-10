@@ -3496,6 +3496,40 @@ body.e2e-customers #customers_main .breadcrumb .glyphicon {
     max-width: 980px;
 }
 
+.nav-tabs {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    flex-wrap: wrap;
+}
+.nav-tabs > li {
+    margin-bottom: -1px;
+}
+.nav-tabs > li > a {
+    display: block;
+    padding: 8px 15px;
+    color: #428bca;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    font-size: 13px;
+    line-height: 1.42857;
+}
+.nav-tabs > li > a:hover {
+    border-color: #eee #eee #ddd;
+    background-color: #eee;
+    color: #337ab7;
+}
+.nav-tabs > li.active > a {
+    color: #555;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+    cursor: default;
+}
+
 .service-details-tabs {
     margin-bottom: 10px;
 }
