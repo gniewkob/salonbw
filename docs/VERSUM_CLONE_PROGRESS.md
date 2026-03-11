@@ -87,7 +87,7 @@
 | Moduł Usługi | 🟡 | 90% (column_row data_table + nav-tabs CSS + export link, commit 8e1c08e2) |
 | Moduł Statystyki | 🟡 | 85% (functional YES, visual strict YES — data_table/stats-tabs/sprite icons, commit a633b427) |
 | Moduł Łączność | 🟡 | 80% (column_row data_table + odd/even + input-with-select-sm toolbar, commit 56ef1eb2) |
-| Moduł Ustawienia | 🟡 | 80% (settings tiles + sprite-settings icons + breadcrumb YES, visual strict NO, commit 7e27aea0) |
+| Moduł Ustawienia | 🟡 | 85% (functional parity YES na `/settings`, visual strict NO: 5.446%, commit 7e27aea0) |
 | Moduł Dodatki (Extension) | 🟡 | 85% (index visual parity YES, detail page /extension/tools/[id]: layout+header+price+status+desc+availability-table YES, screenshots deferred) |
 | Infra: Next.js | ✅ | 15.5.10 na panel + landing (pnpm.overrides zaktualizowane) |
 
@@ -128,6 +128,13 @@
     - `output/parity/2026-03-11-statistics-prod-full/REPORT.md`
     - `output/parity/2026-03-11-statistics-prod-full/pixel-diff.json`
     - `output/parity/2026-03-11-statistics-visual-baseline/`
+- Ustawienia (latest rerun 2026-03-11T00:47Z):
+  - functional parity: **YES** (`/settings`),
+  - visual strict parity: **NO** (`settings-main 5.446%`, próg `3.0%`),
+  - artefakty:
+    - `output/parity/2026-03-11-settings-prod-full/REPORT.md`
+    - `output/parity/2026-03-11-settings-prod-full/pixel-diff.json`
+    - `output/parity/2026-03-11-settings-visual-baseline/`
 - Największe odchylenia pixel diff (próg 3.0%, latest warehouse run 2026-03-11):
   - `products`: `11.277%`
   - `sales-history`: `7.718%`
@@ -148,6 +155,20 @@
 ---
 
 ## 📝 HISTORIA ZMIAN
+
+### 2026-03-11 - Ustawienia: parity audit prod fix (Versum URL) + rerun
+
+- zmiana kodu:
+  - `apps/panel/tests/e2e/prod-settings-parity-audit.spec.ts`
+    - poprawiony URL referencyjny Versum: `.../settings` (zamiast nieistniejącego `.../settings/company` zwracającego 404),
+    - utrzymane checki strukturalne `#sidebar` + `#main-content` oraz screenshot/pixel-diff.
+- walidacja produkcyjna:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-settings-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik parity (raport `output/parity/2026-03-11-settings-prod-full/REPORT.md`, generated `2026-03-11T00:47:13.939Z`):
+  - functional parity: `YES`,
+  - visual strict (`<= 3.0%`): `NO` (`settings-main 5.446%`).
+
+---
 
 ### 2026-03-11 - Klienci: smoke hardening + produkcyjny parity rerun
 
