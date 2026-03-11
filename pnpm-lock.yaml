@@ -73,8 +73,8 @@ importers:
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
       '@fullcalendar/react':
-        specifier: ^6.1.18
-        version: 6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^6.1.20
+        version: 6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@fullcalendar/timegrid':
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
@@ -230,8 +230,8 @@ importers:
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
       '@fullcalendar/react':
-        specifier: ^6.1.18
-        version: 6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^6.1.20
+        version: 6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@fullcalendar/timegrid':
         specifier: ^6.1.18
         version: 6.1.19(@fullcalendar/core@6.1.20)
@@ -1173,10 +1173,10 @@ packages:
     peerDependencies:
       '@fullcalendar/core': ~6.1.19
 
-  '@fullcalendar/react@6.1.19':
-    resolution: {integrity: sha512-FP78vnyylaL/btZeHig8LQgfHgfwxLaIG6sKbNkzkPkKEACv11UyyBoTSkaavPsHtXvAkcTED1l7TOunAyPEnA==}
+  '@fullcalendar/react@6.1.20':
+    resolution: {integrity: sha512-1w0pZtceaUdfAnxMSCGHCQalhi+mR1jOe76sXzyAXpcPz/Lf0zHSdcGK/U2XpZlnQgQtBZW+d+QBnnzVQKCxAA==}
     peerDependencies:
-      '@fullcalendar/core': ~6.1.19
+      '@fullcalendar/core': ~6.1.20
       react: ^16.7.0 || ^17 || ^18 || ^19
       react-dom: ^16.7.0 || ^17 || ^18 || ^19
 
@@ -6877,6 +6877,7 @@ packages:
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
+    deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
   prelude-ls@1.2.1:
@@ -9402,7 +9403,7 @@ snapshots:
     dependencies:
       '@fullcalendar/core': 6.1.20
 
-  '@fullcalendar/react@6.1.19(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@fullcalendar/react@6.1.20(@fullcalendar/core@6.1.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@fullcalendar/core': 6.1.20
       react: 18.3.1
