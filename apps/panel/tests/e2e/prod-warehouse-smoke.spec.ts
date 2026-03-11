@@ -10,32 +10,56 @@ async function login(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
 
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        await page.goto('/');
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
 
-    const emailInput = page.locator(
-        'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
+        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+            return;
+        }
+
+        const emailInput = page.locator(
+            'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
+        );
+        const passwordInput = page.locator(
+            'input[name="password"], input[type="password"], input[placeholder*="Password"], input[aria-label*="Password"]',
+        );
+
+        await emailInput.first().waitFor({ state: 'visible', timeout: 20_000 });
+        await emailInput.first().fill(email);
+        await passwordInput.first().fill(password);
+
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
+            page.click(
+                'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
+            ),
+        ]);
+
+        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+            return;
+        }
+
+        const throttled = await page
+            .locator('text=Too Many Requests, text=ThrottlerException')
+            .first()
+            .isVisible()
+            .catch(() => false);
+        if (throttled) {
+            await page.waitForTimeout(35_000);
+            continue;
+        }
+        await page.waitForTimeout(1000);
+    }
+
+    await expect(page).not.toHaveURL(
+        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
     );
-    const passwordInput = page.locator(
-        'input[name="password"], input[type="password"], input[placeholder*="Password"], input[aria-label*="Password"]',
-    );
-
-    await emailInput.first().waitFor({ state: 'visible', timeout: 20_000 });
-    await emailInput.first().fill(email);
-    await passwordInput.first().fill(password);
-
-    await Promise.all([
-        page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => null),
-        page.click(
-            'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
-        ),
-    ]);
-
-    await expect(page).not.toHaveURL(/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/);
 }
 
 test.describe('PROD smoke: warehouse layout parity', () => {
-    test.setTimeout(90_000);
+    test.setTimeout(210_000);
 
     test.skip(
         !process.env.PANEL_LOGIN_EMAIL || !process.env.PANEL_LOGIN_PASSWORD,
@@ -72,7 +96,8 @@ test.describe('PROD smoke: warehouse layout parity', () => {
 
             // Warehouse pages should include the products wrapper.
             await expect(page.locator('#products_main')).toBeVisible();
-            await expect(page.locator('.products-top-tabs')).toBeVisible();
+            await expect(page.locator('#products_main')).toContainText('PRODUKTY');
+            await expect(page.locator('#products_main')).toContainText('SPRZEDAŻ');
         }
     });
 
