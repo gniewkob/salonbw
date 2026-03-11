@@ -110,28 +110,50 @@ async function loginPanel(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
 
-    await page.goto('https://panel.salon-bw.pl/auth/login', {
-        waitUntil: 'domcontentloaded',
-    });
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        await page.goto('https://panel.salon-bw.pl/auth/login', {
+            waitUntil: 'domcontentloaded',
+        });
+        await page.waitForLoadState('networkidle').catch(() => null);
 
-    await page
-        .locator(
-            'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
-        )
-        .first()
-        .fill(email);
-    await page.locator('input[type="password"]').first().fill(password);
+        if (!page.url().includes('/auth/login')) {
+            return;
+        }
 
-    await Promise.all([
-        page
-            .waitForURL((url: URL) => !url.pathname.includes('/auth/login'), {
-                timeout: 30_000,
-            })
-            .catch(() => null),
-        page.click(
-            'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
-        ),
-    ]);
+        await page
+            .locator(
+                'input[name="email"], input[type="email"], input[placeholder*="Email"], input[aria-label*="Email"]',
+            )
+            .first()
+            .fill(email);
+        await page.locator('input[type="password"]').first().fill(password);
+
+        await Promise.all([
+            page
+                .waitForURL((url: URL) => !url.pathname.includes('/auth/login'), {
+                    timeout: 30_000,
+                })
+                .catch(() => null),
+            page.click(
+                'button[type="submit"], button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")',
+            ),
+        ]);
+
+        if (!page.url().includes('/auth/login')) {
+            return;
+        }
+
+        const throttled = await page
+            .locator('text=Too Many Requests, text=ThrottlerException')
+            .first()
+            .isVisible()
+            .catch(() => false);
+        if (throttled) {
+            await page.waitForTimeout(35_000);
+            continue;
+        }
+        await page.waitForTimeout(1000);
+    }
 }
 
 async function loginVersum(page: any) {
@@ -413,6 +435,13 @@ test.describe('PROD audit: statistics panel vs versum', () => {
                 waitUntil: 'domcontentloaded',
                 timeout: 45_000,
             });
+            if (/\/auth\/login(\?|$)/.test(panelPage.url())) {
+                await loginPanel(panelPage);
+                await panelPage.goto(action.panelUrl, {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 45_000,
+                });
+            }
             await panelPage.waitForTimeout(1200);
             await panelPage.screenshot({
                 path: path.join(outDir, `panel-${seq}-${action.id}.png`),

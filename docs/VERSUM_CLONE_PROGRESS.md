@@ -120,14 +120,14 @@
     - `output/parity/2026-03-11-warehouse-prod-full/pixel-diff.json`
     - `output/parity/2026-03-11-warehouse-visual-baseline/`
 - Statystyki po deploy `9ec696ac`:
-  - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
-  - strict visual parity: **NO** (`dashboard 13.473%`, `employees 4.005%`, `commissions 6.250%`),
+  - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`) — latest rerun 2026-03-11,
+  - strict visual parity: **NO** (`dashboard 12.292%`, `employees 4.188%`, `commissions 6.111%`),
   - runtime crash `Application error: a client-side exception has occurred` na `/statistics` i `/statistics/commissions`: **naprawiony** (nieodtworzony na rerun 2026-02-24),
   - decyzja: **odłożone do dopieszczenia po module o wyższym priorytecie** (strict visual polish + synchronizacja danych parity),
   - artefakty:
-    - `output/parity/2026-02-24-statistics-prod-full/REPORT.md`
-    - `output/parity/2026-02-24-statistics-prod-full/pixel-diff.json`
-    - `output/parity/2026-02-24-statistics-visual-baseline/`
+    - `output/parity/2026-03-11-statistics-prod-full/REPORT.md`
+    - `output/parity/2026-03-11-statistics-prod-full/pixel-diff.json`
+    - `output/parity/2026-03-11-statistics-visual-baseline/`
 - Największe odchylenia pixel diff (próg 3.0%, latest warehouse run 2026-03-11):
   - `products`: `11.277%`
   - `sales-history`: `7.718%`
@@ -189,6 +189,28 @@
 - wynik parity (raport `output/parity/2026-03-11-warehouse-prod-full/REPORT.md`, generated `2026-03-11T00:01:36.685Z`):
   - functional parity: `YES` (`16/16`),
   - visual strict (`<= 3.0%`): `NO` (`products 11.277%`, `sales-history 7.718%`, `deliveries-history 6.876%`).
+
+---
+
+### 2026-03-11 - Statystyki: smoke/parity hardening + aktualizacja benchmarków strict visual
+
+- zmiana kodu:
+  - `apps/panel/tests/e2e/prod-statistics-smoke.spec.ts`
+    - login hardening (`retry + throttle wait`) dla `Too Many Requests`,
+    - timeout smoke podniesiony do `180_000`,
+    - update selektorów do aktualnego DOM produkcji:
+      - breadcrumbs zamiast legacy `h1`,
+      - check tabel po treści (`Sprzedaż usług`, `Pracownik`) bez klasy `versum-table`,
+      - nawigacja daty przez `getByRole('link', { name: /Następny dzień|›/ })`.
+  - `apps/panel/tests/e2e/prod-statistics-parity-audit.spec.ts`
+    - login panel hardening (`retry + throttle wait`),
+    - auto re-login w pętli akcji po redirect na `/auth/login`.
+- walidacja produkcyjna:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-statistics-smoke.spec.ts --project=desktop-1366` -> `2 passed`,
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-statistics-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik parity (raport `output/parity/2026-03-11-statistics-prod-full/REPORT.md`, generated `2026-03-11T00:11:10.608Z`):
+  - functional parity: `YES` (dashboard/employees/commissions/services),
+  - visual strict (`<= 3.0%`): `NO` (`dashboard 12.292%`, `employees 4.188%`, `commissions 6.111%`).
 
 ---
 
