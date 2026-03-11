@@ -108,7 +108,17 @@
     - `output/parity/2026-03-10-customers-prod-full/REPORT.md`
     - `output/parity/2026-03-10-customers-prod-full/pixel-diff.json`
     - `output/parity/2026-03-10-customers-visual-baseline/`
-- Magazyn po deploy `d42a8615` ma pełną parity funkcjonalną (`16/16`), ale strict visual parity pozostaje **NO**.
+- Magazyn (latest rerun 2026-03-11T00:01Z):
+  - functional parity: **YES** (`16/16`),
+  - visual strict parity: **NO** (próg 3.0% niespełniony),
+  - odchylenia pixel diff (produkcja, latest):
+    - `products`: `11.277%`
+    - `sales-history`: `7.718%`
+    - `deliveries-history`: `6.876%`
+  - artefakty:
+    - `output/parity/2026-03-11-warehouse-prod-full/REPORT.md`
+    - `output/parity/2026-03-11-warehouse-prod-full/pixel-diff.json`
+    - `output/parity/2026-03-11-warehouse-visual-baseline/`
 - Statystyki po deploy `9ec696ac`:
   - functional parity (panel+versum): **YES** (`dashboard`, `employees`, `commissions`, `services`),
   - strict visual parity: **NO** (`dashboard 13.473%`, `employees 4.005%`, `commissions 6.250%`),
@@ -118,14 +128,14 @@
     - `output/parity/2026-02-24-statistics-prod-full/REPORT.md`
     - `output/parity/2026-02-24-statistics-prod-full/pixel-diff.json`
     - `output/parity/2026-02-24-statistics-visual-baseline/`
-- Największe odchylenia pixel diff (próg 3.0%, produkcja 2026-02-20):
-  - `products`: `9.314%`
-  - `sales-history`: `7.367%`
-  - `deliveries-history`: `5.731%`
+- Największe odchylenia pixel diff (próg 3.0%, latest warehouse run 2026-03-11):
+  - `products`: `11.277%`
+  - `sales-history`: `7.718%`
+  - `deliveries-history`: `6.876%`
 - Referencja artefaktów:
-  - `output/parity/2026-02-20-warehouse-prod-full/REPORT.md`
-  - `output/parity/2026-02-20-warehouse-prod-full/pixel-diff.json`
-  - `output/parity/2026-02-20-warehouse-visual-baseline/`
+  - `output/parity/2026-03-11-warehouse-prod-full/REPORT.md`
+  - `output/parity/2026-03-11-warehouse-prod-full/pixel-diff.json`
+  - `output/parity/2026-03-11-warehouse-visual-baseline/`
 
 ---
 
@@ -160,6 +170,25 @@
     - `gallery 2.825%` (`YES`),
     - `files 2.951%` (`YES`),
   - final verdict: `NO` (functional + visual strict niespełnione dla części ekranów).
+
+---
+
+### 2026-03-11 - Magazyn: smoke/parity hardening + wiarygodny rerun produkcyjny
+
+- zmiana kodu:
+  - `apps/panel/tests/e2e/prod-warehouse-smoke.spec.ts`
+    - login hardening (`retry + throttle wait`) dla `Too Many Requests`,
+    - timeout smoke podniesiony do `210_000`,
+    - selektor top-tabs zaktualizowany do stabilnego checku tekstowego (`PRODUKTY`, `SPRZEDAŻ` w `#products_main`).
+  - `apps/panel/tests/e2e/prod-warehouse-parity-audit.spec.ts`
+    - login panel hardening (`retry + throttle wait`),
+    - auto re-login w pętli akcji, jeśli nastąpi redirect na `/auth/login`.
+- walidacja produkcyjna:
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-warehouse-smoke.spec.ts --project=desktop-1366` -> `2 passed`,
+  - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm exec playwright test tests/e2e/prod-warehouse-parity-audit.spec.ts --project=desktop-1366` -> `1 passed`.
+- wynik parity (raport `output/parity/2026-03-11-warehouse-prod-full/REPORT.md`, generated `2026-03-11T00:01:36.685Z`):
+  - functional parity: `YES` (`16/16`),
+  - visual strict (`<= 3.0%`): `NO` (`products 11.277%`, `sales-history 7.718%`, `deliveries-history 6.876%`).
 
 ---
 
