@@ -82,31 +82,36 @@ function DraggableCustomerRow({
                     {customer.fullName || customer.name}
                 </Link>
             </td>
-            <td className="col-email">
-                {customer.email && (
-                    <a
-                        href={`mailto:${customer.email}`}
-                        className="clients-icon-link"
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        title={customer.email}
-                    >
-                        <i className="fa fa-envelope-o" aria-hidden="true" />
-                    </a>
-                )}
-            </td>
             <td className="col-phone">
-                {customer.phone && (
-                    <a
-                        href={`tel:${customer.phone}`}
-                        className="clients-phone-link"
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                    >
-                        <i className="fa fa-phone" aria-hidden="true" />
-                        {customer.phone}
-                    </a>
-                )}
+                <div className="clients-contact-cell">
+                    {customer.email ? (
+                        <a
+                            href={`mailto:${customer.email}`}
+                            className="clients-icon-link"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            title={customer.email}
+                        >
+                            <i
+                                className="fa fa-envelope-o"
+                                aria-hidden="true"
+                            />
+                        </a>
+                    ) : null}
+                    {customer.phone ? (
+                        <a
+                            href={`tel:${customer.phone}`}
+                            className="clients-phone-link"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                        >
+                            <i className="fa fa-phone" aria-hidden="true" />
+                            {customer.phone}
+                        </a>
+                    ) : (
+                        <span className="clients-phone-empty">nie podano</span>
+                    )}
+                </div>
             </td>
             <td className="col-last-visit">
                 {formatLastVisit(customer.lastVisitDate)}
