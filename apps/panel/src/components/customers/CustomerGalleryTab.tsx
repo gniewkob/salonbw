@@ -29,18 +29,6 @@ export default function CustomerGalleryTab({ customerId }: Props) {
 
     const base = getBrowserApiBase();
 
-    if (isLoading) {
-        return <div className="customer-loading">Ładowanie galerii...</div>;
-    }
-
-    if (error) {
-        return (
-            <div className="customer-error">
-                <p>Nie udało się załadować galerii</p>
-            </div>
-        );
-    }
-
     return (
         <div className="row customer-gallery-tab">
             <div className="col-sm-12">
@@ -65,7 +53,15 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                     </div>
 
                     <div className="versum-widget__content">
-                        {images.length === 0 ? (
+                        {isLoading ? (
+                            <div className="customer-loading">
+                                Ładowanie galerii...
+                            </div>
+                        ) : error ? (
+                            <div className="customer-error">
+                                <p>Nie udało się załadować galerii</p>
+                            </div>
+                        ) : images.length === 0 ? (
                             <div className="customer-empty-state">
                                 Brak zdjęć w galerii klienta.
                             </div>
