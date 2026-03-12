@@ -45,15 +45,32 @@ export class StatisticsQueryDto {
 
 export interface DashboardStats {
     todayRevenue: number;
+    todayProductRevenue: number;
     todayAppointments: number;
     todayCompletedAppointments: number;
     todayNewClients: number;
     weekRevenue: number;
+    weekProductRevenue: number;
     weekAppointments: number;
     monthRevenue: number;
+    monthProductRevenue: number;
     monthAppointments: number;
     pendingAppointments: number;
     averageRating: number;
+    monthDailyAppointments: Array<{
+        date: string;
+        count: number;
+    }>;
+    monthDailyNewClients: Array<{
+        date: string;
+        count: number;
+    }>;
+    monthDailyRevenue: Array<{
+        date: string;
+        serviceRevenue: number;
+        productRevenue: number;
+        totalRevenue: number;
+    }>;
 }
 
 export interface RevenueDataPoint {

@@ -13,6 +13,8 @@ export interface CustomerStatistics {
     cancelledVisits: number;
     noShowVisits: number;
     totalSpent: number;
+    serviceSpent: number;
+    productSpent: number;
     averageSpent: number;
     lastVisitDate: Date | null;
     firstVisitDate: Date | null;
@@ -26,11 +28,29 @@ export interface CustomerStatistics {
         employeeName: string;
         count: number;
     }>;
+    favoriteProducts: Array<{
+        productId: number;
+        productName: string;
+        count: number;
+    }>;
     visitsByMonth: Array<{
         month: string;
         count: number;
         spent: number;
+        serviceSpent: number;
+        productSpent: number;
     }>;
+}
+
+interface ProductSpentByMonthRow {
+    month: string;
+    spent: string | number | null;
+}
+
+interface FavoriteProductRow {
+    productId: string | number | null;
+    productName: string;
+    count: string | number | null;
 }
 
 @Injectable()
@@ -74,6 +94,18 @@ export class CustomerStatisticsService {
         return { from, toExclusive };
     }
 
+    private async hasTable(name: string): Promise<boolean> {
+        try {
+            const result = await this.appointmentsRepo.query(
+                'SELECT to_regclass($1) AS exists',
+                [name],
+            );
+            return Boolean(result[0]?.exists);
+        } catch {
+            return false;
+        }
+    }
+
     async getStatistics(
         customerId: number,
         options?: { from?: string; to?: string },
@@ -106,7 +138,7 @@ export class CustomerStatisticsService {
             (a) => a.status === AppointmentStatus.NoShow,
         );
 
-        const totalSpent = completed.reduce(
+        const serviceSpent = completed.reduce(
             (sum, a) => sum + (a.paidAmount || a.service?.price || 0),
             0,
         );
@@ -176,14 +208,97 @@ export class CustomerStatisticsService {
                 monthlyData.set(monthKey, { count: 1, spent });
             }
         });
+        let productSpent = 0;
+        let favoriteProducts: CustomerStatistics['favoriteProducts'] = [];
+        const productSpentByMonth = new Map<string, number>();
+
+        if (await this.hasTable('public.product_sales')) {
+            const params: Array<number | Date> = [customerId];
+            const filters: string[] = ['apt."clientId" = $1'];
+
+            if (from) {
+                params.push(from);
+                filters.push(`ps."soldAt" >= $${params.length}`);
+            }
+
+            if (toExclusive) {
+                params.push(toExclusive);
+                filters.push(`ps."soldAt" < $${params.length}`);
+            }
+
+            const whereSql = filters.join(' AND ');
+
+            const productTotalsRowsPromise = this.appointmentsRepo.query(
+                `SELECT
+                        TO_CHAR(DATE_TRUNC('month', ps."soldAt"), 'YYYY-MM') AS month,
+                        COALESCE(SUM(ps.quantity * ps."unitPrice" - COALESCE(ps.discount, 0)), 0) AS spent
+                     FROM product_sales ps
+                     INNER JOIN appointments apt ON apt.id = ps."appointmentId"
+                     WHERE ${whereSql}
+                     GROUP BY month
+                     ORDER BY month ASC`,
+                params,
+            );
+            const favoriteProductRowsPromise = this.appointmentsRepo.query(
+                `SELECT
+                        ps."productId" AS "productId",
+                        COALESCE(MAX(p.name), 'Produkt') AS "productName",
+                        COALESCE(SUM(ps.quantity), 0) AS count
+                     FROM product_sales ps
+                     INNER JOIN appointments apt ON apt.id = ps."appointmentId"
+                     LEFT JOIN products p ON p.id = ps."productId"
+                     WHERE ${whereSql}
+                     GROUP BY ps."productId"
+                     ORDER BY count DESC, "productName" ASC
+                     LIMIT 5`,
+                params,
+            );
+            const [productTotalsRows, favoriteProductRows] = (await Promise.all(
+                [productTotalsRowsPromise, favoriteProductRowsPromise],
+            )) as [ProductSpentByMonthRow[], FavoriteProductRow[]];
+
+            for (const row of productTotalsRows) {
+                const value = Number(row.spent ?? 0);
+                productSpent += value;
+                productSpentByMonth.set(row.month, value);
+            }
+
+            favoriteProducts = favoriteProductRows.map((row) => ({
+                productId: Number(row.productId),
+                productName: row.productName,
+                count: Number(row.count ?? 0),
+            }));
+        }
+
         const visitsByMonth = Array.from(monthlyData.entries())
             .map(([month, data]) => ({
                 month,
                 count: data.count,
-                spent: data.spent,
+                spent: data.spent + (productSpentByMonth.get(month) ?? 0),
+                serviceSpent: data.spent,
+                productSpent: productSpentByMonth.get(month) ?? 0,
             }))
             .sort((a, b) => a.month.localeCompare(b.month))
             .slice(-12);
+
+        for (const [month, spent] of productSpentByMonth.entries()) {
+            if (monthlyData.has(month)) {
+                continue;
+            }
+
+            visitsByMonth.push({
+                month,
+                count: 0,
+                spent,
+                serviceSpent: 0,
+                productSpent: spent,
+            });
+        }
+
+        visitsByMonth.sort((a, b) => a.month.localeCompare(b.month));
+        const last12Months = visitsByMonth.slice(-12);
+
+        const totalSpent = serviceSpent + productSpent;
 
         return {
             totalVisits: appointments.length,
@@ -191,6 +306,8 @@ export class CustomerStatisticsService {
             cancelledVisits: cancelled.length,
             noShowVisits: noShow.length,
             totalSpent,
+            serviceSpent,
+            productSpent,
             averageSpent:
                 completed.length > 0 ? totalSpent / completed.length : 0,
             lastVisitDate:
@@ -201,7 +318,8 @@ export class CustomerStatisticsService {
                 completed.length > 0 ? new Date(completed[0].startTime) : null,
             favoriteServices,
             favoriteEmployees,
-            visitsByMonth,
+            favoriteProducts,
+            visitsByMonth: last12Months,
         };
     }
 
