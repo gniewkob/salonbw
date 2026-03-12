@@ -19,6 +19,7 @@ export default function CustomerSummaryTab({
 }: Props) {
     const [customer, setCustomer] = useState<Customer>(initialCustomer);
     const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+    const modalStyle = { display: 'block' };
 
     const { data: stats, isLoading: statsLoading } = useCustomerStatistics(
         customer.id,
@@ -273,34 +274,36 @@ export default function CustomerSummaryTab({
                                             <div className="flex flex-wrap gap-4">
                                                 {customer.groups.map(
                                                     (group) => {
+                                                        const badgeStyle = {
+                                                            borderColor:
+                                                                group.color ||
+                                                                '#999',
+                                                            color:
+                                                                group.color ||
+                                                                '#666',
+                                                            backgroundColor:
+                                                                group.color
+                                                                    ? `${group.color}15`
+                                                                    : '#f5f5f5',
+                                                        };
+                                                        const badgeDotStyle = {
+                                                            backgroundColor:
+                                                                group.color ||
+                                                                '#999',
+                                                        };
                                                         return (
                                                             <span
                                                                 key={group.id}
                                                                 className="inline-flex items-center px-8 py-2 rounded text-xs font-medium border group"
-                                                                {...({
-                                                                    style: {
-                                                                        borderColor:
-                                                                            group.color ||
-                                                                            '#999',
-                                                                        color:
-                                                                            group.color ||
-                                                                            '#666',
-                                                                        backgroundColor:
-                                                                            group.color
-                                                                                ? `${group.color}15`
-                                                                                : '#f5f5f5',
-                                                                    },
-                                                                } as any)}
+                                                                style={
+                                                                    badgeStyle
+                                                                }
                                                             >
                                                                 <span
                                                                     className="w-6 h-6 rounded-full mr-4"
-                                                                    {...({
-                                                                        style: {
-                                                                            backgroundColor:
-                                                                                group.color ||
-                                                                                '#999',
-                                                                        },
-                                                                    } as any)}
+                                                                    style={
+                                                                        badgeDotStyle
+                                                                    }
                                                                 />
                                                                 {group.name}
                                                                 <button
@@ -385,10 +388,7 @@ export default function CustomerSummaryTab({
 
             {/* Modal dodawania do grupy */}
             {showAddToGroupModal && (
-                <div
-                    className="modal fade in"
-                    {...({ style: { display: 'block' } } as any)}
-                >
+                <div className="modal fade in" style={modalStyle}>
                     <div className="modal-dialog modal-sm">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -411,6 +411,10 @@ export default function CustomerSummaryTab({
                                 ) : (
                                     <ul className="list-group">
                                         {availableGroups.map((group) => {
+                                            const badgeDotStyle = {
+                                                backgroundColor:
+                                                    group.color || '#999',
+                                            };
                                             return (
                                                 <li
                                                     key={group.id}
@@ -423,13 +427,7 @@ export default function CustomerSummaryTab({
                                                 >
                                                     <span
                                                         className="w-12 h-12 rounded-full"
-                                                        {...({
-                                                            style: {
-                                                                backgroundColor:
-                                                                    group.color ||
-                                                                    '#999',
-                                                            },
-                                                        } as any)}
+                                                        style={badgeDotStyle}
                                                     />
                                                     <span className="flex-1">
                                                         {group.name}

@@ -195,11 +195,16 @@ export interface Product {
 
 export interface Review {
     id: number;
-    appointmentId: number;
+    appointmentId?: number;
+    appointment?: {
+        id: number;
+    } | null;
     rating: number;
     comment?: string;
     employee?: Employee;
+    client?: Client;
     author?: Client;
+    createdAt?: string;
 }
 
 export interface DashboardResponse {
@@ -558,6 +563,7 @@ export interface WarehouseSaleItem {
     id: number;
     saleId: number;
     productId: number | null;
+    originalSaleItemId?: number | null;
     productName: string;
     quantity: number;
     unit: string;
@@ -571,6 +577,9 @@ export interface WarehouseSaleItem {
     product?: ProductExtended | null;
 }
 
+export type WarehouseSaleKind = 'sale' | 'void' | 'refund' | 'correction';
+export type WarehouseSaleStatus = 'active' | 'adjusted' | 'voided' | 'refunded';
+
 export interface WarehouseSale {
     id: number;
     saleNumber: string;
@@ -579,6 +588,10 @@ export interface WarehouseSale {
     clientId?: number | null;
     employeeId?: number | null;
     appointmentId?: number | null;
+    kind?: WarehouseSaleKind;
+    status?: WarehouseSaleStatus;
+    sourceSaleId?: number | null;
+    reversalReason?: string | null;
     discountGross: number;
     totalNet: number;
     totalGross: number;

@@ -38,6 +38,10 @@ export default function ServiceCategoryTree({
         const hasChildren = category.children && category.children.length > 0;
         const isExpanded = expandedIds.has(category.id);
         const isSelected = selectedCategoryId === category.id;
+        const rowStyle = { paddingLeft: `${12 + level * 16}px` };
+        const colorStyle = category.color
+            ? { backgroundColor: category.color }
+            : undefined;
 
         return (
             <div key={category.id}>
@@ -47,9 +51,7 @@ export default function ServiceCategoryTree({
                             ? 'bg-primary-100 text-primary-700'
                             : 'hover:bg-gray-100'
                     }`}
-                    {...({
-                        style: { paddingLeft: `${12 + level * 16}px` },
-                    } as any)}
+                    style={rowStyle}
                     onClick={() => onSelectCategory(category.id)}
                 >
                     {hasChildren && (
@@ -82,9 +84,7 @@ export default function ServiceCategoryTree({
                     {category.color && (
                         <span
                             className="w-3 h-3 rounded-full shrink-0"
-                            {...({
-                                style: { backgroundColor: category.color },
-                            } as any)}
+                            style={colorStyle}
                         />
                     )}
 

@@ -4,12 +4,26 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
+import type { WarehouseSale } from '@/types';
 
 const formatCurrency = (value: number) =>
     `${new Intl.NumberFormat('pl-PL', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(value)} zł`;
+
+function saleKindLabel(sale: WarehouseSale) {
+    switch (sale.kind) {
+        case 'void':
+            return 'void';
+        case 'refund':
+            return 'zwrot';
+        case 'correction':
+            return 'korekta';
+        default:
+            return 'sprzedaż';
+    }
+}
 
 export default function WarehouseSalesHistoryPage() {
     const [search, setSearch] = useState('');
@@ -27,12 +41,7 @@ export default function WarehouseSalesHistoryPage() {
                 const matchesSearch = !search.trim()
                     ? true
                     : haystack.includes(search.toLowerCase());
-                const saleType =
-                    sale.totalGross < 0
-                        ? 'korekta'
-                        : sale.paymentMethod
-                          ? 'sprzedaż'
-                          : 'korekta';
+                const saleType = saleKindLabel(sale);
                 const matchesType =
                     typeFilter === 'all' ? true : saleType === typeFilter;
                 return matchesSearch && matchesType;
@@ -87,6 +96,8 @@ export default function WarehouseSalesHistoryPage() {
                         >
                             <option value="all">wszystkie</option>
                             <option value="sprzedaż">sprzedaż</option>
+                            <option value="void">void</option>
+                            <option value="zwrot">zwrot</option>
                             <option value="korekta">korekta</option>
                         </select>
                     </div>
@@ -107,12 +118,7 @@ export default function WarehouseSalesHistoryPage() {
                                     const firstItem =
                                         sale.items?.[0]?.productName ??
                                         sale.saleNumber;
-                                    const saleType =
-                                        sale.totalGross < 0
-                                            ? 'korekta'
-                                            : sale.paymentMethod
-                                              ? 'sprzedaż'
-                                              : 'korekta';
+                                    const saleType = saleKindLabel(sale);
                                     return (
                                         <tr key={sale.id}>
                                             <td>

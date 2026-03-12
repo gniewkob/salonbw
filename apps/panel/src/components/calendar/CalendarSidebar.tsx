@@ -56,7 +56,7 @@ export default function CalendarSidebar({
         const day = String(date.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
 
-        router.push(
+        void router.push(
             {
                 pathname: router.pathname,
                 query: { ...router.query, date: dateStr },
@@ -103,6 +103,9 @@ export default function CalendarSidebar({
                 </div>
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                     {employees.map((emp) => {
+                        const colorStyle = {
+                            backgroundColor: emp.color || '#ccc',
+                        };
                         return (
                             <label
                                 key={emp.id}
@@ -119,12 +122,7 @@ export default function CalendarSidebar({
                                 <div className="flex items-center gap-2">
                                     <div
                                         className="w-3 h-3 rounded-full"
-                                        {...({
-                                            style: {
-                                                backgroundColor:
-                                                    emp.color || '#ccc',
-                                            },
-                                        } as any)}
+                                        style={colorStyle}
                                     />
                                     <span className="text-gray-700">
                                         {emp.name}

@@ -27,7 +27,11 @@ export default function ReviewsPage() {
     const [employeeId, setEmployeeId] = useState(1);
     const { data } = useReviews(isAdmin ? { employeeId } : { mine: true });
     const api = useReviewApi();
-    type Row = Review & { employeeName?: string; authorName?: string };
+    type Row = Review & {
+        appointmentDisplay?: number | string;
+        employeeName?: string;
+        authorName?: string;
+    };
     const [rows, setRows] = useState<Row[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Row | null>(null);
@@ -36,8 +40,9 @@ export default function ReviewsPage() {
         setRows(
             data.map((r) => ({
                 ...r,
-                employeeName: r.employee?.fullName,
-                authorName: r.author?.name,
+                appointmentDisplay: r.appointmentId ?? r.appointment?.id ?? '',
+                employeeName: r.employee?.fullName ?? r.employee?.name,
+                authorName: r.author?.name ?? r.client?.name,
             })),
         );
     }, [data]);
@@ -46,7 +51,7 @@ export default function ReviewsPage() {
 
     const columns: Column<Row>[] = [
         { header: 'ID', accessor: 'id' },
-        { header: 'Appointment', accessor: 'appointmentId' },
+        { header: 'Appointment', accessor: 'appointmentDisplay' },
         { header: 'Employee', accessor: 'employeeName' },
         { header: 'Author', accessor: 'authorName' },
         { header: 'Rating', accessor: 'rating' },
@@ -66,8 +71,11 @@ export default function ReviewsPage() {
             ...c,
             {
                 ...created,
-                employeeName: created.employee?.fullName,
-                authorName: created.author?.name,
+                appointmentDisplay:
+                    created.appointmentId ?? created.appointment?.id ?? '',
+                employeeName:
+                    created.employee?.fullName ?? created.employee?.name,
+                authorName: created.author?.name ?? created.client?.name,
             },
         ]);
         setOpenForm(false);
@@ -88,8 +96,15 @@ export default function ReviewsPage() {
                 cl.id === editing.id
                     ? {
                           ...updated,
-                          employeeName: updated.employee?.fullName,
-                          authorName: updated.author?.name,
+                          appointmentDisplay:
+                              updated.appointmentId ??
+                              updated.appointment?.id ??
+                              '',
+                          employeeName:
+                              updated.employee?.fullName ??
+                              updated.employee?.name,
+                          authorName:
+                              updated.author?.name ?? updated.client?.name,
                       }
                     : cl,
             ),

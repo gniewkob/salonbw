@@ -14,6 +14,41 @@ Last updated: 2026-02-04
    - `/track_new_events.json`
    - `/salonblackandwhite/*` compatibility aliases (rewritten to local routes)
 
+## Output Contract
+
+Current verified contract in repo:
+
+- `/calendar` does not render a React container for the vendored runtime.
+- `apps/panel/src/pages/calendar.tsx` replaces the whole document using:
+  - `document.open()`
+  - `document.write(html)`
+  - `document.close()`
+- `apps/panel/src/pages/api/calendar-embed.ts` therefore returns a full HTML document, not a JSX fragment and not a partial body by default.
+- The handler injects runtime config and auth interception into the returned document before `</head>`.
+
+Verified consequences:
+
+- script ordering in the returned HTML matters;
+- `<head>` content is part of the runtime contract;
+- a refactor that serializes only `#main-content` is not behaviorally equivalent unless it deliberately reconstructs required scripts/styles.
+
+## PJAX Status
+
+Current verified state in repo:
+
+- the in-repo `/calendar` page does not send an `x-pjax` header when fetching `/api/calendar-embed`;
+- no active in-repo caller was found that requests `/api/calendar-embed` as a PJAX fragment;
+- the live Versum panel uses PJAX inside some modules such as customer-list pagination, but this was not observed for calendar HTML embedding.
+
+Current implementation detail:
+
+- `apps/panel/src/pages/api/calendar-embed.ts` no longer contains a PJAX-specific response branch;
+- the handler always returns a full HTML document with runtime config and auth interception injected into `<head>`.
+
+Implication:
+
+- calendar embed should be treated as full-document runtime only unless a real calendar caller requiring PJAX HTML is identified and specified.
+
 ## Routing / Proxy
 
 `apps/panel/next.config.mjs` rewrites:

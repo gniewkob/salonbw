@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
 
@@ -192,12 +193,12 @@ export default function PolicyPage() {
                             Kwestie dotyczące ochrony danych osobowych, praw
                             Użytkownika, zbieranych logów i cookies znajdują się
                             w osobnym dokumencie na stronie{' '}
-                            <a
+                            <Link
                                 href="/privacy"
                                 className="text-blue-600 hover:underline"
                             >
                                 Polityka Prywatności
-                            </a>
+                            </Link>
                             .
                         </li>
                         <li>

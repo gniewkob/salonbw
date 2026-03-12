@@ -74,6 +74,8 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
             : 0;
     const servicesShare = 100;
     const productsShare = 0;
+    const servicesBarStyle = { width: `${servicesShare}%` };
+    const productsBarStyle = { width: `${productsShare}%` };
     const favoriteRows =
         activeList === 'services' ? stats.favoriteServices : [];
 
@@ -179,15 +181,11 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     <>
                         <div
                             className="customer-stats-share__bar-services"
-                            {...({
-                                style: { width: `${servicesShare}%` },
-                            } as any)}
+                            style={servicesBarStyle}
                         />
                         <div
                             className="customer-stats-share__bar-products"
-                            {...({
-                                style: { width: `${productsShare}%` },
-                            } as any)}
+                            style={productsBarStyle}
                         />
                     </>
                 </div>
@@ -218,6 +216,9 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                               )
                                             : 0;
                                     const label = p.month.slice(5);
+                                    const barStyle = {
+                                        height: `${Math.max(2, h)}%`,
+                                    };
                                     return (
                                         <div
                                             key={p.month}
@@ -227,11 +228,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                             <div className="customer-bar-chart__barwrap">
                                                 <div
                                                     className="customer-bar-chart__bar"
-                                                    {...({
-                                                        style: {
-                                                            height: `${Math.max(2, h)}%`,
-                                                        },
-                                                    } as any)}
+                                                    style={barStyle}
                                                 />
                                             </div>
                                             <div className="customer-bar-chart__label">

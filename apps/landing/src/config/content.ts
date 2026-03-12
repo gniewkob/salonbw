@@ -18,8 +18,8 @@ export const BUSINESS_INFO = {
     lng: 18.921429,
   },
   contact: {
-    phone: '+48 XXX XXX XXX', // TODO: Add actual phone number
-    email: 'kontakt@salon-bw.pl', // TODO: Add actual email
+    phone: '+48 723 588 868',
+    email: 'kontakt@salon-bw.pl',
   },
   hours: {
     mondayFriday: '10:00 - 19:00',

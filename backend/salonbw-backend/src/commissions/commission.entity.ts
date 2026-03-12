@@ -26,6 +26,9 @@ export class Commission {
     @ManyToOne(() => Product, { nullable: true, eager: true })
     product?: Product | null;
 
+    @Column({ type: 'int', nullable: true })
+    productSaleId?: number | null;
+
     @Column('decimal', { transformer: new ColumnNumericTransformer() })
     amount: number;
 
