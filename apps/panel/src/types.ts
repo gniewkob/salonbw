@@ -368,6 +368,8 @@ export interface CustomerStatistics {
     cancelledVisits: number;
     noShowVisits: number;
     totalSpent: number;
+    serviceSpent: number;
+    productSpent: number;
     averageSpent: number;
     lastVisitDate: string | null;
     firstVisitDate: string | null;
@@ -381,10 +383,17 @@ export interface CustomerStatistics {
         employeeName: string;
         count: number;
     }>;
+    favoriteProducts: Array<{
+        productId: number;
+        productName: string;
+        count: number;
+    }>;
     visitsByMonth: Array<{
         month: string;
         count: number;
         spent: number;
+        serviceSpent: number;
+        productSpent: number;
     }>;
 }
 
@@ -995,15 +1004,32 @@ export type GroupBy = (typeof GroupBy)[keyof typeof GroupBy];
 
 export interface DashboardStats {
     todayRevenue: number;
+    todayProductRevenue: number;
     todayAppointments: number;
     todayCompletedAppointments: number;
     todayNewClients: number;
     weekRevenue: number;
+    weekProductRevenue: number;
     weekAppointments: number;
     monthRevenue: number;
+    monthProductRevenue: number;
     monthAppointments: number;
     pendingAppointments: number;
     averageRating: number;
+    monthDailyAppointments: Array<{
+        date: string;
+        count: number;
+    }>;
+    monthDailyNewClients: Array<{
+        date: string;
+        count: number;
+    }>;
+    monthDailyRevenue: Array<{
+        date: string;
+        serviceRevenue: number;
+        productRevenue: number;
+        totalRevenue: number;
+    }>;
 }
 
 export interface RevenueDataPoint {
@@ -1028,16 +1054,28 @@ export interface EmployeeStats {
     reviewCount: number;
 }
 
+export interface CommissionReport {
+    employeeId: number;
+    employeeName: string;
+    serviceRevenue: number;
+    serviceCommission: number;
+    productRevenue: number;
+    productCommission: number;
+    totalRevenue: number;
+    totalCommission: number;
+}
+
 export interface CommissionReportSummary {
-    totalCommissions: number;
-    totalBaseAmount: number;
-    byEmployee: Array<{
-        employeeId: number;
-        employeeName: string;
-        commissionAmount: number;
-        baseAmount: number;
-        appointmentsCount: number;
-    }>;
+    date: string;
+    employees: CommissionReport[];
+    totals: {
+        serviceRevenue: number;
+        serviceCommission: number;
+        productRevenue: number;
+        productCommission: number;
+        totalRevenue: number;
+        totalCommission: number;
+    };
 }
 
 export interface ServiceStats {

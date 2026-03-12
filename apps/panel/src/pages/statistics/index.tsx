@@ -1,7 +1,21 @@
 import { useMemo, useState } from 'react';
-import { format } from 'date-fns';
-import { useDashboardStats, useEmployeeRanking } from '@/hooks/useStatistics';
-import { useCashRegister } from '@/hooks/useStatistics';
+import {
+    addDays,
+    endOfDay,
+    endOfMonth,
+    endOfWeek,
+    format,
+    startOfDay,
+    startOfMonth,
+    startOfWeek,
+    subDays,
+} from 'date-fns';
+import {
+    useCashRegister,
+    useCommissionReport,
+    useEmployeeRanking,
+    useRevenueChart,
+} from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
 import VersumShell from '@/components/versum/VersumShell';
@@ -15,6 +29,17 @@ const VISUAL_FALLBACK_EMPLOYEES = [
 ];
 
 const EMPLOYEE_COLORS = ['#88ca2a', '#169ddd', '#d95431'];
+
+interface EmployeeReportRow {
+    employeeId: number;
+    employeeName: string;
+    completedAppointments: number;
+    workTimeMinutes: number;
+    serviceRevenue: number;
+    productRevenue: number;
+    totalRevenue: number;
+    tips: number;
+}
 
 const toNumber = (value: unknown): number => {
     if (typeof value === 'number') {
@@ -64,88 +89,218 @@ function StatisticsPageContent() {
     const [reportDate, setReportDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
-    const { data: dashboard, isLoading: dashboardLoading } =
-        useDashboardStats();
+    const reportDay = useMemo(
+        () => new Date(`${reportDate}T12:00:00`),
+        [reportDate],
+    );
+    const reportDayRange = useMemo(
+        () => ({
+            from: startOfDay(reportDay).toISOString(),
+            to: endOfDay(reportDay).toISOString(),
+        }),
+        [reportDay],
+    );
+    const reportWeekRange = useMemo(
+        () => ({
+            from: startOfWeek(reportDay, { weekStartsOn: 1 }).toISOString(),
+            to: endOfWeek(reportDay, { weekStartsOn: 1 }).toISOString(),
+        }),
+        [reportDay],
+    );
+    const reportMonthRange = useMemo(
+        () => ({
+            from: startOfMonth(reportDay).toISOString(),
+            to: endOfMonth(reportDay).toISOString(),
+        }),
+        [reportDay],
+    );
+
     const {
         data: ranking = [],
         isLoading: rankingLoading,
         error: rankingError,
     } = useEmployeeRanking({
-        range: DateRange.ThisMonth,
+        range: DateRange.Custom,
+        from: reportDayRange.from,
+        to: reportDayRange.to,
+    });
+    const {
+        data: commissionSummary,
+        isLoading: commissionLoading,
+        error: commissionError,
+    } = useCommissionReport({
+        range: DateRange.Custom,
+        from: reportDayRange.from,
+        to: reportDayRange.to,
+    });
+    const {
+        data: dayRevenuePoints = [],
+        isLoading: dayRevenueLoading,
+        error: dayRevenueError,
+    } = useRevenueChart({
+        range: DateRange.Custom,
+        from: reportDayRange.from,
+        to: reportDayRange.to,
+        groupBy: 'day',
+    });
+    const {
+        data: weekRevenuePoints = [],
+        isLoading: weekRevenueLoading,
+        error: weekRevenueError,
+    } = useRevenueChart({
+        range: DateRange.Custom,
+        from: reportWeekRange.from,
+        to: reportWeekRange.to,
+        groupBy: 'day',
+    });
+    const {
+        data: monthRevenuePoints = [],
+        isLoading: monthRevenueLoading,
+        error: monthRevenueError,
+    } = useRevenueChart({
+        range: DateRange.Custom,
+        from: reportMonthRange.from,
+        to: reportMonthRange.to,
+        groupBy: 'day',
     });
     const { data: employeeList } = useEmployees();
     const { data: registerSummary } = useCashRegister(reportDate);
     const safeEmployeeList = useMemo(() => employeeList ?? [], [employeeList]);
 
-    const totals = useMemo(() => {
-        const totalRevenue = toNumber(dashboard?.monthRevenue);
-        const dayRevenue = toNumber(dashboard?.todayRevenue);
-        const weekRevenue = toNumber(dashboard?.weekRevenue);
-        const totalVisits = toNumber(dashboard?.monthAppointments);
-        return {
-            totalRevenue,
-            dayRevenue,
-            weekRevenue,
-            totalVisits,
-            avgVisitValue: totalVisits > 0 ? totalRevenue / totalVisits : 0,
-        };
-    }, [dashboard]);
+    const employeeRows = useMemo<EmployeeReportRow[]>(() => {
+        const rankingByEmployee = new Map(
+            ranking.map((employee) => [
+                employee.employeeId,
+                {
+                    completedAppointments: toNumber(
+                        employee.completedAppointments,
+                    ),
+                    averageDuration: toNumber(employee.averageDuration),
+                    tips: toNumber(employee.tips),
+                    serviceRevenue: toNumber(employee.revenue),
+                },
+            ]),
+        );
 
-    const employeeRows = useMemo(() => {
-        if (ranking.length > 0) {
-            return ranking.map((employee) => ({
-                employeeId: employee.employeeId,
-                employeeName: employee.employeeName,
-                completedAppointments: toNumber(employee.completedAppointments),
-                revenue: toNumber(employee.revenue),
-                averageRevenue: toNumber(employee.averageRevenue),
-                averageDuration: toNumber(employee.averageDuration),
-                tips: toNumber(employee.tips),
-                rating: toNumber(employee.rating),
-            }));
-        }
+        const commissionByEmployee = new Map(
+            (commissionSummary?.employees ?? []).map((employee) => [
+                employee.employeeId,
+                {
+                    productRevenue: toNumber(employee.productRevenue),
+                    totalRevenue: toNumber(employee.totalRevenue),
+                },
+            ]),
+        );
 
-        if (!safeEmployeeList.length) {
-            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
-                employeeId: employee.id,
-                employeeName: employee.name,
-                completedAppointments: 0,
-                revenue: 0,
-                averageRevenue: 0,
-                averageDuration: 0,
-                tips: 0,
-                rating: 0,
-            }));
-        }
-        return safeEmployeeList.slice(0, 3).map((employee) => {
-            return {
-                employeeId: employee.id,
-                employeeName:
-                    employee.fullName ||
+        const namesByEmployee = new Map<number, string>();
+        for (const employee of safeEmployeeList) {
+            namesByEmployee.set(
+                employee.id,
+                employee.fullName ||
                     employee.name ||
                     [employee.firstName, employee.lastName]
                         .filter(Boolean)
                         .join(' ') ||
                     `Pracownik #${employee.id}`,
-                completedAppointments: 0,
-                revenue: 0,
-                averageRevenue: 0,
-                averageDuration: 0,
-                tips: 0,
-                rating: 0,
-            };
-        });
-    }, [ranking, safeEmployeeList]);
-
-    const totalWorkMinutes = useMemo(() => {
-        return employeeRows.reduce((acc, employee) => {
-            return (
-                acc +
-                toNumber(employee.completedAppointments) *
-                    toNumber(employee.averageDuration)
             );
-        }, 0);
-    }, [employeeRows]);
+        }
+        for (const employee of ranking) {
+            namesByEmployee.set(employee.employeeId, employee.employeeName);
+        }
+        for (const employee of commissionSummary?.employees ?? []) {
+            namesByEmployee.set(employee.employeeId, employee.employeeName);
+        }
+
+        const employeeIds = new Set<number>([
+            ...rankingByEmployee.keys(),
+            ...commissionByEmployee.keys(),
+            ...namesByEmployee.keys(),
+        ]);
+
+        if (employeeIds.size === 0) {
+            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                completedAppointments: 0,
+                workTimeMinutes: 0,
+                serviceRevenue: 0,
+                productRevenue: 0,
+                totalRevenue: 0,
+                tips: 0,
+            }));
+        }
+
+        return Array.from(employeeIds)
+            .map((employeeId) => {
+                const rankingRow = rankingByEmployee.get(employeeId);
+                const commissionRow = commissionByEmployee.get(employeeId);
+                const completedAppointments =
+                    rankingRow?.completedAppointments ?? 0;
+                const workTimeMinutes =
+                    completedAppointments * (rankingRow?.averageDuration ?? 0);
+                const serviceRevenue = rankingRow?.serviceRevenue ?? 0;
+                const productRevenue = commissionRow?.productRevenue ?? 0;
+                const totalRevenue =
+                    commissionRow?.totalRevenue ??
+                    serviceRevenue + productRevenue;
+
+                return {
+                    employeeId,
+                    employeeName:
+                        namesByEmployee.get(employeeId) ??
+                        `Pracownik #${employeeId}`,
+                    completedAppointments,
+                    workTimeMinutes,
+                    serviceRevenue,
+                    productRevenue,
+                    totalRevenue,
+                    tips: rankingRow?.tips ?? 0,
+                };
+            })
+            .sort((a, b) => b.totalRevenue - a.totalRevenue);
+    }, [commissionSummary?.employees, ranking, safeEmployeeList]);
+
+    const reportTotals = useMemo(() => {
+        const sumRevenuePoints = (points: typeof dayRevenuePoints) =>
+            points.reduce(
+                (acc, point) => {
+                    acc.serviceRevenue += toNumber(point.revenue);
+                    acc.productRevenue += toNumber(point.products);
+                    acc.tips += toNumber(point.tips);
+                    return acc;
+                },
+                {
+                    serviceRevenue: 0,
+                    productRevenue: 0,
+                    tips: 0,
+                },
+            );
+
+        const day = sumRevenuePoints(dayRevenuePoints);
+        const week = sumRevenuePoints(weekRevenuePoints);
+        const month = sumRevenuePoints(monthRevenuePoints);
+        const totalVisits = employeeRows.reduce(
+            (sum, employee) => sum + employee.completedAppointments,
+            0,
+        );
+        const totalWorkMinutes = employeeRows.reduce(
+            (sum, employee) => sum + employee.workTimeMinutes,
+            0,
+        );
+        const dayRevenue = day.serviceRevenue + day.productRevenue;
+
+        return {
+            dayServiceRevenue: day.serviceRevenue,
+            dayProductRevenue: day.productRevenue,
+            dayTips: day.tips,
+            dayRevenue,
+            weekRevenue: week.serviceRevenue + week.productRevenue,
+            monthRevenue: month.serviceRevenue + month.productRevenue,
+            totalVisits,
+            totalWorkMinutes,
+            avgVisitValue: totalVisits > 0 ? dayRevenue / totalVisits : 0,
+        };
+    }, [dayRevenuePoints, employeeRows, monthRevenuePoints, weekRevenuePoints]);
 
     const paymentRows = useMemo(() => {
         const totalsData = registerSummary?.totals;
@@ -176,29 +331,40 @@ function StatisticsPageContent() {
                 },
             ];
         }
+
         return rows;
     }, [registerSummary]);
 
-    const paymentTotal = useMemo(() => {
-        return paymentRows.reduce((acc, item) => acc + item.amount, 0);
-    }, [paymentRows]);
+    const paymentTotal = useMemo(
+        () => paymentRows.reduce((acc, item) => acc + item.amount, 0),
+        [paymentRows],
+    );
 
     const employeeChartData = useMemo(() => {
-        return employeeRows.slice(0, 3).map((emp, i) => ({
-            label: emp.employeeName,
-            value: toNumber(emp.revenue),
-            color: EMPLOYEE_COLORS[i] ?? '#ccc',
+        return employeeRows.slice(0, 3).map((employee, index) => ({
+            label: employee.employeeName,
+            value: employee.totalRevenue,
+            color: EMPLOYEE_COLORS[index] ?? '#ccc',
             percent:
-                totals.totalRevenue > 0
+                reportTotals.dayRevenue > 0
                     ? Math.round(
-                          (toNumber(emp.revenue) / totals.totalRevenue) * 100,
+                          (employee.totalRevenue / reportTotals.dayRevenue) *
+                              100,
                       )
                     : 0,
         }));
-    }, [employeeRows, totals.totalRevenue]);
+    }, [employeeRows, reportTotals.dayRevenue]);
 
     const formatMoney = (value: unknown): string =>
-        toNumber(value).toFixed(2).replace('.', ',') + ' zł';
+        `${toNumber(value).toFixed(2).replace('.', ',')} zł`;
+
+    const navigateDate = (direction: 'prev' | 'next') => {
+        const nextDate =
+            direction === 'prev'
+                ? subDays(reportDay, 1)
+                : addDays(reportDay, 1);
+        setReportDate(format(nextDate, 'yyyy-MM-dd'));
+    };
 
     const downloadCsvReport = () => {
         const escape = (value: unknown) =>
@@ -212,21 +378,25 @@ function StatisticsPageContent() {
         lines.push(['Salon ogolem']);
         lines.push([
             'Sprzedaz uslug brutto',
-            `${toNumber(totals.dayRevenue).toFixed(2)}`,
+            `${reportTotals.dayServiceRevenue.toFixed(2)}`,
         ]);
-        lines.push(['Sprzedaz produktow brutto', '0.00']);
+        lines.push([
+            'Sprzedaz produktow brutto',
+            `${reportTotals.dayProductRevenue.toFixed(2)}`,
+        ]);
+        lines.push(['Napiwki', `${reportTotals.dayTips.toFixed(2)}`]);
         lines.push([
             'Utarg za ten tydzien',
-            `${toNumber(totals.weekRevenue).toFixed(2)}`,
+            `${reportTotals.weekRevenue.toFixed(2)}`,
         ]);
         lines.push([
             'Utarg za ten miesiac',
-            `${toNumber(totals.totalRevenue).toFixed(2)}`,
+            `${reportTotals.monthRevenue.toFixed(2)}`,
         ]);
-        lines.push(['Laczna liczba wizyt', `${totals.totalVisits}`]);
+        lines.push(['Laczna liczba wizyt', `${reportTotals.totalVisits}`]);
         lines.push([
             'Srednia wartosc wizyty',
-            `${toNumber(totals.avgVisitValue).toFixed(2)}`,
+            `${reportTotals.avgVisitValue.toFixed(2)}`,
         ]);
         lines.push([]);
         lines.push(['Dane w podziale na pracownikow']);
@@ -248,21 +418,21 @@ function StatisticsPageContent() {
                 [
                     employee.employeeName,
                     employee.completedAppointments,
-                    '0 min',
-                    toNumber(employee.revenue).toFixed(2),
-                    (toNumber(employee.revenue) * 0.77).toFixed(2),
-                    '0.00',
-                    '0.00',
-                    toNumber(employee.revenue).toFixed(2),
-                    totals.totalRevenue > 0
+                    formatDuration(employee.workTimeMinutes),
+                    employee.serviceRevenue.toFixed(2),
+                    (employee.serviceRevenue * 0.77).toFixed(2),
+                    employee.productRevenue.toFixed(2),
+                    (employee.productRevenue * 0.77).toFixed(2),
+                    employee.totalRevenue.toFixed(2),
+                    reportTotals.dayRevenue > 0
                         ? (
-                              (toNumber(employee.revenue) /
-                                  toNumber(totals.totalRevenue)) *
+                              (employee.totalRevenue /
+                                  reportTotals.dayRevenue) *
                               100
                           ).toFixed(0) + '%'
                         : '0%',
-                    toNumber(employee.tips).toFixed(2),
-                ].map((v) => String(v)),
+                    employee.tips.toFixed(2),
+                ].map((value) => String(value)),
             );
         }
 
@@ -275,12 +445,26 @@ function StatisticsPageContent() {
             type: 'text/csv;charset=utf-8',
         });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `raport-finansowy-${reportDate}.csv`;
-        a.click();
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `raport-finansowy-${reportDate}.csv`;
+        anchor.click();
         URL.revokeObjectURL(url);
     };
+
+    const reportLoading =
+        rankingLoading ||
+        commissionLoading ||
+        dayRevenueLoading ||
+        weekRevenueLoading ||
+        monthRevenueLoading;
+
+    const reportError =
+        rankingError ||
+        commissionError ||
+        dayRevenueError ||
+        weekRevenueError ||
+        monthRevenueError;
 
     return (
         <div
@@ -292,17 +476,16 @@ function StatisticsPageContent() {
                 <li>Raport finansowy</li>
             </ul>
 
-            {/* Toolbar — matches Versum .actions structure */}
             <div className="statistics-actions">
                 <div className="statistics-date-wrap">
-                    <a
+                    <button
+                        type="button"
                         className="statistics-nav-btn"
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
+                        onClick={() => navigateDate('prev')}
                         aria-label="Poprzedni dzień"
                     >
                         <span className="statistics-arrow">&#8249;</span>
-                    </a>
+                    </button>
                     <input
                         id="report-date"
                         className="statistics-date-input"
@@ -325,64 +508,63 @@ function StatisticsPageContent() {
                             type="date"
                             className="statistics-date-picker-hidden"
                             value={reportDate}
-                            onChange={(e) => setReportDate(e.target.value)}
+                            onChange={(event) =>
+                                setReportDate(event.target.value)
+                            }
                         />
                     </label>
-                    <a
+                    <button
+                        type="button"
                         className="statistics-nav-btn"
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
+                        onClick={() => navigateDate('next')}
                         aria-label="Następny dzień"
                     >
                         <span className="statistics-arrow">&#8250;</span>
-                    </a>
+                    </button>
                 </div>
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <a
+                <button
+                    type="button"
                     className="button"
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        downloadCsvReport();
-                    }}
+                    onClick={downloadCsvReport}
                 >
                     <div
                         className="icon sprite-exel_blue mr-xs"
                         aria-hidden="true"
                     />
                     pobierz raport Excel
-                </a>
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <a
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        window.print();
-                    }}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => window.print()}
                     aria-label="Drukuj"
                 >
                     <div
                         className="icon sprite-print_blue"
                         aria-hidden="true"
                     />
-                </a>
+                </button>
             </div>
 
-            {dashboardLoading ? (
+            {reportLoading ? (
                 <div className="versum-muted p-20">Ładowanie raportu...</div>
+            ) : reportError ? (
+                <div className="versum-muted p-20">
+                    Nie udało się pobrać raportu finansowego.
+                </div>
             ) : (
                 <div className="statistics-description">
                     <h2>Salon ogółem</h2>
                     <p>
                         Liczba sfinalizowanych wizyt:{' '}
-                        <strong>{totals.totalVisits}</strong>
+                        <strong>{reportTotals.totalVisits}</strong>
                         <br />
                         Łączny czas trwania sfinalizowanych wizyt:{' '}
-                        <strong>{formatDuration(totalWorkMinutes)}</strong>
+                        <strong>
+                            {formatDuration(reportTotals.totalWorkMinutes)}
+                        </strong>
                     </p>
                     <br />
 
-                    {/* Bootstrap-style float grid — col-lg-5 + col-lg-7 */}
                     <div className="statistics-row">
                         <div className="statistics-col-5">
                             <div className="statistics-price-summary">
@@ -396,17 +578,31 @@ function StatisticsPageContent() {
                                             </tr>
                                             <tr>
                                                 <th>Sprzedaż usług</th>
-                                                <td>0,00&nbsp;zł</td>
                                                 <td>
                                                     {formatMoney(
-                                                        totals.dayRevenue,
+                                                        reportTotals.dayServiceRevenue *
+                                                            0.77,
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {formatMoney(
+                                                        reportTotals.dayServiceRevenue,
                                                     )}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th>Sprzedaż towarów</th>
-                                                <td>0,00&nbsp;zł</td>
-                                                <td>0,00&nbsp;zł</td>
+                                                <td>
+                                                    {formatMoney(
+                                                        reportTotals.dayProductRevenue *
+                                                            0.77,
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {formatMoney(
+                                                        reportTotals.dayProductRevenue,
+                                                    )}
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td
@@ -417,7 +613,7 @@ function StatisticsPageContent() {
                                                     towarów brutto:{' '}
                                                     <strong>
                                                         {formatMoney(
-                                                            totals.dayRevenue,
+                                                            reportTotals.dayRevenue,
                                                         )}
                                                         <br />
                                                     </strong>
@@ -427,7 +623,9 @@ function StatisticsPageContent() {
                                                 <th>Napiwki</th>
                                                 <td className="statistics-td-no-right" />
                                                 <td className="statistics-td-no-left">
-                                                    0,00&nbsp;zł
+                                                    {formatMoney(
+                                                        reportTotals.dayTips,
+                                                    )}
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -450,11 +648,11 @@ function StatisticsPageContent() {
                                 <small>brutto</small>:{' '}
                                 <strong>0,00&nbsp;zł</strong>
                                 <br />
-                                Sprzedaż usług <small>brutto</small>: 0,00&nbsp;
-                                zł
+                                Sprzedaż usług <small>brutto</small>:{' '}
+                                {formatMoney(reportTotals.dayServiceRevenue)}
                                 <br />
-                                Sprzedaż towarów <small>brutto</small>: 0,00
-                                &nbsp;zł
+                                Sprzedaż towarów <small>brutto</small>:{' '}
+                                {formatMoney(reportTotals.dayProductRevenue)}
                                 <br />
                             </div>
                         </div>
@@ -471,10 +669,10 @@ function StatisticsPageContent() {
                                 <StatisticsPieChart
                                     width={500}
                                     height={300}
-                                    data={paymentRows.map((r) => ({
-                                        label: `${r.label}: ${formatMoney(r.amount)} (${paymentTotal > 0 ? ((r.amount / paymentTotal) * 100).toFixed(1) : '0,0'}%)`,
-                                        value: r.amount,
-                                        color: r.color,
+                                    data={paymentRows.map((row) => ({
+                                        label: `${row.label}: ${formatMoney(row.amount)} (${paymentTotal > 0 ? ((row.amount / paymentTotal) * 100).toFixed(1) : '0,0'}%)`,
+                                        value: row.amount,
+                                        color: row.color,
                                     }))}
                                 />
                             </div>
@@ -483,145 +681,143 @@ function StatisticsPageContent() {
                     <br className="statistics-clearfix" />
 
                     <h2>Dane w podziale na pracowników</h2>
-                    {rankingLoading ? (
-                        <div className="versum-muted p-20">
-                            Ładowanie pracowników...
-                        </div>
-                    ) : rankingError ? (
-                        <div className="versum-muted p-20">
-                            Nie udało się pobrać danych pracowników.
-                        </div>
-                    ) : (
-                        <div className="data_table">
-                            <table className="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th>Pracownik</th>
-                                        <th>Wizyty</th>
-                                        <th>Łączny czas wizyt</th>
-                                        <th>
-                                            Sprzedaż usług <small>brutto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż usług <small>netto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż towarów{' '}
-                                            <small>brutto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż towarów{' '}
-                                            <small>netto</small>
-                                        </th>
-                                        <th>
-                                            Utarg <small>brutto</small>
-                                        </th>
-                                        <th>Procent</th>
-                                    </tr>
-                                    {employeeRows.map((employee, i) => (
-                                        <tr
-                                            key={employee.employeeId}
-                                            className={
-                                                i % 2 === 0 ? 'even' : 'odd'
-                                            }
-                                        >
-                                            <td>{employee.employeeName}</td>
-                                            <td>
-                                                {employee.completedAppointments}
-                                            </td>
-                                            <td>
-                                                {formatDuration(
-                                                    toNumber(
-                                                        employee.completedAppointments,
-                                                    ) *
-                                                        toNumber(
-                                                            employee.averageDuration,
-                                                        ),
-                                                )}
-                                            </td>
-                                            <td>
-                                                {toNumber(
-                                                    employee.revenue,
-                                                ).toFixed(2)}
-                                                &nbsp;zł
-                                            </td>
-                                            <td>
-                                                {(
-                                                    toNumber(employee.revenue) *
-                                                    0.77
-                                                ).toFixed(2)}
-                                                &nbsp;zł
-                                            </td>
-                                            <td>0,00&nbsp;zł</td>
-                                            <td>0,00&nbsp;zł</td>
-                                            <td>
-                                                {toNumber(
-                                                    employee.revenue,
-                                                ).toFixed(2)}
-                                                &nbsp;zł
-                                            </td>
-                                            <td>
-                                                {totals.totalRevenue > 0
-                                                    ? `${((toNumber(employee.revenue) / toNumber(totals.totalRevenue)) * 100).toFixed(0)}%`
-                                                    : '0%'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    <tr>
-                                        <td colSpan={9}>
-                                            <strong>Podsumowanie</strong>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th />
-                                        <th>Wizyty</th>
-                                        <th>Łączny czas wizyt</th>
-                                        <th>
-                                            Sprzedaż usług <small>brutto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż usług <small>netto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż towarów{' '}
-                                            <small>brutto</small>
-                                        </th>
-                                        <th>
-                                            Sprzedaż towarów{' '}
-                                            <small>netto</small>
-                                        </th>
-                                        <th>
-                                            Utarg <small>brutto</small>
-                                        </th>
-                                        <th>Procent</th>
-                                    </tr>
-                                    <tr>
+                    <div className="data_table">
+                        <table className="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Pracownik</th>
+                                    <th>Wizyty</th>
+                                    <th>Łączny czas wizyt</th>
+                                    <th>
+                                        Sprzedaż usług <small>brutto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż usług <small>netto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż towarów <small>brutto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż towarów <small>netto</small>
+                                    </th>
+                                    <th>
+                                        Utarg <small>brutto</small>
+                                    </th>
+                                    <th>Procent</th>
+                                </tr>
+                                {employeeRows.map((employee, index) => (
+                                    <tr
+                                        key={employee.employeeId}
+                                        className={
+                                            index % 2 === 0 ? 'even' : 'odd'
+                                        }
+                                    >
+                                        <td>{employee.employeeName}</td>
                                         <td>
-                                            <strong>Łącznie</strong>
-                                        </td>
-                                        <td>{totals.totalVisits}</td>
-                                        <td>
-                                            {formatDuration(totalWorkMinutes)}
+                                            {employee.completedAppointments}
                                         </td>
                                         <td>
-                                            {formatMoney(totals.totalRevenue)}
-                                        </td>
-                                        <td>
-                                            {formatMoney(
-                                                totals.totalRevenue * 0.77,
+                                            {formatDuration(
+                                                employee.workTimeMinutes,
                                             )}
                                         </td>
-                                        <td>0,00&nbsp;zł</td>
-                                        <td>0,00&nbsp;zł</td>
                                         <td>
-                                            {formatMoney(totals.totalRevenue)}
+                                            {employee.serviceRevenue.toFixed(2)}
+                                            &nbsp;zł
                                         </td>
-                                        <td>100%</td>
+                                        <td>
+                                            {(
+                                                employee.serviceRevenue * 0.77
+                                            ).toFixed(2)}
+                                            &nbsp;zł
+                                        </td>
+                                        <td>
+                                            {employee.productRevenue.toFixed(2)}
+                                            &nbsp;zł
+                                        </td>
+                                        <td>
+                                            {(
+                                                employee.productRevenue * 0.77
+                                            ).toFixed(2)}
+                                            &nbsp;zł
+                                        </td>
+                                        <td>
+                                            {employee.totalRevenue.toFixed(2)}
+                                            &nbsp;zł
+                                        </td>
+                                        <td>
+                                            {reportTotals.dayRevenue > 0
+                                                ? `${((employee.totalRevenue / reportTotals.dayRevenue) * 100).toFixed(0)}%`
+                                                : '0%'}
+                                        </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                ))}
+                                <tr>
+                                    <td colSpan={9}>
+                                        <strong>Podsumowanie</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th />
+                                    <th>Wizyty</th>
+                                    <th>Łączny czas wizyt</th>
+                                    <th>
+                                        Sprzedaż usług <small>brutto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż usług <small>netto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż towarów <small>brutto</small>
+                                    </th>
+                                    <th>
+                                        Sprzedaż towarów <small>netto</small>
+                                    </th>
+                                    <th>
+                                        Utarg <small>brutto</small>
+                                    </th>
+                                    <th>Procent</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Łącznie</strong>
+                                    </td>
+                                    <td>{reportTotals.totalVisits}</td>
+                                    <td>
+                                        {formatDuration(
+                                            reportTotals.totalWorkMinutes,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {formatMoney(
+                                            reportTotals.dayServiceRevenue,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {formatMoney(
+                                            reportTotals.dayServiceRevenue *
+                                                0.77,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {formatMoney(
+                                            reportTotals.dayProductRevenue,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {formatMoney(
+                                            reportTotals.dayProductRevenue *
+                                                0.77,
+                                        )}
+                                    </td>
+                                    <td>
+                                        {formatMoney(reportTotals.dayRevenue)}
+                                    </td>
+                                    <td>100%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div className="statistics-employee-chart-wrap">
                         <p className="statistics-chart-label">
@@ -630,10 +826,10 @@ function StatisticsPageContent() {
                         <StatisticsPieChart
                             width={550}
                             height={320}
-                            data={employeeChartData.map((e) => ({
-                                label: `${e.label} (${e.percent}%)`,
-                                value: e.value,
-                                color: e.color,
+                            data={employeeChartData.map((employee) => ({
+                                label: `${employee.label} (${employee.percent}%)`,
+                                value: employee.value,
+                                color: employee.color,
                             }))}
                         />
                         <div className="statistics-wybrana">

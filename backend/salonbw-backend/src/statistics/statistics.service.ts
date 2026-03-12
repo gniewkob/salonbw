@@ -89,85 +89,201 @@ export class StatisticsService {
         const todayEnd = endOfDay(now);
         const weekStart = startOfWeek(now, { weekStartsOn: 1 });
         const monthStart = startOfMonth(now);
+        const dayKeys = eachDayOfInterval({
+            start: monthStart,
+            end: todayStart,
+        }).map((day) => format(day, 'yyyy-MM-dd'));
 
-        // Today stats
-        const todayAppointments = await this.appointmentRepository.find({
-            where: {
-                startTime: Between(todayStart, todayEnd),
-            },
-            relations: ['service', 'serviceVariant'],
-        });
+        const [
+            todayAppointments,
+            todayNewClients,
+            weekAppointments,
+            monthCompletedAppointments,
+            monthAllAppointments,
+            monthNewClients,
+            pendingAppointments,
+            ratingResult,
+        ] = await Promise.all([
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(todayStart, todayEnd),
+                },
+                relations: ['service', 'serviceVariant'],
+            }),
+            this.userRepository.count({
+                where: {
+                    role: Role.Client,
+                    createdAt: Between(todayStart, todayEnd),
+                },
+            }),
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(weekStart, todayEnd),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: ['service', 'serviceVariant'],
+            }),
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(monthStart, todayEnd),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: ['service', 'serviceVariant'],
+            }),
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(monthStart, todayEnd),
+                },
+                select: {
+                    id: true,
+                    startTime: true,
+                },
+            }),
+            this.userRepository.find({
+                where: {
+                    role: Role.Client,
+                    createdAt: Between(monthStart, todayEnd),
+                },
+                select: {
+                    id: true,
+                    createdAt: true,
+                },
+            }),
+            this.appointmentRepository.count({
+                where: {
+                    startTime: MoreThanOrEqual(now),
+                    status: AppointmentStatus.Scheduled,
+                },
+            }),
+            this.reviewRepository
+                .createQueryBuilder('review')
+                .select('AVG(review.rating)', 'avg')
+                .getRawOne(),
+        ]);
 
         const todayCompleted = todayAppointments.filter(
-            (a) => a.status === AppointmentStatus.Completed,
+            (appointment) => appointment.status === AppointmentStatus.Completed,
         );
 
-        const todayRevenue = todayCompleted.reduce(
-            (sum, a) => sum + this.resolveAppointmentPrice(a),
+        const serviceRevenueByDay = new Map<string, number>();
+        for (const appointment of monthCompletedAppointments) {
+            const dayKey = format(
+                new Date(appointment.startTime),
+                'yyyy-MM-dd',
+            );
+            serviceRevenueByDay.set(
+                dayKey,
+                (serviceRevenueByDay.get(dayKey) ?? 0) +
+                    this.resolveAppointmentPrice(appointment),
+            );
+        }
+
+        const appointmentCountByDay = new Map<string, number>();
+        for (const appointment of monthAllAppointments) {
+            const dayKey = format(
+                new Date(appointment.startTime),
+                'yyyy-MM-dd',
+            );
+            appointmentCountByDay.set(
+                dayKey,
+                (appointmentCountByDay.get(dayKey) ?? 0) + 1,
+            );
+        }
+
+        const newClientsByDay = new Map<string, number>();
+        for (const client of monthNewClients) {
+            const dayKey = format(new Date(client.createdAt), 'yyyy-MM-dd');
+            newClientsByDay.set(dayKey, (newClientsByDay.get(dayKey) ?? 0) + 1);
+        }
+
+        let productRevenueByDay = new Map<string, number>();
+        const hasProductSales = await this.hasTable('public.product_sales');
+        if (hasProductSales) {
+            const rows = await this.appointmentRepository.query(
+                `SELECT TO_CHAR(DATE_TRUNC('day', "soldAt"), 'YYYY-MM-DD') AS bucket,
+                        COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
+                 FROM product_sales
+                 WHERE "soldAt" BETWEEN $1 AND $2
+                 GROUP BY bucket`,
+                [monthStart, todayEnd],
+            );
+            productRevenueByDay = new Map(
+                rows.map(
+                    (row: { bucket: string; revenue: string | number }) => [
+                        row.bucket,
+                        Number(row.revenue ?? 0),
+                    ],
+                ),
+            );
+        }
+
+        const todayKey = format(todayStart, 'yyyy-MM-dd');
+        const todayServiceRevenue = todayCompleted.reduce(
+            (sum, appointment) =>
+                sum + this.resolveAppointmentPrice(appointment),
+            0,
+        );
+        const todayProductRevenue = productRevenueByDay.get(todayKey) ?? 0;
+        const weekProductRevenue = dayKeys
+            .filter((dayKey) => {
+                const date = new Date(`${dayKey}T00:00:00`);
+                return date >= weekStart && date <= todayStart;
+            })
+            .reduce(
+                (sum, dayKey) => sum + (productRevenueByDay.get(dayKey) ?? 0),
+                0,
+            );
+        const monthProductRevenue = dayKeys.reduce(
+            (sum, dayKey) => sum + (productRevenueByDay.get(dayKey) ?? 0),
+            0,
+        );
+        const weekServiceRevenue = weekAppointments.reduce(
+            (sum, appointment) =>
+                sum + this.resolveAppointmentPrice(appointment),
+            0,
+        );
+        const monthServiceRevenue = monthCompletedAppointments.reduce(
+            (sum, appointment) =>
+                sum + this.resolveAppointmentPrice(appointment),
             0,
         );
 
-        // New clients today
-        const todayNewClients = await this.userRepository.count({
-            where: {
-                role: Role.Client,
-                createdAt: Between(todayStart, todayEnd),
-            },
+        const monthDailyAppointments = dayKeys.map((dayKey) => ({
+            date: dayKey,
+            count: appointmentCountByDay.get(dayKey) ?? 0,
+        }));
+        const monthDailyNewClients = dayKeys.map((dayKey) => ({
+            date: dayKey,
+            count: newClientsByDay.get(dayKey) ?? 0,
+        }));
+        const monthDailyRevenue = dayKeys.map((dayKey) => {
+            const serviceRevenue = serviceRevenueByDay.get(dayKey) ?? 0;
+            const productRevenue = productRevenueByDay.get(dayKey) ?? 0;
+            return {
+                date: dayKey,
+                serviceRevenue,
+                productRevenue,
+                totalRevenue: serviceRevenue + productRevenue,
+            };
         });
-
-        // Week stats
-        const weekAppointments = await this.appointmentRepository.find({
-            where: {
-                startTime: Between(weekStart, todayEnd),
-                status: AppointmentStatus.Completed,
-            },
-            relations: ['service', 'serviceVariant'],
-        });
-
-        const weekRevenue = weekAppointments.reduce(
-            (sum, a) => sum + this.resolveAppointmentPrice(a),
-            0,
-        );
-
-        // Month stats
-        const monthAppointments = await this.appointmentRepository.find({
-            where: {
-                startTime: Between(monthStart, todayEnd),
-                status: AppointmentStatus.Completed,
-            },
-            relations: ['service', 'serviceVariant'],
-        });
-
-        const monthRevenue = monthAppointments.reduce(
-            (sum, a) => sum + this.resolveAppointmentPrice(a),
-            0,
-        );
-
-        // Pending appointments
-        const pendingAppointments = await this.appointmentRepository.count({
-            where: {
-                startTime: MoreThanOrEqual(now),
-                status: AppointmentStatus.Scheduled,
-            },
-        });
-
-        // Average rating
-        const ratingResult = await this.reviewRepository
-            .createQueryBuilder('review')
-            .select('AVG(review.rating)', 'avg')
-            .getRawOne();
 
         return {
-            todayRevenue,
+            todayRevenue: todayServiceRevenue + todayProductRevenue,
+            todayProductRevenue,
             todayAppointments: todayAppointments.length,
             todayCompletedAppointments: todayCompleted.length,
             todayNewClients,
-            weekRevenue,
+            weekRevenue: weekServiceRevenue + weekProductRevenue,
+            weekProductRevenue,
             weekAppointments: weekAppointments.length,
-            monthRevenue,
-            monthAppointments: monthAppointments.length,
+            monthRevenue: monthServiceRevenue + monthProductRevenue,
+            monthProductRevenue,
+            monthAppointments: monthCompletedAppointments.length,
             pendingAppointments,
             averageRating: parseFloat(ratingResult?.avg ?? '0') || 0,
+            monthDailyAppointments,
+            monthDailyNewClients,
+            monthDailyRevenue,
         };
     }
 

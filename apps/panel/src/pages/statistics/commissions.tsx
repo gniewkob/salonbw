@@ -1,33 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
-
-interface CommissionReport {
-    employeeId: number;
-    employeeName: string;
-    serviceRevenue: number;
-    serviceCommission: number;
-    productRevenue: number;
-    productCommission: number;
-    totalRevenue: number;
-    totalCommission: number;
-}
-
-interface CommissionReportSummary {
-    date: string;
-    employees: CommissionReport[];
-    totals: {
-        serviceRevenue: number;
-        serviceCommission: number;
-        productRevenue: number;
-        productCommission: number;
-        totalRevenue: number;
-        totalCommission: number;
-    };
-}
+import { useCommissionReport } from '@/hooks/useStatistics';
 
 const toNumber = (value: unknown): number => {
     if (typeof value === 'number') {
@@ -59,30 +36,17 @@ export default function CommissionsPage() {
     const [selectedDate, setSelectedDate] = useState(
         format(new Date(), 'yyyy-MM-dd'),
     );
-    const [data, setData] = useState<CommissionReportSummary | null>(null);
-    const [loading, setLoading] = useState(false);
-
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const from = `${selectedDate}T00:00:00.000Z`;
-            const to = `${selectedDate}T23:59:59.999Z`;
-            const res = await fetch(
-                `/api/statistics/commissions?range=custom&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-            );
-            if (res.ok) {
-                const json = (await res.json()) as CommissionReportSummary;
-                setData(json);
-            }
-        } catch (error) {
-            console.error('Failed to fetch commissions:', error);
-        }
-        setLoading(false);
-    }, [selectedDate]);
-
-    useEffect(() => {
-        void fetchData();
-    }, [fetchData]);
+    const from = `${selectedDate}T00:00:00.000Z`;
+    const to = `${selectedDate}T23:59:59.999Z`;
+    const {
+        data,
+        isLoading: loading,
+        error,
+    } = useCommissionReport({
+        range: 'custom',
+        from,
+        to,
+    });
 
     const navigateDate = (direction: 'prev' | 'next') => {
         const current = new Date(selectedDate);
@@ -195,18 +159,14 @@ export default function CommissionsPage() {
 
                 <div className="statistics-actions">
                     <div className="statistics-date-wrap">
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
+                        <button
+                            type="button"
                             className="button button-link button_prev mr-s"
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigateDate('prev');
-                            }}
+                            onClick={() => navigateDate('prev')}
                             aria-label="Poprzedni dzień"
                         >
                             <span className="fc-icon fc-icon-left-single-arrow" />
-                        </a>
+                        </button>
                         <input
                             type="text"
                             id="date_range"
@@ -215,49 +175,40 @@ export default function CommissionsPage() {
                             value={selectedDate}
                             aria-label="Data"
                         />
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
+                        <button
+                            type="button"
                             className="button button-link button_next ml-s"
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigateDate('next');
-                            }}
+                            onClick={() => navigateDate('next')}
                             aria-label="Następny dzień"
                         >
                             <span className="fc-icon fc-icon-right-single-arrow" />
-                        </a>
+                        </button>
                     </div>
-                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                    <a
-                        className="button"
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                    >
+                    <button type="button" className="button" disabled>
                         <div
                             className="icon sprite-exel_blue mr-xs"
                             aria-hidden="true"
                         />
                         pobierz raport Excel
-                    </a>
-                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                    <a
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.print();
-                        }}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
                         aria-label="Drukuj"
                     >
                         <div
                             className="icon sprite-print_blue"
                             aria-hidden="true"
                         />
-                    </a>
+                    </button>
                 </div>
 
                 {loading ? (
                     <div className="versum-muted p-20">Ładowanie...</div>
+                ) : error ? (
+                    <div className="versum-muted p-20">
+                        Nie udało się pobrać raportu prowizji.
+                    </div>
                 ) : (
                     <div className="overflow_hidden">
                         <div className="description">

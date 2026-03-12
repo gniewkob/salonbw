@@ -1,15 +1,139 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
-import { format, startOfMonth } from 'date-fns';
+import { format, startOfMonth, subDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import Link from 'next/link';
 
+interface MiniChartPoint {
+    date: string;
+    value: number;
+}
+
+function formatMoney(value: number) {
+    return new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
+        currency: 'PLN',
+        minimumFractionDigits: 2,
+    }).format(value);
+}
+
+function formatTrend(current: number, previous: number) {
+    if (previous === 0) {
+        return current === 0 ? '0%' : '+100%';
+    }
+
+    const delta = ((current - previous) / previous) * 100;
+    const rounded = Math.round(delta);
+
+    if (rounded > 0) {
+        return `+${rounded}%`;
+    }
+
+    return `${rounded}%`;
+}
+
+function isPositiveTrend(current: number, previous: number) {
+    if (previous === 0) {
+        return current >= 0;
+    }
+
+    return current >= previous;
+}
+
+function MiniChart({
+    series,
+    todayKey,
+    barClassName = '',
+}: {
+    series: MiniChartPoint[];
+    todayKey: string;
+    barClassName?: string;
+}) {
+    const maxValue = Math.max(1, ...series.map((point) => point.value));
+
+    return (
+        <div className="versum-mini-chart">
+            {series.map((point) => {
+                const ratio = point.value / maxValue;
+                const height = point.value > 0 ? Math.max(8, ratio * 100) : 6;
+
+                return (
+                    <div
+                        key={point.date}
+                        className={`versum-mini-chart__bar ${barClassName}`.trim()}
+                        style={{
+                            height: `${height}%`,
+                            opacity: point.date === todayKey ? 1 : 0.55,
+                        }}
+                        title={`${point.date}: ${point.value}`}
+                    />
+                );
+            })}
+        </div>
+    );
+}
+
 export default function AdminDashboard() {
     const { data: dashboardData, loading: dashboardLoading } = useDashboard();
-
     const { data: stats, isLoading: statsLoading } = useDashboardStats();
+
+    const today = useMemo(() => new Date(), []);
+    const todayKey = format(today, 'yyyy-MM-dd');
+    const yesterdayKey = format(subDays(today, 1), 'yyyy-MM-dd');
+
+    const appointmentSeries = useMemo<MiniChartPoint[]>(() => {
+        return (stats?.monthDailyAppointments ?? []).map((point) => ({
+            date: point.date,
+            value: point.count,
+        }));
+    }, [stats?.monthDailyAppointments]);
+
+    const newClientsSeries = useMemo<MiniChartPoint[]>(() => {
+        return (stats?.monthDailyNewClients ?? []).map((point) => ({
+            date: point.date,
+            value: point.count,
+        }));
+    }, [stats?.monthDailyNewClients]);
+
+    const revenueSeries = useMemo<MiniChartPoint[]>(() => {
+        return (stats?.monthDailyRevenue ?? []).map((point) => ({
+            date: point.date,
+            value: point.totalRevenue,
+        }));
+    }, [stats?.monthDailyRevenue]);
+
+    const appointmentTrend = useMemo(() => {
+        const yesterday =
+            appointmentSeries.find((point) => point.date === yesterdayKey)
+                ?.value ?? 0;
+        return {
+            text: formatTrend(stats?.todayAppointments ?? 0, yesterday),
+            positive: isPositiveTrend(stats?.todayAppointments ?? 0, yesterday),
+        };
+    }, [appointmentSeries, stats?.todayAppointments, yesterdayKey]);
+
+    const newClientsTrend = useMemo(() => {
+        const yesterday =
+            newClientsSeries.find((point) => point.date === yesterdayKey)
+                ?.value ?? 0;
+        return {
+            text: formatTrend(stats?.todayNewClients ?? 0, yesterday),
+            positive: isPositiveTrend(stats?.todayNewClients ?? 0, yesterday),
+        };
+    }, [newClientsSeries, stats?.todayNewClients, yesterdayKey]);
+
+    const revenueTrend = useMemo(() => {
+        const yesterday =
+            revenueSeries.find((point) => point.date === yesterdayKey)?.value ??
+            0;
+        return {
+            text: formatTrend(stats?.todayRevenue ?? 0, yesterday),
+            positive: isPositiveTrend(stats?.todayRevenue ?? 0, yesterday),
+        };
+    }, [revenueSeries, stats?.todayRevenue, yesterdayKey]);
 
     if (dashboardLoading || statsLoading) {
         return (
@@ -29,13 +153,8 @@ export default function AdminDashboard() {
         );
     }
 
-    // Calculate daily stats for mini chart (simplified)
-    const today = new Date();
-    const daysInMonth = today.getDate();
-
     return (
         <div className="versum-dashboard">
-            {/* Header */}
             <div className="versum-dashboard__header">
                 <h1 className="versum-dashboard__title">Pulpit</h1>
                 <Link
@@ -47,7 +166,6 @@ export default function AdminDashboard() {
                 </Link>
             </div>
 
-            {/* Stats Period Selector */}
             <div className="versum-dashboard__period">
                 <button
                     type="button"
@@ -62,108 +180,65 @@ export default function AdminDashboard() {
                 </span>
             </div>
 
-            {/* Stats Grid */}
             <div className="versum-dashboard__stats">
-                {/* Liczba wizyt */}
                 <div className="versum-stat-card">
                     <h3 className="versum-stat-card__title">liczba wizyt</h3>
                     <div className="versum-stat-card__value">
                         {stats.todayAppointments}
-                        <span className="versum-stat-card__change positive">
-                            ↑ 100%
+                        <span
+                            className={`versum-stat-card__change ${appointmentTrend.positive ? 'positive' : ''}`.trim()}
+                        >
+                            {appointmentTrend.text}
                         </span>
                     </div>
                     <div className="versum-stat-card__chart">
-                        {/* Simplified bar chart visualization */}
-                        <div className="versum-mini-chart">
-                            {Array.from({ length: daysInMonth }, (_, i) => (
-                                <div
-                                    key={i}
-                                    className="versum-mini-chart__bar"
-                                    {...{
-                                        style: {
-                                            height: `${Math.random() * 60 + 20}%`,
-                                            opacity:
-                                                i + 1 === today.getDate()
-                                                    ? 1
-                                                    : 0.6,
-                                        },
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <MiniChart
+                            series={appointmentSeries}
+                            todayKey={todayKey}
+                        />
                     </div>
                 </div>
 
-                {/* Nowych klientów */}
                 <div className="versum-stat-card">
                     <h3 className="versum-stat-card__title">nowych klientów</h3>
                     <div className="versum-stat-card__value">
                         {stats.todayNewClients}
-                        <span className="versum-stat-card__change positive">
-                            ↑ 100%
+                        <span
+                            className={`versum-stat-card__change ${newClientsTrend.positive ? 'positive' : ''}`.trim()}
+                        >
+                            {newClientsTrend.text}
                         </span>
                     </div>
                     <div className="versum-stat-card__chart">
-                        <div className="versum-mini-chart">
-                            {Array.from({ length: daysInMonth }, (_, i) => (
-                                <div
-                                    key={i}
-                                    className="versum-mini-chart__bar versum-mini-chart__bar--blue"
-                                    {...{
-                                        style: {
-                                            height: `${Math.random() * 40 + 10}%`,
-                                            opacity:
-                                                i + 1 === today.getDate()
-                                                    ? 1
-                                                    : 0.6,
-                                        },
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <MiniChart
+                            series={newClientsSeries}
+                            todayKey={todayKey}
+                            barClassName="versum-mini-chart__bar--blue"
+                        />
                     </div>
                 </div>
 
-                {/* Obroty salonu */}
                 <div className="versum-stat-card">
                     <h3 className="versum-stat-card__title">obroty salonu</h3>
                     <div className="versum-stat-card__value">
-                        <button
-                            type="button"
-                            className="versum-stat-card__toggle"
+                        {formatMoney(stats.todayRevenue)}
+                        <span
+                            className={`versum-stat-card__change ${revenueTrend.positive ? 'positive' : ''}`.trim()}
                         >
-                            pokaż obrót
-                        </button>
-                        <span className="versum-stat-card__change positive">
-                            ↑ 100%
+                            {revenueTrend.text}
                         </span>
                     </div>
                     <div className="versum-stat-card__chart">
-                        <div className="versum-mini-chart">
-                            {Array.from({ length: daysInMonth }, (_, i) => (
-                                <div
-                                    key={i}
-                                    className="versum-mini-chart__bar versum-mini-chart__bar--green"
-                                    {...{
-                                        style: {
-                                            height: `${Math.random() * 80 + 20}%`,
-                                            opacity:
-                                                i + 1 === today.getDate()
-                                                    ? 1
-                                                    : 0.6,
-                                        },
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <MiniChart
+                            series={revenueSeries}
+                            todayKey={todayKey}
+                            barClassName="versum-mini-chart__bar--green"
+                        />
                     </div>
                 </div>
             </div>
 
-            {/* Bottom Sections Grid */}
             <div className="versum-dashboard__grid">
-                {/* Activity Log */}
                 <div className="versum-dashboard__section">
                     <div className="versum-dashboard__section-header">
                         <h2>więcej aktywności</h2>
@@ -177,22 +252,24 @@ export default function AdminDashboard() {
                     <div className="versum-activity-list">
                         {dashboardData?.upcomingAppointments
                             ?.slice(0, 5)
-                            .map((apt) => (
+                            .map((appointment) => (
                                 <div
-                                    key={apt.id}
+                                    key={appointment.id}
                                     className="versum-activity-item"
                                 >
                                     <div className="versum-activity-item__avatar">
-                                        {apt.client?.name?.charAt(0) || '?'}
+                                        {appointment.client?.name?.charAt(0) ||
+                                            '?'}
                                     </div>
                                     <div className="versum-activity-item__content">
                                         <div className="versum-activity-item__title">
                                             Wizyta:{' '}
-                                            {apt.client?.name || 'Unknown'}
+                                            {appointment.client?.name ||
+                                                'Unknown'}
                                         </div>
                                         <div className="versum-activity-item__meta">
                                             {format(
-                                                new Date(apt.startTime),
+                                                new Date(appointment.startTime),
                                                 'd MMMM, HH:mm',
                                                 { locale: pl },
                                             )}
@@ -207,7 +284,6 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Upcoming Appointments */}
                 <div className="versum-dashboard__section">
                     <div className="versum-dashboard__section-header">
                         <h2>najbliższe zaplanowane wizyty</h2>
@@ -215,23 +291,25 @@ export default function AdminDashboard() {
                     <div className="versum-appointments-list">
                         {dashboardData?.upcomingAppointments
                             ?.slice(0, 5)
-                            .map((apt) => (
+                            .map((appointment) => (
                                 <div
-                                    key={apt.id}
+                                    key={appointment.id}
                                     className="versum-appointment-item"
                                 >
                                     <div className="versum-appointment-item__time">
                                         {format(
-                                            new Date(apt.startTime),
+                                            new Date(appointment.startTime),
                                             'HH:mm',
                                         )}
                                     </div>
                                     <div className="versum-appointment-item__details">
                                         <div className="versum-appointment-item__client">
-                                            {apt.client?.name || 'Unknown'}
+                                            {appointment.client?.name ||
+                                                'Unknown'}
                                         </div>
                                         <div className="versum-appointment-item__service">
-                                            {apt.service?.name || 'Unknown'}
+                                            {appointment.service?.name ||
+                                                'Unknown'}
                                         </div>
                                     </div>
                                 </div>
@@ -249,7 +327,6 @@ export default function AdminDashboard() {
                     </Link>
                 </div>
 
-                {/* Tasks */}
                 <div className="versum-dashboard__section">
                     <div className="versum-dashboard__section-header">
                         <h2>zadania</h2>
@@ -258,28 +335,13 @@ export default function AdminDashboard() {
                                 +
                             </button>
                             <button type="button" className="versum-icon-btn">
-                                🗑
+                                •••
                             </button>
                         </div>
                     </div>
-                    <div className="versum-tasks">
-                        <div className="versum-tasks__input">
-                            <input
-                                type="text"
-                                placeholder="nowe zadanie"
-                                className="versum-input versum-input--ghost"
-                            />
-                        </div>
-                        <div className="versum-tasks__empty">
-                            Nie znaleziono żadnych zadań
-                        </div>
+                    <div className="versum-empty-state">
+                        Brak zadań do wykonania
                     </div>
-                    <Link
-                        href="/todo/archives/"
-                        className="versum-dashboard__section-footer"
-                    >
-                        archiwum zadań
-                    </Link>
                 </div>
             </div>
         </div>
