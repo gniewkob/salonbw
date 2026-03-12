@@ -203,57 +203,58 @@ export default function WarehouseChangesPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {stats.recentMovements.map((m) => (
-                                                <tr key={m.id}>
-                                                    <td>
-                                                        {new Date(
-                                                            m.createdAt,
-                                                        ).toLocaleDateString(
-                                                            'pl-PL',
-                                                        )}
-                                                    </td>
-                                                    <td>{m.productName}</td>
-                                                    <td>
-                                                        <span
-                                                            className="badge"
-                                                            {...({
-                                                                style: {
-                                                                    backgroundColor:
-                                                                        TYPE_COLORS[
-                                                                            m
-                                                                                .type
-                                                                        ] ||
-                                                                        '#999',
-                                                                },
-                                                            } as any)}
+                                            {stats.recentMovements.map((m) => {
+                                                const badgeStyle = {
+                                                    backgroundColor:
+                                                        TYPE_COLORS[m.type] ||
+                                                        '#999',
+                                                };
+                                                return (
+                                                    <tr key={m.id}>
+                                                        <td>
+                                                            {new Date(
+                                                                m.createdAt,
+                                                            ).toLocaleDateString(
+                                                                'pl-PL',
+                                                            )}
+                                                        </td>
+                                                        <td>{m.productName}</td>
+                                                        <td>
+                                                            <span
+                                                                className="badge"
+                                                                style={
+                                                                    badgeStyle
+                                                                }
+                                                            >
+                                                                {TYPE_LABELS[
+                                                                    m.type
+                                                                ] || m.type}
+                                                            </span>
+                                                        </td>
+                                                        <td
+                                                            className={`text-right ${
+                                                                m.quantity > 0
+                                                                    ? 'text-success'
+                                                                    : 'text-danger'
+                                                            }`}
                                                         >
-                                                            {TYPE_LABELS[
-                                                                m.type
-                                                            ] || m.type}
-                                                        </span>
-                                                    </td>
-                                                    <td
-                                                        className={`text-right ${
-                                                            m.quantity > 0
-                                                                ? 'text-success'
-                                                                : 'text-danger'
-                                                        }`}
-                                                    >
-                                                        {m.quantity > 0
-                                                            ? `+${m.quantity}`
-                                                            : m.quantity}
-                                                    </td>
-                                                    <td className="text-right">
-                                                        {m.quantityBefore}
-                                                    </td>
-                                                    <td className="text-right">
-                                                        {m.quantityAfter}
-                                                    </td>
-                                                    <td>
-                                                        {m.createdByName || '-'}
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                            {m.quantity > 0
+                                                                ? `+${m.quantity}`
+                                                                : m.quantity}
+                                                        </td>
+                                                        <td className="text-right">
+                                                            {m.quantityBefore}
+                                                        </td>
+                                                        <td className="text-right">
+                                                            {m.quantityAfter}
+                                                        </td>
+                                                        <td>
+                                                            {m.createdByName ||
+                                                                '-'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>

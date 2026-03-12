@@ -53,58 +53,64 @@ export default function ServiceRanking({ data, loading }: Props) {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {data.map((service) => (
-                        <tr
-                            key={service.serviceId}
-                            className="hover:bg-gray-50"
-                        >
-                            <td className="px-4 py-3">
-                                <div className="font-medium text-gray-900">
-                                    {service.serviceName}
-                                </div>
-                                <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
-                                    <div
-                                        className="bg-primary-500 h-1.5 rounded-full"
-                                        {...({
-                                            style: {
-                                                width: `${(service.bookingCount / maxBookings) * 100}%`,
-                                            },
-                                        } as any)}
-                                    />
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                {service.categoryName ? (
-                                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
-                                        {service.categoryName}
+                    {data.map((service) => {
+                        const width = maxBookings
+                            ? `${(service.bookingCount / maxBookings) * 100}%`
+                            : '0%';
+                        return (
+                            <tr
+                                key={service.serviceId}
+                                className="hover:bg-gray-50"
+                            >
+                                <td className="px-4 py-3">
+                                    <div className="font-medium text-gray-900">
+                                        {service.serviceName}
+                                    </div>
+                                    <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                                        <div
+                                            className="bg-primary-500 h-1.5 rounded-full"
+                                            style={{ width }}
+                                        />
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                    {service.categoryName ? (
+                                        <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                            {service.categoryName}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-right">
+                                    <span className="font-semibold text-gray-900">
+                                        {service.bookingCount}
                                     </span>
-                                ) : (
-                                    <span className="text-gray-400">-</span>
-                                )}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right">
-                                <span className="font-semibold text-gray-900">
-                                    {service.bookingCount}
-                                </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right">
-                                <span className="font-semibold text-gray-900">
-                                    {service.revenue.toLocaleString('pl-PL')}{' '}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-right">
+                                    <span className="font-semibold text-gray-900">
+                                        {service.revenue.toLocaleString(
+                                            'pl-PL',
+                                        )}{' '}
+                                        PLN
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
+                                    {service.averagePrice.toLocaleString(
+                                        'pl-PL',
+                                        {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        },
+                                    )}{' '}
                                     PLN
-                                </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
-                                {service.averagePrice.toLocaleString('pl-PL', {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                })}{' '}
-                                PLN
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
-                                {service.averageDuration} min
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-600">
+                                    {service.averageDuration} min
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

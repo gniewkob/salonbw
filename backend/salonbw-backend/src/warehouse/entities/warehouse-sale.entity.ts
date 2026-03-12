@@ -12,6 +12,20 @@ import { ColumnNumericTransformer } from '../../column-numeric.transformer';
 import { WarehouseSaleItem } from './warehouse-sale-item.entity';
 import { User } from '../../users/user.entity';
 
+export enum WarehouseSaleKind {
+    Sale = 'sale',
+    Void = 'void',
+    Refund = 'refund',
+    Correction = 'correction',
+}
+
+export enum WarehouseSaleStatus {
+    Active = 'active',
+    Adjusted = 'adjusted',
+    Voided = 'voided',
+    Refunded = 'refunded',
+}
+
 @Entity('warehouse_sales')
 export class WarehouseSale {
     @PrimaryGeneratedColumn()
@@ -38,6 +52,26 @@ export class WarehouseSale {
 
     @Column({ type: 'int', nullable: true })
     appointmentId: number | null;
+
+    @Column({
+        type: 'varchar',
+        length: 20,
+        default: WarehouseSaleKind.Sale,
+    })
+    kind: WarehouseSaleKind;
+
+    @Column({
+        type: 'varchar',
+        length: 20,
+        default: WarehouseSaleStatus.Active,
+    })
+    status: WarehouseSaleStatus;
+
+    @Column({ type: 'int', nullable: true })
+    sourceSaleId: number | null;
+
+    @Column({ type: 'text', nullable: true })
+    reversalReason: string | null;
 
     @Column('decimal', {
         precision: 10,

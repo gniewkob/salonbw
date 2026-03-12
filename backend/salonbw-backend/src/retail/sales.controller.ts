@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { ReverseSaleDto } from './dto/reverse-sale.dto';
 import { RetailService } from './retail.service';
 import { User } from '../users/user.entity';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -77,5 +78,51 @@ export class SalesController {
     @ApiResponse({ status: 200, description: 'Warehouse sale details' })
     findSale(@Param('id', ParseIntPipe) id: number) {
         return this.retail.getSaleDetails(id);
+    }
+
+    @Post(':id/void')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Void a sale by creating a full reversal entry' })
+    voidSale(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: ReverseSaleDto,
+        @CurrentUser() user: { userId: number },
+    ) {
+        return this.retail.voidSale(id, dto, { id: user.userId } as User);
+    }
+
+    @Post(':id/refund')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Refund selected sale lines by creating a reversal entry',
+    })
+    refundSale(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: ReverseSaleDto,
+        @CurrentUser() user: { userId: number },
+    ) {
+        return this.retail.refundSale(id, dto, { id: user.userId } as User);
+    }
+
+    @Post(':id/correction')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Employee, Role.Admin)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Create a correction entry for selected sale lines',
+    })
+    correctSale(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: ReverseSaleDto,
+        @CurrentUser() user: { userId: number },
+    ) {
+        return this.retail.correctSale(id, dto, { id: user.userId } as User);
     }
 }

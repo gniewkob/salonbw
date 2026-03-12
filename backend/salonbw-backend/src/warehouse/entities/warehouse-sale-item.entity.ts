@@ -31,6 +31,9 @@ export class WarehouseSaleItem {
     @Column({ type: 'int', nullable: true })
     productId: number | null;
 
+    @Column({ type: 'int', nullable: true })
+    originalSaleItemId: number | null;
+
     @Column({ type: 'varchar', length: 200 })
     productName: string;
 

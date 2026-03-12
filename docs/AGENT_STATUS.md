@@ -1,6 +1,38 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-10 (Extension copy-first + smoke/parity on production; secret cleanup in add-test-data flows; production probe green)_
+_Last updated: 2026-03-12 (local backlog closure plus POS reversal suite: statistics/retail batching, customer reviews mapping, calendar embed full-document runtime, retail reporting semantics, landing contact data, refund/void/correction flow, and backend reversal test coverage; not deployed yet)_
+
+## Pending Local Changes (Not Deployed Yet)
+
+- Statistics:
+  - removed N+1 patterns from employee ranking and employee activity in `backend/salonbw-backend/src/statistics/statistics.service.ts`
+  - added regression coverage in `backend/salonbw-backend/src/statistics/statistics.service.spec.ts`
+- Retail:
+  - added duplicate-line aggregation before stock validation
+  - replaced per-item transactional product reads with batched locked reads in `backend/salonbw-backend/src/retail/retail.service.ts`
+  - added regression coverage in `backend/salonbw-backend/src/retail/retail.service.spec.ts`
+  - added controller coverage in `backend/salonbw-backend/src/retail/sales.controller.spec.ts`
+  - product sale insert now preserves transaction date in `product_sales.soldAt`
+  - product commissions now persist `productSaleId`, enabling reporting by transaction date instead of commission creation time
+  - implemented reversal ledger flow for `void`, `refund`, and `correction`
+  - reversal flow restores stock and can reverse product commission
+  - requires DB migration `1760105000000-AddWarehouseSaleReversalFlow.ts`
+- Reporting:
+  - `statistics.service.ts` now includes retail revenue in revenue chart buckets using `soldAt`
+  - employee commissions report now includes product revenue and product commission grouped by transaction date
+  - sales without `employeeId` are reported under `Recepcja`
+- Panel:
+  - `CustomerReviewsTab` is now wired to `/customers/:id/reviews` through a normalization layer
+  - `Review` frontend type now reflects the actual backend relation-based payload more closely
+  - commissions page now sends a real custom day range instead of the ignored `date` parameter
+- Landing:
+  - public contact data updated from first-party site (`+48 723 588 868`, `kontakt@salon-bw.pl`)
+- Calendar:
+  - removed the unverified PJAX branch from `apps/panel/src/pages/api/calendar-embed.ts`
+  - documented the verified runtime contract in `docs/CALENDAR_FLOW_SPEC.md`
+- Backlog tracking:
+  - repository status snapshot added in `docs/IMPLEMENTATION_BACKLOG_STATUS.md`
+  - refund / void / reversal updated from approved scope to implemented local scope
 
 ## Platform Architecture
 

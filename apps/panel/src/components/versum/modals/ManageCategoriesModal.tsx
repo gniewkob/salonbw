@@ -103,11 +103,6 @@ export default function ManageCategoriesModal({ type, onClose }: Props) {
     return <ManageProductCategoriesModal onClose={onClose} />;
 }
 
-const HR_STYLE: React.CSSProperties = {
-    margin: '14px 0',
-    borderColor: '#eef1f4',
-};
-
 function ManageProductCategoriesModal({ onClose }: { onClose: () => void }) {
     const { data: tree = [], isLoading } = useProductCategories();
     const createCategory = useCreateProductCategory();
@@ -310,19 +305,6 @@ function CategoryEditorRow({
     useEffect(() => {
         setState(draft);
     }, [draft]);
-
-    const rowStyle: React.CSSProperties = {
-        border: '1px solid #e6eaee',
-        borderRadius: 3,
-        padding: 10,
-        marginBottom: 10,
-    };
-    const gridStyle: React.CSSProperties = {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-    };
-    const actionsStyle: React.CSSProperties = { display: 'flex', gap: 8 };
 
     return (
         <div className="border border-[#e6eaee] rounded-[3px] p-[10px] mb-[10px]">

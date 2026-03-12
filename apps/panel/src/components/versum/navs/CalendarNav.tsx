@@ -158,6 +158,9 @@ export default function CalendarNav() {
             <div className="nav-header">PRACOWNICY</div>
             <div className="versum-employee-filter">
                 {employees?.map((employee) => {
+                    const colorStyle = {
+                        backgroundColor: employee.color || '#999',
+                    };
                     return (
                         <label
                             key={employee.id}
@@ -175,12 +178,7 @@ export default function CalendarNav() {
                             />
                             <span
                                 className="versum-employee-filter__color"
-                                {...({
-                                    style: {
-                                        backgroundColor:
-                                            employee.color || '#999',
-                                    },
-                                } as any)}
+                                style={colorStyle}
                             />
                             <span className="versum-employee-filter__name">
                                 {employee.name}

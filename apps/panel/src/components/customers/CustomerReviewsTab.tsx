@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useReviews } from '@/hooks/useReviews';
+import { Review } from '@/types';
 
 interface Props {
     customerId: number;
@@ -22,6 +24,19 @@ interface CustomerReview {
         content: string;
         createdAt: string;
         authorName: string;
+    };
+}
+
+function mapReviewToCustomerReview(review: Review): CustomerReview {
+    return {
+        id: review.id,
+        rating: review.rating,
+        content: review.comment,
+        source: 'internal',
+        serviceId: review.appointmentId ?? review.appointment?.id,
+        employeeId: review.employee?.id,
+        employeeName: review.employee?.fullName ?? review.employee?.name,
+        createdAt: review.createdAt ?? '',
     };
 }
 
@@ -68,16 +83,13 @@ function StarRating({ rating }: { rating: number }) {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export default function CustomerReviewsTab({ customerId }: Props) {
-    const [reviews] = useState<CustomerReview[]>([]);
     const [filterSource, setFilterSource] = useState<ReviewSource | 'all'>(
         'all',
     );
-    const isLoading = false;
-
-    // TODO: Integrate with API when backend supports customer reviews
-    // const { data: reviews, isLoading } = useCustomerReviews(customerId);
+    const { data, loading } = useReviews({ clientId: customerId });
+    const reviews = data.map(mapReviewToCustomerReview);
+    const isLoading = loading;
 
     const filteredReviews =
         filterSource === 'all'
@@ -174,11 +186,13 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                                     </span>
                                                 </div>
                                                 <span className="fz-11 text-999">
-                                                    {new Date(
-                                                        review.createdAt,
-                                                    ).toLocaleDateString(
-                                                        'pl-PL',
-                                                    )}
+                                                    {review.createdAt
+                                                        ? new Date(
+                                                              review.createdAt,
+                                                          ).toLocaleDateString(
+                                                              'pl-PL',
+                                                          )
+                                                        : '-'}
                                                 </span>
                                             </div>
 

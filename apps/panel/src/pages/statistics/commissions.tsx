@@ -65,8 +65,10 @@ export default function CommissionsPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
+            const from = `${selectedDate}T00:00:00.000Z`;
+            const to = `${selectedDate}T23:59:59.999Z`;
             const res = await fetch(
-                `/api/statistics/commissions?range=today&date=${selectedDate}`,
+                `/api/statistics/commissions?range=custom&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
             );
             if (res.ok) {
                 const json = (await res.json()) as CommissionReportSummary;

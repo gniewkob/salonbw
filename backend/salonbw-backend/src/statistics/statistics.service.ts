@@ -61,6 +61,9 @@ import { Product } from '../products/product.entity';
 
 @Injectable()
 export class StatisticsService {
+    private static readonly RECEPTION_EMPLOYEE_ID = 0;
+    private static readonly RECEPTION_EMPLOYEE_NAME = 'Recepcja';
+
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentRepository: Repository<Appointment>,
@@ -188,6 +191,36 @@ export class StatisticsService {
             relations: ['service', 'serviceVariant'],
         });
 
+        let productSalesByBucket = new Map<string, number>();
+        const hasProductSales = await this.hasTable('public.product_sales');
+        if (hasProductSales) {
+            const bucketExpr =
+                groupBy === GroupBy.Month
+                    ? `DATE_TRUNC('month', "soldAt")`
+                    : groupBy === GroupBy.Week
+                      ? `DATE_TRUNC('week', "soldAt")`
+                      : `DATE_TRUNC('day', "soldAt")`;
+            const employeeFilter =
+                employeeId !== undefined ? 'AND "employeeId" = $3' : '';
+            const rows = await this.appointmentRepository.query(
+                `SELECT TO_CHAR(${bucketExpr}, 'YYYY-MM-DD') AS bucket,
+                        COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
+                 FROM product_sales
+                 WHERE "soldAt" BETWEEN $1 AND $2
+                 ${employeeFilter}
+                 GROUP BY bucket`,
+                employeeId !== undefined ? [from, to, employeeId] : [from, to],
+            );
+            productSalesByBucket = new Map(
+                rows.map(
+                    (row: { bucket: string; revenue: string | number }) => [
+                        row.bucket,
+                        Number(row.revenue ?? 0),
+                    ],
+                ),
+            );
+        }
+
         // Generate date intervals
         let intervals: Date[];
         let formatStr: string;
@@ -247,7 +280,10 @@ export class StatisticsService {
                 revenue,
                 appointments: periodAppointments.length,
                 tips,
-                products: 0, // TODO: Add product sales when retail integration is complete
+                products:
+                    productSalesByBucket.get(
+                        format(rangeStart, 'yyyy-MM-dd'),
+                    ) ?? 0,
             };
         });
 
@@ -255,69 +291,100 @@ export class StatisticsService {
     }
 
     async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
-        const employees = await this.userRepository.find({
-            where: { role: Role.Employee },
-        });
-
-        const stats: EmployeeStats[] = [];
-
-        for (const employee of employees) {
-            const appointments = await this.appointmentRepository.find({
+        const [employees, appointments, reviewRows] = await Promise.all([
+            this.userRepository.find({
+                where: { role: Role.Employee },
+            }),
+            this.appointmentRepository.find({
                 where: {
-                    employee: { id: employee.id },
                     startTime: Between(from, to),
                     status: AppointmentStatus.Completed,
                 },
                 relations: ['service', 'serviceVariant'],
-            });
-
-            const revenue = appointments.reduce(
-                (sum, a) => sum + this.resolveAppointmentPrice(a),
-                0,
-            );
-            const tips = appointments.reduce(
-                (sum, a) => sum + (a.tipAmount ?? 0),
-                0,
-            );
-            const totalDuration = appointments.reduce(
-                (sum, a) =>
-                    sum +
-                    (a.serviceVariant?.duration ?? a.service?.duration ?? 0),
-                0,
-            );
-
-            // Get reviews
-            const reviewsResult = await this.reviewRepository
+            }),
+            this.reviewRepository
                 .createQueryBuilder('review')
                 .innerJoin('review.appointment', 'appointment')
-                .where('appointment.employeeId = :employeeId', {
-                    employeeId: employee.id,
-                })
-                .andWhere('appointment.startTime BETWEEN :from AND :to', {
+                .select('appointment.employeeId', 'employeeId')
+                .addSelect('AVG(review.rating)', 'avg')
+                .addSelect('COUNT(*)', 'count')
+                .where('appointment.startTime BETWEEN :from AND :to', {
                     from,
                     to,
                 })
-                .select('AVG(review.rating)', 'avg')
-                .addSelect('COUNT(*)', 'count')
-                .getRawOne();
+                .groupBy('appointment.employeeId')
+                .getRawMany<{
+                    employeeId: string;
+                    avg: string | null;
+                    count: string;
+                }>(),
+        ]);
 
-            stats.push({
+        const appointmentsByEmployee = new Map<number, Appointment[]>();
+        for (const appointment of appointments) {
+            const employeeAppointments =
+                appointmentsByEmployee.get(appointment.employeeId) ?? [];
+            employeeAppointments.push(appointment);
+            appointmentsByEmployee.set(
+                appointment.employeeId,
+                employeeAppointments,
+            );
+        }
+
+        const reviewsByEmployee = new Map<
+            number,
+            { avg: number; count: number }
+        >(
+            reviewRows.map((row) => [
+                Number(row.employeeId),
+                {
+                    avg: parseFloat(row.avg ?? '0') || 0,
+                    count: parseInt(row.count ?? '0', 10),
+                },
+            ]),
+        );
+
+        const stats = employees.map((employee) => {
+            const employeeAppointments =
+                appointmentsByEmployee.get(employee.id) ?? [];
+            const revenue = employeeAppointments.reduce(
+                (sum, appointment) =>
+                    sum + this.resolveAppointmentPrice(appointment),
+                0,
+            );
+            const tips = employeeAppointments.reduce(
+                (sum, appointment) => sum + (appointment.tipAmount ?? 0),
+                0,
+            );
+            const totalDuration = employeeAppointments.reduce(
+                (sum, appointment) =>
+                    sum +
+                    (appointment.serviceVariant?.duration ??
+                        appointment.service?.duration ??
+                        0),
+                0,
+            );
+            const reviews = reviewsByEmployee.get(employee.id);
+
+            return {
                 employeeId: employee.id,
                 employeeName: employee.name,
                 revenue,
-                appointments: appointments.length,
-                completedAppointments: appointments.length,
+                appointments: employeeAppointments.length,
+                completedAppointments: employeeAppointments.length,
                 averageDuration:
-                    appointments.length > 0
-                        ? totalDuration / appointments.length
+                    employeeAppointments.length > 0
+                        ? totalDuration / employeeAppointments.length
                         : 0,
                 averageRevenue:
-                    appointments.length > 0 ? revenue / appointments.length : 0,
+                    employeeAppointments.length > 0
+                        ? revenue / employeeAppointments.length
+                        : 0,
                 tips,
-                rating: parseFloat(reviewsResult?.avg ?? '0') || 0,
-                reviewCount: parseInt(reviewsResult?.count ?? '0', 10),
-            });
-        }
+                rating: reviews?.avg ?? 0,
+                reviewCount: reviews?.count ?? 0,
+            };
+        });
 
         // Sort by revenue descending
         return stats.sort((a, b) => b.revenue - a.revenue);
@@ -515,39 +582,53 @@ export class StatisticsService {
         const dayStart = startOfDay(date);
         const dayEnd = endOfDay(date);
 
-        const employees = await this.userRepository.find({
-            where: { role: Role.Employee },
-        });
+        const [employees, appointments] = await Promise.all([
+            this.userRepository.find({
+                where: { role: Role.Employee },
+            }),
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(dayStart, dayEnd),
+                    status: AppointmentStatus.Completed,
+                },
+                select: {
+                    id: true,
+                    employeeId: true,
+                    startTime: true,
+                    endTime: true,
+                },
+            }),
+        ]);
+
+        const activityByEmployee = new Map<
+            number,
+            { workTimeMinutes: number; appointmentsCount: number }
+        >();
+        for (const appointment of appointments) {
+            const durationMs =
+                new Date(appointment.endTime).getTime() -
+                new Date(appointment.startTime).getTime();
+            const durationMinutes = Math.max(
+                0,
+                Math.round(durationMs / (60 * 1000)),
+            );
+            const current = activityByEmployee.get(appointment.employeeId) ?? {
+                workTimeMinutes: 0,
+                appointmentsCount: 0,
+            };
+            current.workTimeMinutes += durationMinutes;
+            current.appointmentsCount += 1;
+            activityByEmployee.set(appointment.employeeId, current);
+        }
 
         const employeesActivity: EmployeeActivity[] = [];
         let totalWorkTime = 0;
         let totalAppointments = 0;
 
         for (const employee of employees) {
-            const appointments = await this.appointmentRepository.find({
-                where: {
-                    employeeId: employee.id,
-                    startTime: Between(dayStart, dayEnd),
-                    status: AppointmentStatus.Completed,
-                },
-                select: {
-                    id: true,
-                    startTime: true,
-                    endTime: true,
-                },
-            });
-
-            const workTimeMinutes = appointments.reduce((sum, appointment) => {
-                const durationMs =
-                    new Date(appointment.endTime).getTime() -
-                    new Date(appointment.startTime).getTime();
-                const durationMinutes = Math.max(
-                    0,
-                    Math.round(durationMs / (60 * 1000)),
-                );
-                return sum + durationMinutes;
-            }, 0);
-            const appointmentsCount = appointments.length;
+            const activity = activityByEmployee.get(employee.id);
+            const workTimeMinutes = activity?.workTimeMinutes ?? 0;
+            const appointmentsCount = activity?.appointmentsCount ?? 0;
 
             employeesActivity.push({
                 employeeId: employee.id,
@@ -615,55 +696,144 @@ export class StatisticsService {
             where: { role: Role.Employee },
         });
 
+        const [
+            appointments,
+            serviceCommissionRows,
+            productSalesRows,
+            productCommissionRows,
+        ] = await Promise.all([
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(from, to),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: ['service', 'serviceVariant'],
+            }),
+            this.appointmentRepository.query(
+                `SELECT c."employeeId" AS "employeeId",
+                            COALESCE(SUM(c.amount), 0) AS amount
+                     FROM commissions c
+                     INNER JOIN appointments a ON a.id = c."appointmentId"
+                     WHERE a."startTime" BETWEEN $1 AND $2
+                     GROUP BY c."employeeId"`,
+                [from, to],
+            ),
+            this.hasTable('public.product_sales').then(async (exists) => {
+                if (!exists) return [];
+                return this.appointmentRepository.query(
+                    `SELECT COALESCE("employeeId", 0) AS "employeeId",
+                                COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
+                         FROM product_sales
+                         WHERE "soldAt" BETWEEN $1 AND $2
+                         GROUP BY COALESCE("employeeId", 0)`,
+                    [from, to],
+                );
+            }),
+            this.hasTable('public.product_sales').then(async (exists) => {
+                if (!exists) return [];
+                return this.appointmentRepository.query(
+                    `SELECT COALESCE(ps."employeeId", 0) AS "employeeId",
+                                COALESCE(SUM(c.amount), 0) AS amount
+                         FROM commissions c
+                         INNER JOIN product_sales ps ON ps.id = c."productSaleId"
+                         WHERE ps."soldAt" BETWEEN $1 AND $2
+                         GROUP BY COALESCE(ps."employeeId", 0)`,
+                    [from, to],
+                );
+            }),
+        ]);
+
+        const serviceRevenueByEmployee = new Map<number, number>();
+        for (const appointment of appointments) {
+            const key = appointment.employeeId;
+            serviceRevenueByEmployee.set(
+                key,
+                (serviceRevenueByEmployee.get(key) ?? 0) +
+                    this.resolveAppointmentPrice(appointment),
+            );
+        }
+
+        const serviceCommissionByEmployee = new Map<number, number>();
+        for (const row of serviceCommissionRows) {
+            const key = Number(
+                (row as { employeeId: string | number }).employeeId ?? 0,
+            );
+            if (!key) continue;
+            serviceCommissionByEmployee.set(
+                key,
+                Number((row as { amount: string | number }).amount ?? 0),
+            );
+        }
+
+        const productRevenueByEmployee = new Map<number, number>(
+            productSalesRows.map(
+                (row: {
+                    employeeId: string | number;
+                    revenue: string | number;
+                }) => [
+                    Number(
+                        row.employeeId ??
+                            StatisticsService.RECEPTION_EMPLOYEE_ID,
+                    ),
+                    Number(row.revenue ?? 0),
+                ],
+            ),
+        );
+
+        const productCommissionByEmployee = new Map<number, number>(
+            productCommissionRows.map(
+                (row: {
+                    employeeId: string | number;
+                    amount: string | number;
+                }) => [
+                    Number(
+                        row.employeeId ??
+                            StatisticsService.RECEPTION_EMPLOYEE_ID,
+                    ),
+                    Number(row.amount ?? 0),
+                ],
+            ),
+        );
+
         const employeesReport: CommissionReport[] = [];
         let totalServiceRevenue = 0;
         let totalServiceCommission = 0;
         let totalProductRevenue = 0;
         let totalProductCommission = 0;
 
-        for (const employee of employees) {
-            // Get completed appointments for employee in date range
-            const appointments = await this.appointmentRepository.find({
-                where: {
-                    employee: { id: employee.id },
-                    startTime: Between(from, to),
-                    status: AppointmentStatus.Completed,
-                },
-                relations: ['service', 'serviceVariant'],
-            });
+        const employeeRows = [...employees];
+        if (
+            productRevenueByEmployee.has(
+                StatisticsService.RECEPTION_EMPLOYEE_ID,
+            ) ||
+            productCommissionByEmployee.has(
+                StatisticsService.RECEPTION_EMPLOYEE_ID,
+            )
+        ) {
+            employeeRows.unshift({
+                id: StatisticsService.RECEPTION_EMPLOYEE_ID,
+                name: StatisticsService.RECEPTION_EMPLOYEE_NAME,
+            } as User);
+        }
 
-            const serviceRevenue = appointments.reduce(
-                (sum, a) => sum + this.resolveAppointmentPrice(a),
-                0,
-            );
-
-            // Get commissions for employee in date range
-            const commissions = await this.commissionRepository
-                .createQueryBuilder('commission')
-                .where('commission.employeeId = :employeeId', {
-                    employeeId: employee.id,
-                })
-                .andWhere('commission.createdAt BETWEEN :from AND :to', {
-                    from,
-                    to,
-                })
-                .getMany();
-
-            const serviceCommission = commissions.reduce(
-                (sum, c) => sum + Number(c.amount),
-                0,
-            );
-
-            // TODO: Product sales - when retail module is ready
-            const productRevenue = 0;
-            const productCommission = 0;
-
+        for (const employee of employeeRows) {
+            const employeeKey =
+                employee.id ?? StatisticsService.RECEPTION_EMPLOYEE_ID;
+            const serviceRevenue =
+                serviceRevenueByEmployee.get(employeeKey) ?? 0;
+            const serviceCommission =
+                serviceCommissionByEmployee.get(employeeKey) ?? 0;
+            const productRevenue =
+                productRevenueByEmployee.get(employeeKey) ?? 0;
+            const productCommission =
+                productCommissionByEmployee.get(employeeKey) ?? 0;
             const totalRevenue = serviceRevenue + productRevenue;
             const totalCommission = serviceCommission + productCommission;
 
             employeesReport.push({
-                employeeId: employee.id,
-                employeeName: employee.name,
+                employeeId: employeeKey,
+                employeeName:
+                    employee.name ?? StatisticsService.RECEPTION_EMPLOYEE_NAME,
                 serviceRevenue,
                 serviceCommission,
                 productRevenue,
@@ -691,6 +861,18 @@ export class StatisticsService {
                     totalServiceCommission + totalProductCommission,
             },
         };
+    }
+
+    private async hasTable(name: string): Promise<boolean> {
+        try {
+            const [result] = await this.appointmentRepository.query(
+                'SELECT to_regclass($1) AS exists',
+                [name],
+            );
+            return Boolean(result?.exists);
+        } catch {
+            return false;
+        }
     }
 
     async getClientReturningStats(

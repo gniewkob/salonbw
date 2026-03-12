@@ -287,6 +287,60 @@ export function useCreateWarehouseSale() {
     });
 }
 
+interface ReverseWarehouseSalePayload {
+    reason?: string;
+    soldAt?: string;
+    restock?: boolean;
+    reverseCommission?: boolean;
+    items?: Array<{
+        saleItemId: number;
+        quantity: number;
+    }>;
+}
+
+function useWarehouseSaleAction(action: 'void' | 'refund' | 'correction') {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({
+            saleId,
+            payload,
+        }: {
+            saleId: number;
+            payload: ReverseWarehouseSalePayload;
+        }) =>
+            apiFetch<WarehouseSale>(`/sales/${saleId}/${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }),
+        onSuccess: (_, variables) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-sales'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-sale', variables.saleId],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+        },
+    });
+}
+
+export function useVoidWarehouseSale() {
+    return useWarehouseSaleAction('void');
+}
+
+export function useRefundWarehouseSale() {
+    return useWarehouseSaleAction('refund');
+}
+
+export function useCorrectWarehouseSale() {
+    return useWarehouseSaleAction('correction');
+}
+
 export function useWarehouseUsage(
     scope: 'all' | 'planned' | 'completed' = 'all',
 ) {

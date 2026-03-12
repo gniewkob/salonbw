@@ -12,10 +12,12 @@ interface Props {
 }
 
 export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
+    const initialAppointmentId =
+        initial?.appointmentId ?? initial?.appointment?.id;
     const [form, setForm] = useState(() => ({
         appointmentId:
-            initial?.appointmentId !== undefined
-                ? String(initial.appointmentId)
+            initialAppointmentId !== undefined
+                ? String(initialAppointmentId)
                 : '',
         rating: initial?.rating !== undefined ? String(initial.rating) : '1',
         comment: initial?.comment ?? '',
@@ -74,9 +76,9 @@ export default function ReviewForm({ initial, onSubmit, onCancel }: Props) {
                     placeholder="Employee"
                 />
             )}
-            {initial?.author && (
+            {(initial?.author ?? initial?.client) && (
                 <input
-                    value={initial.author.name}
+                    value={(initial.author ?? initial.client)?.name ?? ''}
                     readOnly
                     className="border p-1 w-full bg-gray-100"
                     placeholder="Author"

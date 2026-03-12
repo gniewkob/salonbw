@@ -29,31 +29,6 @@ const colorOptions = [
     '#64748b', // slate
 ];
 
-const HR_STYLE: React.CSSProperties = {
-    margin: '14px 0',
-    borderColor: '#eef1f4',
-};
-const ACTIONS_STYLE: React.CSSProperties = { display: 'flex', gap: 8 };
-const ROW_STYLE: React.CSSProperties = {
-    border: '1px solid #e6eaee',
-    borderRadius: 3,
-    padding: 10,
-    marginBottom: 10,
-};
-const ROW_HEADER_STYLE: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 8,
-};
-const ID_CONTAINER_STYLE: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-};
-const ID_STYLE: React.CSSProperties = { fontSize: 12 };
-
 export default function ManageCustomerGroupsModal({ onClose }: Props) {
     const { data: groups = [], isLoading } = useCustomerGroups();
     const create = useCreateCustomerGroup();
@@ -208,11 +183,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                         color,
                                                     }))
                                                 }
-                                                {...({
-                                                    style: {
-                                                        backgroundColor: color,
-                                                    },
-                                                } as any)}
+                                                style={{
+                                                    backgroundColor: color,
+                                                }}
                                                 title={color}
                                                 aria-label={color}
                                                 disabled={isBusy}
@@ -287,9 +260,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                             };
                                                         return (
                                                             <span
-                                                                {...({
-                                                                    style: colorDotStyle,
-                                                                } as any)}
+                                                                style={
+                                                                    colorDotStyle
+                                                                }
                                                             />
                                                         );
                                                     })()}
@@ -387,6 +360,11 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                 <div className="versum-color-picker">
                                                     {colorOptions.map(
                                                         (color) => {
+                                                            const buttonStyle =
+                                                                {
+                                                                    backgroundColor:
+                                                                        color,
+                                                                };
                                                             return (
                                                                 <button
                                                                     key={color}
@@ -404,12 +382,9 @@ export default function ManageCustomerGroupsModal({ onClose }: Props) {
                                                                             }),
                                                                         )
                                                                     }
-                                                                    {...({
-                                                                        style: {
-                                                                            backgroundColor:
-                                                                                color,
-                                                                        },
-                                                                    } as any)}
+                                                                    style={
+                                                                        buttonStyle
+                                                                    }
                                                                     title={
                                                                         color
                                                                     }
