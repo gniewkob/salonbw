@@ -525,20 +525,32 @@ textarea.form-control {
     padding-left: 12px;
 }
 
-.clients-table .col-email {
-    width: 34px;
-    text-align: center;
-    color: #8a939b;
-}
-
 .clients-table .col-phone {
-    width: 180px;
+    width: 240px;
     color: #6c7680;
     white-space: nowrap;
 }
 
-.clients-table .col-phone i {
-    margin-right: 8px;
+.clients-contact-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clients-phone-link {
+    display: inline-flex;
+    align-items: center;
+    color: #6c7680;
+    text-decoration: none;
+}
+
+.clients-phone-link i,
+.clients-contact-cell .clients-icon-link i {
+    margin-right: 6px;
+    color: #9aa3ab;
+}
+
+.clients-phone-empty {
     color: #9aa3ab;
 }
 
@@ -4108,6 +4120,11 @@ h2.column_row small {
 .row-col_row { overflow: hidden; margin-bottom: 20px; }
 .row-col { display: block; }
 .row-col.single-detail-row { margin: 0 0 10px; }
+.row-col.single-detail-row .lbl {
+    display: inline-block;
+    min-width: 88px;
+    margin-right: 4px;
+}
 .details-row { margin: 0 0 20px; }
 .icon_box { display: inline-block; color: #636363; margin: 0 1px 0 0; vertical-align: middle; }
 .info-box { padding: 15px; border: 1px solid #c8c8c8; margin: 0 0 20px; background: #fff; }
