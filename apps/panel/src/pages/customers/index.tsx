@@ -24,6 +24,20 @@ import {
 import type { Route } from 'next';
 
 // Komponent dla wiersza klienta z obsługą drag (Versum 1:1 style)
+function formatLastVisit(date: string | null | undefined) {
+    if (!date) return '-';
+    const value = new Date(date);
+    if (!Number.isFinite(value.getTime())) return '-';
+
+    const day = `${value.getDate()}`.padStart(2, '0');
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const year = value.getFullYear();
+    const hours = `${value.getHours()}`.padStart(2, '0');
+    const minutes = `${value.getMinutes()}`.padStart(2, '0');
+
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
 function DraggableCustomerRow({
     customer,
     isDragging,
@@ -47,7 +61,7 @@ function DraggableCustomerRow({
         <tr
             ref={setNodeRef}
             {...{ style }}
-            className={`${isDragging ? 'opacity-50' : ''} hover:bg-gray-50 cursor-grab`}
+            className={`${isDragging ? 'opacity-50' : ''} clients-row`}
             onClick={() => onOpen(customer.id)}
         >
             <td className="col-checkbox">
@@ -95,38 +109,30 @@ function DraggableCustomerRow({
                 )}
             </td>
             <td className="col-last-visit">
-                {customer.lastVisitDate
-                    ? new Date(customer.lastVisitDate).toLocaleString('pl-PL', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                      })
-                    : '-'}
+                {formatLastVisit(customer.lastVisitDate)}
             </td>
             <td className="col-actions">
-                <span
-                    className="clients-drag-handle"
-                    title="Przeciągnij do grupy"
-                    // Drag listeners must be on a dedicated handle; attaching to the whole row
-                    // prevents normal click navigation in some browsers.
-                    {...listeners}
-                    {...attributes}
-                    onClick={(e) => e.stopPropagation()}
-                    onPointerDown={(e) => e.stopPropagation()}
-                >
-                    ⋮⋮
-                </span>
-                <Link
-                    href={`/customers/${customer.id}/edit`}
-                    className="clients-edit-link"
-                    onClick={(e) => e.stopPropagation()}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    title="Edytuj"
-                >
-                    <i className="fa fa-pencil" aria-hidden="true" />
-                </Link>
+                <div className="clients-actions-wrap">
+                    <span
+                        className="clients-drag-handle"
+                        title="Przeciągnij do grupy"
+                        {...listeners}
+                        {...attributes}
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                    >
+                        ⋮⋮
+                    </span>
+                    <Link
+                        href={`/customers/${customer.id}/edit`}
+                        className="clients-edit-link"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        title="Edytuj"
+                    >
+                        <i className="fa fa-pencil" aria-hidden="true" />
+                    </Link>
+                </div>
             </td>
         </tr>
     );
@@ -260,7 +266,13 @@ export default function ClientsPage() {
                     <div className="customers_index" id="customers_main">
                         {/* Breadcrumbs - Versum style */}
                         <ul className="breadcrumb">
-                            <li>Klienci / Lista klientów</li>
+                            <li>
+                                <i
+                                    className="icon sprite-breadcrumbs_customers"
+                                    aria-hidden="true"
+                                />{' '}
+                                Klienci / Lista klientów
+                            </li>
                         </ul>
 
                         {/* Toolbar - Versum style */}

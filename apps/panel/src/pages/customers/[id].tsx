@@ -208,8 +208,8 @@ export default function CustomerDetailPage() {
                             </div>
                         ) : customer ? (
                             <>
-                                <div className="buttons-row column_row">
-                                    <div className="text-right">
+                                <div className="buttons-row">
+                                    <div className="right-buttons">
                                         <Link
                                             href={`/customers/${customer.id}/edit`}
                                             className="button button-small"
@@ -406,6 +406,12 @@ function CustomerSummaryView({
         ...(customer.groups?.map((g) => g.name) ?? []),
         ...(tags.map((t) => t.name) ?? []),
     ].filter(Boolean);
+    const avatarShape =
+        customer.gender === 'female'
+            ? 'female'
+            : customer.gender === 'male'
+              ? 'male'
+              : 'neutral';
 
     return (
         <div className="customer-info-summary" id="summary">
@@ -416,19 +422,23 @@ function CustomerSummaryView({
                             <h2>{customer.fullName || customer.name}</h2>
                         </div>
                         <div className="details-row">
-                            {customer.phone && (
-                                <div className="row-col single-detail-row">
-                                    <span className="icon_box">
-                                        <i
-                                            className="icon sprite-customer_telephone"
-                                            aria-hidden="true"
-                                        />
-                                    </span>
+                            <div className="row-col single-detail-row">
+                                <span className="icon_box">
+                                    <i
+                                        className="icon sprite-customer_telephone"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                {customer.phone ? (
                                     <a href={`tel:${customer.phone}`}>
                                         {customer.phone}
                                     </a>
-                                </div>
-                            )}
+                                ) : (
+                                    <span className="light_text">
+                                        nie podano
+                                    </span>
+                                )}
+                            </div>
                             <div className="row-col single-detail-row">
                                 <span className="icon_box">
                                     <i
@@ -493,16 +503,25 @@ function CustomerSummaryView({
                         </div>
                     </div>
                     <div className="col-sm-6">
-                        <div className="customer-avatar">
+                        <div
+                            className={`customer-avatar customer-avatar--${avatarShape}`}
+                        >
                             <svg
                                 viewBox="0 0 120 120"
                                 className="avatar-placeholder"
                             >
                                 <circle cx="60" cy="60" r="60" fill="#e8eaed" />
-                                <path
-                                    d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
-                                    fill="#bdc1c6"
-                                />
+                                {avatarShape === 'female' ? (
+                                    <path
+                                        d="M60 18c-16.6 0-30 13.4-30 30 0 8.8 3.8 16.8 9.8 22.3-9.9 4-24.8 12.7-24.8 27.7V104h90v-6c0-15-14.9-23.7-24.8-27.7 6-5.5 9.8-13.5 9.8-22.3 0-16.6-13.4-30-30-30zm0 13c9.4 0 17 7.6 17 17 0 3.9-1.3 7.4-3.6 10.2l-3.4-6.2-7.4 7.3-9.3-17.7-4.7 10.2-4.5-.8c-.3 1-.5 2.1-.5 3.2 0 9.4 7.6 17 17 17z"
+                                        fill="#c3c7cc"
+                                    />
+                                ) : (
+                                    <path
+                                        d="M60 65c13.8 0 25-11.2 25-25S73.8 15 60 15 35 26.2 35 40s11.2 25 25 25zm0 2.5c-16.7 0-50 8.3-50 25v12.5h100v-12.5c0-16.7-33.3-25-50-25z"
+                                        fill="#bdc1c6"
+                                    />
+                                )}
                             </svg>
                         </div>
                     </div>
@@ -545,17 +564,18 @@ function CustomerSummaryView({
                                                     </div>
                                                 </div>
                                             ))}
-                                        {upcomingVisits.length > 3 && (
-                                            <a href="#" className="link-more">
-                                                więcej
-                                            </a>
-                                        )}
                                     </>
                                 ) : (
                                     <p className="light_text">
-                                        Brak zaplanowanych wizyt
+                                        Klient nie ma zaplanowanych wizyt
                                     </p>
                                 )}
+                                <Link
+                                    href={`/customers/${customer.id}?tab_name=events_history`}
+                                    className="link-more"
+                                >
+                                    więcej
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -585,7 +605,7 @@ function CustomerSummaryView({
                                                             }
                                                         </Link>
                                                         <div className="visit-details">
-                                                            {formatDate(
+                                                            {formatDateTime(
                                                                 visit.date,
                                                             )}
                                                         </div>
@@ -614,11 +634,12 @@ function CustomerSummaryView({
                                                     </div>
                                                 </div>
                                             ))}
-                                        {(stats?.completedVisits || 0) > 3 && (
-                                            <a href="#" className="link-more">
-                                                więcej
-                                            </a>
-                                        )}
+                                        <Link
+                                            href={`/customers/${customer.id}?tab_name=events_history`}
+                                            className="link-more"
+                                        >
+                                            więcej
+                                        </Link>
                                     </>
                                 ) : (
                                     <p className="light_text">

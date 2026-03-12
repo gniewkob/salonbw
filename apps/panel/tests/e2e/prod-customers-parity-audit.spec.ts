@@ -151,7 +151,10 @@ async function stabilizePanelActionPage(
             .toLowerCase()
             .replace(/\s+/g, ' ');
         const looksLoading =
-            text.includes('ładowanie danych klienta') || text.includes('ładowanie...');
+            text.includes('ładowanie danych klienta') ||
+            text.includes('ładowanie historii wizyt') ||
+            text.includes('ładowanie galerii') ||
+            text.includes('ładowanie...');
         if (!looksLoading && attempt >= 1) return;
         await page.waitForTimeout(1000);
     }

@@ -169,8 +169,19 @@ export default function NewCustomerPage() {
                         id="customers_main"
                     >
                         <ul className="breadcrumb">
-                            <li>Klienci / Dodaj klienta</li>
+                            <li>
+                                <i
+                                    className="icon sprite-breadcrumbs_customers"
+                                    aria-hidden="true"
+                                />{' '}
+                                Klienci / nowy klient
+                            </li>
                         </ul>
+
+                        <h2 className="column_row">
+                            nowy klient
+                            <small>Klienci / nowy klient</small>
+                        </h2>
 
                         <form
                             onSubmit={(e) => void onSubmit(e)}

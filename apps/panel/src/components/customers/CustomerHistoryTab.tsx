@@ -99,27 +99,13 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         withCounts: true,
     });
 
-    if (isLoading) {
-        return (
-            <div className="customer-loading">Ładowanie historii wizyt...</div>
-        );
-    }
-
-    if (error || !data) {
-        return (
-            <div className="customer-error">
-                <p>Nie udało się załadować historii wizyt</p>
-            </div>
-        );
-    }
-
-    const totalPages = Math.max(1, Math.ceil((data.total || 0) / PAGE_SIZE));
-    const fromItem = data.total > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
-    const toItem = Math.min(page * PAGE_SIZE, data.total);
+    const totalPages = Math.max(1, Math.ceil((data?.total || 0) / PAGE_SIZE));
+    const fromItem = (data?.total || 0) > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
+    const toItem = Math.min(page * PAGE_SIZE, data?.total || 0);
 
     const itemsByMonth = (() => {
-        const map = new Map<string, typeof data.items>();
-        for (const item of data.items) {
+        const map = new Map<string, NonNullable<typeof data>['items']>();
+        for (const item of data?.items ?? []) {
             const key = item.date.slice(0, 7);
             const existing = map.get(key);
             if (existing) existing.push(item);
@@ -128,7 +114,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         return Array.from(map.entries());
     })();
 
-    const counts = data.counts;
+    const counts = data?.counts;
     const fmtCount = (n: number | undefined) =>
         typeof n === 'number' ? ` ${n}` : '';
 
@@ -220,7 +206,15 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                 </div>
             </div>
 
-            {data.items.length === 0 ? (
+            {isLoading ? (
+                <div className="customer-loading">
+                    Ładowanie historii wizyt...
+                </div>
+            ) : error || !data ? (
+                <div className="customer-error">
+                    <p>Nie udało się załadować historii wizyt</p>
+                </div>
+            ) : data.items.length === 0 ? (
                 <div className="customer-empty-state">Brak historii wizyt.</div>
             ) : (
                 <div className="customer-history-list">
@@ -286,7 +280,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             {totalPages > 1 && (
                 <div className="customers-history-pagination customers-history-pagination--versum">
                     <span>
-                        Pozycje od {fromItem} do {toItem} z {data.total}
+                        Pozycje od {fromItem} do {toItem} z {data?.total || 0}
                     </span>
                     <div className="btn-group">
                         <button
