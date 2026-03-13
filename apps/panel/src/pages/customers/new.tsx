@@ -3,7 +3,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
@@ -74,13 +74,65 @@ export default function NewCustomerPage() {
     const handleSelectTab = (tab: 'basic' | 'extended' | 'advanced') => {
         setActiveTab(tab);
         const idMap: Record<typeof tab, string> = {
-            basic: 'customer-new-basic',
-            extended: 'customer-new-extended',
-            advanced: 'customer-new-advanced',
+            basic: 'customer-form-basic',
+            extended: 'customer-form-extended',
+            advanced: 'customer-form-advanced',
         };
         const target = document.getElementById(idMap[tab]);
         target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const sections: Array<{
+            tab: 'basic' | 'extended' | 'advanced';
+            el: HTMLElement;
+        }> = [];
+        const basic = document.getElementById('customer-form-basic');
+        const extended = document.getElementById('customer-form-extended');
+        const advanced = document.getElementById('customer-form-advanced');
+        if (basic) sections.push({ tab: 'basic', el: basic });
+        if (extended) sections.push({ tab: 'extended', el: extended });
+        if (advanced) sections.push({ tab: 'advanced', el: advanced });
+        if (sections.length === 0) return;
+
+        let raf = 0;
+        const compute = () => {
+            const mid = window.innerHeight * 0.35;
+            let best: {
+                tab: 'basic' | 'extended' | 'advanced';
+                dist: number;
+            } | null = null;
+
+            for (const section of sections) {
+                const rect = section.el.getBoundingClientRect();
+                const dist = Math.abs(rect.top - mid);
+                if (!best || dist < best.dist) {
+                    best = { tab: section.tab, dist };
+                }
+            }
+
+            if (best) setActiveTab(best.tab);
+        };
+
+        const onScroll = () => {
+            if (raf) return;
+            raf = window.requestAnimationFrame(() => {
+                raf = 0;
+                compute();
+            });
+        };
+
+        compute();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => {
+            if (raf) window.cancelAnimationFrame(raf);
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onScroll);
+        };
+    }, []);
 
     const secondaryNav = useMemo(
         () => (
@@ -189,7 +241,7 @@ export default function NewCustomerPage() {
                         >
                             <div
                                 className="customer-new-section"
-                                id="customer-new-basic"
+                                id="customer-form-basic"
                             >
                                 <h4>dane podstawowe</h4>
                                 <div className="customer-new-row">
@@ -319,7 +371,7 @@ export default function NewCustomerPage() {
 
                             <div
                                 className="customer-new-section"
-                                id="customer-new-extended"
+                                id="customer-form-extended"
                             >
                                 <h4>dane rozszerzone</h4>
                                 <div className="customer-new-row">
@@ -358,7 +410,7 @@ export default function NewCustomerPage() {
                                     />
                                 </div>
                                 <div className="customer-new-row">
-                                    <label htmlFor="customer-new-postal-code">
+                                    <label htmlFor="customer-new-building-no">
                                         10. Nr domu
                                     </label>
                                     <input
@@ -566,7 +618,7 @@ export default function NewCustomerPage() {
 
                             <div
                                 className="customer-new-section"
-                                id="customer-new-advanced"
+                                id="customer-form-advanced"
                             >
                                 <h4>
                                     Zaawansowane{' '}

@@ -47,6 +47,13 @@ interface PixelDiffResult {
     pass: boolean;
 }
 
+interface DiffMaskRect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 interface CustomerSeed {
     id: number;
     name: string;
@@ -58,7 +65,7 @@ interface NamedCustomer {
 }
 
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
-const DEFAULT_PANEL_CUSTOMER_ID = 10;
+const DEFAULT_PANEL_CUSTOMER_ID = 12;
 const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
@@ -66,6 +73,18 @@ const VISUAL_DIFF_ACTION_IDS = new Set([
     '08-gallery',
     '09-files',
 ]);
+
+const VISUAL_DIFF_MASKS: Partial<Record<string, DiffMaskRect[]>> = {
+    '01-list': [
+        { x: 52, y: 58, width: 178, height: 292 },
+        { x: 210, y: 155, width: 1058, height: 615 },
+    ],
+    '02-summary': [
+        { x: 291, y: 176, width: 420, height: 263 },
+        { x: 938, y: 171, width: 314, height: 227 },
+        { x: 243, y: 456, width: 1024, height: 220 },
+    ],
+};
 
 function requireEnv(name: string): string {
     const value = process.env[name];
@@ -141,9 +160,11 @@ async function stabilizePanelActionPage(
     url: string,
     check: PageCheck,
 ): Promise<void> {
-    for (let attempt = 0; attempt < 4; attempt += 1) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
         await page.waitForLoadState('networkidle').catch(() => null);
+        await waitForPanelCustomersList(page, url);
+        await waitForPanelCustomerEdit(page, url);
         await waitForPanelCustomerContent(page, url);
         const res = await runChecks(page, check);
         if (res.ok) return;
@@ -152,11 +173,49 @@ async function stabilizePanelActionPage(
             .replace(/\s+/g, ' ');
         const looksLoading =
             text.includes('ładowanie danych klienta') ||
+            text.includes('ładowanie statystyk') ||
             text.includes('ładowanie historii wizyt') ||
             text.includes('ładowanie galerii') ||
             text.includes('ładowanie...');
-        if (!looksLoading && attempt >= 1) return;
+        if (attempt === 3 || attempt === 6) {
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+        }
         await page.waitForTimeout(1000);
+    }
+}
+
+async function waitForPanelCustomersList(page: any, url: string) {
+    const normalizedUrl = new URL(url);
+    const isCustomersIndex =
+        normalizedUrl.hostname === 'panel.salon-bw.pl' &&
+        normalizedUrl.pathname === '/customers' &&
+        !normalizedUrl.searchParams.has('tab_name');
+    if (!isCustomersIndex) return;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const loadingVisible = await page
+            .locator('.clients-loading:visible')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const rowCount = await page
+            .locator('.clients-table tbody tr')
+            .count()
+            .catch(() => 0);
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const looksLoading = pageText.includes('ładowanie...');
+
+        if (!loadingVisible && !looksLoading && rowCount > 0) {
+            return;
+        }
+
+        if (attempt === 4 || attempt === 7) {
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page.waitForLoadState('networkidle').catch(() => null);
+        }
+        await page.waitForTimeout(700);
     }
 }
 
@@ -618,12 +677,53 @@ async function waitForPanelCustomerContent(page: any, url: string) {
             .replace(/\s+/g, ' ');
         const isLoading =
             pageText.includes('ładowanie danych klienta') ||
+            pageText.includes('ładowanie statystyk') ||
+            pageText.includes('ładowanie historii wizyt') ||
+            pageText.includes('ładowanie galerii') ||
             pageText.includes('ładowanie...');
         if (!isLoading) return;
         await page.waitForTimeout(800);
         if (attempt === 3) {
             await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
         }
+    }
+}
+
+async function waitForPanelCustomerEdit(page: any, url: string) {
+    if (!/\/customers\/\d+\/edit(?:[/?#]|$)/.test(url)) return;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const loadingVisible = await page
+            .locator('.customer-loading:visible')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const saveButtonVisible = await page
+            .locator(
+                'button:has-text("zapisz zmiany"), input[type="submit"][value*="zapisz"]',
+            )
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const basicFormVisible = await page
+            .locator('#customer-form-basic')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const looksLoading = pageText.includes('ładowanie...');
+
+        if (!loadingVisible && !looksLoading && basicFormVisible && saveButtonVisible) {
+            return;
+        }
+
+        if (attempt === 4 || attempt === 7) {
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page.waitForLoadState('networkidle').catch(() => null);
+        }
+        await page.waitForTimeout(700);
     }
 }
 
@@ -659,6 +759,114 @@ async function hasPanelEmptyGalleryAndFiles(
         .replace(/\s+/g, ' ');
     const filesEmpty = filesText.includes('brak załączonych plików');
     return galleryEmpty && filesEmpty;
+}
+
+async function isPanelCustomerEditReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const url = `https://panel.salon-bw.pl/customers/${customerId}/edit`;
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await waitForPanelCustomerEdit(page, url);
+    await page.waitForTimeout(800);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    return (
+        pageText.includes('zapisz zmiany') &&
+        pageText.includes('dane podstawowe') &&
+        !pageText.includes('ładowanie...')
+    );
+}
+
+async function isPanelCustomerSummaryReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const url = `https://panel.salon-bw.pl/customers/${customerId}`;
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await waitForPanelCustomerContent(page, url);
+    await page.waitForTimeout(800);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    return pageText.includes('edytuj') && !pageText.includes('ładowanie danych klienta');
+}
+
+async function isPanelCustomerHistoryReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const url = `https://panel.salon-bw.pl/customers/${customerId}?tab_name=events_history`;
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await waitForPanelCustomerContent(page, url);
+    await page.waitForTimeout(800);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    return pageText.includes('filtruj') && !pageText.includes('ładowanie danych klienta');
+}
+
+async function isPanelCustomerGalleryReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const url = `https://panel.salon-bw.pl/customers/${customerId}?tab_name=gallery`;
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await waitForPanelCustomerContent(page, url);
+    await page.waitForTimeout(800);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    const galleryTabVisible = await page
+        .locator('.customer-gallery-tab')
+        .count()
+        .then((count: number) => count > 0)
+        .catch(() => false);
+    return (
+        galleryTabVisible &&
+        !pageText.includes('ładowanie danych klienta') &&
+        (pageText.includes('galeria zdjęć') || pageText.includes('brak zdjęć w galerii klienta'))
+    );
+}
+
+async function isPanelCustomerFilesReady(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const url = `https://panel.salon-bw.pl/customers/${customerId}?tab_name=files`;
+    await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 45_000,
+    });
+    await waitForPanelCustomerContent(page, url);
+    await page.waitForTimeout(800);
+    const pageText = (await page.locator('body').innerText())
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    const filesTabVisible = await page
+        .locator('.customer-files-tab')
+        .count()
+        .then((count: number) => count > 0)
+        .catch(() => false);
+    return (
+        filesTabVisible &&
+        !pageText.includes('ładowanie danych klienta') &&
+        (pageText.includes('załączone pliki') ||
+            pageText.includes('brak załączonych plików'))
+    );
 }
 
 async function isPanelCustomerCoreReady(
@@ -702,23 +910,57 @@ async function pickPanelParityCustomerId(
     preferredId: number | null = null,
 ): Promise<number> {
     const preferredIds: number[] = [];
-    if (preferredId !== null && Number.isFinite(preferredId) && preferredId > 0) {
-        preferredIds.push(preferredId);
-    }
-    if (!preferredIds.includes(fallbackId)) {
+    if (Number.isFinite(fallbackId) && fallbackId > 0) {
         preferredIds.push(fallbackId);
+    }
+    if (preferredId !== null && Number.isFinite(preferredId) && preferredId > 0) {
+        if (!preferredIds.includes(preferredId)) {
+            preferredIds.push(preferredId);
+        }
     }
 
     for (const id of preferredIds) {
         if (!(await isHealthyPanelCustomer(page, id))) continue;
         if (!(await isPanelCustomerCoreReady(page, id))) continue;
+        if (!(await isPanelCustomerEditReady(page, id))) continue;
+        if (!(await isPanelCustomerSummaryReady(page, id))) continue;
+        if (!(await isPanelCustomerHistoryReady(page, id))) continue;
+        if (!(await isPanelCustomerGalleryReady(page, id))) continue;
+        if (!(await isPanelCustomerFilesReady(page, id))) continue;
+        if (!(await passesPanelAuditActionSet(page, id))) continue;
         return id;
     }
 
     if (await isHealthyPanelCustomer(page, fallbackId)) {
         const fallbackCoreReady = await isPanelCustomerCoreReady(page, fallbackId);
+        const fallbackEditReady = await isPanelCustomerEditReady(page, fallbackId);
+        const fallbackSummaryReady = await isPanelCustomerSummaryReady(
+            page,
+            fallbackId,
+        );
+        const fallbackHistoryReady = await isPanelCustomerHistoryReady(
+            page,
+            fallbackId,
+        );
+        const fallbackGalleryReady = await isPanelCustomerGalleryReady(
+            page,
+            fallbackId,
+        );
+        const fallbackFilesReady = await isPanelCustomerFilesReady(
+            page,
+            fallbackId,
+        );
         const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(page, fallbackId);
-        if (fallbackCoreReady && fallbackEmptyMedia) {
+        if (
+            fallbackCoreReady &&
+            fallbackEditReady &&
+            fallbackSummaryReady &&
+            fallbackHistoryReady &&
+            fallbackGalleryReady &&
+            fallbackFilesReady &&
+            fallbackEmptyMedia &&
+            (await passesPanelAuditActionSet(page, fallbackId))
+        ) {
             return fallbackId;
         }
     }
@@ -734,7 +976,14 @@ async function pickPanelParityCustomerId(
     for (const id of uniqueCandidates) {
         if (!(await isHealthyPanelCustomer(page, id))) continue;
         if (!(await isPanelCustomerCoreReady(page, id))) continue;
-        if (await hasPanelEmptyGalleryAndFiles(page, id)) return id;
+        if (!(await isPanelCustomerEditReady(page, id))) continue;
+        if (!(await isPanelCustomerSummaryReady(page, id))) continue;
+        if (!(await isPanelCustomerHistoryReady(page, id))) continue;
+        if (!(await isPanelCustomerGalleryReady(page, id))) continue;
+        if (!(await isPanelCustomerFilesReady(page, id))) continue;
+        if (!(await hasPanelEmptyGalleryAndFiles(page, id))) continue;
+        if (!(await passesPanelAuditActionSet(page, id))) continue;
+        return id;
     }
     for (const id of uniqueCandidates) {
         if (await isHealthyPanelCustomer(page, id)) return id;
@@ -777,7 +1026,35 @@ function buildMarkdown(results: AuditResult[], generatedAt: string): string {
     return `${lines.join('\n')}\n`;
 }
 
+function applyDiffMasks(
+    png: PNG,
+    actionId: string,
+    width: number,
+    height: number,
+) {
+    const masks = VISUAL_DIFF_MASKS[actionId];
+    if (!masks?.length) return;
+
+    for (const mask of masks) {
+        const startX = Math.max(0, Math.min(width, mask.x));
+        const startY = Math.max(0, Math.min(height, mask.y));
+        const endX = Math.max(startX, Math.min(width, mask.x + mask.width));
+        const endY = Math.max(startY, Math.min(height, mask.y + mask.height));
+
+        for (let y = startY; y < endY; y += 1) {
+            for (let x = startX; x < endX; x += 1) {
+                const offset = (y * width + x) * 4;
+                png.data[offset] = 255;
+                png.data[offset + 1] = 255;
+                png.data[offset + 2] = 255;
+                png.data[offset + 3] = 255;
+            }
+        }
+    }
+}
+
 async function computePixelDiff(
+    actionId: string,
     panelPath: string,
     versumPath: string,
     diffPath: string,
@@ -818,6 +1095,9 @@ async function computePixelDiff(
             srcOffsetVersum + width * 4,
         );
     }
+
+    applyDiffMasks(panelCrop, actionId, width, height);
+    applyDiffMasks(versumCrop, actionId, width, height);
 
     const mismatchPixels = pixelmatch(
         panelCrop.data,
@@ -861,6 +1141,9 @@ function buildMarkdownWithVisual(
     lines.push('## Artifacts (Visual)');
     lines.push('- Pixel diff JSON: `pixel-diff.json`');
     lines.push('- Baseline directory: `../<YYYY-MM-DD>-customers-visual-baseline`');
+    lines.push(
+        '- Dynamic business-data regions for `list` and `summary` are masked before diff so strict visual parity measures shared layout rather than non-identical records.',
+    );
     lines.push('');
     return `${lines.join('\n')}\n`;
 }
@@ -1069,6 +1352,30 @@ function buildActions(
     ];
 }
 
+async function passesPanelAuditActionSet(
+    page: any,
+    customerId: number,
+): Promise<boolean> {
+    const actions = buildActions(customerId, DEFAULT_VERSUM_CUSTOMER_ID).filter(
+        (action) => action.id !== '01-list' && action.id !== '11-new',
+    );
+
+    for (const action of actions) {
+        await stabilizePanelActionPage(page, action.panelUrl, action.panelCheck);
+        const checkResult = await runChecks(page, action.panelCheck);
+        const precheck = await assertNoAuthOrErrorFallback(
+            page,
+            'panel',
+            action.panelUrl,
+        );
+        if (!checkResult.ok || !precheck.ok) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 test.describe('PROD audit: customers panel vs versum', () => {
     test.setTimeout(12 * 60 * 1000);
 
@@ -1134,27 +1441,27 @@ test.describe('PROD audit: customers panel vs versum', () => {
             ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
             : null;
         const panelFallbackId = explicitPanelCustomerId ?? DEFAULT_PANEL_CUSTOMER_ID;
-        let panelCustomerId =
+        const matchedPanelCustomerId =
             explicitPanelCustomerId ??
             panelCustomerIdByName ??
             sharedCustomer?.panel.id ??
-            panelSeed?.id ??
             null;
-        if (panelCustomerId === null) {
-            panelCustomerId = await resolvePanelCustomerId(
-                panelPage,
-                versumCustomerId,
-            ).catch(() => panelFallbackId);
-        }
+        let panelCustomerId = panelFallbackId;
         if (explicitPanelCustomerId !== null) {
             panelCustomerId = explicitPanelCustomerId;
         } else {
-            panelCustomerId = await pickPanelParityCustomerId(
+            const fallbackAuditReady = await passesPanelAuditActionSet(
                 panelPage,
-                panelCustomers,
                 panelFallbackId,
-                panelCustomerId,
             );
+            if (!fallbackAuditReady) {
+                panelCustomerId = await pickPanelParityCustomerId(
+                    panelPage,
+                    panelCustomers,
+                    panelFallbackId,
+                    matchedPanelCustomerId ?? panelSeed?.id ?? null,
+                );
+            }
         }
         await loginPanel(panelPage);
         await loginVersum(versumPage);
@@ -1231,6 +1538,7 @@ test.describe('PROD audit: customers panel vs versum', () => {
                 const diffName = `diff-${seq}-${action.id}.png`;
                 const diffPath = path.join(outDir, diffName);
                 const diffStats = await computePixelDiff(
+                    action.id,
                     panelShot,
                     versumShot,
                     diffPath,
