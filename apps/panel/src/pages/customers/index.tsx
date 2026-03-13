@@ -9,7 +9,7 @@ import {
 } from '@/hooks/useCustomers';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { CustomerFilterParams, Customer } from '@/types';
 import {
     DndContext,
@@ -161,6 +161,14 @@ export default function ClientsPage() {
         ? Number(router.query.employeeId)
         : undefined;
 
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+
+    // Reset to page 1 when URL filters change
+    useEffect(() => {
+        setPage(1);
+    }, [currentGroupId, currentTagId, currentServiceId, currentEmployeeId]);
+
     // Przygotuj filtry dla API
     const filters: CustomerFilterParams = useMemo(
         () => ({
@@ -170,7 +178,8 @@ export default function ClientsPage() {
             employeeId: currentEmployeeId,
             hasUpcomingVisit:
                 router.query.hasUpcomingVisit === 'true' ? true : undefined,
-            limit: 50,
+            limit: pageSize,
+            page,
         }),
         [
             currentGroupId,
@@ -178,6 +187,8 @@ export default function ClientsPage() {
             currentServiceId,
             currentEmployeeId,
             router.query.hasUpcomingVisit,
+            page,
+            pageSize,
         ],
     );
 
@@ -287,9 +298,10 @@ export default function ClientsPage() {
                                     type="text"
                                     placeholder="wyszukaj klienta"
                                     value={searchTerm}
-                                    onChange={(e) =>
-                                        setSearchTerm(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setPage(1);
+                                    }}
                                     className="versum-input"
                                 />
                             </div>
@@ -398,43 +410,79 @@ export default function ClientsPage() {
                             )}
 
                             {/* Paginacja - Versum style */}
-                            <div className="clients-pagination">
-                                <span>
-                                    Pozycje od 1 do {filteredCustomers.length} z{' '}
-                                    {customersData?.total ||
-                                        filteredCustomers.length}
-                                </span>
-                                <span className="clients-pagination-separator">
-                                    |
-                                </span>
-                                <label>
-                                    na stronie
-                                    <select className="versum-select">
-                                        <option>20</option>
-                                        <option>50</option>
-                                        <option>100</option>
-                                    </select>
-                                </label>
-                                <div className="clients-pagination-nav">
-                                    <input
-                                        type="text"
-                                        value="1"
-                                        className="versum-input versum-input--small"
-                                        aria-label="Aktualna strona"
-                                        readOnly
-                                    />
-                                    <span>z</span>
-                                    <span>
-                                        {Math.ceil(
-                                            (customersData?.total ||
-                                                filteredCustomers.length) / 20,
-                                        )}
-                                    </span>
-                                    <button className="versum-btn versum-btn--icon">
-                                        ›
-                                    </button>
-                                </div>
-                            </div>
+                            {(() => {
+                                const totalCount = customersData?.total ?? 0;
+                                const totalPages =
+                                    customersData?.totalPages ??
+                                    (Math.ceil(totalCount / pageSize) || 1);
+                                const fromItem =
+                                    totalCount === 0
+                                        ? 0
+                                        : (page - 1) * pageSize + 1;
+                                const toItem = Math.min(
+                                    page * pageSize,
+                                    totalCount,
+                                );
+                                return (
+                                    <div className="clients-pagination">
+                                        <span>
+                                            Pozycje od {fromItem} do {toItem} z{' '}
+                                            {totalCount}
+                                        </span>
+                                        <span className="clients-pagination-separator">
+                                            |
+                                        </span>
+                                        <label>
+                                            na stronie
+                                            <select
+                                                className="versum-select"
+                                                value={pageSize}
+                                                onChange={(e) => {
+                                                    setPageSize(
+                                                        Number(e.target.value),
+                                                    );
+                                                    setPage(1);
+                                                }}
+                                            >
+                                                <option value="20">20</option>
+                                                <option value="50">50</option>
+                                                <option value="100">100</option>
+                                            </select>
+                                        </label>
+                                        <div className="clients-pagination-nav">
+                                            <button
+                                                type="button"
+                                                className="versum-btn versum-btn--icon"
+                                                onClick={() =>
+                                                    setPage((p) => p - 1)
+                                                }
+                                                disabled={page <= 1}
+                                            >
+                                                ‹
+                                            </button>
+                                            <input
+                                                type="text"
+                                                value={page}
+                                                className="versum-input versum-input--small"
+                                                aria-label="Aktualna strona"
+                                                readOnly
+                                            />
+                                            <span>z</span>
+                                            <span>{totalPages}</span>
+                                            <button
+                                                type="button"
+                                                className="versum-btn versum-btn--icon"
+                                                onClick={() =>
+                                                    setPage((p) => p + 1)
+                                                }
+                                                disabled={page >= totalPages}
+                                            >
+                                                ›
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
 
