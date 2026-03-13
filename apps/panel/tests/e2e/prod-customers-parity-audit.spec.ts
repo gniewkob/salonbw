@@ -164,6 +164,7 @@ async function stabilizePanelActionPage(
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
         await page.waitForLoadState('networkidle').catch(() => null);
         await waitForPanelCustomersList(page, url);
+        await waitForPanelCustomerSummary(page, url);
         await waitForPanelCustomerEdit(page, url);
         await waitForPanelCustomerContent(page, url);
         const res = await runChecks(page, check);
@@ -716,6 +717,46 @@ async function waitForPanelCustomerEdit(page: any, url: string) {
         const looksLoading = pageText.includes('ładowanie...');
 
         if (!loadingVisible && !looksLoading && basicFormVisible && saveButtonVisible) {
+            return;
+        }
+
+        if (attempt === 4 || attempt === 7) {
+            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page.waitForLoadState('networkidle').catch(() => null);
+        }
+        await page.waitForTimeout(700);
+    }
+}
+
+async function waitForPanelCustomerSummary(page: any, url: string) {
+    if (!/\/customers\/\d+(?:[/?#]|$)/.test(url) || /tab_name=|\/edit(?:[/?#]|$)/.test(url)) {
+        return;
+    }
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const loadingVisible = await page
+            .locator('.customer-loading:visible')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const editVisible = await page
+            .locator('a:has-text("edytuj"), .buttons-row .button:has-text("edytuj")')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const contentVisible = await page
+            .locator('.customer-card-content, .customer-summary, #customers_main')
+            .count()
+            .then((count: number) => count > 0)
+            .catch(() => false);
+        const pageText = (await page.locator('body').innerText())
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+        const looksLoading =
+            pageText.includes('ładowanie danych klienta') ||
+            pageText.includes('ładowanie...');
+
+        if (!loadingVisible && !looksLoading && editVisible && contentVisible) {
             return;
         }
 
