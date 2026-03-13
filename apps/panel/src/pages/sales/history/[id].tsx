@@ -81,7 +81,10 @@ export default function WarehouseSaleDetailsPage() {
     );
 
     const canReverse = Boolean(
-        sale && !sale.sourceSaleId && sale.kind === 'sale',
+        sale &&
+            !sale.sourceSaleId &&
+            sale.kind === 'sale' &&
+            sale.status !== 'voided',
     );
 
     const actionPayload = useMemo(

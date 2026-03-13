@@ -420,9 +420,9 @@ function StatisticsPageContent() {
                     employee.completedAppointments,
                     formatDuration(employee.workTimeMinutes),
                     employee.serviceRevenue.toFixed(2),
-                    (employee.serviceRevenue * 0.77).toFixed(2),
+                    (employee.serviceRevenue / 1.23).toFixed(2),
                     employee.productRevenue.toFixed(2),
-                    (employee.productRevenue * 0.77).toFixed(2),
+                    (employee.productRevenue / 1.23).toFixed(2),
                     employee.totalRevenue.toFixed(2),
                     reportTotals.dayRevenue > 0
                         ? (
@@ -580,8 +580,8 @@ function StatisticsPageContent() {
                                                 <th>Sprzedaż usług</th>
                                                 <td>
                                                     {formatMoney(
-                                                        reportTotals.dayServiceRevenue *
-                                                            0.77,
+                                                        reportTotals.dayServiceRevenue /
+                                                            1.23,
                                                     )}
                                                 </td>
                                                 <td>
@@ -594,8 +594,8 @@ function StatisticsPageContent() {
                                                 <th>Sprzedaż towarów</th>
                                                 <td>
                                                     {formatMoney(
-                                                        reportTotals.dayProductRevenue *
-                                                            0.77,
+                                                        reportTotals.dayProductRevenue /
+                                                            1.23,
                                                     )}
                                                 </td>
                                                 <td>
@@ -727,7 +727,7 @@ function StatisticsPageContent() {
                                         </td>
                                         <td>
                                             {(
-                                                employee.serviceRevenue * 0.77
+                                                employee.serviceRevenue / 1.23
                                             ).toFixed(2)}
                                             &nbsp;zł
                                         </td>
@@ -737,7 +737,7 @@ function StatisticsPageContent() {
                                         </td>
                                         <td>
                                             {(
-                                                employee.productRevenue * 0.77
+                                                employee.productRevenue / 1.23
                                             ).toFixed(2)}
                                             &nbsp;zł
                                         </td>
@@ -795,8 +795,8 @@ function StatisticsPageContent() {
                                     </td>
                                     <td>
                                         {formatMoney(
-                                            reportTotals.dayServiceRevenue *
-                                                0.77,
+                                            reportTotals.dayServiceRevenue /
+                                                1.23,
                                         )}
                                     </td>
                                     <td>
@@ -806,8 +806,8 @@ function StatisticsPageContent() {
                                     </td>
                                     <td>
                                         {formatMoney(
-                                            reportTotals.dayProductRevenue *
-                                                0.77,
+                                            reportTotals.dayProductRevenue /
+                                                1.23,
                                         )}
                                     </td>
                                     <td>

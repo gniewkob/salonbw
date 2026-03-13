@@ -29,14 +29,12 @@ function formatDate(value?: string | null) {
 }
 
 export default function CustomerStatisticsTab({ customerId }: Props) {
-    const today = new Date();
-    const defaultTo = toIsoDate(today);
-    const oneYearAgo = new Date(today);
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const defaultFrom = toIsoDate(oneYearAgo);
-
-    const [from, setFrom] = useState(defaultFrom);
-    const [to, setTo] = useState(defaultTo);
+    const [from, setFrom] = useState(() => {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 1);
+        return toIsoDate(d);
+    });
+    const [to, setTo] = useState(() => toIsoDate(new Date()));
     const [activeList, setActiveList] = useState<'services' | 'products'>(
         'services',
     );

@@ -74,38 +74,7 @@ export default function CommissionsPage() {
         }
 
         if (!safeEmployeeList.length) {
-            return [
-                {
-                    employeeId: 900001,
-                    employeeName: 'Recepcja',
-                    serviceRevenue: 0,
-                    serviceCommission: 0,
-                    productRevenue: 0,
-                    productCommission: 0,
-                    totalRevenue: 0,
-                    totalCommission: 0,
-                },
-                {
-                    employeeId: 900002,
-                    employeeName: 'Gniewko Bodora',
-                    serviceRevenue: 0,
-                    serviceCommission: 0,
-                    productRevenue: 0,
-                    productCommission: 0,
-                    totalRevenue: 0,
-                    totalCommission: 0,
-                },
-                {
-                    employeeId: 900003,
-                    employeeName: 'Aleksandra Bodora',
-                    serviceRevenue: 0,
-                    serviceCommission: 0,
-                    productRevenue: 0,
-                    productCommission: 0,
-                    totalRevenue: 0,
-                    totalCommission: 0,
-                },
-            ];
+            return [];
         }
 
         return safeEmployeeList.slice(0, 3).map((employee) => {
@@ -307,8 +276,8 @@ export default function CommissionsPage() {
                                                 brutto
                                                 <br />
                                                 {formatMoney(
-                                                    safeTotals.serviceRevenue *
-                                                        0.77,
+                                                    safeTotals.serviceRevenue /
+                                                        1.23,
                                                 )}{' '}
                                                 netto
                                             </td>
@@ -319,8 +288,8 @@ export default function CommissionsPage() {
                                                 brutto
                                                 <br />
                                                 {formatMoney(
-                                                    safeTotals.serviceCommission *
-                                                        0.77,
+                                                    safeTotals.serviceCommission /
+                                                        1.23,
                                                 )}{' '}
                                                 netto
                                             </td>
@@ -331,8 +300,8 @@ export default function CommissionsPage() {
                                                 brutto
                                                 <br />
                                                 {formatMoney(
-                                                    safeTotals.productRevenue *
-                                                        0.77,
+                                                    safeTotals.productRevenue /
+                                                        1.23,
                                                 )}{' '}
                                                 netto
                                             </td>
@@ -343,8 +312,8 @@ export default function CommissionsPage() {
                                                 brutto
                                                 <br />
                                                 {formatMoney(
-                                                    safeTotals.productCommission *
-                                                        0.77,
+                                                    safeTotals.productCommission /
+                                                        1.23,
                                                 )}{' '}
                                                 netto
                                             </td>

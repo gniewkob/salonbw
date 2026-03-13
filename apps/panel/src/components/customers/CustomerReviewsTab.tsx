@@ -33,7 +33,7 @@ function mapReviewToCustomerReview(review: Review): CustomerReview {
         rating: review.rating,
         content: review.comment,
         source: 'internal',
-        serviceId: review.appointmentId ?? review.appointment?.id,
+        serviceId: undefined,
         employeeId: review.employee?.id,
         employeeName: review.employee?.fullName ?? review.employee?.name,
         createdAt: review.createdAt ?? '',

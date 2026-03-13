@@ -278,8 +278,7 @@ export class CustomerStatisticsService {
                 serviceSpent: data.spent,
                 productSpent: productSpentByMonth.get(month) ?? 0,
             }))
-            .sort((a, b) => a.month.localeCompare(b.month))
-            .slice(-12);
+            .sort((a, b) => a.month.localeCompare(b.month));
 
         for (const [month, spent] of productSpentByMonth.entries()) {
             if (monthlyData.has(month)) {

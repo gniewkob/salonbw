@@ -509,11 +509,7 @@ export class RetailService {
         await this.commissions.create(
             {
                 employee,
-                appointment: sourceSale.appointmentId
-                    ? await this.appointments.findOne({
-                          where: { id: sourceSale.appointmentId },
-                      })
-                    : null,
+                appointment: null,
                 product,
                 productSaleId: reversalProductSaleId,
                 amount,
@@ -848,9 +844,28 @@ export class RetailService {
         const reversal = await this.dataSource.transaction(async (manager) => {
             const lockedSourceSale = await manager.findOne(WarehouseSale, {
                 where: { id: sourceSale.id },
+                lock: { mode: 'pessimistic_write' },
             });
             if (!lockedSourceSale) {
                 throw new NotFoundException(`Sale ${sourceSale.id} not found`);
+            }
+
+            // Re-check status inside transaction to guard against race conditions
+            if (lockedSourceSale.status === WarehouseSaleStatus.Voided) {
+                if (kind === WarehouseSaleKind.Void) {
+                    throw new BadRequestException('Sale is already voided');
+                }
+                throw new BadRequestException('Voided sale cannot be reversed');
+            }
+            if (kind === WarehouseSaleKind.Void) {
+                const existingCount = await manager.count(WarehouseSale, {
+                    where: { sourceSaleId: sourceSale.id },
+                });
+                if (existingCount > 0) {
+                    throw new BadRequestException(
+                        'Void is allowed only before any refund or correction exists',
+                    );
+                }
             }
 
             const productIds = Array.from(

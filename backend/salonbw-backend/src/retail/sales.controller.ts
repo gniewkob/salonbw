@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Get,
@@ -67,6 +68,12 @@ export class SalesController {
     getSummary(@Query('from') from?: string, @Query('to') to?: string) {
         const fromDate = from ? new Date(from) : undefined;
         const toDate = to ? new Date(to) : undefined;
+        if (fromDate && isNaN(fromDate.getTime())) {
+            throw new BadRequestException('Invalid from date');
+        }
+        if (toDate && isNaN(toDate.getTime())) {
+            throw new BadRequestException('Invalid to date');
+        }
         return this.retail.getSalesSummary({ from: fromDate, to: toDate });
     }
 
