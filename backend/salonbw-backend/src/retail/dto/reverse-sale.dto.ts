@@ -12,8 +12,9 @@ import {
 import { Type } from 'class-transformer';
 
 export class ReverseSaleItemDto {
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ minimum: 1 })
     @IsInt()
+    @Min(1)
     saleItemId: number;
 
     @ApiPropertyOptional({ minimum: 1 })

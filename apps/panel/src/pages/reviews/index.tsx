@@ -132,11 +132,14 @@ export default function ReviewsPage() {
                             <label className="versum-label">
                                 Employee
                                 <input
+                                    type="number"
                                     className="versum-input versum-input--sm"
                                     value={employeeId}
-                                    onChange={(e) =>
-                                        setEmployeeId(Number(e.target.value))
-                                    }
+                                    onChange={(e) => {
+                                        const n = Number(e.target.value);
+                                        if (Number.isInteger(n) && n > 0)
+                                            setEmployeeId(n);
+                                    }}
                                 />
                             </label>
                         )}
