@@ -218,7 +218,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor="customer-personal-postal-code">
+                    <label htmlFor="customer-personal-building-no">
                         10. Nr domu
                     </label>
                     <input

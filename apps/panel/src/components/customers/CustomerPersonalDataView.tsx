@@ -35,6 +35,9 @@ function formatGender(gender?: Customer['gender']): string {
 export default function CustomerPersonalDataView({ customer }: Props) {
     return (
         <div className="customer-personal-view">
+            <div className="customer-personal-view__header">
+                <h3>dane osobowe</h3>
+            </div>
             <div className="customer-personal-view__col">
                 <h4>dane podstawowe</h4>
                 <dl className="customer-personal-view__list">

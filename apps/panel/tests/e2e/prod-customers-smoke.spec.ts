@@ -3,10 +3,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PNG } from 'pngjs';
 
+const LOGIN_URL_RE = /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/;
+
 function requireEnv(name: string): string {
     const v = process.env[name];
     if (!v) throw new Error(`Missing required env var: ${name}`);
     return v;
+}
+
+function requireProdBaseUrl(): string {
+    const baseUrl = requireEnv('PLAYWRIGHT_BASE_URL');
+    const normalized = baseUrl.replace(/\/+$/, '');
+    if (normalized !== 'https://panel.salon-bw.pl') {
+        throw new Error(
+            `prod-customers-smoke requires PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl (got ${baseUrl})`,
+        );
+    }
+    return normalized;
 }
 
 function extractNumericId(payload: unknown): number | null {
@@ -27,10 +40,9 @@ async function resolveCustomerId(page: any): Promise<number> {
     await page.goto('/customers');
     await page.waitForLoadState('domcontentloaded');
     await page.waitForLoadState('networkidle').catch(() => null);
+    await ensureLoggedIn(page);
     await page.waitForTimeout(1200);
-    await expect(page).not.toHaveURL(
-        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
-    );
+    await expect(page).not.toHaveURL(LOGIN_URL_RE);
     const hrefs = await page.$$eval('a[href]', (anchors) =>
         anchors.map((a) => a.getAttribute('href') || ''),
     );
@@ -83,15 +95,8 @@ async function gotoCustomerTab(
         await page.goto(target);
         await page.waitForLoadState('domcontentloaded');
         await page.waitForLoadState('networkidle').catch(() => null);
-        if (/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
-            await login(page);
-            await page.goto(target);
-            await page.waitForLoadState('domcontentloaded');
-            await page.waitForLoadState('networkidle').catch(() => null);
-        }
-        await expect(page).not.toHaveURL(
-            /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
-        );
+        await ensureLoggedIn(page, target);
+        await expect(page).not.toHaveURL(LOGIN_URL_RE);
         try {
             await page.waitForSelector(selector, { timeout: 20_000 });
             return;
@@ -102,6 +107,7 @@ async function gotoCustomerTab(
             await page.goto(summaryUrl).catch(() => null);
             await page.waitForLoadState('domcontentloaded').catch(() => null);
             await page.waitForLoadState('networkidle').catch(() => null);
+            await ensureLoggedIn(page, summaryUrl);
             const tabLink = page
                 .locator(`a[href*="tab_name=${tabName}"], a[href$="?tab_name=${tabName}"]`)
                 .first();
@@ -138,9 +144,8 @@ async function gotoCustomerRoute(
         await page.goto(target);
         await page.waitForLoadState('domcontentloaded');
         await page.waitForLoadState('networkidle').catch(() => null);
-        await expect(page).not.toHaveURL(
-            /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
-        );
+        await ensureLoggedIn(page, target);
+        await expect(page).not.toHaveURL(LOGIN_URL_RE);
         try {
             await page.waitForSelector(`${requiredSelector}, .customer-error`, {
                 timeout: 20_000,
@@ -163,10 +168,15 @@ async function login(page: any) {
     const email = requireEnv('PANEL_LOGIN_EMAIL');
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt < 4; attempt += 1) {
         // Production panel may host the login form on "/" (or redirect).
         await page.goto('/');
         await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
+
+        if (!LOGIN_URL_RE.test(page.url())) {
+            return;
+        }
 
         // Be liberal in selectors: the panel login has a simple email + password form.
         const emailInput = page.locator(
@@ -187,25 +197,55 @@ async function login(page: any) {
             ),
         ]);
 
-        if (!/\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/.test(page.url())) {
+        if (!LOGIN_URL_RE.test(page.url())) {
             return;
+        }
+
+        const throttled = await page
+            .locator('text=Too Many Requests, text=ThrottlerException')
+            .first()
+            .isVisible()
+            .catch(() => false);
+        if (throttled) {
+            await page.waitForTimeout(35_000);
+            continue;
         }
         await page.waitForTimeout(1000);
     }
-    await expect(page).not.toHaveURL(
-        /\/login(\?|$)|\/sign-in(\?|$)|\/auth\/login(\?|$)/,
-    );
+    await expect(page).not.toHaveURL(LOGIN_URL_RE);
+}
+
+async function ensureLoggedIn(page: any, redirectTo?: string) {
+    const loginVisible = await page
+        .locator('button:has-text("Sign in"), button:has-text("Zaloguj"), button:has-text("Zaloguj się")')
+        .first()
+        .isVisible()
+        .catch(() => false);
+    if (!LOGIN_URL_RE.test(page.url()) && !loginVisible) {
+        return;
+    }
+
+    await login(page);
+    if (redirectTo) {
+        await page.goto(redirectTo);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForLoadState('networkidle').catch(() => null);
+    }
+    await expect(page).not.toHaveURL(LOGIN_URL_RE);
 }
 
 test.describe('PROD smoke: customers gallery/files', () => {
     test.setTimeout(180_000);
 
     test.skip(
-        !process.env.PANEL_LOGIN_EMAIL || !process.env.PANEL_LOGIN_PASSWORD,
-        'Requires PANEL_LOGIN_EMAIL and PANEL_LOGIN_PASSWORD',
+        !process.env.PANEL_LOGIN_EMAIL ||
+            !process.env.PANEL_LOGIN_PASSWORD ||
+            !process.env.PLAYWRIGHT_BASE_URL,
+        'Requires PANEL_LOGIN_EMAIL, PANEL_LOGIN_PASSWORD and PLAYWRIGHT_BASE_URL',
     );
 
     test('gallery: upload image -> thumbnail visible', async ({ page }, testInfo) => {
+        requireProdBaseUrl();
         await login(page);
         const customerId = await resolveCustomerId(page);
 
@@ -238,6 +278,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
         );
         await fileInput.setInputFiles(pngPath);
         const uploadResponse = await uploadResponsePromise;
+        await ensureLoggedIn(page, `/customers/${customerId}?tab_name=gallery`);
         const uploadPayload = await uploadResponse.json().catch(() => null);
         const uploadedImageId = extractNumericId(uploadPayload);
 
@@ -266,6 +307,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
     });
 
     test('files: upload file -> row visible -> download returns 200', async ({ page }, testInfo) => {
+        requireProdBaseUrl();
         await login(page);
         const customerId = await resolveCustomerId(page);
 
@@ -286,6 +328,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
         );
         await input.setInputFiles(txtPath);
         const uploadResponse = await uploadResponsePromise;
+        await ensureLoggedIn(page, `/customers/${customerId}?tab_name=files`);
         const uploadPayload = await uploadResponse.json().catch(() => null);
         const uploadedFileId = extractNumericId(uploadPayload);
 
@@ -339,6 +382,7 @@ test.describe('PROD smoke: customers gallery/files', () => {
     });
 
     test('customer card routes: all tabs render without client-side exception', async ({ page }) => {
+        requireProdBaseUrl();
         await login(page);
         const customerId = await resolveCustomerId(page);
 
