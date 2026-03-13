@@ -1140,7 +1140,9 @@ function buildMarkdownWithVisual(
     lines.push('');
     lines.push('## Artifacts (Visual)');
     lines.push('- Pixel diff JSON: `pixel-diff.json`');
-    lines.push('- Baseline directory: `../<YYYY-MM-DD>-customers-visual-baseline`');
+    lines.push(
+        '- Baseline directory: `../<YYYY-MM-DDTHH-mm-ss-sssZ>-customers-visual-baseline`',
+    );
     lines.push(
         '- Dynamic business-data regions for `list` and `summary` are masked before diff so strict visual parity measures shared layout rather than non-identical records.',
     );
@@ -1388,14 +1390,14 @@ test.describe('PROD audit: customers panel vs versum', () => {
         const explicitPanelCustomerId = optionalNumericEnv('PANEL_PARITY_CUSTOMER_ID');
         const parityCustomerNameHint = process.env.PARITY_CUSTOMER_NAME?.trim() || null;
 
-        const runDate = new Date().toISOString().slice(0, 10);
+        const runStamp = new Date().toISOString().replace(/[:.]/g, '-');
         const outDir = path.resolve(
             process.cwd(),
-            `../../output/parity/${runDate}-customers-prod-full`,
+            `../../output/parity/${runStamp}-customers-prod-full`,
         );
         const baselineDir = path.resolve(
             process.cwd(),
-            `../../output/parity/${runDate}-customers-visual-baseline`,
+            `../../output/parity/${runStamp}-customers-visual-baseline`,
         );
         await ensureDir(outDir);
         await ensureDir(baselineDir);
