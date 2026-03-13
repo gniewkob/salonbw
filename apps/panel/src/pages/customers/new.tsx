@@ -1,9 +1,7 @@
-'use client';
-
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
@@ -146,6 +144,14 @@ export default function NewCustomerPage() {
         [activeTab],
     );
 
+    const consentCheckboxRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (consentCheckboxRef.current) {
+            consentCheckboxRef.current.indeterminate =
+                form.emailConsent !== form.smsConsent;
+        }
+    }, [form.emailConsent, form.smsConsent]);
+
     // Must be called before any early return (Rules of Hooks)
     useSetSecondaryNav(secondaryNav);
 
@@ -153,20 +159,30 @@ export default function NewCustomerPage() {
 
     const onSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const created = await create.mutateAsync({
-            firstName: form.firstName.trim() || undefined,
-            lastName: form.lastName.trim() || undefined,
-            email: form.email.trim() || undefined,
-            phone: form.phone.trim() || undefined,
-            birthDate: form.birthDate || undefined,
-            gender: form.gender || undefined,
-            address: form.address.trim() || undefined,
-            city: form.city.trim() || undefined,
-            postalCode: form.postalCode.trim() || undefined,
-            description: form.description.trim() || undefined,
-            emailConsent: form.emailConsent,
-            smsConsent: form.smsConsent,
-        });
+        let created;
+        try {
+            created = await create.mutateAsync({
+                firstName: form.firstName.trim() || undefined,
+                lastName: form.lastName.trim() || undefined,
+                email: form.email.trim() || undefined,
+                phone: form.phone.trim() || undefined,
+                birthDate: form.birthDate || undefined,
+                gender: form.gender || undefined,
+                address: form.address.trim() || undefined,
+                city: form.city.trim() || undefined,
+                postalCode: form.postalCode.trim() || undefined,
+                description: form.description.trim() || undefined,
+                emailConsent: form.emailConsent,
+                smsConsent: form.smsConsent,
+            });
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : 'Nie udało się zapisać klienta',
+            );
+            return;
+        }
         if (submitMode === 'next') {
             setForm({
                 firstName: '',
@@ -352,10 +368,11 @@ export default function NewCustomerPage() {
                                         osobowych
                                     </label>
                                     <input
+                                        ref={consentCheckboxRef}
                                         id="customer-new-consent"
                                         type="checkbox"
                                         checked={
-                                            form.emailConsent || form.smsConsent
+                                            form.emailConsent && form.smsConsent
                                         }
                                         onChange={(e) =>
                                             setForm((p) => ({

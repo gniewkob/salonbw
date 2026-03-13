@@ -442,7 +442,6 @@ export default function ClientsPage() {
                     <DragOverlay dropAnimation={null}>
                         {draggedCustomer ? (
                             <div className="bg-white shadow-lg rounded p-12 border border-sky-200 flex items-center gap-8">
-                                <span className="text-lg">👤</span>
                                 <span className="font-medium">
                                     {draggedCustomer.name}
                                 </span>

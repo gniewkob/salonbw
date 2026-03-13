@@ -1,6 +1,4 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Customer } from '@/types';
 
 interface Props {
@@ -62,6 +60,14 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
     const [draft, setDraft] = useState<Draft>(() => toDraft(customer));
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const gdprCheckboxRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (gdprCheckboxRef.current) {
+            gdprCheckboxRef.current.indeterminate =
+                draft.emailConsent !== draft.smsConsent;
+        }
+    }, [draft.emailConsent, draft.smsConsent]);
 
     useEffect(() => {
         setDraft(toDraft(customer));
@@ -181,9 +187,10 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                         Wyrażam zgodę na przetwarzanie danych osobowych
                     </label>
                     <input
+                        ref={gdprCheckboxRef}
                         id="customer-personal-gdpr"
                         type="checkbox"
-                        checked={draft.emailConsent || draft.smsConsent}
+                        checked={draft.emailConsent && draft.smsConsent}
                         onChange={(e) => {
                             updateField('emailConsent', e.target.checked);
                             updateField('smsConsent', e.target.checked);

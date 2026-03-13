@@ -1,5 +1,3 @@
-'use client';
-
 import type { Customer } from '@/types';
 
 interface Props {
@@ -84,7 +82,7 @@ export default function CustomerPersonalDataView({ customer }: Props) {
                     </div>
                     <div>
                         <dt>Kraj</dt>
-                        <dd>Polska</dd>
+                        <dd>{valueOrNotProvided(undefined)}</dd>
                     </div>
                     <div>
                         <dt>Należy do grup</dt>
