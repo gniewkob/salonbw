@@ -1,5 +1,3 @@
-'use client';
-
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -231,13 +229,6 @@ export default function CustomerDetailPage() {
                                                     >
                                                         drukuj
                                                     </button>
-                                                </li>
-                                                <li>
-                                                    <Link
-                                                        href={`/customers/${customer.id}?tab_name=personal_data`}
-                                                    >
-                                                        historia zmian
-                                                    </Link>
                                                 </li>
                                                 <li>
                                                     <button

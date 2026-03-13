@@ -13,22 +13,16 @@ import { useSecondaryNavContext } from '@/contexts/SecondaryNavContext';
 interface VersumShellProps {
     role: Role;
     children: ReactNode;
-    secondaryNav?: ReactNode;
 }
 
-export default function VersumShell({
-    role,
-    children,
-    secondaryNav,
-}: VersumShellProps) {
+export default function VersumShell({ role, children }: VersumShellProps) {
     const router = useRouter();
     const secondaryNavContext = useSecondaryNavContext();
     const routeForModuleResolution = router.asPath || router.pathname;
     const activeModule = resolveVersumModule(routeForModuleResolution);
     const modules = visibleVersumModules(role);
     const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
-    const resolvedSecondaryNav =
-        secondaryNav ?? secondaryNavContext?.secondaryNav ?? null;
+    const resolvedSecondaryNav = secondaryNavContext?.secondaryNav ?? null;
 
     // Versum vendor CSS uses module-scoped selectors like `.main-content.customers`.
     const mainContentClass = activeModule.key;

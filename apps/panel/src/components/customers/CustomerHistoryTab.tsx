@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { useCustomerEventHistory } from '@/hooks/useCustomers';
 import Link from 'next/link';
@@ -81,14 +79,12 @@ export default function CustomerHistoryTab({ customerId }: Props) {
     const [page, setPage] = useState(1);
     const [status, setStatus] = useState<StatusFilter>('all');
 
-    const today = new Date();
-    const defaultTo = toIsoDate(today);
-    const oneYearAgo = new Date(today);
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const defaultFrom = toIsoDate(oneYearAgo);
-
-    const [from, setFrom] = useState(defaultFrom);
-    const [to, setTo] = useState(defaultTo);
+    const [from, setFrom] = useState(() => {
+        const d = new Date();
+        d.setFullYear(d.getFullYear() - 1);
+        return toIsoDate(d);
+    });
+    const [to, setTo] = useState(() => toIsoDate(new Date()));
 
     const { data, isLoading, error } = useCustomerEventHistory(customerId, {
         limit: PAGE_SIZE,
