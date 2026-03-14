@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import WarehouseLayout from '@/components/warehouse/WarehouseLayout';
 import { useWarehouseSales } from '@/hooks/useWarehouseViews';
 import type { WarehouseSale } from '@/types';
@@ -25,38 +25,32 @@ function saleKindLabel(sale: WarehouseSale) {
     }
 }
 
+const PAGE_SIZE = 20;
+
 export default function WarehouseSalesHistoryPage() {
     const [search, setSearch] = useState('');
-    const [typeFilter, setTypeFilter] = useState('all');
+    const [searchDebounced, setSearchDebounced] = useState('');
+    const [kindFilter, setKindFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(20);
-    const { data: sales = [], isLoading } = useWarehouseSales();
 
-    const filteredSales = useMemo(
-        () =>
-            sales.filter((sale) => {
-                const firstItem = sale.items?.[0]?.productName ?? '';
-                const haystack =
-                    `${firstItem} ${sale.saleNumber} ${sale.clientName ?? ''}`.toLowerCase();
-                const matchesSearch = !search.trim()
-                    ? true
-                    : haystack.includes(search.toLowerCase());
-                const saleType = saleKindLabel(sale);
-                const matchesType =
-                    typeFilter === 'all' ? true : saleType === typeFilter;
-                return matchesSearch && matchesType;
-            }),
-        [sales, search, typeFilter],
-    );
+    useEffect(() => {
+        const t = setTimeout(() => setSearchDebounced(search), 300);
+        return () => clearTimeout(t);
+    }, [search]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredSales.length / pageSize));
+    const { data, isLoading } = useWarehouseSales({
+        page,
+        pageSize: PAGE_SIZE,
+        search: searchDebounced || undefined,
+        kind: kindFilter || undefined,
+    });
+
+    const items = data?.items ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = data?.totalPages ?? 1;
     const safePage = Math.min(Math.max(page, 1), totalPages);
-    const startIndex = (safePage - 1) * pageSize;
-    const visibleSales = filteredSales.slice(startIndex, startIndex + pageSize);
-    const from = filteredSales.length ? startIndex + 1 : 0;
-    const to = filteredSales.length
-        ? Math.min(startIndex + pageSize, filteredSales.length)
-        : 0;
+    const from = total ? (safePage - 1) * PAGE_SIZE + 1 : 0;
+    const to = total ? Math.min(safePage * PAGE_SIZE, total) : 0;
 
     return (
         <WarehouseLayout
@@ -88,17 +82,17 @@ export default function WarehouseSalesHistoryPage() {
                         />
                         <select
                             className="versum-select"
-                            value={typeFilter}
+                            value={kindFilter}
                             onChange={(e) => {
-                                setTypeFilter(e.target.value);
+                                setKindFilter(e.target.value);
                                 setPage(1);
                             }}
                         >
-                            <option value="all">wszystkie</option>
-                            <option value="sprzedaż">sprzedaż</option>
+                            <option value="">wszystkie</option>
+                            <option value="sale">sprzedaż</option>
                             <option value="void">void</option>
-                            <option value="zwrot">zwrot</option>
-                            <option value="korekta">korekta</option>
+                            <option value="refund">zwrot</option>
+                            <option value="correction">korekta</option>
                         </select>
                     </div>
                     <div className="products-table-wrap">
@@ -114,7 +108,7 @@ export default function WarehouseSalesHistoryPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleSales.map((sale) => {
+                                {items.map((sale) => {
                                     const firstItem =
                                         sale.items?.[0]?.productName ??
                                         sale.saleNumber;
@@ -153,14 +147,13 @@ export default function WarehouseSalesHistoryPage() {
                         </table>
                         <div className="products-table-footer">
                             <span>
-                                Pozycje od {from} do {to} z{' '}
-                                {filteredSales.length}
+                                Pozycje od {from} do {to} z {total}
                             </span>
                             <div className="products-table-footer__controls">
                                 <span>na stronie</span>
                                 <select
                                     className="versum-select versum-select--inline"
-                                    value={String(pageSize)}
+                                    value={String(PAGE_SIZE)}
                                     disabled
                                 >
                                     <option value="20">20</option>
