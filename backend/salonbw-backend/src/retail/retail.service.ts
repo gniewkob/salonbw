@@ -238,24 +238,16 @@ export class RetailService {
         );
     }
 
-    private async generateSaleNumber(manager: EntityManager): Promise<string> {
+    private formatSaleNumber(id: number): string {
         const now = new Date();
         const prefix = `S${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const rows = await manager.query(
-            'SELECT id FROM warehouse_sales ORDER BY id DESC LIMIT 1',
-        );
-        const next = Number(rows?.[0]?.id ?? 0) + 1;
-        return `${prefix}${String(next).padStart(5, '0')}`;
+        return `${prefix}${String(id).padStart(5, '0')}`;
     }
 
-    private async generateUsageNumber(manager: EntityManager): Promise<string> {
+    private formatUsageNumber(id: number): string {
         const now = new Date();
         const prefix = `U${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const rows = await manager.query(
-            'SELECT id FROM warehouse_usages ORDER BY id DESC LIMIT 1',
-        );
-        const next = Number(rows?.[0]?.id ?? 0) + 1;
-        return `${prefix}${String(next).padStart(5, '0')}`;
+        return `${prefix}${String(id).padStart(5, '0')}`;
     }
 
     async insertProductSale(
@@ -604,7 +596,7 @@ export class RetailService {
             }
 
             const created = manager.create(WarehouseSale, {
-                saleNumber: await this.generateSaleNumber(manager),
+                saleNumber: `TEMP-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
                 soldAt,
                 clientName: dto.clientName ?? null,
                 clientId: null,
@@ -622,6 +614,7 @@ export class RetailService {
                 createdById: actor.id ?? null,
             });
             await manager.save(created);
+            created.saleNumber = this.formatSaleNumber(created.id);
 
             let totalDiscount = 0;
             let totalNet = 0;
@@ -888,7 +881,7 @@ export class RetailService {
             );
 
             const created = manager.create(WarehouseSale, {
-                saleNumber: await this.generateSaleNumber(manager),
+                saleNumber: `TEMP-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
                 soldAt,
                 clientName: sourceSale.clientName ?? null,
                 clientId: sourceSale.clientId ?? null,
@@ -906,6 +899,7 @@ export class RetailService {
                 createdById: actor.id ?? null,
             });
             await manager.save(created);
+            created.saleNumber = this.formatSaleNumber(created.id);
 
             const dirtyProducts = new Set<number>();
             let totalDiscount = 0;
@@ -1051,15 +1045,45 @@ export class RetailService {
         return this.getSaleDetails(reversal.id);
     }
 
-    async listSales() {
+    async listSales(
+        params: {
+            page?: number;
+            pageSize?: number;
+            search?: string;
+            kind?: string;
+        } = {},
+    ) {
         if (!(await this.hasTable('public.warehouse_sales'))) {
-            return [];
+            return { items: [], total: 0, page: 1, totalPages: 0 };
         }
 
-        return this.warehouseSales.find({
-            relations: ['items', 'employee', 'createdBy'],
-            order: { soldAt: 'DESC', id: 'DESC' },
-        });
+        const page = Math.max(1, params.page ?? 1);
+        const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 20));
+
+        const qb = this.warehouseSales
+            .createQueryBuilder('sale')
+            .leftJoinAndSelect('sale.items', 'items')
+            .leftJoinAndSelect('sale.employee', 'employee')
+            .leftJoinAndSelect('sale.createdBy', 'createdBy')
+            .orderBy('sale.soldAt', 'DESC')
+            .addOrderBy('sale.id', 'DESC')
+            .skip((page - 1) * pageSize)
+            .take(pageSize);
+
+        if (params.search?.trim()) {
+            const term = `%${params.search.trim().toLowerCase()}%`;
+            qb.andWhere(
+                '(LOWER(sale.saleNumber) LIKE :term OR LOWER(sale.clientName) LIKE :term)',
+                { term },
+            );
+        }
+
+        if (params.kind && params.kind !== 'all') {
+            qb.andWhere('sale.kind = :kind', { kind: params.kind });
+        }
+
+        const [items, total] = await qb.getManyAndCount();
+        return { items, total, page, totalPages: Math.ceil(total / pageSize) };
     }
 
     async getSaleDetails(id: number) {
@@ -1169,7 +1193,7 @@ export class RetailService {
             }
 
             const created = manager.create(WarehouseUsage, {
-                usageNumber: await this.generateUsageNumber(manager),
+                usageNumber: `TEMP-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
                 usedAt:
                     isPlanned && dto.plannedFor
                         ? new Date(dto.plannedFor)
@@ -1181,6 +1205,8 @@ export class RetailService {
                 notes: dto.note ?? null,
                 createdById: actor.id ?? null,
             });
+            await manager.save(created);
+            created.usageNumber = this.formatUsageNumber(created.id);
             await manager.save(created);
             const dirtyProducts = new Set<number>();
 

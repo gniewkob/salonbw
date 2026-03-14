@@ -236,11 +236,33 @@ export function useUpdateProductCommissions(productId?: number) {
     });
 }
 
-export function useWarehouseSales() {
+interface SalesQuery {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    kind?: string;
+}
+
+interface SalesPaginatedResult {
+    items: WarehouseSale[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+export function useWarehouseSales(filters: SalesQuery = {}) {
     const { apiFetch } = useAuth();
-    return useQuery<WarehouseSale[]>({
-        queryKey: ['warehouse-sales'],
-        queryFn: () => apiFetch<WarehouseSale[]>('/sales'),
+    return useQuery<SalesPaginatedResult>({
+        queryKey: ['warehouse-sales', filters],
+        queryFn: () =>
+            apiFetch<SalesPaginatedResult>(
+                `/sales${toQueryString({
+                    page: filters.page,
+                    pageSize: filters.pageSize,
+                    search: filters.search,
+                    kind: filters.kind,
+                })}`,
+            ),
     });
 }
 

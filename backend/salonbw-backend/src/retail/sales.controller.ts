@@ -49,9 +49,42 @@ export class SalesController {
     @Roles(Role.Employee, Role.Admin)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List warehouse sales' })
-    @ApiResponse({ status: 200, description: 'Warehouse sales list' })
-    findSales() {
-        return this.retail.listSales();
+    @ApiResponse({
+        status: 200,
+        description: 'Warehouse sales list (paginated)',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: 'Page number (default: 1)',
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        required: false,
+        description: 'Items per page (default: 20, max: 100)',
+    })
+    @ApiQuery({
+        name: 'search',
+        required: false,
+        description: 'Filter by saleNumber or clientName',
+    })
+    @ApiQuery({
+        name: 'kind',
+        required: false,
+        description: 'Filter by kind: sale|void|refund|correction',
+    })
+    findSales(
+        @Query('page') page?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('search') search?: string,
+        @Query('kind') kind?: string,
+    ) {
+        return this.retail.listSales({
+            page: page ? Number(page) : undefined,
+            pageSize: pageSize ? Number(pageSize) : undefined,
+            search,
+            kind,
+        });
     }
 
     @Get('summary')

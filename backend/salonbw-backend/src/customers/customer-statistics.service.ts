@@ -270,6 +270,90 @@ export class CustomerStatisticsService {
             }));
         }
 
+        if (await this.hasTable('public.warehouse_sales')) {
+            const wsParams: Array<number | Date> = [customerId];
+            const wsFilters: string[] = [
+                'ws."clientId" = $1',
+                "ws.kind = 'sale'",
+            ];
+
+            if (from) {
+                wsParams.push(from);
+                wsFilters.push(`ws."soldAt" >= $${wsParams.length}`);
+            }
+
+            if (toExclusive) {
+                wsParams.push(toExclusive);
+                wsFilters.push(`ws."soldAt" < $${wsParams.length}`);
+            }
+
+            const wsWhere = wsFilters.join(' AND ');
+
+            const [wsTotalsRows, wsFavRows] = (await Promise.all([
+                this.appointmentsRepo.query(
+                    `SELECT
+                            TO_CHAR(DATE_TRUNC('month', ws."soldAt"), 'YYYY-MM') AS month,
+                            COALESCE(SUM(wsi."totalGross"), 0) AS spent
+                         FROM warehouse_sales ws
+                         JOIN warehouse_sale_items wsi ON wsi."saleId" = ws.id
+                         WHERE ${wsWhere}
+                         GROUP BY month
+                         ORDER BY month ASC`,
+                    wsParams,
+                ),
+                this.appointmentsRepo.query(
+                    `SELECT
+                            wsi."productId" AS "productId",
+                            COALESCE(MAX(wsi."productName"), 'Produkt') AS "productName",
+                            COALESCE(SUM(wsi.quantity), 0) AS count
+                         FROM warehouse_sales ws
+                         JOIN warehouse_sale_items wsi ON wsi."saleId" = ws.id
+                         WHERE ${wsWhere}
+                         GROUP BY wsi."productId"
+                         ORDER BY count DESC, "productName" ASC
+                         LIMIT 5`,
+                    wsParams,
+                ),
+            ])) as [ProductSpentByMonthRow[], FavoriteProductRow[]];
+
+            for (const row of wsTotalsRows) {
+                const value = Number(row.spent ?? 0);
+                productSpent += value;
+                productSpentByMonth.set(
+                    row.month,
+                    (productSpentByMonth.get(row.month) ?? 0) + value,
+                );
+            }
+
+            const mergedFavMap = new Map<
+                number,
+                { productId: number; productName: string; count: number }
+            >();
+            for (const p of favoriteProducts) {
+                mergedFavMap.set(p.productId, { ...p });
+            }
+            for (const row of wsFavRows) {
+                const pid = Number(row.productId);
+                const existing = mergedFavMap.get(pid);
+                if (existing) {
+                    existing.count += Number(row.count ?? 0);
+                } else {
+                    mergedFavMap.set(pid, {
+                        productId: pid,
+                        productName: row.productName,
+                        count: Number(row.count ?? 0),
+                    });
+                }
+            }
+            favoriteProducts = Array.from(mergedFavMap.values())
+                .sort(
+                    (a, b) =>
+                        b.count - a.count ||
+                        a.productName.localeCompare(b.productName),
+                )
+                .slice(0, 5);
+        }
+
         const visitsByMonth = Array.from(monthlyData.entries())
             .map(([month, data]) => ({
                 month,
