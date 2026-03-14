@@ -602,6 +602,9 @@ test.describe('PROD audit: warehouse panel vs versum', () => {
                 });
             }
             await panelPage.waitForTimeout(1200);
+            await panelPage
+                .waitForLoadState('networkidle', { timeout: 8_000 })
+                .catch(() => null);
             await panelPage.screenshot({
                 path: path.join(outDir, `panel-${seq}-${action.id}.png`),
                 fullPage: true,

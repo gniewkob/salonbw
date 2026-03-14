@@ -57,11 +57,6 @@ export default function WarehouseSalesHistoryPage() {
             pageTitle="Magazyn / Historia sprzedaży | SalonBW"
             heading="Magazyn / Historia sprzedaży"
             activeTab="sales"
-            actions={
-                <Link href="/sales/new" className="btn btn-primary btn-xs">
-                    dodaj sprzedaż
-                </Link>
-            }
         >
             {isLoading ? (
                 <p className="products-empty">
@@ -82,6 +77,7 @@ export default function WarehouseSalesHistoryPage() {
                         />
                         <select
                             className="versum-select"
+                            aria-label="rodzaj sprzedaży"
                             value={kindFilter}
                             onChange={(e) => {
                                 setKindFilter(e.target.value);
@@ -94,6 +90,13 @@ export default function WarehouseSalesHistoryPage() {
                             <option value="refund">zwrot</option>
                             <option value="correction">korekta</option>
                         </select>
+                        <Link
+                            href="/sales/new"
+                            className="button button-blue"
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            dodaj sprzedaż
+                        </Link>
                     </div>
                     <div className="products-table-wrap">
                         <table className="products-table">
@@ -153,6 +156,7 @@ export default function WarehouseSalesHistoryPage() {
                                 <span>na stronie</span>
                                 <select
                                     className="versum-select versum-select--inline"
+                                    aria-label="na stronie"
                                     value={String(PAGE_SIZE)}
                                     disabled
                                 >
@@ -161,6 +165,7 @@ export default function WarehouseSalesHistoryPage() {
                                 <div className="products-pagination-nav">
                                     <input
                                         type="text"
+                                        aria-label="strona"
                                         value={safePage}
                                         onChange={(e) => {
                                             const next = Number(e.target.value);
