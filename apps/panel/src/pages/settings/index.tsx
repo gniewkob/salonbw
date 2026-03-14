@@ -9,6 +9,14 @@ type SettingsTile = {
     icon: string;
 };
 
+const addonTiles: SettingsTile[] = [
+    {
+        href: '/extension/tools/4',
+        label: 'Marketing Automatyczny',
+        icon: 'sprite-automatic_marketing',
+    },
+];
+
 const mainTiles: SettingsTile[] = [
     {
         href: '/admin/timetables',
@@ -84,9 +92,13 @@ export default function SettingsPage() {
         <RouteGuard roles={['admin']} permission="nav:settings">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="settings-page">
-                    <ul className="breadcrumb">
-                        <li>Ustawienia</li>
-                    </ul>
+                    <h2>
+                        <i
+                            className="icon sprite-wrench settings-section-heading-icon"
+                            aria-hidden="true"
+                        />
+                        Ustawienia
+                    </h2>
 
                     <div className="settings-tiles-grid">
                         {mainTiles.map((tile) => (
@@ -102,6 +114,31 @@ export default function SettingsPage() {
                                 <span>{tile.label}</span>
                             </Link>
                         ))}
+                    </div>
+
+                    <div className="settings-addon-section">
+                        <h2>
+                            <i
+                                className="icon sprite-star settings-section-heading-icon"
+                                aria-hidden="true"
+                            />
+                            Ustawienia dodatków
+                        </h2>
+                        <div className="settings-tiles-grid">
+                            {addonTiles.map((tile) => (
+                                <Link
+                                    key={tile.label}
+                                    href={tile.href}
+                                    className="settings-tile"
+                                >
+                                    <i
+                                        className={`icon ${tile.icon} settings-tile__icon`}
+                                        aria-hidden="true"
+                                    />
+                                    <span>{tile.label}</span>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </VersumShell>
