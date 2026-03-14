@@ -669,11 +669,23 @@ function StatisticsPageContent() {
                                 <StatisticsPieChart
                                     width={500}
                                     height={300}
-                                    data={paymentRows.map((row) => ({
-                                        label: `${row.label}: ${formatMoney(row.amount)} (${paymentTotal > 0 ? ((row.amount / paymentTotal) * 100).toFixed(1) : '0,0'}%)`,
-                                        value: row.amount,
-                                        color: row.color,
-                                    }))}
+                                    data={paymentRows.map((row) => {
+                                        const pct =
+                                            paymentTotal > 0
+                                                ? (row.amount / paymentTotal) *
+                                                  100
+                                                : paymentRows.length === 1
+                                                  ? 100
+                                                  : 0;
+                                        const pctStr = Number.isInteger(pct)
+                                            ? String(pct)
+                                            : pct.toFixed(1).replace('.', ',');
+                                        return {
+                                            label: `${row.label}: ${formatMoney(row.amount)} (${pctStr}%)`,
+                                            value: row.amount,
+                                            color: row.color,
+                                        };
+                                    })}
                                 />
                             </div>
                         </div>

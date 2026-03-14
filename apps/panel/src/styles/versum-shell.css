@@ -65,6 +65,15 @@ body.e2e-body {
     color: #7d8790;
 }
 
+.breadcrumb li {
+    display: inline;
+}
+
+.breadcrumb li + li::before {
+    content: ' / ';
+    color: #7d8790;
+}
+
 .btn-default {
     background: #fff;
     border: 1px solid var(--versum-border);
