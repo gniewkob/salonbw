@@ -181,45 +181,57 @@ export default function EmployeeActivityPage() {
                                     <tr>
                                         <th>Pracownik</th>
                                         <th>Przepracowany czas</th>
+                                        <th>Procent</th>
                                         <th>Liczba wizyt</th>
                                     </tr>
-                                    {rows.map((employee, i) => (
-                                        <tr
-                                            key={employee.employeeId}
-                                            className={
-                                                i % 2 === 0 ? 'even' : 'odd'
-                                            }
-                                        >
-                                            <td>
-                                                <Link
-                                                    href={`/employees/${employee.employeeId}`}
-                                                    className="versum-link"
-                                                >
-                                                    {employee.employeeName}
-                                                </Link>
-                                            </td>
-                                            <td>
-                                                {formatWorkTime(
-                                                    toNumber(
-                                                        employee.workTimeMinutes,
-                                                    ),
-                                                )}
-                                            </td>
-                                            <td>
-                                                {toNumber(
-                                                    employee.appointmentsCount,
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {rows.map((employee, i) => {
+                                        const empMinutes = toNumber(
+                                            employee.workTimeMinutes,
+                                        );
+                                        const pct =
+                                            totalWorkMinutes > 0
+                                                ? Math.round(
+                                                      (empMinutes /
+                                                          totalWorkMinutes) *
+                                                          100,
+                                                  )
+                                                : 0;
+                                        return (
+                                            <tr
+                                                key={employee.employeeId}
+                                                className={
+                                                    i % 2 === 0 ? 'even' : 'odd'
+                                                }
+                                            >
+                                                <td>
+                                                    <Link
+                                                        href={`/employees/${employee.employeeId}`}
+                                                        className="versum-link"
+                                                    >
+                                                        {employee.employeeName}
+                                                    </Link>
+                                                </td>
+                                                <td>
+                                                    {formatWorkTime(empMinutes)}
+                                                </td>
+                                                <td>{pct}%</td>
+                                                <td>
+                                                    {toNumber(
+                                                        employee.appointmentsCount,
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                     <tr>
-                                        <td colSpan={3}>
+                                        <td colSpan={4}>
                                             <strong>Podsumowanie</strong>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th aria-label="Pracownik" />
                                         <th>Przepracowany czas</th>
+                                        <th>Procent</th>
                                         <th>Liczba wizyt</th>
                                     </tr>
                                     <tr>
@@ -229,6 +241,7 @@ export default function EmployeeActivityPage() {
                                         <td>
                                             {formatWorkTime(totalWorkMinutes)}
                                         </td>
+                                        <td>100%</td>
                                         <td>{totalAppointments}</td>
                                     </tr>
                                 </tbody>
