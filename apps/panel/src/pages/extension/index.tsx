@@ -103,7 +103,7 @@ export default function ExtensionPage() {
                     <ul className="breadcrumb">
                         <li>Dodatki</li>
                     </ul>
-                    <div className="inner extensions_boxes">
+                    <div className="inner extensions_boxes versum-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
                                 key={`row-${rowIndex}`}
