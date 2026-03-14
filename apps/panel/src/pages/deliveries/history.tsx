@@ -70,11 +70,6 @@ export default function WarehouseDeliveriesHistoryPage() {
             pageTitle="Magazyn / Historia dostaw | SalonBW"
             heading="Magazyn / Historia dostaw"
             activeTab="deliveries"
-            actions={
-                <Link href="/deliveries/new" className="btn btn-primary btn-xs">
-                    dodaj dostawę
-                </Link>
-            }
         >
             {isLoading ? (
                 <p className="products-empty">Ładowanie historii dostaw...</p>
@@ -93,6 +88,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                         />
                         <select
                             className="versum-select"
+                            aria-label="status dostawy"
                             value={statusFilter ?? ''}
                             onChange={(e) => {
                                 const status = e.target.value;
@@ -109,6 +105,13 @@ export default function WarehouseDeliveriesHistoryPage() {
                             <option value="received">przyjęte</option>
                             <option value="cancelled">anulowane</option>
                         </select>
+                        <Link
+                            href="/deliveries/new"
+                            className="button button-blue"
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            dodaj dostawę
+                        </Link>
                     </div>
                     <div className="products-table-wrap">
                         <table className="products-table">
@@ -194,6 +197,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 <span>na stronie</span>
                                 <select
                                     className="versum-select versum-select--inline"
+                                    aria-label="na stronie"
                                     value={String(pageSize)}
                                     disabled
                                 >
@@ -202,6 +206,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                                 <div className="products-pagination-nav">
                                     <input
                                         type="text"
+                                        aria-label="strona"
                                         value={safePage}
                                         onChange={(e) => {
                                             const next = Number(e.target.value);
