@@ -2747,7 +2747,7 @@ body.e2e-statistics .sidenav {
 
 #sidenav .nav-list .sub-nav li a::before,
 .sidenav .nav-list .sub-nav li a::before {
-    content: '— ';
+    content: '';
     color: #9ba3ab;
 }
 

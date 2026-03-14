@@ -56,15 +56,28 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
                 style={{ position: 'absolute', left: 0, top: 0 }}
                 aria-hidden="true"
             >
-                {slices.map((slice, i) => (
-                    <path
-                        key={i}
-                        d={arc(slice.startAngle, slice.endAngle, r)}
-                        fill={slice.color}
-                        stroke="#fff"
-                        strokeWidth={1}
-                    />
-                ))}
+                {slices.map((slice, i) => {
+                    const isFullCircle =
+                        slice.endAngle - slice.startAngle >=
+                        2 * Math.PI - 0.001;
+                    return isFullCircle ? (
+                        <circle
+                            key={i}
+                            cx={cx}
+                            cy={cy}
+                            r={r}
+                            fill={slice.color}
+                        />
+                    ) : (
+                        <path
+                            key={i}
+                            d={arc(slice.startAngle, slice.endAngle, r)}
+                            fill={slice.color}
+                            stroke="#fff"
+                            strokeWidth={1}
+                        />
+                    );
+                })}
             </svg>
             <table
                 className="statistics-jqplot-legend"
