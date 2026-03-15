@@ -209,7 +209,7 @@ function ExtensionToolContent() {
                 <li>
                     <Link href="/extension">Dodatki</Link>
                 </li>
-                <li>/ {tool?.title ?? resolvedId}</li>
+                <li>{tool?.title ?? resolvedId}</li>
             </ul>
 
             {tool ? (
