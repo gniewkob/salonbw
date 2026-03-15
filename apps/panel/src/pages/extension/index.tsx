@@ -40,7 +40,7 @@ const cards: ExtensionCard[] = [
         colClass: 'ext_1',
         title: 'Zasoby',
         description:
-            'Automatycznie sprawdza dostępność urządzeń i pomieszczeń podczas wprowadzania wizyt.',
+            'Automatycznie sprawdza dostępność urządzeń i pomieszczeń podczas wprowadzania wizyt. Eliminuje błędne rezerwacje i oszczędza czas.',
         icon: 'resources',
         status: 'Nieaktywny',
     },
@@ -100,7 +100,7 @@ export default function ExtensionPage() {
         <RouteGuard roles={['admin']} permission="nav:extension">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="extension-page">
-                    <h2>
+                    <h2 className="extensions-page-heading">
                         <i className="icon sprite-star" aria-hidden="true" />
                         {' Dodatki'}
                     </h2>
