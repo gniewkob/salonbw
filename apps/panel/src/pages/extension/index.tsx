@@ -100,9 +100,10 @@ export default function ExtensionPage() {
         <RouteGuard roles={['admin']} permission="nav:extension">
             <VersumShell role={role}>
                 <div className="versum-page" data-testid="extension-page">
-                    <ul className="breadcrumb">
-                        <li>Dodatki</li>
-                    </ul>
+                    <h2>
+                        <i className="icon sprite-star" aria-hidden="true" />
+                        {' Dodatki'}
+                    </h2>
                     <div className="inner extensions_boxes versum-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
@@ -139,20 +140,10 @@ export default function ExtensionPage() {
                                                     <div className="short_desc">
                                                         {card.description}
                                                     </div>
-                                                    <div
-                                                        className="more"
-                                                        style={{
-                                                            float: 'left',
-                                                        }}
-                                                    >
+                                                    <div className="more float-left">
                                                         więcej
                                                     </div>
-                                                    <div
-                                                        className="activate"
-                                                        style={{
-                                                            float: 'right',
-                                                        }}
-                                                    >
+                                                    <div className="activate float-right">
                                                         {'status:'}
                                                         {card.status ===
                                                         'Aktywny' ? (
