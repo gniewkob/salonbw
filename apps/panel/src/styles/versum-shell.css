@@ -4220,12 +4220,20 @@ h2.column_row small {
     font-size: 22px;
     font-weight: 400;
     color: #313140;
-    margin: 10px 0 20px;
+    margin: 0 0 10px;
 }
 
 .extensions-page-heading .icon {
     margin-right: 6px;
     vertical-align: middle;
+}
+
+/* Remove double-padding: .inner.extensions_boxes is nested inside VersumShell's .inner
+   which already provides 20px padding. Override to avoid stacked padding. */
+.main-content .inner.extensions_boxes {
+    padding: 0;
+    max-width: none;
+    margin: 0;
 }
 
 .extensions_boxes .row {
