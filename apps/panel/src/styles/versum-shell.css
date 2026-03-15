@@ -2704,6 +2704,11 @@ body.e2e-statistics .sidenav {
     align-self: flex-start;
 }
 
+body#extension,
+body.e2e-extension {
+    --versum-sidenav-w: 130px;
+}
+
 #sidenav .nav-header,
 .sidenav .nav-header {
     margin: 10px 0 5px;
