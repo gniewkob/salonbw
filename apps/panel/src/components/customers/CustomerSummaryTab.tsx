@@ -295,15 +295,15 @@ export default function CustomerSummaryTab({
                                                             <span
                                                                 key={group.id}
                                                                 className="inline-flex items-center px-8 py-2 rounded text-xs font-medium border group"
-                                                                style={
-                                                                    badgeStyle
-                                                                }
+                                                                {...{
+                                                                    style: badgeStyle,
+                                                                }}
                                                             >
                                                                 <span
                                                                     className="w-6 h-6 rounded-full mr-4"
-                                                                    style={
-                                                                        badgeDotStyle
-                                                                    }
+                                                                    {...{
+                                                                        style: badgeDotStyle,
+                                                                    }}
                                                                 />
                                                                 {group.name}
                                                                 <button
@@ -388,7 +388,7 @@ export default function CustomerSummaryTab({
 
             {/* Modal dodawania do grupy */}
             {showAddToGroupModal && (
-                <div className="modal fade in" style={modalStyle}>
+                <div className="modal fade in" {...{ style: modalStyle }}>
                     <div className="modal-dialog modal-sm">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -427,7 +427,9 @@ export default function CustomerSummaryTab({
                                                 >
                                                     <span
                                                         className="w-12 h-12 rounded-full"
-                                                        style={badgeDotStyle}
+                                                        {...{
+                                                            style: badgeDotStyle,
+                                                        }}
                                                     />
                                                     <span className="flex-1">
                                                         {group.name}

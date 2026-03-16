@@ -359,6 +359,7 @@ export default function WarehouseSaleDetailsPage() {
                                                 <td>
                                                     <input
                                                         type="number"
+                                                        aria-label="Ilość do akcji"
                                                         min={0}
                                                         max={item.quantity}
                                                         className="form-control"

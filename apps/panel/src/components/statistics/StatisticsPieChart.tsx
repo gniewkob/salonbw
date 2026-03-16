@@ -48,12 +48,12 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
     return (
         <div
             className="statistics-jqplot-wrap"
-            style={{ width, height, position: 'relative' }}
+            {...{ style: { width, height, position: 'relative' } }}
         >
             <svg
                 width={height * 1.1}
                 height={height}
-                style={{ position: 'absolute', left: 0, top: 0 }}
+                {...{ style: { position: 'absolute', left: 0, top: 0 } }}
                 aria-hidden="true"
             >
                 {slices.map((slice, i) => {
@@ -81,29 +81,43 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
             </svg>
             <table
                 className="statistics-jqplot-legend"
-                style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: cy - (data.length * 20) / 2,
+                {...{
+                    style: {
+                        position: 'absolute',
+                        right: 0,
+                        top: cy - (data.length * 20) / 2,
+                    },
                 }}
             >
                 <tbody>
                     {data.map((d, i) => (
                         <tr key={i}>
-                            <td style={{ paddingTop: i > 0 ? '0.5em' : 0 }}>
+                            <td
+                                {...{
+                                    style: {
+                                        paddingTop: i > 0 ? '0.5em' : 0,
+                                    },
+                                }}
+                            >
                                 <div className="statistics-jqplot-swatch-outer">
                                     <div
                                         className="statistics-jqplot-swatch"
-                                        style={{
-                                            backgroundColor: d.color,
-                                            borderColor: d.color,
+                                        {...{
+                                            style: {
+                                                backgroundColor: d.color,
+                                                borderColor: d.color,
+                                            },
                                         }}
                                     />
                                 </div>
                             </td>
                             <td
                                 className="statistics-jqplot-label"
-                                style={{ paddingTop: i > 0 ? '0.5em' : 0 }}
+                                {...{
+                                    style: {
+                                        paddingTop: i > 0 ? '0.5em' : 0,
+                                    },
+                                }}
                             >
                                 {d.label}
                             </td>
