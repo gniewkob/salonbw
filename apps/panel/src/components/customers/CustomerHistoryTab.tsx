@@ -182,6 +182,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     </span>
                     <input
                         type="date"
+                        aria-label="Od daty"
                         className="form-control input-sm"
                         value={from}
                         onChange={(e) => {
@@ -192,6 +193,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <span className="customer-history-period__sep">-</span>
                     <input
                         type="date"
+                        aria-label="Do daty"
                         className="form-control input-sm"
                         value={to}
                         onChange={(e) => {

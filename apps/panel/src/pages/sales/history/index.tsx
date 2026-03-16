@@ -68,6 +68,7 @@ export default function WarehouseSalesHistoryPage() {
                         <input
                             type="text"
                             className="versum-input"
+                            title="Wyszukaj w historii sprzedaży"
                             placeholder="wyszukaj w historii sprzedaży..."
                             value={search}
                             onChange={(e) => {
@@ -78,6 +79,7 @@ export default function WarehouseSalesHistoryPage() {
                         <select
                             className="versum-select"
                             aria-label="rodzaj sprzedaży"
+                            title="Rodzaj sprzedaży"
                             value={kindFilter}
                             onChange={(e) => {
                                 setKindFilter(e.target.value);
@@ -157,6 +159,7 @@ export default function WarehouseSalesHistoryPage() {
                                 <select
                                     className="versum-select versum-select--inline"
                                     aria-label="na stronie"
+                                    title="Na stronie"
                                     value={String(PAGE_SIZE)}
                                     disabled
                                 >
@@ -166,6 +169,7 @@ export default function WarehouseSalesHistoryPage() {
                                     <input
                                         type="text"
                                         aria-label="strona"
+                                        title="Strona"
                                         value={safePage}
                                         onChange={(e) => {
                                             const next = Number(e.target.value);

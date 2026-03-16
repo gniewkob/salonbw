@@ -190,11 +190,11 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                     <>
                         <div
                             className="customer-stats-share__bar-services"
-                            style={servicesBarStyle}
+                            {...{ style: servicesBarStyle }}
                         />
                         <div
                             className="customer-stats-share__bar-products"
-                            style={productsBarStyle}
+                            {...{ style: productsBarStyle }}
                         />
                     </>
                 </div>
@@ -237,7 +237,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                             <div className="customer-bar-chart__barwrap">
                                                 <div
                                                     className="customer-bar-chart__bar"
-                                                    style={barStyle}
+                                                    {...{ style: barStyle }}
                                                 />
                                             </div>
                                             <div className="customer-bar-chart__label">
