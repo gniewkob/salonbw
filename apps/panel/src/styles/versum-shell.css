@@ -2717,7 +2717,6 @@ body.e2e-extension .sidenav {
 
 body#extension .main-content .inner,
 body.e2e-extension .main-content .inner {
-    max-width: none;
     margin: 0;
 }
 
@@ -4241,11 +4240,19 @@ h2.column_row small {
 }
 
 /* Remove double-padding: .inner.extensions_boxes is nested inside VersumShell's .inner
-   which already provides 20px padding. Override to avoid stacked padding. */
+   which already provides 20px padding. Override to avoid stacked padding.
+   max-width: 774px matches Versum card grid width (~380px per card). */
 .main-content .inner.extensions_boxes {
     padding: 0;
-    max-width: 760px;
+    max-width: 774px;
     margin: 0;
+}
+
+/* Extension detail: constrain content to match Versum's ~600px content area. */
+body#extension .main-content .inner.extension_info,
+body.e2e-extension .main-content .inner.extension_info {
+    max-width: 600px;
+    padding: 0;
 }
 
 .extensions_boxes .row {
