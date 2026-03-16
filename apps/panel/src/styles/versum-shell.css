@@ -2706,7 +2706,19 @@ body.e2e-statistics .sidenav {
 
 body#extension,
 body.e2e-extension {
-    --versum-sidenav-w: 130px;
+    --versum-sidenav-w: 0px;
+}
+
+body#extension .sidenav,
+body.e2e-extension .sidenav {
+    overflow: hidden;
+    border-right: none;
+}
+
+body#extension .main-content .inner,
+body.e2e-extension .main-content .inner {
+    max-width: none;
+    margin: 0;
 }
 
 #sidenav .nav-header,
@@ -4232,7 +4244,7 @@ h2.column_row small {
    which already provides 20px padding. Override to avoid stacked padding. */
 .main-content .inner.extensions_boxes {
     padding: 0;
-    max-width: none;
+    max-width: 760px;
     margin: 0;
 }
 
