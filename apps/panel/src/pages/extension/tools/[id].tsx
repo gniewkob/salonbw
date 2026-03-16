@@ -215,7 +215,7 @@ function ExtensionToolContent() {
             {tool ? (
                 <div className="inner extension_info container-fluid">
                     <div className="row">
-                        <div className="col-sm-4 logo_with_actions">
+                        <div className="col-sm-6 logo_with_actions">
                             <div className="row">
                                 <div className="col-xs-3 extension_icon">
                                     <svg
@@ -321,7 +321,7 @@ function ExtensionToolContent() {
                             </div>
                         </div>
                         {tool.gallery ? (
-                            <div className="col-sm-8">
+                            <div className="col-sm-6">
                                 <div className="slider">
                                     <div id="gallery">
                                         <div className="row row-no-padding">
