@@ -215,7 +215,7 @@ function ExtensionToolContent() {
             {tool ? (
                 <div className="inner extension_info container-fluid">
                     <div className="row">
-                        <div className="col-sm-6 logo_with_actions">
+                        <div className="col-sm-4 logo_with_actions">
                             <div className="row">
                                 <div className="col-xs-3 extension_icon">
                                     <svg
@@ -317,75 +317,11 @@ function ExtensionToolContent() {
                                                 ustawienia dodatku
                                             </a>
                                         )}
-                                    <h2>Dostępność</h2>
-                                    <table className="table-bordered availability-table no-hover">
-                                        <tbody>
-                                            <tr>
-                                                {PLANS.map((plan) => (
-                                                    <th
-                                                        key={plan}
-                                                        className={
-                                                            tool.status ===
-                                                                'Aktywny' &&
-                                                            plan === 'basic'
-                                                                ? 'currently-active'
-                                                                : ''
-                                                        }
-                                                    >
-                                                        {plan
-                                                            .charAt(0)
-                                                            .toUpperCase() +
-                                                            plan.slice(1)}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                            <tr>
-                                                {PLANS.map((plan) => {
-                                                    const p = tool.plans[plan];
-                                                    return (
-                                                        <td key={plan}>
-                                                            {p.available ? (
-                                                                <>
-                                                                    {/* Copy-first parity with Versum: native <img> availability icon. */}
-                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                    <img
-                                                                        alt="dostępny"
-                                                                        title="dostępny"
-                                                                        src={
-                                                                            AVAILABLE_ICON
-                                                                        }
-                                                                    />
-                                                                    <br />
-                                                                    {p.price}
-                                                                    {p.price &&
-                                                                        p.price !==
-                                                                            'bezpłatny' && (
-                                                                            <div className="small">
-                                                                                netto
-                                                                                /
-                                                                                miesiąc
-                                                                            </div>
-                                                                        )}
-                                                                </>
-                                                            ) : (
-                                                                <span
-                                                                    className="availability-no"
-                                                                    aria-label="niedostępny"
-                                                                >
-                                                                    —
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                         </div>
                         {tool.gallery ? (
-                            <div className="col-sm-6">
+                            <div className="col-sm-8">
                                 <div className="slider">
                                     <div id="gallery">
                                         <div className="row row-no-padding">
@@ -426,6 +362,63 @@ function ExtensionToolContent() {
                             </div>
                         ) : null}
                     </div>
+                    <h2>Dostępność</h2>
+                    <table className="table-bordered availability-table no-hover">
+                        <tbody>
+                            <tr>
+                                {PLANS.map((plan) => (
+                                    <th
+                                        key={plan}
+                                        className={
+                                            tool.status === 'Aktywny' &&
+                                            plan === 'basic'
+                                                ? 'currently-active'
+                                                : ''
+                                        }
+                                    >
+                                        {plan.charAt(0).toUpperCase() +
+                                            plan.slice(1)}
+                                    </th>
+                                ))}
+                            </tr>
+                            <tr>
+                                {PLANS.map((plan) => {
+                                    const p = tool.plans[plan];
+                                    return (
+                                        <td key={plan}>
+                                            {p.available ? (
+                                                <>
+                                                    {/* Copy-first parity with Versum: native <img> availability icon. */}
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        alt="dostępny"
+                                                        title="dostępny"
+                                                        src={AVAILABLE_ICON}
+                                                    />
+                                                    <br />
+                                                    {p.price}
+                                                    {p.price &&
+                                                        p.price !==
+                                                            'bezpłatny' && (
+                                                            <div className="small">
+                                                                netto / miesiąc
+                                                            </div>
+                                                        )}
+                                                </>
+                                            ) : (
+                                                <span
+                                                    className="availability-no"
+                                                    aria-label="niedostępny"
+                                                >
+                                                    —
+                                                </span>
+                                            )}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             ) : (
                 <p className="versum-muted p-20">Nie znaleziono dodatku.</p>
