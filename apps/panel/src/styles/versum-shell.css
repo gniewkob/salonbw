@@ -2707,6 +2707,8 @@ body.e2e-statistics .sidenav {
 body#extension,
 body.e2e-extension {
     --versum-sidenav-w: 0px;
+    font-family: 'Lato', sans-serif;
+    line-height: 1.42857;
 }
 
 body#extension .sidenav,
@@ -3296,7 +3298,7 @@ body.e2e-statistics .main-content .inner {
 .icon.sprite-active_green {
     width: 14px;
     height: 14px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2317d38f'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E") no-repeat center;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317d38f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20%2C6 9%2C17 4%2C12'/%3E%3C/svg%3E") no-repeat center;
     background-size: contain;
 }
 
@@ -4249,10 +4251,10 @@ h2.column_row small {
     margin: 0;
 }
 
-/* Extension detail: constrain content to match Versum's ~600px content area. */
+/* Extension detail: constrain content to match Versum's ~810px content area. */
 body#extension .main-content .inner.extension_info,
 body.e2e-extension .main-content .inner.extension_info {
-    max-width: 600px;
+    max-width: 810px;
     padding: 0;
 }
 
