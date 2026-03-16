@@ -376,8 +376,7 @@ function ExtensionToolContent() {
                                                 : ''
                                         }
                                     >
-                                        {plan.charAt(0).toUpperCase() +
-                                            plan.slice(1)}
+                                        {plan.toUpperCase()}
                                     </th>
                                 ))}
                             </tr>

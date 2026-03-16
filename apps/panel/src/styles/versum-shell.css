@@ -4355,12 +4355,12 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 .extension_icon svg {
-    width: 90px;
-    height: 90px;
+    width: 60px;
+    height: 60px;
 }
 
 .ext_title {
-    font-size: 30px;
+    font-size: 22px;
     font-weight: 400;
     color: #313140;
     padding-bottom: 3px;
