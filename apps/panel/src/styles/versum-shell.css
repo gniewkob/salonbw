@@ -2718,7 +2718,7 @@ body.e2e-extension .sidenav {
 body#extension .main-content .inner,
 body.e2e-extension .main-content .inner {
     margin: 0;
-    padding-top: 8px;
+    padding-top: 0;
 }
 
 #sidenav .nav-header,
