@@ -4310,12 +4310,14 @@ body.e2e-extension .main-content .inner.extension_info {
     font-size: 15.6px;
     font-weight: 700;
     color: #313140;
+    font-family: 'Lato', sans-serif;
 }
 
 .ext_info .short_desc {
     font-size: 13px;
     margin-top: 10px;
     color: #505960;
+    font-family: 'Lato', sans-serif;
 }
 
 .ext_info .more {
