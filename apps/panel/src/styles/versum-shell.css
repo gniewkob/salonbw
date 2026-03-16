@@ -4282,7 +4282,7 @@ body.e2e-extension .main-content .inner.extension_info {
     display: block;
     padding: 20px 15px 10px;
     border: 1px solid #e0e0e0;
-    min-height: 170px;
+    min-height: 140px;
     text-decoration: none;
     color: inherit;
     overflow: hidden;
@@ -4295,7 +4295,6 @@ body.e2e-extension .main-content .inner.extension_info {
 .ext_image {
     float: left;
     width: 90px;
-    height: 140px;
     margin-right: 14px;
 }
 
@@ -4463,7 +4462,8 @@ body.e2e-extension .main-content .inner.extension_info {
 
 .gthumbnail {
     display: block;
-    width: 100%;
+    max-width: 100%;
+    height: auto;
 }
 
 .availability-no {
