@@ -123,7 +123,7 @@ This file tracks the current status of the AI-ready implementation backlog again
 
 ### Refund / void / reversal suite
 
-- Status: implemented locally, not deployed yet
+- Status: implemented and deployed
 - Files:
   - `backend/salonbw-backend/src/migrations/1760105000000-AddWarehouseSaleReversalFlow.ts`
   - `backend/salonbw-backend/src/retail/dto/reverse-sale.dto.ts`
@@ -146,5 +146,8 @@ This file tracks the current status of the AI-ready implementation backlog again
 - Test coverage:
   - `retail.service.spec.ts` covers reversal selection defaults, duplicate reversal guards, refund ledger semantics, restock behavior, source-sale status updates, and partial-void rejection
   - `sales.controller.spec.ts` covers controller delegation and route metadata for `POST /sales/:id/void`, `POST /sales/:id/refund`, and `POST /sales/:id/correction`
-- Deployment requirement:
-  - requires running migration `1760105000000-AddWarehouseSaleReversalFlow.ts`
+- Production rollout:
+  - dashboard deploy `23001341385` (`success`)
+  - api deploy `23001488052` (`success`)
+  - public deploy `23001578864` (`success`)
+  - migration `1760105000000-AddWarehouseSaleReversalFlow.ts` applied during API deploy
