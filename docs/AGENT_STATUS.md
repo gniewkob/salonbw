@@ -1,38 +1,19 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-12 (local backlog closure plus POS reversal suite: statistics/retail batching, customer reviews mapping, calendar embed full-document runtime, retail reporting semantics, landing contact data, refund/void/correction flow, and backend reversal test coverage; not deployed yet)_
+_Last updated: 2026-03-12 (backlog closure and POS reversal suite deployed to production: statistics/retail batching, customer reviews mapping, calendar embed full-document runtime, retail reporting semantics, landing contact data, refund/void/correction flow, and backend reversal test coverage)_
 
-## Pending Local Changes (Not Deployed Yet)
+## Latest Production Rollout
 
-- Statistics:
-  - removed N+1 patterns from employee ranking and employee activity in `backend/salonbw-backend/src/statistics/statistics.service.ts`
-  - added regression coverage in `backend/salonbw-backend/src/statistics/statistics.service.spec.ts`
-- Retail:
-  - added duplicate-line aggregation before stock validation
-  - replaced per-item transactional product reads with batched locked reads in `backend/salonbw-backend/src/retail/retail.service.ts`
-  - added regression coverage in `backend/salonbw-backend/src/retail/retail.service.spec.ts`
-  - added controller coverage in `backend/salonbw-backend/src/retail/sales.controller.spec.ts`
-  - product sale insert now preserves transaction date in `product_sales.soldAt`
-  - product commissions now persist `productSaleId`, enabling reporting by transaction date instead of commission creation time
-  - implemented reversal ledger flow for `void`, `refund`, and `correction`
-  - reversal flow restores stock and can reverse product commission
-  - requires DB migration `1760105000000-AddWarehouseSaleReversalFlow.ts`
-- Reporting:
-  - `statistics.service.ts` now includes retail revenue in revenue chart buckets using `soldAt`
-  - employee commissions report now includes product revenue and product commission grouped by transaction date
-  - sales without `employeeId` are reported under `Recepcja`
-- Panel:
-  - `CustomerReviewsTab` is now wired to `/customers/:id/reviews` through a normalization layer
-  - `Review` frontend type now reflects the actual backend relation-based payload more closely
-  - commissions page now sends a real custom day range instead of the ignored `date` parameter
-- Landing:
-  - public contact data updated from first-party site (`+48 723 588 868`, `kontakt@salon-bw.pl`)
-- Calendar:
-  - removed the unverified PJAX branch from `apps/panel/src/pages/api/calendar-embed.ts`
-  - documented the verified runtime contract in `docs/CALENDAR_FLOW_SPEC.md`
-- Backlog tracking:
-  - repository status snapshot added in `docs/IMPLEMENTATION_BACKLOG_STATUS.md`
-  - refund / void / reversal updated from approved scope to implemented local scope
+- Commit deployed: `fb8578cc`
+- Dashboard (`panel.salon-bw.pl`):
+  - deploy run `23001341385` (`success`, target `dashboard`, sha `fb8578cc`)
+  - includes customer reviews mapping, calendar embed cleanup, commissions range fix, warehouse history actions UI, and panel support for reversal flow
+- API (`api.salon-bw.pl`):
+  - deploy run `23001488052` (`success`, target `api`, sha `fb8578cc`)
+  - includes statistics N+1 fixes, retail batching, retail revenue/product commission reporting by transaction date, and DB migration `1760105000000-AddWarehouseSaleReversalFlow.ts`
+- Public site (`dev.salon-bw.pl`):
+  - deploy run `23001578864` (`success`, target `public`, sha `fb8578cc`)
+  - includes public contact data update (`+48 723 588 868`, `kontakt@salon-bw.pl`)
 
 ## Platform Architecture
 
@@ -51,15 +32,19 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `9ec696ac` | `22366598647` | 2026-02-24 19:28 | production | Statystyki: poprawione parsowanie kwot (decimal/string) i stabilne sumowanie revenue bez konkatenacji stringów |
-| Public site (`dev.salon-bw.pl`) | `3c88809d` | `22058727498` | 2026-02-16 10:20 | production | ✅ Landing Phase 1 LIVE: Polish hero slider (3 slides), founder message, history accordion, values tabs, salon gallery, services page, mobile menu |
-| Dashboard (`panel.salon-bw.pl`) | `7e27aea0` | `22922758693` | 2026-03-10 20:29 | production | Ustawienia: kafle 1:1 z ikonami `sprite-settings_*` (emoji usunięte), retry po transient fail install deps |
+| API (`api.salon-bw.pl`) | `fb8578cc` | `23001488052` | 2026-03-12 12:17 | production | Backlog closure: statistics batching, retail/reporting updates, POS reversal flow, migration `1760105000000` applied |
+| Public site (`dev.salon-bw.pl`) | `fb8578cc` | `23001578864` | 2026-03-12 12:21 | production | Public contact data updated (`+48 723 588 868`, `kontakt@salon-bw.pl`) |
+| Dashboard (`panel.salon-bw.pl`) | `fb8578cc` | `23001341385` | 2026-03-12 12:15 | production | Reviews mapping, commissions range fix, warehouse reversal UI, calendar embed cleanup |
 
 Verification:
 
-- `curl -I https://api.salon-bw.pl/healthz` → `200 OK` (DB: 3.2ms, SMTP: 24ms)
-- `curl https://api.salon-bw.pl/content/sections` → Returns 4 sections (business_info, hero_slides, founder_message, history_items)
-- `curl -I https://dev.salon-bw.pl` → `200 OK` (29.9KB HTML, Polish content verified)
+- `curl https://api.salon-bw.pl/healthz` → `{"status":"ok", ...}` (DB and SMTP healthy after deploy)
+- `curl -I https://dev.salon-bw.pl` → `200 OK`
+- `curl -I https://panel.salon-bw.pl` → `307` to `/auth/login` (expected when unauthenticated)
+- `curl -I https://panel.salon-bw.pl/sales/history` → `307` to `/auth/login?redirectTo=%2Fsales%2Fhistory` (expected when unauthenticated)
+- Dashboard production deploy note (2026-03-12):
+  - initial manual `public` run `23001488045` was cancelled by workflow concurrency,
+  - final successful production runs are `23001341385` (dashboard), `23001488052` (api), `23001578864` (public).
 - Dashboard post-deploy verification (2026-03-10):
   - deploy run `22922605165` (`failure`, target `dashboard`, sha `7e27aea0`) — fail on remote deps install,
   - deploy retry run `22922758693` (`success`, target `dashboard`, sha `7e27aea0`),
