@@ -82,6 +82,13 @@ The legacy Laravel frontend has been removed; the repo now contains only the Nex
 - CI/CD overview + secrets: [`docs/CI_CD.md`](docs/CI_CD.md)
 - Deployment runbook for hosting: [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md)
 - Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
+- Versum clone handoff for the panel agent: [`docs/HANDOFF_PANEL_AGENT.md`](docs/HANDOFF_PANEL_AGENT.md)
+- Versum route-by-route implementation backlog: [`docs/IMPLEMENTATION_MATRIX.md`](docs/IMPLEMENTATION_MATRIX.md)
+- Versum gaps that must be invented in `salonbw`: [`docs/INVENTED_BEHAVIOR.md`](docs/INVENTED_BEHAVIOR.md)
+- Versum clone execution workflow for the implementation agent: [`docs/AGENT_EXECUTION_PLAYBOOK.md`](docs/AGENT_EXECUTION_PLAYBOOK.md)
+- Versum route index with dump artifact pointers: [`docs/ROUTE_INDEX.json`](docs/ROUTE_INDEX.json)
+- Versum reusable UI patterns: [`docs/UI_PATTERN_CATALOG.md`](docs/UI_PATTERN_CATALOG.md)
+- Versum domain/entity inventory: [`docs/DOMAIN_SCHEMA_INVENTORY.md`](docs/DOMAIN_SCHEMA_INVENTORY.md)
 
 ## Common scripts
 
