@@ -353,6 +353,7 @@ export function useCreateCustomerGroup() {
             description?: string;
             color?: string;
             memberIds?: number[];
+            parentId?: number | null;
         }) =>
             apiFetch<CustomerGroup>('/customer-groups', {
                 method: 'POST',
@@ -377,7 +378,12 @@ export function useUpdateCustomerGroup() {
             data,
         }: {
             id: number;
-            data: { name?: string; description?: string; color?: string };
+            data: {
+                name?: string;
+                description?: string;
+                color?: string;
+                parentId?: number | null;
+            };
         }) =>
             apiFetch<CustomerGroup>(`/customer-groups/${id}`, {
                 method: 'PUT',
@@ -402,6 +408,31 @@ export function useDeleteCustomerGroup() {
     return useMutation({
         mutationFn: (id: number) =>
             apiFetch<void>(`/customer-groups/${id}`, { method: 'DELETE' }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-groups'],
+            });
+        },
+    });
+}
+
+export function useSortCustomerGroups() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (
+            items: Array<{
+                id: number;
+                parentId: number | null;
+                sortOrder: number;
+            }>,
+        ) =>
+            apiFetch<CustomerGroup[]>('/customer-groups/sort', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items }),
+            }),
         onSuccess: () => {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-groups'],

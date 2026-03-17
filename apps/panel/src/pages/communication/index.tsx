@@ -203,12 +203,22 @@ export default function CommunicationPage() {
                                                           }
                                                       >
                                                           <td>
-                                                              {entry.recipient}
+                                                              <Link
+                                                                  href={`/communication/${entry.id}?kind=sms`}
+                                                              >
+                                                                  {
+                                                                      entry.recipient
+                                                                  }
+                                                              </Link>
                                                           </td>
                                                           <td>
                                                               <strong>
-                                                                  {entry.subject ||
-                                                                      'Wiadomość'}
+                                                                  <Link
+                                                                      href={`/communication/${entry.id}?kind=sms`}
+                                                                  >
+                                                                      {entry.subject ||
+                                                                          'Wiadomość'}
+                                                                  </Link>
                                                               </strong>
                                                               <div className="light_text">
                                                                   {entry.content.slice(
@@ -244,11 +254,21 @@ export default function CommunicationPage() {
                                                                   : 'even'
                                                           }
                                                       >
-                                                          <td>{entry.to}</td>
+                                                          <td>
+                                                              <Link
+                                                                  href={`/communication/${entry.id}?kind=email`}
+                                                              >
+                                                                  {entry.to}
+                                                              </Link>
+                                                          </td>
                                                           <td>
                                                               <strong>
-                                                                  {entry.subject ||
-                                                                      'Email'}
+                                                                  <Link
+                                                                      href={`/communication/${entry.id}?kind=email`}
+                                                                  >
+                                                                      {entry.subject ||
+                                                                          'Email'}
+                                                                  </Link>
                                                               </strong>
                                                               <div className="light_text">
                                                                   {(

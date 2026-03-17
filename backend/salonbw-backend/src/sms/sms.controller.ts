@@ -144,6 +144,12 @@ export class SmsController {
         return this.smsService.getHistory(filter);
     }
 
+    @Get('history/:id')
+    @Roles(Role.Admin)
+    async getHistoryItem(@Param('id', ParseIntPipe) id: number) {
+        return this.smsService.getHistoryItem(id);
+    }
+
     @Get('stats')
     @Roles(Role.Admin)
     async getStats(@Query('from') from: string, @Query('to') to: string) {

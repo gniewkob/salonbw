@@ -19,18 +19,18 @@ const addonTiles: SettingsTile[] = [
 
 const mainTiles: SettingsTile[] = [
     {
-        href: '/admin/timetables',
+        href: '/settings/timetable/employees',
         label: 'grafiki pracy',
         icon: 'sprite-settings_work_schedule',
     },
     {
-        href: '/admin/settings/company',
+        href: '/settings/branch',
         label: 'dane salonu',
         icon: 'sprite-settings_branch',
     },
     {
-        href: '/admin/settings/calendar',
-        label: 'godziny otwarcia',
+        href: '/settings/calendar',
+        label: 'kalendarz',
         icon: 'sprite-settings_opening_hours',
     },
     { href: '/calendar', label: 'kalendarz', icon: 'sprite-settings_calendar' },

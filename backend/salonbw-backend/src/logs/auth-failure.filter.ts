@@ -47,6 +47,7 @@ export class AuthFailureFilter implements ExceptionFilter {
             await this.logService.logAction(user, action, {
                 endpoint: req.url,
                 userId,
+                ipAddress: req.ip,
             });
             requestLogger.warn(
                 {

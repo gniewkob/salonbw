@@ -74,6 +74,52 @@ export function useEmailHistory(filter: EmailHistoryFilter) {
     };
 }
 
+export function useEmailHistoryItem(id: number | null) {
+    const { apiFetch } = useAuth();
+
+    const query = useQuery({
+        queryKey: [...EMAIL_HISTORY_QUERY_KEY, 'detail', id],
+        queryFn: async () => {
+            if (!id) return null;
+            return apiFetch<{
+                id: number;
+                to: string;
+                subject: string;
+                template?: string;
+                status: string;
+                sentAt: string | null;
+                createdAt: string;
+                errorMessage: string | null;
+                recipientId: number | null;
+                recipientUser?: { id: number; name: string } | null;
+                sentBy?: { id: number; name: string } | null;
+            }>(`/emails/history/${id}`);
+        },
+        enabled: !!id,
+    });
+
+    return {
+        data: query.data
+            ? ({
+                  id: query.data.id,
+                  recipient: query.data.to,
+                  subject: query.data.subject,
+                  status: query.data.status,
+                  sentAt: query.data.sentAt ?? query.data.createdAt,
+                  createdAt: query.data.createdAt,
+                  template: query.data.template,
+                  errorMessage: query.data.errorMessage,
+                  recipientId: query.data.recipientId,
+                  recipientUser: query.data.recipientUser,
+                  sentBy: query.data.sentBy,
+              } satisfies EmailLog)
+            : null,
+        error: (query.error as Error | null) ?? null,
+        loading: query.isLoading,
+        refetch: query.refetch,
+    };
+}
+
 export function useEmailMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();

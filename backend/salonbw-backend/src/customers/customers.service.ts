@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 import {
@@ -22,6 +23,7 @@ import {
 import {
     CreateCustomerGroupDto,
     UpdateCustomerGroupDto,
+    SortCustomerGroupsDto,
 } from './dto/customer-group.dto';
 import {
     CreateCustomerNoteDto,
@@ -391,15 +393,15 @@ export class CustomersService {
 
     async findAllGroups() {
         return this.groupsRepo.find({
-            relations: ['members'],
-            order: { name: 'ASC' },
+            relations: ['members', 'parent'],
+            order: { sortOrder: 'ASC', name: 'ASC' },
         });
     }
 
     async findOneGroup(id: number) {
         const group = await this.groupsRepo.findOne({
             where: { id },
-            relations: ['members'],
+            relations: ['members', 'parent'],
         });
         if (!group) {
             throw new NotFoundException('Group not found');
@@ -408,10 +410,13 @@ export class CustomersService {
     }
 
     async createGroup(dto: CreateCustomerGroupDto) {
+        const sortOrder = await this.getNextGroupSortOrder(dto.parentId);
         const group = this.groupsRepo.create({
             name: dto.name,
             description: dto.description,
             color: dto.color,
+            parentId: dto.parentId ?? null,
+            sortOrder,
         });
 
         if (dto.memberIds?.length) {
@@ -430,6 +435,9 @@ export class CustomersService {
         if (dto.name !== undefined) group.name = dto.name;
         if (dto.description !== undefined) group.description = dto.description;
         if (dto.color !== undefined) group.color = dto.color;
+        if (dto.parentId !== undefined) {
+            group.parentId = dto.parentId;
+        }
 
         if (dto.memberIds !== undefined) {
             group.members = await this.usersRepo.findBy({
@@ -439,6 +447,17 @@ export class CustomersService {
         }
 
         return this.groupsRepo.save(group);
+    }
+
+    async sortGroups(dto: SortCustomerGroupsDto) {
+        for (const item of dto.items) {
+            await this.groupsRepo.update(item.id, {
+                parentId: item.parentId,
+                sortOrder: item.sortOrder,
+            });
+        }
+
+        return this.findAllGroups();
     }
 
     async deleteGroup(id: number) {
@@ -465,6 +484,15 @@ export class CustomersService {
         const group = await this.findOneGroup(groupId);
         group.members = group.members.filter((m) => m.id !== customerId);
         return this.groupsRepo.save(group);
+    }
+
+    private async getNextGroupSortOrder(parentId?: number | null) {
+        const siblingCount = await this.groupsRepo.count({
+            where: {
+                parentId: parentId ?? IsNull(),
+            },
+        });
+        return siblingCount;
     }
 
     // ==================== NOTES ====================

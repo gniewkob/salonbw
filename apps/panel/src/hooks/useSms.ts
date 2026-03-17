@@ -161,6 +161,26 @@ export function useSmsHistory(filter: SmsHistoryFilter) {
     };
 }
 
+export function useSmsHistoryItem(id: number | null) {
+    const { apiFetch } = useAuth();
+
+    const query = useQuery({
+        queryKey: [...SMS_HISTORY_QUERY_KEY, 'detail', id],
+        queryFn: async () => {
+            if (!id) return null;
+            return apiFetch<SmsLog>(`/sms/history/${id}`);
+        },
+        enabled: !!id,
+    });
+
+    return {
+        data: query.data ?? null,
+        error: (query.error as Error | null) ?? null,
+        loading: query.isLoading,
+        refetch: query.refetch,
+    };
+}
+
 export function useSmsStats(from?: string, to?: string) {
     const { apiFetch } = useAuth();
 

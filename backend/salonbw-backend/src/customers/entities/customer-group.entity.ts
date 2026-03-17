@@ -6,6 +6,9 @@ import {
     UpdateDateColumn,
     ManyToMany,
     JoinTable,
+    ManyToOne,
+    OneToMany,
+    JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
 
@@ -22,6 +25,22 @@ export class CustomerGroup {
 
     @Column({ nullable: true })
     color?: string;
+
+    @Column({ nullable: true, type: 'int' })
+    parentId?: number | null;
+
+    @ManyToOne(() => CustomerGroup, (group) => group.children, {
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
+    @JoinColumn({ name: 'parentId' })
+    parent?: CustomerGroup | null;
+
+    @OneToMany(() => CustomerGroup, (group) => group.parent)
+    children?: CustomerGroup[];
+
+    @Column({ type: 'int', default: 0 })
+    sortOrder: number;
 
     @ManyToMany(() => User, (user) => user.groups)
     @JoinTable({

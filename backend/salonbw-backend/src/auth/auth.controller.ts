@@ -44,6 +44,7 @@ export class AuthController {
     async login(
         @CurrentUser() user: Omit<User, 'password'>,
         @Response({ passthrough: true }) res: ExpressResponse,
+        @Request() req: ExpressRequest,
     ) {
         const result = await this.authService.login(user, res);
         try {
@@ -52,6 +53,7 @@ export class AuthController {
                 LogAction.USER_LOGIN,
                 {
                     userId: user.id,
+                    ipAddress: req.ip,
                 },
             );
         } catch (error) {

@@ -74,6 +74,66 @@ const nextConfig = {
                 source: '/salonblackandwhite/customers/:path*',
                 destination: '/customers/:path*',
             },
+            {
+                source: '/salonblackandwhite/calendar/views',
+                destination: '/calendar/views',
+            },
+            {
+                source: '/salonblackandwhite/calendar/views/new',
+                destination: '/calendar/views/new',
+            },
+            {
+                source: '/salonblackandwhite/services/new',
+                destination: '/services/new',
+            },
+            {
+                source: '/salonblackandwhite/settings/branch',
+                destination: '/settings/branch',
+            },
+            {
+                source: '/salonblackandwhite/settings/calendar',
+                destination: '/settings/calendar',
+            },
+            {
+                source: '/salonblackandwhite/settings/customer_groups',
+                destination: '/settings/customer_groups',
+            },
+            {
+                source: '/salonblackandwhite/settings/customer_groups/new',
+                destination: '/settings/customer_groups/new',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees',
+                destination: '/settings/employees',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/activity_logs',
+                destination: '/settings/employees/activity_logs',
+            },
+            {
+                source: '/salonblackandwhite/settings/payment_configuration',
+                destination: '/settings/payment-configuration',
+            },
+            {
+                source: '/salonblackandwhite/settings/sms',
+                destination: '/settings/sms',
+            },
+            {
+                source: '/salonblackandwhite/settings/timetable/employees',
+                destination: '/settings/timetable/employees',
+            },
+            {
+                source: '/salonblackandwhite/settings/timetable/templates',
+                destination: '/settings/timetable/templates',
+            },
+            {
+                source: '/salonblackandwhite/helps',
+                destination: '/helps/new',
+            },
+            {
+                source: '/salonblackandwhite/helps/new',
+                destination: '/helps/new',
+            },
 
             // Other modules
             {
@@ -179,6 +239,11 @@ const nextConfig = {
             {
                 source: '/signout',
                 destination: '/auth/login',
+                permanent: false,
+            },
+            {
+                source: '/settings/payment_configuration',
+                destination: '/settings/payment-configuration',
                 permanent: false,
             },
         ];

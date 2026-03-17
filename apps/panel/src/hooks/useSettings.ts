@@ -5,6 +5,7 @@ import type {
     BranchSettings,
     CalendarSettings,
     OnlineBookingSettings,
+    SmsSettings,
     UpdateBranchSettingsRequest,
     UpdateCalendarSettingsRequest,
     UpdateOnlineBookingSettingsRequest,
@@ -56,6 +57,17 @@ export function useOnlineBookingSettings() {
     });
 }
 
+export function useSmsSettings() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: [...SETTINGS_QUERY_KEY, 'sms'],
+        queryFn: async () => {
+            return apiFetch<SmsSettings>('/settings/sms');
+        },
+    });
+}
+
 export function useSettingsMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
@@ -94,9 +106,20 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const updateSmsSettings = useMutation({
+        mutationFn: async (data: Partial<SmsSettings>) => {
+            return apiFetch<SmsSettings>('/settings/sms', {
+                method: 'PUT',
+                body: JSON.stringify(data),
+            });
+        },
+        onSuccess: invalidateAll,
+    });
+
     return {
         updateBranchSettings,
         updateCalendarSettings,
         updateOnlineBookingSettings,
+        updateSmsSettings,
     };
 }

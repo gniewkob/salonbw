@@ -4,13 +4,16 @@ import { Repository } from 'typeorm';
 import { BranchSettings } from './entities/branch-settings.entity';
 import { CalendarSettings } from './entities/calendar-settings.entity';
 import { OnlineBookingSettings } from './entities/online-booking-settings.entity';
+import { SmsSettings } from './entities/sms-settings.entity';
 import {
     UpdateBranchSettingsDto,
     UpdateCalendarSettingsDto,
     UpdateOnlineBookingSettingsDto,
+    UpdateSmsSettingsDto,
 } from './dto/settings.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class SettingsService {
@@ -23,6 +26,8 @@ export class SettingsService {
         private readonly calendarSettingsRepo: Repository<CalendarSettings>,
         @InjectRepository(OnlineBookingSettings)
         private readonly onlineBookingSettingsRepo: Repository<OnlineBookingSettings>,
+        @InjectRepository(SmsSettings)
+        private readonly smsSettingsRepo: Repository<SmsSettings>,
         private readonly logService: LogService,
     ) {}
 
@@ -55,7 +60,7 @@ export class SettingsService {
         const updated = await this.branchSettingsRepo.save(settings);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as User,
             LogAction.SETTINGS_BRANCH_UPDATED,
             {
                 settingsId: settings.id,
@@ -94,7 +99,7 @@ export class SettingsService {
         const updated = await this.calendarSettingsRepo.save(settings);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as User,
             LogAction.SETTINGS_CALENDAR_UPDATED,
             {
                 settingsId: settings.id,
@@ -133,7 +138,7 @@ export class SettingsService {
         const updated = await this.onlineBookingSettingsRepo.save(settings);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as User,
             LogAction.SETTINGS_ONLINE_BOOKING_UPDATED,
             {
                 settingsId: settings.id,
@@ -145,20 +150,59 @@ export class SettingsService {
         return updated;
     }
 
+    async getSmsSettings(): Promise<SmsSettings> {
+        let settings = await this.smsSettingsRepo.findOne({
+            where: {},
+            order: { id: 'ASC' },
+        });
+
+        if (!settings) {
+            settings = this.smsSettingsRepo.create({});
+            await this.smsSettingsRepo.save(settings);
+            this.logger.log('Created default sms settings');
+        }
+
+        return settings;
+    }
+
+    async updateSmsSettings(
+        dto: UpdateSmsSettingsDto,
+        actorId: number,
+    ): Promise<SmsSettings> {
+        const settings = await this.getSmsSettings();
+        const oldValues = this.toRecord(settings);
+
+        Object.assign(settings, dto);
+        const updated = await this.smsSettingsRepo.save(settings);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_SMS_UPDATED,
+            {
+                settingsId: settings.id,
+                changes: this.getChanges(oldValues, this.toRecord(updated)),
+            },
+        );
+
+        this.logger.log(`Sms settings updated by user ${actorId}`);
+        return updated;
+    }
+
     // Get all settings at once
     async getAllSettings() {
-        const [branch, calendar, onlineBooking] = await Promise.all([
+        const [branch, calendar, onlineBooking, sms] = await Promise.all([
             this.getBranchSettings(),
             this.getCalendarSettings(),
             this.getOnlineBookingSettings(),
+            this.getSmsSettings(),
         ]);
 
-        return { branch, calendar, onlineBooking };
+        return { branch, calendar, onlineBooking, sms };
     }
 
     // Helper to convert entity to record
     private toRecord(entity: object): Record<string, unknown> {
-        return JSON.parse(JSON.stringify(entity));
+        return JSON.parse(JSON.stringify(entity)) as Record<string, unknown>;
     }
 
     // Helper to get changes for logging
