@@ -34,7 +34,7 @@ const SETTINGS_ITEMS: NavItem[] = [
     {
         id: 'settings-reminders',
         label: 'Komunikacja z klientem',
-        href: '/settings/reminders',
+        href: '/event-reminders',
     },
 ];
 

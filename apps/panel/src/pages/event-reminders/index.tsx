@@ -1,12 +1,5 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import EventRemindersPage from '@/components/settings/EventRemindersPage';
 
-export default function EventRemindersRedirect() {
-    const router = useRouter();
-
-    useEffect(() => {
-        void router.replace('/settings/reminders');
-    }, [router]);
-
-    return null;
+export default function EventRemindersIndexPage() {
+    return <EventRemindersPage />;
 }

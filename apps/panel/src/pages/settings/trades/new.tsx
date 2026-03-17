@@ -50,7 +50,13 @@ export default function SettingsTradesNewPage() {
                     </ul>
                 </div>
                 <div className="inner edit_branch_form">
-                    <form onSubmit={(e) => e.preventDefault()}>
+                    <div className="alert alert-info">
+                        Trasa została zachowana dla parity IA względem Versum,
+                        ale moduł branż nie ma jeszcze osobnego backendu w
+                        salonbw. Ten ekran jest sklasyfikowany jako invented, a
+                        zapis pozostaje poza zakresem aktualnego wdrożenia.
+                    </div>
+                    <form>
                         <h2>Dodaj branżę</h2>
                         <div className="form-group">
                             <label htmlFor="name" className="control-label">
@@ -67,11 +73,12 @@ export default function SettingsTradesNewPage() {
                         </div>
                         <div className="form-group">
                             <button
-                                type="submit"
+                                type="button"
                                 className="btn button-blue"
                                 disabled
+                                title="Backend branż nie jest jeszcze dostępny."
                             >
-                                Dodaj branżę
+                                Zapis niedostępny
                             </button>
                             <Link
                                 href="/settings"

@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useReminderSettings, useSettingsMutations } from '@/hooks/useSettings';
+import type { ReminderChannel, UpdateReminderSettingsRequest } from '@/types';
+
+type ReminderDraft = Required<UpdateReminderSettingsRequest> & {
+    preferredChannel: ReminderChannel;
+};
 
 const REMINDERS_NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -12,7 +19,7 @@ const REMINDERS_NAV = (
                     <span className="nav-section-label">PRZYPOMNIENIA</span>
                 </li>
                 <li>
-                    <Link href="/settings/reminders" className="active">
+                    <Link href="/event-reminders" className="active">
                         <div className="icon_box">
                             <span className="icon sprite-settings_notifications_nav" />
                         </div>
@@ -91,12 +98,50 @@ function channelLabel(channel: string): string {
 }
 
 export default function EventRemindersPage() {
+    const router = useRouter();
     useSetSecondaryNav(REMINDERS_NAV);
 
     const { data: settings, isLoading } = useReminderSettings();
     const { updateReminderSettings } = useSettingsMutations();
     const [howItWorksOpen, setHowItWorksOpen] = useState(false);
     const [toggling, setToggling] = useState(false);
+    const [draft, setDraft] = useState<ReminderDraft>({
+        active: true,
+        timingHours: 24,
+        preferredChannel: 'sms',
+        smsTemplate: '',
+        emailSubject: '',
+        emailTemplate: '',
+    });
+
+    const isEditing = router.query.edit === '1';
+
+    useEffect(() => {
+        if (!settings) return;
+        setDraft({
+            active: settings.active,
+            timingHours: settings.timingHours,
+            preferredChannel: settings.preferredChannel,
+            smsTemplate: settings.smsTemplate ?? '',
+            emailSubject: settings.emailSubject ?? '',
+            emailTemplate: settings.emailTemplate ?? '',
+        });
+    }, [settings]);
+
+    const openEdit = async () => {
+        await router.replace(
+            {
+                pathname: '/event-reminders',
+                query: { edit: '1' },
+            },
+            undefined,
+            { shallow: true },
+        );
+    };
+
+    const closeEdit = async () => {
+        await router.replace('/event-reminders', undefined, { shallow: true });
+    };
 
     const handleToggleActive = async () => {
         if (!settings || toggling) return;
@@ -108,6 +153,12 @@ export default function EventRemindersPage() {
         } finally {
             setToggling(false);
         }
+    };
+
+    const handleSave = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        await updateReminderSettings.mutateAsync(draft);
+        await closeEdit();
     };
 
     if (isLoading) {
@@ -136,11 +187,13 @@ export default function EventRemindersPage() {
         );
     }
 
+    const previewSettings = isEditing ? draft : settings;
     const smsPreview =
-        settings?.smsTemplate ??
+        previewSettings?.smsTemplate ||
         'Salon przypomina o wizycie jutro. W razie pytań prosimy o kontakt.';
 
-    const emailSubject = settings?.emailSubject ?? 'Przypomnienie o wizycie';
+    const emailSubject =
+        previewSettings?.emailSubject ?? 'Przypomnienie o wizycie';
 
     return (
         <div className="event-reminders-page">
@@ -173,9 +226,9 @@ export default function EventRemindersPage() {
                         </button>
                         <ul className="dropdown-menu pull-right">
                             <li>
-                                <Link href="/settings/sms">
+                                <span className="settings-detail-layout__nav-disabled">
                                     Szablony przypomnień
-                                </Link>
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -183,9 +236,7 @@ export default function EventRemindersPage() {
                         type="button"
                         className="btn button-blue pull-right"
                         style={{ marginRight: '8px' }}
-                        onClick={() => {
-                            /* edit modal placeholder */
-                        }}
+                        onClick={() => void openEdit()}
                     >
                         edytuj przypomnienie
                     </button>
@@ -224,13 +275,192 @@ export default function EventRemindersPage() {
                     </dl>
                 </div>
 
+                {isEditing && (
+                    <form
+                        className="well"
+                        onSubmit={(event) => void handleSave(event)}
+                    >
+                        <h3>Edytuj przypomnienie</h3>
+                        <div className="form-group">
+                            <label className="control-label">Status</label>
+                            <div>
+                                <label className="radio-inline">
+                                    <input
+                                        type="radio"
+                                        name="reminder-status"
+                                        checked={draft.active}
+                                        onChange={() =>
+                                            setDraft((current) => ({
+                                                ...current,
+                                                active: true,
+                                            }))
+                                        }
+                                    />{' '}
+                                    Aktywny
+                                </label>
+                                <label className="radio-inline">
+                                    <input
+                                        type="radio"
+                                        name="reminder-status"
+                                        checked={!draft.active}
+                                        onChange={() =>
+                                            setDraft((current) => ({
+                                                ...current,
+                                                active: false,
+                                            }))
+                                        }
+                                    />{' '}
+                                    Nieaktywny
+                                </label>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label
+                                htmlFor="timingHours"
+                                className="control-label"
+                            >
+                                Czas wysyłki
+                            </label>
+                            <select
+                                id="timingHours"
+                                className="form-control"
+                                value={draft.timingHours}
+                                onChange={(event) =>
+                                    setDraft((current) => ({
+                                        ...current,
+                                        timingHours: Number(event.target.value),
+                                    }))
+                                }
+                            >
+                                <option value={1}>
+                                    Jedną godzinę przed wizytą
+                                </option>
+                                <option value={2}>
+                                    Dwie godziny przed wizytą
+                                </option>
+                                <option value={24}>
+                                    Jeden dzień przed wizytą
+                                </option>
+                                <option value={48}>Dwa dni przed wizytą</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label
+                                htmlFor="preferredChannel"
+                                className="control-label"
+                            >
+                                Preferowany kanał
+                            </label>
+                            <select
+                                id="preferredChannel"
+                                className="form-control"
+                                value={draft.preferredChannel}
+                                onChange={(event) =>
+                                    setDraft((current) => ({
+                                        ...current,
+                                        preferredChannel: event.target
+                                            .value as typeof current.preferredChannel,
+                                    }))
+                                }
+                            >
+                                <option value="sms">
+                                    preferuj wiadomość SMS
+                                </option>
+                                <option value="email">preferuj e-mail</option>
+                                <option value="both">SMS i e-mail</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label
+                                htmlFor="smsTemplate"
+                                className="control-label"
+                            >
+                                Treść SMS
+                            </label>
+                            <textarea
+                                id="smsTemplate"
+                                className="form-control"
+                                rows={3}
+                                value={draft.smsTemplate}
+                                onChange={(event) =>
+                                    setDraft((current) => ({
+                                        ...current,
+                                        smsTemplate: event.target.value,
+                                    }))
+                                }
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label
+                                htmlFor="emailSubject"
+                                className="control-label"
+                            >
+                                Temat e-maila
+                            </label>
+                            <input
+                                id="emailSubject"
+                                type="text"
+                                className="form-control"
+                                value={draft.emailSubject}
+                                onChange={(event) =>
+                                    setDraft((current) => ({
+                                        ...current,
+                                        emailSubject: event.target.value,
+                                    }))
+                                }
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label
+                                htmlFor="emailTemplate"
+                                className="control-label"
+                            >
+                                Treść e-maila
+                            </label>
+                            <textarea
+                                id="emailTemplate"
+                                className="form-control"
+                                rows={6}
+                                value={draft.emailTemplate}
+                                onChange={(event) =>
+                                    setDraft((current) => ({
+                                        ...current,
+                                        emailTemplate: event.target.value,
+                                    }))
+                                }
+                            />
+                        </div>
+                        <div className="form-group">
+                            <button
+                                type="submit"
+                                className="btn button-blue"
+                                disabled={updateReminderSettings.isPending}
+                            >
+                                {updateReminderSettings.isPending
+                                    ? 'Zapisywanie...'
+                                    : 'zapisz ustawienia'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-default"
+                                style={{ marginLeft: '8px' }}
+                                onClick={() => void closeEdit()}
+                                disabled={updateReminderSettings.isPending}
+                            >
+                                anuluj
+                            </button>
+                        </div>
+                    </form>
+                )}
+
                 <h2>Podgląd wiadomości</h2>
 
                 <div className="reminder-preview-section">
                     <div className="reminder-preview-label">
                         <span className="icon sprite-sms_icon" />
                         SMS{' '}
-                        {(settings?.preferredChannel ?? 'sms') !== 'email' && (
+                        {(previewSettings?.preferredChannel ?? 'sms') !==
+                            'email' && (
                             <span className="tag tag-info reminder-preferred-tag">
                                 preferowany
                             </span>
@@ -243,7 +473,7 @@ export default function EventRemindersPage() {
                     <div className="reminder-preview-label">
                         <span className="icon sprite-email_icon" />
                         E-mail{' '}
-                        {settings?.preferredChannel === 'email' && (
+                        {previewSettings?.preferredChannel === 'email' && (
                             <span className="tag tag-info reminder-preferred-tag">
                                 preferowany
                             </span>
@@ -254,7 +484,9 @@ export default function EventRemindersPage() {
                             Temat: {emailSubject}
                         </div>
                         <div className="reminder-preview-email__body">
-                            {settings?.emailTemplate ?? (
+                            {previewSettings?.emailTemplate ? (
+                                previewSettings.emailTemplate
+                            ) : (
                                 <>
                                     <p>
                                         Przypominamy o wizycie zaplanowanej na

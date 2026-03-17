@@ -103,12 +103,68 @@ const nextConfig = {
                 destination: '/settings/customer_groups/new',
             },
             {
+                source: '/salonblackandwhite/event_reminders',
+                destination: '/event-reminders',
+            },
+            {
+                source: '/salonblackandwhite/event_reminders/edit',
+                destination: '/event-reminders?edit=1',
+            },
+            {
+                source: '/salonblackandwhite/settings/categories',
+                destination: '/settings/categories',
+            },
+            {
+                source: '/salonblackandwhite/settings/categories/new',
+                destination: '/settings/categories/new',
+            },
+            {
+                source: '/salonblackandwhite/settings/customer_origins',
+                destination: '/settings/customer-origins',
+            },
+            {
+                source: '/salonblackandwhite/settings/customer_panel/settings',
+                destination: '/settings/customer-panel',
+            },
+            {
+                source: '/salonblackandwhite/settings/data_protection',
+                destination: '/settings/data-protection',
+            },
+            {
                 source: '/salonblackandwhite/settings/employees',
                 destination: '/settings/employees',
             },
             {
+                source: '/salonblackandwhite/settings/employees/new',
+                destination: '/settings/employees/new',
+            },
+            {
                 source: '/salonblackandwhite/settings/employees/activity_logs',
-                destination: '/settings/employees/activity_logs',
+                destination: '/settings/employees/activity-logs',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/commissions',
+                destination: '/settings/employees/commissions',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/commissions/:id',
+                destination: '/settings/employees/commissions/:id',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/:id/edit',
+                destination: '/settings/employees/:id/edit',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/:id/events_history',
+                destination: '/settings/employees/:id/events-history',
+            },
+            {
+                source: '/salonblackandwhite/settings/employees/:id',
+                destination: '/settings/employees/:id',
+            },
+            {
+                source: '/salonblackandwhite/settings/extra_fields',
+                destination: '/settings/extra-fields',
             },
             {
                 source: '/salonblackandwhite/settings/payment_configuration',
@@ -123,8 +179,24 @@ const nextConfig = {
                 destination: '/settings/timetable/employees',
             },
             {
+                source: '/salonblackandwhite/settings/timetable/employees/copy',
+                destination: '/settings/timetable/employees/copy',
+            },
+            {
+                source: '/salonblackandwhite/settings/timetable/employees/:id',
+                destination: '/settings/timetable/employees/:id',
+            },
+            {
                 source: '/salonblackandwhite/settings/timetable/templates',
                 destination: '/settings/timetable/templates',
+            },
+            {
+                source: '/salonblackandwhite/settings/timetable/branch',
+                destination: '/settings/timetable/branch',
+            },
+            {
+                source: '/salonblackandwhite/settings/trades/new',
+                destination: '/settings/trades/new',
             },
             {
                 source: '/salonblackandwhite/helps',
@@ -244,6 +316,26 @@ const nextConfig = {
             {
                 source: '/settings/payment_configuration',
                 destination: '/settings/payment-configuration',
+                permanent: false,
+            },
+            {
+                source: '/settings/customer_origins',
+                destination: '/settings/customer-origins',
+                permanent: false,
+            },
+            {
+                source: '/settings/data_protection',
+                destination: '/settings/data-protection',
+                permanent: false,
+            },
+            {
+                source: '/settings/extra_fields',
+                destination: '/settings/extra-fields',
+                permanent: false,
+            },
+            {
+                source: '/settings/employees/activity_logs',
+                destination: '/settings/employees/activity-logs',
                 permanent: false,
             },
         ];

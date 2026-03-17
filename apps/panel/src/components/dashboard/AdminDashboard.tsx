@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                     <div className="versum-dashboard__section-header">
                         <h2>więcej aktywności</h2>
                         <Link
-                            href="/settings/employees/activity_logs"
+                            href="/settings/employees/activity-logs"
                             className="versum-link"
                         >
                             więcej

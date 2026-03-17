@@ -75,67 +75,88 @@ export default function SettingsTimetableEmployeesCopyPage() {
                     {loading ? (
                         <p>Ładowanie...</p>
                     ) : (
-                        <form onSubmit={(e) => e.preventDefault()}>
-                            <div className="form-group">
-                                <label
-                                    htmlFor="fromId"
-                                    className="control-label"
-                                >
-                                    Kopiuj od pracownika
-                                </label>
-                                <select
-                                    id="fromId"
-                                    className="form-control"
-                                    value={fromId}
-                                    onChange={(e) => setFromId(e.target.value)}
-                                >
-                                    <option value="">— wybierz —</option>
-                                    {employees.map((emp) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.name}
-                                        </option>
-                                    ))}
-                                </select>
+                        <>
+                            <div className="alert alert-info">
+                                Funkcja kopiowania grafiku została odtworzona
+                                jako ekran referencyjny z dumpa Versum, ale nie
+                                jest jeszcze aktywna backendowo w architekturze
+                                salonbw. Wybór pracowników jest zachowany dla
+                                parity UX, jednak zapis nie jest wykonywany.
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="toId" className="control-label">
-                                    Kopiuj do pracownika
-                                </label>
-                                <select
-                                    id="toId"
-                                    className="form-control"
-                                    value={toId}
-                                    onChange={(e) => setToId(e.target.value)}
-                                >
-                                    <option value="">— wybierz —</option>
-                                    {employees
-                                        .filter(
-                                            (emp) => String(emp.id) !== fromId,
-                                        )
-                                        .map((emp) => (
+                            <form>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="fromId"
+                                        className="control-label"
+                                    >
+                                        Kopiuj od pracownika
+                                    </label>
+                                    <select
+                                        id="fromId"
+                                        className="form-control"
+                                        value={fromId}
+                                        onChange={(e) =>
+                                            setFromId(e.target.value)
+                                        }
+                                    >
+                                        <option value="">— wybierz —</option>
+                                        {employees.map((emp) => (
                                             <option key={emp.id} value={emp.id}>
                                                 {emp.name}
                                             </option>
                                         ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <button
-                                    type="submit"
-                                    className="btn button-blue"
-                                    disabled={!fromId || !toId}
-                                >
-                                    Kopiuj grafik
-                                </button>
-                                <Link
-                                    href="/settings/timetable/employees"
-                                    className="btn btn-default"
-                                    style={{ marginLeft: 8 }}
-                                >
-                                    Anuluj
-                                </Link>
-                            </div>
-                        </form>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="toId"
+                                        className="control-label"
+                                    >
+                                        Kopiuj do pracownika
+                                    </label>
+                                    <select
+                                        id="toId"
+                                        className="form-control"
+                                        value={toId}
+                                        onChange={(e) =>
+                                            setToId(e.target.value)
+                                        }
+                                    >
+                                        <option value="">— wybierz —</option>
+                                        {employees
+                                            .filter(
+                                                (emp) =>
+                                                    String(emp.id) !== fromId,
+                                            )
+                                            .map((emp) => (
+                                                <option
+                                                    key={emp.id}
+                                                    value={emp.id}
+                                                >
+                                                    {emp.name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <button
+                                        type="button"
+                                        className="btn button-blue"
+                                        disabled
+                                        title="Kopiowanie grafiku nie jest jeszcze aktywne backendowo."
+                                    >
+                                        Kopiowanie backendowe w przygotowaniu
+                                    </button>
+                                    <Link
+                                        href="/settings/timetable/employees"
+                                        className="btn btn-default"
+                                        style={{ marginLeft: 8 }}
+                                    >
+                                        Anuluj
+                                    </Link>
+                                </div>
+                            </form>
+                        </>
                     )}
                 </div>
             </div>

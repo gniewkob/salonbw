@@ -42,8 +42,8 @@ export default function EmployeesNav() {
             </div>
             <div className="column_row tree">
                 <Link
-                    className={`root ${isActive('/settings/employees/activity_logs') ? 'active' : ''}`.trim()}
-                    href="/settings/employees/activity_logs"
+                    className={`root ${isActive('/settings/employees/activity-logs') ? 'active' : ''}`.trim()}
+                    href="/settings/employees/activity-logs"
                 >
                     <div className="icon_box">
                         <span className="icon sprite-register_activity" />
