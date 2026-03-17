@@ -52,7 +52,7 @@
       "area": "calendar",
       "count": 1,
       "priority": "P1",
-      "status": "missing",
+      "status": "exact",
       "target_route": "/calendar/views",
       "example_url": "https://panel.versum.com/salonblackandwhite/calendar/views",
       "representative_slug": "salonblackandwhite__calendar__views",
