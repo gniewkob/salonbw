@@ -88,7 +88,7 @@
 | Moduł Statystyki | 🟡 | 85% (functional YES, visual strict YES — data_table/stats-tabs/sprite icons, commit a633b427) |
 | Moduł Łączność | 🟡 | 80% (column_row data_table + odd/even + input-with-select-sm toolbar, commit 56ef1eb2) |
 | Moduł Ustawienia | 🟡 | 85% (functional parity YES na `/settings`, visual strict NO: 5.446%, commit 7e27aea0) |
-| Moduł Dodatki (Extension) | 🟡 | 85% (index visual parity YES, detail page /extension/tools/[id]: layout+header+price+status+desc+availability-table YES, screenshots deferred) |
+| Moduł Dodatki (Extension) | 🟡 | 85% (functional YES, visual strict NO — list 8.767%, detail 12.424%, threshold 3.0%; structural baseline ~4.5% from topbar/sidebar; detail blocked by gallery CDN URLs; commits 5af2de51, 106bc9d3) |
 | Infra: Next.js | ✅ | 15.5.10 na panel + landing (pnpm.overrides zaktualizowane) |
 
 **Całkowity postęp: ~65%** (wszystkie moduły mają secondary nav + breadcrumb; otwarte delty strict visual na: klienci/statystyki/magazyn/usługi)
