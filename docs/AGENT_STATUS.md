@@ -1,19 +1,16 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-12 (backlog closure and POS reversal suite deployed to production: statistics/retail batching, customer reviews mapping, calendar embed full-document runtime, retail reporting semantics, landing contact data, refund/void/correction flow, and backend reversal test coverage)_
+_Last updated: 2026-03-17 (P1+P2 Versum route parity: all 12 P1 missing routes + 20 P2 routes implemented — settings pages, employee dynamic pages, redirect stubs, communication pages, reminder settings backend)_
 
 ## Latest Production Rollout
 
-- Commit deployed: `fb8578cc`
+- Commit deployed: `b4e6665c`
 - Dashboard (`panel.salon-bw.pl`):
-  - deploy run `23001341385` (`success`, target `dashboard`, sha `fb8578cc`)
-  - includes customer reviews mapping, calendar embed cleanup, commissions range fix, warehouse history actions UI, and panel support for reversal flow
+  - deploy run `23215816796` (`success`, target `dashboard`, sha `b4e6665c`)
+  - includes P2 batch: 17 routes (settings simple pages, employee dynamic [id]/edit/events-history, commissions, timetable, redirect stubs, newsletters/new, messages)
 - API (`api.salon-bw.pl`):
-  - deploy run `23001488052` (`success`, target `api`, sha `fb8578cc`)
-  - includes statistics N+1 fixes, retail batching, retail revenue/product commission reporting by transaction date, and DB migration `1760105000000-AddWarehouseSaleReversalFlow.ts`
-- Public site (`dev.salon-bw.pl`):
-  - deploy run `23001578864` (`success`, target `public`, sha `fb8578cc`)
-  - includes public contact data update (`+48 723 588 868`, `kontakt@salon-bw.pl`)
+  - deploy run `23215633445` (`success`, target `api`, sha `b4e6665c`)
+  - includes GET `/employees/:id` endpoint + reminder settings entity/migration/endpoints
 
 ## Platform Architecture
 
@@ -32,9 +29,9 @@ The Salon Black & White platform consists of the following services:
 
 | Component | Commit | Workflow Run ID | Finished (UTC) | Environment | Notes |
 | --- | --- | --- | --- | --- | --- |
-| API (`api.salon-bw.pl`) | `fb8578cc` | `23001488052` | 2026-03-12 12:17 | production | Backlog closure: statistics batching, retail/reporting updates, POS reversal flow, migration `1760105000000` applied |
+| API (`api.salon-bw.pl`) | `b4e6665c` | `23215633445` | 2026-03-17 20:47 | production | P2 batch: GET /employees/:id, reminder settings entity+migration+endpoints |
 | Public site (`dev.salon-bw.pl`) | `fb8578cc` | `23001578864` | 2026-03-12 12:21 | production | Public contact data updated (`+48 723 588 868`, `kontakt@salon-bw.pl`) |
-| Dashboard (`panel.salon-bw.pl`) | `106bc9d3` | `23197829583` | 2026-03-17 14:00 | production | Extension card heights 200px, inter-row gap, heading margin (parity list 8.767%) |
+| Dashboard (`panel.salon-bw.pl`) | `b4e6665c` | `23215816796` | 2026-03-17 21:00 | production | P1+P2 all missing routes: settings pages, employee dynamic, reminders, communication |
 
 Verification:
 
