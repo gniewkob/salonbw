@@ -9,6 +9,7 @@ import {
     UpdateCalendarSettingsDto,
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
+    UpdateReminderSettingsDto,
 } from './dto/settings.dto';
 
 @Controller('settings')
@@ -87,5 +88,21 @@ export class SettingsController {
         @Request() req: { user: { id: number } },
     ) {
         return this.settingsService.updateSmsSettings(dto, req.user.id);
+    }
+
+    // Reminder Settings
+    @Get('reminders')
+    @Roles(Role.Admin)
+    async getReminderSettings() {
+        return this.settingsService.getReminderSettings();
+    }
+
+    @Put('reminders')
+    @Roles(Role.Admin)
+    async updateReminderSettings(
+        @Body() dto: UpdateReminderSettingsDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updateReminderSettings(dto, req.user.id);
     }
 }

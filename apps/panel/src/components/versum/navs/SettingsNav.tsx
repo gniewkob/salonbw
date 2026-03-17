@@ -31,6 +31,11 @@ const SETTINGS_ITEMS: NavItem[] = [
         label: 'Faktury i abonament',
         href: '/invoices',
     },
+    {
+        id: 'settings-reminders',
+        label: 'Komunikacja z klientem',
+        href: '/settings/reminders',
+    },
 ];
 
 export default function SettingsNav() {

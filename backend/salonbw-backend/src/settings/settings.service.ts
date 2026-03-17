@@ -5,11 +5,13 @@ import { BranchSettings } from './entities/branch-settings.entity';
 import { CalendarSettings } from './entities/calendar-settings.entity';
 import { OnlineBookingSettings } from './entities/online-booking-settings.entity';
 import { SmsSettings } from './entities/sms-settings.entity';
+import { ReminderSettings } from './entities/reminder-settings.entity';
 import {
     UpdateBranchSettingsDto,
     UpdateCalendarSettingsDto,
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
+    UpdateReminderSettingsDto,
 } from './dto/settings.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -28,6 +30,8 @@ export class SettingsService {
         private readonly onlineBookingSettingsRepo: Repository<OnlineBookingSettings>,
         @InjectRepository(SmsSettings)
         private readonly smsSettingsRepo: Repository<SmsSettings>,
+        @InjectRepository(ReminderSettings)
+        private readonly reminderSettingsRepo: Repository<ReminderSettings>,
         private readonly logService: LogService,
     ) {}
 
@@ -198,6 +202,43 @@ export class SettingsService {
         ]);
 
         return { branch, calendar, onlineBooking, sms };
+    }
+
+    // Reminder Settings
+    async getReminderSettings(): Promise<ReminderSettings> {
+        let settings = await this.reminderSettingsRepo.findOne({
+            where: { id: 1 },
+        });
+
+        if (!settings) {
+            settings = this.reminderSettingsRepo.create({});
+            await this.reminderSettingsRepo.save(settings);
+            this.logger.log('Created default reminder settings');
+        }
+
+        return settings;
+    }
+
+    async updateReminderSettings(
+        dto: UpdateReminderSettingsDto,
+        userId: number,
+    ): Promise<ReminderSettings> {
+        const settings = await this.getReminderSettings();
+        const oldValues = this.toRecord(settings);
+
+        Object.assign(settings, dto);
+        const updated = await this.reminderSettingsRepo.save(settings);
+
+        await this.logService.logAction(
+            { id: userId } as User,
+            LogAction.SETTINGS_REMINDERS_UPDATED,
+            {
+                settingsId: settings.id,
+                changes: this.getChanges(oldValues, this.toRecord(updated)),
+            },
+        );
+
+        return updated;
     }
 
     // Helper to convert entity to record

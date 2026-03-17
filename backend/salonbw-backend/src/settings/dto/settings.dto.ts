@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { CalendarView } from '../entities/calendar-settings.entity';
 import { SmsType } from '../entities/sms-settings.entity';
+import { ReminderChannel } from '../entities/reminder-settings.entity';
 
 // Branch Settings DTOs
 export class UpdateBranchSettingsDto {
@@ -458,6 +459,35 @@ export class UpdateOnlineBookingSettingsDto {
     @Min(0)
     @Max(24)
     widgetBorderRadius?: number;
+}
+
+// Reminder Settings DTO
+export class UpdateReminderSettingsDto {
+    @IsOptional()
+    @IsBoolean()
+    active?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    @Max(168)
+    timingHours?: number;
+
+    @IsOptional()
+    @IsEnum(ReminderChannel)
+    preferredChannel?: ReminderChannel;
+
+    @IsOptional()
+    @IsString()
+    smsTemplate?: string;
+
+    @IsOptional()
+    @IsString()
+    emailSubject?: string;
+
+    @IsOptional()
+    @IsString()
+    emailTemplate?: string;
 }
 
 // Combined settings response
