@@ -82,6 +82,24 @@ export class EmployeesController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
+    @Get(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get single employee by id' })
+    async getOne(@Param('id', ParseIntPipe) id: number) {
+        const user = await this.usersService.findById(id);
+        if (!user || user.role !== Role.Employee) {
+            return null;
+        }
+        return {
+            ...user,
+            fullName: user.name,
+            firstName: user.name.split(' ')[0] ?? '',
+            lastName: user.name.split(' ').slice(1).join(' ') ?? '',
+        };
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
     @Post()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create employee (placeholder email/password)' })

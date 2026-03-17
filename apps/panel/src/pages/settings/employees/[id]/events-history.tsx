@@ -1,0 +1,125 @@
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useEmployee } from '@/hooks/useEmployees';
+import { useActivityLogs } from '@/hooks/useActivityLogs';
+
+const NAV = (
+    <div className="sidenav secondarynav" id="sidenav">
+        <div className="column_row tree other_settings">
+            <h4>Pracownicy</h4>
+            <ul>
+                <li>
+                    <Link href="/settings/employees">
+                        <div className="icon_box">
+                            <span className="icon sprite-settings_employees_nav" />
+                        </div>
+                        Lista pracowników
+                    </Link>
+                </li>
+                <li>
+                    <Link href="/settings/employees/activity_logs">
+                        <div className="icon_box">
+                            <span className="icon sprite-settings_activity_log_nav" />
+                        </div>
+                        Dziennik aktywności
+                    </Link>
+                </li>
+            </ul>
+        </div>
+    </div>
+);
+
+export default function SettingsEmployeeEventsHistoryPage() {
+    const router = useRouter();
+    const id = router.query.id ? Number(router.query.id) : null;
+    useSetSecondaryNav(NAV);
+
+    const { data: employee } = useEmployee(id);
+    const { data: logs, isLoading } = useActivityLogs({
+        userId: id ?? undefined,
+        limit: 50,
+    });
+
+    return (
+        <div className="settings-detail-layout" data-testid="settings-detail">
+            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
+            <div className="settings-detail-layout__main">
+                <div className="breadcrumbs" e2e-breadcrumbs="">
+                    <ul>
+                        <li>
+                            <div className="icon sprite-breadcrumbs_settings" />
+                            <Link href="/settings">Ustawienia</Link>
+                        </li>
+                        <li>
+                            <span> / </span>
+                            <Link href="/settings/employees">Pracownicy</Link>
+                        </li>
+                        <li>
+                            <span> / </span>
+                            {employee?.name ?? '...'}
+                        </li>
+                        <li>
+                            <span> / </span>
+                            Historia wydarzeń
+                        </li>
+                    </ul>
+                </div>
+                <div className="inner edit_branch_form">
+                    <h2>Historia wydarzeń — {employee?.name ?? '...'}</h2>
+                    {isLoading ? (
+                        <p>Ładowanie...</p>
+                    ) : (
+                        <table className="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <div>Data</div>
+                                    </th>
+                                    <th>
+                                        <div>Akcja</div>
+                                    </th>
+                                    <th>
+                                        <div>Szczegóły</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {!logs?.items?.length ? (
+                                    <tr>
+                                        <td colSpan={3}>
+                                            Brak historii wydarzeń
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    logs.items.map((log, i) => (
+                                        <tr
+                                            key={log.id}
+                                            className={
+                                                i % 2 === 0 ? 'even' : 'odd'
+                                            }
+                                        >
+                                            <td>
+                                                {new Date(
+                                                    log.timestamp,
+                                                ).toLocaleString('pl-PL')}
+                                            </td>
+                                            <td>{log.actionLabel}</td>
+                                            <td>
+                                                {log.details
+                                                    ? JSON.stringify(
+                                                          log.details,
+                                                      )
+                                                    : '—'}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
