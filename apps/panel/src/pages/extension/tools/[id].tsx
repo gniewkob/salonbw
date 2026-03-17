@@ -207,6 +207,7 @@ function ExtensionToolContent() {
         <div className="versum-page" data-testid="extension-tool-page">
             <ul className="breadcrumb">
                 <li>
+                    <i className="icon sprite-star" aria-hidden="true" />
                     <Link href="/extension">Dodatki</Link>
                 </li>
                 <li>{tool?.title ?? resolvedId}</li>
