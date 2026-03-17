@@ -206,6 +206,29 @@ export interface SmsSettings {
     updatedAt?: string;
 }
 
+export type ReminderChannel = 'sms' | 'email' | 'both';
+
+export interface ReminderSettings {
+    id: number;
+    active: boolean;
+    timingHours: number;
+    preferredChannel: ReminderChannel;
+    smsTemplate: string | null;
+    emailSubject: string | null;
+    emailTemplate: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface UpdateReminderSettingsRequest {
+    active?: boolean;
+    timingHours?: number;
+    preferredChannel?: ReminderChannel;
+    smsTemplate?: string;
+    emailSubject?: string;
+    emailTemplate?: string;
+}
+
 export interface Product {
     id: number;
     name: string;

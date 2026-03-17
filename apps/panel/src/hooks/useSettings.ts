@@ -6,9 +6,11 @@ import type {
     CalendarSettings,
     OnlineBookingSettings,
     SmsSettings,
+    ReminderSettings,
     UpdateBranchSettingsRequest,
     UpdateCalendarSettingsRequest,
     UpdateOnlineBookingSettingsRequest,
+    UpdateReminderSettingsRequest,
 } from '@/types';
 
 export const SETTINGS_QUERY_KEY = ['api', '/settings'] as const;
@@ -68,6 +70,17 @@ export function useSmsSettings() {
     });
 }
 
+export function useReminderSettings() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: [...SETTINGS_QUERY_KEY, 'reminders'],
+        queryFn: async () => {
+            return apiFetch<ReminderSettings>('/settings/reminders');
+        },
+    });
+}
+
 export function useSettingsMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
@@ -116,10 +129,21 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const updateReminderSettings = useMutation({
+        mutationFn: async (data: UpdateReminderSettingsRequest) => {
+            return apiFetch<ReminderSettings>('/settings/reminders', {
+                method: 'PUT',
+                body: JSON.stringify(data),
+            });
+        },
+        onSuccess: invalidateAll,
+    });
+
     return {
         updateBranchSettings,
         updateCalendarSettings,
         updateOnlineBookingSettings,
         updateSmsSettings,
+        updateReminderSettings,
     };
 }
