@@ -34,7 +34,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `fb8578cc` | `23001488052` | 2026-03-12 12:17 | production | Backlog closure: statistics batching, retail/reporting updates, POS reversal flow, migration `1760105000000` applied |
 | Public site (`dev.salon-bw.pl`) | `fb8578cc` | `23001578864` | 2026-03-12 12:21 | production | Public contact data updated (`+48 723 588 868`, `kontakt@salon-bw.pl`) |
-| Dashboard (`panel.salon-bw.pl`) | `fb8578cc` | `23001341385` | 2026-03-12 12:15 | production | Reviews mapping, commissions range fix, warehouse reversal UI, calendar embed cleanup |
+| Dashboard (`panel.salon-bw.pl`) | `106bc9d3` | `23197829583` | 2026-03-17 14:00 | production | Extension card heights 200px, inter-row gap, heading margin (parity list 8.767%) |
 
 Verification:
 
