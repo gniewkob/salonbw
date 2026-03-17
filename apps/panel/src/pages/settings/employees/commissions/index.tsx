@@ -27,7 +27,7 @@ const NAV = (
                     </Link>
                 </li>
                 <li>
-                    <Link href="/settings/employees/activity_logs">
+                    <Link href="/settings/employees/activity-logs">
                         <div className="icon_box">
                             <span className="icon sprite-settings_activity_log_nav" />
                         </div>

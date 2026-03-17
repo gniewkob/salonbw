@@ -12,49 +12,49 @@ Primary comparison source:
 
 ## Status Legend
 
-- `exact`: route exists directly in `apps/panel/src/pages`
-- `aliased`: route appears covered under a renamed or split route
-- `missing`: route is visible in the dump but has no direct panel implementation yet
-- `invent`: no reliable extraction path; build from agreed assumptions
+- `exact`: route is implemented and the main visible flow works without dead primary actions
+- `aliased`: route is covered under a renamed canonical route or redirect
+- `invent`: route exists, but some visible behavior is reconstructed without full backend parity
+- `excluded`: route family is intentionally out of scope for this clone phase
 
 ## P1 Matrix
 
 | Versum Route | Target In `salonbw` | Status | Dump Inputs | Agent Instruction |
 |---|---|---|---|---|
-| `/calendar/views` | new route under panel | `missing` | screenshot + route bundle if available from dump path family | implement as missing calendar management view |
-| `/communication/:id` | likely `communication/:id` | `missing` | communication screenshots, route bundles, responses | create detail view for communication records |
-| `/services/new` | likely `services/new` | `missing` | services screenshots + HTML patterns from list/detail/new flows | build create form from existing service patterns |
-| `/settings/branch` | likely `settings/branch` | `missing` | settings screenshot + route bundle + responses | create branch settings view |
-| `/settings/calendar` | likely `settings/calendar` | `missing` | settings screenshot + route bundle + responses | create calendar settings view |
-| `/settings/customer_groups` | likely `settings/customer_groups` | `missing` | dump + existing customer group work in panel | connect existing logic into dedicated settings route |
-| `/settings/customer_groups/new` | likely modal or route | `missing` | dump + modal patterns | build create flow from dump and existing customer-group UI |
-| `/settings/employees/activity_logs` | likely `settings/employees/activity_logs` | `missing` | route bundle + responses | implement employee activity logs |
-| `/settings/payment_configuration` | likely `settings/payment_configuration` | `missing` | route bundle + responses | implement payment settings UI |
-| `/settings/sms` | likely `settings/sms` | `missing` | route bundle + existing sms components | expose SMS settings route |
-| `/settings/timetable/employees` | likely `settings/timetable/employees` | `missing` | route bundle + worktime/timetable assets | implement employee timetable management |
-| `/settings/timetable/templates` | likely `settings/timetable/templates` | `missing` | route bundle + timetable patterns | implement timetable templates |
-| `/helps/new` | likely help/contact entry inside panel | `missing` | route bundle + screenshot | implement support/help form |
+| `/calendar/views` | `/calendar/views` | `invent` | screenshot + route bundle + live UX check | route-driven modal clone works, but save flow is still reconstructed |
+| `/communication/:id` | `/communication/[id]` | `invent` | communication screenshots, route bundles, responses | detail route exists, but thread/id behavior is adapted to salonbw logs |
+| `/services/new` | `/services/new` | `invent` | services screenshots + HTML patterns from list/detail/new flows | create route works, but some service variants/uploads remain reconstructed |
+| `/settings/branch` | `/settings/branch` | `exact` | settings screenshot + route bundle + responses | branch settings route and legacy alias are covered |
+| `/settings/calendar` | `/settings/calendar` | `exact` | settings screenshot + route bundle + responses | calendar settings save through backend |
+| `/settings/customer_groups` | `/settings/customer_groups` | `exact` | dump + existing customer group work in panel | list/reorder route implemented |
+| `/settings/customer_groups/new` | `/settings/customer_groups/new` | `exact` | dump + modal patterns | create flow implemented |
+| `/settings/employees/activity_logs` | `/settings/employees/activity-logs` | `exact` | route bundle + responses | canonical kebab-case route + legacy underscore aliases covered |
+| `/settings/payment_configuration` | `/settings/payment-configuration` | `invent` | route bundle + responses | visible route exists, but activation flow is still reconstructed |
+| `/settings/sms` | `/settings/sms` | `exact` | route bundle + existing sms components | SMS settings save through backend |
+| `/settings/timetable/employees` | `/settings/timetable/employees` | `invent` | route bundle + worktime/timetable assets | weekly overview exists, but some detail behavior remains simplified |
+| `/settings/timetable/templates` | `/settings/timetable/templates` | `invent` | route bundle + timetable patterns | template CRUD is local only, without shared backend |
+| `/helps/new` | `/helps/new` | `exact` | route bundle + screenshot | support/help form implemented |
 
 ## P2 Matrix
 
 | Versum Route | Target In `salonbw` | Status | Dump Inputs | Agent Instruction |
 |---|---|---|---|---|
-| `/event_reminders` | likely reminders module | `missing` | route bundle + responses | implement reminder management if product scope requires it |
-| `/settings/categories` | likely dedicated settings categories route | `missing` | route bundle + modal/category dump | build from existing category modal logic |
-| `/settings/categories/new` | route or modal | `missing` | dump + category modal patterns | prefer modal if consistent with current architecture |
-| `/settings/customer_origins` | likely dedicated route | `missing` | route bundle + responses | implement customer origins config |
-| `/settings/customer_panel/settings` | likely dedicated route | `missing` | route bundle + screenshot | implement customer panel settings |
-| `/settings/data_protection` | likely dedicated route | `missing` | route bundle + responses | implement compliance/data protection settings |
-| `/settings/employees/:id` | route family | `missing` | employee route bundles | create employee profile screens |
-| `/settings/employees/:id/edit` | route family | `missing` | employee route bundles | create employee edit screens |
-| `/settings/employees/:id/events_history` | route family | `missing` | route bundle + responses | create employee event history view |
-| `/settings/employees/commissions` | route family | `missing` | dump + statistics/worktime/commission references | define proper commission settings surface |
-| `/settings/employees/new` | route family | `missing` | dump + employee form conventions | create new employee flow |
-| `/settings/extra_fields` | route | `missing` | route bundle + responses | implement custom fields settings |
-| `/settings/timetable/branch` | route | `missing` | timetable route bundle | implement branch timetable settings |
-| `/settings/timetable/employees/:id` | route family | `missing` | route bundle | implement per-employee timetable |
-| `/settings/timetable/employees/copy` | route | `missing` | route bundle | implement copy timetable utility |
-| `/settings/trades/new` | route | `missing` | route bundle | implement if still domain-relevant |
+| `/event_reminders` | `/event-reminders` | `exact` | route bundle + responses | canonical route restored; edit flow saves through reminder settings backend |
+| `/settings/categories` | `/settings/categories` | `invent` | route bundle + modal/category dump | list route exists, but list-level CRUD actions remain non-backend parity |
+| `/settings/categories/new` | `/settings/categories/new` | `exact` | dump + category modal patterns | new category form posts to backend |
+| `/settings/customer_origins` | `/settings/customer-origins` | `invent` | route bundle + responses | route kept for IA parity, with static non-backend management surface |
+| `/settings/customer_panel/settings` | `/settings/customer-panel` | `aliased` | route bundle + screenshot | covered by redirect to customer-panel/online-booking surface |
+| `/settings/data_protection` | `/settings/data-protection` | `invent` | route bundle + responses | route exists, but save flow is not persisted backend state |
+| `/settings/employees/:id` | `/settings/employees/[id]` | `exact` | employee route bundles | employee profile screens implemented |
+| `/settings/employees/:id/edit` | `/settings/employees/[id]/edit` | `exact` | employee route bundles | employee edit screens implemented |
+| `/settings/employees/:id/events_history` | `/settings/employees/[id]/events-history` | `exact` | route bundle + responses | event history implemented under canonical kebab-case |
+| `/settings/employees/commissions` | `/settings/employees/commissions` | `exact` | dump + statistics/worktime/commission references | commissions routes implemented |
+| `/settings/employees/new` | `/settings/employees/new` | `exact` | dump + employee form conventions | new employee form posts to backend |
+| `/settings/extra_fields` | `/settings/extra-fields` | `invent` | route bundle + responses | route kept for IA parity, but CRUD stays non-backend |
+| `/settings/timetable/branch` | `/settings/timetable/branch` | `invent` | timetable route bundle | branch timetable view exists, but edit action is not active backend parity |
+| `/settings/timetable/employees/:id` | `/settings/timetable/employees/[id]` | `exact` | route bundle | per-employee timetable implemented |
+| `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |
+| `/settings/trades/new` | `/settings/trades/new` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |
 
 ## P3 / Edge Matrix
 

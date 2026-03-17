@@ -1,13 +1,28 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-03-17 (P1+P2 Versum route parity: all 12 P1 missing routes + 20 P2 routes implemented — settings pages, employee dynamic pages, redirect stubs, communication pages, reminder settings backend)_
+_Last updated: 2026-03-17 (P1+P2 route coverage is implemented, but parity status is mixed: `exact`, `aliased`, and `invent` routes coexist; implemented does not equal DONE 1:1)_
+
+## Current Parity Classification
+
+- `exact`: main visible route flow works without dead primary actions
+- `aliased`: Versum route is intentionally covered by a renamed salonbw route
+- `invent`: route exists, but some behavior is reconstructed without full backend parity
+- `excluded`: remains outside the current clone scope
+
+Current audit state:
+
+- P1 routes are covered, but not all are `exact`
+- known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`, `/settings/payment_configuration`, `/settings/timetable/employees`, `/settings/timetable/templates`
+- P2 routes are covered as a mix of `exact`, `aliased`, and `invent`
+- explicit non-exact P2 examples: `/settings/categories`, `/settings/customer_origins`, `/settings/data_protection`, `/settings/extra_fields`, `/settings/timetable/branch`, `/settings/timetable/employees/copy`, `/settings/trades/new`
+- P3 families such as PDF export and social remain outside the current project scope
 
 ## Latest Production Rollout
 
 - Commit deployed: `b4e6665c`
 - Dashboard (`panel.salon-bw.pl`):
   - deploy run `23215816796` (`success`, target `dashboard`, sha `b4e6665c`)
-  - includes P2 batch: 17 routes (settings simple pages, employee dynamic [id]/edit/events-history, commissions, timetable, redirect stubs, newsletters/new, messages)
+  - includes broad P2 route coverage, but several settings routes remain classified as `invent` rather than exact parity
 - API (`api.salon-bw.pl`):
   - deploy run `23215633445` (`success`, target `api`, sha `b4e6665c`)
   - includes GET `/employees/:id` endpoint + reminder settings entity/migration/endpoints
@@ -31,7 +46,7 @@ The Salon Black & White platform consists of the following services:
 | --- | --- | --- | --- | --- | --- |
 | API (`api.salon-bw.pl`) | `b4e6665c` | `23215633445` | 2026-03-17 20:47 | production | P2 batch: GET /employees/:id, reminder settings entity+migration+endpoints |
 | Public site (`dev.salon-bw.pl`) | `fb8578cc` | `23001578864` | 2026-03-12 12:21 | production | Public contact data updated (`+48 723 588 868`, `kontakt@salon-bw.pl`) |
-| Dashboard (`panel.salon-bw.pl`) | `b4e6665c` | `23215816796` | 2026-03-17 21:00 | production | P1+P2 all missing routes: settings pages, employee dynamic, reminders, communication |
+| Dashboard (`panel.salon-bw.pl`) | `b4e6665c` | `23215816796` | 2026-03-17 21:00 | production | broad P1+P2 route coverage; parity status still mixes exact, invent, and aliased routes |
 
 Verification:
 
@@ -103,7 +118,7 @@ Verification:
   - production `/employees` check after login:
     - no client-side exception,
     - `body id` = `settings`,
-    - `#sidenav` rendered with active `/employees` item and `/settings/employees/activity_logs` link.
+    - `#sidenav` rendered with active `/employees` item and `/settings/employees/activity-logs` link.
 - Dashboard post-deploy verification (2026-02-21):
   - deploy run `22258658561` (`success`, target `dashboard`),
   - probe run `22258712384` (`success`, target `probe`),

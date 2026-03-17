@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 
 const ITEMS = [
     {
-        href: '/settings/extra_fields',
+        href: '/settings/extra-fields',
         label: 'Klienci',
         iconClass: 'sprite-settings_extra_fields',
     },
@@ -13,12 +13,12 @@ const ITEMS = [
         iconClass: 'sprite-settings_customer_groups',
     },
     {
-        href: '/settings/customer_origins',
+        href: '/settings/customer-origins',
         label: 'Pochodzenie klientów',
         iconClass: 'sprite-settings_customer_origins',
     },
     {
-        href: '/settings/data_protection',
+        href: '/settings/data-protection',
         label: 'Tryb ochrony danych',
         iconClass: 'sprite-settings_data_protection',
     },

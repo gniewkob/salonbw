@@ -111,3 +111,28 @@ Whenever an implementation includes invented behavior, the agent should state:
 - hidden save rules for payment configuration not visible in payloads
 - exact workflow of an advanced marketing tool not fully captured in the dump
 - social integration authorization flows not fully exposed by screenshots or responses
+
+## Explicit Current Route Inventory
+
+The following routes currently exist in the panel, but must still be treated as `invented` rather than exact Versum parity:
+
+- `/calendar/views`
+- `/communication/:id`
+- `/services/new`
+- `/settings/payment_configuration`
+- `/settings/categories`
+- `/settings/customer_origins`
+- `/settings/data_protection`
+- `/settings/extra_fields`
+- `/settings/timetable/branch`
+- `/settings/timetable/employees`
+- `/settings/timetable/templates`
+- `/settings/timetable/employees/copy`
+- `/settings/trades/new`
+
+These routes remain `invented` for at least one of these reasons:
+
+- backend contract does not exist yet
+- visible CTA is intentionally disabled to avoid fake parity
+- route is backed by local/session storage instead of shared persisted state
+- salonbw uses a different domain model than legacy Versum, so the flow is reconstructed rather than copied 1:1

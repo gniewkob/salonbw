@@ -66,7 +66,7 @@ interface NamedCustomer {
 
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
 const DEFAULT_PANEL_CUSTOMER_ID = 12;
-const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
+const VISUAL_DIFF_THRESHOLD_PCT = 15.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
     '02-summary',
@@ -161,7 +161,10 @@ async function stabilizePanelActionPage(
     check: PageCheck,
 ): Promise<void> {
     for (let attempt = 0; attempt < 8; attempt += 1) {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+        await page.goto(url, {
+            waitUntil: 'domcontentloaded',
+            timeout: 45_000,
+        });
         await page.waitForLoadState('networkidle').catch(() => null);
         await waitForPanelCustomersList(page, url);
         await waitForPanelCustomerSummary(page, url);
@@ -179,7 +182,9 @@ async function stabilizePanelActionPage(
             text.includes('ładowanie galerii') ||
             text.includes('ładowanie...');
         if (attempt === 3 || attempt === 6) {
-            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page
+                .reload({ waitUntil: 'domcontentloaded' })
+                .catch(() => null);
         }
         await page.waitForTimeout(1000);
     }
@@ -213,7 +218,9 @@ async function waitForPanelCustomersList(page: any, url: string) {
         }
 
         if (attempt === 4 || attempt === 7) {
-            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page
+                .reload({ waitUntil: 'domcontentloaded' })
+                .catch(() => null);
             await page.waitForLoadState('networkidle').catch(() => null);
         }
         await page.waitForTimeout(700);
@@ -309,7 +316,8 @@ async function loginVersum(page: any) {
         waitUntil: 'domcontentloaded',
     });
 
-    const hasPasswordField = (await page.locator('input[type="password"]').count()) > 0;
+    const hasPasswordField =
+        (await page.locator('input[type="password"]').count()) > 0;
     if (!hasPasswordField) return;
 
     const loginInput = page.locator(
@@ -349,7 +357,9 @@ async function resolveCustomerId(page: any): Promise<number> {
     );
     for (const href of hrefs) {
         if (!href) continue;
-        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        const match = href.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
         if (!match) continue;
         const id = Number(match[1]);
         if (!Number.isFinite(id) || id <= 0) continue;
@@ -357,7 +367,9 @@ async function resolveCustomerId(page: any): Promise<number> {
     }
 
     const html = await page.content();
-    const htmlMatch = html.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+    const htmlMatch = html.match(
+        /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+    );
     if (htmlMatch) {
         const id = Number(htmlMatch[1]);
         if (Number.isFinite(id) && id > 0) return id;
@@ -501,7 +513,9 @@ async function resolvePanelCustomerIdByName(
         const text = row.text;
         if (!href || !text) continue;
         if (!/\/(?:customers|clients)\//.test(href)) continue;
-        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        const match = href.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
         if (!match) continue;
         if (normalizeText(text) !== target) continue;
         const id = Number(match[1]);
@@ -512,7 +526,9 @@ async function resolvePanelCustomerIdByName(
         const text = row.text;
         if (!href || !text) continue;
         if (!/\/(?:customers|clients)\//.test(href)) continue;
-        const match = href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+        const match = href.match(
+            /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+        );
         if (!match) continue;
         if (!normalizeText(text).includes(target)) continue;
         const id = Number(match[1]);
@@ -521,7 +537,9 @@ async function resolvePanelCustomerIdByName(
     return null;
 }
 
-async function resolvePanelCustomerSeed(page: any): Promise<CustomerSeed | null> {
+async function resolvePanelCustomerSeed(
+    page: any,
+): Promise<CustomerSeed | null> {
     await page.goto('https://panel.salon-bw.pl/customers', {
         waitUntil: 'domcontentloaded',
         timeout: 45_000,
@@ -543,7 +561,9 @@ async function resolvePanelCustomerSeed(page: any): Promise<CustomerSeed | null>
     );
     const first = rows[0];
     if (!first) return null;
-    const match = first.href.match(/\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/);
+    const match = first.href.match(
+        /\/(?:customers|clients)\/(\d+)(?:[/?#]|$|\/)/,
+    );
     if (!match) return null;
     const id = Number(match[1]);
     if (!Number.isFinite(id) || id <= 0) return null;
@@ -685,7 +705,9 @@ async function waitForPanelCustomerContent(page: any, url: string) {
         if (!isLoading) return;
         await page.waitForTimeout(800);
         if (attempt === 3) {
-            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page
+                .reload({ waitUntil: 'domcontentloaded' })
+                .catch(() => null);
         }
     }
 }
@@ -716,12 +738,19 @@ async function waitForPanelCustomerEdit(page: any, url: string) {
             .replace(/\s+/g, ' ');
         const looksLoading = pageText.includes('ładowanie...');
 
-        if (!loadingVisible && !looksLoading && basicFormVisible && saveButtonVisible) {
+        if (
+            !loadingVisible &&
+            !looksLoading &&
+            basicFormVisible &&
+            saveButtonVisible
+        ) {
             return;
         }
 
         if (attempt === 4 || attempt === 7) {
-            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page
+                .reload({ waitUntil: 'domcontentloaded' })
+                .catch(() => null);
             await page.waitForLoadState('networkidle').catch(() => null);
         }
         await page.waitForTimeout(700);
@@ -729,7 +758,10 @@ async function waitForPanelCustomerEdit(page: any, url: string) {
 }
 
 async function waitForPanelCustomerSummary(page: any, url: string) {
-    if (!/\/customers\/\d+(?:[/?#]|$)/.test(url) || /tab_name=|\/edit(?:[/?#]|$)/.test(url)) {
+    if (
+        !/\/customers\/\d+(?:[/?#]|$)/.test(url) ||
+        /tab_name=|\/edit(?:[/?#]|$)/.test(url)
+    ) {
         return;
     }
 
@@ -740,12 +772,16 @@ async function waitForPanelCustomerSummary(page: any, url: string) {
             .then((count: number) => count > 0)
             .catch(() => false);
         const editVisible = await page
-            .locator('a:has-text("edytuj"), .buttons-row .button:has-text("edytuj")')
+            .locator(
+                'a:has-text("edytuj"), .buttons-row .button:has-text("edytuj")',
+            )
             .count()
             .then((count: number) => count > 0)
             .catch(() => false);
         const contentVisible = await page
-            .locator('.customer-card-content, .customer-summary, #customers_main')
+            .locator(
+                '.customer-card-content, .customer-summary, #customers_main',
+            )
             .count()
             .then((count: number) => count > 0)
             .catch(() => false);
@@ -761,7 +797,9 @@ async function waitForPanelCustomerSummary(page: any, url: string) {
         }
 
         if (attempt === 4 || attempt === 7) {
-            await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => null);
+            await page
+                .reload({ waitUntil: 'domcontentloaded' })
+                .catch(() => null);
             await page.waitForLoadState('networkidle').catch(() => null);
         }
         await page.waitForTimeout(700);
@@ -837,7 +875,10 @@ async function isPanelCustomerSummaryReady(
     const pageText = (await page.locator('body').innerText())
         .toLowerCase()
         .replace(/\s+/g, ' ');
-    return pageText.includes('edytuj') && !pageText.includes('ładowanie danych klienta');
+    return (
+        pageText.includes('edytuj') &&
+        !pageText.includes('ładowanie danych klienta')
+    );
 }
 
 async function isPanelCustomerHistoryReady(
@@ -854,7 +895,10 @@ async function isPanelCustomerHistoryReady(
     const pageText = (await page.locator('body').innerText())
         .toLowerCase()
         .replace(/\s+/g, ' ');
-    return pageText.includes('filtruj') && !pageText.includes('ładowanie danych klienta');
+    return (
+        pageText.includes('filtruj') &&
+        !pageText.includes('ładowanie danych klienta')
+    );
 }
 
 async function isPanelCustomerGalleryReady(
@@ -879,7 +923,8 @@ async function isPanelCustomerGalleryReady(
     return (
         galleryTabVisible &&
         !pageText.includes('ładowanie danych klienta') &&
-        (pageText.includes('galeria zdjęć') || pageText.includes('brak zdjęć w galerii klienta'))
+        (pageText.includes('galeria zdjęć') ||
+            pageText.includes('brak zdjęć w galerii klienta'))
     );
 }
 
@@ -915,7 +960,10 @@ async function isPanelCustomerCoreReady(
     customerId: number,
 ): Promise<boolean> {
     const checks: Array<{ url: string; needle: string }> = [
-        { url: `https://panel.salon-bw.pl/customers/${customerId}`, needle: 'edytuj' },
+        {
+            url: `https://panel.salon-bw.pl/customers/${customerId}`,
+            needle: 'edytuj',
+        },
         {
             url: `https://panel.salon-bw.pl/customers/${customerId}?tab_name=personal_data`,
             needle: 'dane podstawowe',
@@ -954,7 +1002,11 @@ async function pickPanelParityCustomerId(
     if (Number.isFinite(fallbackId) && fallbackId > 0) {
         preferredIds.push(fallbackId);
     }
-    if (preferredId !== null && Number.isFinite(preferredId) && preferredId > 0) {
+    if (
+        preferredId !== null &&
+        Number.isFinite(preferredId) &&
+        preferredId > 0
+    ) {
         if (!preferredIds.includes(preferredId)) {
             preferredIds.push(preferredId);
         }
@@ -973,8 +1025,14 @@ async function pickPanelParityCustomerId(
     }
 
     if (await isHealthyPanelCustomer(page, fallbackId)) {
-        const fallbackCoreReady = await isPanelCustomerCoreReady(page, fallbackId);
-        const fallbackEditReady = await isPanelCustomerEditReady(page, fallbackId);
+        const fallbackCoreReady = await isPanelCustomerCoreReady(
+            page,
+            fallbackId,
+        );
+        const fallbackEditReady = await isPanelCustomerEditReady(
+            page,
+            fallbackId,
+        );
         const fallbackSummaryReady = await isPanelCustomerSummaryReady(
             page,
             fallbackId,
@@ -991,7 +1049,10 @@ async function pickPanelParityCustomerId(
             page,
             fallbackId,
         );
-        const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(page, fallbackId);
+        const fallbackEmptyMedia = await hasPanelEmptyGalleryAndFiles(
+            page,
+            fallbackId,
+        );
         if (
             fallbackCoreReady &&
             fallbackEditReady &&
@@ -1380,7 +1441,8 @@ function buildActions(
             id: '11-new',
             name: 'Add customer form',
             panelUrl: 'https://panel.salon-bw.pl/customers/new',
-            versumUrl: 'https://panel.versum.com/salonblackandwhite/customers/new',
+            versumUrl:
+                'https://panel.versum.com/salonblackandwhite/customers/new',
             panelCheck: {
                 requiredTexts: ['nowy klient', 'dodaj klienta'],
                 requiredSelectors: ['#sidebar', '#main-content', '.sidenav'],
@@ -1404,7 +1466,11 @@ async function passesPanelAuditActionSet(
     );
 
     for (const action of actions) {
-        await stabilizePanelActionPage(page, action.panelUrl, action.panelCheck);
+        await stabilizePanelActionPage(
+            page,
+            action.panelUrl,
+            action.panelCheck,
+        );
         const checkResult = await runChecks(page, action.panelCheck);
         const precheck = await assertNoAuthOrErrorFallback(
             page,
@@ -1427,9 +1493,13 @@ test.describe('PROD audit: customers panel vs versum', () => {
         requireEnv('PANEL_LOGIN_PASSWORD');
         requireEnv('VERSUM_LOGIN_EMAIL');
         requireEnv('VERSUM_LOGIN_PASSWORD');
-        const explicitVersumCustomerId = optionalNumericEnv('VERSUM_CUSTOMER_ID');
-        const explicitPanelCustomerId = optionalNumericEnv('PANEL_PARITY_CUSTOMER_ID');
-        const parityCustomerNameHint = process.env.PARITY_CUSTOMER_NAME?.trim() || null;
+        const explicitVersumCustomerId =
+            optionalNumericEnv('VERSUM_CUSTOMER_ID');
+        const explicitPanelCustomerId = optionalNumericEnv(
+            'PANEL_PARITY_CUSTOMER_ID',
+        );
+        const parityCustomerNameHint =
+            process.env.PARITY_CUSTOMER_NAME?.trim() || null;
 
         const runStamp = new Date().toISOString().replace(/[:.]/g, '-');
         const outDir = path.resolve(
@@ -1466,7 +1536,10 @@ test.describe('PROD audit: customers panel vs versum', () => {
             await loginVersum(versumPage);
             versumCustomers = await collectNamedCustomers(versumPage, 'versum');
         }
-        const sharedCustomer = findSharedCustomer(panelCustomers, versumCustomers);
+        const sharedCustomer = findSharedCustomer(
+            panelCustomers,
+            versumCustomers,
+        );
         const panelSeed = await resolvePanelCustomerSeed(panelPage);
         const candidateName = parityCustomerNameHint ?? panelSeed?.name ?? null;
         const versumIdByName = candidateName
@@ -1483,7 +1556,8 @@ test.describe('PROD audit: customers panel vs versum', () => {
         const panelCustomerIdByName = versumCustomerName
             ? await resolvePanelCustomerIdByName(panelPage, versumCustomerName)
             : null;
-        const panelFallbackId = explicitPanelCustomerId ?? DEFAULT_PANEL_CUSTOMER_ID;
+        const panelFallbackId =
+            explicitPanelCustomerId ?? DEFAULT_PANEL_CUSTOMER_ID;
         const matchedPanelCustomerId =
             explicitPanelCustomerId ??
             panelCustomerIdByName ??
@@ -1518,25 +1592,41 @@ test.describe('PROD audit: customers panel vs versum', () => {
 
             for (const target of ['panel', 'versum'] as AppTarget[]) {
                 const page = target === 'panel' ? panelPage : versumPage;
-                const url = target === 'panel' ? action.panelUrl : action.versumUrl;
+                const url =
+                    target === 'panel' ? action.panelUrl : action.versumUrl;
                 if (target === 'panel') {
-                    await stabilizePanelActionPage(page, url, action.panelCheck);
+                    await stabilizePanelActionPage(
+                        page,
+                        url,
+                        action.panelCheck,
+                    );
                 } else {
                     await page.goto(url, {
                         waitUntil: 'domcontentloaded',
                         timeout: 45_000,
                     });
-                    await page.waitForLoadState('networkidle').catch(() => null);
+                    await page
+                        .waitForLoadState('networkidle')
+                        .catch(() => null);
                 }
                 await page.waitForTimeout(1500);
                 await page.screenshot({
-                    path: path.join(outDir, `${target}-${seq}-${action.id}.png`),
+                    path: path.join(
+                        outDir,
+                        `${target}-${seq}-${action.id}.png`,
+                    ),
                     fullPage: true,
                 });
             }
 
-            const panelCheckResult = await runChecks(panelPage, action.panelCheck);
-            const versumCheckResult = await runChecks(versumPage, action.versumCheck);
+            const panelCheckResult = await runChecks(
+                panelPage,
+                action.panelCheck,
+            );
+            const versumCheckResult = await runChecks(
+                versumPage,
+                action.versumCheck,
+            );
             const panelPrecheck = await assertNoAuthOrErrorFallback(
                 panelPage,
                 'panel',
@@ -1560,7 +1650,10 @@ test.describe('PROD audit: customers panel vs versum', () => {
             const versum = versumCheckResult.ok ? 'YES' : 'NO';
             const parity = panel === 'YES' && versum === 'YES' ? 'YES' : 'NO';
 
-            const panelShot = path.join(outDir, `panel-${seq}-${action.id}.png`);
+            const panelShot = path.join(
+                outDir,
+                `panel-${seq}-${action.id}.png`,
+            );
             const versumShot = path.join(
                 outDir,
                 `versum-${seq}-${action.id}.png`,

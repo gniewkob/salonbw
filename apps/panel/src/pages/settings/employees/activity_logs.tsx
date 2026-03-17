@@ -216,7 +216,7 @@ export default function EmployeeActivityLogsPage() {
                             <div className="rows" id="filter_rows">
                                 <Link
                                     className="close"
-                                    href="/settings/employees/activity_logs"
+                                    href="/settings/employees/activity-logs"
                                 >
                                     ×
                                 </Link>
