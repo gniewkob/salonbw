@@ -20,11 +20,15 @@ import {
 import { IsString, MinLength } from 'class-validator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 import { Role } from './role.enum';
 import { UsersService } from './users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment } from '../appointments/appointment.entity';
+import { LogService } from '../logs/log.service';
+import { LogAction } from '../logs/log-action.enum';
+import { User } from './user.entity';
 
 class CreateEmployeeDto {
     @IsString()
@@ -40,6 +44,7 @@ class CreateEmployeeDto {
 export class EmployeesController {
     constructor(
         private readonly usersService: UsersService,
+        private readonly logService: LogService,
         @InjectRepository(Appointment)
         private readonly appointments: Repository<Appointment>,
     ) {}
@@ -61,18 +66,44 @@ export class EmployeesController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin)
+    @Get('staff-options')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'List all staff users for filters' })
+    async staffOptions() {
+        const users = await this.usersService.findAll();
+        return users
+            .filter((user) => user.role !== Role.Client)
+            .map((user) => ({
+                id: user.id,
+                name: user.name,
+                role: user.role,
+            }));
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
     @Post()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create employee (placeholder email/password)' })
     @ApiResponse({ status: 201 })
-    async create(@Body() dto: CreateEmployeeDto) {
+    async create(@Body() dto: CreateEmployeeDto, @CurrentUser() actor?: User) {
         const name = `${dto.firstName} ${dto.lastName}`.trim();
         const email = this.genEmail(name, 'employee');
         const password = this.genPassword();
-        return this.usersService.createUserWithRole(
+        const created = await this.usersService.createUserWithRole(
             { email, password, name },
             Role.Employee,
         );
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.EMPLOYEE_CREATED,
+            {
+                employeeId: created.id,
+                employeeName: created.name,
+                role: created.role,
+            },
+        );
+        return created;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -83,9 +114,20 @@ export class EmployeesController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CreateEmployeeDto,
+        @CurrentUser() actor?: User,
     ) {
         const name = `${dto.firstName} ${dto.lastName}`.trim();
-        return this.usersService.updateName(id, name);
+        return this.usersService.updateName(id, name).then(async (updated) => {
+            await this.logService.logAction(
+                actor ?? null,
+                LogAction.EMPLOYEE_UPDATED,
+                {
+                    employeeId: id,
+                    employeeName: name,
+                },
+            );
+            return updated;
+        });
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -93,7 +135,11 @@ export class EmployeesController {
     @Delete(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete employee' })
-    async remove(@Param('id', ParseIntPipe) id: number) {
+    async remove(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() actor?: User,
+    ) {
+        const employee = await this.usersService.findById(id);
         const count = await this.appointments.count({
             where: [{ employee: { id } }],
         });
@@ -103,6 +149,14 @@ export class EmployeesController {
             );
         }
         await this.usersService.remove(id);
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.EMPLOYEE_DELETED,
+            {
+                employeeId: id,
+                employeeName: employee?.name ?? null,
+            },
+        );
         return { success: true };
     }
 

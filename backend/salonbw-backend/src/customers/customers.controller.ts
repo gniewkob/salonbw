@@ -45,6 +45,7 @@ import {
     CreateCustomerGroupDto,
     UpdateCustomerGroupDto,
     AddMembersDto,
+    SortCustomerGroupsDto,
 } from './dto/customer-group.dto';
 import {
     CreateCustomerNoteDto,
@@ -514,6 +515,13 @@ export class CustomerGroupsController {
     @ApiOperation({ summary: 'Delete customer group' })
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.deleteGroup(id);
+    }
+
+    @Post('sort')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Sort customer groups' })
+    sort(@Body() dto: SortCustomerGroupsDto) {
+        return this.customersService.sortGroups(dto);
     }
 
     @Post(':id/members')

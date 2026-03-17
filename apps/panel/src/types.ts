@@ -164,6 +164,46 @@ export interface Employee {
     lastName?: string;
     fullName?: string;
     color?: string;
+    role?: 'admin' | 'employee' | 'receptionist' | 'client';
+}
+
+export interface StaffOption {
+    id: number;
+    name: string;
+    role: 'admin' | 'employee' | 'receptionist' | 'client';
+}
+
+export interface ActivityLogFeedItem {
+    id: number;
+    timestamp: string;
+    employeeId: number | null;
+    employeeName: string;
+    ipAddress: string | null;
+    actionKey: string;
+    actionLabel: string;
+    categoryKey: string;
+    categoryLabel: string;
+    details: Record<string, unknown> | string | null;
+    expandable: boolean;
+}
+
+export interface ActivityLogFeedResponse {
+    items: ActivityLogFeedItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export type SmsType = 'standard' | 'premium';
+
+export interface SmsSettings {
+    id: number;
+    smsType: SmsType;
+    sendAbroad: boolean;
+    utf: boolean;
+    defaultPrefix: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Product {
@@ -243,6 +283,12 @@ export interface EmailLog {
     subject: string;
     status: string;
     sentAt: string;
+    createdAt?: string;
+    template?: string;
+    errorMessage?: string | null;
+    recipientId?: number | null;
+    recipientUser?: { id: number; name: string } | null;
+    sentBy?: { id: number; name: string } | null;
 }
 
 export interface Invoice {
@@ -294,6 +340,7 @@ export interface CalendarEvent {
 }
 
 export type CalendarView = 'day' | 'week' | 'month' | 'reception';
+export type CustomerNamingOrder = 'firstname' | 'lastname';
 
 export interface CalendarData {
     events: CalendarEvent[];
@@ -340,6 +387,8 @@ export interface CustomerGroup {
     name: string;
     description?: string;
     color?: string;
+    parentId?: number | null;
+    sortOrder?: number;
     members?: Customer[];
     memberCount?: number;
     createdAt: string;
@@ -967,6 +1016,13 @@ export interface SmsLog {
     recipientId?: number;
     recipientUser?: { id: number; name: string };
     appointmentId?: number;
+    appointment?: {
+        id: number;
+        startTime?: string;
+        client?: { id: number; name: string };
+        employee?: { id: number; name: string };
+        service?: { id: number; name: string };
+    };
     sentById?: number;
     sentBy?: { id: number; name: string };
     sentAt?: string;
@@ -1381,11 +1437,14 @@ export interface CalendarSettings {
     timeSlotDuration: number;
     defaultStartTime: string;
     defaultEndTime: string;
+    firstVisibleHour: string;
     showWeekends: boolean;
     weekStartsOn: number;
     showEmployeePhotos: boolean;
     showServiceColors: boolean;
     compactView: boolean;
+    daysWhileEditable: number;
+    customerNamingOrder: CustomerNamingOrder;
     allowOverlappingAppointments: boolean;
     minAppointmentDuration: number;
     maxAppointmentDuration: number;
@@ -1450,6 +1509,7 @@ export interface AllSettings {
     branch: BranchSettings;
     calendar: CalendarSettings;
     onlineBooking: OnlineBookingSettings;
+    sms: SmsSettings;
 }
 
 export interface UpdateBranchSettingsRequest {
@@ -1489,11 +1549,14 @@ export interface UpdateCalendarSettingsRequest {
     timeSlotDuration?: number;
     defaultStartTime?: string;
     defaultEndTime?: string;
+    firstVisibleHour?: string;
     showWeekends?: boolean;
     weekStartsOn?: number;
     showEmployeePhotos?: boolean;
     showServiceColors?: boolean;
     compactView?: boolean;
+    daysWhileEditable?: number;
+    customerNamingOrder?: CustomerNamingOrder;
     allowOverlappingAppointments?: boolean;
     minAppointmentDuration?: number;
     maxAppointmentDuration?: number;

@@ -12,17 +12,17 @@ const SETTINGS_ITEMS: NavItem[] = [
     {
         id: 'settings-company',
         label: 'Dane salonu',
-        href: '/admin/settings/company',
+        href: '/settings/branch',
     },
     {
         id: 'settings-calendar',
-        label: 'Godziny otwarcia',
-        href: '/admin/settings/calendar',
+        label: 'Kalendarz',
+        href: '/settings/calendar',
     },
     {
         id: 'settings-timetables',
         label: 'Grafiki pracy',
-        href: '/admin/timetables',
+        href: '/settings/timetable/employees',
     },
     { id: 'settings-employees', label: 'Pracownicy', href: '/employees' },
     { id: 'settings-reviews', label: 'Komentarze', href: '/reviews' },

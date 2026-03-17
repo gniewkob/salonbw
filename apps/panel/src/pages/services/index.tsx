@@ -1,15 +1,8 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import {
-    useServicesWithFilters,
-    useCreateService,
-    useServiceCategories,
-} from '@/hooks/useServicesAdmin';
+import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
-import ServiceFormModal, {
-    ServiceFormData,
-} from '@/components/services/ServiceFormModal';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role, Service, ServiceVariant } from '@/types';
@@ -36,7 +29,6 @@ export default function ServicesPage() {
 function ServicesPageContent({ role }: { role: Role }) {
     const router = useRouter();
     const [search, setSearch] = useState('');
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
     const categoryId = router.query.categoryId
@@ -49,12 +41,10 @@ function ServicesPageContent({ role }: { role: Role }) {
         includeVariants: true,
     });
 
-    const { data: categories = [] } = useServiceCategories();
     const { data: ranking = [] } = useServiceRanking({
         range: 'this_month',
         enabled: role === 'admin',
     });
-    const createService = useCreateService();
 
     const popularityByServiceId = useMemo(() => {
         const map = new Map<number, number>();
@@ -143,17 +133,6 @@ function ServicesPageContent({ role }: { role: Role }) {
         const start = (currentPage - 1) * itemsPerPage;
         return filtered.slice(start, start + itemsPerPage);
     }, [filtered, currentPage, itemsPerPage]);
-
-    const handleCreateService = async (data: ServiceFormData) => {
-        try {
-            await createService.mutateAsync({
-                ...data,
-            });
-            setIsCreateModalOpen(false);
-        } catch (error) {
-            console.error('Failed to create service:', error);
-        }
-    };
 
     const toggleSelectAll = () => {
         if (selectedIds.length === paginatedServices.length) {
@@ -246,13 +225,9 @@ function ServicesPageContent({ role }: { role: Role }) {
                     />
                 </div>
                 <div className="col-sm-6 text-right mt-xs">
-                    <button
-                        type="button"
-                        className="button button-blue"
-                        onClick={() => setIsCreateModalOpen(true)}
-                    >
+                    <Link href="/services/new" className="button button-blue">
                         dodaj usługę
-                    </button>
+                    </Link>
                 </div>
             </div>
 
@@ -433,14 +408,6 @@ function ServicesPageContent({ role }: { role: Role }) {
                     </div>
                 </>
             )}
-
-            <ServiceFormModal
-                isOpen={isCreateModalOpen}
-                service={null}
-                categories={categories}
-                onClose={() => setIsCreateModalOpen(false)}
-                onSave={handleCreateService}
-            />
         </div>
     );
 }

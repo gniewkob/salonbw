@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    ParseIntPipe,
+    Post,
+    Query,
+    UseGuards,
+} from '@nestjs/common';
 import { EmailsService } from './emails.service';
 import { SendEmailDto } from './dto/send-email.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -98,5 +107,15 @@ export class EmailsController {
             .getManyAndCount();
 
         return { items, total, page, limit };
+    }
+
+    @Get('history/:id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    async historyItem(@Param('id', ParseIntPipe) id: number) {
+        return this.emailLogs.findOneOrFail({
+            where: { id },
+            relations: ['recipientUser', 'sentBy'],
+        });
     }
 }

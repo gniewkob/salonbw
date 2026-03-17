@@ -152,13 +152,13 @@ export default function VersumTopbar() {
                         <ul className="dropdown-menu larger-dropdown-menu nav-help">
                             <li className="divider"></li>
                             <li className="main-menu-li">
-                                <a href="/helps/new">
+                                <Link href="/helps/new">
                                     <VersumIcon
                                         id="svg-message"
                                         className="svg-message"
                                     />
                                     <span>Formularz kontaktowy</span>
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </li>

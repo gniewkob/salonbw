@@ -10,6 +10,7 @@ export enum CalendarView {
     Day = 'day',
     Week = 'week',
     Month = 'month',
+    Reception = 'reception',
 }
 
 export enum TimeSlotDuration {
@@ -46,6 +47,13 @@ export class CalendarSettings {
     @Column({ name: 'default_end_time', type: 'time', default: '20:00:00' })
     defaultEndTime: string;
 
+    @Column({
+        name: 'first_visible_hour',
+        type: 'time',
+        default: '09:00:00',
+    })
+    firstVisibleHour: string;
+
     // Display settings
     @Column({ name: 'show_weekends', default: false })
     showWeekends: boolean;
@@ -61,6 +69,17 @@ export class CalendarSettings {
 
     @Column({ name: 'compact_view', default: false })
     compactView: boolean;
+
+    @Column({ name: 'days_while_editable', type: 'int', default: 1 })
+    daysWhileEditable: number;
+
+    @Column({
+        name: 'customer_naming_order',
+        type: 'varchar',
+        length: 20,
+        default: 'lastname',
+    })
+    customerNamingOrder: string;
 
     // Appointment settings
     @Column({ name: 'allow_overlapping_appointments', default: false })

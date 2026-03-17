@@ -8,6 +8,7 @@ import {
     UpdateBranchSettingsDto,
     UpdateCalendarSettingsDto,
     UpdateOnlineBookingSettingsDto,
+    UpdateSmsSettingsDto,
 } from './dto/settings.dto';
 
 @Controller('settings')
@@ -71,5 +72,20 @@ export class SettingsController {
             dto,
             req.user.id,
         );
+    }
+
+    @Get('sms')
+    @Roles(Role.Admin)
+    async getSmsSettings() {
+        return this.settingsService.getSmsSettings();
+    }
+
+    @Put('sms')
+    @Roles(Role.Admin)
+    async updateSmsSettings(
+        @Body() dto: UpdateSmsSettingsDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updateSmsSettings(dto, req.user.id);
     }
 }

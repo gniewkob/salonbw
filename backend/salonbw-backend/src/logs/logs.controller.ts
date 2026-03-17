@@ -27,6 +27,7 @@ import { Role } from '../users/role.enum';
 import { LogService } from './log.service';
 import { GetLogsDto } from './dto/get-logs.dto';
 import { ClientLogDto } from './dto/client-log.dto';
+import { GetActivityFeedDto } from './dto/get-activity-feed.dto';
 
 @ApiTags('logs')
 @Controller('logs')
@@ -47,6 +48,26 @@ export class LogsController {
         return this.logService.findAll({
             userId: dto.userId,
             action: dto.action,
+            from: dto.from ? new Date(dto.from) : undefined,
+            to: dto.to ? new Date(dto.to) : undefined,
+            page: dto.page,
+            limit: dto.limit,
+        });
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Get('activity-feed')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get employee activity feed for settings page' })
+    @ApiResponse({ status: 200, description: 'Normalized activity feed' })
+    getActivityFeed(
+        @Query(new ValidationPipe({ transform: true })) dto: GetActivityFeedDto,
+    ) {
+        return this.logService.findActivityFeed({
+            userId: dto.userId,
+            activity: dto.activity,
+            category: dto.category,
             from: dto.from ? new Date(dto.from) : undefined,
             to: dto.to ? new Date(dto.to) : undefined,
             page: dto.page,

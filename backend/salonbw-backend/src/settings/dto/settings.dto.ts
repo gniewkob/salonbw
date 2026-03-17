@@ -13,6 +13,7 @@ import {
     IsArray,
 } from 'class-validator';
 import { CalendarView } from '../entities/calendar-settings.entity';
+import { SmsType } from '../entities/sms-settings.entity';
 
 // Branch Settings DTOs
 export class UpdateBranchSettingsDto {
@@ -178,6 +179,11 @@ export class UpdateCalendarSettingsDto {
     defaultEndTime?: string;
 
     @IsOptional()
+    @IsString()
+    @Matches(/^\d{2}:\d{2}(:\d{2})?$/)
+    firstVisibleHour?: string;
+
+    @IsOptional()
     @IsBoolean()
     showWeekends?: boolean;
 
@@ -198,6 +204,15 @@ export class UpdateCalendarSettingsDto {
     @IsOptional()
     @IsBoolean()
     compactView?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    daysWhileEditable?: number;
+
+    @IsOptional()
+    @IsString()
+    customerNamingOrder?: string;
 
     @IsOptional()
     @IsBoolean()
@@ -281,6 +296,25 @@ export class UpdateCalendarSettingsDto {
 
     @IsOptional()
     statusColors?: Record<string, string>;
+}
+
+export class UpdateSmsSettingsDto {
+    @IsOptional()
+    @IsEnum(SmsType)
+    smsType?: SmsType;
+
+    @IsOptional()
+    @IsBoolean()
+    sendAbroad?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    utf?: boolean;
+
+    @IsOptional()
+    @IsString()
+    @Length(1, 64)
+    defaultPrefix?: string;
 }
 
 // Online Booking Settings DTOs

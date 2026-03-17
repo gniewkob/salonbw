@@ -30,14 +30,7 @@ export default function EmployeesPage() {
     const [rows, setRows] = useState<Employee[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
-    const secondaryNav = useMemo(
-        () => (
-            <div className="sidenav secondarynav" id="sidenav">
-                <EmployeesNav />
-            </div>
-        ),
-        [],
-    );
+    const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
         if (data && rows.length === 0) {

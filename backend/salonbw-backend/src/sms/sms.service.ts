@@ -386,6 +386,29 @@ export class SmsService {
         return { items, total, page, limit };
     }
 
+    async getHistoryItem(id: number): Promise<SmsLog> {
+        const item = await this.smsLogRepository.findOne({
+            where: { id },
+            relations: [
+                'recipientUser',
+                'template',
+                'sentBy',
+                'appointment',
+                'appointment.client',
+                'appointment.employee',
+                'appointment.service',
+            ],
+        });
+
+        if (!item) {
+            throw new NotFoundException(
+                `Wpis historii SMS o ID ${id} nie został znaleziony`,
+            );
+        }
+
+        return item;
+    }
+
     async getStats(
         from: Date,
         to: Date,

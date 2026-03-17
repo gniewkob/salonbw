@@ -9,7 +9,8 @@ export type VersumModuleKey =
     | 'communication'
     | 'services'
     | 'settings'
-    | 'extension';
+    | 'extension'
+    | 'helps';
 
 export interface VersumModule {
     key: VersumModuleKey;
@@ -96,6 +97,15 @@ export const VERSUM_MODULES: VersumModule[] = [
     },
 ];
 
+const HELPS_MODULE: VersumModule = {
+    key: 'helps',
+    href: '/helps/new',
+    label: 'pomoc',
+    iconId: 'svg-help',
+    permission: 'nav:settings',
+    secondaryNav: false,
+};
+
 export function resolveVersumModule(pathname: string): VersumModule {
     // Normalize path
     const path = pathname.toLowerCase();
@@ -165,6 +175,10 @@ export function resolveVersumModule(pathname: string): VersumModule {
         path.startsWith('/admin/gift-cards')
     ) {
         return VERSUM_MODULES[7];
+    }
+
+    if (path.startsWith('/helps')) {
+        return HELPS_MODULE;
     }
 
     return VERSUM_MODULES[0];
