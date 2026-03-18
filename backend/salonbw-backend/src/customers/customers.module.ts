@@ -8,6 +8,7 @@ import { CustomerGalleryImage } from './entities/customer-gallery-image.entity';
 import { CustomerNote } from './entities/customer-note.entity';
 import { CustomerTag } from './entities/customer-tag.entity';
 import { CustomerOrigin } from './entities/customer-origin.entity';
+import { CustomerExtraField } from './entities/customer-extra-field.entity';
 import { CustomersService } from './customers.service';
 import { CustomerStatisticsService } from './customer-statistics.service';
 import { CustomerMediaService } from './customer-media.service';
@@ -16,6 +17,7 @@ import {
     CustomerGroupsController,
     CustomerTagsController,
     CustomerOriginsController,
+    CustomerExtraFieldsController,
 } from './customers.controller';
 
 @Module({
@@ -29,6 +31,7 @@ import {
             CustomerNote,
             CustomerTag,
             CustomerOrigin,
+            CustomerExtraField,
         ]),
     ],
     controllers: [
@@ -36,6 +39,7 @@ import {
         CustomerGroupsController,
         CustomerTagsController,
         CustomerOriginsController,
+        CustomerExtraFieldsController,
     ],
     providers: [
         CustomersService,

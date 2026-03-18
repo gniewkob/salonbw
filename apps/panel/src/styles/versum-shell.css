@@ -6008,3 +6008,22 @@ body.e2e-extension .main-content .inner.extension_info {
 .input-group--narrow {
     width: 175px;
 }
+
+.extra-fields-description {
+    overflow: hidden;
+}
+
+.extra-fields-add-panel {
+    margin-top: 16px;
+}
+
+.extra-fields-add-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.extra-fields-table {
+    margin-top: 16px;
+}

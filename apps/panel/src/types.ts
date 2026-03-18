@@ -443,6 +443,18 @@ export interface CustomerOrigin {
     updatedAt: string;
 }
 
+export type ExtraFieldType = 'text' | 'number' | 'date' | 'checkbox' | 'select';
+
+export interface CustomerExtraField {
+    id: number;
+    label: string;
+    type: ExtraFieldType;
+    required: boolean;
+    sortOrder: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface CustomerStatistics {
     totalVisits: number;
     completedVisits: number;

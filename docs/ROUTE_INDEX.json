@@ -636,7 +636,7 @@
       "area": "settings",
       "count": 1,
       "priority": "P2",
-      "status": "invent",
+      "status": "exact",
       "target_route": "/settings/extra-fields",
       "example_url": "https://panel.versum.com/salonblackandwhite/settings/extra_fields",
       "representative_slug": "salonblackandwhite__settings__extra_fields",

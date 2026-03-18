@@ -38,6 +38,11 @@ import {
     UpdateCustomerOriginDto,
 } from './dto/customer-origin.dto';
 import { CustomerOrigin } from './entities/customer-origin.entity';
+import {
+    CreateExtraFieldDto,
+    UpdateExtraFieldDto,
+} from './dto/customer-extra-field.dto';
+import { CustomerExtraField } from './entities/customer-extra-field.entity';
 
 @Injectable()
 export class CustomersService {
@@ -54,6 +59,8 @@ export class CustomersService {
         private readonly tagsRepo: Repository<CustomerTag>,
         @InjectRepository(CustomerOrigin)
         private readonly originsRepo: Repository<CustomerOrigin>,
+        @InjectRepository(CustomerExtraField)
+        private readonly extraFieldsRepo: Repository<CustomerExtraField>,
     ) {}
 
     // ==================== CUSTOMERS ====================
@@ -650,6 +657,34 @@ export class CustomersService {
         if (!origin) throw new NotFoundException(`Origin ${id} not found`);
         if (origin.isSystem) throw new BadRequestException('Cannot delete system origins');
         await this.originsRepo.delete(id);
+    }
+
+    // ==================== EXTRA FIELDS ====================
+
+    async findAllExtraFields(): Promise<CustomerExtraField[]> {
+        return this.extraFieldsRepo.find({ order: { sortOrder: 'ASC', label: 'ASC' } });
+    }
+
+    async createExtraField(dto: CreateExtraFieldDto): Promise<CustomerExtraField> {
+        const field = this.extraFieldsRepo.create({
+            label: dto.label,
+            type: dto.type,
+            required: dto.required ?? false,
+        });
+        return this.extraFieldsRepo.save(field);
+    }
+
+    async updateExtraField(id: number, dto: UpdateExtraFieldDto): Promise<CustomerExtraField> {
+        const field = await this.extraFieldsRepo.findOne({ where: { id } });
+        if (!field) throw new NotFoundException(`Extra field ${id} not found`);
+        Object.assign(field, dto);
+        return this.extraFieldsRepo.save(field);
+    }
+
+    async deleteExtraField(id: number): Promise<void> {
+        const field = await this.extraFieldsRepo.findOne({ where: { id } });
+        if (!field) throw new NotFoundException(`Extra field ${id} not found`);
+        await this.extraFieldsRepo.delete(id);
     }
 
     // ==================== HELPERS ====================

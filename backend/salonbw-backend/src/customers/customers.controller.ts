@@ -60,6 +60,10 @@ import {
     CreateCustomerOriginDto,
     UpdateCustomerOriginDto,
 } from './dto/customer-origin.dto';
+import {
+    CreateExtraFieldDto,
+    UpdateExtraFieldDto,
+} from './dto/customer-extra-field.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -625,5 +629,44 @@ export class CustomerOriginsController {
     @ApiOperation({ summary: 'Delete customer origin' })
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.deleteOrigin(id);
+    }
+}
+
+@ApiTags('customer-extra-fields')
+@Controller('customer-extra-fields')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiBearerAuth()
+export class CustomerExtraFieldsController {
+    constructor(private readonly customersService: CustomersService) {}
+
+    @Get()
+    @Roles(Role.Admin, Role.Receptionist)
+    @ApiOperation({ summary: 'List all customer extra fields' })
+    findAll() {
+        return this.customersService.findAllExtraFields();
+    }
+
+    @Post()
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Create customer extra field' })
+    create(@Body() dto: CreateExtraFieldDto) {
+        return this.customersService.createExtraField(dto);
+    }
+
+    @Patch(':id')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Update customer extra field' })
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateExtraFieldDto,
+    ) {
+        return this.customersService.updateExtraField(id, dto);
+    }
+
+    @Delete(':id')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Delete customer extra field' })
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.customersService.deleteExtraField(id);
     }
 }
