@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useReminderSettings, useSettingsMutations } from '@/hooks/useSettings';
+import PanelSection from '@/components/ui/PanelSection';
 import type { ReminderChannel, UpdateReminderSettingsRequest } from '@/types';
 
 type ReminderDraft = Required<UpdateReminderSettingsRequest> & {
@@ -214,7 +215,7 @@ export default function EventRemindersPage() {
                 </ul>
             </div>
 
-            <div className="inner edit_branch_form">
+            <PanelSection>
                 <div className="actions">
                     <div className="btn-group pull-right">
                         <button
@@ -538,7 +539,7 @@ export default function EventRemindersPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </PanelSection>
         </div>
     );
 }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployees } from '@/hooks/useEmployees';
+import PanelSection from '@/components/ui/PanelSection';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -70,8 +71,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <h2>Kopiuj grafik pracownika</h2>
+                <PanelSection title="Kopiuj grafik pracownika">
                     {loading ? (
                         <p>Ładowanie...</p>
                     ) : (
@@ -158,7 +158,7 @@ export default function SettingsTimetableEmployeesCopyPage() {
                             </form>
                         </>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 import {
     useCustomerOrigins,
     useCreateCustomerOrigin,
@@ -68,8 +70,8 @@ export default function SettingsCustomerOriginsPage() {
                     </ul>
                 </div>
 
-                <div className="inner edit_branch_form">
-                    <div className="actions">
+                <PanelSection
+                    action={
                         <button
                             type="button"
                             className="btn button-blue pull-right"
@@ -77,8 +79,8 @@ export default function SettingsCustomerOriginsPage() {
                         >
                             + Dodaj nowe źródło
                         </button>
-                    </div>
-
+                    }
+                >
                     {isAdding && (
                         <div className="form-group">
                             <label className="control-label">
@@ -145,163 +147,141 @@ export default function SettingsCustomerOriginsPage() {
                                         źródeł pochodzenia klienta.
                                     </h3>
                                 ) : (
-                                    <table className="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <div>Nazwa</div>
-                                                </th>
-                                                <th aria-label="Akcje" />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {customOrigins.map((origin, i) => (
-                                                <tr
-                                                    key={origin.id}
-                                                    className={
-                                                        i % 2 === 0
-                                                            ? 'even'
-                                                            : 'odd'
-                                                    }
-                                                >
-                                                    <td>
-                                                        {editingId ===
-                                                        origin.id ? (
-                                                            <input
-                                                                type="text"
-                                                                className="form-control input-sm"
-                                                                value={
-                                                                    editingName
+                                    <PanelTable
+                                        columns={[
+                                            { label: 'Nazwa' },
+                                            { ariaLabel: 'Akcje' },
+                                        ]}
+                                    >
+                                        {customOrigins.map((origin, i) => (
+                                            <tr
+                                                key={origin.id}
+                                                className={
+                                                    i % 2 === 0 ? 'even' : 'odd'
+                                                }
+                                            >
+                                                <td>
+                                                    {editingId === origin.id ? (
+                                                        <input
+                                                            type="text"
+                                                            className="form-control input-sm"
+                                                            value={editingName}
+                                                            title="Edytuj nazwę źródła"
+                                                            onChange={(e) =>
+                                                                setEditingName(
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            onKeyDown={(e) => {
+                                                                if (
+                                                                    e.key ===
+                                                                    'Enter'
+                                                                )
+                                                                    handleEditSave(
+                                                                        origin.id,
+                                                                    );
+                                                                if (
+                                                                    e.key ===
+                                                                    'Escape'
+                                                                )
+                                                                    setEditingId(
+                                                                        null,
+                                                                    );
+                                                            }}
+                                                            // eslint-disable-next-line jsx-a11y/no-autofocus
+                                                            autoFocus
+                                                        />
+                                                    ) : (
+                                                        origin.name
+                                                    )}
+                                                </td>
+                                                <td className="col-actions">
+                                                    {editingId === origin.id ? (
+                                                        <span className="btn-group">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-xs button-blue"
+                                                                onClick={() =>
+                                                                    handleEditSave(
+                                                                        origin.id,
+                                                                    )
                                                                 }
-                                                                title="Edytuj nazwę źródła"
-                                                                onChange={(e) =>
+                                                                disabled={
+                                                                    updateOrigin.isPending
+                                                                }
+                                                            >
+                                                                zapisz
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-xs btn-default"
+                                                                onClick={() =>
+                                                                    setEditingId(
+                                                                        null,
+                                                                    )
+                                                                }
+                                                            >
+                                                                anuluj
+                                                            </button>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="btn-group">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-xs btn-default"
+                                                                onClick={() => {
+                                                                    setEditingId(
+                                                                        origin.id,
+                                                                    );
                                                                     setEditingName(
-                                                                        e.target
-                                                                            .value,
+                                                                        origin.name,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                edytuj
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-xs btn-default"
+                                                                onClick={() =>
+                                                                    deleteOrigin.mutate(
+                                                                        origin.id,
                                                                     )
                                                                 }
-                                                                onKeyDown={(
-                                                                    e,
-                                                                ) => {
-                                                                    if (
-                                                                        e.key ===
-                                                                        'Enter'
-                                                                    )
-                                                                        handleEditSave(
-                                                                            origin.id,
-                                                                        );
-                                                                    if (
-                                                                        e.key ===
-                                                                        'Escape'
-                                                                    )
-                                                                        setEditingId(
-                                                                            null,
-                                                                        );
-                                                                }}
-                                                                // eslint-disable-next-line jsx-a11y/no-autofocus
-                                                                autoFocus
-                                                            />
-                                                        ) : (
-                                                            origin.name
-                                                        )}
-                                                    </td>
-                                                    <td className="col-actions">
-                                                        {editingId ===
-                                                        origin.id ? (
-                                                            <span className="btn-group">
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-xs button-blue"
-                                                                    onClick={() =>
-                                                                        handleEditSave(
-                                                                            origin.id,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        updateOrigin.isPending
-                                                                    }
-                                                                >
-                                                                    zapisz
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-default"
-                                                                    onClick={() =>
-                                                                        setEditingId(
-                                                                            null,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    anuluj
-                                                                </button>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="btn-group">
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-default"
-                                                                    onClick={() => {
-                                                                        setEditingId(
-                                                                            origin.id,
-                                                                        );
-                                                                        setEditingName(
-                                                                            origin.name,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    edytuj
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-default"
-                                                                    onClick={() =>
-                                                                        deleteOrigin.mutate(
-                                                                            origin.id,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        deleteOrigin.isPending
-                                                                    }
-                                                                >
-                                                                    usuń
-                                                                </button>
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                                disabled={
+                                                                    deleteOrigin.isPending
+                                                                }
+                                                            >
+                                                                usuń
+                                                            </button>
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </PanelTable>
                                 )}
                             </div>
 
                             <div className="column_row">
                                 <h2>Zdefiniowane w systemie</h2>
-                                <table className="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                <div>Nazwa</div>
-                                            </th>
+                                <PanelTable columns={[{ label: 'Nazwa' }]}>
+                                    {systemOrigins.map((origin, i) => (
+                                        <tr
+                                            key={origin.id}
+                                            className={
+                                                i % 2 === 0 ? 'odd' : 'even'
+                                            }
+                                        >
+                                            <td>{origin.name}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {systemOrigins.map((origin, i) => (
-                                            <tr
-                                                key={origin.id}
-                                                className={
-                                                    i % 2 === 0 ? 'odd' : 'even'
-                                                }
-                                            >
-                                                <td>{origin.name}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                    ))}
+                                </PanelTable>
                             </div>
                         </>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

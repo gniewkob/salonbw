@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import PanelSection from '@/components/ui/PanelSection';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -49,7 +50,7 @@ export default function SettingsTradesNewPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
+                <PanelSection>
                     <div className="alert alert-info">
                         Trasa została zachowana dla parity IA względem Versum,
                         ale moduł branż nie ma jeszcze osobnego backendu w
@@ -89,7 +90,7 @@ export default function SettingsTradesNewPage() {
                             </Link>
                         </div>
                     </form>
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

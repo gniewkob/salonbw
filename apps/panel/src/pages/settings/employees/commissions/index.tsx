@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployees } from '@/hooks/useEmployees';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -65,59 +67,41 @@ export default function SettingsEmployeeCommissionsPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <h2>Prowizje pracowników</h2>
+                <PanelSection title="Prowizje pracowników">
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>Pracownik</div>
-                                    </th>
-                                    <th>
-                                        <div>Prowizja (usługi)</div>
-                                    </th>
-                                    <th>
-                                        <div>Prowizja (produkty)</div>
-                                    </th>
-                                    <th>
-                                        <div>Akcje</div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {employees.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={4}>Brak pracowników</td>
-                                    </tr>
-                                ) : (
-                                    employees.map((emp, i) => (
-                                        <tr
-                                            key={emp.id}
-                                            className={
-                                                i % 2 === 0 ? 'even' : 'odd'
-                                            }
+                        <PanelTable
+                            columns={[
+                                { label: 'Pracownik' },
+                                { label: 'Prowizja (usługi)' },
+                                { label: 'Prowizja (produkty)' },
+                                { label: 'Akcje' },
+                            ]}
+                            isEmpty={employees.length === 0}
+                            emptyMessage="Brak pracowników"
+                        >
+                            {employees.map((emp, i) => (
+                                <tr
+                                    key={emp.id}
+                                    className={i % 2 === 0 ? 'even' : 'odd'}
+                                >
+                                    <td>{emp.name}</td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                    <td style={{ textAlign: 'right' }}>
+                                        <Link
+                                            href={`/settings/employees/commissions/${emp.id}`}
+                                            className="btn btn-xs btn-default"
                                         >
-                                            <td>{emp.name}</td>
-                                            <td>—</td>
-                                            <td>—</td>
-                                            <td style={{ textAlign: 'right' }}>
-                                                <Link
-                                                    href={`/settings/employees/commissions/${emp.id}`}
-                                                    className="btn btn-xs btn-default"
-                                                >
-                                                    edytuj
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                            edytuj
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </PanelTable>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

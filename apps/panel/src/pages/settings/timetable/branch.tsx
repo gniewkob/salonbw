@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 
 const TIMETABLE_NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -70,8 +72,9 @@ export default function SettingsTimetableBranchPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <div className="actions">
+                <PanelSection
+                    title="Godziny pracy salonu"
+                    action={
                         <button
                             type="button"
                             className="btn button-blue pull-right"
@@ -79,52 +82,33 @@ export default function SettingsTimetableBranchPage() {
                         >
                             edytuj
                         </button>
-                    </div>
-                    <h2>Godziny pracy salonu</h2>
-                    <table className="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <div>Dzień</div>
-                                </th>
-                                <th>
-                                    <div>Od</div>
-                                </th>
-                                <th>
-                                    <div>Do</div>
-                                </th>
-                                <th>
-                                    <div>Czynny</div>
-                                </th>
+                    }
+                >
+                    <PanelTable
+                        columns={[
+                            { label: 'Dzień' },
+                            { label: 'Od' },
+                            { label: 'Do' },
+                            { label: 'Czynny' },
+                        ]}
+                    >
+                        {DAYS.map((day, i) => (
+                            <tr
+                                key={day}
+                                className={i % 2 === 0 ? 'even' : 'odd'}
+                            >
+                                <td>{day}</td>
+                                <td>
+                                    {i < 5 ? '09:00' : i === 5 ? '10:00' : '—'}
+                                </td>
+                                <td>
+                                    {i < 5 ? '20:00' : i === 5 ? '18:00' : '—'}
+                                </td>
+                                <td>{i < 6 ? 'Tak' : 'Nie'}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {DAYS.map((day, i) => (
-                                <tr
-                                    key={day}
-                                    className={i % 2 === 0 ? 'even' : 'odd'}
-                                >
-                                    <td>{day}</td>
-                                    <td>
-                                        {i < 5
-                                            ? '09:00'
-                                            : i === 5
-                                              ? '10:00'
-                                              : '—'}
-                                    </td>
-                                    <td>
-                                        {i < 5
-                                            ? '20:00'
-                                            : i === 5
-                                              ? '18:00'
-                                              : '—'}
-                                    </td>
-                                    <td>{i < 6 ? 'Tak' : 'Nie'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </PanelTable>
+                </PanelSection>
             </div>
         </div>
     );

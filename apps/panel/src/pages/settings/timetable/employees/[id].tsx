@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
+import PanelSection from '@/components/ui/PanelSection';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -69,7 +70,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
+                <PanelSection>
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
@@ -90,7 +91,7 @@ export default function SettingsTimetableEmployeeDetailPage() {
                             </p>
                         </>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

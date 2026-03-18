@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import PanelSection from '@/components/ui/PanelSection';
 import type { Employee } from '@/types';
 
 const NAV = (
@@ -76,7 +77,7 @@ export default function SettingsEmployeeNewPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
+                <PanelSection>
                     <form onSubmit={(e) => void handleSubmit(e)}>
                         <h2>Dodaj pracownika</h2>
                         <div className="form-group">
@@ -127,7 +128,7 @@ export default function SettingsEmployeeNewPage() {
                             </Link>
                         </div>
                     </form>
-                </div>
+                </PanelSection>
             </div>
         </div>
     );
