@@ -113,6 +113,16 @@ export class BranchSettings {
     @Column({ name: 'gdpr_consent_text', type: 'text', nullable: true })
     gdprConsentText: string;
 
+    // Data Protection Mode (Versum "paranoia mode")
+    @Column({ name: 'paranoia_mode', default: false })
+    paranoiaMode: boolean;
+
+    @Column({ name: 'paranoia_limit', default: 20 })
+    paranoiaLimit: number;
+
+    @Column({ name: 'paranoia_email', length: 255, nullable: true })
+    paranoiaEmail: string;
+
     // Active status (for multi-branch support in the future)
     @Column({ name: 'is_active', default: true })
     isActive: boolean;

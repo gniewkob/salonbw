@@ -490,6 +490,39 @@ export class UpdateReminderSettingsDto {
     emailTemplate?: string;
 }
 
+// Payment Configuration DTO
+export class UpdatePaymentConfigurationDto {
+    @IsOptional()
+    @IsBoolean()
+    requirePrepayment?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    @Max(100)
+    prepaymentPercentage?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    acceptOnlinePayments?: boolean;
+}
+
+// Data Protection DTO
+export class UpdateDataProtectionDto {
+    @IsOptional()
+    @IsBoolean()
+    paranoiaMode?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    paranoiaLimit?: number;
+
+    @IsOptional()
+    @IsEmail()
+    paranoiaEmail?: string;
+}
+
 // Combined settings response
 export class AllSettingsDto {
     branch: UpdateBranchSettingsDto;

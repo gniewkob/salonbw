@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
+import PanelActionBar from '@/components/ui/PanelActionBar';
 import {
     useCreateCustomerGroup,
     useCustomerGroups,
@@ -123,19 +124,20 @@ export default function NewCustomerGroupPage() {
                         <div className="alert alert-danger">{submitError}</div>
                     ) : null}
 
-                    <div className="form-actions-prev" />
-                    <div className="form-actions">
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={createGroup.isPending || !name.trim()}
-                        >
-                            <span className="icon sprite-add_customer_save mr-xs" />
-                            {createGroup.isPending
-                                ? 'Przetwarzanie danych...'
-                                : 'dodaj grupę'}
-                        </button>
-                    </div>
+                    <PanelActionBar
+                        primary={
+                            <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={createGroup.isPending || !name.trim()}
+                            >
+                                <span className="icon sprite-add_customer_save mr-xs" />
+                                {createGroup.isPending
+                                    ? 'Przetwarzanie danych...'
+                                    : 'dodaj grupę'}
+                            </button>
+                        }
+                    />
                 </form>
             </div>
         </div>

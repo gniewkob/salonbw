@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import SettingsDetailLayout from '@/components/settings/SettingsDetailLayout';
+import PanelActionBar from '@/components/ui/PanelActionBar';
 
 const paymentNavItems = [
     {
@@ -35,22 +36,25 @@ export default function PaymentConfigurationPage() {
             navItems={[...paymentNavItems]}
         >
             <div className="settings-payment-page">
-                <div className="settings-payment-page__actions">
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => setActivationNoticeVisible(true)}
-                    >
-                        aktywuj Moment Pay
-                    </button>
-                </div>
+                <PanelActionBar
+                    className="mt-0 border-t-0 pt-0"
+                    primary={
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => setActivationNoticeVisible(true)}
+                        >
+                            aktywuj Moment Pay
+                        </button>
+                    }
+                />
 
                 <section
-                    className="settings-payment-page__blank"
+                    className="settings-payment-page__blank flex flex-col items-center"
                     aria-label="Moment Pay activation"
                 >
                     <div
-                        className="settings-payment-page__art"
+                        className="settings-payment-page__art flex items-center justify-center"
                         aria-hidden="true"
                     >
                         <div className="settings-payment-page__art-shadow" />
@@ -59,9 +63,11 @@ export default function PaymentConfigurationPage() {
                         </div>
                     </div>
 
-                    <h2 className="settings-payment-page__title">Moment Pay</h2>
+                    <h2 className="settings-payment-page__title text-center">
+                        Moment Pay
+                    </h2>
 
-                    <p className="settings-payment-page__description">
+                    <p className="settings-payment-page__description text-center">
                         Aktywuj system płatności online Moment Pay, aby
                         zmniejszyć ilość zapomnianych wizyt i usprawnić proces
                         rezerwacji usług. Dzięki niemu zyskasz możliwość

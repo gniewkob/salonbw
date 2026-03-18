@@ -6004,3 +6004,7 @@ body.e2e-extension .main-content .inner.extension_info {
         width: 100%;
     }
 }
+
+.input-group--narrow {
+    width: 175px;
+}

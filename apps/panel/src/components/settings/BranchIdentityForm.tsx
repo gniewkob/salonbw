@@ -5,6 +5,7 @@ import {
     type ChangeEvent,
     type FormEvent,
 } from 'react';
+import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useBranchSettings, useSettingsMutations } from '@/hooks/useSettings';
 import type { UpdateBranchSettingsRequest } from '@/types';
 
@@ -462,20 +463,21 @@ export default function BranchIdentityForm() {
                 </div>
             ) : null}
 
-            <div className="form-actions-prev" />
-            <div className="form-actions">
-                <button
-                    type="submit"
-                    name="commit"
-                    className="btn btn-primary"
-                    disabled={updateBranchSettings.isPending}
-                >
-                    <span className="icon sprite-add_customer_save mr-xs" />
-                    {updateBranchSettings.isPending
-                        ? 'Przetwarzanie danych...'
-                        : 'zapisz zmiany'}
-                </button>
-            </div>
+            <PanelActionBar
+                primary={
+                    <button
+                        type="submit"
+                        name="commit"
+                        className="btn btn-primary"
+                        disabled={updateBranchSettings.isPending}
+                    >
+                        <span className="icon sprite-add_customer_save mr-xs" />
+                        {updateBranchSettings.isPending
+                            ? 'Przetwarzanie danych...'
+                            : 'zapisz zmiany'}
+                    </button>
+                }
+            />
         </form>
     );
 }

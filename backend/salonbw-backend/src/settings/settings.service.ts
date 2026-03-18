@@ -12,6 +12,8 @@ import {
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
     UpdateReminderSettingsDto,
+    UpdatePaymentConfigurationDto,
+    UpdateDataProtectionDto,
 } from './dto/settings.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -190,6 +192,75 @@ export class SettingsService {
 
         this.logger.log(`Sms settings updated by user ${actorId}`);
         return updated;
+    }
+
+    // Payment Configuration (subset of OnlineBookingSettings)
+    async getPaymentConfiguration() {
+        const settings = await this.getOnlineBookingSettings();
+        return {
+            requirePrepayment: settings.requirePrepayment,
+            prepaymentPercentage: settings.prepaymentPercentage,
+            acceptOnlinePayments: settings.acceptOnlinePayments,
+        };
+    }
+
+    async updatePaymentConfiguration(
+        dto: UpdatePaymentConfigurationDto,
+        actorId: number,
+    ) {
+        const settings = await this.getOnlineBookingSettings();
+        const oldValues = this.toRecord(settings);
+
+        Object.assign(settings, dto);
+        const updated = await this.onlineBookingSettingsRepo.save(settings);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_ONLINE_BOOKING_UPDATED,
+            {
+                settingsId: settings.id,
+                changes: this.getChanges(oldValues, this.toRecord(updated)),
+            },
+        );
+
+        return {
+            requirePrepayment: updated.requirePrepayment,
+            prepaymentPercentage: updated.prepaymentPercentage,
+            acceptOnlinePayments: updated.acceptOnlinePayments,
+        };
+    }
+
+    // Data Protection (paranoia mode — subset of BranchSettings)
+    async getDataProtection() {
+        const settings = await this.getBranchSettings();
+        return {
+            paranoiaMode: settings.paranoiaMode,
+            paranoiaLimit: settings.paranoiaLimit,
+            paranoiaEmail: settings.paranoiaEmail,
+        };
+    }
+
+    async updateDataProtection(dto: UpdateDataProtectionDto, actorId: number) {
+        const settings = await this.getBranchSettings();
+        const oldValues = this.toRecord(settings);
+
+        Object.assign(settings, dto);
+        const updated = await this.branchSettingsRepo.save(settings);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_BRANCH_UPDATED,
+            {
+                settingsId: settings.id,
+                changes: this.getChanges(oldValues, this.toRecord(updated)),
+            },
+        );
+
+        return {
+            paranoiaMode: updated.paranoiaMode,
+            paranoiaLimit: updated.paranoiaLimit,
+            paranoiaEmail: updated.paranoiaEmail,
+        };
     }
 
     // Get all settings at once

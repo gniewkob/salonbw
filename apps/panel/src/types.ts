@@ -1449,9 +1449,24 @@ export interface BranchSettings {
     invoicePaymentDays: number;
     gdprDataRetentionDays: number;
     gdprConsentText: string | null;
+    paranoiaMode: boolean;
+    paranoiaLimit: number;
+    paranoiaEmail: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface DataProtectionSettings {
+    paranoiaMode: boolean;
+    paranoiaLimit: number;
+    paranoiaEmail: string | null;
+}
+
+export interface UpdateDataProtectionRequest {
+    paranoiaMode?: boolean;
+    paranoiaLimit?: number;
+    paranoiaEmail?: string;
 }
 
 export interface CalendarSettings {
