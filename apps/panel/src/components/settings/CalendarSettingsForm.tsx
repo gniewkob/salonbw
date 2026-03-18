@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import PanelActionBar from '@/components/ui/PanelActionBar';
 import { useCalendarSettings, useSettingsMutations } from '@/hooks/useSettings';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import type { CalendarView, UpdateCalendarSettingsRequest } from '@/types';
@@ -458,20 +459,21 @@ export default function CalendarSettingsForm() {
                         </div>
                     ) : null}
 
-                    <div className="form-actions-prev" />
-                    <div className="form-actions">
-                        <button
-                            type="submit"
-                            name="commit"
-                            className="btn btn-primary"
-                            disabled={updateCalendarSettings.isPending}
-                        >
-                            <span className="icon sprite-add_customer_save mr-xs" />
-                            {updateCalendarSettings.isPending
-                                ? 'Przetwarzanie danych...'
-                                : 'zapisz ustawienia'}
-                        </button>
-                    </div>
+                    <PanelActionBar
+                        primary={
+                            <button
+                                type="submit"
+                                name="commit"
+                                className="btn btn-primary"
+                                disabled={updateCalendarSettings.isPending}
+                            >
+                                <span className="icon sprite-add_customer_save mr-xs" />
+                                {updateCalendarSettings.isPending
+                                    ? 'Przetwarzanie danych...'
+                                    : 'zapisz ustawienia'}
+                            </button>
+                        }
+                    />
                 </form>
             </div>
         </div>

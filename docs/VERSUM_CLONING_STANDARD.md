@@ -10,7 +10,7 @@ Cel klonowania: **100% funkcjonalności, szybszy UX i 98% zgodności wizualnej (
 Zasada:
 
 -   1. **Identyfikacja flow** w referencji (dane wejściowe, mutacje, wyjście),
--   2. **Komponowanie widoku** z `Versum UI Kit` (Tailwind do layoutu, stare klasy do kolorów/typografii),
+-   2. **Komponowanie widoku** z `Panel UI Kit` (Tailwind do layoutu, stare klasy do kolorów/typografii dopasowane do SalonBW),
 -   3. **Adopcja integracyjna** (routing, auth, API, mocki w MSW aby zrównoleglić pracę),
 -   4. **Walidacja funkcjonalna** (E2E; testy wizualne z tolerancją odchyleń).
 
@@ -67,7 +67,7 @@ Screenshoty i kod weryfikują tę tabelę — nie zastępują jej.
 
 ### Krok B — Pattern-Driven Implementation
 
-- Nie wklejamy czystego HTML z Versum z dziesiątkami klas "col-xs-\*". Reużywamy wyabstrahowane komponenty (np. `<VersumTable>`, `<VersumIcon>`) opisane w `UI_PATTERN_CATALOG.md`.
+- Nie wklejamy czystego HTML z dziesiątkami starych klas "col-xs-\*". Reużywamy wyabstrahowane, dedykowane komponenty (np. `<PanelTable>`, `<PanelIcon>`) opisane w `UI_PATTERN_CATALOG.md`. Nazwa "Versum" dotyczy wyłącznie systemu źródłowego, nie naszego kodu docelowego.
 - Do layoutu i układania siatek używamy **Tailwind CSS** (`flex`, `grid`, `gap`, `w-full`), aby zredukować błędy RWD i zyskać na szybkości dewelopmentu.
 
 ### Krok C — Integracja panelu
@@ -101,7 +101,7 @@ Moduł jest „100%” tylko gdy wszystkie warunki są spełnione:
 
 ## 5. Zasady implementacyjne (żeby nie rozjechać klonu)
 
-- Budujemy w oparciu o komponenty (zobacz: `docs/UI_PATTERN_CATALOG.md`). Wklejanie wielkich bloków zagnieżdżonych `div` (`Copy-paste`) bezpośrednio do stron `pages/` jest zakazane.
+- Budujemy w oparciu o komponenty z `Panel UI Kit` (zobacz: `docs/UI_PATTERN_CATALOG.md`). Wklejanie wielkich bloków zagnieżdżonych `div` (`Copy-paste`) bezpośrednio do stron `pages/` jest zakazane. Kod musi być czysty i dostosowany do SalonBW.
 - Jeśli trzeba „adoptować” kod, zmieniaj minimalnie:
     - routing,
     - źródła danych/API,

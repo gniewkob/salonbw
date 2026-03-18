@@ -7,10 +7,12 @@ import type {
     OnlineBookingSettings,
     SmsSettings,
     ReminderSettings,
+    DataProtectionSettings,
     UpdateBranchSettingsRequest,
     UpdateCalendarSettingsRequest,
     UpdateOnlineBookingSettingsRequest,
     UpdateReminderSettingsRequest,
+    UpdateDataProtectionRequest,
 } from '@/types';
 
 export const SETTINGS_QUERY_KEY = ['api', '/settings'] as const;
@@ -81,6 +83,19 @@ export function useReminderSettings() {
     });
 }
 
+export function useDataProtectionSettings() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: [...SETTINGS_QUERY_KEY, 'data-protection'],
+        queryFn: async () => {
+            return apiFetch<DataProtectionSettings>(
+                '/settings/data-protection',
+            );
+        },
+    });
+}
+
 export function useSettingsMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
@@ -139,11 +154,25 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const updateDataProtection = useMutation({
+        mutationFn: async (data: UpdateDataProtectionRequest) => {
+            return apiFetch<DataProtectionSettings>(
+                '/settings/data-protection',
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                },
+            );
+        },
+        onSuccess: invalidateAll,
+    });
+
     return {
         updateBranchSettings,
         updateCalendarSettings,
         updateOnlineBookingSettings,
         updateSmsSettings,
         updateReminderSettings,
+        updateDataProtection,
     };
 }

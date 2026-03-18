@@ -1,6 +1,10 @@
-# UI Pattern Catalog for the Versum Clone
+# UI Pattern Catalog for SalonBW Panel
 
-This catalog defines the reusable UI patterns the implementation agent should build before filling individual screens.
+This catalog defines the reusable UI patterns the implementation agent should extract and formalize **in parallel** with delivering individual screens (Build kit through backlog delivery).
+
+## Golden Rule: "Rule of Two"
+
+Do not build abstract UI components in isolation (Premature Abstraction). A pattern should only be formalized into a shared component (e.g., `<PanelTable>`, `<PanelFormSection>`, `<PanelModal>`) when it has **at least 2 real-world use cases** in the actual routes being delivered. Extract them organically while building P1 routes.
 
 ## Source artifacts
 

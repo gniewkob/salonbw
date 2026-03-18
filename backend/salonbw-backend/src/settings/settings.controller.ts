@@ -10,6 +10,8 @@ import {
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
     UpdateReminderSettingsDto,
+    UpdatePaymentConfigurationDto,
+    UpdateDataProtectionDto,
 } from './dto/settings.dto';
 
 @Controller('settings')
@@ -88,6 +90,41 @@ export class SettingsController {
         @Request() req: { user: { id: number } },
     ) {
         return this.settingsService.updateSmsSettings(dto, req.user.id);
+    }
+
+    // Payment Configuration
+    @Get('payment-configuration')
+    @Roles(Role.Admin)
+    async getPaymentConfiguration() {
+        return this.settingsService.getPaymentConfiguration();
+    }
+
+    @Put('payment-configuration')
+    @Roles(Role.Admin)
+    async updatePaymentConfiguration(
+        @Body() dto: UpdatePaymentConfigurationDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updatePaymentConfiguration(
+            dto,
+            req.user.id,
+        );
+    }
+
+    // Data Protection
+    @Get('data-protection')
+    @Roles(Role.Admin)
+    async getDataProtection() {
+        return this.settingsService.getDataProtection();
+    }
+
+    @Put('data-protection')
+    @Roles(Role.Admin)
+    async updateDataProtection(
+        @Body() dto: UpdateDataProtectionDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updateDataProtection(dto, req.user.id);
     }
 
     // Reminder Settings
