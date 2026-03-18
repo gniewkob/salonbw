@@ -2,23 +2,50 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
+import {
+    useCustomerOrigins,
+    useCreateCustomerOrigin,
+    useUpdateCustomerOrigin,
+    useDeleteCustomerOrigin,
+} from '@/hooks/useCustomers';
 
 const NAV = <CustomerSettingsNav />;
-
-const DEFAULT_ORIGINS = [
-    'Facebook',
-    'Instagram',
-    'Polecenie znajomego',
-    'Google',
-    'Ulotka',
-    'Strona internetowa',
-    'Inne',
-];
 
 export default function SettingsCustomerOriginsPage() {
     useSetSecondaryNav(NAV);
 
-    const [origins] = useState<string[]>(DEFAULT_ORIGINS);
+    const { data: origins, isLoading, isError } = useCustomerOrigins();
+    const createOrigin = useCreateCustomerOrigin();
+    const updateOrigin = useUpdateCustomerOrigin();
+    const deleteOrigin = useDeleteCustomerOrigin();
+
+    const [addingName, setAddingName] = useState('');
+    const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingName, setEditingName] = useState('');
+
+    const systemOrigins = (origins ?? []).filter((o) => o.isSystem);
+    const customOrigins = (origins ?? []).filter((o) => !o.isSystem);
+
+    const handleAdd = () => {
+        const name = addingName.trim();
+        if (!name) return;
+        createOrigin.mutate(name, {
+            onSuccess: () => {
+                setAddingName('');
+                setIsAdding(false);
+            },
+        });
+    };
+
+    const handleEditSave = (id: number) => {
+        const name = editingName.trim();
+        if (!name) return;
+        updateOrigin.mutate(
+            { id, name },
+            { onSuccess: () => setEditingId(null) },
+        );
+    };
 
     return (
         <div className="settings-detail-layout" data-testid="settings-detail">
@@ -40,60 +67,240 @@ export default function SettingsCustomerOriginsPage() {
                         </li>
                     </ul>
                 </div>
+
                 <div className="inner edit_branch_form">
                     <div className="actions">
                         <button
                             type="button"
                             className="btn button-blue pull-right"
-                            disabled
+                            onClick={() => setIsAdding(true)}
                         >
-                            + dodaj źródło
+                            + Dodaj nowe źródło
                         </button>
                     </div>
-                    <h2>Pochodzenie klientów</h2>
-                    <p className="text-muted">
-                        Lista źródeł, z których klienci trafiają do salonu.
-                    </p>
-                    <table className="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <div>Nazwa źródła</div>
-                                </th>
-                                <th>
-                                    <div>Akcje</div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {origins.map((origin, i) => (
-                                <tr
-                                    key={origin}
-                                    className={i % 2 === 0 ? 'even' : 'odd'}
-                                >
-                                    <td>{origin}</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <span className="btn-group">
-                                            <button
-                                                type="button"
-                                                className="btn btn-xs btn-default"
-                                                disabled
+
+                    {isAdding && (
+                        <div className="form-group">
+                            <label className="control-label">
+                                Nazwa źródła
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={addingName}
+                                    onChange={(e) =>
+                                        setAddingName(e.target.value)
+                                    }
+                                    placeholder="np. Instagram"
+                                    title="Nazwa nowego źródła"
+                                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleAdd();
+                                        if (e.key === 'Escape') {
+                                            setIsAdding(false);
+                                            setAddingName('');
+                                        }
+                                    }}
+                                />
+                                <span className="input-group-btn">
+                                    <button
+                                        type="button"
+                                        className="btn button-blue"
+                                        onClick={handleAdd}
+                                        disabled={createOrigin.isPending}
+                                    >
+                                        Zapisz
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-default"
+                                        onClick={() => {
+                                            setIsAdding(false);
+                                            setAddingName('');
+                                        }}
+                                    >
+                                        Anuluj
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {isLoading && <p>Ładowanie...</p>}
+                    {isError && (
+                        <div className="alert alert-danger">
+                            Nie udało się załadować źródeł.
+                        </div>
+                    )}
+
+                    {!isLoading && !isError && (
+                        <>
+                            <div className="column_row">
+                                <h2>Zdefiniowane przez salon</h2>
+                                {customOrigins.length === 0 ? (
+                                    <h3>
+                                        W salonie nie zdefiniowano żadnych
+                                        źródeł pochodzenia klienta.
+                                    </h3>
+                                ) : (
+                                    <table className="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <div>Nazwa</div>
+                                                </th>
+                                                <th aria-label="Akcje" />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {customOrigins.map((origin, i) => (
+                                                <tr
+                                                    key={origin.id}
+                                                    className={
+                                                        i % 2 === 0
+                                                            ? 'even'
+                                                            : 'odd'
+                                                    }
+                                                >
+                                                    <td>
+                                                        {editingId ===
+                                                        origin.id ? (
+                                                            <input
+                                                                type="text"
+                                                                className="form-control input-sm"
+                                                                value={
+                                                                    editingName
+                                                                }
+                                                                title="Edytuj nazwę źródła"
+                                                                onChange={(e) =>
+                                                                    setEditingName(
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                onKeyDown={(
+                                                                    e,
+                                                                ) => {
+                                                                    if (
+                                                                        e.key ===
+                                                                        'Enter'
+                                                                    )
+                                                                        handleEditSave(
+                                                                            origin.id,
+                                                                        );
+                                                                    if (
+                                                                        e.key ===
+                                                                        'Escape'
+                                                                    )
+                                                                        setEditingId(
+                                                                            null,
+                                                                        );
+                                                                }}
+                                                                // eslint-disable-next-line jsx-a11y/no-autofocus
+                                                                autoFocus
+                                                            />
+                                                        ) : (
+                                                            origin.name
+                                                        )}
+                                                    </td>
+                                                    <td className="col-actions">
+                                                        {editingId ===
+                                                        origin.id ? (
+                                                            <span className="btn-group">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-xs button-blue"
+                                                                    onClick={() =>
+                                                                        handleEditSave(
+                                                                            origin.id,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        updateOrigin.isPending
+                                                                    }
+                                                                >
+                                                                    zapisz
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-xs btn-default"
+                                                                    onClick={() =>
+                                                                        setEditingId(
+                                                                            null,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    anuluj
+                                                                </button>
+                                                            </span>
+                                                        ) : (
+                                                            <span className="btn-group">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-xs btn-default"
+                                                                    onClick={() => {
+                                                                        setEditingId(
+                                                                            origin.id,
+                                                                        );
+                                                                        setEditingName(
+                                                                            origin.name,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    edytuj
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-xs btn-default"
+                                                                    onClick={() =>
+                                                                        deleteOrigin.mutate(
+                                                                            origin.id,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        deleteOrigin.isPending
+                                                                    }
+                                                                >
+                                                                    usuń
+                                                                </button>
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+
+                            <div className="column_row">
+                                <h2>Zdefiniowane w systemie</h2>
+                                <table className="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <div>Nazwa</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {systemOrigins.map((origin, i) => (
+                                            <tr
+                                                key={origin.id}
+                                                className={
+                                                    i % 2 === 0 ? 'odd' : 'even'
+                                                }
                                             >
-                                                edytuj
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-xs btn-default"
-                                                disabled
-                                            >
-                                                usuń
-                                            </button>
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                <td>{origin.name}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

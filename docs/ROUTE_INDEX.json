@@ -486,7 +486,7 @@
       "area": "settings",
       "count": 1,
       "priority": "P2",
-      "status": "invent",
+      "status": "exact",
       "target_route": "/settings/customer-origins",
       "example_url": "https://panel.versum.com/salonblackandwhite/settings/customer_origins",
       "representative_slug": "salonblackandwhite__settings__customer_origins",

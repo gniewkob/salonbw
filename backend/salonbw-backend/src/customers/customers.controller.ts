@@ -56,6 +56,10 @@ import {
     UpdateCustomerTagDto,
     AssignTagsDto,
 } from './dto/customer-tag.dto';
+import {
+    CreateCustomerOriginDto,
+    UpdateCustomerOriginDto,
+} from './dto/customer-origin.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -582,5 +586,44 @@ export class CustomerTagsController {
     @ApiOperation({ summary: 'Delete customer tag' })
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.customersService.deleteTag(id);
+    }
+}
+
+@ApiTags('customer-origins')
+@Controller('customer-origins')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiBearerAuth()
+export class CustomerOriginsController {
+    constructor(private readonly customersService: CustomersService) {}
+
+    @Get()
+    @Roles(Role.Admin, Role.Receptionist)
+    @ApiOperation({ summary: 'List all customer origins' })
+    findAll() {
+        return this.customersService.findAllOrigins();
+    }
+
+    @Post()
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Create customer origin' })
+    create(@Body() dto: CreateCustomerOriginDto) {
+        return this.customersService.createOrigin(dto);
+    }
+
+    @Patch(':id')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Update customer origin' })
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateCustomerOriginDto,
+    ) {
+        return this.customersService.updateOrigin(id, dto);
+    }
+
+    @Delete(':id')
+    @Roles(Role.Admin)
+    @ApiOperation({ summary: 'Delete customer origin' })
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.customersService.deleteOrigin(id);
     }
 }

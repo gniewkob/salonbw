@@ -17,6 +17,7 @@ import {
     CustomerFilterParams,
     PaginatedCustomers,
     NoteType,
+    CustomerOrigin,
 } from '@/types';
 
 // ==================== CUSTOMERS ====================
@@ -493,6 +494,69 @@ export function useRemoveGroupMember() {
             });
             void queryClient.invalidateQueries({
                 queryKey: ['customer-group', variables.groupId],
+            });
+        },
+    });
+}
+
+// ==================== ORIGINS ====================
+
+export function useCustomerOrigins() {
+    const { apiFetch } = useAuth();
+    return useQuery<CustomerOrigin[]>({
+        queryKey: ['customer-origins'],
+        queryFn: () => apiFetch<CustomerOrigin[]>('/customer-origins'),
+    });
+}
+
+export function useCreateCustomerOrigin() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (name: string) =>
+            apiFetch<CustomerOrigin>('/customer-origins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-origins'],
+            });
+        },
+    });
+}
+
+export function useUpdateCustomerOrigin() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, name }: { id: number; name: string }) =>
+            apiFetch<CustomerOrigin>(`/customer-origins/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-origins'],
+            });
+        },
+    });
+}
+
+export function useDeleteCustomerOrigin() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch<void>(`/customer-origins/${id}`, { method: 'DELETE' }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-origins'],
             });
         },
     });
