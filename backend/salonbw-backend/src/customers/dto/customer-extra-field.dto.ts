@@ -1,4 +1,10 @@
-import { IsString, IsBoolean, IsOptional, IsEnum, Length } from 'class-validator';
+import {
+    IsString,
+    IsBoolean,
+    IsOptional,
+    IsEnum,
+    Length,
+} from 'class-validator';
 import { ExtraFieldType } from '../entities/customer-extra-field.entity';
 
 export class CreateExtraFieldDto {
