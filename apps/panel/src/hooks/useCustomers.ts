@@ -18,6 +18,8 @@ import {
     PaginatedCustomers,
     NoteType,
     CustomerOrigin,
+    CustomerExtraField,
+    ExtraFieldType,
 } from '@/types';
 
 // ==================== CUSTOMERS ====================
@@ -557,6 +559,81 @@ export function useDeleteCustomerOrigin() {
         onSuccess: () => {
             void queryClient.invalidateQueries({
                 queryKey: ['customer-origins'],
+            });
+        },
+    });
+}
+
+// ==================== EXTRA FIELDS ====================
+
+export function useCustomerExtraFields() {
+    const { apiFetch } = useAuth();
+    return useQuery<CustomerExtraField[]>({
+        queryKey: ['customer-extra-fields'],
+        queryFn: () => apiFetch<CustomerExtraField[]>('/customer-extra-fields'),
+    });
+}
+
+export function useCreateCustomerExtraField() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: {
+            label: string;
+            type: ExtraFieldType;
+            required?: boolean;
+        }) =>
+            apiFetch<CustomerExtraField>('/customer-extra-fields', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-extra-fields'],
+            });
+        },
+    });
+}
+
+export function useUpdateCustomerExtraField() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({
+            id,
+            data,
+        }: {
+            id: number;
+            data: { label?: string; type?: ExtraFieldType; required?: boolean };
+        }) =>
+            apiFetch<CustomerExtraField>(`/customer-extra-fields/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-extra-fields'],
+            });
+        },
+    });
+}
+
+export function useDeleteCustomerExtraField() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: number) =>
+            apiFetch<void>(`/customer-extra-fields/${id}`, {
+                method: 'DELETE',
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-extra-fields'],
             });
         },
     });
