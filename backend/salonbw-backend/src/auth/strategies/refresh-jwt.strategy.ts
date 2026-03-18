@@ -9,6 +9,12 @@ export class RefreshJwtStrategy extends PassportStrategy(
     'jwt-refresh',
 ) {
     constructor(config: ConfigService) {
+        const secret = config.get<string>('JWT_REFRESH_SECRET');
+        if (!secret) {
+            throw new Error(
+                'JWT_REFRESH_SECRET is not set — refusing to start with insecure default',
+            );
+        }
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([
                 (request: Request) => {
@@ -19,7 +25,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
                     );
                 },
             ]),
-            secretOrKey: config.get<string>('JWT_REFRESH_SECRET') || 'secret',
+            secretOrKey: secret,
             passReqToCallback: true,
         });
     }

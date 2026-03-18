@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { EmailsService } from './emails.service';
 import { SendEmailDto } from './dto/send-email.dto';
+import { ContactFormDto } from './dto/contact-form.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmailLog } from './email-log.entity';
@@ -30,14 +31,14 @@ export class EmailsController {
         private readonly emailLogs: Repository<EmailLog>,
     ) {}
 
-    @Post('send')
-    async send(@Body() dto: SendEmailDto): Promise<{ status: string }> {
-        await this.emailsService.send(dto);
+    /** Public contact form — recipient is server-configured, no arbitrary relay. */
+    @Post('contact')
+    async contact(@Body() dto: ContactFormDto): Promise<{ status: string }> {
+        await this.emailsService.sendContact(dto);
         return { status: 'ok' };
     }
 
     // Authenticated send endpoint for internal usage (panel/admin).
-    // Public contact form must continue to use POST /emails/send.
     @Post('send-auth')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist)
