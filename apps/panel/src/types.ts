@@ -434,6 +434,15 @@ export interface CustomerTag {
     createdAt: string;
 }
 
+export interface CustomerOrigin {
+    id: number;
+    name: string;
+    isSystem: boolean;
+    sortOrder: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface CustomerStatistics {
     totalVisits: number;
     completedVisits: number;

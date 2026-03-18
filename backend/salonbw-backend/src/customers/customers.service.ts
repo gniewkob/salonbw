@@ -33,6 +33,11 @@ import {
     CreateCustomerTagDto,
     UpdateCustomerTagDto,
 } from './dto/customer-tag.dto';
+import {
+    CreateCustomerOriginDto,
+    UpdateCustomerOriginDto,
+} from './dto/customer-origin.dto';
+import { CustomerOrigin } from './entities/customer-origin.entity';
 
 @Injectable()
 export class CustomersService {
@@ -47,6 +52,8 @@ export class CustomersService {
         private readonly notesRepo: Repository<CustomerNote>,
         @InjectRepository(CustomerTag)
         private readonly tagsRepo: Repository<CustomerTag>,
+        @InjectRepository(CustomerOrigin)
+        private readonly originsRepo: Repository<CustomerOrigin>,
     ) {}
 
     // ==================== CUSTOMERS ====================
@@ -617,6 +624,32 @@ export class CustomersService {
             .where('cta.userId = :customerId', { customerId })
             .getMany();
         return tags;
+    }
+
+    // ==================== ORIGINS ====================
+
+    async findAllOrigins(): Promise<CustomerOrigin[]> {
+        return this.originsRepo.find({ order: { isSystem: 'ASC', sortOrder: 'ASC', name: 'ASC' } });
+    }
+
+    async createOrigin(dto: CreateCustomerOriginDto): Promise<CustomerOrigin> {
+        const origin = this.originsRepo.create({ name: dto.name, isSystem: false });
+        return this.originsRepo.save(origin);
+    }
+
+    async updateOrigin(id: number, dto: UpdateCustomerOriginDto): Promise<CustomerOrigin> {
+        const origin = await this.originsRepo.findOne({ where: { id } });
+        if (!origin) throw new NotFoundException(`Origin ${id} not found`);
+        if (origin.isSystem) throw new BadRequestException('Cannot edit system origins');
+        origin.name = dto.name;
+        return this.originsRepo.save(origin);
+    }
+
+    async deleteOrigin(id: number): Promise<void> {
+        const origin = await this.originsRepo.findOne({ where: { id } });
+        if (!origin) throw new NotFoundException(`Origin ${id} not found`);
+        if (origin.isSystem) throw new BadRequestException('Cannot delete system origins');
+        await this.originsRepo.delete(id);
     }
 
     // ==================== HELPERS ====================
