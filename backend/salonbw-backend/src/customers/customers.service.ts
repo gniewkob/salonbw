@@ -636,18 +636,27 @@ export class CustomersService {
     // ==================== ORIGINS ====================
 
     async findAllOrigins(): Promise<CustomerOrigin[]> {
-        return this.originsRepo.find({ order: { isSystem: 'ASC', sortOrder: 'ASC', name: 'ASC' } });
+        return this.originsRepo.find({
+            order: { isSystem: 'ASC', sortOrder: 'ASC', name: 'ASC' },
+        });
     }
 
     async createOrigin(dto: CreateCustomerOriginDto): Promise<CustomerOrigin> {
-        const origin = this.originsRepo.create({ name: dto.name, isSystem: false });
+        const origin = this.originsRepo.create({
+            name: dto.name,
+            isSystem: false,
+        });
         return this.originsRepo.save(origin);
     }
 
-    async updateOrigin(id: number, dto: UpdateCustomerOriginDto): Promise<CustomerOrigin> {
+    async updateOrigin(
+        id: number,
+        dto: UpdateCustomerOriginDto,
+    ): Promise<CustomerOrigin> {
         const origin = await this.originsRepo.findOne({ where: { id } });
         if (!origin) throw new NotFoundException(`Origin ${id} not found`);
-        if (origin.isSystem) throw new BadRequestException('Cannot edit system origins');
+        if (origin.isSystem)
+            throw new BadRequestException('Cannot edit system origins');
         origin.name = dto.name;
         return this.originsRepo.save(origin);
     }
@@ -655,17 +664,22 @@ export class CustomersService {
     async deleteOrigin(id: number): Promise<void> {
         const origin = await this.originsRepo.findOne({ where: { id } });
         if (!origin) throw new NotFoundException(`Origin ${id} not found`);
-        if (origin.isSystem) throw new BadRequestException('Cannot delete system origins');
+        if (origin.isSystem)
+            throw new BadRequestException('Cannot delete system origins');
         await this.originsRepo.delete(id);
     }
 
     // ==================== EXTRA FIELDS ====================
 
     async findAllExtraFields(): Promise<CustomerExtraField[]> {
-        return this.extraFieldsRepo.find({ order: { sortOrder: 'ASC', label: 'ASC' } });
+        return this.extraFieldsRepo.find({
+            order: { sortOrder: 'ASC', label: 'ASC' },
+        });
     }
 
-    async createExtraField(dto: CreateExtraFieldDto): Promise<CustomerExtraField> {
+    async createExtraField(
+        dto: CreateExtraFieldDto,
+    ): Promise<CustomerExtraField> {
         const field = this.extraFieldsRepo.create({
             label: dto.label,
             type: dto.type,
@@ -674,7 +688,10 @@ export class CustomersService {
         return this.extraFieldsRepo.save(field);
     }
 
-    async updateExtraField(id: number, dto: UpdateExtraFieldDto): Promise<CustomerExtraField> {
+    async updateExtraField(
+        id: number,
+        dto: UpdateExtraFieldDto,
+    ): Promise<CustomerExtraField> {
         const field = await this.extraFieldsRepo.findOne({ where: { id } });
         if (!field) throw new NotFoundException(`Extra field ${id} not found`);
         Object.assign(field, dto);
