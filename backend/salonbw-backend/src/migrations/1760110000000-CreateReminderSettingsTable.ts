@@ -7,22 +7,25 @@ export class CreateReminderSettingsTable1760110000000
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `CREATE TABLE \`reminder_settings\` (
-                \`id\` int NOT NULL AUTO_INCREMENT,
-                \`active\` tinyint NOT NULL DEFAULT 1,
-                \`timing_hours\` int NOT NULL DEFAULT 24,
-                \`preferred_channel\` enum('sms','email','both') NOT NULL DEFAULT 'sms',
-                \`sms_template\` text NULL,
-                \`email_subject\` varchar(255) NULL,
-                \`email_template\` text NULL,
-                \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-                \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-                PRIMARY KEY (\`id\`)
-            ) ENGINE=InnoDB`,
+            `CREATE TYPE reminder_channel AS ENUM ('sms', 'email', 'both')`,
+        );
+        await queryRunner.query(
+            `CREATE TABLE reminder_settings (
+                id SERIAL PRIMARY KEY,
+                active BOOLEAN NOT NULL DEFAULT true,
+                timing_hours INTEGER NOT NULL DEFAULT 24,
+                preferred_channel reminder_channel NOT NULL DEFAULT 'sms',
+                sms_template TEXT NULL,
+                email_subject VARCHAR(255) NULL,
+                email_template TEXT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT now(),
+                updated_at TIMESTAMP NOT NULL DEFAULT now()
+            )`,
         );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE \`reminder_settings\``);
+        await queryRunner.query(`DROP TABLE reminder_settings`);
+        await queryRunner.query(`DROP TYPE reminder_channel`);
     }
 }
