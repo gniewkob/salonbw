@@ -66,7 +66,7 @@ interface NamedCustomer {
 
 const DEFAULT_VERSUM_CUSTOMER_ID = 8177102;
 const DEFAULT_PANEL_CUSTOMER_ID = 12;
-const VISUAL_DIFF_THRESHOLD_PCT = 15.0;
+const VISUAL_DIFF_THRESHOLD_PCT = 3.0;
 const VISUAL_DIFF_ACTION_IDS = new Set([
     '01-list',
     '02-summary',
