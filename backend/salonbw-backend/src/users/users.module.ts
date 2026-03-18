@@ -6,9 +6,10 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { EmployeesController } from './employees.controller';
 import { RolesGuard } from '../auth/roles.guard';
+import { LogsModule } from '../logs/logs.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Appointment])],
+    imports: [TypeOrmModule.forFeature([User, Appointment]), LogsModule],
     providers: [UsersService, RolesGuard],
     controllers: [UsersController, EmployeesController],
     exports: [UsersService],
