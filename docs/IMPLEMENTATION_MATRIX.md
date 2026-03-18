@@ -42,15 +42,15 @@ Primary comparison source:
 | `/event_reminders` | `/event-reminders` | `exact` | route bundle + responses | canonical route restored; edit flow saves through reminder settings backend |
 | `/settings/categories` | `/settings/categories` | `invent` | route bundle + modal/category dump | list route exists, but list-level CRUD actions remain non-backend parity |
 | `/settings/categories/new` | `/settings/categories/new` | `exact` | dump + category modal patterns | new category form posts to backend |
-| `/settings/customer_origins` | `/settings/customer-origins` | `invent` | route bundle + responses | route kept for IA parity, with static non-backend management surface |
+| `/settings/customer_origins` | `/settings/customer-origins` | `invent` | route bundle + responses | full backend CRUD implemented; UNIQUE constraint on name; system origins protected from edit/delete |
 | `/settings/customer_panel/settings` | `/settings/customer-panel` | `aliased` | route bundle + screenshot | covered by redirect to customer-panel/online-booking surface |
-| `/settings/data_protection` | `/settings/data-protection` | `invent` | route bundle + responses | route exists, but save flow is not persisted backend state |
+| `/settings/data_protection` | `/settings/data-protection` | `invent` | route bundle + responses | backend CRUD implemented; persisted via BranchSettings (paranoiaMode + paranoiaLimit + paranoiaEmail) |
 | `/settings/employees/:id` | `/settings/employees/[id]` | `exact` | employee route bundles | employee profile screens implemented |
 | `/settings/employees/:id/edit` | `/settings/employees/[id]/edit` | `exact` | employee route bundles | employee edit screens implemented |
 | `/settings/employees/:id/events_history` | `/settings/employees/[id]/events-history` | `exact` | route bundle + responses | event history implemented under canonical kebab-case |
 | `/settings/employees/commissions` | `/settings/employees/commissions` | `exact` | dump + statistics/worktime/commission references | commissions routes implemented |
 | `/settings/employees/new` | `/settings/employees/new` | `exact` | dump + employee form conventions | new employee form posts to backend |
-| `/settings/extra_fields` | `/settings/extra-fields` | `invent` | route bundle + responses | route kept for IA parity, but CRUD stays non-backend |
+| `/settings/extra_fields` | `/settings/extra-fields` | `invent` | route bundle + responses | backend CRUD implemented; select type hidden from UI (no options model yet) |
 | `/settings/timetable/branch` | `/settings/timetable/branch` | `invent` | timetable route bundle | branch timetable view exists, but edit action is not active backend parity |
 | `/settings/timetable/employees/:id` | `/settings/timetable/employees/[id]` | `exact` | route bundle | per-employee timetable implemented |
 | `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |

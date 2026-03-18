@@ -278,7 +278,7 @@ export class SettingsService {
     // Reminder Settings
     async getReminderSettings(): Promise<ReminderSettings> {
         let settings = await this.reminderSettingsRepo.findOne({
-            where: { id: 1 },
+            order: { id: 'ASC' },
         });
 
         if (!settings) {
