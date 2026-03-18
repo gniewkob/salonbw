@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useProductCategories } from '@/hooks/useProducts';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 import type { ProductCategory } from '@/types';
 
 const WAREHOUSE_NAV = (
@@ -91,48 +93,31 @@ export default function SettingsCategoriesPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <div className="actions">
-                        <button
-                            type="button"
+                <PanelSection
+                    title="Kategorie produktów"
+                    action={
+                        <Link
+                            href="/settings/categories/new"
                             className="btn button-blue pull-right"
-                            disabled
                         >
                             + dodaj kategorię
-                        </button>
-                    </div>
-                    <h2>Kategorie produktów</h2>
+                        </Link>
+                    }
+                >
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>Nazwa</div>
-                                    </th>
-                                    <th>
-                                        <div>Akcje</div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {categories.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={2}>Brak kategorii</td>
-                                    </tr>
-                                ) : (
-                                    categories.map((cat) => (
-                                        <CategoryRow
-                                            key={cat.id}
-                                            category={cat}
-                                        />
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        <PanelTable
+                            columns={[{ label: 'Nazwa' }, { label: 'Akcje' }]}
+                            isEmpty={categories.length === 0}
+                            emptyMessage="Brak kategorii"
+                        >
+                            {categories.map((cat) => (
+                                <CategoryRow key={cat.id} category={cat} />
+                            ))}
+                        </PanelTable>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

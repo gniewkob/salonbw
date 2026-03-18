@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 import type { ExtraFieldType } from '@/types';
 import {
     useCustomerExtraFields,
@@ -20,13 +22,7 @@ const TYPE_LABELS: Record<ExtraFieldType, string> = {
     select: 'Lista',
 };
 
-const TYPE_OPTIONS: ExtraFieldType[] = [
-    'text',
-    'number',
-    'date',
-    'checkbox',
-    'select',
-];
+const TYPE_OPTIONS: ExtraFieldType[] = ['text', 'number', 'date', 'checkbox'];
 
 interface AddFormState {
     label: string;
@@ -110,8 +106,8 @@ export default function SettingsExtraFieldsPage() {
                     </ul>
                 </div>
 
-                <div className="inner edit_branch_form">
-                    <div className="actions">
+                <PanelSection
+                    action={
                         <button
                             type="button"
                             className="btn button-blue pull-right"
@@ -119,8 +115,8 @@ export default function SettingsExtraFieldsPage() {
                         >
                             + dodaj pole
                         </button>
-                    </div>
-
+                    }
+                >
                     <div className="extra-fields-description">
                         <div className="description">
                             <p>
@@ -215,201 +211,169 @@ export default function SettingsExtraFieldsPage() {
                     )}
 
                     {!isLoading && !isError && (fields ?? []).length > 0 && (
-                        <table className="table table-bordered extra-fields-table">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>Etykieta</div>
-                                    </th>
-                                    <th>
-                                        <div>Typ</div>
-                                    </th>
-                                    <th>
-                                        <div>Wymagane</div>
-                                    </th>
-                                    <th scope="col" aria-label="Akcje" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(fields ?? []).map((field, i) => (
-                                    <tr
-                                        key={field.id}
-                                        className={i % 2 === 0 ? 'even' : 'odd'}
-                                    >
-                                        {editForm?.id === field.id ? (
-                                            <>
-                                                <td>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control input-sm"
-                                                        value={editForm.label}
-                                                        title="Etykieta pola"
-                                                        onChange={(e) =>
-                                                            setEditForm((f) =>
-                                                                f
-                                                                    ? {
-                                                                          ...f,
-                                                                          label: e
+                        <PanelTable
+                            className="extra-fields-table"
+                            columns={[
+                                { label: 'Etykieta' },
+                                { label: 'Typ' },
+                                { label: 'Wymagane' },
+                                { ariaLabel: 'Akcje' },
+                            ]}
+                        >
+                            {(fields ?? []).map((field, i) => (
+                                <tr
+                                    key={field.id}
+                                    className={i % 2 === 0 ? 'even' : 'odd'}
+                                >
+                                    {editForm?.id === field.id ? (
+                                        <>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    className="form-control input-sm"
+                                                    value={editForm.label}
+                                                    title="Etykieta pola"
+                                                    onChange={(e) =>
+                                                        setEditForm((f) =>
+                                                            f
+                                                                ? {
+                                                                      ...f,
+                                                                      label: e
+                                                                          .target
+                                                                          .value,
+                                                                  }
+                                                                : f,
+                                                        )
+                                                    }
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter')
+                                                            handleEditSave();
+                                                        if (e.key === 'Escape')
+                                                            setEditForm(null);
+                                                    }}
+                                                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                                                    autoFocus
+                                                />
+                                            </td>
+                                            <td>
+                                                <select
+                                                    className="form-control input-sm"
+                                                    title="Typ pola"
+                                                    value={editForm.type}
+                                                    onChange={(e) =>
+                                                        setEditForm((f) =>
+                                                            f
+                                                                ? {
+                                                                      ...f,
+                                                                      type: e
+                                                                          .target
+                                                                          .value as ExtraFieldType,
+                                                                  }
+                                                                : f,
+                                                        )
+                                                    }
+                                                >
+                                                    {TYPE_OPTIONS.map((t) => (
+                                                        <option
+                                                            key={t}
+                                                            value={t}
+                                                        >
+                                                            {TYPE_LABELS[t]}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    title="Wymagane"
+                                                    checked={editForm.required}
+                                                    onChange={(e) =>
+                                                        setEditForm((f) =>
+                                                            f
+                                                                ? {
+                                                                      ...f,
+                                                                      required:
+                                                                          e
                                                                               .target
-                                                                              .value,
-                                                                      }
-                                                                    : f,
-                                                            )
-                                                        }
-                                                        onKeyDown={(e) => {
-                                                            if (
-                                                                e.key ===
-                                                                'Enter'
-                                                            )
-                                                                handleEditSave();
-                                                            if (
-                                                                e.key ===
-                                                                'Escape'
-                                                            )
-                                                                setEditForm(
-                                                                    null,
-                                                                );
-                                                        }}
-                                                        // eslint-disable-next-line jsx-a11y/no-autofocus
-                                                        autoFocus
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <select
-                                                        className="form-control input-sm"
-                                                        title="Typ pola"
-                                                        value={editForm.type}
-                                                        onChange={(e) =>
-                                                            setEditForm((f) =>
-                                                                f
-                                                                    ? {
-                                                                          ...f,
-                                                                          type: e
-                                                                              .target
-                                                                              .value as ExtraFieldType,
-                                                                      }
-                                                                    : f,
-                                                            )
+                                                                              .checked,
+                                                                  }
+                                                                : f,
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+                                            <td className="col-actions">
+                                                <span className="btn-group">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-xs button-blue"
+                                                        onClick={handleEditSave}
+                                                        disabled={
+                                                            updateField.isPending
                                                         }
                                                     >
-                                                        {TYPE_OPTIONS.map(
-                                                            (t) => (
-                                                                <option
-                                                                    key={t}
-                                                                    value={t}
-                                                                >
-                                                                    {
-                                                                        TYPE_LABELS[
-                                                                            t
-                                                                        ]
-                                                                    }
-                                                                </option>
-                                                            ),
-                                                        )}
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        title="Wymagane"
-                                                        checked={
-                                                            editForm.required
+                                                        zapisz
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-xs btn-default"
+                                                        onClick={() =>
+                                                            setEditForm(null)
                                                         }
-                                                        onChange={(e) =>
-                                                            setEditForm((f) =>
-                                                                f
-                                                                    ? {
-                                                                          ...f,
-                                                                          required:
-                                                                              e
-                                                                                  .target
-                                                                                  .checked,
-                                                                      }
-                                                                    : f,
+                                                    >
+                                                        anuluj
+                                                    </button>
+                                                </span>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td>{field.label}</td>
+                                            <td>{TYPE_LABELS[field.type]}</td>
+                                            <td>
+                                                {field.required ? 'Tak' : 'Nie'}
+                                            </td>
+                                            <td className="col-actions">
+                                                <span className="btn-group">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-xs btn-default"
+                                                        onClick={() =>
+                                                            setEditForm({
+                                                                id: field.id,
+                                                                label: field.label,
+                                                                type: field.type,
+                                                                required:
+                                                                    field.required,
+                                                            })
+                                                        }
+                                                    >
+                                                        edytuj
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-xs btn-default"
+                                                        onClick={() =>
+                                                            deleteField.mutate(
+                                                                field.id,
                                                             )
                                                         }
-                                                    />
-                                                </td>
-                                                <td className="col-actions">
-                                                    <span className="btn-group">
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs button-blue"
-                                                            onClick={
-                                                                handleEditSave
-                                                            }
-                                                            disabled={
-                                                                updateField.isPending
-                                                            }
-                                                        >
-                                                            zapisz
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs btn-default"
-                                                            onClick={() =>
-                                                                setEditForm(
-                                                                    null,
-                                                                )
-                                                            }
-                                                        >
-                                                            anuluj
-                                                        </button>
-                                                    </span>
-                                                </td>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <td>{field.label}</td>
-                                                <td>
-                                                    {TYPE_LABELS[field.type]}
-                                                </td>
-                                                <td>
-                                                    {field.required
-                                                        ? 'Tak'
-                                                        : 'Nie'}
-                                                </td>
-                                                <td className="col-actions">
-                                                    <span className="btn-group">
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs btn-default"
-                                                            onClick={() =>
-                                                                setEditForm({
-                                                                    id: field.id,
-                                                                    label: field.label,
-                                                                    type: field.type,
-                                                                    required:
-                                                                        field.required,
-                                                                })
-                                                            }
-                                                        >
-                                                            edytuj
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-xs btn-default"
-                                                            onClick={() =>
-                                                                deleteField.mutate(
-                                                                    field.id,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                deleteField.isPending
-                                                            }
-                                                        >
-                                                            usuń
-                                                        </button>
-                                                    </span>
-                                                </td>
-                                            </>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                                        disabled={
+                                                            deleteField.isPending
+                                                        }
+                                                    >
+                                                        usuń
+                                                    </button>
+                                                </span>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+                        </PanelTable>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

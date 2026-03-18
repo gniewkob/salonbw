@@ -5,6 +5,7 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProductCategories } from '@/hooks/useProducts';
+import PanelSection from '@/components/ui/PanelSection';
 import type { ProductCategory } from '@/types';
 
 const NAV = (
@@ -82,7 +83,7 @@ export default function SettingsCategoriesNewPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
+                <PanelSection>
                     <form onSubmit={(e) => void handleSubmit(e)}>
                         <h2>Dodaj kategorię produktów</h2>
                         <div className="form-group">
@@ -135,7 +136,7 @@ export default function SettingsCategoriesNewPage() {
                             </Link>
                         </div>
                     </form>
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

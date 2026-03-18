@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
+import PanelSection from '@/components/ui/PanelSection';
+import PanelTable from '@/components/ui/PanelTable';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -65,60 +67,42 @@ export default function SettingsEmployeeEventsHistoryPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <h2>Historia wydarzeń — {employee?.name ?? '...'}</h2>
+                <PanelSection
+                    title={`Historia wydarzeń — ${employee?.name ?? '...'}`}
+                >
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <div>Data</div>
-                                    </th>
-                                    <th>
-                                        <div>Akcja</div>
-                                    </th>
-                                    <th>
-                                        <div>Szczegóły</div>
-                                    </th>
+                        <PanelTable
+                            columns={[
+                                { label: 'Data' },
+                                { label: 'Akcja' },
+                                { label: 'Szczegóły' },
+                            ]}
+                            isEmpty={!logs?.items?.length}
+                            emptyMessage="Brak historii wydarzeń"
+                        >
+                            {(logs?.items ?? []).map((log, i) => (
+                                <tr
+                                    key={log.id}
+                                    className={i % 2 === 0 ? 'even' : 'odd'}
+                                >
+                                    <td>
+                                        {new Date(log.timestamp).toLocaleString(
+                                            'pl-PL',
+                                        )}
+                                    </td>
+                                    <td>{log.actionLabel}</td>
+                                    <td>
+                                        {log.details
+                                            ? JSON.stringify(log.details)
+                                            : '—'}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {!logs?.items?.length ? (
-                                    <tr>
-                                        <td colSpan={3}>
-                                            Brak historii wydarzeń
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    logs.items.map((log, i) => (
-                                        <tr
-                                            key={log.id}
-                                            className={
-                                                i % 2 === 0 ? 'even' : 'odd'
-                                            }
-                                        >
-                                            <td>
-                                                {new Date(
-                                                    log.timestamp,
-                                                ).toLocaleString('pl-PL')}
-                                            </td>
-                                            <td>{log.actionLabel}</td>
-                                            <td>
-                                                {log.details
-                                                    ? JSON.stringify(
-                                                          log.details,
-                                                      )
-                                                    : '—'}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                            ))}
+                        </PanelTable>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import PanelSection from '@/components/ui/PanelSection';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
 import { useUpdateEmployee } from '@/hooks/useEmployees';
@@ -76,7 +77,7 @@ export default function SettingsEmployeeEditPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
+                <PanelSection>
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
@@ -142,7 +143,7 @@ export default function SettingsEmployeeEditPage() {
                             </div>
                         </form>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );

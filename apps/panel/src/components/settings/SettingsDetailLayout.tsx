@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import PanelSection from '@/components/ui/PanelSection';
 
 type SettingsDetailNavItem = {
     label: string;
@@ -76,7 +77,7 @@ export default function SettingsDetailLayout({
                     </ul>
                 </div>
 
-                <div className="inner edit_branch_form">{children}</div>
+                <PanelSection>{children}</PanelSection>
             </div>
         </div>
     );

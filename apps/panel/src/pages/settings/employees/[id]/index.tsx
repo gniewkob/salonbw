@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
+import PanelSection from '@/components/ui/PanelSection';
 
 const NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -64,15 +65,16 @@ export default function SettingsEmployeeDetailPage() {
                         </li>
                     </ul>
                 </div>
-                <div className="inner edit_branch_form">
-                    <div className="actions">
+                <PanelSection
+                    action={
                         <Link
                             href={id ? `/settings/employees/${id}/edit` : '#'}
                             className="btn button-blue pull-right"
                         >
                             edytuj
                         </Link>
-                    </div>
+                    }
+                >
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : employee ? (
@@ -102,7 +104,7 @@ export default function SettingsEmployeeDetailPage() {
                     ) : (
                         <p>Nie znaleziono pracownika.</p>
                     )}
-                </div>
+                </PanelSection>
             </div>
         </div>
     );
