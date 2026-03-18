@@ -63,24 +63,17 @@ export default function ContactForm() {
         setEmailError('');
         setSubmitError('');
         const retries = 3;
-        const recipient =
-            process.env.NEXT_PUBLIC_CONTACT_RECIPIENT || 'kontakt@salon-bw.pl';
         for (let attempt = 0; attempt < retries; attempt++) {
             try {
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/emails/send`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            to: recipient,
-                            subject: `Zapytanie ze strony - ${form.name}`,
-                            template:
-                                '<p><strong>Imię:</strong> {{name}}</p>' +
-                                '<p><strong>Email:</strong> {{email}}</p>' +
-                                '<p><strong>Wiadomość:</strong></p>' +
-                                '<p>{{message}}</p>',
-                            data: { name, email, message },
+                            name,
+                            replyTo: email,
+                            message,
                         }),
                     },
                 );

@@ -5,6 +5,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SendEmailDto } from './dto/send-email.dto';
+import { ContactFormDto } from './dto/contact-form.dto';
 import { MetricsService } from '../observability/metrics.service';
 import { EmailLog, EmailLogStatus } from './email-log.entity';
 import { User } from '../users/user.entity';
@@ -98,6 +99,29 @@ export class EmailsService {
 
     async send(dto: SendEmailDto): Promise<void> {
         return this.sendInternal(dto, { sentById: null });
+    }
+
+    async sendContact(dto: ContactFormDto): Promise<void> {
+        const recipient =
+            this.configService.get<string>('CONTACT_RECIPIENT') ||
+            'kontakt@salon-bw.pl';
+        return this.sendInternal(
+            {
+                to: recipient,
+                subject: `Zapytanie ze strony - ${dto.name}`,
+                template:
+                    '<p><strong>Imię:</strong> {{name}}</p>' +
+                    '<p><strong>Email:</strong> {{replyTo}}</p>' +
+                    '<p><strong>Wiadomość:</strong></p>' +
+                    '<p>{{message}}</p>',
+                data: {
+                    name: dto.name,
+                    replyTo: dto.replyTo,
+                    message: dto.message,
+                },
+            },
+            { sentById: null },
+        );
     }
 
     async sendAsUser(dto: SendEmailDto, sentById: number): Promise<void> {
