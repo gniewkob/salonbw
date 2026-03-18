@@ -16,6 +16,11 @@ export class CreateCustomerOriginsTable1760200000000
         `);
 
         await queryRunner.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS customer_origins_name_unique
+            ON customer_origins (name)
+        `);
+
+        await queryRunner.query(`
             INSERT INTO customer_origins (name, is_system, sort_order) VALUES
                 ('Facebook', TRUE, 1),
                 ('Polecenie przez innego klienta', TRUE, 2),
@@ -27,6 +32,7 @@ export class CreateCustomerOriginsTable1760200000000
                 ('Tablica reklamowa/banner', TRUE, 8),
                 ('Ulotki', TRUE, 9),
                 ('Zakupy grupowe', TRUE, 10)
+            ON CONFLICT (name) DO NOTHING
         `);
     }
 

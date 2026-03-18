@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ConflictException,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
@@ -646,7 +647,21 @@ export class CustomersService {
             name: dto.name,
             isSystem: false,
         });
-        return this.originsRepo.save(origin);
+        try {
+            return await this.originsRepo.save(origin);
+        } catch (err: unknown) {
+            if (
+                typeof err === 'object' &&
+                err !== null &&
+                'code' in err &&
+                (err as { code: string }).code === '23505'
+            ) {
+                throw new ConflictException(
+                    `Źródło o nazwie "${dto.name}" już istnieje`,
+                );
+            }
+            throw err;
+        }
     }
 
     async updateOrigin(
@@ -658,7 +673,21 @@ export class CustomersService {
         if (origin.isSystem)
             throw new BadRequestException('Cannot edit system origins');
         origin.name = dto.name;
-        return this.originsRepo.save(origin);
+        try {
+            return await this.originsRepo.save(origin);
+        } catch (err: unknown) {
+            if (
+                typeof err === 'object' &&
+                err !== null &&
+                'code' in err &&
+                (err as { code: string }).code === '23505'
+            ) {
+                throw new ConflictException(
+                    `Źródło o nazwie "${dto.name}" już istnieje`,
+                );
+            }
+            throw err;
+        }
     }
 
     async deleteOrigin(id: number): Promise<void> {
