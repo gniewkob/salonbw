@@ -5,12 +5,14 @@ import type {
     BranchSettings,
     CalendarSettings,
     OnlineBookingSettings,
+    PaymentConfigurationSettings,
     SmsSettings,
     ReminderSettings,
     DataProtectionSettings,
     UpdateBranchSettingsRequest,
     UpdateCalendarSettingsRequest,
     UpdateOnlineBookingSettingsRequest,
+    UpdatePaymentConfigurationRequest,
     UpdateReminderSettingsRequest,
     UpdateDataProtectionRequest,
 } from '@/types';
@@ -96,6 +98,19 @@ export function useDataProtectionSettings() {
     });
 }
 
+export function usePaymentConfigurationSettings() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: [...SETTINGS_QUERY_KEY, 'payment-configuration'],
+        queryFn: async () => {
+            return apiFetch<PaymentConfigurationSettings>(
+                '/settings/payment-configuration',
+            );
+        },
+    });
+}
+
 export function useSettingsMutations() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
@@ -167,6 +182,19 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const updatePaymentConfiguration = useMutation({
+        mutationFn: async (data: UpdatePaymentConfigurationRequest) => {
+            return apiFetch<PaymentConfigurationSettings>(
+                '/settings/payment-configuration',
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                },
+            );
+        },
+        onSuccess: invalidateAll,
+    });
+
     return {
         updateBranchSettings,
         updateCalendarSettings,
@@ -174,5 +202,6 @@ export function useSettingsMutations() {
         updateSmsSettings,
         updateReminderSettings,
         updateDataProtection,
+        updatePaymentConfiguration,
     };
 }
