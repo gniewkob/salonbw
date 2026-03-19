@@ -9,7 +9,6 @@ import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCreateService,
-    useCreateServiceVariant,
     useServiceCategories,
 } from '@/hooks/useServicesAdmin';
 import type { PriceType, ServiceCategory } from '@/types';
@@ -75,7 +74,6 @@ function NewServicePageContent() {
     const router = useRouter();
     const { data: categories = [] } = useServiceCategories();
     const createService = useCreateService();
-    const createVariant = useCreateServiceVariant();
 
     const [name, setName] = useState('');
     const [categoryId, setCategoryId] = useState<string>(
@@ -250,21 +248,16 @@ function NewServicePageContent() {
                 vatRate: activeVatRate,
                 categoryId: categoryId ? Number(categoryId) : undefined,
                 onlineBooking: onlineBookingMode === 'online_booking_enabled',
+                variants:
+                    measureKind === 'multiple'
+                        ? validVariants.map((v) => ({
+                              name: v.name,
+                              duration: v.duration,
+                              price: v.price,
+                              priceType: 'fixed' as PriceType,
+                          }))
+                        : undefined,
             });
-
-            if (measureKind === 'multiple') {
-                for (const variant of validVariants) {
-                    await createVariant.mutateAsync({
-                        serviceId: createdService.id,
-                        data: {
-                            name: variant.name,
-                            duration: variant.duration,
-                            price: variant.price,
-                            priceType: 'fixed',
-                        },
-                    });
-                }
-            }
 
             if (mode === 'save_and_add_another') {
                 resetForm();

@@ -188,6 +188,7 @@ export interface CreateServiceDto {
     isActive?: boolean;
     onlineBooking?: boolean;
     sortOrder?: number;
+    variants?: CreateServiceVariantDto[];
 }
 
 export function useCreateService() {

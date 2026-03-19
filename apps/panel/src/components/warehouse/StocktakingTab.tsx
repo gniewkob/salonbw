@@ -34,6 +34,7 @@ export default function StocktakingTab() {
         stocktakingDate: new Date().toISOString().split('T')[0],
         notes: '',
     });
+    const [error, setError] = useState<string | null>(null);
 
     const { data: stocktakings = [], isLoading } = useStocktakings(
         statusFilter ? { status: statusFilter } : undefined,
@@ -47,15 +48,18 @@ export default function StocktakingTab() {
             stocktakingDate: new Date().toISOString().split('T')[0],
             notes: '',
         });
+        setError(null);
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         try {
             await createStocktaking.mutateAsync({
                 stocktakingDate: formData.stocktakingDate || undefined,
@@ -64,6 +68,7 @@ export default function StocktakingTab() {
             handleCloseModal();
         } catch (err) {
             console.error('Error creating stocktaking:', err);
+            setError('Wystąpił błąd podczas tworzenia inwentaryzacji.');
         }
     };
 
@@ -315,6 +320,11 @@ export default function StocktakingTab() {
                             <h2 className="text-xl font-semibold mb-4">
                                 Nowa inwentaryzacja
                             </h2>
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                                    {error}
+                                </div>
+                            )}
                             <form
                                 onSubmit={(event) => {
                                     void handleSubmit(event);

@@ -35,6 +35,7 @@ export default function DeliveriesTab() {
         invoiceNumber: '',
         notes: '',
     });
+    const [error, setError] = useState<string | null>(null);
 
     const { data: deliveries = [], isLoading } = useDeliveries(
         statusFilter ? { status: statusFilter } : undefined,
@@ -51,15 +52,18 @@ export default function DeliveriesTab() {
             invoiceNumber: '',
             notes: '',
         });
+        setError(null);
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         try {
             await createDelivery.mutateAsync({
                 supplierId: formData.supplierId
@@ -72,6 +76,7 @@ export default function DeliveriesTab() {
             handleCloseModal();
         } catch (err) {
             console.error('Error creating delivery:', err);
+            setError('Wystąpił błąd podczas tworzenia dostawy.');
         }
     };
 
@@ -289,6 +294,11 @@ export default function DeliveriesTab() {
                             <h2 className="text-xl font-semibold mb-4">
                                 Nowa dostawa
                             </h2>
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                                    {error}
+                                </div>
+                            )}
                             <form
                                 onSubmit={(event) => {
                                     void handleSubmit(event);
