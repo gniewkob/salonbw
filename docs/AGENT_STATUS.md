@@ -17,7 +17,7 @@ Current audit state:
 - P1 routes are covered, but not all are `exact`
 - known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`
 - P2 routes are covered as a mix of `exact`, `aliased`, and `invent`
-- explicit non-exact P2 examples: `/settings/data_protection`, `/settings/trades/new`
+- explicit non-exact P2 example: `/settings/data_protection`
 - P3 families such as PDF export and social remain outside the current project scope
 
 Local implementation note (2026-03-19):
@@ -30,6 +30,7 @@ Local implementation note (2026-03-19):
 - `/settings/timetable/branch` now supports multiple opening-hour ranges per day on top of the active branch `workingHours` backend model, matching the main dump behavior closely enough to treat the route as `exact`.
 - `/settings/categories` now has persisted list-level reorder parity; the route supports save-order mode via backend `product-categories/reorder`, so it no longer belongs in the remaining non-exact P2 examples.
 - `/settings/customer-origins` aligns with the dump well enough to treat as `exact`: salon-defined origins support live add/edit/delete, and the system origins section remains read-only.
+- `/settings/trades/new` is no longer an honest disabled stub; it now creates real service categories through the existing `service-categories` backend and redirects into the services module, so the route can be treated as `exact`.
 
 ## Latest Production Rollout
 
