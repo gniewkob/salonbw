@@ -4929,6 +4929,103 @@ h2.column_row small {
     margin-top: 10px;
 }
 
+.timetable-employee-detail__top {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.timetable-employee-detail__table {
+    background: #fff;
+    width: 100%;
+}
+
+.timetable-employee-detail__table th {
+    background: #f7f8fa;
+    border-bottom: 1px solid #dde3e8;
+    color: #49515a;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.timetable-employee-detail__table td {
+    border-bottom: 1px solid #edf1f4;
+    border-right: 1px solid #edf1f4;
+    vertical-align: top;
+}
+
+.timetable-employee-detail__week {
+    background: #fafbfd;
+    min-width: 170px;
+    padding: 12px 10px;
+    width: 170px;
+}
+
+.timetable-employee-detail__day {
+    min-width: 126px;
+    padding: 10px 8px;
+}
+
+.timetable-employee-detail__day .schedule-cell {
+    min-height: 92px;
+}
+
+.timetable-employee-detail__day .date {
+    color: #7f8993;
+    display: block;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.timetable-employee-detail__workspace {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    margin-top: 20px;
+}
+
+.timetable-employee-detail__workspace-main,
+.timetable-employee-detail__workspace-side {
+    min-width: 0;
+}
+
+.timetable-employee-detail__card {
+    background: #fff;
+    border: 1px solid #d8dde3;
+    padding: 20px;
+}
+
+.timetable-employee-detail__card-head {
+    align-items: flex-start;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.timetable-employee-detail__card-head h3 {
+    color: #2f3640;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.timetable-employee-detail__card-head p {
+    color: #6f7882;
+    line-height: 1.5;
+    margin: 6px 0 0;
+}
+
+.timetable-employee-detail__card-placeholder {
+    color: #6f7882;
+    line-height: 1.6;
+    padding: 16px 0 4px;
+}
+
 .timetable-templates-page__table {
     background: #fff;
     width: 100%;
@@ -5034,6 +5131,16 @@ h2.column_row small {
         gap: 10px;
     }
 
+    .timetable-employee-detail__top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .timetable-employee-detail__workspace {
+        grid-template-columns: 1fr;
+    }
+
     .timetable-templates-page__table {
         display: block;
         overflow-x: auto;
@@ -5103,6 +5210,11 @@ h2.column_row small {
     }
 
     .timetable-employees-page__table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .timetable-employee-detail__table {
         display: block;
         overflow-x: auto;
     }
