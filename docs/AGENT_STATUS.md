@@ -25,6 +25,7 @@ Local implementation note (2026-03-19):
 - `/settings/payment_configuration` no longer uses a reconstructed activation notice as its primary flow; the page now reads/writes `settings/payment-configuration` and persists Moment Pay activation plus prepayment settings through backend state.
 - `/settings/timetable/employees` overview now routes into a rebuilt per-employee monthly timetable view with working weekly editing and exception management instead of the earlier simplified local detail behavior.
 - `/settings/extra_fields` now supports the `select` field type end-to-end, including persisted option lists in backend state and editable options in the panel UI.
+- `/settings/timetable/branch` no longer uses a dead edit button; the page now reads/writes weekly opening hours through the active branch `workingHours` backend model, while still remaining an `invent` route because Versum's multi-range/day and full tab behavior are not fully mirrored yet.
 
 ## Latest Production Rollout
 
