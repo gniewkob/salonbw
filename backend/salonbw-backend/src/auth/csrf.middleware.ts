@@ -18,7 +18,7 @@ const EXCLUDED_PATHS = new Set([
     '/api/auth/register',
     '/logs/client',
     // Public contact form endpoint (no session cookies / CSRF token)
-    '/emails/send',
+    '/emails/contact',
     // Calendar endpoints - authenticated via JWT, vendored JS doesn't send CSRF
     '/graphql',
     '/events',

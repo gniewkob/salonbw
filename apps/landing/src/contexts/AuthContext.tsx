@@ -78,18 +78,10 @@ const hasAuthHint = () => {
         return false;
     }
     const cookieToken = Cookies.get('accessToken');
-    const cookieRefresh = Cookies.get('refreshToken');
     const cookieAuth = Cookies.get('sbw_auth');
     const storageToken = readLocalStorageValue(ACCESS_TOKEN_KEY);
-    const storageRefresh = readLocalStorageValue(REFRESH_TOKEN_KEY);
 
-    return Boolean(
-        cookieToken ||
-            cookieRefresh ||
-            cookieAuth ||
-            storageToken ||
-            storageRefresh,
-    );
+    return Boolean(cookieToken || cookieAuth || storageToken);
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -106,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (nextTokens) {
             Cookies.set('accessToken', nextTokens.accessToken, cookieOptions);
-            Cookies.set('refreshToken', nextTokens.refreshToken, cookieOptions);
             Cookies.set('sbw_auth', 'true', cookieOptions);
         } else {
             Cookies.remove('accessToken', cookieOptions);
@@ -119,10 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ACCESS_TOKEN_KEY,
             nextTokens?.accessToken ?? null,
         );
-        writeLocalStorageValue(
-            REFRESH_TOKEN_KEY,
-            nextTokens?.refreshToken ?? null,
-        );
+        // Refresh token is stored in an httpOnly cookie by the backend;
+        // keeping it in localStorage or js-cookie is a security risk (XSS-readable).
+        writeLocalStorageValue(REFRESH_TOKEN_KEY, null);
     }, []);
 
     const clearSessionState = useCallback(() => {
