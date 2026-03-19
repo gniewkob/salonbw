@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProductCategories } from '@/hooks/useProducts';
 import PanelSection from '@/components/ui/PanelSection';
 import type { ProductCategory } from '@/types';
@@ -26,50 +26,112 @@ const NAV = (
     </div>
 );
 
-function useCreateProductCategory() {
-    const { apiFetch } = useAuth();
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (data: { name: string; parentId?: number }) =>
-            apiFetch<ProductCategory>('/product-categories', {
-                method: 'POST',
-                body: JSON.stringify(data),
-            }),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: ['product-categories'],
-            });
-        },
-    });
+function flattenCategories(
+    categories: ProductCategory[],
+    depth = 0,
+): Array<ProductCategory & { depth: number }> {
+    return categories.flatMap((category) => [
+        { ...category, depth },
+        ...flattenCategories(category.children ?? [], depth + 1),
+    ]);
 }
 
-export default function SettingsCategoriesNewPage() {
+export default function SettingsCategoriesEditPage() {
     const router = useRouter();
     useSetSecondaryNav(NAV);
 
-    const createCategory = useCreateProductCategory();
-    const { data: categories = [] } = useProductCategories();
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    const categoryId = Number(router.query.id);
+    const { data: categories = [], isLoading } = useProductCategories();
+    const flatCategories = useMemo(
+        () => flattenCategories(categories),
+        [categories],
+    );
+    const category = useMemo(
+        () => flatCategories.find((entry) => entry.id === categoryId) ?? null,
+        [categoryId, flatCategories],
+    );
+    const selectableParents = useMemo(
+        () => flatCategories.filter((entry) => entry.id !== categoryId),
+        [categoryId, flatCategories],
+    );
+
     const [name, setName] = useState('');
-    const initialParentId = useMemo(() => {
-        const queryValue = router.query.parent_id;
-        return typeof queryValue === 'string' ? queryValue : '';
-    }, [router.query.parent_id]);
-    const [parentId, setParentId] = useState(initialParentId);
+    const [parentId, setParentId] = useState('');
+
+    const updateCategory = useMutation({
+        mutationFn: async (payload: {
+            name: string;
+            parentId?: number | null;
+        }) =>
+            apiFetch<ProductCategory>(`/product-categories/${categoryId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            }),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories-tree'],
+                }),
+            ]);
+        },
+    });
 
     useEffect(() => {
-        if (initialParentId && !parentId) {
-            setParentId(initialParentId);
-        }
-    }, [initialParentId, parentId]);
+        if (!category) return;
+        setName((current) => current || category.name);
+        setParentId(
+            (current) =>
+                current || (category.parentId ? String(category.parentId) : ''),
+        );
+    }, [category]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await createCategory.mutateAsync({
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!categoryId) return;
+
+        await updateCategory.mutateAsync({
             name,
-            ...(parentId ? { parentId: Number(parentId) } : {}),
+            parentId: parentId ? Number(parentId) : null,
         });
         void router.push('/settings/categories');
     };
+
+    if (isLoading) {
+        return (
+            <div
+                className="settings-detail-layout"
+                data-testid="settings-detail"
+            >
+                <aside className="settings-detail-layout__sidebar">{NAV}</aside>
+                <div className="settings-detail-layout__main">
+                    <PanelSection>
+                        <p>Ładowanie...</p>
+                    </PanelSection>
+                </div>
+            </div>
+        );
+    }
+
+    if (!category) {
+        return (
+            <div
+                className="settings-detail-layout"
+                data-testid="settings-detail"
+            >
+                <aside className="settings-detail-layout__sidebar">{NAV}</aside>
+                <div className="settings-detail-layout__main">
+                    <PanelSection>
+                        <p>Nie znaleziono kategorii.</p>
+                    </PanelSection>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="settings-detail-layout" data-testid="settings-detail">
@@ -89,13 +151,13 @@ export default function SettingsCategoriesNewPage() {
                         </li>
                         <li>
                             <span> / </span>
-                            Nowa kategoria
+                            Edycja kategorii
                         </li>
                     </ul>
                 </div>
                 <PanelSection>
-                    <form onSubmit={(e) => void handleSubmit(e)}>
-                        <h2>Dodaj kategorię produktów</h2>
+                    <form onSubmit={(event) => void handleSubmit(event)}>
+                        <h2>Edytuj kategorię produktów</h2>
                         <div className="form-group">
                             <label htmlFor="name" className="control-label">
                                 Nazwa
@@ -105,7 +167,9 @@ export default function SettingsCategoriesNewPage() {
                                 type="text"
                                 className="form-control"
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(event) =>
+                                    setName(event.target.value)
+                                }
                                 required
                             />
                         </div>
@@ -117,12 +181,14 @@ export default function SettingsCategoriesNewPage() {
                                 id="parentId"
                                 className="form-control"
                                 value={parentId}
-                                onChange={(e) => setParentId(e.target.value)}
+                                onChange={(event) =>
+                                    setParentId(event.target.value)
+                                }
                             >
                                 <option value="">— brak —</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
+                                {selectableParents.map((entry) => (
+                                    <option key={entry.id} value={entry.id}>
+                                        {'-'.repeat(entry.depth)} {entry.name}
                                     </option>
                                 ))}
                             </select>
@@ -131,11 +197,11 @@ export default function SettingsCategoriesNewPage() {
                             <button
                                 type="submit"
                                 className="btn button-blue"
-                                disabled={createCategory.isPending}
+                                disabled={updateCategory.isPending}
                             >
-                                {createCategory.isPending
+                                {updateCategory.isPending
                                     ? 'Zapisywanie...'
-                                    : 'Dodaj kategorię'}
+                                    : 'Zapisz kategorię'}
                             </button>
                             <Link
                                 href="/settings/categories"
