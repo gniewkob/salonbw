@@ -8,6 +8,7 @@ import { ReminderSettings } from './entities/reminder-settings.entity';
 import { SettingsService } from './settings.service';
 import { SettingsController } from './settings.controller';
 import { LogsModule } from '../logs/logs.module';
+import { User } from '../users/user.entity';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { LogsModule } from '../logs/logs.module';
             OnlineBookingSettings,
             SmsSettings,
             ReminderSettings,
+            User,
         ]),
         LogsModule,
     ],

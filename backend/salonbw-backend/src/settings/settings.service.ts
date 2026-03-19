@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BranchSettings } from './entities/branch-settings.entity';
@@ -14,10 +14,12 @@ import {
     UpdateReminderSettingsDto,
     UpdatePaymentConfigurationDto,
     UpdateDataProtectionDto,
+    UpdateDataProtectionEmployeeLimitDto,
 } from './dto/settings.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { User } from '../users/user.entity';
+import { Role } from '../users/role.enum';
 
 @Injectable()
 export class SettingsService {
@@ -34,6 +36,8 @@ export class SettingsService {
         private readonly smsSettingsRepo: Repository<SmsSettings>,
         @InjectRepository(ReminderSettings)
         private readonly reminderSettingsRepo: Repository<ReminderSettings>,
+        @InjectRepository(User)
+        private readonly usersRepo: Repository<User>,
         private readonly logService: LogService,
     ) {}
 
@@ -240,6 +244,24 @@ export class SettingsService {
         };
     }
 
+    async getDataProtectionEmployeeLimits() {
+        const users = await this.usersRepo.find({
+            where: [
+                { role: Role.Admin },
+                { role: Role.Employee },
+                { role: Role.Receptionist },
+            ],
+            order: { name: 'ASC' },
+        });
+
+        return users.map((user) => ({
+            id: user.id,
+            name: user.name,
+            role: user.role,
+            paranoiaLimitOverride: user.paranoiaLimitOverride,
+        }));
+    }
+
     async updateDataProtection(dto: UpdateDataProtectionDto, actorId: number) {
         const settings = await this.getBranchSettings();
         const oldValues = this.toRecord(settings);
@@ -260,6 +282,42 @@ export class SettingsService {
             paranoiaMode: updated.paranoiaMode,
             paranoiaLimit: updated.paranoiaLimit,
             paranoiaEmail: updated.paranoiaEmail,
+        };
+    }
+
+    async updateDataProtectionEmployeeLimit(
+        userId: number,
+        dto: UpdateDataProtectionEmployeeLimitDto,
+        actorId: number,
+    ) {
+        const user = await this.usersRepo.findOne({ where: { id: userId } });
+        if (
+            !user ||
+            (user.role !== Role.Employee && user.role !== Role.Receptionist)
+        ) {
+            throw new NotFoundException(
+                'Employee data protection limit target not found',
+            );
+        }
+
+        user.paranoiaLimitOverride = dto.paranoiaLimit;
+        const updated = await this.usersRepo.save(user);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.EMPLOYEE_UPDATED,
+            {
+                employeeId: updated.id,
+                employeeName: updated.name,
+                paranoiaLimitOverride: updated.paranoiaLimitOverride,
+            },
+        );
+
+        return {
+            id: updated.id,
+            name: updated.name,
+            role: updated.role,
+            paranoiaLimitOverride: updated.paranoiaLimitOverride,
         };
     }
 

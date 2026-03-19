@@ -5839,3 +5839,49 @@ body.e2e-extension .main-content .inner.extension_info {
 .extra-fields-table {
     margin-top: 16px;
 }
+
+.data-protection-limits {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+}
+
+.data-protection-limits li {
+    border-top: 1px solid #e6e6e6;
+    padding: 16px 0;
+}
+
+.data-protection-limits li:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.data-protection-limits__role {
+    font-weight: 400;
+}
+
+.data-protection-limits__summary,
+.data-protection-limits__editor {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.data-protection-limits__input {
+    width: 90px;
+}
+
+.button-link {
+    background: none;
+    border: 0;
+    color: #2575ed;
+    cursor: pointer;
+    padding: 0;
+}
+
+.button-link[disabled] {
+    color: #8ca7d9;
+    cursor: default;
+}

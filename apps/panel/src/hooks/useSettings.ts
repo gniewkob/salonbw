@@ -9,12 +9,14 @@ import type {
     SmsSettings,
     ReminderSettings,
     DataProtectionSettings,
+    DataProtectionEmployeeLimit,
     UpdateBranchSettingsRequest,
     UpdateCalendarSettingsRequest,
     UpdateOnlineBookingSettingsRequest,
     UpdatePaymentConfigurationRequest,
     UpdateReminderSettingsRequest,
     UpdateDataProtectionRequest,
+    UpdateDataProtectionEmployeeLimitRequest,
 } from '@/types';
 
 export const SETTINGS_QUERY_KEY = ['api', '/settings'] as const;
@@ -93,6 +95,19 @@ export function useDataProtectionSettings() {
         queryFn: async () => {
             return apiFetch<DataProtectionSettings>(
                 '/settings/data-protection',
+            );
+        },
+    });
+}
+
+export function useDataProtectionEmployeeLimits() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: [...SETTINGS_QUERY_KEY, 'data-protection', 'employee-limits'],
+        queryFn: async () => {
+            return apiFetch<DataProtectionEmployeeLimit[]>(
+                '/settings/data-protection/employee-limits',
             );
         },
     });
@@ -182,6 +197,34 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const updateDataProtectionEmployeeLimit = useMutation({
+        mutationFn: async ({
+            id,
+            data,
+        }: {
+            id: number;
+            data: UpdateDataProtectionEmployeeLimitRequest;
+        }) => {
+            return apiFetch<DataProtectionEmployeeLimit>(
+                `/settings/data-protection/employee-limits/${id}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                },
+            );
+        },
+        onSuccess: () => {
+            invalidateAll();
+            void queryClient.invalidateQueries({
+                queryKey: [
+                    ...SETTINGS_QUERY_KEY,
+                    'data-protection',
+                    'employee-limits',
+                ],
+            });
+        },
+    });
+
     const updatePaymentConfiguration = useMutation({
         mutationFn: async (data: UpdatePaymentConfigurationRequest) => {
             return apiFetch<PaymentConfigurationSettings>(
@@ -202,6 +245,7 @@ export function useSettingsMutations() {
         updateSmsSettings,
         updateReminderSettings,
         updateDataProtection,
+        updateDataProtectionEmployeeLimit,
         updatePaymentConfiguration,
     };
 }
