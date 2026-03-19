@@ -32,7 +32,7 @@ Primary comparison source:
 | `/settings/payment_configuration` | `/settings/payment-configuration` | `invent` | route bundle + responses | visible route exists, but activation flow is still reconstructed |
 | `/settings/sms` | `/settings/sms` | `exact` | route bundle + existing sms components | SMS settings save through backend |
 | `/settings/timetable/employees` | `/settings/timetable/employees` | `invent` | route bundle + worktime/timetable assets | weekly overview exists, but some detail behavior remains simplified |
-| `/settings/timetable/templates` | `/settings/timetable/templates` | `invent` | route bundle + timetable patterns | template CRUD is local only, without shared backend |
+| `/settings/timetable/templates` | `/settings/timetable/templates` | `exact` | route bundle + timetable patterns | template list + add/rename/delete now persist through dedicated backend resource |
 | `/helps/new` | `/helps/new` | `exact` | route bundle + screenshot | support/help form implemented |
 
 ## P2 Matrix

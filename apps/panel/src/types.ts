@@ -993,6 +993,26 @@ export interface Timetable {
     updatedAt: string;
 }
 
+export type TimetableTemplateDayKind = 'open' | 'dayoff' | 'closed';
+
+export interface TimetableTemplateDay {
+    id: number;
+    templateId: number;
+    dayOfWeek: DayOfWeek;
+    kind: TimetableTemplateDayKind;
+    startTime?: string | null;
+    endTime?: string | null;
+}
+
+export interface TimetableTemplate {
+    id: number;
+    name: string;
+    colorClass: 'color1' | 'color2' | 'color3' | 'color4' | 'color5';
+    days: TimetableTemplateDay[];
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface AvailabilitySlot {
     date: string;
     dayOfWeek: DayOfWeek;

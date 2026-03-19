@@ -15,10 +15,13 @@ Operational note (2026-03-19):
 Current audit state:
 
 - P1 routes are covered, but not all are `exact`
-- known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`, `/settings/payment_configuration`, `/settings/timetable/employees`, `/settings/timetable/templates`
+- known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`, `/settings/payment_configuration`, `/settings/timetable/employees`
 - P2 routes are covered as a mix of `exact`, `aliased`, and `invent`
 - explicit non-exact P2 examples: `/settings/categories`, `/settings/customer_origins`, `/settings/data_protection`, `/settings/extra_fields`, `/settings/timetable/branch`, `/settings/timetable/employees/copy`, `/settings/trades/new`
 - P3 families such as PDF export and social remain outside the current project scope
+
+Local implementation note (2026-03-19):
+- `/settings/timetable/templates` no longer relies on `localStorage`; the route now uses dedicated backend CRUD (`timetable_templates` + per-day rows) with seeded timetable templates matching the prior fallback defaults.
 
 ## Latest Production Rollout
 
