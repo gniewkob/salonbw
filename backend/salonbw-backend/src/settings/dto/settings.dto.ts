@@ -11,6 +11,7 @@ import {
     Length,
     Matches,
     IsArray,
+    ValidateIf,
 } from 'class-validator';
 import { CalendarView } from '../entities/calendar-settings.entity';
 import { SmsType } from '../entities/sms-settings.entity';
@@ -521,6 +522,13 @@ export class UpdateDataProtectionDto {
     @IsOptional()
     @IsEmail()
     paranoiaEmail?: string;
+}
+
+export class UpdateDataProtectionEmployeeLimitDto {
+    @ValidateIf((_object, value) => value !== null)
+    @IsNumber()
+    @Min(1)
+    paranoiaLimit!: number | null;
 }
 
 // Combined settings response

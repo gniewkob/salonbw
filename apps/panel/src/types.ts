@@ -1505,10 +1505,21 @@ export interface DataProtectionSettings {
     paranoiaEmail: string | null;
 }
 
+export interface DataProtectionEmployeeLimit {
+    id: number;
+    name: string;
+    role: 'admin' | 'employee' | 'receptionist' | 'client';
+    paranoiaLimitOverride: number | null;
+}
+
 export interface UpdateDataProtectionRequest {
     paranoiaMode?: boolean;
     paranoiaLimit?: number;
     paranoiaEmail?: string;
+}
+
+export interface UpdateDataProtectionEmployeeLimitRequest {
+    paranoiaLimit: number | null;
 }
 
 export interface CalendarSettings {

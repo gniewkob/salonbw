@@ -4,6 +4,7 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
 import PanelActionBar from '@/components/ui/PanelActionBar';
 import {
+    useDataProtectionEmployeeLimits,
     useDataProtectionSettings,
     useSettingsMutations,
 } from '@/hooks/useSettings';
@@ -14,12 +15,18 @@ export default function SettingsDataProtectionPage() {
     useSetSecondaryNav(NAV);
 
     const { data, isLoading, isError } = useDataProtectionSettings();
-    const { updateDataProtection } = useSettingsMutations();
+    const employeeLimits = useDataProtectionEmployeeLimits();
+    const { updateDataProtection, updateDataProtectionEmployeeLimit } =
+        useSettingsMutations();
 
     const [paranoiaMode, setParanoiaMode] = useState(false);
     const [paranoiaLimit, setParanoiaLimit] = useState(20);
     const [paranoiaEmail, setParanoiaEmail] = useState('');
     const [saved, setSaved] = useState(false);
+    const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(
+        null,
+    );
+    const [employeeLimitDraft, setEmployeeLimitDraft] = useState('');
 
     useEffect(() => {
         if (data) {
@@ -44,6 +51,58 @@ export default function SettingsDataProtectionPage() {
                 },
             },
         );
+    };
+
+    const startEmployeeLimitEdit = (id: number, limit: number) => {
+        setEditingEmployeeId(id);
+        setEmployeeLimitDraft(String(limit));
+    };
+
+    const cancelEmployeeLimitEdit = () => {
+        setEditingEmployeeId(null);
+        setEmployeeLimitDraft('');
+    };
+
+    const saveEmployeeLimit = (id: number) => {
+        const nextLimit = Number(employeeLimitDraft);
+        if (!Number.isFinite(nextLimit) || nextLimit < 1) {
+            return;
+        }
+
+        updateDataProtectionEmployeeLimit.mutate(
+            { id, data: { paranoiaLimit: nextLimit } },
+            {
+                onSuccess: () => {
+                    cancelEmployeeLimitEdit();
+                },
+            },
+        );
+    };
+
+    const clearEmployeeLimit = (id: number) => {
+        updateDataProtectionEmployeeLimit.mutate(
+            { id, data: { paranoiaLimit: null } },
+            {
+                onSuccess: () => {
+                    if (editingEmployeeId === id) {
+                        cancelEmployeeLimitEdit();
+                    }
+                },
+            },
+        );
+    };
+
+    const formatEmployeeRole = (role: string) => {
+        switch (role) {
+            case 'admin':
+                return 'Administrator';
+            case 'receptionist':
+                return 'Recepcjonista';
+            case 'employee':
+                return 'Pracownik';
+            default:
+                return role;
+        }
     };
 
     return (
@@ -86,6 +145,15 @@ export default function SettingsDataProtectionPage() {
                         className="inner edit_branch_form"
                         onSubmit={handleSubmit}
                     >
+                        <div className="actions">
+                            <Link
+                                className="button"
+                                href="/settings/data_protection/logs"
+                            >
+                                Rejestr aktywności pracowników
+                            </Link>
+                        </div>
+
                         <h2>Tryb ochrony danych</h2>
 
                         {saved && (
@@ -171,10 +239,177 @@ export default function SettingsDataProtectionPage() {
                                 <div className="form-group">
                                     <h2>Indywidualne limity dla pracowników</h2>
                                     <p className="help-block">
-                                        Konfiguracja indywidualnych limitów dla
-                                        poszczególnych pracowników jest dostępna
-                                        w ustawieniach pracownika.
+                                        Ustal indywidualnie liczbę klientów,
+                                        których dane kontaktowe mogą przeglądać
+                                        poszczególni pracownicy w ciągu jednego
+                                        dnia.
                                     </p>
+                                    {employeeLimits.isLoading && (
+                                        <p className="help-block">
+                                            Ładowanie listy pracowników...
+                                        </p>
+                                    )}
+                                    {employeeLimits.isError && (
+                                        <div className="alert alert-danger">
+                                            Nie udało się załadować limitów
+                                            pracowników.
+                                        </div>
+                                    )}
+                                    {updateDataProtectionEmployeeLimit.isError && (
+                                        <div className="alert alert-danger">
+                                            Nie udało się zapisać limitu
+                                            pracownika.
+                                        </div>
+                                    )}
+                                    {!employeeLimits.isLoading &&
+                                        !employeeLimits.isError && (
+                                            <ul className="data-protection-limits">
+                                                {(
+                                                    employeeLimits.data ?? []
+                                                ).map((employee) => {
+                                                    const effectiveLimit =
+                                                        employee.paranoiaLimitOverride ??
+                                                        paranoiaLimit;
+                                                    const isAdmin =
+                                                        employee.role ===
+                                                        'admin';
+                                                    const isEditing =
+                                                        editingEmployeeId ===
+                                                        employee.id;
+                                                    const isSavingThisRow =
+                                                        updateDataProtectionEmployeeLimit.isPending &&
+                                                        updateDataProtectionEmployeeLimit
+                                                            .variables?.id ===
+                                                            employee.id;
+
+                                                    return (
+                                                        <li key={employee.id}>
+                                                            <label>
+                                                                {employee.name}{' '}
+                                                                <span className="data-protection-limits__role">
+                                                                    (
+                                                                    {formatEmployeeRole(
+                                                                        employee.role,
+                                                                    )}
+                                                                    )
+                                                                </span>
+                                                            </label>
+                                                            <br className="c" />
+                                                            {isAdmin ? (
+                                                                <span>
+                                                                    Tryb ochrony
+                                                                    danych
+                                                                    kontaktowych
+                                                                    klientów nie
+                                                                    dotyczy
+                                                                    administratorów
+                                                                    konta w
+                                                                    systemie.
+                                                                    Moga oni
+                                                                    przegladac
+                                                                    karty
+                                                                    klientow bez
+                                                                    ograniczen.
+                                                                </span>
+                                                            ) : isEditing ? (
+                                                                <div className="data-protection-limits__editor">
+                                                                    <span>
+                                                                        Limit
+                                                                    </span>
+                                                                    <input
+                                                                        className="form-control data-protection-limits__input"
+                                                                        min={1}
+                                                                        type="number"
+                                                                        value={
+                                                                            employeeLimitDraft
+                                                                        }
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            setEmployeeLimitDraft(
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                    <button
+                                                                        className="btn button-blue btn_small"
+                                                                        disabled={
+                                                                            isSavingThisRow
+                                                                        }
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            saveEmployeeLimit(
+                                                                                employee.id,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        zapisz
+                                                                    </button>
+                                                                    <button
+                                                                        className="button-link"
+                                                                        disabled={
+                                                                            isSavingThisRow
+                                                                        }
+                                                                        type="button"
+                                                                        onClick={
+                                                                            cancelEmployeeLimitEdit
+                                                                        }
+                                                                    >
+                                                                        anuluj
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="data-protection-limits__summary">
+                                                                    <span>
+                                                                        Limit:{' '}
+                                                                        <strong>
+                                                                            {
+                                                                                effectiveLimit
+                                                                            }
+                                                                        </strong>{' '}
+                                                                        klientow
+                                                                    </span>
+                                                                    <button
+                                                                        className="button-link"
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            startEmployeeLimitEdit(
+                                                                                employee.id,
+                                                                                effectiveLimit,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Zmien
+                                                                        limit
+                                                                    </button>
+                                                                    {employee.paranoiaLimitOverride !==
+                                                                        null && (
+                                                                        <button
+                                                                            className="button-link"
+                                                                            disabled={
+                                                                                isSavingThisRow
+                                                                            }
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                clearEmployeeLimit(
+                                                                                    employee.id,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Uzyj
+                                                                            limitu
+                                                                            domyslnego
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        )}
                                 </div>
                             </>
                         )}

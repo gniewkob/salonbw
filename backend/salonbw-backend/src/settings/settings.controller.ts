@@ -1,4 +1,13 @@
-import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Put,
+    Body,
+    UseGuards,
+    Request,
+    Param,
+    ParseIntPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -12,6 +21,7 @@ import {
     UpdateReminderSettingsDto,
     UpdatePaymentConfigurationDto,
     UpdateDataProtectionDto,
+    UpdateDataProtectionEmployeeLimitDto,
 } from './dto/settings.dto';
 
 @Controller('settings')
@@ -125,6 +135,26 @@ export class SettingsController {
         @Request() req: { user: { id: number } },
     ) {
         return this.settingsService.updateDataProtection(dto, req.user.id);
+    }
+
+    @Get('data-protection/employee-limits')
+    @Roles(Role.Admin)
+    async getDataProtectionEmployeeLimits() {
+        return this.settingsService.getDataProtectionEmployeeLimits();
+    }
+
+    @Put('data-protection/employee-limits/:id')
+    @Roles(Role.Admin)
+    async updateDataProtectionEmployeeLimit(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateDataProtectionEmployeeLimitDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updateDataProtectionEmployeeLimit(
+            id,
+            dto,
+            req.user.id,
+        );
     }
 
     // Reminder Settings
