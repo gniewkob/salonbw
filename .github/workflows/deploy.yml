@@ -364,6 +364,7 @@ jobs:
           ls -l dist/migrate.js || echo "migrate.js missing!"
 
       - name: Configure SSH
+        id: ssh
         run: |
           mkdir -p ~/.ssh
           KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
@@ -1173,7 +1174,7 @@ jobs:
           PY
 
       - name: Collect remote logs (frontend)
-        if: ${{ always() && github.event.inputs.target != 'api' }}
+        if: ${{ always() && steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
@@ -1194,7 +1195,7 @@ jobs:
           REMOTE_CMDS
 
       - name: Collect remote logs (backend)
-        if: ${{ always() && (github.event_name == 'push' || github.event.inputs.target == 'api') }}
+        if: ${{ always() && steps.ssh.outcome == 'success' && (github.event.inputs.target == 'api' || (github.event_name == 'push' && steps.changes.outputs.api == 'true')) }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             ${{ secrets.MYDEVIL_SSH_USER }}@${{ secrets.MYDEVIL_SSH_HOST }} \
@@ -1215,14 +1216,14 @@ jobs:
           REMOTE_CMDS
 
       - name: Sanitize app host (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         id: host
         shell: bash
         run: |
           APP="${{ steps.dest.outputs.app_name_public }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
 
       - name: Smoke test (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         run: |
           python3 - <<'PY'
           import os, ssl, urllib.request, urllib.error, sys
@@ -1273,7 +1274,7 @@ jobs:
           PY
 
       - name: Discover static chunk (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         id: chunk
         shell: bash
         run: |
@@ -1284,7 +1285,7 @@ jobs:
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
       - name: Fetch static chunk (frontend)
-        if: ${{ github.event.inputs.target != 'api' }}
+        if: ${{ steps.ssh.outcome == 'success' && (github.event.inputs.target == 'public' || github.event.inputs.target == 'landing' || (github.event_name == 'push' && steps.changes.outputs.landing == 'true')) }}
         shell: bash
         run: |
           set -euo pipefail
