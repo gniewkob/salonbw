@@ -16,6 +16,8 @@ export enum BranchStatus {
     Suspended = 'suspended',
 }
 
+type WorkingHoursRange = { open: string; close: string };
+
 @Entity('branches')
 export class Branch {
     @PrimaryGeneratedColumn()
@@ -81,7 +83,10 @@ export class Branch {
         default: () =>
             `'{"mon": {"open": "09:00", "close": "18:00"}, "tue": {"open": "09:00", "close": "18:00"}, "wed": {"open": "09:00", "close": "18:00"}, "thu": {"open": "09:00", "close": "18:00"}, "fri": {"open": "09:00", "close": "18:00"}, "sat": {"open": "10:00", "close": "14:00"}, "sun": null}'`,
     })
-    workingHours: Record<string, { open: string; close: string } | null>;
+    workingHours: Record<
+        string,
+        WorkingHoursRange | WorkingHoursRange[] | null
+    >;
 
     // Settings
     @Column({ name: 'timezone', length: 50, default: 'Europe/Warsaw' })

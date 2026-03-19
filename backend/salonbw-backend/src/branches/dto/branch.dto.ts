@@ -15,6 +15,8 @@ import {
 } from 'class-validator';
 import { BranchStatus } from '../entities/branch.entity';
 
+type WorkingHoursRange = { open: string; close: string };
+
 export class CreateBranchDto {
     @IsString()
     @Length(1, 255)
@@ -102,7 +104,10 @@ export class CreateBranchDto {
 
     @IsOptional()
     @IsObject()
-    workingHours?: Record<string, { open: string; close: string } | null>;
+    workingHours?: Record<
+        string,
+        WorkingHoursRange | WorkingHoursRange[] | null
+    >;
 
     @IsOptional()
     @IsString()
@@ -212,7 +217,10 @@ export class UpdateBranchDto {
 
     @IsOptional()
     @IsObject()
-    workingHours?: Record<string, { open: string; close: string } | null>;
+    workingHours?: Record<
+        string,
+        WorkingHoursRange | WorkingHoursRange[] | null
+    >;
 
     @IsOptional()
     @IsString()
