@@ -12,7 +12,7 @@ import {
     useBranchesMutations,
     useMyPrimaryBranch,
 } from '@/hooks/useBranches';
-import type { Branch, WorkingHours } from '@/types';
+import type { Branch, WorkingHoursValue } from '@/types';
 
 const TIMETABLE_NAV = (
     <div className="sidenav secondarynav" id="sidenav">
@@ -60,22 +60,21 @@ const DAYS = [
 
 type DayKey = (typeof DAYS)[number]['key'];
 
-type DayDraft = {
-    isOpen: boolean;
+type TimeRangeDraft = {
     open: string;
     close: string;
 };
 
-type BranchHoursDraft = Record<DayKey, DayDraft>;
+type BranchHoursDraft = Record<DayKey, TimeRangeDraft[]>;
 
 const DEFAULT_DRAFT: BranchHoursDraft = {
-    mon: { isOpen: true, open: '09:00', close: '18:00' },
-    tue: { isOpen: true, open: '09:00', close: '18:00' },
-    wed: { isOpen: true, open: '09:00', close: '18:00' },
-    thu: { isOpen: true, open: '09:00', close: '18:00' },
-    fri: { isOpen: true, open: '09:00', close: '18:00' },
-    sat: { isOpen: true, open: '10:00', close: '14:00' },
-    sun: { isOpen: false, open: '10:00', close: '14:00' },
+    mon: [{ open: '09:00', close: '18:00' }],
+    tue: [{ open: '09:00', close: '18:00' }],
+    wed: [{ open: '09:00', close: '18:00' }],
+    thu: [{ open: '09:00', close: '18:00' }],
+    fri: [{ open: '09:00', close: '18:00' }],
+    sat: [{ open: '10:00', close: '14:00' }],
+    sun: [],
 };
 
 const TIME_OPTIONS = Array.from({ length: 65 }, (_, index) => {
@@ -85,41 +84,100 @@ const TIME_OPTIONS = Array.from({ length: 65 }, (_, index) => {
     return `${hours}:${minutes}`;
 });
 
-function toDraft(workingHours?: Record<string, WorkingHours | null> | null) {
-    return DAYS.reduce<BranchHoursDraft>(
-        (draft, day) => {
-            const current = workingHours?.[day.key] ?? null;
-            draft[day.key] = current
-                ? {
-                      isOpen: true,
-                      open: current.open.slice(0, 5),
-                      close: current.close.slice(0, 5),
-                  }
-                : DEFAULT_DRAFT[day.key];
-            return draft;
-        },
-        { ...DEFAULT_DRAFT },
-    );
+function cloneDefaultDraft(): BranchHoursDraft {
+    return DAYS.reduce<BranchHoursDraft>((draft, day) => {
+        draft[day.key] = DEFAULT_DRAFT[day.key].map((range) => ({ ...range }));
+        return draft;
+    }, {} as BranchHoursDraft);
+}
+
+function normalizeWorkingHoursRanges(value?: WorkingHoursValue | null) {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+}
+
+function toDraft(
+    workingHours?: Record<string, WorkingHoursValue | null> | null,
+) {
+    return DAYS.reduce<BranchHoursDraft>((draft, day) => {
+        const current = normalizeWorkingHoursRanges(workingHours?.[day.key]);
+        draft[day.key] =
+            current.length > 0
+                ? current.map((range) => ({
+                      open: range.open.slice(0, 5),
+                      close: range.close.slice(0, 5),
+                  }))
+                : cloneDefaultDraft()[day.key];
+        return draft;
+    }, cloneDefaultDraft());
 }
 
 function buildWorkingHours(draft: BranchHoursDraft) {
-    return DAYS.reduce<Record<string, WorkingHours | null>>((result, day) => {
-        const current = draft[day.key];
-        result[day.key] = current.isOpen
-            ? {
-                  open: current.open,
-                  close: current.close,
-              }
-            : null;
-        return result;
-    }, {});
+    return DAYS.reduce<Record<string, WorkingHoursValue | null>>(
+        (result, day) => {
+            const current = draft[day.key];
+            result[day.key] =
+                current.length === 0
+                    ? null
+                    : current.length === 1
+                      ? {
+                            open: current[0].open,
+                            close: current[0].close,
+                        }
+                      : current.map((range) => ({
+                            open: range.open,
+                            close: range.close,
+                        }));
+            return result;
+        },
+        {},
+    );
 }
 
-function hasInvalidRange(draft: BranchHoursDraft) {
-    return DAYS.some((day) => {
-        const current = draft[day.key];
-        return current.isOpen && current.open >= current.close;
+function createDefaultRange(day: DayKey): TimeRangeDraft {
+    const fallback = DEFAULT_DRAFT[day][0];
+    return fallback ? { ...fallback } : { open: '09:00', close: '18:00' };
+}
+
+function hasOverlap(ranges: TimeRangeDraft[]) {
+    const sorted = [...ranges].sort((a, b) => a.open.localeCompare(b.open));
+    return sorted.some((range, index) => {
+        const next = sorted[index + 1];
+        return Boolean(next && range.close > next.open);
     });
+}
+
+function getValidationMessage(draft: BranchHoursDraft) {
+    for (const day of DAYS) {
+        const current = draft[day.key];
+        if (current.some((range) => range.open >= range.close)) {
+            return 'Godzina zamknięcia musi być późniejsza niż godzina otwarcia.';
+        }
+        if (hasOverlap(current)) {
+            return 'Zakresy godzin otwarcia nie mogą na siebie nachodzić.';
+        }
+    }
+    return null;
+}
+
+function isDayOpen(ranges: TimeRangeDraft[]) {
+    return ranges.length > 0;
+}
+
+function getNextRange(day: DayKey, ranges: TimeRangeDraft[]) {
+    const lastRange = ranges[ranges.length - 1];
+    if (!lastRange) {
+        return createDefaultRange(day);
+    }
+
+    const lastCloseIndex = TIME_OPTIONS.indexOf(lastRange.close);
+    const nextOpenIndex = Math.max(lastCloseIndex, 0);
+    const nextCloseIndex = Math.min(nextOpenIndex + 4, TIME_OPTIONS.length - 1);
+
+    return {
+        open: TIME_OPTIONS[nextOpenIndex] ?? lastRange.close,
+        close: TIME_OPTIONS[nextCloseIndex] ?? lastRange.close,
+    };
 }
 
 export default function SettingsTimetableBranchPage() {
@@ -144,7 +202,7 @@ export default function SettingsTimetableBranchPage() {
     const branch = useMemo<Branch | null>(() => {
         return primaryBranch ?? branches?.[0] ?? null;
     }, [branches, primaryBranch]);
-    const [draft, setDraft] = useState<BranchHoursDraft>(DEFAULT_DRAFT);
+    const [draft, setDraft] = useState<BranchHoursDraft>(cloneDefaultDraft());
     const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
@@ -156,9 +214,7 @@ export default function SettingsTimetableBranchPage() {
     const isLoading = isLoadingPrimary || isLoadingBranches;
     const loadError = primaryError ?? branchesError;
     const isError = !branch && (isPrimaryError || isBranchesError);
-    const validationError = hasInvalidRange(draft)
-        ? 'Godzina zamknięcia musi być późniejsza niż godzina otwarcia.'
-        : null;
+    const validationError = getValidationMessage(draft);
     const submitError =
         updateBranch.isError && updateBranch.error instanceof Error
             ? updateBranch.error.message
@@ -169,27 +225,39 @@ export default function SettingsTimetableBranchPage() {
     const handleOpenToggle = (day: DayKey) => {
         setDraft((current) => ({
             ...current,
-            [day]: {
-                ...current[day],
-                isOpen: !current[day].isOpen,
-            },
+            [day]: isDayOpen(current[day]) ? [] : [createDefaultRange(day)],
         }));
         setIsSaved(false);
     };
 
     const handleTimeChange =
-        (day: DayKey, field: 'open' | 'close') =>
+        (day: DayKey, rangeIndex: number, field: 'open' | 'close') =>
         (event: ChangeEvent<HTMLSelectElement>) => {
             const value = event.target.value;
             setDraft((current) => ({
                 ...current,
-                [day]: {
-                    ...current[day],
-                    [field]: value,
-                },
+                [day]: current[day].map((range, index) =>
+                    index === rangeIndex ? { ...range, [field]: value } : range,
+                ),
             }));
             setIsSaved(false);
         };
+
+    const handleAddRange = (day: DayKey) => {
+        setDraft((current) => ({
+            ...current,
+            [day]: [...current[day], getNextRange(day, current[day])],
+        }));
+        setIsSaved(false);
+    };
+
+    const handleRemoveRange = (day: DayKey, rangeIndex: number) => {
+        setDraft((current) => ({
+            ...current,
+            [day]: current[day].filter((_, index) => index !== rangeIndex),
+        }));
+        setIsSaved(false);
+    };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -332,7 +400,9 @@ export default function SettingsTimetableBranchPage() {
 
                                 <div className="settings-timetable-branch-form__days">
                                     {DAYS.map((day) => {
-                                        const current = draft[day.key];
+                                        const ranges = draft[day.key];
+                                        const open = isDayOpen(ranges);
+
                                         return (
                                             <div
                                                 key={day.key}
@@ -342,96 +412,166 @@ export default function SettingsTimetableBranchPage() {
                                                     {day.label}
                                                 </div>
                                                 <div className="calendar-form-col">
-                                                    <div className="column_row">
-                                                        <div className="column column-working">
-                                                            <label>
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={
-                                                                        current.isOpen
-                                                                    }
-                                                                    onChange={() =>
-                                                                        handleOpenToggle(
+                                                    {ranges.map(
+                                                        (range, rangeIndex) => (
+                                                            <div
+                                                                key={`${day.key}-${rangeIndex}`}
+                                                                className="column_row"
+                                                            >
+                                                                <div className="column column-working">
+                                                                    {rangeIndex ===
+                                                                    0 ? (
+                                                                        <label>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={
+                                                                                    open
+                                                                                }
+                                                                                onChange={() =>
+                                                                                    handleOpenToggle(
+                                                                                        day.key,
+                                                                                    )
+                                                                                }
+                                                                            />{' '}
+                                                                            Otwarte
+                                                                        </label>
+                                                                    ) : (
+                                                                        <span className="light_text smaller">
+                                                                            dodatkowy
+                                                                            zakres
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="column column-valid-times">
+                                                                    <span>
+                                                                        &nbsp;od&nbsp;
+                                                                    </span>
+                                                                    <select
+                                                                        className="schedule-time"
+                                                                        value={
+                                                                            range.open
+                                                                        }
+                                                                        onChange={handleTimeChange(
                                                                             day.key,
-                                                                        )
-                                                                    }
-                                                                />{' '}
-                                                                Otwarte
-                                                            </label>
+                                                                            rangeIndex,
+                                                                            'open',
+                                                                        )}
+                                                                    >
+                                                                        {TIME_OPTIONS.map(
+                                                                            (
+                                                                                option,
+                                                                            ) => (
+                                                                                <option
+                                                                                    key={
+                                                                                        option
+                                                                                    }
+                                                                                    value={
+                                                                                        option
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        option
+                                                                                    }
+                                                                                </option>
+                                                                            ),
+                                                                        )}
+                                                                    </select>
+                                                                    <span>
+                                                                        &nbsp;do&nbsp;
+                                                                    </span>
+                                                                    <select
+                                                                        className="schedule-time"
+                                                                        value={
+                                                                            range.close
+                                                                        }
+                                                                        onChange={handleTimeChange(
+                                                                            day.key,
+                                                                            rangeIndex,
+                                                                            'close',
+                                                                        )}
+                                                                    >
+                                                                        {TIME_OPTIONS.map(
+                                                                            (
+                                                                                option,
+                                                                            ) => (
+                                                                                <option
+                                                                                    key={
+                                                                                        option
+                                                                                    }
+                                                                                    value={
+                                                                                        option
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        option
+                                                                                    }
+                                                                                </option>
+                                                                            ),
+                                                                        )}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="column column-period-actions">
+                                                                    <div className="column-add-actions">
+                                                                        {rangeIndex ===
+                                                                        ranges.length -
+                                                                            1 ? (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="button-link"
+                                                                                onClick={() =>
+                                                                                    handleAddRange(
+                                                                                        day.key,
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                Dodaj
+                                                                                zakres
+                                                                            </button>
+                                                                        ) : null}
+                                                                    </div>
+                                                                    <div className="column-delete-period-action">
+                                                                        {ranges.length >
+                                                                        1 ? (
+                                                                            <button
+                                                                                type="button"
+                                                                                className="button-link"
+                                                                                onClick={() =>
+                                                                                    handleRemoveRange(
+                                                                                        day.key,
+                                                                                        rangeIndex,
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                usuń
+                                                                            </button>
+                                                                        ) : null}
+                                                                    </div>
+                                                                    <div className="clearfix" />
+                                                                </div>
+                                                            </div>
+                                                        ),
+                                                    )}
+
+                                                    {!open ? (
+                                                        <div className="column_row">
+                                                            <div className="column column-working">
+                                                                <label>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={
+                                                                            open
+                                                                        }
+                                                                        onChange={() =>
+                                                                            handleOpenToggle(
+                                                                                day.key,
+                                                                            )
+                                                                        }
+                                                                    />{' '}
+                                                                    Otwarte
+                                                                </label>
+                                                            </div>
                                                         </div>
-                                                        <div className="column column-valid-times">
-                                                            <span>
-                                                                &nbsp;od&nbsp;
-                                                            </span>
-                                                            <select
-                                                                className="schedule-time"
-                                                                value={
-                                                                    current.open
-                                                                }
-                                                                onChange={handleTimeChange(
-                                                                    day.key,
-                                                                    'open',
-                                                                )}
-                                                                disabled={
-                                                                    !current.isOpen
-                                                                }
-                                                            >
-                                                                {TIME_OPTIONS.map(
-                                                                    (
-                                                                        option,
-                                                                    ) => (
-                                                                        <option
-                                                                            key={
-                                                                                option
-                                                                            }
-                                                                            value={
-                                                                                option
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                option
-                                                                            }
-                                                                        </option>
-                                                                    ),
-                                                                )}
-                                                            </select>
-                                                            <span>
-                                                                &nbsp;do&nbsp;
-                                                            </span>
-                                                            <select
-                                                                className="schedule-time"
-                                                                value={
-                                                                    current.close
-                                                                }
-                                                                onChange={handleTimeChange(
-                                                                    day.key,
-                                                                    'close',
-                                                                )}
-                                                                disabled={
-                                                                    !current.isOpen
-                                                                }
-                                                            >
-                                                                {TIME_OPTIONS.map(
-                                                                    (
-                                                                        option,
-                                                                    ) => (
-                                                                        <option
-                                                                            key={
-                                                                                option
-                                                                            }
-                                                                            value={
-                                                                                option
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                option
-                                                                            }
-                                                                        </option>
-                                                                    ),
-                                                                )}
-                                                            </select>
-                                                        </div>
-                                                    </div>
+                                                    ) : null}
                                                 </div>
                                             </div>
                                         );

@@ -1723,6 +1723,8 @@ export interface WorkingHours {
     close: string;
 }
 
+export type WorkingHoursValue = WorkingHours | WorkingHours[];
+
 export interface Branch {
     id: number;
     name: string;
@@ -1741,7 +1743,7 @@ export interface Branch {
     logoUrl: string | null;
     coverImageUrl: string | null;
     primaryColor: string;
-    workingHours: Record<string, WorkingHours | null>;
+    workingHours: Record<string, WorkingHoursValue | null>;
     timezone: string;
     currency: string;
     locale: string;
@@ -1785,7 +1787,7 @@ export interface CreateBranchRequest {
     logoUrl?: string;
     coverImageUrl?: string;
     primaryColor?: string;
-    workingHours?: Record<string, WorkingHours | null>;
+    workingHours?: Record<string, WorkingHoursValue | null>;
     timezone?: string;
     currency?: string;
     locale?: string;
@@ -1810,7 +1812,7 @@ export interface UpdateBranchRequest {
     logoUrl?: string;
     coverImageUrl?: string;
     primaryColor?: string;
-    workingHours?: Record<string, WorkingHours | null>;
+    workingHours?: Record<string, WorkingHoursValue | null>;
     timezone?: string;
     currency?: string;
     locale?: string;
