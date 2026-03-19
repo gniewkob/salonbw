@@ -5,13 +5,15 @@ import {
     BadRequestException,
     ConflictException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import {
     Repository,
     FindOptionsWhere,
     MoreThanOrEqual,
     LessThanOrEqual,
     Between,
+    DataSource,
+    EntityManager,
 } from 'typeorm';
 import {
     LoyaltyProgram,
@@ -39,6 +41,9 @@ import {
 } from './dto/loyalty.dto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { User } from '../users/user.entity';
+
+const EXPIRE_CHUNK_SIZE = 100;
 
 @Injectable()
 export class LoyaltyService {
@@ -56,6 +61,8 @@ export class LoyaltyService {
         @InjectRepository(LoyaltyRewardRedemption)
         private readonly redemptionRepo: Repository<LoyaltyRewardRedemption>,
         private readonly logService: LogService,
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
     ) {}
 
     // Program Management
@@ -87,7 +94,7 @@ export class LoyaltyService {
         const updated = await this.programRepo.save(program);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_PROGRAM_UPDATED,
             { changes: dto },
         );
@@ -141,63 +148,76 @@ export class LoyaltyService {
         actorId: number,
     ): Promise<LoyaltyTransaction> {
         const program = await this.getProgram();
-        const balance = await this.getBalance(dto.userId);
 
-        // Apply tier multiplier
-        let points = dto.points;
-        if (balance.tierMultiplier > 1) {
-            points = Math.floor(points * Number(balance.tierMultiplier));
-        }
+        const { saved, finalPoints } = await this.dataSource.transaction(
+            async (manager) => {
+                const balance = await this.lockOrCreateBalance(
+                    dto.userId,
+                    manager,
+                );
 
-        // Apply min/max constraints
-        if (program.minPointsPerVisit && points < program.minPointsPerVisit) {
-            points = program.minPointsPerVisit;
-        }
-        if (program.maxPointsPerVisit && points > program.maxPointsPerVisit) {
-            points = program.maxPointsPerVisit;
-        }
+                let pts = dto.points;
+                if (balance.tierMultiplier > 1) {
+                    pts = Math.floor(pts * Number(balance.tierMultiplier));
+                }
+                if (
+                    program.minPointsPerVisit &&
+                    pts < program.minPointsPerVisit
+                ) {
+                    pts = program.minPointsPerVisit;
+                }
+                if (
+                    program.maxPointsPerVisit &&
+                    pts > program.maxPointsPerVisit
+                ) {
+                    pts = program.maxPointsPerVisit;
+                }
 
-        // Update balance
-        balance.currentBalance += points;
-        balance.totalPointsEarned += points;
-        balance.lifetimeTierPoints += points;
+                balance.currentBalance += pts;
+                balance.totalPointsEarned += pts;
+                balance.lifetimeTierPoints += pts;
+                this.updateTier(balance, program);
+                await manager.getRepository(LoyaltyBalance).save(balance);
 
-        // Check for tier upgrade
-        this.updateTier(balance, program);
+                const expiresAt = program.pointsExpireMonths
+                    ? new Date(
+                          Date.now() +
+                              program.pointsExpireMonths *
+                                  30 *
+                                  24 *
+                                  60 *
+                                  60 *
+                                  1000,
+                      )
+                    : null;
 
-        await this.balanceRepo.save(balance);
-
-        // Create transaction
-        const expiresAt = program.pointsExpireMonths
-            ? new Date(
-                  Date.now() +
-                      program.pointsExpireMonths * 30 * 24 * 60 * 60 * 1000,
-              )
-            : null;
-
-        const transaction = this.transactionRepo.create({
-            userId: dto.userId,
-            type: LoyaltyTransactionType.Earn,
-            source: dto.source,
-            points,
-            balanceAfter: balance.currentBalance,
-            appointmentId: dto.appointmentId,
-            referralUserId: dto.referralUserId,
-            description:
-                dto.description ?? this.getDefaultDescription(dto.source),
-            performedById: actorId,
-            expiresAt,
-        });
-
-        const saved = await this.transactionRepo.save(transaction);
-
-        await this.logService.logAction(
-            { id: actorId } as any,
-            LogAction.LOYALTY_POINTS_AWARDED,
-            { userId: dto.userId, points, source: dto.source },
+                const txRepo = manager.getRepository(LoyaltyTransaction);
+                const tx = txRepo.create({
+                    userId: dto.userId,
+                    type: LoyaltyTransactionType.Earn,
+                    source: dto.source,
+                    points: pts,
+                    balanceAfter: balance.currentBalance,
+                    appointmentId: dto.appointmentId,
+                    referralUserId: dto.referralUserId,
+                    description:
+                        dto.description ??
+                        this.getDefaultDescription(dto.source),
+                    performedById: actorId,
+                    expiresAt,
+                });
+                const saved = await txRepo.save(tx);
+                return { saved, finalPoints: pts };
+            },
         );
 
-        this.logger.log(`Awarded ${points} points to user ${dto.userId}`);
+        await this.logService.logAction(
+            { id: actorId } as unknown as User,
+            LogAction.LOYALTY_POINTS_AWARDED,
+            { userId: dto.userId, points: finalPoints, source: dto.source },
+        );
+
+        this.logger.log(`Awarded ${finalPoints} points to user ${dto.userId}`);
         return saved;
     }
 
@@ -233,36 +253,39 @@ export class LoyaltyService {
         dto: AdjustPointsDto,
         actorId: number,
     ): Promise<LoyaltyTransaction> {
-        const balance = await this.getBalance(userId);
+        const saved = await this.dataSource.transaction(async (manager) => {
+            const balance = await this.lockOrCreateBalance(userId, manager);
 
-        const newBalance = balance.currentBalance + dto.points;
-        if (newBalance < 0) {
-            throw new BadRequestException('Saldo punktów nie może być ujemne');
-        }
+            const newBalance = balance.currentBalance + dto.points;
+            if (newBalance < 0) {
+                throw new BadRequestException(
+                    'Saldo punktów nie może być ujemne',
+                );
+            }
 
-        balance.currentBalance = newBalance;
-        if (dto.points > 0) {
-            balance.totalPointsEarned += dto.points;
-        } else {
-            balance.totalPointsSpent += Math.abs(dto.points);
-        }
+            balance.currentBalance = newBalance;
+            if (dto.points > 0) {
+                balance.totalPointsEarned += dto.points;
+            } else {
+                balance.totalPointsSpent += Math.abs(dto.points);
+            }
+            await manager.getRepository(LoyaltyBalance).save(balance);
 
-        await this.balanceRepo.save(balance);
-
-        const transaction = this.transactionRepo.create({
-            userId,
-            type: LoyaltyTransactionType.Adjust,
-            source: LoyaltyTransactionSource.Manual,
-            points: dto.points,
-            balanceAfter: newBalance,
-            description: dto.description,
-            performedById: actorId,
+            const txRepo = manager.getRepository(LoyaltyTransaction);
+            const tx = txRepo.create({
+                userId,
+                type: LoyaltyTransactionType.Adjust,
+                source: LoyaltyTransactionSource.Manual,
+                points: dto.points,
+                balanceAfter: newBalance,
+                description: dto.description,
+                performedById: actorId,
+            });
+            return txRepo.save(tx);
         });
 
-        const saved = await this.transactionRepo.save(transaction);
-
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_POINTS_ADJUSTED,
             { userId, points: dto.points, description: dto.description },
         );
@@ -345,7 +368,7 @@ export class LoyaltyService {
         const saved = await this.rewardRepo.save(reward);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_REWARD_CREATED,
             { rewardId: saved.id, name: saved.name },
         );
@@ -371,7 +394,7 @@ export class LoyaltyService {
         const updated = await this.rewardRepo.save(reward);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_REWARD_UPDATED,
             { rewardId: id, changes: dto },
         );
@@ -385,7 +408,7 @@ export class LoyaltyService {
         await this.rewardRepo.save(reward);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_REWARD_DELETED,
             { rewardId: id, name: reward.name },
         );
@@ -397,27 +420,19 @@ export class LoyaltyService {
         dto: RedeemRewardDto,
         actorId: number,
     ): Promise<LoyaltyRewardRedemption> {
+        // Read reward and program outside the transaction — they are rarely modified
+        // and locking them here would increase lock contention.
         const reward = await this.getReward(dto.rewardId);
-        const balance = await this.getBalance(userId);
         const program = await this.getProgram();
 
-        // Validations
         if (!reward.isActive) {
             throw new BadRequestException('Ta nagroda jest nieaktywna');
         }
-
-        if (balance.currentBalance < reward.pointsCost) {
-            throw new BadRequestException(
-                `Niewystarczająca liczba punktów. Potrzebujesz ${reward.pointsCost}, masz ${balance.currentBalance}`,
-            );
-        }
-
         if (reward.pointsCost < program.minPointsRedemption) {
             throw new BadRequestException(
                 `Minimalna liczba punktów do wymiany to ${program.minPointsRedemption}`,
             );
         }
-
         const now = new Date();
         if (reward.availableFrom && reward.availableFrom > now) {
             throw new BadRequestException(
@@ -436,46 +451,64 @@ export class LoyaltyService {
             );
         }
 
-        // Deduct points
-        balance.currentBalance -= reward.pointsCost;
-        balance.totalPointsSpent += reward.pointsCost;
-        await this.balanceRepo.save(balance);
+        const savedRedemption = await this.dataSource.transaction(
+            async (manager) => {
+                // Lock the balance row to prevent concurrent redemptions
+                const balance = await this.lockOrCreateBalance(userId, manager);
 
-        // Create transaction
-        const transaction = this.transactionRepo.create({
-            userId,
-            type: LoyaltyTransactionType.Spend,
-            source: LoyaltyTransactionSource.Reward,
-            points: -reward.pointsCost,
-            balanceAfter: balance.currentBalance,
-            rewardId: reward.id,
-            description: `Wymiana na nagrodę: ${reward.name}`,
-            performedById: actorId,
-        });
-        const savedTx = await this.transactionRepo.save(transaction);
+                if (balance.currentBalance < reward.pointsCost) {
+                    throw new BadRequestException(
+                        `Niewystarczająca liczba punktów. Potrzebujesz ${reward.pointsCost}, masz ${balance.currentBalance}`,
+                    );
+                }
 
-        // Update reward redemption count
-        reward.currentRedemptions += 1;
-        await this.rewardRepo.save(reward);
+                balance.currentBalance -= reward.pointsCost;
+                balance.totalPointsSpent += reward.pointsCost;
+                await manager.getRepository(LoyaltyBalance).save(balance);
 
-        // Create redemption record
-        const redemptionCode = await this.generateRedemptionCode();
-        const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000); // 90 days
+                const txRepo = manager.getRepository(LoyaltyTransaction);
+                const tx = txRepo.create({
+                    userId,
+                    type: LoyaltyTransactionType.Spend,
+                    source: LoyaltyTransactionSource.Reward,
+                    points: -reward.pointsCost,
+                    balanceAfter: balance.currentBalance,
+                    rewardId: reward.id,
+                    description: `Wymiana na nagrodę: ${reward.name}`,
+                    performedById: actorId,
+                });
+                const savedTx = await txRepo.save(tx);
 
-        const redemption = this.redemptionRepo.create({
-            userId,
-            rewardId: reward.id,
-            pointsSpent: reward.pointsCost,
-            transactionId: savedTx.id,
-            redemptionCode,
-            expiresAt,
-            status: 'active',
-        });
+                // Atomic increment avoids race condition on reward counter
+                await manager
+                    .getRepository(LoyaltyReward)
+                    .increment({ id: reward.id }, 'currentRedemptions', 1);
 
-        const savedRedemption = await this.redemptionRepo.save(redemption);
+                const redemptionCode =
+                    await this.generateRedemptionCode(manager);
+                const expiresAt = new Date(
+                    Date.now() + 90 * 24 * 60 * 60 * 1000,
+                );
+
+                const redemptionRepo = manager.getRepository(
+                    LoyaltyRewardRedemption,
+                );
+                const redemption = redemptionRepo.create({
+                    userId,
+                    rewardId: reward.id,
+                    pointsSpent: reward.pointsCost,
+                    transactionId: savedTx.id,
+                    redemptionCode,
+                    expiresAt,
+                    status: 'active',
+                });
+
+                return redemptionRepo.save(redemption);
+            },
+        );
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_REWARD_REDEEMED,
             {
                 userId,
@@ -526,7 +559,7 @@ export class LoyaltyService {
         const updated = await this.redemptionRepo.save(redemption);
 
         await this.logService.logAction(
-            { id: actorId } as any,
+            { id: actorId } as unknown as User,
             LogAction.LOYALTY_COUPON_USED,
             { redemptionCode: dto.redemptionCode, userId: redemption.userId },
         );
@@ -661,8 +694,41 @@ export class LoyaltyService {
         return descriptions[source];
     }
 
-    private async generateRedemptionCode(): Promise<string> {
+    /**
+     * Lock-or-create the balance row for the given user within an active
+     * transaction.  Uses pessimistic_write so concurrent operations on the
+     * same user block until the first one commits.
+     */
+    private async lockOrCreateBalance(
+        userId: number,
+        manager: EntityManager,
+    ): Promise<LoyaltyBalance> {
+        const repo = manager.getRepository(LoyaltyBalance);
+        let balance = await repo.findOne({
+            where: { userId },
+            lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!balance) {
+            balance = repo.create({
+                userId,
+                currentBalance: 0,
+                totalPointsEarned: 0,
+                totalPointsSpent: 0,
+                lifetimeTierPoints: 0,
+                tierMultiplier: 1.0,
+            });
+            await repo.save(balance);
+        }
+
+        return balance;
+    }
+
+    private async generateRedemptionCode(
+        manager: EntityManager,
+    ): Promise<string> {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const repo = manager.getRepository(LoyaltyRewardRedemption);
         let code: string;
         let attempts = 0;
 
@@ -673,7 +739,7 @@ export class LoyaltyService {
             }
             attempts++;
 
-            const existing = await this.redemptionRepo.findOne({
+            const existing = await repo.findOne({
                 where: { redemptionCode: code },
             });
             if (!existing) {
@@ -686,43 +752,60 @@ export class LoyaltyService {
         );
     }
 
-    // Cron job for expiring points
+    // Cron job for expiring points — processes in chunks to avoid OOM on large datasets
     async expirePoints(): Promise<number> {
         const now = new Date();
-
-        const expiredTransactions = await this.transactionRepo.find({
-            where: {
-                type: LoyaltyTransactionType.Earn,
-                isExpired: false,
-                expiresAt: LessThanOrEqual(now),
-            },
-        });
-
         let totalExpired = 0;
 
-        for (const tx of expiredTransactions) {
-            tx.isExpired = true;
-            await this.transactionRepo.save(tx);
+        // Since we mark isExpired=true as we go, each iteration fetches the
+        // next unseen chunk (skip=0 always returns un-processed rows).
+        while (true) {
+            const chunk = await this.transactionRepo.find({
+                where: {
+                    type: LoyaltyTransactionType.Earn,
+                    isExpired: false,
+                    expiresAt: LessThanOrEqual(now),
+                },
+                take: EXPIRE_CHUNK_SIZE,
+            });
 
-            const balance = await this.getBalance(tx.userId);
-            const expireAmount = Math.min(tx.points, balance.currentBalance);
+            if (chunk.length === 0) break;
 
-            if (expireAmount > 0) {
-                balance.currentBalance -= expireAmount;
-                await this.balanceRepo.save(balance);
+            for (const tx of chunk) {
+                await this.dataSource.transaction(async (manager) => {
+                    await manager
+                        .getRepository(LoyaltyTransaction)
+                        .update(tx.id, { isExpired: true });
 
-                await this.transactionRepo.save(
-                    this.transactionRepo.create({
-                        userId: tx.userId,
-                        type: LoyaltyTransactionType.Expire,
-                        source: LoyaltyTransactionSource.Expiration,
-                        points: -expireAmount,
-                        balanceAfter: balance.currentBalance,
-                        description: 'Wygaśnięcie punktów',
-                    }),
-                );
+                    const balance = await this.lockOrCreateBalance(
+                        tx.userId,
+                        manager,
+                    );
+                    const expireAmount = Math.min(
+                        tx.points,
+                        balance.currentBalance,
+                    );
 
-                totalExpired += expireAmount;
+                    if (expireAmount > 0) {
+                        balance.currentBalance -= expireAmount;
+                        await manager
+                            .getRepository(LoyaltyBalance)
+                            .save(balance);
+
+                        await manager.getRepository(LoyaltyTransaction).save(
+                            manager.getRepository(LoyaltyTransaction).create({
+                                userId: tx.userId,
+                                type: LoyaltyTransactionType.Expire,
+                                source: LoyaltyTransactionSource.Expiration,
+                                points: -expireAmount,
+                                balanceAfter: balance.currentBalance,
+                                description: 'Wygaśnięcie punktów',
+                            }),
+                        );
+
+                        totalExpired += expireAmount;
+                    }
+                });
             }
         }
 
