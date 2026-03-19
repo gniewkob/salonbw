@@ -304,6 +304,13 @@ body.e2e-body {
     white-space: pre-wrap;
 }
 
+.communication-detail-status {
+    max-width: 720px;
+    margin: 0 0 14px;
+    color: #5d6770;
+    font-size: 13px;
+}
+
 .communication-reply-list {
     list-style: none;
     padding: 0;
@@ -321,6 +328,11 @@ body.e2e-body {
     max-width: 760px;
 }
 
+.communication-reply-input,
+.communication-reply-select {
+    max-width: 760px;
+}
+
 .communication-reply-meta {
     margin-top: 8px;
     color: #6c757d;
@@ -335,6 +347,19 @@ body.e2e-body {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.communication-inline-link {
+    background: none;
+    border: 0;
+    color: #3177b8;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.buttons_bottom {
+    margin-top: 16px;
 }
 
 .form-group {

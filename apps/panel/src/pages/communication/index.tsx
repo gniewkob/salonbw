@@ -204,7 +204,7 @@ export default function CommunicationPage() {
                                                       >
                                                           <td>
                                                               <Link
-                                                                  href={`/communication/${entry.id}?kind=sms`}
+                                                                  href={`/communication/${entry.id}`}
                                                               >
                                                                   {
                                                                       entry.recipient
@@ -214,7 +214,7 @@ export default function CommunicationPage() {
                                                           <td>
                                                               <strong>
                                                                   <Link
-                                                                      href={`/communication/${entry.id}?kind=sms`}
+                                                                      href={`/communication/${entry.id}`}
                                                                   >
                                                                       {entry.subject ||
                                                                           'Wiadomość'}
@@ -256,7 +256,7 @@ export default function CommunicationPage() {
                                                       >
                                                           <td>
                                                               <Link
-                                                                  href={`/communication/${entry.id}?kind=email`}
+                                                                  href={`/communication/${entry.id}`}
                                                               >
                                                                   {entry.to}
                                                               </Link>
@@ -264,7 +264,7 @@ export default function CommunicationPage() {
                                                           <td>
                                                               <strong>
                                                                   <Link
-                                                                      href={`/communication/${entry.id}?kind=email`}
+                                                                      href={`/communication/${entry.id}`}
                                                                   >
                                                                       {entry.subject ||
                                                                           'Email'}
