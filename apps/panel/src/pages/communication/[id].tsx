@@ -1,14 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
 import VersumShell from '@/components/versum/VersumShell';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+    useMessageTemplates,
+    useSmsHistoryItem,
+    useSmsMutations,
+} from '@/hooks/useSms';
 import { useEmailHistoryItem, useEmailMutations } from '@/hooks/useEmails';
-import { useSmsHistoryItem, useSmsMutations } from '@/hooks/useSms';
 
 function formatDateTime(value?: string | null) {
     if (!value) return '-';
@@ -39,6 +43,7 @@ export default function CommunicationDetailPage() {
         : router.query.kind;
     const id = rawId ? Number(rawId) : null;
 
+    const hasExplicitKind = kind === 'sms' || kind === 'email';
     const smsItem = useSmsHistoryItem(kind === 'email' ? null : id);
     const emailItem = useEmailHistoryItem(kind === 'sms' ? null : id);
     const { sendSms } = useSmsMutations();
@@ -46,22 +51,39 @@ export default function CommunicationDetailPage() {
 
     const [replyMode, setReplyMode] = useState<'new' | 'template'>('new');
     const [replyText, setReplyText] = useState('');
+    const [replySubject, setReplySubject] = useState('');
     const [booksyPrompt, setBooksyPrompt] = useState(false);
     const [isSending, setIsSending] = useState(false);
-
-    if (!role) return null;
+    const [replyVisible, setReplyVisible] = useState(false);
+    const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
     const sms = smsItem.data;
     const email = emailItem.data;
-    const activeKind =
-        kind === 'sms' || (kind !== 'email' && sms) ? 'sms' : 'email';
-    const loading =
-        activeKind === 'sms'
+    const activeKind = hasExplicitKind
+        ? kind
+        : sms
+          ? 'sms'
+          : email
+            ? 'email'
+            : 'sms';
+    const loading = hasExplicitKind
+        ? activeKind === 'sms'
             ? smsItem.loading
-            : activeKind === 'email'
-              ? emailItem.loading
-              : smsItem.loading || emailItem.loading;
+            : emailItem.loading
+        : smsItem.loading || emailItem.loading;
     const detail = activeKind === 'sms' ? sms : email;
+    const templates = useMessageTemplates({
+        channel: activeKind,
+        isActive: true,
+        enabled: !!id,
+    });
+    const selectedTemplate = useMemo(
+        () =>
+            templates.data.find(
+                (template) => String(template.id) === selectedTemplateId,
+            ) ?? null,
+        [selectedTemplateId, templates.data],
+    );
 
     const recipientName =
         activeKind === 'sms'
@@ -71,6 +93,33 @@ export default function CommunicationDetailPage() {
         activeKind === 'sms'
             ? (sms?.recipient ?? '')
             : (email?.recipient ?? '');
+    const defaultReplySubject = email?.subject
+        ? `Re: ${email.subject}`
+        : 'Odpowiedź';
+
+    useEffect(() => {
+        if (activeKind === 'email') {
+            setReplySubject(defaultReplySubject);
+        } else {
+            setReplySubject('');
+        }
+    }, [activeKind, defaultReplySubject]);
+
+    useEffect(() => {
+        if (replyMode !== 'template') return;
+        if (!selectedTemplate) {
+            setReplyText('');
+            if (activeKind === 'email') {
+                setReplySubject(defaultReplySubject);
+            }
+            return;
+        }
+
+        setReplyText(selectedTemplate.content);
+        if (activeKind === 'email') {
+            setReplySubject(selectedTemplate.subject || defaultReplySubject);
+        }
+    }, [activeKind, defaultReplySubject, replyMode, selectedTemplate]);
 
     const handleSendReply = async () => {
         if (!detail || !replyText.trim()) return;
@@ -88,13 +137,20 @@ export default function CommunicationDetailPage() {
             } else {
                 await sendEmailAuth.mutateAsync({
                     to: recipientContact,
-                    subject: email?.subject || 'Odpowiedź',
+                    subject:
+                        replySubject.trim() || email?.subject || 'Odpowiedź',
                     template: replyText.trim(),
                     recipientId: email?.recipientId ?? undefined,
                 });
                 await emailItem.refetch();
             }
             setReplyText('');
+            if (activeKind === 'email') {
+                setReplySubject(defaultReplySubject);
+            }
+            setSelectedTemplateId('');
+            setReplyMode('new');
+            setReplyVisible(false);
         } catch (error) {
             console.error('Failed to send reply:', error);
             alert('Wystąpił błąd podczas wysyłania wiadomości');
@@ -102,6 +158,12 @@ export default function CommunicationDetailPage() {
             setIsSending(false);
         }
     };
+
+    const handleShowReply = () => {
+        setReplyVisible(true);
+    };
+
+    if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
@@ -187,9 +249,9 @@ export default function CommunicationDetailPage() {
                                             ? 'Odbiorca:'
                                             : 'Odbiorca:'}{' '}
                                         <strong>
-                                            {sms?.recipientUser?.id ? (
+                                            {detail.recipientUser?.id ? (
                                                 <Link
-                                                    href={`/customers/${sms.recipientUser.id}`}
+                                                    href={`/customers/${detail.recipientUser.id}`}
                                                 >
                                                     {recipientName}
                                                 </Link>
@@ -198,9 +260,13 @@ export default function CommunicationDetailPage() {
                                             )}
                                         </strong>{' '}
                                         (
-                                        <a href={`tel:${recipientContact}`}>
+                                        <button
+                                            type="button"
+                                            className="communication-inline-link"
+                                            onClick={handleShowReply}
+                                        >
                                             {recipientContact}
-                                        </a>
+                                        </button>
                                         )
                                     </div>
                                     <div className="text">
@@ -211,156 +277,253 @@ export default function CommunicationDetailPage() {
                                 </div>
 
                                 {activeKind === 'sms' &&
-                                sms?.status === 'delivered' ? (
-                                    <div className="customer message">
-                                        <div className="header">
-                                            <strong>
-                                                {formatDateTime(
-                                                    sms.deliveredAt ||
-                                                        sms.sentAt ||
-                                                        null,
-                                                )}
-                                            </strong>{' '}
-                                            (SMS Premium) |
-                                            <br />
-                                            Nadawca: {recipientName} (
-                                            <a href={`tel:${recipientContact}`}>
-                                                {recipientContact}
-                                            </a>
-                                            )
-                                        </div>
-                                        <div className="text">Dostarczono</div>
+                                (sms?.deliveredAt || sms?.errorMessage) ? (
+                                    <div className="communication-detail-status">
+                                        {sms?.deliveredAt ? (
+                                            <div>
+                                                Dostarczono:{' '}
+                                                <strong>
+                                                    {formatDateTime(
+                                                        sms.deliveredAt,
+                                                    )}
+                                                </strong>
+                                            </div>
+                                        ) : null}
+                                        {sms?.errorMessage ? (
+                                            <div>
+                                                Błąd dostarczenia:{' '}
+                                                <strong>
+                                                    {sms.errorMessage}
+                                                </strong>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 ) : null}
                             </div>
 
                             <hr />
 
-                            <div id="reply_form">
-                                <ol className="communication-reply-list">
-                                    <li className="control-group">
-                                        <label className="control-label">
-                                            Dane odbiorcy
-                                        </label>
-                                        <div className="controls">
-                                            {recipientName}
-                                        </div>
-                                    </li>
-                                    <li className="control-group">
-                                        <label className="control-label">
-                                            Szablon
-                                        </label>
-                                        <div className="controls">
-                                            <div className="radio-inline">
-                                                <label className="auto-width">
-                                                    <input
-                                                        className="mr-s"
-                                                        type="radio"
-                                                        checked={
-                                                            replyMode === 'new'
-                                                        }
-                                                        onChange={() =>
-                                                            setReplyMode('new')
-                                                        }
-                                                    />
-                                                    Podaj treść
-                                                </label>
+                            {replyVisible ? (
+                                <div id="reply_form">
+                                    <ol className="communication-reply-list">
+                                        <li className="control-group">
+                                            <label className="control-label">
+                                                Dane odbiorcy
+                                            </label>
+                                            <div className="controls">
+                                                {recipientName}
                                             </div>
-                                            <div className="radio-inline">
-                                                <label className="auto-width">
-                                                    <input
-                                                        className="mr-s"
-                                                        type="radio"
-                                                        checked={
-                                                            replyMode ===
-                                                            'template'
+                                        </li>
+                                        <li className="control-group">
+                                            <label className="control-label">
+                                                Szablon
+                                            </label>
+                                            <div className="controls">
+                                                <div className="radio-inline">
+                                                    <label className="auto-width">
+                                                        <input
+                                                            className="mr-s"
+                                                            type="radio"
+                                                            checked={
+                                                                replyMode ===
+                                                                'new'
+                                                            }
+                                                            onChange={() =>
+                                                                setReplyMode(
+                                                                    'new',
+                                                                )
+                                                            }
+                                                        />
+                                                        Podaj treść
+                                                    </label>
+                                                </div>
+                                                <div className="radio-inline">
+                                                    <label className="auto-width">
+                                                        <input
+                                                            className="mr-s"
+                                                            type="radio"
+                                                            checked={
+                                                                replyMode ===
+                                                                'template'
+                                                            }
+                                                            onChange={() =>
+                                                                setReplyMode(
+                                                                    'template',
+                                                                )
+                                                            }
+                                                        />
+                                                        Użyj szablonu
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        {replyMode === 'template' ? (
+                                            <li className="control-group">
+                                                <label
+                                                    className="control-label"
+                                                    htmlFor="reply-template"
+                                                >
+                                                    Istniejący szablon
+                                                </label>
+                                                <div className="controls">
+                                                    <select
+                                                        id="reply-template"
+                                                        className="form-control communication-reply-select"
+                                                        value={
+                                                            selectedTemplateId
                                                         }
-                                                        onChange={() =>
-                                                            setReplyMode(
-                                                                'template',
+                                                        onChange={(event) =>
+                                                            setSelectedTemplateId(
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="">
+                                                            wybierz szablon
+                                                        </option>
+                                                        {templates.data.map(
+                                                            (template) => (
+                                                                <option
+                                                                    key={
+                                                                        template.id
+                                                                    }
+                                                                    value={
+                                                                        template.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        template.name
+                                                                    }
+                                                                </option>
+                                                            ),
+                                                        )}
+                                                    </select>
+                                                </div>
+                                            </li>
+                                        ) : null}
+                                        {activeKind === 'email' ? (
+                                            <li className="control-group">
+                                                <label
+                                                    className="control-label"
+                                                    htmlFor="reply-subject"
+                                                >
+                                                    Tytuł wiadomości
+                                                </label>
+                                                <div className="controls">
+                                                    <input
+                                                        id="reply-subject"
+                                                        type="text"
+                                                        className="form-control communication-reply-input"
+                                                        value={replySubject}
+                                                        onChange={(event) =>
+                                                            setReplySubject(
+                                                                event.target
+                                                                    .value,
                                                             )
                                                         }
                                                     />
-                                                    Użyj szablonu
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li className="control-group">
-                                        <label
-                                            className="control-label"
-                                            htmlFor="reply-content"
-                                        >
-                                            Treść wiadomości
-                                        </label>
-                                        <div className="controls">
-                                            <textarea
-                                                id="reply-content"
-                                                className="form-control communication-reply-textarea"
-                                                value={replyText}
-                                                onChange={(event) =>
-                                                    setReplyText(
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                rows={6}
-                                            />
-                                            <div className="communication-reply-meta">
-                                                <div>
-                                                    Liczba znaków:{' '}
-                                                    {replyText.length} (liczba
-                                                    wiadomości SMS:{' '}
-                                                    {replyText.length === 0
-                                                        ? 0
-                                                        : Math.ceil(
-                                                              replyText.length /
-                                                                  160,
-                                                          )}
-                                                    )
                                                 </div>
-                                                <p>
-                                                    Pamiętaj o podaniu nazwy
-                                                    firmy oraz numeru
-                                                    kontaktowego
-                                                </p>
-                                                <Link href="/communication/templates">
-                                                    Podgląd
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    {activeKind === 'sms' ? (
+                                            </li>
+                                        ) : null}
                                         <li className="control-group">
-                                            <label className="communication-booksy-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={booksyPrompt}
+                                            <label
+                                                className="control-label"
+                                                htmlFor="reply-content"
+                                            >
+                                                Treść wiadomości
+                                            </label>
+                                            <div className="controls">
+                                                <textarea
+                                                    id="reply-content"
+                                                    className="form-control communication-reply-textarea"
+                                                    value={replyText}
                                                     onChange={(event) =>
-                                                        setBooksyPrompt(
-                                                            event.target
-                                                                .checked,
+                                                        setReplyText(
+                                                            event.target.value,
                                                         )
                                                     }
+                                                    rows={6}
                                                 />
-                                                <span>
-                                                    Dodaj zachętę do umówienia
-                                                    się na wizytę przez
-                                                    aplikację Booksy
-                                                </span>
-                                            </label>
+                                                <div className="communication-reply-meta">
+                                                    <div>
+                                                        Liczba znaków:{' '}
+                                                        {replyText.length}{' '}
+                                                        (liczba wiadomości SMS:{' '}
+                                                        {replyText.length === 0
+                                                            ? 0
+                                                            : Math.ceil(
+                                                                  replyText.length /
+                                                                      160,
+                                                              )}
+                                                        )
+                                                    </div>
+                                                    <p>
+                                                        Pamiętaj o podaniu nazwy
+                                                        firmy oraz numeru
+                                                        kontaktowego
+                                                    </p>
+                                                    <Link href="/communication/templates">
+                                                        Podgląd
+                                                    </Link>
+                                                </div>
+                                            </div>
                                         </li>
-                                    ) : null}
-                                </ol>
+                                        {activeKind === 'sms' ? (
+                                            <li className="control-group">
+                                                <label className="communication-booksy-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={booksyPrompt}
+                                                        onChange={(event) =>
+                                                            setBooksyPrompt(
+                                                                event.target
+                                                                    .checked,
+                                                            )
+                                                        }
+                                                    />
+                                                    <span>
+                                                        Dodaj zachętę do
+                                                        umówienia się na wizytę
+                                                        przez aplikację Booksy
+                                                    </span>
+                                                </label>
+                                            </li>
+                                        ) : null}
+                                    </ol>
 
-                                <button
-                                    type="button"
-                                    className="button button-blue"
-                                    disabled={isSending || !replyText.trim()}
-                                    onClick={() => void handleSendReply()}
-                                >
-                                    wyślij wiadomość
-                                </button>
-                            </div>
+                                    <button
+                                        type="button"
+                                        className="button button-blue"
+                                        disabled={
+                                            isSending ||
+                                            !replyText.trim() ||
+                                            (activeKind === 'email' &&
+                                                !replySubject.trim())
+                                        }
+                                        onClick={() => void handleSendReply()}
+                                    >
+                                        wyślij wiadomość
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="buttons_bottom">
+                                    <div className="l">
+                                        <button
+                                            type="button"
+                                            className="button button-blue"
+                                            onClick={handleShowReply}
+                                        >
+                                            Wyślij odpowiedź do: {recipientName}{' '}
+                                            (
+                                            {activeKind === 'sms'
+                                                ? 'SMS'
+                                                : 'email'}
+                                            )
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
