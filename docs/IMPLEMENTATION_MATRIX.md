@@ -53,7 +53,7 @@ Primary comparison source:
 | `/settings/extra_fields` | `/settings/extra-fields` | `exact` | route bundle + responses | backend CRUD now includes select-field options and the panel exposes full field-type editing |
 | `/settings/timetable/branch` | `/settings/timetable/branch` | `invent` | timetable route bundle + existing `branches.workingHours` model | weekly branch opening-hours form now persists through the active branch backend, but multi-range day editing and full tab parity remain reconstructed |
 | `/settings/timetable/employees/:id` | `/settings/timetable/employees/[id]` | `exact` | route bundle | per-employee timetable implemented |
-| `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |
+| `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `exact` | route bundle | copy flow now creates real target timetables by cloning the source employee's active weekly schedule for the selected date range |
 | `/settings/trades/new` | `/settings/trades/new` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |
 
 ## P3 / Edge Matrix

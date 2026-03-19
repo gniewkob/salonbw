@@ -17,7 +17,7 @@ Current audit state:
 - P1 routes are covered, but not all are `exact`
 - known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`
 - P2 routes are covered as a mix of `exact`, `aliased`, and `invent`
-- explicit non-exact P2 examples: `/settings/data_protection`, `/settings/timetable/branch`, `/settings/timetable/employees/copy`, `/settings/trades/new`
+- explicit non-exact P2 examples: `/settings/data_protection`, `/settings/timetable/branch`, `/settings/trades/new`
 - P3 families such as PDF export and social remain outside the current project scope
 
 Local implementation note (2026-03-19):
@@ -26,6 +26,7 @@ Local implementation note (2026-03-19):
 - `/settings/timetable/employees` overview now routes into a rebuilt per-employee monthly timetable view with working weekly editing and exception management instead of the earlier simplified local detail behavior.
 - `/settings/extra_fields` now supports the `select` field type end-to-end, including persisted option lists in backend state and editable options in the panel UI.
 - `/settings/data_protection` no longer stops at global branch-level paranoia settings; the page now exposes persisted per-employee limit overrides plus a dedicated logs entry route, but it remains `invent` because the logs screen still reuses the generic employee activity feed instead of a data-protection-specific parity view.
+- `/settings/timetable/employees/copy` now performs a real copy operation: it clones the active weekly timetable from the chosen source employee into new target timetables for the selected date range, so the route no longer belongs in the remaining non-exact P2 examples.
 - `/settings/timetable/branch` no longer uses a dead edit button; the page now reads/writes weekly opening hours through the active branch `workingHours` backend model, while still remaining an `invent` route because Versum's multi-range/day and full tab behavior are not fully mirrored yet.
 - `/settings/categories` now has persisted list-level reorder parity; the route supports save-order mode via backend `product-categories/reorder`, so it no longer belongs in the remaining non-exact P2 examples.
 - `/settings/customer-origins` aligns with the dump well enough to treat as `exact`: salon-defined origins support live add/edit/delete, and the system origins section remains read-only.
