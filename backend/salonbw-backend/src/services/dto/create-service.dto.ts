@@ -6,10 +6,14 @@ import {
     IsOptional,
     IsNotEmpty,
     IsEnum,
+    IsArray,
+    ValidateNested,
     Min,
     Max,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PriceType } from '../service.entity';
+import { CreateServiceVariantDto } from './service-variant.dto';
 
 export class CreateServiceDto {
     @ApiProperty({ description: 'Service name' })
@@ -111,4 +115,15 @@ export class CreateServiceDto {
     @IsNumber()
     @IsOptional()
     sortOrder?: number;
+
+    @ApiProperty({
+        required: false,
+        description: 'Initial variants (bulk creation, atomic)',
+        type: [CreateServiceVariantDto],
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateServiceVariantDto)
+    variants?: CreateServiceVariantDto[];
 }

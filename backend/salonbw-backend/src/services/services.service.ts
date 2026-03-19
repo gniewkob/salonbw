@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service } from './service.entity';
+import { ServiceVariant } from './entities/service-variant.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { LogService } from '../logs/log.service';
@@ -26,13 +27,29 @@ export class ServicesService {
     constructor(
         @InjectRepository(Service)
         private readonly servicesRepository: Repository<Service>,
+        @InjectRepository(ServiceVariant)
+        private readonly variantRepository: Repository<ServiceVariant>,
         private readonly logService: LogService,
         private readonly cache: AppCacheService,
     ) {}
 
     async create(dto: CreateServiceDto, user: User): Promise<Service> {
-        const service = this.servicesRepository.create(dto);
+        const { variants, ...serviceData } = dto;
+        const service = this.servicesRepository.create(serviceData);
         const saved = await this.servicesRepository.save(service);
+
+        if (variants?.length) {
+            const variantEntities = variants.map((v) =>
+                this.variantRepository.create({ ...v, serviceId: saved.id }),
+            );
+            try {
+                await this.variantRepository.save(variantEntities);
+            } catch (variantError) {
+                await this.servicesRepository.delete(saved.id);
+                throw variantError;
+            }
+        }
+
         try {
             await this.logService.logAction(user, LogAction.SERVICE_CREATED, {
                 serviceId: saved.id,

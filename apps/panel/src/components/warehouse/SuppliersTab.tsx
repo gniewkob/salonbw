@@ -38,6 +38,7 @@ export default function SuppliersTab() {
         null,
     );
     const [formData, setFormData] = useState<SupplierFormData>(defaultFormData);
+    const [error, setError] = useState<string | null>(null);
 
     const { data: suppliers = [], isLoading } = useSuppliers(showInactive);
     const createSupplier = useCreateSupplier();
@@ -61,6 +62,7 @@ export default function SuppliersTab() {
             setEditingSupplier(null);
             setFormData(defaultFormData);
         }
+        setError(null);
         setIsModalOpen(true);
     };
 
@@ -68,10 +70,12 @@ export default function SuppliersTab() {
         setIsModalOpen(false);
         setEditingSupplier(null);
         setFormData(defaultFormData);
+        setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         try {
             if (editingSupplier) {
                 await updateSupplier.mutateAsync({
@@ -84,6 +88,7 @@ export default function SuppliersTab() {
             handleCloseModal();
         } catch (err) {
             console.error('Error saving supplier:', err);
+            setError('Wystąpił błąd podczas zapisywania danych dostawcy.');
         }
     };
 
@@ -227,6 +232,11 @@ export default function SuppliersTab() {
                                     ? 'Edytuj dostawcę'
                                     : 'Nowy dostawca'}
                             </h2>
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                                    {error}
+                                </div>
+                            )}
                             <form
                                 onSubmit={(event) => {
                                     void handleSubmit(event);
