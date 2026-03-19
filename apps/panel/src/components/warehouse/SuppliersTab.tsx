@@ -8,6 +8,7 @@ import {
     useDeleteSupplier,
 } from '@/hooks/useWarehouse';
 import type { Supplier } from '@/types';
+import PanelModal from '@/components/ui/PanelModal';
 
 interface SupplierFormData {
     name: string;
@@ -38,6 +39,7 @@ export default function SuppliersTab() {
         null,
     );
     const [formData, setFormData] = useState<SupplierFormData>(defaultFormData);
+    const [error, setError] = useState<string | null>(null);
 
     const { data: suppliers = [], isLoading } = useSuppliers(showInactive);
     const createSupplier = useCreateSupplier();
@@ -61,6 +63,7 @@ export default function SuppliersTab() {
             setEditingSupplier(null);
             setFormData(defaultFormData);
         }
+        setError(null);
         setIsModalOpen(true);
     };
 
@@ -68,10 +71,12 @@ export default function SuppliersTab() {
         setIsModalOpen(false);
         setEditingSupplier(null);
         setFormData(defaultFormData);
+        setError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         try {
             if (editingSupplier) {
                 await updateSupplier.mutateAsync({
@@ -84,21 +89,33 @@ export default function SuppliersTab() {
             handleCloseModal();
         } catch (err) {
             console.error('Error saving supplier:', err);
+            setError(
+                'Wystąpił błąd podczas zapisywania dostawcy. Spróbuj ponownie.',
+            );
         }
     };
 
     const handleDelete = async (id: number) => {
         if (confirm('Czy na pewno chcesz usunąć tego dostawcę?')) {
+            setError(null);
             try {
                 await deleteSupplier.mutateAsync(id);
             } catch (err) {
                 console.error('Error deleting supplier:', err);
+                setError(
+                    'Nie udało się usunąć dostawcy. Upewnij się, że nie ma przypisanych dostaw.',
+                );
             }
         }
     };
 
     return (
         <div>
+            {error && !isModalOpen && (
+                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+                    {error}
+                </div>
+            )}
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
@@ -219,179 +236,180 @@ export default function SuppliersTab() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <h2 className="text-xl font-semibold mb-4">
-                                {editingSupplier
-                                    ? 'Edytuj dostawcę'
-                                    : 'Nowy dostawca'}
-                            </h2>
-                            <form
-                                onSubmit={(event) => {
-                                    void handleSubmit(event);
-                                }}
-                                className="space-y-4"
-                            >
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nazwa *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                name: e.target.value,
-                                            })
-                                        }
-                                        required
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Osoba kontaktowa
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.contactPerson}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                contactPerson: e.target.value,
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    email: e.target.value,
-                                                })
-                                            }
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Telefon
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            value={formData.phone}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    phone: e.target.value,
-                                                })
-                                            }
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        NIP
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.nip}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                nip: e.target.value,
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Adres
-                                    </label>
-                                    <textarea
-                                        value={formData.address}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                address: e.target.value,
-                                            })
-                                        }
-                                        rows={2}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Notatki
-                                    </label>
-                                    <textarea
-                                        value={formData.notes}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                notes: e.target.value,
-                                            })
-                                        }
-                                        rows={2}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isActive}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    isActive: e.target.checked,
-                                                })
-                                            }
-                                            className="rounded border-gray-300"
-                                        />
-                                        <span className="text-sm text-gray-700">
-                                            Aktywny
-                                        </span>
-                                    </label>
-                                </div>
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                                    >
-                                        Anuluj
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={
-                                            createSupplier.isPending ||
-                                            updateSupplier.isPending
-                                        }
-                                        className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
-                                    >
-                                        {createSupplier.isPending ||
-                                        updateSupplier.isPending
-                                            ? 'Zapisywanie...'
-                                            : 'Zapisz'}
-                                    </button>
-                                </div>
-                            </form>
+                <PanelModal
+                    title={
+                        editingSupplier ? 'Edytuj dostawcę' : 'Nowy dostawca'
+                    }
+                    maxWidthClassName="max-w-md max-h-[90vh] overflow-y-auto"
+                >
+                    {error && (
+                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                            {error}
                         </div>
-                    </div>
-                </div>
+                    )}
+                    <form
+                        onSubmit={(event) => {
+                            void handleSubmit(event);
+                        }}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nazwa *
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
+                                }
+                                required
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Osoba kontaktowa
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.contactPerson}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        contactPerson: e.target.value,
+                                    })
+                                }
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Telefon
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            phone: e.target.value,
+                                        })
+                                    }
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                NIP
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.nip}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        nip: e.target.value,
+                                    })
+                                }
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Adres
+                            </label>
+                            <textarea
+                                value={formData.address}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        address: e.target.value,
+                                    })
+                                }
+                                rows={2}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Notatki
+                            </label>
+                            <textarea
+                                value={formData.notes}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                rows={2}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isActive}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            isActive: e.target.checked,
+                                        })
+                                    }
+                                    className="rounded border-gray-300"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    Aktywny
+                                </span>
+                            </label>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                            >
+                                Anuluj
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={
+                                    createSupplier.isPending ||
+                                    updateSupplier.isPending
+                                }
+                                className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+                            >
+                                {createSupplier.isPending ||
+                                updateSupplier.isPending
+                                    ? 'Zapisywanie...'
+                                    : 'Zapisz'}
+                            </button>
+                        </div>
+                    </form>
+                </PanelModal>
             )}
         </div>
     );
