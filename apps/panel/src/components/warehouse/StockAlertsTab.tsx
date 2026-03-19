@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useStockAlerts, useStockSummary } from '@/hooks/useStockAlerts';
 import type {
     StockAlertPriority,
@@ -39,38 +39,42 @@ export default function StockAlertsTab({ onCreateDelivery }: Props) {
 
     const isLoading = alertsLoading || summaryLoading;
 
-    // Filter suggestions by priority
-    const filteredSuggestions =
-        alerts?.reorderSuggestions.filter((s) =>
-            filterPriority === 'all' ? true : s.priority === filterPriority,
-        ) ?? [];
+    const filteredSuggestions = useMemo(() => {
+        return (
+            alerts?.reorderSuggestions.filter((s) =>
+                filterPriority === 'all' ? true : s.priority === filterPriority,
+            ) ?? []
+        );
+    }, [alerts?.reorderSuggestions, filterPriority]);
 
-    // Group suggestions by supplier for bulk ordering
-    const groupedBySupplier = filteredSuggestions.reduce(
-        (acc, suggestion) => {
-            const key = suggestion.supplierId ?? 0;
-            if (!acc[key]) {
-                acc[key] = {
-                    supplierId: suggestion.supplierId,
-                    supplierName: suggestion.supplierName ?? 'Brak dostawcy',
-                    suggestions: [],
-                    totalCost: 0,
-                };
-            }
-            acc[key].suggestions.push(suggestion);
-            acc[key].totalCost += suggestion.estimatedCost ?? 0;
-            return acc;
-        },
-        {} as Record<
-            number,
-            {
-                supplierId: number | null;
-                supplierName: string;
-                suggestions: ReorderSuggestion[];
-                totalCost: number;
-            }
-        >,
-    );
+    const groupedBySupplier = useMemo(() => {
+        return filteredSuggestions.reduce(
+            (acc, suggestion) => {
+                const key = suggestion.supplierId ?? 'unassigned';
+                if (!acc[key]) {
+                    acc[key] = {
+                        supplierId: suggestion.supplierId,
+                        supplierName:
+                            suggestion.supplierName ?? 'Brak dostawcy',
+                        suggestions: [],
+                        totalCost: 0,
+                    };
+                }
+                acc[key].suggestions.push(suggestion);
+                acc[key].totalCost += suggestion.estimatedCost ?? 0;
+                return acc;
+            },
+            {} as Record<
+                string,
+                {
+                    supplierId: number | null;
+                    supplierName: string;
+                    suggestions: ReorderSuggestion[];
+                    totalCost: number;
+                }
+            >,
+        );
+    }, [filteredSuggestions]);
 
     if (isLoading) {
         return (
