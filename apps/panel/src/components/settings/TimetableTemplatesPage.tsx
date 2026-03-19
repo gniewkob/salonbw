@@ -1,96 +1,18 @@
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
+import {
+    useTimetableTemplateMutations,
+    useTimetableTemplates,
+} from '@/hooks/useTimetableTemplates';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
-import type { DayOfWeek, Timetable } from '@/types';
-
-type TemplateDayState =
-    | { kind: 'open'; startTime: string; endTime: string }
-    | { kind: 'dayoff' }
-    | { kind: 'closed' };
-
-type TimetableTemplate = {
-    id: number;
-    name: string;
-    colorClass: 'color1' | 'color2' | 'color3' | 'color4' | 'color5';
-    days: Record<DayOfWeek, TemplateDayState>;
-};
-
-const STORAGE_KEY = 'salonbw:timetable-templates';
-
-const DEFAULT_TEMPLATES: TimetableTemplate[] = [
-    {
-        id: 4978,
-        name: 'Poniedziałek Środa wolne',
-        colorClass: 'color1',
-        days: {
-            0: { kind: 'dayoff' },
-            1: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            2: { kind: 'dayoff' },
-            3: { kind: 'open', startTime: '10:00', endTime: '15:00' },
-            4: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            5: { kind: 'open', startTime: '09:00', endTime: '15:00' },
-            6: { kind: 'closed' },
-        },
-    },
-    {
-        id: 4979,
-        name: 'Recepcja',
-        colorClass: 'color2',
-        days: {
-            0: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            1: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            2: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            3: { kind: 'dayoff' },
-            4: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            5: { kind: 'open', startTime: '09:00', endTime: '15:00' },
-            6: { kind: 'closed' },
-        },
-    },
-    {
-        id: 5013,
-        name: 'Stylistka paznokci',
-        colorClass: 'color3',
-        days: {
-            0: { kind: 'dayoff' },
-            1: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            2: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            3: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            4: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            5: { kind: 'open', startTime: '09:00', endTime: '15:00' },
-            6: { kind: 'closed' },
-        },
-    },
-    {
-        id: 4976,
-        name: 'Wolny piątek',
-        colorClass: 'color4',
-        days: {
-            0: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            1: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            2: { kind: 'open', startTime: '11:00', endTime: '19:00' },
-            3: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            4: { kind: 'dayoff' },
-            5: { kind: 'open', startTime: '09:00', endTime: '15:00' },
-            6: { kind: 'closed' },
-        },
-    },
-    {
-        id: 4977,
-        name: 'Wolny wtorek',
-        colorClass: 'color5',
-        days: {
-            0: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            1: { kind: 'dayoff' },
-            2: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            3: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            4: { kind: 'open', startTime: '10:00', endTime: '19:00' },
-            5: { kind: 'open', startTime: '09:00', endTime: '15:00' },
-            6: { kind: 'closed' },
-        },
-    },
-];
+import type {
+    DayOfWeek,
+    Timetable,
+    TimetableTemplate,
+    TimetableTemplateDayKind,
+} from '@/types';
 
 const DAY_LABELS = [
     'poniedziałek',
@@ -116,62 +38,121 @@ function formatHours(minutes: number) {
 }
 
 function getTemplateMinutes(template: TimetableTemplate) {
+    const dayMap = getTemplateDayMap(template);
     return ([0, 1, 2, 3, 4, 5, 6] as DayOfWeek[]).reduce<number>((sum, day) => {
-        const entry = template.days[day];
+        const entry = dayMap[day];
         if (entry.kind !== 'open') return sum;
-        return (
-            sum +
-            (timeToMinutes(entry.endTime) - timeToMinutes(entry.startTime))
-        );
+        const startTime = entry.startTime ?? '00:00';
+        const endTime = entry.endTime ?? '00:00';
+        return sum + (timeToMinutes(endTime) - timeToMinutes(startTime));
     }, 0);
 }
 
 function getDefaultTemplate(
     name: string,
     colorClass: TimetableTemplate['colorClass'],
-): TimetableTemplate {
+): {
+    name: string;
+    colorClass: TimetableTemplate['colorClass'];
+    days: Array<{
+        dayOfWeek: DayOfWeek;
+        kind: TimetableTemplateDayKind;
+        startTime?: string;
+        endTime?: string;
+    }>;
+} {
     return {
-        id: Date.now(),
         name,
         colorClass,
-        days: {
-            0: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            1: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            2: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            3: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            4: { kind: 'open', startTime: '10:00', endTime: '18:00' },
-            5: { kind: 'dayoff' },
-            6: { kind: 'closed' },
-        },
+        days: [
+            {
+                dayOfWeek: 0,
+                kind: 'open',
+                startTime: '10:00',
+                endTime: '18:00',
+            },
+            {
+                dayOfWeek: 1,
+                kind: 'open',
+                startTime: '10:00',
+                endTime: '18:00',
+            },
+            {
+                dayOfWeek: 2,
+                kind: 'open',
+                startTime: '10:00',
+                endTime: '18:00',
+            },
+            {
+                dayOfWeek: 3,
+                kind: 'open',
+                startTime: '10:00',
+                endTime: '18:00',
+            },
+            {
+                dayOfWeek: 4,
+                kind: 'open',
+                startTime: '10:00',
+                endTime: '18:00',
+            },
+            { dayOfWeek: 5, kind: 'dayoff' },
+            { dayOfWeek: 6, kind: 'closed' },
+        ],
     };
 }
 
-function loadTemplates() {
-    if (typeof window === 'undefined') return DEFAULT_TEMPLATES;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_TEMPLATES;
-    try {
-        const parsed = JSON.parse(raw) as TimetableTemplate[];
-        return parsed.length > 0 ? parsed : DEFAULT_TEMPLATES;
-    } catch {
-        return DEFAULT_TEMPLATES;
-    }
+function getTemplateDayMap(template: TimetableTemplate) {
+    return template.days.reduce<
+        Record<
+            DayOfWeek,
+            {
+                kind: TimetableTemplateDayKind;
+                startTime?: string;
+                endTime?: string;
+            }
+        >
+    >(
+        (acc, day) => {
+            acc[day.dayOfWeek] =
+                day.kind === 'open'
+                    ? {
+                          kind: 'open',
+                          startTime: day.startTime ?? '',
+                          endTime: day.endTime ?? '',
+                      }
+                    : { kind: day.kind };
+            return acc;
+        },
+        {
+            0: { kind: 'closed' },
+            1: { kind: 'closed' },
+            2: { kind: 'closed' },
+            3: { kind: 'closed' },
+            4: { kind: 'closed' },
+            5: { kind: 'closed' },
+            6: { kind: 'closed' },
+        },
+    );
 }
 
 export default function TimetableTemplatesPage() {
-    const [templates, setTemplates] = useState<TimetableTemplate[]>([]);
     const [notice, setNotice] = useState<string | null>(null);
     const { data: staffOptions } = useStaffOptions();
     const { data: timetables } = useTimetables({ isActive: true });
+    const {
+        data: templates,
+        loading,
+        error,
+        refetch,
+    } = useTimetableTemplates();
+    const { createTemplate, updateTemplate, deleteTemplate } =
+        useTimetableTemplateMutations();
 
     useEffect(() => {
-        setTemplates(loadTemplates());
-    }, []);
-
-    useEffect(() => {
-        if (typeof window === 'undefined' || templates.length === 0) return;
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-    }, [templates]);
+        if (!notice) return;
+        const timeout = window.setTimeout(() => setNotice(null), 2500);
+        return () => window.clearTimeout(timeout);
+    }, [notice]);
 
     const secondaryNav = useMemo(() => {
         const timetableMap = new Map<number, Timetable>(
@@ -266,37 +247,77 @@ export default function TimetableTemplatesPage() {
 
     useSetSecondaryNav(secondaryNav);
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         const name = window.prompt('Nazwa szablonu', 'Nowy szablon');
         if (!name) return;
         const colorClass = `color${(
             (templates.length % 5) +
             1
         ).toString()}` as TimetableTemplate['colorClass'];
-        setTemplates((current) => [
-            ...current,
-            getDefaultTemplate(name, colorClass),
-        ]);
-        setNotice('Dodano lokalny szablon grafiku.');
+        try {
+            await createTemplate.mutateAsync(
+                getDefaultTemplate(name, colorClass),
+            );
+            setNotice('Dodano szablon grafiku.');
+        } catch (mutationError) {
+            setNotice(
+                mutationError instanceof Error
+                    ? mutationError.message
+                    : 'Nie udało się dodać szablonu.',
+            );
+        }
     };
 
-    const handleRename = (id: number) => {
+    const handleRename = async (id: number) => {
         const current = templates.find((template) => template.id === id);
         const nextName = window.prompt('Edytuj nazwę szablonu', current?.name);
         if (!nextName) return;
-        setTemplates((items) =>
-            items.map((item) =>
-                item.id === id ? { ...item, name: nextName } : item,
-            ),
-        );
-        setNotice('Zmieniono nazwę szablonu.');
+        try {
+            await updateTemplate.mutateAsync({ id, name: nextName });
+            setNotice('Zmieniono nazwę szablonu.');
+        } catch (mutationError) {
+            setNotice(
+                mutationError instanceof Error
+                    ? mutationError.message
+                    : 'Nie udało się zmienić nazwy szablonu.',
+            );
+        }
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = async (id: number) => {
         if (!window.confirm('Czy na pewno chcesz usunąć szablon?')) return;
-        setTemplates((items) => items.filter((item) => item.id !== id));
-        setNotice('Usunięto lokalny szablon grafiku.');
+        try {
+            await deleteTemplate.mutateAsync(id);
+            setNotice('Usunięto szablon grafiku.');
+        } catch (mutationError) {
+            setNotice(
+                mutationError instanceof Error
+                    ? mutationError.message
+                    : 'Nie udało się usunąć szablonu.',
+            );
+        }
     };
+
+    if (loading) {
+        return (
+            <div className="settings-detail-state">Ładowanie szablonów...</div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="settings-detail-state settings-detail-state--error">
+                <div>Nie udało się pobrać szablonów grafików.</div>
+                <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => void refetch()}
+                >
+                    odśwież
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="timetable-templates-page">
@@ -325,7 +346,7 @@ export default function TimetableTemplatesPage() {
                         <button
                             type="button"
                             className="button button-blue"
-                            onClick={handleAdd}
+                            onClick={() => void handleAdd()}
                         >
                             Dodaj szablon
                         </button>
@@ -344,123 +365,125 @@ export default function TimetableTemplatesPage() {
                         </thead>
                         <tbody>
                             <tr className="schedule-row" />
-                            {templates.map((template) => (
-                                <>
-                                    <tr
-                                        key={template.id}
-                                        className="schedule-row"
-                                    >
-                                        <td className={template.colorClass}>
-                                            <ul className="schedule-settings">
-                                                <li className="name">
-                                                    {template.name}
-                                                </li>
-                                                <li>
-                                                    <span className="counter">
-                                                        {formatHours(
-                                                            getTemplateMinutes(
-                                                                template,
-                                                            ),
-                                                        )}
-                                                    </span>
-                                                </li>
-                                                <li className="schedule-edit">
-                                                    <div className="pull_left">
-                                                        <button
-                                                            type="button"
-                                                            className="timetable-employees-page__link-button"
-                                                            onClick={() =>
-                                                                handleRename(
-                                                                    template.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            Edytuj
-                                                        </button>
-                                                    </div>
-                                                    <div className="pull_right">
-                                                        <button
-                                                            type="button"
-                                                            className="timetable-employees-page__link-button"
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    template.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            Usuń
-                                                        </button>
-                                                    </div>
-                                                    <div className="c" />
-                                                </li>
-                                            </ul>
-                                        </td>
-                                        {(
-                                            [0, 1, 2, 3, 4, 5, 6] as DayOfWeek[]
-                                        ).map((day) => {
-                                            const entry = template.days[day];
-                                            return (
-                                                <td
-                                                    key={`${template.id}-${day}`}
-                                                    className={`${template.colorClass} days`}
-                                                >
-                                                    <div className="schedule-cell">
-                                                        {entry.kind ===
-                                                        'open' ? (
-                                                            <ul className="schedule-cell-list schedule-cell-list-full">
-                                                                <li className="schedule-open">
-                                                                    {
-                                                                        entry.startTime
-                                                                    }{' '}
-                                                                    -{' '}
-                                                                    {
-                                                                        entry.endTime
-                                                                    }{' '}
-                                                                    <span className="counter">
-                                                                        {formatHours(
-                                                                            timeToMinutes(
-                                                                                entry.endTime,
-                                                                            ) -
+                            {templates.map((template) => {
+                                const dayMap = getTemplateDayMap(template);
+                                return (
+                                    <Fragment key={template.id}>
+                                        <tr className="schedule-row">
+                                            <td className={template.colorClass}>
+                                                <ul className="schedule-settings">
+                                                    <li className="name">
+                                                        {template.name}
+                                                    </li>
+                                                    <li>
+                                                        <span className="counter">
+                                                            {formatHours(
+                                                                getTemplateMinutes(
+                                                                    template,
+                                                                ),
+                                                            )}
+                                                        </span>
+                                                    </li>
+                                                    <li className="schedule-edit">
+                                                        <div className="pull_left">
+                                                            <button
+                                                                type="button"
+                                                                className="timetable-employees-page__link-button"
+                                                                onClick={() =>
+                                                                    void handleRename(
+                                                                        template.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Edytuj
+                                                            </button>
+                                                        </div>
+                                                        <div className="pull_right">
+                                                            <button
+                                                                type="button"
+                                                                className="timetable-employees-page__link-button"
+                                                                onClick={() =>
+                                                                    void handleDelete(
+                                                                        template.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Usuń
+                                                            </button>
+                                                        </div>
+                                                        <div className="c" />
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                            {(
+                                                [
+                                                    0, 1, 2, 3, 4, 5, 6,
+                                                ] as DayOfWeek[]
+                                            ).map((day) => {
+                                                const entry = dayMap[day];
+                                                return (
+                                                    <td
+                                                        key={`${template.id}-${day}`}
+                                                        className={`${template.colorClass} days`}
+                                                    >
+                                                        <div className="schedule-cell">
+                                                            {entry.kind ===
+                                                            'open' ? (
+                                                                <ul className="schedule-cell-list schedule-cell-list-full">
+                                                                    <li className="schedule-open">
+                                                                        {entry.startTime ??
+                                                                            '--:--'}{' '}
+                                                                        -{' '}
+                                                                        {entry.endTime ??
+                                                                            '--:--'}{' '}
+                                                                        <span className="counter">
+                                                                            {formatHours(
                                                                                 timeToMinutes(
-                                                                                    entry.startTime,
-                                                                                ),
-                                                                        )}
-                                                                    </span>
-                                                                </li>
-                                                            </ul>
-                                                        ) : (
-                                                            <ul className="schedule-cell-list schedule-cell-list-empty">
-                                                                <li className="schedule-closed">
-                                                                    <div className="icon_box">
-                                                                        <i
-                                                                            className={`icon ${
-                                                                                entry.kind ===
-                                                                                'dayoff'
-                                                                                    ? 'sprite-schedule_dayoff'
-                                                                                    : 'sprite-schedule_inactive'
-                                                                            } mr-xs `}
-                                                                        />
-                                                                    </div>{' '}
-                                                                    {entry.kind ===
-                                                                    'dayoff'
-                                                                        ? 'Dzień wolny'
-                                                                        : 'Salon nieczynny'}
-                                                                </li>
-                                                            </ul>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                    <tr
-                                        key={`sep-${template.id}`}
-                                        className="schedule-form-row"
-                                    >
-                                        <td colSpan={8} />
-                                    </tr>
-                                </>
-                            ))}
+                                                                                    entry.endTime ??
+                                                                                        '00:00',
+                                                                                ) -
+                                                                                    timeToMinutes(
+                                                                                        entry.startTime ??
+                                                                                            '00:00',
+                                                                                    ),
+                                                                            )}
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                            ) : (
+                                                                <ul className="schedule-cell-list schedule-cell-list-empty">
+                                                                    <li className="schedule-closed">
+                                                                        <div className="icon_box">
+                                                                            <i
+                                                                                className={`icon ${
+                                                                                    entry.kind ===
+                                                                                    'dayoff'
+                                                                                        ? 'sprite-schedule_dayoff'
+                                                                                        : 'sprite-schedule_inactive'
+                                                                                } mr-xs `}
+                                                                            />
+                                                                        </div>{' '}
+                                                                        {entry.kind ===
+                                                                        'dayoff'
+                                                                            ? 'Dzień wolny'
+                                                                            : 'Salon nieczynny'}
+                                                                    </li>
+                                                                </ul>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                        <tr
+                                            key={`sep-${template.id}`}
+                                            className="schedule-form-row"
+                                        >
+                                            <td colSpan={8} />
+                                        </tr>
+                                    </Fragment>
+                                );
+                            })}
                         </tbody>
                         <tfoot>
                             <tr>
