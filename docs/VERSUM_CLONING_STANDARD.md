@@ -113,6 +113,8 @@ Moduł jest „100%” tylko gdy wszystkie warunki są spełnione:
 - Każda świadoma różnica vs Versum musi być opisana w:
     - `docs/VERSUM_CLONE_PROGRESS.md` (sekcja „Known deltas”),
     - PR/commit message.
+- **Spójność transakcyjna (Backend):** Wieloetapowe operacje biznesowe (np. tworzenie encji nadrzędnej i powiązanych wariantów/elementów) muszą być przesyłane w jednym żądaniu API i obsługiwane atomowo po stronie backendu (transakcje bazodanowe lub manualny rollback). Frontend nie może wysyłać mutacji w pętli.
+- **Obsługa błędów (Frontend):** Bezwzględnie unikamy "głuchych błędów" (silent failures). Każda akcja modyfikująca dane (szczególnie w formularzach i modalach) musi w bloku `catch` przechwycić błąd i wyświetlić go użytkownikowi w UI (np. jako czerwony baner z komunikatem).
 
 ## 6. Checklist przed commitem (moduły Versum clone)
 
