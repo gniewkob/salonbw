@@ -54,7 +54,7 @@ Primary comparison source:
 | `/settings/timetable/branch` | `/settings/timetable/branch` | `exact` | timetable route bundle + existing `branches.workingHours` model | weekly branch opening-hours form now persists through the active branch backend, including multi-range day editing with backward-compatible JSON storage |
 | `/settings/timetable/employees/:id` | `/settings/timetable/employees/[id]` | `exact` | route bundle | per-employee timetable implemented |
 | `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `exact` | route bundle | copy flow now creates real target timetables by cloning the source employee's active weekly schedule for the selected date range |
-| `/settings/trades/new` | `/settings/trades/new` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |
+| `/settings/trades/new` | `/settings/trades/new` | `exact` | route bundle + existing `service-categories` backend | route now creates real service categories/branches and redirects into the services area instead of remaining a disabled stub |
 
 ## P3 / Edge Matrix
 
