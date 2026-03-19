@@ -9,8 +9,8 @@ import {
     useSuppliers,
 } from '@/hooks/useWarehouse';
 import type { DeliveryStatus } from '@/types';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import PanelModal from '@/components/ui/PanelModal';
+import { formatPanelCurrency, formatPanelDate } from '@/utils/formatters';
 
 const statusLabels: Record<DeliveryStatus, string> = {
     draft: 'Wersja robocza',
@@ -86,42 +86,35 @@ export default function DeliveriesTab() {
                 'Czy na pewno chcesz przyjąć tę dostawę? Stany magazynowe zostaną zaktualizowane.',
             )
         ) {
+            setError(null);
             try {
                 await receiveDelivery.mutateAsync({ id });
             } catch (err) {
                 console.error('Error receiving delivery:', err);
+                setError('Nie udało się przyjąć dostawy. Spróbuj ponownie.');
             }
         }
     };
 
     const handleCancel = async (id: number) => {
         if (confirm('Czy na pewno chcesz anulować tę dostawę?')) {
+            setError(null);
             try {
                 await cancelDelivery.mutateAsync(id);
             } catch (err) {
                 console.error('Error cancelling delivery:', err);
+                setError('Nie udało się anulować dostawy. Spróbuj ponownie.');
             }
         }
     };
 
-    const formatDate = (dateStr: string | undefined) => {
-        if (!dateStr) return '-';
-        try {
-            return format(new Date(dateStr), 'd MMM yyyy', { locale: pl });
-        } catch {
-            return '-';
-        }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('pl-PL', {
-            style: 'currency',
-            currency: 'PLN',
-        }).format(amount);
-    };
-
     return (
         <div>
+            {error && !isModalOpen && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    {error}
+                </div>
+            )}
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
@@ -206,13 +199,15 @@ export default function DeliveriesTab() {
                                         {delivery.supplier?.name || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {formatDate(delivery.deliveryDate)}
+                                        {formatPanelDate(delivery.deliveryDate)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {delivery.invoiceNumber || '-'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                                        {formatCurrency(delivery.totalCost)}
+                                        {formatPanelCurrency(
+                                            delivery.totalCost,
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
@@ -273,7 +268,7 @@ export default function DeliveriesTab() {
                                         {delivery.status === 'received' && (
                                             <span className="text-gray-400">
                                                 Przyjęta{' '}
-                                                {formatDate(
+                                                {formatPanelDate(
                                                     delivery.receivedDate,
                                                 )}
                                             </span>
@@ -288,121 +283,111 @@ export default function DeliveriesTab() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                        <div className="p-6">
-                            <h2 className="text-xl font-semibold mb-4">
-                                Nowa dostawa
-                            </h2>
-                            {error && (
-                                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
-                                    {error}
-                                </div>
-                            )}
-                            <form
-                                onSubmit={(event) => {
-                                    void handleSubmit(event);
-                                }}
-                                className="space-y-4"
-                            >
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Dostawca
-                                    </label>
-                                    <select
-                                        value={formData.supplierId}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                supplierId: e.target.value,
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    >
-                                        <option value="">
-                                            -- Wybierz dostawcę --
-                                        </option>
-                                        {suppliers.map((s) => (
-                                            <option key={s.id} value={s.id}>
-                                                {s.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Data dostawy
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.deliveryDate}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                deliveryDate: e.target.value,
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nr faktury
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.invoiceNumber}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                invoiceNumber: e.target.value,
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Notatki
-                                    </label>
-                                    <textarea
-                                        value={formData.notes}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                notes: e.target.value,
-                                            })
-                                        }
-                                        rows={2}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
-                                </div>
-                                <p className="text-sm text-gray-500">
-                                    Po utworzeniu dostawy będziesz mógł dodać
-                                    produkty.
-                                </p>
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                                    >
-                                        Anuluj
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={createDelivery.isPending}
-                                        className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
-                                    >
-                                        {createDelivery.isPending
-                                            ? 'Tworzenie...'
-                                            : 'Utwórz'}
-                                    </button>
-                                </div>
-                            </form>
+                <PanelModal title="Nowa dostawa">
+                    {error && (
+                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                            {error}
                         </div>
-                    </div>
-                </div>
+                    )}
+                    <form
+                        onSubmit={(event) => {
+                            void handleSubmit(event);
+                        }}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Dostawca
+                            </label>
+                            <select
+                                value={formData.supplierId}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        supplierId: e.target.value,
+                                    })
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            >
+                                <option value="">-- Wybierz dostawcę --</option>
+                                {suppliers.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Data dostawy
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.deliveryDate}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        deliveryDate: e.target.value,
+                                    })
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Nr faktury
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.invoiceNumber}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        invoiceNumber: e.target.value,
+                                    })
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Notatki
+                            </label>
+                            <textarea
+                                value={formData.notes}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        notes: e.target.value,
+                                    })
+                                }
+                                rows={2}
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            />
+                        </div>
+                        <p className="text-sm text-gray-500">
+                            Po utworzeniu dostawy będziesz mógł dodać produkty.
+                        </p>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                            >
+                                Anuluj
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={createDelivery.isPending}
+                                className="rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:opacity-50"
+                            >
+                                {createDelivery.isPending
+                                    ? 'Tworzenie...'
+                                    : 'Utwórz'}
+                            </button>
+                        </div>
+                    </form>
+                </PanelModal>
             )}
         </div>
     );
