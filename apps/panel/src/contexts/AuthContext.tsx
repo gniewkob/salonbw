@@ -98,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (nextTokens) {
             Cookies.set('accessToken', nextTokens.accessToken, cookieOptions);
-            Cookies.set('refreshToken', nextTokens.refreshToken, cookieOptions);
             Cookies.set('sbw_auth', 'true', cookieOptions);
         } else {
             Cookies.remove('accessToken', cookieOptions);

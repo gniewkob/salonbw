@@ -16,20 +16,6 @@
         ]
       }
     },
-    "/debug-logs": {
-      "get": {
-        "operationId": "AppController_getLogs",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "app"
-        ]
-      }
-    },
     "/health": {
       "get": {
         "operationId": "HealthController_getHealth",
