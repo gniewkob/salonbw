@@ -24,6 +24,7 @@ import { ProductCategory } from './entities/product-category.entity';
 import { ProductCategoriesService } from './product-categories.service';
 import {
     CreateProductCategoryDto,
+    ReorderProductCategoriesDto,
     UpdateProductCategoryDto,
 } from './dto/product-category.dto';
 
@@ -67,6 +68,15 @@ export class ProductCategoriesController {
     @ApiResponse({ status: 201, type: ProductCategory })
     create(@Body() dto: CreateProductCategoryDto) {
         return this.productCategoriesService.create(dto);
+    }
+
+    @Roles(Role.Admin)
+    @Patch('reorder')
+    @ApiOperation({ summary: 'Reorder product categories' })
+    @ApiResponse({ status: 200, description: 'Product categories reordered' })
+    async reorder(@Body() dto: ReorderProductCategoriesDto) {
+        await this.productCategoriesService.reorder(dto);
+        return { status: 'ok' };
     }
 
     @Roles(Role.Admin)

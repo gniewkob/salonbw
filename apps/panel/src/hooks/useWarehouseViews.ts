@@ -141,6 +141,36 @@ export function useDeleteProductCategory() {
     });
 }
 
+export function useReorderProductCategories() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (
+            items: Array<{
+                id: number;
+                parentId?: number | null;
+                sortOrder: number;
+            }>,
+        ) =>
+            apiFetch('/product-categories/reorder', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items }),
+            }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: ['product-categories-tree'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['product-categories'],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['warehouse-products'],
+            });
+        },
+    });
+}
+
 export function useProductCard(productId?: number) {
     const { apiFetch } = useAuth();
     return useQuery<ProductCardView>({

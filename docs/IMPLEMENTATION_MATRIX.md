@@ -40,7 +40,7 @@ Primary comparison source:
 | Versum Route | Target In `salonbw` | Status | Dump Inputs | Agent Instruction |
 |---|---|---|---|---|
 | `/event_reminders` | `/event-reminders` | `exact` | route bundle + responses | canonical route restored; edit flow saves through reminder settings backend |
-| `/settings/categories` | `/settings/categories` | `invent` | route bundle + modal/category dump | list route exists, but list-level CRUD actions remain non-backend parity |
+| `/settings/categories` | `/settings/categories` | `exact` | route bundle + modal/category dump | list-level CRUD now covers edit/delete/add-subcategory and persisted reorder/save-order through backend |
 | `/settings/categories/new` | `/settings/categories/new` | `exact` | dump + category modal patterns | new category form posts to backend |
 | `/settings/customer_origins` | `/settings/customer-origins` | `invent` | route bundle + responses | full backend CRUD implemented; UNIQUE constraint on name; system origins protected from edit/delete |
 | `/settings/customer_panel/settings` | `/settings/customer-panel` | `aliased` | route bundle + screenshot | covered by redirect to customer-panel/online-booking surface |

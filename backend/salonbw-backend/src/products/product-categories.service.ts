@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ProductCategory } from './entities/product-category.entity';
 import {
     CreateProductCategoryDto,
+    ReorderProductCategoriesDto,
     UpdateProductCategoryDto,
 } from './dto/product-category.dto';
 
@@ -78,6 +79,32 @@ export class ProductCategoriesService {
         await this.categoriesRepository.save(category);
 
         return this.findOne(id);
+    }
+
+    async reorder(dto: ReorderProductCategoriesDto): Promise<void> {
+        if (!dto.items.length) {
+            return;
+        }
+
+        const ids = dto.items.map((item) => item.id);
+        const categories = await this.categoriesRepository.findBy({
+            id: In(ids),
+        });
+        const categoryMap = new Map(categories.map((category) => [category.id, category]));
+
+        for (const item of dto.items) {
+            const category = categoryMap.get(item.id);
+            if (!category) {
+                throw new NotFoundException(
+                    `Product category ${item.id} not found`,
+                );
+            }
+
+            category.parentId = item.parentId ?? null;
+            category.sortOrder = item.sortOrder;
+        }
+
+        await this.categoriesRepository.save(categories);
     }
 
     async remove(id: number): Promise<void> {

@@ -1,10 +1,13 @@
 import Link from 'next/link';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useMemo, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProductCategories } from '@/hooks/useProducts';
+import {
+    useDeleteProductCategory,
+    useProductCategories,
+    useReorderProductCategories,
+} from '@/hooks/useWarehouseViews';
 import PanelSection from '@/components/ui/PanelSection';
-import PanelTable from '@/components/ui/PanelTable';
 import type { ProductCategory } from '@/types';
 
 const WAREHOUSE_NAV = (
@@ -25,81 +28,157 @@ const WAREHOUSE_NAV = (
     </div>
 );
 
-function CategoryRow({
-    category,
+type CategoryNode = ProductCategory & { children: CategoryNode[] };
+
+function toCategoryNodes(categories: ProductCategory[]): CategoryNode[] {
+    return categories.map((category) => ({
+        ...category,
+        children: toCategoryNodes(category.children ?? []),
+    }));
+}
+
+function cloneTree(nodes: CategoryNode[]): CategoryNode[] {
+    return nodes.map((node) => ({
+        ...node,
+        children: cloneTree(node.children),
+    }));
+}
+
+function flattenTree(
+    nodes: CategoryNode[],
+    parentId: number | null = null,
+): Array<{ id: number; parentId: number | null; sortOrder: number }> {
+    return nodes.flatMap((node, index) => [
+        { id: node.id, parentId, sortOrder: index },
+        ...flattenTree(node.children, node.id),
+    ]);
+}
+
+function moveNode(
+    tree: CategoryNode[],
+    categoryId: number,
+    direction: 'up' | 'down',
+) {
+    const moveWithin = (nodes: CategoryNode[]): boolean => {
+        const index = nodes.findIndex((node) => node.id === categoryId);
+        if (index >= 0) {
+            const target = direction === 'up' ? index - 1 : index + 1;
+            if (target < 0 || target >= nodes.length) {
+                return true;
+            }
+            const [item] = nodes.splice(index, 1);
+            nodes.splice(target, 0, item);
+            return true;
+        }
+        return nodes.some((node) => moveWithin(node.children));
+    };
+
+    moveWithin(tree);
+    return tree;
+}
+
+function renderCategoryRows(
+    nodes: CategoryNode[],
+    options: {
+        deletingId: number | null;
+        isReorderMode: boolean;
+        onDelete: (category: ProductCategory) => void;
+        onMove: (categoryId: number, direction: 'up' | 'down') => void;
+    },
     depth = 0,
-    onDelete,
-    deletingId,
-}: {
-    category: ProductCategory & { children?: ProductCategory[] };
-    depth?: number;
-    onDelete: (category: ProductCategory) => void;
-    deletingId: number | null;
-}) {
-    return (
-        <>
-            <tr className="even">
+): ReactNode[] {
+    return nodes.flatMap((category, index) => {
+        const siblings = nodes.length;
+        const row = (
+            <tr key={category.id} className={index % 2 === 0 ? 'even' : 'odd'}>
                 <td style={{ paddingLeft: `${8 + depth * 20}px` }}>
                     {category.name}
                 </td>
                 <td className="actions" style={{ textAlign: 'right' }}>
-                    <span className="btn-group">
-                        <Link
-                            href={`/settings/categories/${category.id}/edit`}
-                            className="btn btn-xs btn-default"
-                        >
-                            edytuj
-                        </Link>
-                        <Link
-                            href={`/settings/categories/new?parent_id=${category.id}`}
-                            className="btn btn-xs btn-default"
-                        >
-                            dodaj podkategorię
-                        </Link>
-                        <button
-                            type="button"
-                            className="btn btn-xs btn-default"
-                            disabled={deletingId === category.id}
-                            onClick={() => onDelete(category)}
-                        >
-                            usuń
-                        </button>
-                    </span>
+                    {options.isReorderMode ? (
+                        <span className="btn-group">
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-default"
+                                disabled={index === 0}
+                                onClick={() =>
+                                    options.onMove(category.id, 'up')
+                                }
+                            >
+                                ↑
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-default"
+                                disabled={index === siblings - 1}
+                                onClick={() =>
+                                    options.onMove(category.id, 'down')
+                                }
+                            >
+                                ↓
+                            </button>
+                        </span>
+                    ) : (
+                        <span className="btn-group">
+                            <Link
+                                href={`/settings/categories/${category.id}/edit`}
+                                className="btn btn-xs btn-default"
+                            >
+                                edytuj
+                            </Link>
+                            <Link
+                                href={`/settings/categories/new?parent_id=${category.id}`}
+                                className="btn btn-xs btn-default"
+                            >
+                                dodaj podkategorię
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-default"
+                                disabled={options.deletingId === category.id}
+                                onClick={() => options.onDelete(category)}
+                            >
+                                usuń
+                            </button>
+                        </span>
+                    )}
                 </td>
             </tr>
-            {category.children?.map((child) => (
-                <CategoryRow
-                    key={child.id}
-                    category={child}
-                    depth={depth + 1}
-                    onDelete={onDelete}
-                    deletingId={deletingId}
-                />
-            ))}
-        </>
-    );
+        );
+
+        return [
+            row,
+            ...renderCategoryRows(category.children, options, depth + 1),
+        ];
+    });
 }
 
 export default function SettingsCategoriesPage() {
     useSetSecondaryNav(WAREHOUSE_NAV);
 
-    const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
     const { data: categories = [], isLoading } = useProductCategories();
-    const deleteCategory = useMutation({
-        mutationFn: async (id: number) =>
-            apiFetch(`/product-categories/${id}`, { method: 'DELETE' }),
-        onSuccess: async () => {
-            await Promise.all([
-                queryClient.invalidateQueries({
-                    queryKey: ['product-categories'],
-                }),
-                queryClient.invalidateQueries({
-                    queryKey: ['product-categories-tree'],
-                }),
-            ]);
-        },
-    });
+    const deleteCategory = useDeleteProductCategory();
+    const reorderCategories = useReorderProductCategories();
+    const [reorderMode, setReorderMode] = useState(false);
+    const [draftTree, setDraftTree] = useState<CategoryNode[]>([]);
+
+    const tree = useMemo<CategoryNode[]>(
+        () => toCategoryNodes(categories),
+        [categories],
+    );
+
+    const visibleTree = reorderMode ? draftTree : tree;
+
+    const beginReorder = () => {
+        setDraftTree(cloneTree(tree));
+        setReorderMode(true);
+    };
+
+    const cancelReorder = () => {
+        setDraftTree([]);
+        setReorderMode(false);
+    };
 
     const handleDelete = (category: ProductCategory) => {
         if (
@@ -111,6 +190,24 @@ export default function SettingsCategoriesPage() {
         }
 
         void deleteCategory.mutateAsync(category.id);
+    };
+
+    const handleMove = (categoryId: number, direction: 'up' | 'down') => {
+        setDraftTree((current) =>
+            moveNode(cloneTree(current), categoryId, direction),
+        );
+    };
+
+    const handleSaveOrder = async () => {
+        await reorderCategories.mutateAsync(flattenTree(draftTree));
+        setReorderMode(false);
+        setDraftTree([]);
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['product-categories'] }),
+            queryClient.invalidateQueries({
+                queryKey: ['product-categories-tree'],
+            }),
+        ]);
     };
 
     return (
@@ -147,31 +244,68 @@ export default function SettingsCategoriesPage() {
                         <Link
                             href="/settings/categories/new"
                             className="btn button-blue"
+                            style={{ marginRight: 8 }}
                         >
                             + dodaj kategorię produktów
                         </Link>
+                        {reorderMode ? (
+                            <>
+                                <button
+                                    type="button"
+                                    className="btn button-blue"
+                                    disabled={reorderCategories.isPending}
+                                    onClick={() => void handleSaveOrder()}
+                                >
+                                    {reorderCategories.isPending
+                                        ? 'zapisywanie...'
+                                        : 'zapisz nowy układ'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-default"
+                                    style={{ marginLeft: 8 }}
+                                    onClick={cancelReorder}
+                                >
+                                    anuluj
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                type="button"
+                                className="btn btn-default"
+                                onClick={beginReorder}
+                            >
+                                zmień układ
+                            </button>
+                        )}
                     </div>
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
-                        <PanelTable
-                            columns={[{ label: 'Nazwa' }, { label: 'Akcje' }]}
-                            isEmpty={categories.length === 0}
-                            emptyMessage="Brak kategorii"
-                        >
-                            {categories.map((cat) => (
-                                <CategoryRow
-                                    key={cat.id}
-                                    category={cat}
-                                    deletingId={
-                                        deleteCategory.isPending
+                        <table className="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th style={{ width: 260 }}>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visibleTree.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={2}>Brak kategorii</td>
+                                    </tr>
+                                ) : (
+                                    renderCategoryRows(visibleTree, {
+                                        deletingId: deleteCategory.isPending
                                             ? (deleteCategory.variables ?? null)
-                                            : null
-                                    }
-                                    onDelete={handleDelete}
-                                />
-                            ))}
-                        </PanelTable>
+                                            : null,
+                                        isReorderMode: reorderMode,
+                                        onDelete: handleDelete,
+                                        onMove: handleMove,
+                                    })
+                                )}
+                            </tbody>
+                        </table>
                     )}
                 </PanelSection>
             </div>

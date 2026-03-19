@@ -2,11 +2,14 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsBoolean,
     IsInt,
+    IsArray,
     IsOptional,
     IsString,
     MaxLength,
     Min,
+    ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateProductCategoryDto {
     @ApiProperty()
@@ -53,4 +56,30 @@ export class UpdateProductCategoryDto {
     @IsOptional()
     @IsBoolean()
     isActive?: boolean;
+}
+
+export class ReorderProductCategoryItemDto {
+    @ApiProperty()
+    @IsInt()
+    @Min(1)
+    id: number;
+
+    @ApiPropertyOptional({ nullable: true })
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    parentId?: number | null;
+
+    @ApiProperty()
+    @IsInt()
+    @Min(0)
+    sortOrder: number;
+}
+
+export class ReorderProductCategoriesDto {
+    @ApiProperty({ type: [ReorderProductCategoryItemDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ReorderProductCategoryItemDto)
+    items: ReorderProductCategoryItemDto[];
 }
