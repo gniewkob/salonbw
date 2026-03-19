@@ -217,11 +217,11 @@ export default function TimetableEmployeesPage() {
                                     <Link
                                         href={{
                                             pathname:
-                                                '/settings/timetable/employees',
+                                                '/settings/timetable/employees/[id]',
                                             query: {
+                                                id: option.id,
                                                 date: toIsoDate(date),
                                                 kind,
-                                                employeeId: option.id,
                                             },
                                         }}
                                     >
@@ -254,12 +254,12 @@ export default function TimetableEmployeesPage() {
                 <div className="list_container">
                     <ul className="simple-list">
                         <li>
-                            <span className="settings-detail-layout__nav-disabled">
+                            <Link href="/statistics/worktime">
                                 <div className="icon_box">
                                     <i className="icon sprite-schedule_report mr-xs " />
                                 </div>
                                 Raport czasu pracy
-                            </span>
+                            </Link>
                         </li>
                         <li>
                             <Link href="/settings/timetable/templates">
@@ -270,12 +270,12 @@ export default function TimetableEmployeesPage() {
                             </Link>
                         </li>
                         <li>
-                            <span className="settings-detail-layout__nav-disabled">
+                            <Link href="/settings/timetable/employees/copy">
                                 <div className="icon_box">
                                     <i className="icon sprite-schedule_copy mr-xs " />
                                 </div>
                                 Kopiuj grafiki pracy
-                            </span>
+                            </Link>
                         </li>
                     </ul>
                 </div>
@@ -496,14 +496,13 @@ export default function TimetableEmployeesPage() {
                                                         className="inverse_decoration blue_text"
                                                         href={{
                                                             pathname:
-                                                                '/settings/timetable/employees',
+                                                                '/settings/timetable/employees/[id]',
                                                             query: {
+                                                                id: employee.id,
                                                                 date: toIsoDate(
                                                                     date,
                                                                 ),
                                                                 kind,
-                                                                employeeId:
-                                                                    employee.id,
                                                             },
                                                         }}
                                                     >
@@ -520,26 +519,21 @@ export default function TimetableEmployeesPage() {
                                                     </span>
                                                 </li>
                                                 <li className="schedule-edit">
-                                                    <button
-                                                        type="button"
+                                                    <Link
                                                         className="timetable-employees-page__link-button"
-                                                        onClick={() => {
-                                                            void router.push({
-                                                                pathname:
-                                                                    '/settings/timetable/employees',
-                                                                query: {
-                                                                    date: toIsoDate(
-                                                                        date,
-                                                                    ),
-                                                                    kind,
-                                                                    employeeId:
-                                                                        employee.id,
-                                                                },
-                                                            });
+                                                        href={{
+                                                            pathname:
+                                                                '/settings/timetable/employees/[id]',
+                                                            query: {
+                                                                id: employee.id,
+                                                                date: toIsoDate(
+                                                                    date,
+                                                                ),
+                                                            },
                                                         }}
                                                     >
                                                         Edytuj
-                                                    </button>
+                                                    </Link>
                                                 </li>
                                             </ul>
                                         </td>
@@ -568,53 +562,70 @@ export default function TimetableEmployeesPage() {
                                                     )}`}
                                                     className="days timetable-employees-page__day"
                                                 >
-                                                    <div className="schedule-cell">
-                                                        {daySlots.length > 0 ? (
-                                                            <ul className="schedule-cell-list schedule-cell-list-full">
-                                                                {daySlots.map(
-                                                                    (slot) => (
-                                                                        <li
-                                                                            key={`${slot.dayOfWeek}-${slot.startTime}-${slot.endTime}`}
-                                                                            className="schedule-open"
-                                                                        >
-                                                                            {slot.startTime.slice(
-                                                                                0,
-                                                                                5,
-                                                                            )}{' '}
-                                                                            -{' '}
-                                                                            {slot.endTime.slice(
-                                                                                0,
-                                                                                5,
-                                                                            )}{' '}
-                                                                            <span className="counter">
-                                                                                {formatHours(
-                                                                                    timeToMinutes(
-                                                                                        slot.endTime,
-                                                                                    ) -
+                                                    <Link
+                                                        className="timetable-employees-page__day-link"
+                                                        href={{
+                                                            pathname:
+                                                                '/settings/timetable/employees/[id]',
+                                                            query: {
+                                                                id: employee.id,
+                                                                date: toIsoDate(
+                                                                    visibleDate,
+                                                                ),
+                                                            },
+                                                        }}
+                                                    >
+                                                        <div className="schedule-cell">
+                                                            {daySlots.length >
+                                                            0 ? (
+                                                                <ul className="schedule-cell-list schedule-cell-list-full">
+                                                                    {daySlots.map(
+                                                                        (
+                                                                            slot,
+                                                                        ) => (
+                                                                            <li
+                                                                                key={`${slot.dayOfWeek}-${slot.startTime}-${slot.endTime}`}
+                                                                                className="schedule-open"
+                                                                            >
+                                                                                {slot.startTime.slice(
+                                                                                    0,
+                                                                                    5,
+                                                                                )}{' '}
+                                                                                -{' '}
+                                                                                {slot.endTime.slice(
+                                                                                    0,
+                                                                                    5,
+                                                                                )}{' '}
+                                                                                <span className="counter">
+                                                                                    {formatHours(
                                                                                         timeToMinutes(
-                                                                                            slot.startTime,
-                                                                                        ),
-                                                                                )}
-                                                                            </span>
+                                                                                            slot.endTime,
+                                                                                        ) -
+                                                                                            timeToMinutes(
+                                                                                                slot.startTime,
+                                                                                            ),
+                                                                                    )}
+                                                                                </span>
+                                                                            </li>
+                                                                        ),
+                                                                    )}
+                                                                    {daySlots.length >
+                                                                    1 ? (
+                                                                        <li className="timetable-employees-page__day-total">
+                                                                            Razem{' '}
+                                                                            {formatHours(
+                                                                                dailyMinutes,
+                                                                            )}
                                                                         </li>
-                                                                    ),
-                                                                )}
-                                                                {daySlots.length >
-                                                                1 ? (
-                                                                    <li className="timetable-employees-page__day-total">
-                                                                        Razem{' '}
-                                                                        {formatHours(
-                                                                            dailyMinutes,
-                                                                        )}
-                                                                    </li>
-                                                                ) : null}
-                                                            </ul>
-                                                        ) : (
-                                                            <div className="timetable-employees-page__day-off">
-                                                                dzień wolny
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                                    ) : null}
+                                                                </ul>
+                                                            ) : (
+                                                                <div className="timetable-employees-page__day-off">
+                                                                    dzień wolny
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </Link>
                                                 </td>
                                             );
                                         })}

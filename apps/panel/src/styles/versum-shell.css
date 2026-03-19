@@ -4889,6 +4889,13 @@ h2.column_row small {
     min-height: 72px;
 }
 
+.timetable-employees-page__day-link {
+    color: inherit;
+    display: block;
+    min-height: 72px;
+    text-decoration: none;
+}
+
 .timetable-employees-page__day-off {
     color: #a0a8b1;
     font-size: 12px;
