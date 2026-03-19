@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProductCategories } from '@/hooks/useProducts';
 import PanelSection from '@/components/ui/PanelSection';
 import PanelTable from '@/components/ui/PanelTable';
@@ -26,9 +28,13 @@ const WAREHOUSE_NAV = (
 function CategoryRow({
     category,
     depth = 0,
+    onDelete,
+    deletingId,
 }: {
     category: ProductCategory & { children?: ProductCategory[] };
     depth?: number;
+    onDelete: (category: ProductCategory) => void;
+    deletingId: number | null;
 }) {
     return (
         <>
@@ -38,17 +44,23 @@ function CategoryRow({
                 </td>
                 <td className="actions" style={{ textAlign: 'right' }}>
                     <span className="btn-group">
-                        <button
-                            type="button"
+                        <Link
+                            href={`/settings/categories/${category.id}/edit`}
                             className="btn btn-xs btn-default"
-                            disabled
                         >
                             edytuj
-                        </button>
+                        </Link>
+                        <Link
+                            href={`/settings/categories/new?parent_id=${category.id}`}
+                            className="btn btn-xs btn-default"
+                        >
+                            dodaj podkategorię
+                        </Link>
                         <button
                             type="button"
                             className="btn btn-xs btn-default"
-                            disabled
+                            disabled={deletingId === category.id}
+                            onClick={() => onDelete(category)}
                         >
                             usuń
                         </button>
@@ -60,6 +72,8 @@ function CategoryRow({
                     key={child.id}
                     category={child}
                     depth={depth + 1}
+                    onDelete={onDelete}
+                    deletingId={deletingId}
                 />
             ))}
         </>
@@ -69,7 +83,35 @@ function CategoryRow({
 export default function SettingsCategoriesPage() {
     useSetSecondaryNav(WAREHOUSE_NAV);
 
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
     const { data: categories = [], isLoading } = useProductCategories();
+    const deleteCategory = useMutation({
+        mutationFn: async (id: number) =>
+            apiFetch(`/product-categories/${id}`, { method: 'DELETE' }),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ['product-categories-tree'],
+                }),
+            ]);
+        },
+    });
+
+    const handleDelete = (category: ProductCategory) => {
+        if (
+            !window.confirm(
+                `Operacji nie można cofnąć. Czy na pewno chcesz usunąć kategorię "${category.name}"?`,
+            )
+        ) {
+            return;
+        }
+
+        void deleteCategory.mutateAsync(category.id);
+    };
 
     return (
         <div className="settings-detail-layout" data-testid="settings-detail">
@@ -93,17 +135,22 @@ export default function SettingsCategoriesPage() {
                         </li>
                     </ul>
                 </div>
-                <PanelSection
-                    title="Kategorie produktów"
-                    action={
+                <PanelSection title="Kategorie produktów">
+                    <div className="actions mb-m">
+                        <Link
+                            href="/products"
+                            className="btn btn-default"
+                            style={{ marginRight: 8 }}
+                        >
+                            lista produktów
+                        </Link>
                         <Link
                             href="/settings/categories/new"
-                            className="btn button-blue pull-right"
+                            className="btn button-blue"
                         >
-                            + dodaj kategorię
+                            + dodaj kategorię produktów
                         </Link>
-                    }
-                >
+                    </div>
                     {isLoading ? (
                         <p>Ładowanie...</p>
                     ) : (
@@ -113,7 +160,16 @@ export default function SettingsCategoriesPage() {
                             emptyMessage="Brak kategorii"
                         >
                             {categories.map((cat) => (
-                                <CategoryRow key={cat.id} category={cat} />
+                                <CategoryRow
+                                    key={cat.id}
+                                    category={cat}
+                                    deletingId={
+                                        deleteCategory.isPending
+                                            ? (deleteCategory.variables ?? null)
+                                            : null
+                                    }
+                                    onDelete={handleDelete}
+                                />
                             ))}
                         </PanelTable>
                     )}
