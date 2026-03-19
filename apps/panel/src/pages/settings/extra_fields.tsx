@@ -4,7 +4,7 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
 import PanelSection from '@/components/ui/PanelSection';
 import PanelTable from '@/components/ui/PanelTable';
-import type { ExtraFieldType } from '@/types';
+import type { CustomerExtraField, ExtraFieldType } from '@/types';
 import {
     useCustomerExtraFields,
     useCreateCustomerExtraField,
@@ -22,12 +22,30 @@ const TYPE_LABELS: Record<ExtraFieldType, string> = {
     select: 'Lista',
 };
 
-const TYPE_OPTIONS: ExtraFieldType[] = ['text', 'number', 'date', 'checkbox'];
+const TYPE_OPTIONS: ExtraFieldType[] = [
+    'text',
+    'number',
+    'date',
+    'checkbox',
+    'select',
+];
+
+function parseOptions(value: string) {
+    return value
+        .split('\n')
+        .map((option) => option.trim())
+        .filter(Boolean);
+}
+
+function formatOptions(options?: string[] | null) {
+    return (options ?? []).join('\n');
+}
 
 interface AddFormState {
     label: string;
     type: ExtraFieldType;
     required: boolean;
+    optionsText: string;
 }
 
 interface EditFormState {
@@ -35,6 +53,27 @@ interface EditFormState {
     label: string;
     type: ExtraFieldType;
     required: boolean;
+    optionsText: string;
+}
+
+function needsOptions(type: ExtraFieldType) {
+    return type === 'select';
+}
+
+function toMutationPayload(form: {
+    label: string;
+    type: ExtraFieldType;
+    required: boolean;
+    optionsText: string;
+}) {
+    return {
+        label: form.label.trim(),
+        type: form.type,
+        required: form.required,
+        ...(needsOptions(form.type)
+            ? { options: parseOptions(form.optionsText) }
+            : {}),
+    };
 }
 
 export default function SettingsExtraFieldsPage() {
@@ -50,39 +89,56 @@ export default function SettingsExtraFieldsPage() {
         label: '',
         type: 'text',
         required: false,
+        optionsText: '',
     });
     const [editForm, setEditForm] = useState<EditFormState | null>(null);
 
     const handleAdd = () => {
         if (!addForm.label.trim()) return;
-        createField.mutate(
-            {
-                label: addForm.label.trim(),
-                type: addForm.type,
-                required: addForm.required,
+        if (
+            needsOptions(addForm.type) &&
+            parseOptions(addForm.optionsText).length === 0
+        ) {
+            return;
+        }
+        createField.mutate(toMutationPayload(addForm), {
+            onSuccess: () => {
+                setIsAdding(false);
+                setAddForm({
+                    label: '',
+                    type: 'text',
+                    required: false,
+                    optionsText: '',
+                });
             },
-            {
-                onSuccess: () => {
-                    setIsAdding(false);
-                    setAddForm({ label: '', type: 'text', required: false });
-                },
-            },
-        );
+        });
     };
 
     const handleEditSave = () => {
         if (!editForm || !editForm.label.trim()) return;
+        if (
+            needsOptions(editForm.type) &&
+            parseOptions(editForm.optionsText).length === 0
+        ) {
+            return;
+        }
         updateField.mutate(
             {
                 id: editForm.id,
-                data: {
-                    label: editForm.label.trim(),
-                    type: editForm.type,
-                    required: editForm.required,
-                },
+                data: toMutationPayload(editForm),
             },
             { onSuccess: () => setEditForm(null) },
         );
+    };
+
+    const openEditForm = (field: CustomerExtraField) => {
+        setEditForm({
+            id: field.id,
+            label: field.label,
+            type: field.type,
+            required: field.required,
+            optionsText: formatOptions(field.options),
+        });
     };
 
     return (
@@ -170,6 +226,21 @@ export default function SettingsExtraFieldsPage() {
                                             </option>
                                         ))}
                                     </select>
+                                    {needsOptions(addForm.type) && (
+                                        <textarea
+                                            className="form-control"
+                                            placeholder="Jedna opcja w linii"
+                                            title="Opcje listy"
+                                            value={addForm.optionsText}
+                                            onChange={(e) =>
+                                                setAddForm((f) => ({
+                                                    ...f,
+                                                    optionsText: e.target.value,
+                                                }))
+                                            }
+                                            rows={4}
+                                        />
+                                    )}
                                     <label className="checkbox-inline">
                                         <input
                                             type="checkbox"
@@ -187,7 +258,13 @@ export default function SettingsExtraFieldsPage() {
                                         type="button"
                                         className="btn button-blue"
                                         onClick={handleAdd}
-                                        disabled={createField.isPending}
+                                        disabled={
+                                            createField.isPending ||
+                                            (needsOptions(addForm.type) &&
+                                                parseOptions(
+                                                    addForm.optionsText,
+                                                ).length === 0)
+                                        }
                                     >
                                         Zapisz
                                     </button>
@@ -216,6 +293,7 @@ export default function SettingsExtraFieldsPage() {
                             columns={[
                                 { label: 'Etykieta' },
                                 { label: 'Typ' },
+                                { label: 'Opcje' },
                                 { label: 'Wymagane' },
                                 { ariaLabel: 'Akcje' },
                             ]}
@@ -284,6 +362,35 @@ export default function SettingsExtraFieldsPage() {
                                                 </select>
                                             </td>
                                             <td>
+                                                {needsOptions(editForm.type) ? (
+                                                    <textarea
+                                                        className="form-control input-sm"
+                                                        title="Opcje listy"
+                                                        value={
+                                                            editForm.optionsText
+                                                        }
+                                                        onChange={(e) =>
+                                                            setEditForm((f) =>
+                                                                f
+                                                                    ? {
+                                                                          ...f,
+                                                                          optionsText:
+                                                                              e
+                                                                                  .target
+                                                                                  .value,
+                                                                      }
+                                                                    : f,
+                                                            )
+                                                        }
+                                                        rows={4}
+                                                    />
+                                                ) : (
+                                                    <span className="text-muted">
+                                                        -
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td>
                                                 <input
                                                     type="checkbox"
                                                     title="Wymagane"
@@ -310,7 +417,13 @@ export default function SettingsExtraFieldsPage() {
                                                         className="btn btn-xs button-blue"
                                                         onClick={handleEditSave}
                                                         disabled={
-                                                            updateField.isPending
+                                                            updateField.isPending ||
+                                                            (needsOptions(
+                                                                editForm.type,
+                                                            ) &&
+                                                                parseOptions(
+                                                                    editForm.optionsText,
+                                                                ).length === 0)
                                                         }
                                                     >
                                                         zapisz
@@ -332,6 +445,13 @@ export default function SettingsExtraFieldsPage() {
                                             <td>{field.label}</td>
                                             <td>{TYPE_LABELS[field.type]}</td>
                                             <td>
+                                                {field.type === 'select'
+                                                    ? (
+                                                          field.options ?? []
+                                                      ).join(', ') || '-'
+                                                    : '-'}
+                                            </td>
+                                            <td>
                                                 {field.required ? 'Tak' : 'Nie'}
                                             </td>
                                             <td className="col-actions">
@@ -340,13 +460,7 @@ export default function SettingsExtraFieldsPage() {
                                                         type="button"
                                                         className="btn btn-xs btn-default"
                                                         onClick={() =>
-                                                            setEditForm({
-                                                                id: field.id,
-                                                                label: field.label,
-                                                                type: field.type,
-                                                                required:
-                                                                    field.required,
-                                                            })
+                                                            openEditForm(field)
                                                         }
                                                     >
                                                         edytuj

@@ -1,9 +1,12 @@
 import {
+    ArrayNotEmpty,
+    IsArray,
     IsString,
     IsBoolean,
     IsOptional,
     IsEnum,
     Length,
+    ValidateIf,
 } from 'class-validator';
 import { ExtraFieldType } from '../entities/customer-extra-field.entity';
 
@@ -18,6 +21,14 @@ export class CreateExtraFieldDto {
     @IsOptional()
     @IsBoolean()
     required?: boolean;
+
+    @IsOptional()
+    @ValidateIf((o) => o.type === ExtraFieldType.Select)
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsString({ each: true })
+    @Length(1, 255, { each: true })
+    options?: string[];
 }
 
 export class UpdateExtraFieldDto {
@@ -33,4 +44,14 @@ export class UpdateExtraFieldDto {
     @IsOptional()
     @IsBoolean()
     required?: boolean;
+
+    @IsOptional()
+    @ValidateIf(
+        (o) => o.type === ExtraFieldType.Select || o.options !== undefined,
+    )
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsString({ each: true })
+    @Length(1, 255, { each: true })
+    options?: string[];
 }

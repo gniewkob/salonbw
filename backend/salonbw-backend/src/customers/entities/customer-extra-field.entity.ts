@@ -32,6 +32,9 @@ export class CustomerExtraField {
     @Column({ default: false })
     required: boolean;
 
+    @Column({ type: 'text', array: true, nullable: true })
+    options: string[] | null;
+
     @Column({ name: 'sort_order', default: 0 })
     sortOrder: number;
 

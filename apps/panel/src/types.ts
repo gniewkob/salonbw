@@ -450,6 +450,7 @@ export interface CustomerExtraField {
     label: string;
     type: ExtraFieldType;
     required: boolean;
+    options?: string[] | null;
     sortOrder: number;
     createdAt: string;
     updatedAt: string;

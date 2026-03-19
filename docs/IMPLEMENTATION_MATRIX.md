@@ -50,7 +50,7 @@ Primary comparison source:
 | `/settings/employees/:id/events_history` | `/settings/employees/[id]/events-history` | `exact` | route bundle + responses | event history implemented under canonical kebab-case |
 | `/settings/employees/commissions` | `/settings/employees/commissions` | `exact` | dump + statistics/worktime/commission references | commissions routes implemented |
 | `/settings/employees/new` | `/settings/employees/new` | `exact` | dump + employee form conventions | new employee form posts to backend |
-| `/settings/extra_fields` | `/settings/extra-fields` | `invent` | route bundle + responses | backend CRUD implemented; select type hidden from UI (no options model yet) |
+| `/settings/extra_fields` | `/settings/extra-fields` | `exact` | route bundle + responses | backend CRUD now includes select-field options and the panel exposes full field-type editing |
 | `/settings/timetable/branch` | `/settings/timetable/branch` | `invent` | timetable route bundle | branch timetable view exists, but edit action is not active backend parity |
 | `/settings/timetable/employees/:id` | `/settings/timetable/employees/[id]` | `exact` | route bundle | per-employee timetable implemented |
 | `/settings/timetable/employees/copy` | `/settings/timetable/employees/copy` | `invent` | route bundle | route preserved as explicit non-backend stub with honest UX |

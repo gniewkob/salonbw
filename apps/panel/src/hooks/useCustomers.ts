@@ -583,6 +583,7 @@ export function useCreateCustomerExtraField() {
             label: string;
             type: ExtraFieldType;
             required?: boolean;
+            options?: string[];
         }) =>
             apiFetch<CustomerExtraField>('/customer-extra-fields', {
                 method: 'POST',
@@ -607,7 +608,12 @@ export function useUpdateCustomerExtraField() {
             data,
         }: {
             id: number;
-            data: { label?: string; type?: ExtraFieldType; required?: boolean };
+            data: {
+                label?: string;
+                type?: ExtraFieldType;
+                required?: boolean;
+                options?: string[];
+            };
         }) =>
             apiFetch<CustomerExtraField>(`/customer-extra-fields/${id}`, {
                 method: 'PATCH',

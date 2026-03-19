@@ -43,7 +43,10 @@ import {
     CreateExtraFieldDto,
     UpdateExtraFieldDto,
 } from './dto/customer-extra-field.dto';
-import { CustomerExtraField } from './entities/customer-extra-field.entity';
+import {
+    CustomerExtraField,
+    ExtraFieldType,
+} from './entities/customer-extra-field.entity';
 
 @Injectable()
 export class CustomersService {
@@ -713,6 +716,10 @@ export class CustomersService {
             label: dto.label,
             type: dto.type,
             required: dto.required ?? false,
+            options:
+                dto.type === ExtraFieldType.Select
+                    ? (dto.options ?? []).map((option) => option.trim())
+                    : null,
         });
         return this.extraFieldsRepo.save(field);
     }
@@ -723,7 +730,16 @@ export class CustomersService {
     ): Promise<CustomerExtraField> {
         const field = await this.extraFieldsRepo.findOne({ where: { id } });
         if (!field) throw new NotFoundException(`Extra field ${id} not found`);
-        Object.assign(field, dto);
+        const nextType = dto.type ?? field.type;
+        Object.assign(field, {
+            ...dto,
+            options:
+                nextType === ExtraFieldType.Select
+                    ? (dto.options ?? field.options ?? []).map((option) =>
+                          option.trim(),
+                      )
+                    : null,
+        });
         return this.extraFieldsRepo.save(field);
     }
 
