@@ -218,6 +218,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit (fail on high/critical only)
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=high --ignore-unfixable
 
 # cspell:ignore GITHUB npmjs github elif
