@@ -44,7 +44,7 @@ Primary comparison source:
 | `/settings/categories/new` | `/settings/categories/new` | `exact` | dump + category modal patterns | new category form posts to backend |
 | `/settings/customer_origins` | `/settings/customer-origins` | `exact` | route bundle + responses | list, add, edit, and delete flows are covered; system origins stay read-only as in the dump |
 | `/settings/customer_panel/settings` | `/settings/customer-panel` | `aliased` | route bundle + screenshot | covered by redirect to customer-panel/online-booking surface |
-| `/settings/data_protection` | `/settings/data-protection` | `invent` | route bundle + responses | global paranoia settings persist via BranchSettings, per-employee limit overrides persist on users, and `/settings/data_protection/logs` exists, but the logs view still reuses generic employee activity behavior instead of full dump-specific parity |
+| `/settings/data_protection` | `/settings/data-protection` | `exact` | route bundle + responses | global paranoia settings persist via BranchSettings, per-employee limit overrides persist on users, and the logs route now has its own customer-settings activity screen instead of a raw employee-log re-export |
 | `/settings/employees/:id` | `/settings/employees/[id]` | `exact` | employee route bundles | employee profile screens implemented |
 | `/settings/employees/:id/edit` | `/settings/employees/[id]/edit` | `exact` | employee route bundles | employee edit screens implemented |
 | `/settings/employees/:id/events_history` | `/settings/employees/[id]/events-history` | `exact` | route bundle + responses | event history implemented under canonical kebab-case |

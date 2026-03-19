@@ -17,7 +17,7 @@ Current audit state:
 - P1 routes are covered, but not all are `exact`
 - known invented P1 routes include `/calendar/views`, `/communication/:id`, `/services/new`
 - P2 routes are covered as a mix of `exact`, `aliased`, and `invent`
-- explicit non-exact P2 example: `/settings/data_protection`
+- no explicit non-exact P2 examples remain in the currently tracked settings routes
 - P3 families such as PDF export and social remain outside the current project scope
 
 Local implementation note (2026-03-19):
@@ -25,7 +25,7 @@ Local implementation note (2026-03-19):
 - `/settings/payment_configuration` no longer uses a reconstructed activation notice as its primary flow; the page now reads/writes `settings/payment-configuration` and persists Moment Pay activation plus prepayment settings through backend state.
 - `/settings/timetable/employees` overview now routes into a rebuilt per-employee monthly timetable view with working weekly editing and exception management instead of the earlier simplified local detail behavior.
 - `/settings/extra_fields` now supports the `select` field type end-to-end, including persisted option lists in backend state and editable options in the panel UI.
-- `/settings/data_protection` no longer stops at global branch-level paranoia settings; the page now exposes persisted per-employee limit overrides plus a dedicated logs entry route, but it remains `invent` because the logs screen still reuses the generic employee activity feed instead of a data-protection-specific parity view.
+- `/settings/data_protection` now exposes persisted per-employee limit overrides plus a dedicated customer-settings logs screen under both underscore and kebab-case routes, so the module can be treated as `exact`.
 - `/settings/timetable/employees/copy` now performs a real copy operation: it clones the active weekly timetable from the chosen source employee into new target timetables for the selected date range, so the route no longer belongs in the remaining non-exact P2 examples.
 - `/settings/timetable/branch` now supports multiple opening-hour ranges per day on top of the active branch `workingHours` backend model, matching the main dump behavior closely enough to treat the route as `exact`.
 - `/settings/categories` now has persisted list-level reorder parity; the route supports save-order mode via backend `product-categories/reorder`, so it no longer belongs in the remaining non-exact P2 examples.

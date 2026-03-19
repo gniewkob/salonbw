@@ -148,7 +148,7 @@ export default function SettingsDataProtectionPage() {
                         <div className="actions">
                             <Link
                                 className="button"
-                                href="/settings/data_protection/logs"
+                                href="/settings/data-protection/logs"
                             >
                                 Rejestr aktywności pracowników
                             </Link>
