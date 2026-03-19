@@ -1584,6 +1584,12 @@ export interface OnlineBookingSettings {
     updatedAt: string;
 }
 
+export interface PaymentConfigurationSettings {
+    requirePrepayment: boolean;
+    prepaymentPercentage: number;
+    acceptOnlinePayments: boolean;
+}
+
 export interface AllSettings {
     branch: BranchSettings;
     calendar: CalendarSettings;
@@ -1689,6 +1695,12 @@ export interface UpdateOnlineBookingSettingsRequest {
     widgetTheme?: string;
     widgetPrimaryColor?: string;
     widgetBorderRadius?: number;
+}
+
+export interface UpdatePaymentConfigurationRequest {
+    requirePrepayment?: boolean;
+    prepaymentPercentage?: number;
+    acceptOnlinePayments?: boolean;
 }
 
 // Branch / Multi-location types

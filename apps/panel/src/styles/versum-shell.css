@@ -4599,6 +4599,76 @@ h2.column_row small {
     padding: 12px 14px;
 }
 
+.settings-payment-page__notice--success {
+    background: #edf8f2;
+    border-color: #b8dfc6;
+    color: #2f6f48;
+}
+
+.settings-payment-page__card {
+    background: #fff;
+    border: 1px solid #d8dde3;
+    margin: 20px auto 0;
+    max-width: 760px;
+    padding: 20px 22px 24px;
+}
+
+.settings-payment-page__card-title {
+    color: #2f3640;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.settings-payment-page__toggle {
+    align-items: center;
+    color: #39424c;
+    display: flex;
+    gap: 10px;
+}
+
+.settings-payment-page__subcopy {
+    color: #6f7882;
+    line-height: 1.6;
+    margin-top: 12px;
+}
+
+.settings-payment-page__percentages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.settings-payment-page__percentage {
+    background: #fff;
+    border: 1px solid #cfd7df;
+    border-radius: 4px;
+    color: #39424c;
+    min-width: 72px;
+    padding: 8px 14px;
+}
+
+.settings-payment-page__percentage--active {
+    background: #3192d5;
+    border-color: #3192d5;
+    color: #fff;
+}
+
+.settings-payment-page__percentage:disabled {
+    background: #f4f6f8;
+    color: #a4adb8;
+}
+
+.settings-payment-page__summary {
+    color: #39424c;
+    margin-top: 16px;
+}
+
+.settings-payment-page__actions {
+    margin-top: 18px;
+}
+
 .sms-settings-page__inner {
     max-width: 980px;
 }
