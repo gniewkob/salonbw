@@ -105,7 +105,7 @@ export default function SalonBWVendorCss() {
                     gap: 4px !important;
                     padding: 6px 4px !important;
                     color: inherit !important;
-                    font-size: 10px !important;
+                    font-size: 12px !important;
                     line-height: 1.1 !important;
                     text-transform: lowercase !important;
                     text-decoration: none !important;

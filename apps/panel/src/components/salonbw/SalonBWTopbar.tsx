@@ -13,10 +13,13 @@ export default function SalonBWTopbar() {
     const helpMenuRef = useRef<HTMLLIElement>(null);
 
     const initials = useMemo(() => {
-        if (!user?.name) return 'SB';
-        const [first, second] = user.name.trim().split(/\s+/, 2);
+        const sourceName =
+            user?.name?.trim() ||
+            [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
+        if (!sourceName) return 'SB';
+        const [first, second] = sourceName.split(/\s+/, 2);
         return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase() || 'SB';
-    }, [user?.name]);
+    }, [user?.firstName, user?.lastName, user?.name]);
 
     // Close dropdowns on outside click
     useEffect(() => {
