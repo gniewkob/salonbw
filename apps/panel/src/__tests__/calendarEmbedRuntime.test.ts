@@ -1,7 +1,9 @@
 import {
     buildCalendarEmbedConfig,
     buildCalendarEmbedScript,
+    deriveCalendarEmbedIdentity,
     rewriteCalendarEmbedAssetPaths,
+    rewriteCalendarEmbedUserIdentity,
 } from '@/pages/api/calendar-embed';
 
 describe('calendar embed runtime compat', () => {
@@ -57,5 +59,46 @@ describe('calendar embed runtime compat', () => {
         expect(html).toContain('/salonbw-vendor/css/style.css');
         expect(html).not.toContain('/versum-calendar/');
         expect(html).not.toContain('/versum-vendor/');
+    });
+
+    it('derives calendar topbar identity from the current profile', () => {
+        expect(
+            deriveCalendarEmbedIdentity({
+                firstName: 'Iwona',
+                lastName: 'Adamska',
+                role: 'admin',
+            }),
+        ).toEqual({
+            avatarUrl: null,
+            fullName: 'Iwona Adamska',
+            initials: 'IA',
+            profileHref: '/settings/profile',
+            roleLabel: 'admin',
+        });
+    });
+
+    it('rewrites vendored calendar topbar with current user identity', () => {
+        const html = rewriteCalendarEmbedUserIdentity(
+            `
+                <div class="border-color"><div class="color1">GB</div></div>
+                <a class="profil" href="/settings/employees/4272118">
+                    <img alt="Data" class="avatar" src="https://cdn.versum.net/avatars/4272118/thumb/data"/>
+                    <strong>Gniewko Bodora</strong>
+                    administrator
+                </a>
+            `,
+            {
+                name: 'Iwona Adamska',
+                role: 'admin',
+                avatarUrl: 'https://example.com/avatar.png',
+            },
+        );
+
+        expect(html).toContain('<div class="color1">IA</div>');
+        expect(html).toContain('href="/settings/profile"');
+        expect(html).toContain('<strong>Iwona Adamska</strong>');
+        expect(html).toContain('src="https://example.com/avatar.png"');
+        expect(html).not.toContain('Gniewko Bodora');
+        expect(html).not.toContain('/settings/employees/4272118');
     });
 });

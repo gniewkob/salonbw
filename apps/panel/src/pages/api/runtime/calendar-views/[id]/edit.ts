@@ -3,7 +3,7 @@ import {
     getCalendarViews,
     getEmployees,
     renderCalendarViewForm,
-} from '../_shared';
+} from '@/server/calendarViewsRuntime';
 
 function parseId(value: string | string[] | undefined) {
     const raw = Array.isArray(value) ? value[0] : value;
