@@ -52,6 +52,46 @@ export class CreateServiceDto {
     @Max(100)
     vatRate?: number;
 
+    @ApiProperty({
+        required: false,
+        default: 0,
+        description: 'Blocked time before service in minutes',
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    durationBefore?: number;
+
+    @ApiProperty({
+        required: false,
+        default: 0,
+        description: 'Blocked time after service in minutes',
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    durationAfter?: number;
+
+    @ApiProperty({
+        required: false,
+        default: 0,
+        description: 'Break offset in minutes',
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    breakOffset?: number;
+
+    @ApiProperty({
+        required: false,
+        default: 0,
+        description: 'Break duration in minutes',
+    })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    breakDuration?: number;
+
     @ApiProperty({ required: false, default: false })
     @IsBoolean()
     @IsOptional()

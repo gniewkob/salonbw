@@ -78,7 +78,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                     <div className="products-toolbar">
                         <input
                             type="text"
-                            className="versum-input"
+                            className="salonbw-input"
                             placeholder="wyszukaj w historii dostaw..."
                             value={search}
                             onChange={(e) => {
@@ -87,7 +87,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                             }}
                         />
                         <select
-                            className="versum-select"
+                            className="salonbw-select"
                             aria-label="status dostawy"
                             value={statusFilter ?? ''}
                             onChange={(e) => {
@@ -196,7 +196,7 @@ export default function WarehouseDeliveriesHistoryPage() {
                             <div className="products-table-footer__controls">
                                 <span>na stronie</span>
                                 <select
-                                    className="versum-select versum-select--inline"
+                                    className="salonbw-select salonbw-select--inline"
                                     aria-label="na stronie"
                                     value={String(pageSize)}
                                     disabled

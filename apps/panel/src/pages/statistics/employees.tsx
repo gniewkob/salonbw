@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface EmployeeActivity {
@@ -98,9 +98,9 @@ export default function EmployeeActivityPage() {
     const totalAppointments = toNumber(totals.appointmentsCount);
 
     return (
-        <VersumShell role={role}>
+        <SalonBWShell role={role}>
             <div
-                className="versum-page statistics-module"
+                className="salonbw-page statistics-module"
                 data-testid="employee-activity-page"
             >
                 <ul className="breadcrumb">
@@ -160,7 +160,7 @@ export default function EmployeeActivityPage() {
                 </div>
 
                 {loading ? (
-                    <div className="versum-muted p-20">Ładowanie...</div>
+                    <div className="salonbw-muted p-20">Ładowanie...</div>
                 ) : (
                     <div className="stats-tabs">
                         <ul>
@@ -206,7 +206,7 @@ export default function EmployeeActivityPage() {
                                                 <td>
                                                     <Link
                                                         href={`/employees/${employee.employeeId}`}
-                                                        className="versum-link"
+                                                        className="salonbw-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>
@@ -250,6 +250,6 @@ export default function EmployeeActivityPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

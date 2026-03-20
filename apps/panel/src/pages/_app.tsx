@@ -8,9 +8,9 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import '@/styles/globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
-import '@/styles/versum-shell.css';
+import '@/styles/salonbw-shell.css';
 import RouteProgress from '@/components/RouteProgress';
-import VersumSvgSprites from '@/components/versum/VersumSvgSprites';
+import SalonBWSvgSprites from '@/components/salonbw/SalonBWSvgSprites';
 import { initSentry } from '@/sentry.client';
 import {
     isAnalyticsEnabled,
@@ -105,7 +105,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             <AuthProvider>
                 <ToastProvider>
                     <SecondaryNavProvider>
-                        <VersumSvgSprites />
+                        <SalonBWSvgSprites />
                         {isAnalyticsEnabled() && (
                             <>
                                 {/* GA4 loader */}

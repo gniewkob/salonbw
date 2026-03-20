@@ -82,9 +82,9 @@ export default function CustomerSummaryTab({
                 {/* KPI Tiles */}
                 <div className="row mb-20 ml-0 mr-0">
                     <div className="col-xs-6 col-sm-3 px-5">
-                        <div className="versum-tile">
-                            <div className="versum-tile__label">Wizyty</div>
-                            <div className="versum-tile__value">
+                        <div className="salonbw-tile">
+                            <div className="salonbw-tile__label">Wizyty</div>
+                            <div className="salonbw-tile__value">
                                 {statsLoading
                                     ? '...'
                                     : (stats?.completedVisits ?? 0)}
@@ -92,9 +92,9 @@ export default function CustomerSummaryTab({
                         </div>
                     </div>
                     <div className="col-xs-6 col-sm-3 px-5">
-                        <div className="versum-tile">
-                            <div className="versum-tile__label">Wydano</div>
-                            <div className="versum-tile__value text-accent">
+                        <div className="salonbw-tile">
+                            <div className="salonbw-tile__label">Wydano</div>
+                            <div className="salonbw-tile__value text-accent">
                                 {statsLoading
                                     ? '...'
                                     : formatCurrency(stats?.totalSpent ?? 0)}
@@ -102,11 +102,11 @@ export default function CustomerSummaryTab({
                         </div>
                     </div>
                     <div className="col-xs-6 col-sm-3 px-5">
-                        <div className="versum-tile">
-                            <div className="versum-tile__label">
+                        <div className="salonbw-tile">
+                            <div className="salonbw-tile__label">
                                 Średnia wartość
                             </div>
-                            <div className="versum-tile__value">
+                            <div className="salonbw-tile__value">
                                 {statsLoading
                                     ? '...'
                                     : formatCurrency(stats?.averageSpent ?? 0)}
@@ -114,11 +114,11 @@ export default function CustomerSummaryTab({
                         </div>
                     </div>
                     <div className="col-xs-6 col-sm-3 px-5">
-                        <div className="versum-tile">
-                            <div className="versum-tile__label">
+                        <div className="salonbw-tile">
+                            <div className="salonbw-tile__label">
                                 Ostatnia wizyta
                             </div>
-                            <div className="versum-tile__value">
+                            <div className="salonbw-tile__value">
                                 {statsLoading
                                     ? '...'
                                     : formatDate(stats?.lastVisitDate ?? null)}
@@ -130,11 +130,11 @@ export default function CustomerSummaryTab({
                 <div className="row">
                     <div className="col-sm-6">
                         {/* Favorite Services */}
-                        <div className="versum-widget">
-                            <div className="versum-widget__header">
+                        <div className="salonbw-widget">
+                            <div className="salonbw-widget__header">
                                 Ulubione usługi
                             </div>
-                            <div className="versum-widget__content">
+                            <div className="salonbw-widget__content">
                                 {stats?.favoriteServices &&
                                 stats.favoriteServices.length > 0 ? (
                                     <ul className="list-unstyled">
@@ -163,11 +163,11 @@ export default function CustomerSummaryTab({
                         </div>
 
                         {/* Recent Visits */}
-                        <div className="versum-widget">
-                            <div className="versum-widget__header">
+                        <div className="salonbw-widget">
+                            <div className="salonbw-widget__header">
                                 Ostatnie wizyty
                             </div>
-                            <div className="versum-widget__content">
+                            <div className="salonbw-widget__content">
                                 {historyLoading ? (
                                     <p className="text-muted text-center">
                                         Ładowanie...
@@ -177,7 +177,7 @@ export default function CustomerSummaryTab({
                                         Brak wizyt
                                     </p>
                                 ) : (
-                                    <table className="versum-table fs-12">
+                                    <table className="salonbw-table fs-12">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
@@ -219,11 +219,11 @@ export default function CustomerSummaryTab({
 
                     <div className="col-sm-6">
                         {/* Contact Info */}
-                        <div className="versum-widget">
-                            <div className="versum-widget__header">
+                        <div className="salonbw-widget">
+                            <div className="salonbw-widget__header">
                                 Informacje kontaktowe
                             </div>
-                            <div className="versum-widget__content form-horizontal">
+                            <div className="salonbw-widget__content form-horizontal">
                                 <div className="form-group">
                                     <label className="control-label">
                                         Telefon
@@ -263,7 +263,7 @@ export default function CustomerSummaryTab({
                                     </div>
                                 </div>
 
-                                {/* Grupy klienta - jak w Versum */}
+                                {/* Grupy klienta - jak w source UI */}
                                 <div className="form-group">
                                     <label className="control-label">
                                         należy do grup
@@ -337,7 +337,7 @@ export default function CustomerSummaryTab({
                                                 onClick={() =>
                                                     setShowAddToGroupModal(true)
                                                 }
-                                                className="mt-8 text-versum-blue hover:text-versum-blue-dark text-xs flex items-center gap-4"
+                                                className="mt-8 text-salonbw-blue hover:text-salonbw-blue-dark text-xs flex items-center gap-4"
                                             >
                                                 <span className="text-sm">
                                                     +
@@ -353,11 +353,11 @@ export default function CustomerSummaryTab({
                         {/* Favorite Employees */}
                         {stats?.favoriteEmployees &&
                             stats.favoriteEmployees.length > 0 && (
-                                <div className="versum-widget">
-                                    <div className="versum-widget__header">
+                                <div className="salonbw-widget">
+                                    <div className="salonbw-widget__header">
                                         Ulubieni pracownicy
                                     </div>
-                                    <div className="versum-widget__content">
+                                    <div className="salonbw-widget__content">
                                         <ul className="list-unstyled">
                                             {stats.favoriteEmployees.map(
                                                 (employee) => (

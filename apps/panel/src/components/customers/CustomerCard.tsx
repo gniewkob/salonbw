@@ -57,7 +57,7 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
             {/* Breadcrumbs */}
             <div className="row">
                 <div className="col-sm-12">
-                    <ul className="versum-breadcrumb">
+                    <ul className="salonbw-breadcrumb">
                         <li>
                             <Link href="/customers">KLIENCI</Link>
                         </li>
@@ -70,7 +70,7 @@ export default function CustomerCard({ customer, onClose, onUpdate }: Props) {
 
             <div className="row">
                 <div className="col-sm-12">
-                    <div className="versum-widget p-0 overflow-hidden">
+                    <div className="salonbw-widget p-0 overflow-hidden">
                         {/* Header */}
                         <div className="customer-header">
                             <div className="customer-header__avatar">

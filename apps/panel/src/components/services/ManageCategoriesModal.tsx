@@ -72,7 +72,7 @@ export default function ManageCategoriesModal({
             <div key={category.id}>
                 {/* eslint-disable-next-line */}
                 <div
-                    className="versum-list-item flex-between pl-dynamic"
+                    className="salonbw-list-item flex-between pl-dynamic"
                     style={rowStyle}
                 >
                     <div className="flex-center gap-10">
@@ -141,8 +141,8 @@ export default function ManageCategoriesModal({
                         <h4 className="modal-title">Zarządzaj kategoriami</h4>
                     </div>
                     <div className="modal-body p-0">
-                        <div className="versum-list">
-                            <div className="versum-list-item flex-between bg-f9 fw-600">
+                        <div className="salonbw-list">
+                            <div className="salonbw-list-item flex-between bg-f9 fw-600">
                                 <span>Nazwa kategorii</span>
                                 <span>Akcje</span>
                             </div>
@@ -152,7 +152,7 @@ export default function ManageCategoriesModal({
                                         renderCategoryRow(cat),
                                     )
                                 ) : (
-                                    <div className="p-4 text-center versum-muted">
+                                    <div className="p-4 text-center salonbw-muted">
                                         Brak zdefiniowanych kategorii
                                     </div>
                                 )}

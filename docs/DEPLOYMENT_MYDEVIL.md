@@ -184,6 +184,18 @@ Ensure the database connection details (`DATABASE_URL`) match the production Pos
 1. Hit the backend health endpoint: `curl https://api.<domain>/healthz`.
 2. Load the public site (dev) and panel login page in a browser.
 3. Perform a quick happy path (login → panel dashboard → create dummy appointment → cancel).
+4. If the deploy includes calendar compat/runtime changes, run the dedicated dashboard smoke:
+
+```bash
+cd apps/panel
+source ../../.env
+PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm test:prod:calendar --project=desktop-1366
+```
+
+Expected for a healthy calendar compat deploy:
+- vendored `/calendar` loads without failed `/salonbw-calendar/*` or `/salonbw-vendor/*` requests,
+- runtime exposes `window.SalonBWConfig` and keeps `window.VersumConfig` as compat alias,
+- no `Unhandled response status error` caused by `POST /graphql` returning `201`.
 
 If issues appear, roll back by redeploying the previous release artifacts and restarting Passenger again.
 

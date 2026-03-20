@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientStats } from '@/hooks/useStatistics';
 
@@ -23,17 +23,17 @@ export default function ClientsStatisticsPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role}>
-            <div className="versum-page" data-testid="clients-statistics-page">
+        <SalonBWShell role={role}>
+            <div className="salonbw-page" data-testid="clients-statistics-page">
                 <ul className="breadcrumb">
                     <li>Statystyki</li>
                     <li>Klienci</li>
                 </ul>
 
-                <div className="versum-page__toolbar">
+                <div className="salonbw-page__toolbar">
                     <div className="flex items-center gap-2">
                         <select
-                            className="form-control versum-select"
+                            className="form-control salonbw-select"
                             aria-label="Zakres czasu"
                             value={range}
                             onChange={(e) => {
@@ -54,7 +54,7 @@ export default function ClientsStatisticsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-default versum-toolbar-btn"
+                        className="btn btn-default salonbw-toolbar-btn"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -62,7 +62,9 @@ export default function ClientsStatisticsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm versum-muted">Ładowanie...</div>
+                    <div className="p-4 text-sm salonbw-muted">
+                        Ładowanie...
+                    </div>
                 ) : (
                     <div className="inner">
                         {/* Summary cards */}
@@ -114,8 +116,8 @@ export default function ClientsStatisticsPage() {
                                     <h3 className="text-lg font-semibold mb-3">
                                         Najlepsi klienci
                                     </h3>
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
+                                    <div className="salonbw-table-wrap">
+                                        <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Klient</th>
@@ -138,7 +140,7 @@ export default function ClientsStatisticsPage() {
                                                             <td>
                                                                 <Link
                                                                     href={`/customers/${client.clientId}`}
-                                                                    className="versum-link"
+                                                                    className="salonbw-link"
                                                                 >
                                                                     {
                                                                         client.clientName
@@ -174,6 +176,6 @@ export default function ClientsStatisticsPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

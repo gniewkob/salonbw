@@ -76,9 +76,9 @@ Confirmed from `apps/panel/src/pages`:
   - `/extension/tools/:id`
 
 Supporting clone infrastructure also already exists:
-- `VersumShell`
-- `VersumMainNav`
-- `VersumSecondaryNav`
+- `SalonBWShell`
+- `SalonBWMainNav`
+- `SalonBWSecondaryNav`
 - `PajaxLoader`
 - SVG/icon system
 - vendor/calendar assets in `apps/panel/public/versum-calendar`

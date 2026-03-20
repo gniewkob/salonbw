@@ -34,7 +34,7 @@ interface CalendarViewProps {
     currentDate: Date;
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
-    hideSidebar?: boolean; // When true, don't render sidebar (used in VersumShell)
+    hideSidebar?: boolean; // When true, don't render sidebar (used in SalonBWShell)
 }
 
 const VIEW_MAP: Record<CalendarViewType, string> = {
@@ -151,7 +151,7 @@ export default function CalendarView({
         <div
             className={`flex h-full ${hideSidebar ? '' : 'flex-col md:flex-row'}`}
         >
-            {/* Sidebar matches Versum layout: Left side filters */}
+            {/* Sidebar matches source layout: Left side filters */}
             {!hideSidebar && (
                 <div className="w-full md:w-64 flex-shrink-0 border-r border-gray-200 bg-white">
                     <CalendarSidebar
@@ -170,7 +170,7 @@ export default function CalendarView({
 
             {/* Main Calendar Area */}
             <div className="flex-1 overflow-auto bg-white p-2">
-                {/* Custom Header matching Versum's top bar usually goes here or in Layout */}
+                {/* Custom Header matching source top bar usually goes here or in Layout */}
 
                 {pluginLoadError ? (
                     <div className="p-4 text-center text-sm text-red-700">
@@ -200,7 +200,7 @@ export default function CalendarView({
                         locale="pl"
                         firstDay={1}
                         slotMinTime="07:00:00"
-                        slotMaxTime="21:00:00" // Versum usually ends late
+                        slotMaxTime="21:00:00" // source UI usually ends late
                         slotDuration="00:15:00"
                         allDaySlot={false}
                         headerToolbar={{

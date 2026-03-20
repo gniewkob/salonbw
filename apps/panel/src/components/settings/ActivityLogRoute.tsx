@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
@@ -69,7 +69,7 @@ const ACTIVITY_OPTIONS = [
         ],
     },
     {
-        label: 'Versum',
+        label: 'SalonBW',
         options: [
             { value: 'signin', label: 'Zalogowanie do systemu' },
             {
@@ -175,7 +175,7 @@ export default function ActivityLogRoute({
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="breadcrumbs" e2e-breadcrumbs="">
                     <ul>
                         {breadcrumbs.map((item, index) => (
@@ -646,7 +646,7 @@ export default function ActivityLogRoute({
                         </div>
                     </div>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

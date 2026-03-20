@@ -181,6 +181,10 @@ export interface CreateServiceDto {
     price: number;
     priceType?: PriceType;
     vatRate?: number;
+    durationBefore?: number;
+    durationAfter?: number;
+    breakOffset?: number;
+    breakDuration?: number;
     isFeatured?: boolean;
     category?: string;
     categoryId?: number;
@@ -736,6 +740,48 @@ export function useAddServicePhoto() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             }),
+        onSuccess: (_, { serviceId }) => {
+            void queryClient.invalidateQueries({
+                queryKey: ['services', serviceId, 'photos'],
+            });
+        },
+    });
+}
+
+export function useUploadServicePhoto() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            serviceId,
+            file,
+            caption,
+            sortOrder,
+            isPublic,
+        }: {
+            serviceId: number;
+            file: File;
+            caption?: string;
+            sortOrder?: number;
+            isPublic?: boolean;
+        }) => {
+            const formData = new FormData();
+            formData.append('image', file);
+            if (caption) formData.append('caption', caption);
+            if (sortOrder !== undefined) {
+                formData.append('sortOrder', String(sortOrder));
+            }
+            if (isPublic !== undefined) {
+                formData.append('isPublic', String(isPublic));
+            }
+            return apiFetch<ServiceMedia>(
+                `/services/${serviceId}/photos/upload`,
+                {
+                    method: 'POST',
+                    body: formData,
+                },
+            );
+        },
         onSuccess: (_, { serviceId }) => {
             void queryClient.invalidateQueries({
                 queryKey: ['services', serviceId, 'photos'],

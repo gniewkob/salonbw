@@ -5,9 +5,9 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useMemo, useState } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
-import NewCustomerNav from '@/components/versum/navs/NewCustomerNav';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import NewCustomerNav from '@/components/salonbw/navs/NewCustomerNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
@@ -132,8 +132,8 @@ export default function CustomerEditPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <VersumShell role={role}>
-                <VersumCustomersVendorCss />
+            <SalonBWShell role={role}>
+                <SalonBWVendorCss />
                 <CustomerErrorBoundary
                     fallback={
                         <div className="show_customer" id="customers_main">
@@ -183,7 +183,7 @@ export default function CustomerEditPage() {
                         )}
                     </div>
                 </CustomerErrorBoundary>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

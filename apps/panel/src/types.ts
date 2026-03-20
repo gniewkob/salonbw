@@ -54,6 +54,10 @@ export interface Service {
     price: number;
     priceType: PriceType;
     vatRate?: number;
+    durationBefore?: number;
+    durationAfter?: number;
+    breakOffset?: number;
+    breakDuration?: number;
     isFeatured?: boolean;
     category?: string;
     categoryId?: number;
@@ -383,7 +387,7 @@ export type NoteType =
 export interface Customer {
     id: number;
     name: string;
-    fullName?: string; // Alias dla name (Versum compat)
+    fullName?: string; // Alias dla name (compat source UI)
     email: string;
     phone?: string;
     firstName?: string;
@@ -1556,6 +1560,14 @@ export interface CalendarSettings {
     statusColors: Record<string, string>;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface CalendarNamedView {
+    id: number;
+    name: string;
+    employeeIds: number[];
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface OnlineBookingSettings {

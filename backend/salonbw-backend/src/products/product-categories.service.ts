@@ -90,7 +90,9 @@ export class ProductCategoriesService {
         const categories = await this.categoriesRepository.findBy({
             id: In(ids),
         });
-        const categoryMap = new Map(categories.map((category) => [category.id, category]));
+        const categoryMap = new Map(
+            categories.map((category) => [category.id, category]),
+        );
 
         for (const item of dto.items) {
             const category = categoryMap.get(item.id);

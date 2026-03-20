@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { TemplateType, MessageChannel } from '@/types';
@@ -134,8 +134,8 @@ export default function TemplatesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <VersumShell role={role}>
-                <div className="versum-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page">
                     <ul className="breadcrumb">
                         <li>
                             <Link href="/communication">Łączność</Link>
@@ -143,16 +143,16 @@ export default function TemplatesPage() {
                         <li>Szablony wiadomości</li>
                     </ul>
 
-                    <div className="versum-page__toolbar">
+                    <div className="salonbw-page__toolbar">
                         <label
-                            className="versum-label"
+                            className="salonbw-label"
                             htmlFor="filter-channel"
                         >
                             Kanał:
                         </label>
                         <select
                             id="filter-channel"
-                            className="versum-select"
+                            className="salonbw-select"
                             value={filterChannel}
                             onChange={(e) =>
                                 setFilterChannel(
@@ -167,12 +167,12 @@ export default function TemplatesPage() {
                                 </option>
                             ))}
                         </select>
-                        <label className="versum-label" htmlFor="filter-type">
+                        <label className="salonbw-label" htmlFor="filter-type">
                             Typ:
                         </label>
                         <select
                             id="filter-type"
-                            className="versum-select"
+                            className="salonbw-select"
                             value={filterType}
                             onChange={(e) =>
                                 setFilterType(
@@ -189,7 +189,7 @@ export default function TemplatesPage() {
                         </select>
                         <button
                             type="button"
-                            className="versum-btn versum-btn--primary"
+                            className="salonbw-btn salonbw-btn--primary"
                             onClick={openAddModal}
                         >
                             + Nowy szablon
@@ -197,18 +197,18 @@ export default function TemplatesPage() {
                     </div>
 
                     {loading ? (
-                        <div className="versum-loading">
+                        <div className="salonbw-loading">
                             Ładowanie szablonów...
                         </div>
                     ) : filteredTemplates.length === 0 ? (
-                        <div className="versum-empty">
+                        <div className="salonbw-empty">
                             {templates.length === 0
                                 ? 'Brak szablonów. Kliknij "Nowy szablon" aby dodać.'
                                 : 'Brak szablonów pasujących do filtrów.'}
                         </div>
                     ) : (
-                        <div className="versum-table-wrap">
-                            <table className="versum-table">
+                        <div className="salonbw-table-wrap">
+                            <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Nazwa</th>
@@ -225,7 +225,7 @@ export default function TemplatesPage() {
                                             <td>
                                                 <strong>{template.name}</strong>
                                                 {template.description && (
-                                                    <div className="versum-muted text-xs">
+                                                    <div className="salonbw-muted text-xs">
                                                         {template.description}
                                                     </div>
                                                 )}
@@ -234,7 +234,7 @@ export default function TemplatesPage() {
                                                 {getTypeLabel(template.type)}
                                             </td>
                                             <td>
-                                                <span className="versum-badge">
+                                                <span className="salonbw-badge">
                                                     {getChannelIcon(
                                                         template.channel,
                                                     )}{' '}
@@ -244,9 +244,9 @@ export default function TemplatesPage() {
                                                 </span>
                                             </td>
                                             <td>
-                                                <div className="versum-template-preview">
+                                                <div className="salonbw-template-preview">
                                                     {template.subject && (
-                                                        <div className="versum-muted">
+                                                        <div className="salonbw-muted">
                                                             Temat:{' '}
                                                             {template.subject}
                                                         </div>
@@ -263,20 +263,20 @@ export default function TemplatesPage() {
                                             </td>
                                             <td>
                                                 {template.isActive ? (
-                                                    <span className="versum-badge versum-badge--success">
+                                                    <span className="salonbw-badge salonbw-badge--success">
                                                         Aktywny
                                                     </span>
                                                 ) : (
-                                                    <span className="versum-badge versum-badge--inactive">
+                                                    <span className="salonbw-badge salonbw-badge--inactive">
                                                         Nieaktywny
                                                     </span>
                                                 )}
                                             </td>
                                             <td>
-                                                <div className="versum-actions">
+                                                <div className="salonbw-actions">
                                                     <button
                                                         type="button"
-                                                        className="versum-btn versum-btn--sm versum-btn--light"
+                                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
                                                         onClick={() =>
                                                             openEditModal(
                                                                 template,
@@ -287,7 +287,7 @@ export default function TemplatesPage() {
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        className="versum-btn versum-btn--sm versum-btn--danger"
+                                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
                                                         onClick={() =>
                                                             void handleDelete(
                                                                 template.id,
@@ -308,14 +308,14 @@ export default function TemplatesPage() {
                     {/* Modal */}
                     {isModalOpen && (
                         <div
-                            className="versum-modal-overlay"
+                            className="salonbw-modal-overlay"
                             onClick={(e) => {
                                 if (e.target === e.currentTarget)
                                     setIsModalOpen(false);
                             }}
                         >
-                            <div className="versum-modal">
-                                <div className="versum-modal__header">
+                            <div className="salonbw-modal">
+                                <div className="salonbw-modal__header">
                                     <h3>
                                         {editingTemplate
                                             ? 'Edytuj szablon'
@@ -323,22 +323,22 @@ export default function TemplatesPage() {
                                     </h3>
                                     <button
                                         type="button"
-                                        className="versum-modal__close"
+                                        className="salonbw-modal__close"
                                         onClick={() => setIsModalOpen(false)}
                                     >
                                         ×
                                     </button>
                                 </div>
                                 <form onSubmit={(e) => void handleSubmit(e)}>
-                                    <div className="versum-modal__body">
-                                        <div className="versum-form-group">
+                                    <div className="salonbw-modal__body">
+                                        <div className="salonbw-form-group">
                                             <label htmlFor="modal-name">
                                                 Nazwa *
                                             </label>
                                             <input
                                                 id="modal-name"
                                                 type="text"
-                                                className="versum-input"
+                                                className="salonbw-input"
                                                 value={formData.name}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -351,14 +351,14 @@ export default function TemplatesPage() {
                                             />
                                         </div>
 
-                                        <div className="versum-form-row">
-                                            <div className="versum-form-group">
+                                        <div className="salonbw-form-row">
+                                            <div className="salonbw-form-group">
                                                 <label htmlFor="modal-type">
                                                     Typ *
                                                 </label>
                                                 <select
                                                     id="modal-type"
-                                                    className="versum-select"
+                                                    className="salonbw-select"
                                                     value={formData.type}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -379,13 +379,13 @@ export default function TemplatesPage() {
                                                 </select>
                                             </div>
 
-                                            <div className="versum-form-group">
+                                            <div className="salonbw-form-group">
                                                 <label htmlFor="modal-channel">
                                                     Kanał *
                                                 </label>
                                                 <select
                                                     id="modal-channel"
-                                                    className="versum-select"
+                                                    className="salonbw-select"
                                                     value={formData.channel}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -408,14 +408,14 @@ export default function TemplatesPage() {
                                         </div>
 
                                         {formData.channel === 'email' && (
-                                            <div className="versum-form-group">
+                                            <div className="salonbw-form-group">
                                                 <label htmlFor="modal-subject">
                                                     Temat
                                                 </label>
                                                 <input
                                                     id="modal-subject"
                                                     type="text"
-                                                    className="versum-input"
+                                                    className="salonbw-input"
                                                     value={formData.subject}
                                                     onChange={(e) =>
                                                         setFormData({
@@ -429,13 +429,13 @@ export default function TemplatesPage() {
                                             </div>
                                         )}
 
-                                        <div className="versum-form-group">
+                                        <div className="salonbw-form-group">
                                             <label htmlFor="modal-content">
                                                 Treść *
                                             </label>
                                             <textarea
                                                 id="modal-content"
-                                                className="versum-textarea"
+                                                className="salonbw-textarea"
                                                 value={formData.content}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -446,7 +446,7 @@ export default function TemplatesPage() {
                                                 rows={6}
                                                 required
                                             />
-                                            <span className="versum-char-count">
+                                            <span className="salonbw-char-count">
                                                 {formData.content.length} znaków
                                                 {formData.channel === 'sms' && (
                                                     <>
@@ -461,7 +461,7 @@ export default function TemplatesPage() {
                                             </span>
                                         </div>
 
-                                        <div className="versum-variables-help">
+                                        <div className="salonbw-variables-help">
                                             <h4>Dostępne zmienne:</h4>
                                             <code>{'{{client_name}}'}</code>
                                             <code>{'{{service_name}}'}</code>
@@ -471,14 +471,14 @@ export default function TemplatesPage() {
                                             <code>{'{{salon_name}}'}</code>
                                         </div>
 
-                                        <div className="versum-form-group">
+                                        <div className="salonbw-form-group">
                                             <label htmlFor="modal-description">
                                                 Opis (opcjonalny)
                                             </label>
                                             <input
                                                 id="modal-description"
                                                 type="text"
-                                                className="versum-input"
+                                                className="salonbw-input"
                                                 value={formData.description}
                                                 onChange={(e) =>
                                                     setFormData({
@@ -491,7 +491,7 @@ export default function TemplatesPage() {
                                             />
                                         </div>
 
-                                        <label className="versum-checkbox-row">
+                                        <label className="salonbw-checkbox-row">
                                             <input
                                                 type="checkbox"
                                                 checked={formData.isActive}
@@ -506,10 +506,10 @@ export default function TemplatesPage() {
                                             <span>Szablon aktywny</span>
                                         </label>
                                     </div>
-                                    <div className="versum-modal__footer">
+                                    <div className="salonbw-modal__footer">
                                         <button
                                             type="button"
-                                            className="versum-btn versum-btn--light"
+                                            className="salonbw-btn salonbw-btn--light"
                                             onClick={() =>
                                                 setIsModalOpen(false)
                                             }
@@ -518,7 +518,7 @@ export default function TemplatesPage() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="versum-btn versum-btn--primary"
+                                            className="salonbw-btn salonbw-btn--primary"
                                             disabled={
                                                 !formData.name.trim() ||
                                                 !formData.content.trim() ||
@@ -537,7 +537,7 @@ export default function TemplatesPage() {
                         </div>
                     )}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

@@ -20,42 +20,42 @@ type StatusConfig = {
 const STATUS_CONFIG: Record<AppointmentStatus | string, StatusConfig> = {
     scheduled: {
         label: 'Zaplanowana',
-        className: 'versum-status--scheduled',
+        className: 'salonbw-status--scheduled',
         actions: ['confirm', 'start', 'cancel', 'no_show'],
     },
     confirmed: {
         label: 'Potwierdzona',
-        className: 'versum-status--confirmed',
+        className: 'salonbw-status--confirmed',
         actions: ['start', 'cancel', 'no_show'],
     },
     in_progress: {
         label: 'W trakcie',
-        className: 'versum-status--in-progress',
+        className: 'salonbw-status--in-progress',
         actions: ['complete', 'cancel'],
     },
     completed: {
         label: 'Zakończona',
-        className: 'versum-status--completed',
+        className: 'salonbw-status--completed',
         actions: [],
     },
     cancelled: {
         label: 'Anulowana',
-        className: 'versum-status--cancelled',
+        className: 'salonbw-status--cancelled',
         actions: [],
     },
     no_show: {
         label: 'Nieobecność',
-        className: 'versum-status--no-show',
+        className: 'salonbw-status--no-show',
         actions: [],
     },
 };
 
 const ACTION_LABELS: Record<string, { label: string; className: string }> = {
-    confirm: { label: 'Potwierdź', className: 'versum-btn--success' },
-    start: { label: 'Rozpocznij', className: 'versum-btn--primary' },
-    complete: { label: 'Zakończ', className: 'versum-btn--success' },
-    cancel: { label: 'Anuluj', className: 'versum-btn--danger' },
-    no_show: { label: 'Nieobecny', className: 'versum-btn--warning' },
+    confirm: { label: 'Potwierdź', className: 'salonbw-btn--success' },
+    start: { label: 'Rozpocznij', className: 'salonbw-btn--primary' },
+    complete: { label: 'Zakończ', className: 'salonbw-btn--success' },
+    cancel: { label: 'Anuluj', className: 'salonbw-btn--danger' },
+    no_show: { label: 'Nieobecny', className: 'salonbw-btn--warning' },
 };
 
 export default function ReceptionView({
@@ -115,7 +115,7 @@ export default function ReceptionView({
     const getStatusBadge = (status: AppointmentStatus | string) => {
         const config = STATUS_CONFIG[status] || STATUS_CONFIG.scheduled;
         return (
-            <span className={`versum-status-badge ${config.className}`}>
+            <span className={`salonbw-status-badge ${config.className}`}>
                 {config.label}
             </span>
         );
@@ -137,17 +137,17 @@ export default function ReceptionView({
 
     if (loading) {
         return (
-            <div className="versum-reception-view">
-                <div className="versum-loading">Ładowanie wizyt...</div>
+            <div className="salonbw-reception-view">
+                <div className="salonbw-loading">Ładowanie wizyt...</div>
             </div>
         );
     }
 
     if (appointments.length === 0) {
         return (
-            <div className="versum-reception-view">
-                <div className="versum-reception-empty">
-                    <div className="versum-reception-empty__icon">📅</div>
+            <div className="salonbw-reception-view">
+                <div className="salonbw-reception-empty">
+                    <div className="salonbw-reception-empty__icon">📅</div>
                     <h3>Brak wizyt na dziś</h3>
                     <p>Wybierz inną datę lub dodaj nową wizytę.</p>
                 </div>
@@ -166,54 +166,54 @@ export default function ReceptionView({
     );
 
     return (
-        <div className="versum-reception-view">
+        <div className="salonbw-reception-view">
             {/* Summary */}
-            <div className="versum-reception-summary">
-                <div className="versum-reception-summary__item">
-                    <span className="versum-reception-summary__value">
+            <div className="salonbw-reception-summary">
+                <div className="salonbw-reception-summary__item">
+                    <span className="salonbw-reception-summary__value">
                         {appointments.length}
                     </span>
-                    <span className="versum-reception-summary__label">
+                    <span className="salonbw-reception-summary__label">
                         Wszystkich
                     </span>
                 </div>
-                <div className="versum-reception-summary__item versum-reception-summary__item--scheduled">
-                    <span className="versum-reception-summary__value">
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--scheduled">
+                    <span className="salonbw-reception-summary__value">
                         {byStatus.scheduled || 0}
                     </span>
-                    <span className="versum-reception-summary__label">
+                    <span className="salonbw-reception-summary__label">
                         Zaplanowanych
                     </span>
                 </div>
-                <div className="versum-reception-summary__item versum-reception-summary__item--confirmed">
-                    <span className="versum-reception-summary__value">
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--confirmed">
+                    <span className="salonbw-reception-summary__value">
                         {byStatus.confirmed || 0}
                     </span>
-                    <span className="versum-reception-summary__label">
+                    <span className="salonbw-reception-summary__label">
                         Potwierdzonych
                     </span>
                 </div>
-                <div className="versum-reception-summary__item versum-reception-summary__item--in-progress">
-                    <span className="versum-reception-summary__value">
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--in-progress">
+                    <span className="salonbw-reception-summary__value">
                         {byStatus.in_progress || 0}
                     </span>
-                    <span className="versum-reception-summary__label">
+                    <span className="salonbw-reception-summary__label">
                         W trakcie
                     </span>
                 </div>
-                <div className="versum-reception-summary__item versum-reception-summary__item--completed">
-                    <span className="versum-reception-summary__value">
+                <div className="salonbw-reception-summary__item salonbw-reception-summary__item--completed">
+                    <span className="salonbw-reception-summary__value">
                         {byStatus.completed || 0}
                     </span>
-                    <span className="versum-reception-summary__label">
+                    <span className="salonbw-reception-summary__label">
                         Zakończonych
                     </span>
                 </div>
             </div>
 
             {/* Appointments Table */}
-            <div className="versum-reception-table-wrap">
-                <table className="versum-reception-table">
+            <div className="salonbw-reception-table-wrap">
+                <table className="salonbw-reception-table">
                     <thead>
                         <tr>
                             <th>Godzina</th>
@@ -242,24 +242,24 @@ export default function ReceptionView({
                             return (
                                 <tr
                                     key={appointment.id}
-                                    className={`${isOverdue ? 'versum-reception-row--overdue' : ''} ${isProcessing ? 'versum-reception-row--processing' : ''}`}
+                                    className={`${isOverdue ? 'salonbw-reception-row--overdue' : ''} ${isProcessing ? 'salonbw-reception-row--processing' : ''}`}
                                 >
-                                    <td className="versum-reception-time">
+                                    <td className="salonbw-reception-time">
                                         {formatTime(appointment.startTime)}
                                         {isOverdue && (
-                                            <span className="versum-reception-overdue-badge">
+                                            <span className="salonbw-reception-overdue-badge">
                                                 opóźnienie
                                             </span>
                                         )}
                                     </td>
                                     <td>
-                                        <div className="versum-reception-client">
+                                        <div className="salonbw-reception-client">
                                             <strong>
                                                 {appointment.client?.name ||
                                                     'Brak klienta'}
                                             </strong>
                                             {appointment.client?.phone && (
-                                                <div className="versum-reception-phone">
+                                                <div className="salonbw-reception-phone">
                                                     📞{' '}
                                                     {appointment.client.phone}
                                                 </div>
@@ -276,7 +276,7 @@ export default function ReceptionView({
                                     </td>
                                     <td>{getStatusBadge(status)}</td>
                                     <td>
-                                        <div className="versum-reception-actions">
+                                        <div className="salonbw-reception-actions">
                                             {config.actions.map((action) => {
                                                 const actionConfig =
                                                     ACTION_LABELS[action];
@@ -284,7 +284,7 @@ export default function ReceptionView({
                                                     <button
                                                         key={action}
                                                         type="button"
-                                                        className={`versum-btn versum-btn--sm ${actionConfig.className}`}
+                                                        className={`salonbw-btn salonbw-btn--sm ${actionConfig.className}`}
                                                         onClick={() =>
                                                             void handleAction(
                                                                 appointment,
@@ -298,7 +298,7 @@ export default function ReceptionView({
                                                 );
                                             })}
                                             {config.actions.length === 0 && (
-                                                <span className="versum-reception-no-actions">
+                                                <span className="salonbw-reception-no-actions">
                                                     -
                                                 </span>
                                             )}

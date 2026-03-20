@@ -3,12 +3,17 @@ import {
     Controller,
     Delete,
     Get,
+    StreamableFile,
     Param,
     ParseIntPipe,
     Post,
     Put,
     Query,
+    Req,
+    Res,
     UseGuards,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -17,6 +22,13 @@ import {
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import { createReadStream } from 'node:fs';
+import type { Request as ExpressRequest, Response } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/role.enum';
@@ -147,6 +159,109 @@ export class ServiceDetailsController {
         @Body() body: CreateServiceMediaDto,
     ) {
         return this.detailsService.addPhoto(id, body);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist)
+    @Post(':id/photos/upload')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Upload service photo file' })
+    @UseInterceptors(
+        FileInterceptor('image', {
+            storage: diskStorage({
+                destination: (
+                    req: ExpressRequest,
+                    _file: Express.Multer.File,
+                    cb: (error: Error | null, destination: string) => void,
+                ) => {
+                    const root =
+                        (process.env.UPLOADS_DIR || '').trim() ||
+                        path.join(process.cwd(), 'uploads');
+                    const rawId = req.params?.id;
+                    const serviceId = Number(rawId);
+                    if (!Number.isInteger(serviceId) || serviceId <= 0) {
+                        return cb(new Error('Invalid serviceId'), root);
+                    }
+                    const dir = path.join(
+                        root,
+                        'services',
+                        String(serviceId),
+                        'gallery',
+                    );
+                    fs.mkdirSync(dir, { recursive: true });
+                    cb(null, dir);
+                },
+                filename: (
+                    req: ExpressRequest & { __servicePhotoName?: string },
+                    file: Express.Multer.File,
+                    cb: (error: Error | null, filename: string) => void,
+                ) => {
+                    const ext = path
+                        .extname(file.originalname || '')
+                        .toLowerCase()
+                        .slice(0, 10);
+                    const name = `${uuidv4()}${ext || ''}`;
+                    req.__servicePhotoName = name;
+                    cb(null, name);
+                },
+            }),
+            limits: { fileSize: 10 * 1024 * 1024 },
+        }),
+    )
+    async uploadPhotoFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Req()
+        req: ExpressRequest & { __servicePhotoName?: string; user?: unknown },
+        @UploadedFile() file: Express.Multer.File,
+        @Body('caption') caption?: string,
+        @Body('sortOrder') sortOrderRaw?: string,
+        @Body('isPublic') isPublicRaw?: string,
+    ) {
+        if (!file) {
+            throw new Error('No image uploaded');
+        }
+        const storedName = String(req.__servicePhotoName || file.filename);
+        const relPath = path.join(
+            'services',
+            String(id),
+            'gallery',
+            storedName,
+        );
+        const sortOrder =
+            sortOrderRaw && sortOrderRaw.trim().length > 0
+                ? Number(sortOrderRaw)
+                : undefined;
+        const isPublic =
+            isPublicRaw && isPublicRaw.trim().length > 0
+                ? isPublicRaw === 'true' || isPublicRaw === '1'
+                : undefined;
+
+        return this.detailsService.addUploadedPhoto(id, {
+            storedRelativePath: relPath,
+            mimeType: file.mimetype,
+            size: file.size,
+            caption,
+            sortOrder: Number.isFinite(sortOrder) ? sortOrder : undefined,
+            isPublic,
+        });
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist)
+    @Get(':id/photos/:photoId/file')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get service photo file' })
+    async getPhotoFile(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('photoId', ParseIntPipe) photoId: number,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const { fullPath, mimeType } = await this.detailsService.getPhotoFile(
+            id,
+            photoId,
+        );
+        res.setHeader('Content-Type', mimeType);
+        return new StreamableFile(createReadStream(fullPath));
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

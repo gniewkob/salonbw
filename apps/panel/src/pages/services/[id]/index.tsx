@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -17,6 +17,7 @@ import {
     useServiceComments,
     useAddServiceComment,
     useDeleteServiceComment,
+    useServicePhotos,
     useServiceCommissions,
     useUpdateServiceCommissions,
 } from '@/hooks/useServicesAdmin';
@@ -25,6 +26,7 @@ import ServiceFormModal, {
 } from '@/components/services/ServiceFormModal';
 import ServiceVariantsModal from '@/components/services/ServiceVariantsModal';
 import { useEmployees } from '@/hooks/useEmployees';
+import { getBrowserApiBase } from '@/hooks/useCustomerMedia';
 import type { EmployeeService } from '@/types';
 
 type TabKey =
@@ -82,6 +84,7 @@ export default function ServiceDetailsPage() {
     });
     const employees = useServiceEmployeesDetails(serviceId);
     const comments = useServiceComments(serviceId);
+    const photos = useServicePhotos(serviceId);
     const commissions = useServiceCommissions(serviceId);
     const allEmployees = useEmployees();
     const { data: categories = [] } = useServiceCategories();
@@ -93,6 +96,7 @@ export default function ServiceDetailsPage() {
 
     const summaryData = summary.data;
     const variantsData = variants.data ?? summaryData?.variants ?? [];
+    const apiBase = getBrowserApiBase();
 
     const chartData = useMemo(() => {
         if (!stats.data) return [];
@@ -205,9 +209,9 @@ export default function ServiceDetailsPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role || 'admin'}>
+        <SalonBWShell role={role || 'admin'}>
             <div
-                className="versum-page service-details-page"
+                className="salonbw-page service-details-page"
                 data-testid="service-details-page"
             >
                 <ul className="breadcrumb">
@@ -346,7 +350,39 @@ export default function ServiceDetailsPage() {
                                                 'Brak opisu'}
                                         </dd>
                                         <dt className="lbl">Zdjęcia</dt>
-                                        <dd>Brak zdjęć</dd>
+                                        <dd>
+                                            {(photos.data ?? []).length ===
+                                            0 ? (
+                                                'Brak zdjęć'
+                                            ) : (
+                                                <div className="service-photo-grid">
+                                                    {(photos.data ?? []).map(
+                                                        (photo) => (
+                                                            <a
+                                                                key={photo.id}
+                                                                href={`${apiBase}${photo.url}`}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="service-photo-thumb"
+                                                                title={
+                                                                    photo.caption ||
+                                                                    'Zdjęcie usługi'
+                                                                }
+                                                            >
+                                                                {/* eslint-disable-next-line @next/next/no-img-element -- Service photos come from API file endpoints, not Next static assets. */}
+                                                                <img
+                                                                    src={`${apiBase}${photo.url}`}
+                                                                    alt={
+                                                                        photo.caption ||
+                                                                        'Zdjęcie usługi'
+                                                                    }
+                                                                />
+                                                            </a>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
+                                        </dd>
                                     </dl>
                                 </div>
                             )}
@@ -385,8 +421,8 @@ export default function ServiceDetailsPage() {
                             )}
 
                             {activeTab === 'history' && (
-                                <div className="versum-table-wrap">
-                                    <table className="versum-table">
+                                <div className="salonbw-table-wrap">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
@@ -465,8 +501,8 @@ export default function ServiceDetailsPage() {
                             )}
 
                             {activeTab === 'employees' && (
-                                <div className="versum-table-wrap">
-                                    <table className="versum-table">
+                                <div className="salonbw-table-wrap">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th className="service-employees-variant-col">
@@ -491,7 +527,7 @@ export default function ServiceDetailsPage() {
                                                             <div className="service-variant-name">
                                                                 {variant.name}
                                                             </div>
-                                                            <div className="versum-muted fz-11">
+                                                            <div className="salonbw-muted fz-11">
                                                                 {formatDuration(
                                                                     variant.duration,
                                                                 )}
@@ -504,7 +540,7 @@ export default function ServiceDetailsPage() {
                                                         <td className="align-top">
                                                             {assigned.length ===
                                                             0 ? (
-                                                                <div className="versum-muted">
+                                                                <div className="salonbw-muted">
                                                                     Brak
                                                                     przypisań
                                                                 </div>
@@ -527,7 +563,7 @@ export default function ServiceDetailsPage() {
                                                                                             ?.name
                                                                                     }
                                                                                 </span>
-                                                                                <span className="versum-muted">
+                                                                                <span className="salonbw-muted">
                                                                                     {formatDuration(
                                                                                         assignment.customDuration ??
                                                                                             variant.duration,
@@ -606,8 +642,8 @@ export default function ServiceDetailsPage() {
                                         />
                                     </div>
 
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
+                                    <div className="salonbw-table-wrap">
+                                        <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Data</th>
@@ -689,8 +725,8 @@ export default function ServiceDetailsPage() {
                                         Ustaw procent prowizji przypisany do
                                         pracownika dla tej usługi.
                                     </div>
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
+                                    <div className="salonbw-table-wrap">
+                                        <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Pracownik</th>
@@ -797,6 +833,6 @@ export default function ServiceDetailsPage() {
                     />
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

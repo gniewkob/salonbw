@@ -28,12 +28,12 @@ export function SecondaryNavProvider({ children }: { children: ReactNode }) {
     );
 }
 
-// Internal — used by VersumShell to detect if a parent shell is already mounted
+// Internal — used by SalonBWShell to detect if a parent shell is already mounted
 export function useSecondaryNavContext(): SecondaryNavContextValue | null {
     return useContext(SecondaryNavContext);
 }
 
-// Public — customer pages call this instead of passing secondaryNav prop to VersumShell
+// Public — customer pages call this instead of passing secondaryNav prop to SalonBWShell
 export function useSetSecondaryNav(nav: ReactNode): void {
     const ctx = useContext(SecondaryNavContext);
     // Effect runs when memoized nav changes and on unmount clears stale nav.

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { Service, ServiceCategory, PriceType } from '@/types';
-import SelectorModal from '@/components/versum/modals/SelectorModal';
+import SelectorModal from '@/components/salonbw/modals/SelectorModal';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useServiceEmployeesDetails } from '@/hooks/useServicesAdmin';
 
@@ -427,7 +427,7 @@ export default function ServiceFormModal({
                 W tej sekcji możesz przypisać zasoby (gabinety, urządzenia)
                 wymagane do wykonania tej usługi.
             </div>
-            <p className="text-center versum-muted p-40">
+            <p className="text-center salonbw-muted p-40">
                 Zasoby nie są jeszcze skonfigurowane w systemie.
             </p>
         </div>
@@ -440,8 +440,8 @@ export default function ServiceFormModal({
                 zdefiniować indywidualne czasy trwania i ceny.
             </div>
 
-            <div className="versum-table-wrap">
-                <table className="versum-table">
+            <div className="salonbw-table-wrap">
+                <table className="salonbw-table">
                     <thead>
                         <tr>
                             <th>Pracownik</th>
@@ -455,7 +455,7 @@ export default function ServiceFormModal({
                             <tr>
                                 <td
                                     colSpan={4}
-                                    className="text-center versum-muted p-20"
+                                    className="text-center salonbw-muted p-20"
                                 >
                                     Nie wybrano żadnych pracowników.
                                 </td>

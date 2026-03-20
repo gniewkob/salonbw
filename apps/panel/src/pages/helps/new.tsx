@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import HelpContactPage from '@/components/help/HelpContactPage';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HelpContactRoute() {
@@ -10,9 +10,9 @@ export default function HelpContactRoute() {
 
     return (
         <RouteGuard>
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <HelpContactPage />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

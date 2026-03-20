@@ -127,21 +127,21 @@ const ACTIVITY_DEFINITIONS: Array<{
     },
     {
         categoryKey: 'versum',
-        categoryLabel: 'Versum',
+        categoryLabel: 'SalonBW',
         actionKey: 'signin',
         actionLabel: 'Zalogowanie do systemu',
         actions: [LogAction.USER_LOGIN],
     },
     {
         categoryKey: 'versum',
-        categoryLabel: 'Versum',
+        categoryLabel: 'SalonBW',
         actionKey: 'failed_login_attempts',
         actionLabel: 'Nieudane logowanie (3 razy)',
         actions: [LogAction.LOGIN_FAIL],
     },
     {
         categoryKey: 'versum',
-        categoryLabel: 'Versum',
+        categoryLabel: 'SalonBW',
         actionKey: 'limit_update',
         actionLabel: 'Błąd autoryzacji',
         actions: [LogAction.AUTHORIZATION_FAILURE],
@@ -331,7 +331,7 @@ export class LogService {
             actionKey: definition?.actionKey ?? item.action.toLowerCase(),
             actionLabel: definition?.actionLabel ?? item.action,
             categoryKey: definition?.categoryKey ?? 'versum',
-            categoryLabel: definition?.categoryLabel ?? 'Versum',
+            categoryLabel: definition?.categoryLabel ?? 'SalonBW',
             details,
             expandable: Boolean(details),
         };

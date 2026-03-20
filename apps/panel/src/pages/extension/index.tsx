@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 type ExtensionCard = {
     id: string;
-    versumToolId: string;
+    toolId: string;
     colClass: 'ext_1' | 'ext_2';
     title: string;
     description: string;
@@ -16,7 +16,7 @@ type ExtensionCard = {
 const cards: ExtensionCard[] = [
     {
         id: 'automatic_marketing',
-        versumToolId: '4',
+        toolId: '4',
         colClass: 'ext_1',
         title: 'Marketing Automatyczny',
         description:
@@ -26,7 +26,7 @@ const cards: ExtensionCard[] = [
     },
     {
         id: 'lumo',
-        versumToolId: '6',
+        toolId: '6',
         colClass: 'ext_2',
         title: 'Program Lojalnościowy',
         description:
@@ -36,7 +36,7 @@ const cards: ExtensionCard[] = [
     },
     {
         id: 'resources',
-        versumToolId: '7',
+        toolId: '7',
         colClass: 'ext_1',
         title: 'Zasoby',
         description:
@@ -46,7 +46,7 @@ const cards: ExtensionCard[] = [
     },
     {
         id: 'gift_cards',
-        versumToolId: '8',
+        toolId: '8',
         colClass: 'ext_2',
         title: 'Bony i Karnety',
         description:
@@ -56,17 +56,17 @@ const cards: ExtensionCard[] = [
     },
     {
         id: 'fiscalization',
-        versumToolId: '3',
+        toolId: '3',
         colClass: 'ext_1',
         title: 'Fiskalizacja',
         description:
-            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej prosto z Versum. Zobacz, jakie to szybkie i proste!',
+            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej bezpośrednio w panelu SalonBW. Zobacz, jakie to szybkie i proste!',
         icon: 'fiscalization',
         status: 'Nieaktywny',
     },
     {
         id: 'google_calendar',
-        versumToolId: '1',
+        toolId: '1',
         colClass: 'ext_2',
         title: 'Kalendarz Google',
         description:
@@ -76,7 +76,7 @@ const cards: ExtensionCard[] = [
     },
     {
         id: 'access_restriction',
-        versumToolId: '5',
+        toolId: '5',
         colClass: 'ext_1',
         title: 'Ograniczenie Dostępu',
         description:
@@ -98,13 +98,13 @@ export default function ExtensionPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="extension-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="extension-page">
                     <h2 className="extensions-page-heading">
                         <i className="icon sprite-star" aria-hidden="true" />
                         {' Dodatki'}
                     </h2>
-                    <div className="inner extensions_boxes versum-extension-grid">
+                    <div className="inner extensions_boxes salonbw-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
                                 key={`row-${rowIndex}`}
@@ -116,7 +116,7 @@ export default function ExtensionPage() {
                                         className="col-md-6 reduced-padding"
                                     >
                                         <Link
-                                            href={`/extension/tools/${card.versumToolId}`}
+                                            href={`/extension/tools/${card.toolId}`}
                                             className="box-link"
                                             data-testid={`extension-card-${card.id}`}
                                         >
@@ -169,7 +169,7 @@ export default function ExtensionPage() {
                         ))}
                     </div>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -79,7 +79,7 @@ export default function ClientOriginsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -110,31 +110,31 @@ export default function ClientOriginsPage() {
                             {/* KPI */}
                             <div className="row mb-20">
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Nowi klienci
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {stats.totalClients}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Źródeł
                                         </div>
-                                        <div className="versum-tile__value text-accent">
+                                        <div className="salonbw-tile__value text-accent">
                                             {stats.origins.length}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Najpopularniejsze
                                         </div>
-                                        <div className="versum-tile__value text-success">
+                                        <div className="salonbw-tile__value text-success">
                                             {stats.origins[0]?.origin || '-'}
                                         </div>
                                     </div>
@@ -144,11 +144,11 @@ export default function ClientOriginsPage() {
                             {/* Charts */}
                             <div className="row">
                                 <div className="col-sm-6">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Podział według źródła
                                         </div>
-                                        <div className="versum-widget__content h-[350px]">
+                                        <div className="salonbw-widget__content h-[350px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -186,11 +186,11 @@ export default function ClientOriginsPage() {
                                 </div>
 
                                 <div className="col-sm-6">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Szczegóły
                                         </div>
-                                        <div className="versum-widget__content h-[350px]">
+                                        <div className="salonbw-widget__content h-[350px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.origins}
@@ -229,12 +229,12 @@ export default function ClientOriginsPage() {
                             </div>
 
                             {/* Table */}
-                            <div className="versum-widget mt-20">
-                                <div className="versum-widget__header">
+                            <div className="salonbw-widget mt-20">
+                                <div className="salonbw-widget__header">
                                     Szczegółowy podział
                                 </div>
-                                <div className="versum-widget__content">
-                                    <table className="versum-table">
+                                <div className="salonbw-widget__content">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th>Źródło</th>
@@ -265,7 +265,7 @@ export default function ClientOriginsPage() {
                         </>
                     ) : null}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

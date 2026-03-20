@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -86,7 +86,7 @@ export default function WarehouseValuePage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -97,7 +97,7 @@ export default function WarehouseValuePage() {
                             onClick={() => {
                                 void fetchData();
                             }}
-                            className="versum-btn versum-btn--default"
+                            className="salonbw-btn salonbw-btn--default"
                             disabled={isLoading}
                         >
                             {isLoading ? 'Ładowanie...' : 'Odśwież'}
@@ -111,42 +111,42 @@ export default function WarehouseValuePage() {
                             {/* KPI */}
                             <div className="row mb-20">
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Produkty
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {stats.totalProducts}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Wartość magazynu
                                         </div>
-                                        <div className="versum-tile__value text-accent">
+                                        <div className="salonbw-tile__value text-accent">
                                             {formatCurrency(stats.totalValue)}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Sztuk w magazynie
                                         </div>
-                                        <div className="versum-tile__value text-success">
+                                        <div className="salonbw-tile__value text-success">
                                             {stats.totalQuantity}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Niski stan
                                         </div>
                                         <div
-                                            className={`versum-tile__value ${
+                                            className={`salonbw-tile__value ${
                                                 stats.lowStockProducts.length >
                                                 0
                                                     ? 'text-danger'
@@ -162,11 +162,11 @@ export default function WarehouseValuePage() {
                             {/* Charts */}
                             <div className="row mb-20">
                                 <div className="col-sm-6">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Wartość wg kategorii
                                         </div>
-                                        <div className="versum-widget__content h-[300px]">
+                                        <div className="salonbw-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -207,11 +207,11 @@ export default function WarehouseValuePage() {
                                 </div>
 
                                 <div className="col-sm-6">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Ilość produktów wg kategorii
                                         </div>
-                                        <div className="versum-widget__content h-[300px]">
+                                        <div className="salonbw-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byCategory}
@@ -241,12 +241,12 @@ export default function WarehouseValuePage() {
                             </div>
 
                             {/* Categories Table */}
-                            <div className="versum-widget mb-20">
-                                <div className="versum-widget__header">
+                            <div className="salonbw-widget mb-20">
+                                <div className="salonbw-widget__header">
                                     Szczegóły wg kategorii
                                 </div>
-                                <div className="versum-widget__content">
-                                    <table className="versum-table">
+                                <div className="salonbw-widget__content">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th>Kategoria</th>
@@ -285,12 +285,12 @@ export default function WarehouseValuePage() {
 
                             {/* Low Stock Alert */}
                             {stats.lowStockProducts.length > 0 && (
-                                <div className="versum-widget">
-                                    <div className="versum-widget__header text-danger">
+                                <div className="salonbw-widget">
+                                    <div className="salonbw-widget__header text-danger">
                                         ⚠️ Produkty z niskim stanem
                                     </div>
-                                    <div className="versum-widget__content">
-                                        <table className="versum-table">
+                                    <div className="salonbw-widget__content">
+                                        <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Produkt</th>
@@ -332,7 +332,7 @@ export default function WarehouseValuePage() {
                         </>
                     ) : null}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

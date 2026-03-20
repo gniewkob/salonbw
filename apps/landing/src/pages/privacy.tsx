@@ -21,7 +21,7 @@ export default function PrivacyPage() {
                         Poniższa Polityka Prywatności określa zasady
                         przetwarzania i ochrony danych osobowych przekazywanych
                         przez Klientów w związku z korzystaniem z usług Salonu
-                        Fryzjerskiego "Black & White" oraz systemu rezerwacji
+                        Fryzjerskiego &quot;Black & White&quot; oraz systemu rezerwacji
                         wizyt online (CRM).
                     </p>
 
@@ -162,7 +162,7 @@ export default function PrivacyPage() {
                             sprostowania,
                         </li>
                         <li>
-                            Usunięcia ("prawo do bycia zapomnianym") lub
+                            Usunięcia (&quot;prawo do bycia zapomnianym&quot;) lub
                             ograniczenia przetwarzania,
                         </li>
                         <li>

@@ -21,9 +21,9 @@ Primary comparison source:
 
 | Versum Route | Target In `salonbw` | Status | Dump Inputs | Agent Instruction |
 |---|---|---|---|---|
-| `/calendar/views` | `/calendar/views` | `invent` | screenshot + route bundle + live UX check | route-driven modal clone works, but save flow is still reconstructed |
-| `/communication/:id` | `/communication/[id]` | `invent` | communication screenshots, route bundles, responses | detail route exists, but thread/id behavior is adapted to salonbw logs |
-| `/services/new` | `/services/new` | `invent` | services screenshots + HTML patterns from list/detail/new flows | create route works, but some service variants/uploads remain reconstructed |
+| `/calendar/views` | `/calendar/views` | `invent` | screenshot + route bundle + live UX check | route-driven modal clone now uses persisted backend CRUD, and vendored `/calendar` now receives dedicated HTML partials for views/list/index/form; remaining delta is still the adapted SalonBW partial contract rather than a literal legacy copy |
+| `/communication/:id` | `/communication/[id]` | `invent` | communication screenshots, route bundles, responses | detail route now opens deterministically with explicit SMS/email kind and builds SMS/email history threads from persisted recipient logs, but still lacks a dedicated conversation model matching legacy Versum 1:1 |
+| `/services/new` | `/services/new` | `adapted` | services screenshots + HTML patterns from list/detail/new flows + live panel/network inspection | create route now covers photos upload, recipe save and extra-time persistence; remaining delta is visual polish and the exact Versum gallery transport contract |
 | `/settings/branch` | `/settings/branch` | `exact` | settings screenshot + route bundle + responses | branch settings route and legacy alias are covered |
 | `/settings/calendar` | `/settings/calendar` | `exact` | settings screenshot + route bundle + responses | calendar settings save through backend |
 | `/settings/customer_groups` | `/settings/customer_groups` | `exact` | dump + existing customer group work in panel | list/reorder route implemented |

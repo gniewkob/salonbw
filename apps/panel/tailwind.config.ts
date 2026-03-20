@@ -9,7 +9,7 @@ const config: Config = {
         extend: {
             colors: {
                 brand: {
-                    DEFAULT: '#25B4C1', // Versum Teal
+                    DEFAULT: '#25B4C1', // SalonBW brand teal
                     hover: '#1f9ba8',
                     black: '#333333',
                     white: '#ffffff',

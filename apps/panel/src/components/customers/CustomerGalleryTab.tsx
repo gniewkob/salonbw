@@ -30,8 +30,8 @@ export default function CustomerGalleryTab({ customerId }: Props) {
     return (
         <div className="row customer-gallery-tab">
             <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header flex-between">
+                <div className="salonbw-widget">
+                    <div className="salonbw-widget__header flex-between">
                         <span>galeria zdjęć</span>
                         <label className="btn btn-primary btn-xs m-0">
                             dodaj zdjęcie
@@ -50,7 +50,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                         </label>
                     </div>
 
-                    <div className="versum-widget__content">
+                    <div className="salonbw-widget__content">
                         {isLoading ? (
                             <div className="customer-loading">
                                 Ładowanie galerii...

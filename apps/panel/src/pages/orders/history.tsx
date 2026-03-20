@@ -76,7 +76,7 @@ export default function WarehouseOrdersHistoryPage() {
                     <div className="products-toolbar">
                         <input
                             type="text"
-                            className="versum-input"
+                            className="salonbw-input"
                             placeholder="wyszukaj w historii zamówień..."
                             value={search}
                             onChange={(e) => {
@@ -85,7 +85,7 @@ export default function WarehouseOrdersHistoryPage() {
                             }}
                         />
                         <select
-                            className="versum-select"
+                            className="salonbw-select"
                             value={statusFilter ?? ''}
                             onChange={(e) => {
                                 const status = e.target.value;
@@ -218,7 +218,7 @@ export default function WarehouseOrdersHistoryPage() {
             <div className="products-pagination">
                 Pozycje od {from} do {to} z {searchedOrders.length} | na stronie
                 <select
-                    className="versum-select versum-select--inline"
+                    className="salonbw-select salonbw-select--inline"
                     value={String(pageSize)}
                     disabled
                 >

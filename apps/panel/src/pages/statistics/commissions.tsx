@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCommissionReport } from '@/hooks/useStatistics';
@@ -116,9 +116,9 @@ export default function CommissionsPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role}>
+        <SalonBWShell role={role}>
             <div
-                className="versum-page statistics-module"
+                className="salonbw-page statistics-module"
                 data-testid="commissions-page"
             >
                 <ul className="breadcrumb">
@@ -173,9 +173,9 @@ export default function CommissionsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="versum-muted p-20">Ładowanie...</div>
+                    <div className="salonbw-muted p-20">Ładowanie...</div>
                 ) : error ? (
-                    <div className="versum-muted p-20">
+                    <div className="salonbw-muted p-20">
                         Nie udało się pobrać raportu prowizji.
                     </div>
                 ) : (
@@ -206,7 +206,7 @@ export default function CommissionsPage() {
                                                 <td>
                                                     <Link
                                                         href={`/employees/${employee.employeeId}`}
-                                                        className="versum-link"
+                                                        className="salonbw-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>
@@ -336,6 +336,6 @@ export default function CommissionsPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

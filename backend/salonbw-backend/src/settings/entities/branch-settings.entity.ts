@@ -113,7 +113,7 @@ export class BranchSettings {
     @Column({ name: 'gdpr_consent_text', type: 'text', nullable: true })
     gdprConsentText: string;
 
-    // Data Protection Mode (Versum "paranoia mode")
+    // Data Protection Mode (legacy "paranoia mode")
     @Column({ name: 'paranoia_mode', default: false })
     paranoiaMode: boolean;
 

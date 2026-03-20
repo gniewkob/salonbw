@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BranchSettings } from './entities/branch-settings.entity';
 import { CalendarSettings } from './entities/calendar-settings.entity';
+import { CalendarViewEntity } from './entities/calendar-view.entity';
 import { OnlineBookingSettings } from './entities/online-booking-settings.entity';
 import { SmsSettings } from './entities/sms-settings.entity';
 import { ReminderSettings } from './entities/reminder-settings.entity';
 import {
+    CreateCalendarViewDto,
     UpdateBranchSettingsDto,
     UpdateCalendarSettingsDto,
+    UpdateCalendarViewDto,
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
     UpdateReminderSettingsDto,
@@ -30,6 +33,8 @@ export class SettingsService {
         private readonly branchSettingsRepo: Repository<BranchSettings>,
         @InjectRepository(CalendarSettings)
         private readonly calendarSettingsRepo: Repository<CalendarSettings>,
+        @InjectRepository(CalendarViewEntity)
+        private readonly calendarViewsRepo: Repository<CalendarViewEntity>,
         @InjectRepository(OnlineBookingSettings)
         private readonly onlineBookingSettingsRepo: Repository<OnlineBookingSettings>,
         @InjectRepository(SmsSettings)
@@ -119,6 +124,94 @@ export class SettingsService {
 
         this.logger.log(`Calendar settings updated by user ${actorId}`);
         return updated;
+    }
+
+    async getCalendarViews(): Promise<CalendarViewEntity[]> {
+        return this.calendarViewsRepo.find({
+            order: { name: 'ASC', id: 'ASC' },
+        });
+    }
+
+    async createCalendarView(
+        dto: CreateCalendarViewDto,
+        actorId: number,
+    ): Promise<CalendarViewEntity> {
+        const created = await this.calendarViewsRepo.save(
+            this.calendarViewsRepo.create({
+                name: dto.name.trim(),
+                employeeIds: dto.employeeIds,
+            }),
+        );
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_CALENDAR_VIEW_CREATED,
+            {
+                calendarViewId: created.id,
+                name: created.name,
+                employeeIds: created.employeeIds,
+            },
+        );
+
+        return created;
+    }
+
+    async updateCalendarView(
+        id: number,
+        dto: UpdateCalendarViewDto,
+        actorId: number,
+    ): Promise<CalendarViewEntity> {
+        const calendarView = await this.calendarViewsRepo.findOne({
+            where: { id },
+        });
+        if (!calendarView) {
+            throw new NotFoundException('Calendar view not found');
+        }
+
+        const oldValues = this.toRecord(calendarView);
+
+        if (dto.name !== undefined) {
+            calendarView.name = dto.name.trim();
+        }
+        if (dto.employeeIds !== undefined) {
+            calendarView.employeeIds = dto.employeeIds;
+        }
+
+        const updated = await this.calendarViewsRepo.save(calendarView);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_CALENDAR_VIEW_UPDATED,
+            {
+                calendarViewId: updated.id,
+                changes: this.getChanges(oldValues, this.toRecord(updated)),
+            },
+        );
+
+        return updated;
+    }
+
+    async deleteCalendarView(id: number, actorId: number) {
+        const calendarView = await this.calendarViewsRepo.findOne({
+            where: { id },
+        });
+        if (!calendarView) {
+            throw new NotFoundException('Calendar view not found');
+        }
+
+        await this.calendarViewsRepo.delete(id);
+
+        await this.logService.logAction(
+            { id: actorId } as User,
+            LogAction.SETTINGS_CALENDAR_VIEW_DELETED,
+            {
+                calendarViewId: calendarView.id,
+                name: calendarView.name,
+                employeeIds: calendarView.employeeIds,
+            },
+        );
+
+        return { success: true };
     }
 
     // Online Booking Settings

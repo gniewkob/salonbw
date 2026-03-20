@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NewsletterNewPage() {
     const { role } = useAuth();
     if (!role) return null;
     return (
-        <VersumShell role={role}>
+        <SalonBWShell role={role}>
             <div className="breadcrumbs" e2e-breadcrumbs="">
                 <ul>
                     <li>
@@ -73,6 +73,6 @@ export default function NewsletterNewPage() {
                     </div>
                 </form>
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

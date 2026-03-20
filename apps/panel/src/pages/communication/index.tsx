@@ -2,10 +2,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
 import { useEmailHistory, useEmailMutations } from '@/hooks/useEmails';
+
+function getCommunicationHref(id: number, kind: 'sms' | 'email') {
+    return {
+        pathname: '/communication/[id]',
+        query: { id: String(id), kind },
+    } as const;
+}
 
 function formatDateTime(value?: string) {
     if (!value) return '-';
@@ -87,7 +94,7 @@ export default function CommunicationPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div data-testid="communication-page">
                     <ul className="breadcrumb">
                         <li>Łączność / Nieprzeczytane wiadomości</li>
@@ -204,7 +211,10 @@ export default function CommunicationPage() {
                                                       >
                                                           <td>
                                                               <Link
-                                                                  href={`/communication/${entry.id}`}
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'sms',
+                                                                  )}
                                                               >
                                                                   {
                                                                       entry.recipient
@@ -214,7 +224,10 @@ export default function CommunicationPage() {
                                                           <td>
                                                               <strong>
                                                                   <Link
-                                                                      href={`/communication/${entry.id}`}
+                                                                      href={getCommunicationHref(
+                                                                          entry.id,
+                                                                          'sms',
+                                                                      )}
                                                                   >
                                                                       {entry.subject ||
                                                                           'Wiadomość'}
@@ -256,7 +269,10 @@ export default function CommunicationPage() {
                                                       >
                                                           <td>
                                                               <Link
-                                                                  href={`/communication/${entry.id}`}
+                                                                  href={getCommunicationHref(
+                                                                      entry.id,
+                                                                      'email',
+                                                                  )}
                                                               >
                                                                   {entry.to}
                                                               </Link>
@@ -264,7 +280,10 @@ export default function CommunicationPage() {
                                                           <td>
                                                               <strong>
                                                                   <Link
-                                                                      href={`/communication/${entry.id}`}
+                                                                      href={getCommunicationHref(
+                                                                          entry.id,
+                                                                          'email',
+                                                                      )}
                                                                   >
                                                                       {entry.subject ||
                                                                           'Email'}
@@ -359,13 +378,13 @@ export default function CommunicationPage() {
                 </div>
 
                 {isModalOpen && (
-                    <div className="versum-modal-overlay">
-                        <div className="versum-modal" role="dialog">
-                            <div className="versum-modal__header">
+                    <div className="salonbw-modal-overlay">
+                        <div className="salonbw-modal" role="dialog">
+                            <div className="salonbw-modal__header">
                                 <h3>Wyślij wiadomość ({kind})</h3>
                                 <button
                                     type="button"
-                                    className="versum-modal__close"
+                                    className="salonbw-modal__close"
                                     onClick={() => {
                                         setIsModalOpen(false);
                                         resetCompose();
@@ -375,8 +394,8 @@ export default function CommunicationPage() {
                                 </button>
                             </div>
 
-                            <div className="versum-modal__body">
-                                <div className="versum-form-group">
+                            <div className="salonbw-modal__body">
+                                <div className="salonbw-form-group">
                                     <label>
                                         Odbiorca{' '}
                                         {kind === 'sms'
@@ -397,7 +416,7 @@ export default function CommunicationPage() {
                                 </div>
 
                                 {kind === 'email' && (
-                                    <div className="versum-form-group">
+                                    <div className="salonbw-form-group">
                                         <label>Temat</label>
                                         <input
                                             value={subject}
@@ -409,7 +428,7 @@ export default function CommunicationPage() {
                                     </div>
                                 )}
 
-                                <div className="versum-form-group">
+                                <div className="salonbw-form-group">
                                     <label htmlFor="comm-content">Treść</label>
                                     <textarea
                                         id="comm-content"
@@ -422,7 +441,7 @@ export default function CommunicationPage() {
                                 </div>
                             </div>
 
-                            <div className="versum-modal__footer">
+                            <div className="salonbw-modal__footer">
                                 <button
                                     type="button"
                                     className="button"
@@ -450,7 +469,7 @@ export default function CommunicationPage() {
                         </div>
                     </div>
                 )}
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

@@ -1,6 +1,24 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export function isPublicDashboardAssetPath(path: string) {
+    return (
+        path.startsWith('/_next') ||
+        path.startsWith('/assets') ||
+        path.startsWith('/salonbw-calendar') ||
+        path.startsWith('/salonbw-vendor') ||
+        path.startsWith('/versum-calendar') ||
+        path.startsWith('/versum-vendor') ||
+        path.startsWith('/favicon.ico') ||
+        path.startsWith('/api') ||
+        path.startsWith('/events') ||
+        path.startsWith('/graphql') ||
+        path.startsWith('/settings/timetable/schedules') ||
+        path.startsWith('/track_new_events.json') ||
+        path.startsWith('/icon')
+    );
+}
+
 export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
 
@@ -15,18 +33,7 @@ export function middleware(request: NextRequest) {
 
     // Define public routes
     const isAuthRoute = path.startsWith('/auth');
-    const isPublicAsset =
-        path.startsWith('/_next') ||
-        path.startsWith('/assets') ||
-        path.startsWith('/versum-calendar') ||
-        path.startsWith('/versum-vendor') ||
-        path.startsWith('/favicon.ico') ||
-        path.startsWith('/api') ||
-        path.startsWith('/events') ||
-        path.startsWith('/graphql') ||
-        path.startsWith('/settings/timetable/schedules') ||
-        path.startsWith('/track_new_events.json') ||
-        path.startsWith('/icon'); // icon.ico/svg
+    const isPublicAsset = isPublicDashboardAssetPath(path); // icon.ico/svg
 
     // Allow public access to auth pages and assets
     if (isAuthRoute || isPublicAsset) {

@@ -13,6 +13,7 @@ type EmailHistoryFilter = {
     to?: string;
     page?: number;
     limit?: number;
+    enabled?: boolean;
 };
 
 type SendEmailPayload = {
@@ -32,20 +33,24 @@ type SendBulkEmailPayload = {
 
 export function useEmailHistory(filter: EmailHistoryFilter) {
     const { apiFetch } = useAuth();
+    const { enabled = true, ...resolvedFilter } = filter;
 
-    const queryKey = [...EMAIL_HISTORY_QUERY_KEY, filter] as const;
+    const queryKey = [...EMAIL_HISTORY_QUERY_KEY, resolvedFilter] as const;
 
     const query = useQuery({
         queryKey,
         queryFn: async () => {
             const params = new URLSearchParams();
-            if (filter.recipientId)
-                params.set('recipientId', String(filter.recipientId));
-            if (filter.status) params.set('status', filter.status);
-            if (filter.from) params.set('from', filter.from);
-            if (filter.to) params.set('to', filter.to);
-            if (filter.page) params.set('page', String(filter.page));
-            if (filter.limit) params.set('limit', String(filter.limit));
+            if (resolvedFilter.recipientId)
+                params.set('recipientId', String(resolvedFilter.recipientId));
+            if (resolvedFilter.status)
+                params.set('status', resolvedFilter.status);
+            if (resolvedFilter.from) params.set('from', resolvedFilter.from);
+            if (resolvedFilter.to) params.set('to', resolvedFilter.to);
+            if (resolvedFilter.page)
+                params.set('page', String(resolvedFilter.page));
+            if (resolvedFilter.limit)
+                params.set('limit', String(resolvedFilter.limit));
             const qs = params.toString();
             return apiFetch<{
                 items: Array<{
@@ -64,6 +69,7 @@ export function useEmailHistory(filter: EmailHistoryFilter) {
                 limit: number;
             }>(`/emails/history${qs ? `?${qs}` : ''}`);
         },
+        enabled,
     });
 
     return {

@@ -8,6 +8,35 @@ interface JwtPayload {
     role: string;
 }
 
+type CalendarEmbedConfig = {
+    branch_id: number;
+    user_id: number;
+    branch_subdomain: string;
+    is_vat_payer: boolean;
+    lumo: boolean;
+    medical_office: boolean;
+    resources_activated: boolean;
+    gift_cards_activated: boolean;
+    tips: {
+        tips_activated: boolean;
+        tips_payment_methods: string[];
+        tips_default_percents: string;
+    };
+    prepayments_enabled: boolean;
+    online_payments_enabled: boolean;
+    env: string;
+    application: {
+        api: {
+            deviceToken: null;
+            graphQL: { url: string };
+            auth: { url: string; clientId: string };
+        };
+    };
+    t_net: string;
+    t_gross: string;
+    current_branch_readonly: boolean;
+};
+
 function decodeJwtPayload(token: string): JwtPayload | null {
     try {
         const parts = token.split('.');
@@ -19,93 +48,87 @@ function decodeJwtPayload(token: string): JwtPayload | null {
     }
 }
 
-/**
- * Serves the vendored calendar HTML with injected config for our backend.
- * This avoids script loading conflicts with Next.js hydration.
- */
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse,
+export function buildCalendarEmbedConfig(userId: number): CalendarEmbedConfig {
+    return {
+        branch_id: 1,
+        user_id: userId,
+        branch_subdomain: 'salonblackandwhite',
+        is_vat_payer: true,
+        lumo: false,
+        medical_office: false,
+        resources_activated: false,
+        gift_cards_activated: false,
+        tips: {
+            tips_activated: true,
+            tips_payment_methods: ['cash', 'credit_card'],
+            tips_default_percents: '10',
+        },
+        prepayments_enabled: false,
+        online_payments_enabled: false,
+        env: 'production',
+        application: {
+            api: {
+                deviceToken: null,
+                graphQL: { url: '/graphql' },
+                auth: { url: '/api/auth/token', clientId: 'salonbw' },
+            },
+        },
+        t_net: 'netto',
+        t_gross: 'brutto',
+        current_branch_readonly: false,
+    };
+}
+
+export function buildCalendarEmbedScript(
+    config: CalendarEmbedConfig,
+    accessToken: string,
 ) {
-    // Check for auth token
-    const accessToken = req.cookies.accessToken;
-    if (!accessToken) {
-        res.redirect(307, '/auth/login?redirectTo=/calendar');
-        return;
-    }
-
-    // Decode JWT to get user info (we don't verify here, auth is handled by backend)
-    let userId = 1;
-    const decoded = decodeJwtPayload(accessToken);
-    if (decoded?.userId) {
-        userId = decoded.userId;
-    }
-
-    try {
-        const htmlPath = path.join(
-            process.cwd(),
-            'public',
-            'versum-calendar',
-            'index.html',
-        );
-
-        let html = await fs.readFile(htmlPath, 'utf8');
-
-        // Vendored calendar template contains `user_id:userId` placeholder.
-        // Resolve it server-side to avoid runtime `ReferenceError: userId is not defined`.
-        html = html.replace(/"user_id":userId/g, `"user_id":${userId}`);
-
-        // Inject our VersumConfig to override the hardcoded one
-        const ourConfig = {
-            branch_id: 1,
-            user_id: userId,
-            branch_subdomain: 'salonblackandwhite',
-            is_vat_payer: true,
-            lumo: false,
-            medical_office: false,
-            resources_activated: false,
-            gift_cards_activated: false,
-            tips: {
-                tips_activated: true,
-                tips_payment_methods: ['cash', 'credit_card'],
-                tips_default_percents: '10',
-            },
-            prepayments_enabled: false,
-            online_payments_enabled: false,
-            env: 'production',
-            application: {
-                api: {
-                    deviceToken: null,
-                    graphQL: { url: '/graphql' },
-                    // Skip OAuth - we use JWT via cookies
-                    auth: { url: '/api/auth/token', clientId: 'salonbw' },
-                },
-            },
-            t_net: 'netto',
-            t_gross: 'brutto',
-            current_branch_readonly: false,
-        };
-
-        // Inject config override script and fetch interceptor before closing </head>
-        const configScript = `
+    return `
 <script>
-// Override VersumConfig with SalonBW config
-window.VersumConfig = ${JSON.stringify(ourConfig)};
+// Expose SalonBW config while preserving the legacy global expected by vendored runtime
+window.SalonBWConfig = ${JSON.stringify(config)};
+window.VersumConfig = window.SalonBWConfig;
 
 // Intercept fetch to add Authorization header
 (function() {
     const token = '${accessToken}';
+    const rewriteCalendarViewUrl = function(url, method) {
+        if (typeof url !== 'string') return url;
+        const upperMethod = (method || 'GET').toUpperCase();
+        const normalized = url.replace(window.location.origin, '');
+        const cleanPath = normalized.replace(/^\\/salonblackandwhite/, '');
+
+        if (upperMethod === 'GET' && cleanPath === '/calendar/views') {
+            return '/api/runtime/calendar-views';
+        }
+        if (upperMethod === 'GET' && cleanPath === '/calendar/views/list') {
+            return '/api/runtime/calendar-views/list';
+        }
+        if (upperMethod === 'GET' && cleanPath === '/calendar/views/new') {
+            return '/api/runtime/calendar-views/new';
+        }
+        const editMatch = cleanPath.match(/^\\/calendar\\/views\\/(\\d+)\\/edit$/);
+        if (upperMethod === 'GET' && editMatch) {
+            return '/api/runtime/calendar-views/' + editMatch[1] + '/edit';
+        }
+
+        return url;
+    };
     const originalFetch = window.fetch;
     window.fetch = function(url, options) {
         options = options || {};
         options.headers = options.headers || {};
+        const rewrittenUrl = rewriteCalendarViewUrl(
+            typeof url === 'string' ? url : String(url),
+            options.method
+        );
 
         // Add Authorization header for API calls
-        if (typeof url === 'string' && (
-            url.includes('/events') ||
-            url.includes('/graphql') ||
-            url.includes('/settings/timetable') ||
-            url.includes('/track_new_events')
+        if (typeof rewrittenUrl === 'string' && (
+            rewrittenUrl.includes('/events') ||
+            rewrittenUrl.includes('/graphql') ||
+            rewrittenUrl.includes('/settings/timetable') ||
+            rewrittenUrl.includes('/track_new_events')
         )) {
             if (options.headers instanceof Headers) {
                 options.headers.set('Authorization', 'Bearer ' + token);
@@ -114,7 +137,7 @@ window.VersumConfig = ${JSON.stringify(ourConfig)};
             }
         }
 
-        return originalFetch.call(this, url, options);
+        return originalFetch.call(this, rewrittenUrl, options);
     };
 
     // Also intercept XMLHttpRequest
@@ -122,8 +145,11 @@ window.VersumConfig = ${JSON.stringify(ourConfig)};
     const originalXHRSend = XMLHttpRequest.prototype.send;
 
     XMLHttpRequest.prototype.open = function(method, url) {
-        this._url = url;
-        return originalXHROpen.apply(this, arguments);
+        const rewrittenUrl = rewriteCalendarViewUrl(url, method);
+        this._url = rewrittenUrl;
+        const args = Array.prototype.slice.call(arguments);
+        args[1] = rewrittenUrl;
+        return originalXHROpen.apply(this, args);
     };
 
     XMLHttpRequest.prototype.send = function() {
@@ -162,6 +188,53 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 `;
+}
+
+export function rewriteCalendarEmbedAssetPaths(html: string) {
+    return html
+        .replaceAll('/versum-calendar/', '/salonbw-calendar/')
+        .replaceAll('/versum-vendor/', '/salonbw-vendor/');
+}
+
+/**
+ * Serves the vendored calendar HTML with injected config for our backend.
+ * This avoids script loading conflicts with Next.js hydration.
+ */
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse,
+) {
+    // Check for auth token
+    const accessToken = req.cookies.accessToken;
+    if (!accessToken) {
+        res.redirect(307, '/auth/login?redirectTo=/calendar');
+        return;
+    }
+
+    // Decode JWT to get user info (we don't verify here, auth is handled by backend)
+    let userId = 1;
+    const decoded = decodeJwtPayload(accessToken);
+    if (decoded?.userId) {
+        userId = decoded.userId;
+    }
+
+    try {
+        const htmlPath = path.join(
+            process.cwd(),
+            'public',
+            'versum-calendar',
+            'index.html',
+        );
+
+        let html = await fs.readFile(htmlPath, 'utf8');
+        html = rewriteCalendarEmbedAssetPaths(html);
+
+        // Vendored calendar template contains `user_id:userId` placeholder.
+        // Resolve it server-side to avoid runtime `ReferenceError: userId is not defined`.
+        html = html.replace(/"user_id":userId/g, `"user_id":${userId}`);
+
+        const ourConfig = buildCalendarEmbedConfig(userId);
+        const configScript = buildCalendarEmbedScript(ourConfig, accessToken);
         html = html.replace('</head>', `${configScript}</head>`);
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');

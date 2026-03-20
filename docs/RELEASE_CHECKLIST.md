@@ -48,6 +48,13 @@ Use this list whenever preparing a new production deployment. Check off each ite
 ## 4. Post-release
 
 - [ ] Monitor logs, metrics, and Sentry (if enabled) for at least 30 minutes.
+- [ ] If the dashboard release touches calendar compat/runtime, run:
+    ```bash
+    cd apps/panel
+    source ../../.env
+    PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm test:prod:calendar --project=desktop-1366
+    ```
+    Confirm the smoke passes with `salonbw-*` assets, `SalonBWConfig` + `VersumConfig` alias, and no `Unhandled response status error` from vendored calendar GraphQL calls.
 - [ ] Remove `redirectTo` cookies/login tokens used during smoke tests.
 - [ ] Communicate release completion to stakeholders (Slack/Teams/email).
 - [ ] Unfreeze the `main` branch and update any open PRs with rebase instructions.

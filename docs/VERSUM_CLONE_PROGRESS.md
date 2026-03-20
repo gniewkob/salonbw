@@ -33,7 +33,7 @@
 
 | Element                                   | Status | Pliki             |
 | ----------------------------------------- | ------ | ----------------- |
-| Strona /clients na VersumShell            | ✅     | clients/index.tsx |
+| Strona /clients na SalonBWShell            | ✅     | clients/index.tsx |
 | Breadcrumbs                               | ✅     | clients/index.tsx |
 | Toolbar (wyszukiwanie, sortowanie, dodaj) | ✅     | clients/index.tsx |
 | Tabela z checkboxami                      | ✅     | clients/index.tsx |
@@ -45,7 +45,7 @@
 
 | Element                             | Status | Pliki            |
 | ----------------------------------- | ------ | ---------------- |
-| Strona /clients/[id] na VersumShell | ✅     | clients/[id].tsx |
+| Strona /clients/[id] na SalonBWShell | ✅     | clients/[id].tsx |
 | Nagłówek "Karta klienta"            | ✅     | clients/[id].tsx |
 | Zakładki (8 sztuk) jak w Versum     | ✅     | clients/[id].tsx |
 | Widok "podsumowanie"                | ✅     | clients/[id].tsx |
@@ -61,7 +61,7 @@
 
 **Zrobione:**
 
-- [x] Strona /products na VersumShell
+- [x] Strona /products na SalonBWShell
 - [x] Sidebar z kategoriami produktów (WarehouseNav)
 - [x] Tabela produktów z sortowaniem
 - [x] Filtr typu produktu (wszystkie/towar/materiał)
@@ -72,8 +72,8 @@
 
 **Pliki zmienione:**
 
-- `apps/panel/src/pages/products/index.tsx` - przepisano na VersumShell
-- `apps/panel/src/styles/versum-shell.css` - dodano style dla magazynu
+- `apps/panel/src/pages/products/index.tsx` - przepisano na SalonBWShell
+- `apps/panel/src/styles/salonbw-shell.css` - dodano style dla magazynu
 
 ---
 
@@ -167,6 +167,157 @@
 - **SOP:** Zaktualizowano `VERSUM_CLONING_STANDARD.md` jako główne źródło prawdy o nowym procesie.
 
 ---
+
+### 2026-03-20 - Services: `/services/new` domknięty funkcjonalnie pod realny flow Versum
+
+- zmiana kodu:
+    - `apps/panel/src/pages/services/new.tsx`
+        - create-flow odwzorowuje realny ekran Versum po live inspekcji panelu:
+            - modal `Odstępy czasowe`,
+            - upload zdjęć przez `input[type=file]`,
+            - receptura jako inline tabela z osobnym save po utworzeniu usługi,
+        - usunięte z create-view pola bez odpowiednika na realnym ekranie Versum (`commissionPercent`, `isActive`).
+    - `apps/panel/src/hooks/useServicesAdmin.ts`
+        - dodany multipart upload zdjęcia usługi.
+    - `apps/panel/src/pages/services/[id]/index.tsx`
+        - miniatury zdjęć w szczegółach usługi.
+    - `backend/salonbw-backend/src/services/service-details.controller.ts`
+    - `backend/salonbw-backend/src/services/service-details.service.ts`
+    - `backend/salonbw-backend/src/services/entities/service-media.entity.ts`
+        - backendowy upload i streaming plików galerii usług.
+    - `backend/salonbw-backend/src/services/service.entity.ts`
+    - `backend/salonbw-backend/src/services/dto/create-service.dto.ts`
+    - `backend/salonbw-backend/src/services/dto/update-service.dto.ts`
+    - `backend/salonbw-backend/src/versum-compat/versum-compat.service.ts`
+        - persistence dla `durationBefore`, `durationAfter`, `breakOffset`, `breakDuration` oraz podanie tych wartości do warstwy compat zamiast sztucznych zer.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/pages/services/new.tsx src/pages/services/[id]/index.tsx src/hooks/useServicesAdmin.ts src/types.ts --fix` ✅
+    - `backend/salonbw-backend`: `pnpm tsc --noEmit` ✅
+- status:
+    - functional parity dla create-flow: **YES** w zakresie formularza, receptury, uploadu zdjęć i persistence dodatkowych czasów,
+    - known delta:
+        - transport galerii nadal jest implementacją `salonbw`, nie 1:1 kopią wewnętrznego flow `gallery_id/Filedata` z Versum,
+        - brak jeszcze produkcyjnego parity rerun dla strict visual.
+
+### 2026-03-20 - Communication detail: mniej `invent`, bez zgadywania rodzaju wiadomości
+
+- zmiana kodu:
+    - `apps/panel/src/pages/communication/index.tsx`
+        - linki z listy komunikacji przekazują jawnie `kind=sms|email` do detailu.
+    - `apps/panel/src/pages/communication/[id].tsx`
+        - detail przestał zgadywać typ wiadomości na podstawie samego `id` jako głównego flow,
+        - przy kolizji `id` między SMS i email wyświetlany jest jawny resolver typu wiadomości,
+        - dla SMS renderowany jest wieloelementowy wątek z realnych logów (`appointmentId` / `recipientId`) zamiast pojedynczego wpisu,
+        - poprawione etykiety statusu dla email vs SMS.
+    - `apps/panel/src/hooks/useSms.ts`
+        - `useSmsHistory` wspiera warunkowe pobieranie pod detail threadu.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/pages/communication/index.tsx src/pages/communication/[id].tsx src/hooks/useSms.ts --fix` ✅
+- status:
+    - główna delta `thread/id behavior adapted to salonbw logs` została istotnie zmniejszona,
+    - route nadal pozostaje `invent`, bo salonbw nie ma jeszcze osobnego backendowego modelu konwersacji 1:1 jak legacy Versum.
+
+### 2026-03-20 - Calendar views: koniec `sessionStorage`, realny persisted CRUD
+
+- zmiana kodu:
+    - `backend/salonbw-backend/src/settings/entities/calendar-view.entity.ts`
+    - `backend/salonbw-backend/src/settings/settings.controller.ts`
+    - `backend/salonbw-backend/src/settings/settings.service.ts`
+    - `backend/salonbw-backend/src/settings/dto/settings.dto.ts`
+    - `backend/salonbw-backend/src/migrations/1760910000000-CreateCalendarViewsTable.ts`
+        - dodany backendowy zasób `settings/calendar-views` z CRUD i persistence listy zapisanych widoków kalendarza.
+    - `apps/panel/src/components/versum/calendar/CalendarViewsRoute.tsx`
+    - `apps/panel/src/components/versum/modals/ManageCalendarViewsModal.tsx`
+    - `apps/panel/src/components/versum/modals/CreateCalendarViewModal.tsx`
+    - `apps/panel/src/hooks/useSettings.ts`
+        - modal `/calendar/views` nie korzysta już z `sessionStorage`; tworzenie, edycja i usuwanie widoków używają backendu przez React Query.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/components/versum/calendar/CalendarViewsRoute.tsx src/components/versum/modals/ManageCalendarViewsModal.tsx src/components/versum/modals/CreateCalendarViewModal.tsx src/hooks/useSettings.ts src/types.ts --fix` ✅
+    - `backend/salonbw-backend`: `pnpm tsc --noEmit` ✅
+    - `backend/salonbw-backend`: `pnpm eslint src/settings/settings.controller.ts src/settings/settings.service.ts src/settings/settings.module.ts src/settings/dto/settings.dto.ts src/settings/entities/calendar-view.entity.ts src/logs/log-action.enum.ts src/migrations/1760910000000-CreateCalendarViewsTable.ts --fix` ✅
+- status:
+    - główna delta `save flow is reconstructed` została usunięta,
+    - route nadal pozostaje `invent`, bo salonbw nadal używa route-driven modali Next.js zamiast oryginalnego kontraktu PJAX + HTML partials z Versum.
+
+### 2026-03-20 - Calendar views: partial bridge dla vendored `/calendar`
+
+- zmiana kodu:
+    - `apps/panel/src/pages/api/runtime/calendar-views/*`
+        - dodany lokalny partial API dla dropdown listy widoków, manage index, formularza new/edit oraz submit/delete.
+    - `apps/panel/src/pages/api/calendar-embed.ts`
+        - vendored runtime kalendarza przechwytuje teraz requesty `/calendar/views`, `/calendar/views/list`, `/calendar/views/new` i `/calendar/views/:id/edit` do lokalnych partial endpoints, zamiast próbować wkładać pełne strony Next do dialogów Bootstrap.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/pages/api/calendar-embed.ts src/pages/api/runtime/calendar-views/_shared.ts src/pages/api/runtime/calendar-views/index.ts src/pages/api/runtime/calendar-views/list.ts src/pages/api/runtime/calendar-views/new.ts src/pages/api/runtime/calendar-views/[id].ts src/pages/api/runtime/calendar-views/[id]/edit.ts --fix` ✅
+- status:
+    - istotnie zmniejszona delta integracyjna między canonical route `/calendar/views` a vendored runtime `/calendar`,
+    - route nadal pozostaje `invent`, bo partial bridge jest implementacją SalonBW, a nie literalnym przeniesieniem backendowego kontraktu Versum.
+
+### 2026-03-20 - Communication detail: thread parity rozszerzony także na email
+
+### 2026-03-20 - De-branding kodu docelowego: `Versum` -> `SalonBW` z zachowaniem warstwy compat
+
+- zmiana kodu:
+    - `apps/panel/src/components/salonbw/*`
+    - `apps/panel/src/styles/salonbw-shell.css`
+    - `apps/panel/src/components/help/HelpContactPage.tsx`
+    - `apps/panel/tailwind.config.ts`
+    - `backend/salonbw-backend/src/logs/log.service.ts`
+    - `backend/salonbw-backend/src/statistics/statistics.service.ts`
+    - wyczyszczone nazwy i komentarze w kodzie docelowym panelu z `Versum*` na `SalonBW*` lub neutralne nazwy opisowe.
+- status:
+    - zgodne z `MASTER_PLAN_ROUTE_DRIVEN_UI_KIT.md`: w kodzie docelowym odchodzimy od nazewnictwa `Versum`.
+    - wykonany pierwszy etap migracji compat:
+        - dodane równoległe aliasy assetów `/salonbw-calendar/*` i `/salonbw-vendor/*`,
+        - middleware dopuszcza oba prefiksy,
+        - bridge kalendarza publikuje `window.SalonBWConfig`, zachowując `window.VersumConfig` jako alias kompatybilności.
+        - generowane artefakty `apps/panel/public/versum-calendar/index.html` i `asset-manifest.json` wskazują już canonical na `/salonbw-calendar/*`.
+        - proxy compat normalizuje `POST /graphql` z `201` do `200` dla vendored runtime kalendarza.
+        - dodany smoke produkcyjny: `apps/panel/tests/e2e/prod-calendar-smoke.spec.ts`
+        - lokalny skrót uruchomienia: `pnpm test:prod:calendar`
+    - świadomie pozostawione wyjątki techniczne:
+        - `apps/panel/public/versum-calendar/*`
+        - `apps/panel/public/versum-vendor/*`
+        - compat pathy `/versum-calendar` i `/versum-vendor`
+        - `window.VersumConfig`
+        - backend `src/versum-compat/*`
+        - zewnętrzne URL-e `panel.versum.com`, `app-cdn.versum.net`, `pomoc.versum.pl`
+        - `font-family: 'versum'` jako nazwa istniejącego font-face/icon-fontu
+    - decyzja:
+        - dalsze usuwanie nazw `Versum` z tych miejsc nie jest już zwykłym cleanupem brandingowym, tylko refaktorem warstwy compat/runtime i wymaga osobnego workstreamu z parity rerun dla `/calendar`.
+
+- zmiana kodu:
+    - `apps/panel/src/pages/communication/[id].tsx`
+        - detail email renderuje teraz wieloelementowy wątek z historii `recipientId`, zamiast pojedynczej wiadomości,
+        - po wysłaniu odpowiedzi odświeżany jest cały widoczny thread, nie tylko pojedynczy detail item.
+    - `apps/panel/src/hooks/useEmails.ts`
+        - `useEmailHistory` wspiera warunkowe pobieranie (`enabled`) pod detail-thread.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/pages/communication/[id].tsx src/hooks/useEmails.ts --fix` ✅
+- status:
+    - delta `single-item email detail` została zmniejszona,
+    - route nadal pozostaje `invent`, bo salonbw nadal nie ma osobnego modelu konwersacji 1:1 zgodnego z legacy Versum.
+
+### 2026-03-20 - Communication detail: reply-template flow bliżej dumpa Versum
+
+- zmiana kodu:
+    - `apps/panel/src/pages/communication/[id].tsx`
+        - dla trybu `Użyj szablonu` detail pokazuje teraz akcje `Podgląd` i `Zmień treść wybranego szablonu`,
+        - wybrany szablon można przepisać do edytowalnej treści reply bez ręcznego kopiowania,
+        - `Podgląd` otwiera teraz lokalny modal preview dla wybranego szablonu albo bieżącego draftu odpowiedzi zamiast przenosić operatora na listę szablonów,
+        - wysyłka SMS z trybu `Użyj szablonu` przekazuje teraz także `templateId`, więc log historii nie traci powiązania z użytym szablonem.
+    - `apps/panel/src/styles/salonbw-shell.css`
+        - dodane style dla akcji szablonu w formularzu odpowiedzi i dla modalu preview wiadomości.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src/pages/communication/[id].tsx --fix` ✅
+- status:
+    - kolejna część reply-form parity została domknięta,
+    - route nadal pozostaje `invent`, bo pełny model konwersacji nadal nie jest literalną kopią backendu Versum, ale sam preview flow nie jest już stubem.
 
 ### 2026-03-11 - Ustawienia: parity audit prod fix (Versum URL) + rerun
 
@@ -262,7 +413,7 @@
     - `apps/panel/src/pages/extension/tools/[id].tsx`
         - aliasy tras `tools/:numericId` -> istniejące dane dodatków,
         - struktura detalu zgodna z Versum (`container-fluid`, `disable_extension_link`, `description_more`, `availability-table` z ikoną `available-*.png`, prawa kolumna `slider/#gallery`).
-    - `apps/panel/src/styles/versum-shell.css`
+    - `apps/panel/src/styles/salonbw-shell.css`
         - style wspierające strukturę copy-first (`extensions_boxes`, `box-link`, `row-no-padding`, `gthumbnail`).
     - testy:
         - `apps/panel/tests/e2e/prod-extension-smoke.spec.ts` -> detal przez `/extension/tools/4`,
@@ -307,7 +458,7 @@
         - przejście z emoji na ikony `sprite-settings_*` i spójny grid kafli ustawień,
         - mapping ikon do klas obecnych w vendored sprite sheet (bez zależności od globalnego vendor CSS),
         - wrapper strony utrzymany w `versum-page`.
-    - `apps/panel/src/styles/versum-shell.css`
+    - `apps/panel/src/styles/salonbw-shell.css`
         - dodane definicje brakujących ikon `sprite-settings_*` (pozycje ze sprite sheet),
         - dodane style kafli `settings-tiles-grid` / `settings-tile`.
 - walidacja:
@@ -369,7 +520,7 @@
         - usunięcie Tailwindowego layoutu z warstwy prezentacji,
         - przebudowa widoku na klasy i strukturę zgodną z Versum (`breadcrumb`, `nav-tabs`, tabele, akcje, sekcje),
         - zachowanie dotychczasowych akcji/modali i integracji API (`summary`, `stats`, `history`, `employees`, `comments`, `commissions`).
-    - `apps/panel/src/styles/versum-shell.css`
+    - `apps/panel/src/styles/salonbw-shell.css`
         - dodane style modułu `Usługi` dla karty szczegółów (tabele meta, stat cards, formularz komentarzy, sekcja prowizji).
 - walidacja:
     - `pnpm eslint src --fix` (panel) ✅
@@ -394,7 +545,7 @@
 - zmiana kodu:
     - `apps/panel/src/components/versum/navs/CommunicationNav.tsx`
         - nowa, trasowana nawigacja boczna modułu `Łączność`.
-    - `apps/panel/src/components/versum/VersumSecondaryNav.tsx`
+    - `apps/panel/src/components/versum/SalonBWSecondaryNav.tsx`
         - podpięcie `CommunicationNav` zamiast statycznej listy placeholderów.
     - `apps/panel/tests/e2e/prod-communication-smoke.spec.ts`
         - nowy smoke test produkcyjny tras `/communication`, `/communication/mass`, `/communication/templates`, `/communication/reminders`.
@@ -411,7 +562,7 @@
 - zmiana kodu:
     - `apps/panel/src/components/versum/navs/SettingsNav.tsx`
         - nowa, trasowana nawigacja boczna modułu `Ustawienia` (copy-first mapowanie sekcji Versum).
-    - `apps/panel/src/components/versum/VersumSecondaryNav.tsx`
+    - `apps/panel/src/components/versum/SalonBWSecondaryNav.tsx`
         - podpięcie `SettingsNav` dla modułu `settings`.
     - `apps/panel/src/components/versum/navigation.ts`
         - aktywacja secondary nav dla `settings` (`secondaryNav: true`).
@@ -850,7 +1001,7 @@
     - `apps/panel/src/pages/statistics/index.tsx`
     - `apps/panel/src/pages/statistics/employees.tsx`
     - `apps/panel/src/pages/statistics/commissions.tsx`
-    - `apps/panel/src/styles/versum-shell.css`
+    - `apps/panel/src/styles/salonbw-shell.css`
     - stabilizacja renderu fallback (stała struktura tabel przy pustych danych),
     - dopięcie toolbar (`pobierz raport` + print) i korekty spacingu/`min-height` dla modułu.
 - walidacja po deployu:
@@ -870,7 +1021,7 @@
     - run: `22262457706` (production, success, target `dashboard`)
     - probe: `22262514834` (production, success, target `probe`)
 - zmiany UI:
-    - `apps/panel/src/styles/versum-shell.css`
+    - `apps/panel/src/styles/salonbw-shell.css`
     - usunięte lokalne compact-override w module statystyk (za małe fonty/wiersze, układ bardziej „ściśnięty” niż Versum).
 - walidacja po deployu:
     - `tests/e2e/prod-statistics-smoke.spec.ts` -> `2 passed`,
@@ -1130,7 +1281,7 @@
 
 ### 2026-02-13 - Magazyn: stabilizacja routingu modułu + cleanup legacy console 404
 
-- poprawione mapowanie modułu w `VersumShell` (`resolveVersumModule`) dla tras:
+- poprawione mapowanie modułu w `SalonBWShell` (`resolveSalonBWModule`) dla tras:
     - `/stock-alerts`, `/suppliers`, `/manufacturers` -> moduł `products`
     - efekt: brak przypadkowego fallbacku do `calendar` (`body#calendar`) na podstronach magazynu.
 - dodane kompatybilne endpointy dla legacy skryptów Versum:
@@ -1144,7 +1295,7 @@
 
 ### 2026-02-13 - Globalny fix secondnav (calendar/customers/products)
 
-- `VersumShell`:
+- `SalonBWShell`:
     - rozpoznawanie aktywnego modułu opiera się na `router.asPath` (nie tylko `pathname`),
     - `secondnav` dostaje stabilny klucz renderu (`module + pathname + asPath`) wymuszający poprawny remount przy zmianie trasy.
 - cel:
@@ -1226,20 +1377,20 @@
 
 ### 2026-02-06 - Sprint 5 zakończony
 
-- Przepisano stronę magazynu (/products) na VersumShell
+- Przepisano stronę magazynu (/products) na SalonBWShell
 - Dodano tabs (Produkty, Sprzedaż, Zużycie, Dostawy, Zamówienia, Inwentaryzacja)
 - Dodano filtr typu produktu
 - Zaimplementowano tabelę z sortowaniem i paginacją
 
 ### 2026-02-06 - Sprint 4 zakończony
 
-- Przepisano stronę szczegółów klienta na VersumShell
+- Przepisano stronę szczegółów klienta na SalonBWShell
 - Zaimplementowano 8 zakładek (tabs)
 - Widok "podsumowanie" z wizytami i danymi klienta
 
 ### 2026-02-06 - Sprint 3 zakończony
 
-- Przepisano stronę listy klientów na VersumShell
+- Przepisano stronę listy klientów na SalonBWShell
 - Dodano tabelę z checkboxami, ikonami edycji
 - Paginacja zgodna z Versum
 
@@ -1258,7 +1409,7 @@
 - commit: `472122e3`
 - zakres:
     - dopasowanie geometrii wykresów na `statistics/dashboard`,
-    - korekty typografii i szerokości shella Versum (`versum-shell.css`),
+    - korekty typografii i szerokości shella Versum (`salonbw-shell.css`),
     - korekty renderu podsumowania czasu pracy i przycisków szczegółów.
 - deploy:
     - `dashboard` (production): run `22263291948` ✅

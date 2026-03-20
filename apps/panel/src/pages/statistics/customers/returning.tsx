@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -78,7 +78,7 @@ export default function CustomersReturning() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -109,21 +109,21 @@ export default function CustomersReturning() {
                             {/* KPI Cards */}
                             <div className="row mb-20">
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Wszyscy klienci
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {stats.totalClients}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Nowi klienci
                                         </div>
-                                        <div className="versum-tile__value text-accent">
+                                        <div className="salonbw-tile__value text-accent">
                                             {stats.newClients}
                                             <span className="text-sm ml-8">
                                                 ({stats.newPercentage}%)
@@ -132,11 +132,11 @@ export default function CustomersReturning() {
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Powracający
                                         </div>
-                                        <div className="versum-tile__value text-[#11ce44]">
+                                        <div className="salonbw-tile__value text-[#11ce44]">
                                             {stats.returningClients}
                                             <span className="text-sm ml-8">
                                                 ({stats.returningPercentage}%)
@@ -145,11 +145,11 @@ export default function CustomersReturning() {
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Współczynnik retencji
                                         </div>
-                                        <div className="versum-tile__value text-success">
+                                        <div className="salonbw-tile__value text-success">
                                             {stats.returningPercentage}%
                                         </div>
                                     </div>
@@ -159,11 +159,11 @@ export default function CustomersReturning() {
                             {/* Charts */}
                             <div className="row">
                                 <div className="col-sm-8">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Nowi vs powracający (miesięcznie)
                                         </div>
-                                        <div className="versum-widget__content h-[300px]">
+                                        <div className="salonbw-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     data={stats.byMonth}
@@ -209,11 +209,11 @@ export default function CustomersReturning() {
                                 </div>
 
                                 <div className="col-sm-4">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Podział klientów
                                         </div>
-                                        <div className="versum-widget__content h-[300px]">
+                                        <div className="salonbw-widget__content h-[300px]">
                                             <ResponsiveContainer>
                                                 <PieChart>
                                                     <Pie
@@ -260,7 +260,7 @@ export default function CustomersReturning() {
                         </>
                     ) : null}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

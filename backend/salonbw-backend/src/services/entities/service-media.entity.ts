@@ -25,6 +25,15 @@ export class ServiceMedia {
     url: string;
 
     @Column({ type: 'text', nullable: true })
+    storagePath?: string | null;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    mimeType?: string | null;
+
+    @Column({ type: 'int', nullable: true })
+    size?: number | null;
+
+    @Column({ type: 'text', nullable: true })
     caption?: string | null;
 
     @Column({ default: 0 })

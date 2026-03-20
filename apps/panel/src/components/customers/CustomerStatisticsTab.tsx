@@ -344,7 +344,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                   ))}
                         </div>
                     )}
-                    <div className="versum-pagination-footer">
+                    <div className="salonbw-pagination-footer">
                         <span>
                             Pozycje od 1 do{' '}
                             {Math.max(

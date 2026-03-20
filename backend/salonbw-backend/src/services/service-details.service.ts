@@ -2,8 +2,12 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    UnsupportedMediaTypeException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import { Between, Repository } from 'typeorm';
 import {
     endOfDay,
@@ -36,10 +40,13 @@ import { User } from '../users/user.entity';
 import { Product } from '../products/product.entity';
 
 type GroupBy = 'day' | 'week' | 'month';
+const ALLOWED_GALLERY_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 @Injectable()
 export class ServiceDetailsService {
     constructor(
+        private readonly configService: ConfigService,
         @InjectRepository(Service)
         private readonly serviceRepository: Repository<Service>,
         @InjectRepository(ServiceMedia)
@@ -61,6 +68,30 @@ export class ServiceDetailsService {
         @InjectRepository(Product)
         private readonly productRepository: Repository<Product>,
     ) {}
+
+    private getUploadsRoot(): string {
+        const configured = this.configService.get<string>('UPLOADS_DIR');
+        return configured && configured.trim().length > 0
+            ? configured.trim()
+            : path.join(process.cwd(), 'uploads');
+    }
+
+    private resolveStoredPath(storedRelativePath: string): string {
+        const root = path.resolve(this.getUploadsRoot());
+        const full = path.resolve(root, storedRelativePath);
+        if (!full.startsWith(root + path.sep) && full !== root) {
+            throw new BadRequestException('Invalid path');
+        }
+        return full;
+    }
+
+    private async safeUnlink(fullPath: string) {
+        try {
+            await fs.unlink(fullPath);
+        } catch {
+            // ignore
+        }
+    }
 
     async getSummary(serviceId: number): Promise<Service> {
         const service = await this.serviceRepository.findOne({
@@ -262,11 +293,73 @@ export class ServiceDetailsService {
         return this.mediaRepository.save(photo);
     }
 
+    async addUploadedPhoto(
+        serviceId: number,
+        data: {
+            storedRelativePath: string;
+            mimeType: string;
+            size: number;
+            caption?: string;
+            sortOrder?: number;
+            isPublic?: boolean;
+        },
+    ) {
+        const service = await this.serviceRepository.findOne({
+            where: { id: serviceId },
+        });
+        if (!service) throw new NotFoundException('Service not found');
+
+        const fullOriginal = this.resolveStoredPath(data.storedRelativePath);
+
+        if (data.size > MAX_IMAGE_BYTES) {
+            await this.safeUnlink(fullOriginal);
+            throw new BadRequestException('Image too large');
+        }
+        if (!ALLOWED_GALLERY_MIME.has(data.mimeType)) {
+            await this.safeUnlink(fullOriginal);
+            throw new UnsupportedMediaTypeException('Unsupported image type');
+        }
+
+        const photo = this.mediaRepository.create({
+            serviceId,
+            url: '',
+            storagePath: data.storedRelativePath,
+            mimeType: data.mimeType,
+            size: data.size,
+            caption: data.caption,
+            sortOrder: data.sortOrder ?? 0,
+            isPublic: data.isPublic ?? true,
+        });
+
+        const saved = await this.mediaRepository.save(photo);
+        saved.url = `/services/${serviceId}/photos/${saved.id}/file`;
+        return this.mediaRepository.save(saved);
+    }
+
+    async getPhotoFile(serviceId: number, photoId: number) {
+        const photo = await this.mediaRepository.findOne({
+            where: { id: photoId, serviceId },
+        });
+        if (!photo) throw new NotFoundException('Photo not found');
+        if (!photo.storagePath) {
+            throw new NotFoundException('Photo file not found');
+        }
+        return {
+            photo,
+            fullPath: this.resolveStoredPath(photo.storagePath),
+            mimeType: photo.mimeType || 'application/octet-stream',
+        };
+    }
+
     async deletePhoto(serviceId: number, photoId: number): Promise<void> {
         const existing = await this.mediaRepository.findOne({
             where: { id: photoId, serviceId },
         });
         if (!existing) throw new NotFoundException('Photo not found');
+        if (existing.storagePath) {
+            const fullPath = this.resolveStoredPath(existing.storagePath);
+            await this.safeUnlink(fullPath);
+        }
         await this.mediaRepository.delete(photoId);
     }
 

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const panelRoot = path.resolve(scriptDir, '..');
 const repoRoot = path.resolve(panelRoot, '..', '..');
+const LEGACY_CALENDAR_ALIAS = '/versum-calendar/';
+const CANONICAL_CALENDAR_ALIAS = '/salonbw-calendar/';
 const templatePath = path.resolve(
     repoRoot,
     'static_preview/templates/calendar_template.html',
@@ -129,7 +131,7 @@ async function main() {
         }
         downloaded.set(sourceUrl, {
             source: sourceUrl,
-            localPath: `/versum-calendar/${localRel}`,
+            localPath: `${CANONICAL_CALENDAR_ALIAS}${localRel}`,
             file: localRel,
             sha256: sha256(content),
             bytes: content.length,
@@ -157,8 +159,14 @@ async function main() {
 
     let html = template;
 
-    html = html.replaceAll('https://app-cdn.versum.net/', '/versum-calendar/');
-    html = html.replaceAll('//app-cdn.versum.net/', '/versum-calendar/');
+    html = html.replaceAll(
+        'https://app-cdn.versum.net/',
+        CANONICAL_CALENDAR_ALIAS,
+    );
+    html = html.replaceAll(
+        '//app-cdn.versum.net/',
+        CANONICAL_CALENDAR_ALIAS,
+    );
 
     html = html.replaceAll('/salonblackandwhite/events/', '/events/');
     html = html.replaceAll(
@@ -197,8 +205,10 @@ async function main() {
 
     html = html.replace(
         'return "https://app-cdn.versum.net/" + basePath + "";',
-        'return "/versum-calendar/" + basePath.replace(/^\\/+/, "");',
+        `return "${CANONICAL_CALENDAR_ALIAS}" + basePath.replace(/^\\\\/+/, "");`,
     );
+
+    html = html.replaceAll(LEGACY_CALENDAR_ALIAS, CANONICAL_CALENDAR_ALIAS);
 
     const compatBootstrap = `\n<script>\nwindow.reactLegacyBridge = window.reactLegacyBridge || {};\nwindow.reactLegacyBridge.notificationCenter = window.reactLegacyBridge.notificationCenter || { renderNotificationCenterNavbar: function(){} };\nwindow.TodoHelpers = window.TodoHelpers || { resizeTasksBox: function(){} };\nwindow.__VERSUM_CALENDAR_EMBED__ = true;\n</script>\n`;
 

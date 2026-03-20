@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type {
     AllSettings,
     BranchSettings,
+    CalendarNamedView,
     CalendarSettings,
     OnlineBookingSettings,
     PaymentConfigurationSettings,
@@ -20,6 +21,10 @@ import type {
 } from '@/types';
 
 export const SETTINGS_QUERY_KEY = ['api', '/settings'] as const;
+export const CALENDAR_VIEWS_QUERY_KEY = [
+    ...SETTINGS_QUERY_KEY,
+    'calendar-views',
+] as const;
 
 export function useAllSettings() {
     const { apiFetch } = useAuth();
@@ -50,6 +55,17 @@ export function useCalendarSettings() {
         queryKey: [...SETTINGS_QUERY_KEY, 'calendar'],
         queryFn: async () => {
             return apiFetch<CalendarSettings>('/settings/calendar');
+        },
+    });
+}
+
+export function useCalendarViews() {
+    const { apiFetch } = useAuth();
+
+    return useQuery({
+        queryKey: CALENDAR_VIEWS_QUERY_KEY,
+        queryFn: async () => {
+            return apiFetch<CalendarNamedView[]>('/settings/calendar-views');
         },
     });
 }
@@ -154,6 +170,62 @@ export function useSettingsMutations() {
         onSuccess: invalidateAll,
     });
 
+    const createCalendarView = useMutation({
+        mutationFn: async (data: { name: string; employeeIds: number[] }) => {
+            return apiFetch<CalendarNamedView>('/settings/calendar-views', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: CALENDAR_VIEWS_QUERY_KEY,
+            });
+        },
+    });
+
+    const updateCalendarView = useMutation({
+        mutationFn: async ({
+            id,
+            data,
+        }: {
+            id: number;
+            data: {
+                name: string;
+                employeeIds: number[];
+            };
+        }) => {
+            return apiFetch<CalendarNamedView>(
+                `/settings/calendar-views/${id}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                },
+            );
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: CALENDAR_VIEWS_QUERY_KEY,
+            });
+        },
+    });
+
+    const deleteCalendarView = useMutation({
+        mutationFn: async (id: number) => {
+            return apiFetch<{ success: boolean }>(
+                `/settings/calendar-views/${id}`,
+                {
+                    method: 'DELETE',
+                },
+            );
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({
+                queryKey: CALENDAR_VIEWS_QUERY_KEY,
+            });
+        },
+    });
+
     const updateOnlineBookingSettings = useMutation({
         mutationFn: async (data: UpdateOnlineBookingSettingsRequest) => {
             return apiFetch<OnlineBookingSettings>('/settings/online-booking', {
@@ -241,6 +313,9 @@ export function useSettingsMutations() {
     return {
         updateBranchSettings,
         updateCalendarSettings,
+        createCalendarView,
+        updateCalendarView,
+        deleteCalendarView,
         updateOnlineBookingSettings,
         updateSmsSettings,
         updateReminderSettings,

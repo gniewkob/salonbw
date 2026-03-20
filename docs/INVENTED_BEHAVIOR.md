@@ -136,3 +136,7 @@ These routes remain `invented` for at least one of these reasons:
 - visible CTA is intentionally disabled to avoid fake parity
 - route is backed by local/session storage instead of shared persisted state
 - salonbw uses a different domain model than legacy Versum, so the flow is reconstructed rather than copied 1:1
+
+Route-specific note:
+
+- `/calendar/views` is still inventoried here, but no longer because of local/session storage. The remaining delta is the route-driven Next.js modal flow versus the original Versum PJAX HTML-partial contract.

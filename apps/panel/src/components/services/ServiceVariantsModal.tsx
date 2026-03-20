@@ -130,7 +130,7 @@ export default function ServiceVariantsModal({
                     <div className="modal-body">
                         {isLoading ? (
                             <div className="text-center py-5">
-                                <div className="versum-muted">
+                                <div className="salonbw-muted">
                                     Ładowanie wariantów...
                                 </div>
                             </div>
@@ -140,7 +140,7 @@ export default function ServiceVariantsModal({
                                 {!isFormVisible && (
                                     <>
                                         <div className="flex-between mb-15">
-                                            <span className="versum-muted">
+                                            <span className="salonbw-muted">
                                                 {variants.length} wariant
                                                 {variants.length !== 1 && 'ów'}
                                             </span>
@@ -153,8 +153,8 @@ export default function ServiceVariantsModal({
                                             </button>
                                         </div>
 
-                                        <div className="versum-table-wrap">
-                                            <table className="versum-table">
+                                        <div className="salonbw-table-wrap">
+                                            <table className="salonbw-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Nazwa</th>
@@ -170,7 +170,7 @@ export default function ServiceVariantsModal({
                                                         <tr>
                                                             <td
                                                                 colSpan={4}
-                                                                className="text-center versum-muted"
+                                                                className="text-center salonbw-muted"
                                                             >
                                                                 Brak wariantów.
                                                                 Dodaj nowy
@@ -193,7 +193,7 @@ export default function ServiceVariantsModal({
                                                                             }
                                                                         </strong>
                                                                         {variant.description && (
-                                                                            <div className="versum-muted fz-11">
+                                                                            <div className="salonbw-muted fz-11">
                                                                                 {
                                                                                     variant.description
                                                                                 }

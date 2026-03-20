@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useInvoices, useMyInvoices } from '@/hooks/useInvoices';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,18 +16,18 @@ export default function InvoicesPage() {
 
     return (
         <RouteGuard permission="nav:invoices">
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="invoices-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="invoices-page">
                     <ul className="breadcrumb">
                         <li>Ustawienia</li>
                         <li>Faktury</li>
                     </ul>
 
                     {loading ? (
-                        <div className="versum-loading">Ładowanie...</div>
+                        <div className="salonbw-loading">Ładowanie...</div>
                     ) : (
-                        <div className="versum-table-wrap">
-                            <table className="versum-table">
+                        <div className="salonbw-table-wrap">
+                            <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Numer</th>
@@ -40,7 +40,7 @@ export default function InvoicesPage() {
                                             <td>{inv.number}</td>
                                             <td>
                                                 <a
-                                                    className="versum-link"
+                                                    className="salonbw-link"
                                                     href={inv.pdfUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -55,7 +55,7 @@ export default function InvoicesPage() {
                         </div>
                     )}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

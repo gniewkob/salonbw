@@ -308,15 +308,19 @@ export class VersumCompatService {
                     employee_ids: [appointment.employeeId],
                     resource_ids: [],
                     duration: durationMinutes,
-                    duration_before: 0,
-                    duration_after: 0,
+                    duration_before:
+                        this.toNumber(appointment.service?.durationBefore) ?? 0,
+                    duration_after:
+                        this.toNumber(appointment.service?.durationAfter) ?? 0,
                     employee_started_at: this.toWarsawIso(
                         appointment.startTime,
                     ),
                     employee_duration: durationMinutes,
                     break_started_at: null,
-                    break_duration: 0,
-                    break_offset: 0,
+                    break_duration:
+                        this.toNumber(appointment.service?.breakDuration) ?? 0,
+                    break_offset:
+                        this.toNumber(appointment.service?.breakOffset) ?? 0,
                     full_name:
                         appointment.serviceVariant?.name ??
                         appointment.service?.name ??
@@ -488,10 +492,14 @@ export class VersumCompatService {
                     raw_duration: durationMinutes,
                     prepayment_amount: 0,
                     event_service_duration: durationMinutes,
-                    event_service_duration_before: 0,
-                    event_service_duration_after: 0,
-                    event_service_break_offset: 0,
-                    event_service_break_duration: 0,
+                    event_service_duration_before:
+                        this.toNumber(appointment.service?.durationBefore) ?? 0,
+                    event_service_duration_after:
+                        this.toNumber(appointment.service?.durationAfter) ?? 0,
+                    event_service_break_offset:
+                        this.toNumber(appointment.service?.breakOffset) ?? 0,
+                    event_service_break_duration:
+                        this.toNumber(appointment.service?.breakDuration) ?? 0,
                     started_at: this.toWarsawIso(appointment.startTime),
                     finished_at: this.toWarsawIso(appointment.endTime),
                     base_price: paidAmount,

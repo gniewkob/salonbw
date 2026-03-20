@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, subDays } from 'date-fns';
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useServiceRanking } from '@/hooks/useStatistics';
 
@@ -38,17 +38,20 @@ export default function ServicesStatisticsPage() {
         data?.reduce((sum, item) => sum + item.bookingCount, 0) || 0;
 
     return (
-        <VersumShell role={role}>
-            <div className="versum-page" data-testid="services-statistics-page">
+        <SalonBWShell role={role}>
+            <div
+                className="salonbw-page"
+                data-testid="services-statistics-page"
+            >
                 <ul className="breadcrumb">
                     <li>Statystyki</li>
                     <li>Usługi</li>
                 </ul>
 
-                <div className="versum-page__toolbar">
+                <div className="salonbw-page__toolbar">
                     <div className="flex items-center gap-2">
                         <select
-                            className="form-control versum-select"
+                            className="form-control salonbw-select"
                             aria-label="Zakres czasu"
                             value={range}
                             onChange={(e) => {
@@ -74,7 +77,7 @@ export default function ServicesStatisticsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-default versum-toolbar-btn"
+                        className="btn btn-default salonbw-toolbar-btn"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -82,7 +85,9 @@ export default function ServicesStatisticsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm versum-muted">Ładowanie...</div>
+                    <div className="p-4 text-sm salonbw-muted">
+                        Ładowanie...
+                    </div>
                 ) : (
                     <div className="inner">
                         {/* Summary */}
@@ -107,8 +112,8 @@ export default function ServicesStatisticsPage() {
                         </div>
 
                         {/* Table */}
-                        <div className="versum-table-wrap">
-                            <table className="versum-table">
+                        <div className="salonbw-table-wrap">
+                            <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Usługa</th>
@@ -132,7 +137,7 @@ export default function ServicesStatisticsPage() {
                                                 <td>
                                                     <Link
                                                         href={`/services/${service.serviceId}`}
-                                                        className="versum-link"
+                                                        className="salonbw-link"
                                                     >
                                                         {service.serviceName}
                                                     </Link>
@@ -200,6 +205,6 @@ export default function ServicesStatisticsPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

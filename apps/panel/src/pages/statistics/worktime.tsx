@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -90,7 +90,7 @@ export default function WorkTimeReportPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -119,41 +119,41 @@ export default function WorkTimeReportPage() {
                             {/* Total Stats */}
                             <div className="row mb-20">
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Pracowników
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {data.length}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Suma godzin
                                         </div>
-                                        <div className="versum-tile__value text-accent">
+                                        <div className="salonbw-tile__value text-accent">
                                             {formatMinutes(totalStats.workTime)}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Wizyt
                                         </div>
-                                        <div className="versum-tile__value text-success">
+                                        <div className="salonbw-tile__value text-success">
                                             {totalStats.appointments}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-3">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Dni roboczych
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {totalStats.days}
                                         </div>
                                     </div>
@@ -163,12 +163,12 @@ export default function WorkTimeReportPage() {
                             {/* Employee Selector & Chart */}
                             <div className="row">
                                 <div className="col-sm-4">
-                                    <div className="versum-widget">
-                                        <div className="versum-widget__header">
+                                    <div className="salonbw-widget">
+                                        <div className="salonbw-widget__header">
                                             Pracownicy
                                         </div>
-                                        <div className="versum-widget__content p-0">
-                                            <table className="versum-table table-hover">
+                                        <div className="salonbw-widget__content p-0">
+                                            <table className="salonbw-table table-hover">
                                                 <thead>
                                                     <tr>
                                                         <th>Pracownik</th>
@@ -213,12 +213,12 @@ export default function WorkTimeReportPage() {
                                 <div className="col-sm-8">
                                     {selectedData && (
                                         <>
-                                            <div className="versum-widget mb-20">
-                                                <div className="versum-widget__header">
+                                            <div className="salonbw-widget mb-20">
+                                                <div className="salonbw-widget__header">
                                                     {selectedData.employeeName}{' '}
                                                     - szczegóły
                                                 </div>
-                                                <div className="versum-widget__content">
+                                                <div className="salonbw-widget__content">
                                                     <div className="row">
                                                         <div className="col-sm-3">
                                                             <div className="text-center">
@@ -272,11 +272,11 @@ export default function WorkTimeReportPage() {
                                                 </div>
                                             </div>
 
-                                            <div className="versum-widget">
-                                                <div className="versum-widget__header">
+                                            <div className="salonbw-widget">
+                                                <div className="salonbw-widget__header">
                                                     Godziny pracy dzień po dniu
                                                 </div>
-                                                <div className="versum-widget__content h-[300px]">
+                                                <div className="salonbw-widget__content h-[300px]">
                                                     <ResponsiveContainer>
                                                         <BarChart
                                                             data={chartData}
@@ -330,12 +330,12 @@ export default function WorkTimeReportPage() {
                             </div>
 
                             {/* Summary Table */}
-                            <div className="versum-widget mt-20">
-                                <div className="versum-widget__header">
+                            <div className="salonbw-widget mt-20">
+                                <div className="salonbw-widget__header">
                                     Podsumowanie wszystkich pracowników
                                 </div>
-                                <div className="versum-widget__content">
-                                    <table className="versum-table">
+                                <div className="salonbw-widget__content">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th>Pracownik</th>
@@ -404,7 +404,7 @@ export default function WorkTimeReportPage() {
                         </>
                     )}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }
