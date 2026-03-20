@@ -34,8 +34,15 @@ export class UsersController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get current user profile' })
     @ApiResponse({ status: 200, description: 'Current user profile' })
-    getProfile(@CurrentUser() user: { userId: number; role: string }) {
-        return user;
+    async getProfile(@CurrentUser() user: { userId: number; role: string }) {
+        const profile = await this.usersService.findById(user.userId);
+        if (!profile) {
+            return user;
+        }
+
+        const { password: _password, ...safeProfile } = profile;
+        void _password;
+        return safeProfile;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
