@@ -7,7 +7,7 @@ import {
     renderCalendarViewsIndex,
     renderCalendarViewForm,
     validateCalendarViewPayload,
-} from './_shared';
+} from '@/server/calendarViewsRuntime';
 
 export default async function handler(
     req: NextApiRequest,

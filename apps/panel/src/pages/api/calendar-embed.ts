@@ -2,10 +2,21 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
+
 interface JwtPayload {
     userId: number;
     email: string;
     role: string;
+}
+
+interface CalendarEmbedProfile {
+    id?: number;
+    role?: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string;
 }
 
 type CalendarEmbedConfig = {
@@ -77,6 +88,84 @@ export function buildCalendarEmbedConfig(userId: number): CalendarEmbedConfig {
         t_gross: 'brutto',
         current_branch_readonly: false,
     };
+}
+
+function escapeHtml(value: string): string {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+export function deriveCalendarEmbedIdentity(
+    profile?: CalendarEmbedProfile | null,
+) {
+    const fullName =
+        profile?.name?.trim() ||
+        [profile?.firstName, profile?.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+    const [first = '', second = ''] = fullName.split(/\s+/, 2);
+    const initials =
+        `${first[0] ?? ''}${second[0] ?? ''}`.toUpperCase() || 'SB';
+
+    return {
+        fullName: fullName || 'Użytkownik',
+        initials,
+        roleLabel: profile?.role || 'administrator',
+        profileHref: '/settings/profile',
+        avatarUrl: profile?.avatarUrl?.trim() || null,
+    };
+}
+
+export function rewriteCalendarEmbedUserIdentity(
+    html: string,
+    profile?: CalendarEmbedProfile | null,
+) {
+    const identity = deriveCalendarEmbedIdentity(profile);
+    const escapedName = escapeHtml(identity.fullName);
+    const escapedRole = escapeHtml(identity.roleLabel);
+    const escapedHref = escapeHtml(identity.profileHref);
+    const escapedInitials = escapeHtml(identity.initials);
+
+    let nextHtml = html.replace(
+        /<a class="profil" href="[^"]*">[\s\S]*?<strong>[\s\S]*?<\/strong>[\s\S]*?<\/a>/,
+        `<a class="profil" href="${escapedHref}">${
+            identity.avatarUrl
+                ? `<img alt="Avatar" class="avatar" src="${escapeHtml(identity.avatarUrl)}"/>`
+                : ''
+        }<strong>${escapedName}</strong>${escapedRole}</a>`,
+    );
+
+    nextHtml = nextHtml.replace(
+        /<div class="color1">[\s\S]*?<\/div>/,
+        `<div class="color1">${escapedInitials}</div>`,
+    );
+
+    return nextHtml;
+}
+
+async function fetchCalendarEmbedProfile(accessToken: string) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/users/profile`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Cache-Control': 'no-store',
+            },
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return (await response.json()) as CalendarEmbedProfile;
+    } catch {
+        return null;
+    }
 }
 
 export function buildCalendarEmbedScript(
@@ -228,6 +317,8 @@ export default async function handler(
 
         let html = await fs.readFile(htmlPath, 'utf8');
         html = rewriteCalendarEmbedAssetPaths(html);
+        const profile = await fetchCalendarEmbedProfile(accessToken);
+        html = rewriteCalendarEmbedUserIdentity(html, profile);
 
         // Vendored calendar template contains `user_id:userId` placeholder.
         // Resolve it server-side to avoid runtime `ReferenceError: userId is not defined`.

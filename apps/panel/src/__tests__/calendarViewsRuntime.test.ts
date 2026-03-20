@@ -4,7 +4,7 @@ import {
     renderCalendarViewsDropdown,
     renderCalendarViewsIndex,
     validateCalendarViewPayload,
-} from '@/pages/api/runtime/calendar-views/_shared';
+} from '@/server/calendarViewsRuntime';
 
 describe('calendar views runtime bridge', () => {
     const employees = [

@@ -256,6 +256,24 @@
     - istotnie zmniejszona delta integracyjna między canonical route `/calendar/views` a vendored runtime `/calendar`,
     - route nadal pozostaje `invent`, bo partial bridge jest implementacją SalonBW, a nie literalnym przeniesieniem backendowego kontraktu Versum.
 
+### 2026-03-20 - Calendar topbar: spójna tożsamość użytkownika w vendored runtime
+
+- zmiana kodu:
+    - `apps/panel/src/pages/api/calendar-embed.ts`
+        - embed pobiera teraz serwerowo `/users/profile` z aktualnym bearer tokenem i nadpisuje w vendored HTML badge inicjałów, nazwę użytkownika, avatar oraz link profilu.
+    - `apps/panel/src/server/calendarViewsRuntime.ts`
+        - helper dla partial bridge `calendar views` został wyniesiony z `pages/api/*` do zwykłego modułu serwerowego, żeby Next nie traktował go jako route config.
+    - `apps/panel/src/pages/api/runtime/calendar-views/*`
+    - `apps/panel/src/__tests__/calendarEmbedRuntime.test.ts`
+    - `apps/panel/src/__tests__/calendarViewsRuntime.test.ts`
+- walidacja lokalna:
+    - `apps/panel`: `pnpm jest src/__tests__/calendarEmbedRuntime.test.ts src/__tests__/calendarViewsRuntime.test.ts --runInBand` ✅
+    - `apps/panel`: `pnpm eslint src/pages/api/calendar-embed.ts src/server/calendarViewsRuntime.ts src/pages/api/runtime/calendar-views/index.ts src/pages/api/runtime/calendar-views/list.ts src/pages/api/runtime/calendar-views/new.ts src/pages/api/runtime/calendar-views/[id].ts src/pages/api/runtime/calendar-views/[id]/edit.ts src/__tests__/calendarEmbedRuntime.test.ts src/__tests__/calendarViewsRuntime.test.ts --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+- status:
+    - usunięta ostatnia widoczna niespójność headera między `/calendar` a resztą panelu (`/customers`, `/products`),
+    - fix nie narusza compat runtime: `window.VersumConfig`, asset aliases i bridge dla vendored kalendarza pozostają bez zmian.
+
 ### 2026-03-20 - Communication detail: thread parity rozszerzony także na email
 
 ### 2026-03-20 - De-branding kodu docelowego: `Versum` -> `SalonBW` z zachowaniem warstwy compat

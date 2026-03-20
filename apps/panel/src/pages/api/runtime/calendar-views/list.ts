@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getCalendarViews, renderCalendarViewsDropdown } from './_shared';
+import {
+    getCalendarViews,
+    renderCalendarViewsDropdown,
+} from '@/server/calendarViewsRuntime';
 
 export default async function handler(
     req: NextApiRequest,
