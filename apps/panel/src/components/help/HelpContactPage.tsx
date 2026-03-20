@@ -6,8 +6,8 @@ import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useMyPrimaryBranch } from '@/hooks/useBranches';
 
 const EMPTY_SECONDARY_NAV = <></>;
-const VERSUM_CLIENT_NUMBER = '19581';
-const KNOWLEDGE_BASE_URL = 'http://pomoc.versum.pl';
+const SALONBW_CLIENT_NUMBER = '19581';
+const SALONBW_KNOWLEDGE_BASE_URL = 'http://pomoc.versum.pl';
 const SUPPORT_PHONE = '(33) 482 49 49';
 const ANYDESK_MAC_URL = 'https://anydesk.com/pl/downloads/thank-you?dv=mac_dmg';
 const ANYDESK_WINDOWS_URL =
@@ -159,7 +159,7 @@ export default function HelpContactPage() {
                 method: 'POST',
                 body: JSON.stringify({
                     to: recipient,
-                    subject: `Panel pomoc: ${branchName} (${VERSUM_CLIENT_NUMBER})`,
+                    subject: `Panel pomoc: ${branchName} (${SALONBW_CLIENT_NUMBER})`,
                     template:
                         '<p><strong>Numer klienta:</strong> {{clientNumber}}</p>' +
                         '<p><strong>Salon:</strong> {{branchName}}</p>' +
@@ -171,7 +171,7 @@ export default function HelpContactPage() {
                         '<p><strong>Pytanie:</strong></p>' +
                         '<p>{{query}}</p>',
                     data: {
-                        clientNumber: VERSUM_CLIENT_NUMBER,
+                        clientNumber: SALONBW_CLIENT_NUMBER,
                         branchName,
                         userName: user?.name || 'Nieznany użytkownik',
                         replyEmail: trimmedEmail,
@@ -210,7 +210,7 @@ export default function HelpContactPage() {
                     </li>
                     <li>
                         <span> / </span>
-                        Twój numer klienta: {VERSUM_CLIENT_NUMBER}
+                        Twój numer klienta: {SALONBW_CLIENT_NUMBER}
                     </li>
                 </ul>
             </div>
@@ -218,11 +218,11 @@ export default function HelpContactPage() {
             <div className="inner helps-page__inner">
                 <h2>Baza wiedzy</h2>
                 <p>
-                    Aby ułatwić korzystanie z systemu Versum przygotowaliśmy{' '}
+                    Aby ułatwić korzystanie z systemu SalonBW przygotowaliśmy{' '}
                     <a
                         target="_blank"
                         rel="noreferrer"
-                        href={KNOWLEDGE_BASE_URL}
+                        href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazę Wiedzy
                     </a>
@@ -238,7 +238,7 @@ export default function HelpContactPage() {
                     <a
                         target="_blank"
                         rel="noreferrer"
-                        href={KNOWLEDGE_BASE_URL}
+                        href={SALONBW_KNOWLEDGE_BASE_URL}
                         className="button button-blue"
                     >
                         Przejdź do Bazy Wiedzy »
@@ -250,7 +250,7 @@ export default function HelpContactPage() {
                     <a
                         target="_blank"
                         rel="noreferrer"
-                        href={KNOWLEDGE_BASE_URL}
+                        href={SALONBW_KNOWLEDGE_BASE_URL}
                     >
                         Bazie Wiedzy
                     </a>{' '}
@@ -380,7 +380,7 @@ export default function HelpContactPage() {
                 Godziny pracy działu obsługi klienta: pon. - pt. 9:00 - 17:00
                 <br />
                 <div className="bold_spans helps-page__diagnostics">
-                    Twój numer klienta: <span>{VERSUM_CLIENT_NUMBER}</span>
+                    Twój numer klienta: <span>{SALONBW_CLIENT_NUMBER}</span>
                     <br />
                     Przeglądarka: <span>{environment.browser}</span>
                     <br />

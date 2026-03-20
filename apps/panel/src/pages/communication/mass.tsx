@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
 import { useEmailMutations } from '@/hooks/useEmails';
@@ -120,8 +120,8 @@ export default function MassCommunicationPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <VersumShell role={role}>
-                <div className="versum-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page">
                     <ul className="breadcrumb">
                         <li>
                             <Link href="/communication">Łączność</Link>
@@ -130,26 +130,28 @@ export default function MassCommunicationPage() {
                     </ul>
 
                     {/* Step indicator */}
-                    <div className="versum-steps">
+                    <div className="salonbw-steps">
                         <div
-                            className={`versum-step ${step === 'recipients' ? 'active' : ''}`}
+                            className={`salonbw-step ${step === 'recipients' ? 'active' : ''}`}
                         >
-                            <span className="versum-step__number">1</span>
-                            <span className="versum-step__label">Odbiorcy</span>
+                            <span className="salonbw-step__number">1</span>
+                            <span className="salonbw-step__label">
+                                Odbiorcy
+                            </span>
                         </div>
-                        <div className="versum-step__divider"></div>
+                        <div className="salonbw-step__divider"></div>
                         <div
-                            className={`versum-step ${step === 'message' ? 'active' : ''}`}
+                            className={`salonbw-step ${step === 'message' ? 'active' : ''}`}
                         >
-                            <span className="versum-step__number">2</span>
-                            <span className="versum-step__label">Treść</span>
+                            <span className="salonbw-step__number">2</span>
+                            <span className="salonbw-step__label">Treść</span>
                         </div>
-                        <div className="versum-step__divider"></div>
+                        <div className="salonbw-step__divider"></div>
                         <div
-                            className={`versum-step ${step === 'preview' ? 'active' : ''}`}
+                            className={`salonbw-step ${step === 'preview' ? 'active' : ''}`}
                         >
-                            <span className="versum-step__number">3</span>
-                            <span className="versum-step__label">
+                            <span className="salonbw-step__number">3</span>
+                            <span className="salonbw-step__label">
                                 Podsumowanie
                             </span>
                         </div>
@@ -157,12 +159,12 @@ export default function MassCommunicationPage() {
 
                     {/* Step 1: Recipients */}
                     {step === 'recipients' && (
-                        <div className="versum-mass-communication">
-                            <div className="versum-mass-communication__section">
+                        <div className="salonbw-mass-communication">
+                            <div className="salonbw-mass-communication__section">
                                 <h3>Kanał komunikacji</h3>
-                                <div className="versum-channel-selector">
+                                <div className="salonbw-channel-selector">
                                     <label
-                                        className={`versum-channel ${channel === 'sms' ? 'active' : ''}`}
+                                        className={`salonbw-channel ${channel === 'sms' ? 'active' : ''}`}
                                     >
                                         <input
                                             type="radio"
@@ -174,13 +176,13 @@ export default function MassCommunicationPage() {
                                                 setContent('');
                                             }}
                                         />
-                                        <span className="versum-channel__icon">
+                                        <span className="salonbw-channel__icon">
                                             📱
                                         </span>
                                         <span>SMS</span>
                                     </label>
                                     <label
-                                        className={`versum-channel ${channel === 'email' ? 'active' : ''}`}
+                                        className={`salonbw-channel ${channel === 'email' ? 'active' : ''}`}
                                     >
                                         <input
                                             type="radio"
@@ -192,7 +194,7 @@ export default function MassCommunicationPage() {
                                                 setContent('');
                                             }}
                                         />
-                                        <span className="versum-channel__icon">
+                                        <span className="salonbw-channel__icon">
                                             ✉️
                                         </span>
                                         <span>Email</span>
@@ -200,10 +202,10 @@ export default function MassCommunicationPage() {
                                 </div>
                             </div>
 
-                            <div className="versum-mass-communication__section">
+                            <div className="salonbw-mass-communication__section">
                                 <h3>Wybierz odbiorców</h3>
 
-                                <label className="versum-checkbox-row">
+                                <label className="salonbw-checkbox-row">
                                     <input
                                         type="checkbox"
                                         checked={includeAll}
@@ -218,17 +220,17 @@ export default function MassCommunicationPage() {
                                 </label>
 
                                 {!includeAll && (
-                                    <div className="versum-mass-communication__subsection">
+                                    <div className="salonbw-mass-communication__subsection">
                                         <h4>Grupy klientów</h4>
                                         {groups.length === 0 ? (
-                                            <p className="versum-muted">
+                                            <p className="salonbw-muted">
                                                 Brak zdefiniowanych grup
                                             </p>
                                         ) : (
                                             groups.map((group) => (
                                                 <label
                                                     key={group.id}
-                                                    className="versum-checkbox-row"
+                                                    className="salonbw-checkbox-row"
                                                 >
                                                     <input
                                                         type="checkbox"
@@ -257,7 +259,7 @@ export default function MassCommunicationPage() {
                                                         }}
                                                     />
                                                     <span
-                                                        className="versum-group-dot"
+                                                        className="salonbw-group-dot"
                                                         {...{
                                                             style: {
                                                                 backgroundColor:
@@ -278,12 +280,12 @@ export default function MassCommunicationPage() {
                                 )}
                             </div>
 
-                            <div className="versum-mass-communication__footer">
-                                <span className="versum-recipient-count">
+                            <div className="salonbw-mass-communication__footer">
+                                <span className="salonbw-recipient-count">
                                     Wybrano odbiorców:{' '}
                                     <strong>{recipientCount}</strong>
                                     {recipientCount < customers.length && (
-                                        <span className="versum-muted">
+                                        <span className="salonbw-muted">
                                             {' '}
                                             (z {customers.length} klientów)
                                         </span>
@@ -291,7 +293,7 @@ export default function MassCommunicationPage() {
                                 </span>
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--primary"
+                                    className="salonbw-btn salonbw-btn--primary"
                                     disabled={recipientCount === 0}
                                     onClick={() => setStep('message')}
                                 >
@@ -303,29 +305,29 @@ export default function MassCommunicationPage() {
 
                     {/* Step 2: Message */}
                     {step === 'message' && (
-                        <div className="versum-mass-communication">
-                            <div className="versum-mass-communication__section">
+                        <div className="salonbw-mass-communication">
+                            <div className="salonbw-mass-communication__section">
                                 <h3>Wybierz szablon</h3>
                                 {filteredTemplates.length === 0 ? (
-                                    <p className="versum-muted">
+                                    <p className="salonbw-muted">
                                         Brak szablonów dla wybranego kanału
                                     </p>
                                 ) : (
-                                    <div className="versum-template-list">
+                                    <div className="salonbw-template-list">
                                         {filteredTemplates.map((template) => (
                                             <div
                                                 key={template.id}
-                                                className={`versum-template-item ${selectedTemplateId === template.id ? 'active' : ''}`}
+                                                className={`salonbw-template-item ${selectedTemplateId === template.id ? 'active' : ''}`}
                                                 onClick={() =>
                                                     handleTemplateSelect(
                                                         template.id,
                                                     )
                                                 }
                                             >
-                                                <span className="versum-template-item__name">
+                                                <span className="salonbw-template-item__name">
                                                     {template.name}
                                                 </span>
-                                                <span className="versum-template-item__preview">
+                                                <span className="salonbw-template-item__preview">
                                                     {template.content.slice(
                                                         0,
                                                         60,
@@ -336,7 +338,7 @@ export default function MassCommunicationPage() {
                                                         : ''}
                                                 </span>
                                                 {template.type && (
-                                                    <span className="versum-badge versum-badge--sm">
+                                                    <span className="salonbw-badge salonbw-badge--sm">
                                                         {template.type}
                                                     </span>
                                                 )}
@@ -346,15 +348,15 @@ export default function MassCommunicationPage() {
                                 )}
                             </div>
 
-                            <div className="versum-mass-communication__section">
+                            <div className="salonbw-mass-communication__section">
                                 <h3>Treść wiadomości</h3>
 
                                 {channel === 'email' && (
-                                    <div className="versum-form-group">
+                                    <div className="salonbw-form-group">
                                         <label>Temat</label>
                                         <input
                                             type="text"
-                                            className="versum-input"
+                                            className="salonbw-input"
                                             value={subject}
                                             onChange={(e) =>
                                                 setSubject(e.target.value)
@@ -364,10 +366,10 @@ export default function MassCommunicationPage() {
                                     </div>
                                 )}
 
-                                <div className="versum-form-group">
+                                <div className="salonbw-form-group">
                                     <label>Treść</label>
                                     <textarea
-                                        className="versum-textarea"
+                                        className="salonbw-textarea"
                                         value={content}
                                         onChange={(e) => {
                                             setContent(e.target.value);
@@ -377,7 +379,7 @@ export default function MassCommunicationPage() {
                                         rows={6}
                                         placeholder="Wpisz treść wiadomości..."
                                     />
-                                    <span className="versum-char-count">
+                                    <span className="salonbw-char-count">
                                         {content.length} znaków
                                         {channel === 'sms' && (
                                             <>
@@ -391,7 +393,7 @@ export default function MassCommunicationPage() {
                                     </span>
                                 </div>
 
-                                <div className="versum-variables-help">
+                                <div className="salonbw-variables-help">
                                     <h4>Dostępne zmienne:</h4>
                                     <code>{'{{client_name}}'}</code>
                                     <code>{'{{salon_name}}'}</code>
@@ -401,17 +403,17 @@ export default function MassCommunicationPage() {
                                 </div>
                             </div>
 
-                            <div className="versum-mass-communication__footer">
+                            <div className="salonbw-mass-communication__footer">
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--light"
+                                    className="salonbw-btn salonbw-btn--light"
                                     onClick={() => setStep('recipients')}
                                 >
                                     Wstecz
                                 </button>
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--primary"
+                                    className="salonbw-btn salonbw-btn--primary"
                                     disabled={
                                         !content.trim() ||
                                         (channel === 'email' &&
@@ -430,28 +432,28 @@ export default function MassCommunicationPage() {
 
                     {/* Step 3: Preview/Result */}
                     {step === 'preview' && sendResult && (
-                        <div className="versum-mass-communication versum-mass-communication--success">
-                            <div className="versum-send-result">
-                                <div className="versum-send-result__icon">
+                        <div className="salonbw-mass-communication salonbw-mass-communication--success">
+                            <div className="salonbw-send-result">
+                                <div className="salonbw-send-result__icon">
                                     ✓
                                 </div>
                                 <h3>Wiadomość została wysłana</h3>
 
-                                <div className="versum-send-result__stats">
-                                    <div className="versum-stat versum-stat--success">
-                                        <span className="versum-stat__value">
+                                <div className="salonbw-send-result__stats">
+                                    <div className="salonbw-stat salonbw-stat--success">
+                                        <span className="salonbw-stat__value">
                                             {sendResult.success}
                                         </span>
-                                        <span className="versum-stat__label">
+                                        <span className="salonbw-stat__label">
                                             Wysłanych
                                         </span>
                                     </div>
                                     {sendResult.failed > 0 && (
-                                        <div className="versum-stat versum-stat--error">
-                                            <span className="versum-stat__value">
+                                        <div className="salonbw-stat salonbw-stat--error">
+                                            <span className="salonbw-stat__value">
                                                 {sendResult.failed}
                                             </span>
-                                            <span className="versum-stat__label">
+                                            <span className="salonbw-stat__label">
                                                 Nieudanych
                                             </span>
                                         </div>
@@ -460,7 +462,7 @@ export default function MassCommunicationPage() {
 
                                 <button
                                     type="button"
-                                    className="versum-btn versum-btn--primary"
+                                    className="salonbw-btn salonbw-btn--primary"
                                     onClick={() => {
                                         setStep('recipients');
                                         setSendResult(null);
@@ -477,7 +479,7 @@ export default function MassCommunicationPage() {
                         </div>
                     )}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

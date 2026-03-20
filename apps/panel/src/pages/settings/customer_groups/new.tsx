@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import NewCustomerGroupPage from '@/components/settings/NewCustomerGroupPage';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NewCustomerGroupSettingsPage() {
@@ -10,9 +10,9 @@ export default function NewCustomerGroupSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <NewCustomerGroupPage />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

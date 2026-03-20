@@ -33,9 +33,9 @@ export default function CustomerSidebar({
     };
 
     return (
-        <div className="versum-sidebar">
+        <div className="salonbw-sidebar">
             {/* Search */}
-            <div className="versum-sidebar__search">
+            <div className="salonbw-sidebar__search">
                 <div className="form-group mb-0">
                     <input
                         type="text"
@@ -48,21 +48,21 @@ export default function CustomerSidebar({
                 </div>
             </div>
 
-            <div className="versum-sidebar__content">
+            <div className="salonbw-sidebar__content">
                 {/* Groups */}
-                <div className="versum-sidebar__section">
-                    <div className="versum-sidebar__header flex-between">
+                <div className="salonbw-sidebar__section">
+                    <div className="salonbw-sidebar__header flex-between">
                         <span>GRUPY</span>
                         {onCreateGroup && (
                             <button
                                 onClick={onCreateGroup}
-                                className="btn btn-link btn-xs p-0 text-versum-blue"
+                                className="btn btn-link btn-xs p-0 text-salonbw-blue"
                             >
                                 + dodaj
                             </button>
                         )}
                     </div>
-                    <ul className="versum-sidebar__nav">
+                    <ul className="salonbw-sidebar__nav">
                         <li className={!filters.groupId ? 'active' : ''}>
                             <a onClick={() => handleGroupSelect(undefined)}>
                                 <span className="flex-1">Wszyscy klienci</span>
@@ -107,9 +107,9 @@ export default function CustomerSidebar({
                 </div>
 
                 {/* Tagi */}
-                <div className="versum-sidebar__section">
-                    <div className="versum-sidebar__header">TAGI</div>
-                    <div className="versum-sidebar__tag-list">
+                <div className="salonbw-sidebar__section">
+                    <div className="salonbw-sidebar__header">TAGI</div>
+                    <div className="salonbw-sidebar__tag-list">
                         {tags.map((tag) => {
                             const tagStyle = {
                                 '--dynamic-color':
@@ -139,9 +139,9 @@ export default function CustomerSidebar({
                 </div>
 
                 {/* Filtry zaawansowane */}
-                <div className="versum-sidebar__section">
+                <div className="salonbw-sidebar__section">
                     <div
-                        className="versum-sidebar__header flex-between cursor-pointer"
+                        className="salonbw-sidebar__header flex-between cursor-pointer"
                         onClick={() =>
                             setShowAdvancedFilters(!showAdvancedFilters)
                         }
@@ -153,11 +153,11 @@ export default function CustomerSidebar({
                     </div>
 
                     {showAdvancedFilters && (
-                        <div className="versum-sidebar__filters">
+                        <div className="salonbw-sidebar__filters">
                             <div className="form-group mb-0">
                                 <label
                                     htmlFor="filter-gender"
-                                    className="control-label versum-label-xs"
+                                    className="control-label salonbw-label-xs"
                                 >
                                     Płeć
                                 </label>
@@ -185,7 +185,7 @@ export default function CustomerSidebar({
                                 <div className="col-xs-6">
                                     <label
                                         htmlFor="filter-age-min"
-                                        className="control-label versum-label-xs"
+                                        className="control-label salonbw-label-xs"
                                     >
                                         Wiek od
                                     </label>
@@ -236,7 +236,7 @@ export default function CustomerSidebar({
                                 <div className="col-xs-6">
                                     <label
                                         htmlFor="filter-spent-min"
-                                        className="control-label versum-label-xs"
+                                        className="control-label salonbw-label-xs"
                                     >
                                         Wydane od
                                     </label>
@@ -260,7 +260,7 @@ export default function CustomerSidebar({
                                 <div className="col-xs-6">
                                     <label
                                         htmlFor="filter-spent-max"
-                                        className="control-label versum-label-xs"
+                                        className="control-label salonbw-label-xs"
                                     >
                                         do
                                     </label>

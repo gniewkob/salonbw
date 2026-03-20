@@ -89,7 +89,7 @@ export function AuthProvider({ children }) {
 #### 1. Client-Side Navigation (Next.js Link)
 
 ```tsx
-// components/versum/VersumMainNav.tsx
+// components/versum/SalonBWMainNav.tsx
 import Link from 'next/link';
 
 <li className="clients">
@@ -153,7 +153,7 @@ UZYTKOWNIK
     │ klikniecie "klienci"
     ▼
 ┌─────────────────┐
-│ VersumMainNav   │
+│ SalonBWMainNav   │
 │ <Link href=...> │
 └────────┬────────┘
          │

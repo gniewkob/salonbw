@@ -1,7 +1,7 @@
 import { useState, useEffect, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
@@ -16,7 +16,7 @@ const ReviewForm = dynamic<ComponentProps<typeof ReviewFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="versum-loading">Loading review form…</div>
+            <div className="salonbw-loading">Loading review form…</div>
         ),
     },
 );
@@ -121,19 +121,19 @@ export default function ReviewsPage() {
 
     return (
         <RouteGuard permission="nav:reviews">
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="reviews-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="reviews-page">
                     <ul className="breadcrumb">
                         <li>Ustawienia</li>
                         <li>Opinie</li>
                     </ul>
-                    <div className="versum-page__toolbar">
+                    <div className="salonbw-page__toolbar">
                         {isAdmin && (
-                            <label className="versum-label">
+                            <label className="salonbw-label">
                                 Employee
                                 <input
                                     type="number"
-                                    className="versum-input versum-input--sm"
+                                    className="salonbw-input salonbw-input--sm"
                                     value={employeeId}
                                     onChange={(e) => {
                                         const n = Number(e.target.value);
@@ -145,7 +145,7 @@ export default function ReviewsPage() {
                         )}
                         <button
                             type="button"
-                            className="versum-btn versum-btn--primary"
+                            className="salonbw-btn salonbw-btn--primary"
                             onClick={() => {
                                 setEditing(null);
                                 setOpenForm(true);
@@ -161,7 +161,7 @@ export default function ReviewsPage() {
                         renderActions={(r) => (
                             <span className="space-x-2">
                                 <button
-                                    className="versum-btn versum-btn--sm versum-btn--light"
+                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
                                     onClick={() => {
                                         setEditing(r);
                                         setOpenForm(true);
@@ -170,7 +170,7 @@ export default function ReviewsPage() {
                                     Edytuj
                                 </button>
                                 <button
-                                    className="versum-btn versum-btn--sm versum-btn--danger"
+                                    className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
                                     onClick={() => void handleDelete(r)}
                                 >
                                     Usuń
@@ -196,7 +196,7 @@ export default function ReviewsPage() {
                         />
                     </Modal>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

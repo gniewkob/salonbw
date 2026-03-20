@@ -127,7 +127,7 @@ groupOperator?: 'and' | 'or' | 'AND' | 'OR';
   - Click to filter
 
 #### 6. CSS/Styling Updates
-**File:** `apps/panel/src/styles/versum-shell.css`
+**File:** `apps/panel/src/styles/salonbw-shell.css`
 
 Added ~300 lines of CSS for pixel-perfect Versum matching:
 - Client list page styles
@@ -153,12 +153,12 @@ Added ~300 lines of CSS for pixel-perfect Versum matching:
 - Tab switching
 - Responsive design (1366x768, 1920x1080)
 
-#### 8. VersumShell Enhancement
-**File:** `apps/panel/src/components/versum/VersumShell.tsx`
+#### 8. SalonBWShell Enhancement
+**File:** `apps/panel/src/components/versum/SalonBWShell.tsx`
 
 Added support for custom secondaryNav prop:
 ```typescript
-interface VersumShellProps {
+interface SalonBWShellProps {
     role: Role;
     children: ReactNode;
     secondaryNav?: ReactNode;  // NEW
@@ -210,8 +210,8 @@ Captured from Versum production:
 - `apps/panel/src/pages/clients/[id].tsx`
 - `apps/panel/src/components/versum/navs/ClientsNav.tsx`
 - `apps/panel/src/components/versum/navs/ClientDetailNav.tsx`
-- `apps/panel/src/components/versum/VersumShell.tsx`
-- `apps/panel/src/styles/versum-shell.css`
+- `apps/panel/src/components/versum/SalonBWShell.tsx`
+- `apps/panel/src/styles/salonbw-shell.css`
 - `apps/panel/src/types.ts`
 
 **Tests:**

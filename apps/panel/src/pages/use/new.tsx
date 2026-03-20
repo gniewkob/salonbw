@@ -199,7 +199,7 @@ export default function WarehouseUsageCreatePage() {
                     <select
                         value={employeeId}
                         onChange={(event) => setEmployeeId(event.target.value)}
-                        className="versum-select"
+                        className="salonbw-select"
                     >
                         <option value="">
                             wpisz nazwę lub wybierz z listy

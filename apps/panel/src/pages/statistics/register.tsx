@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCashRegister } from '@/hooks/useStatistics';
 import type { CashRegisterSummary } from '@/types';
@@ -54,18 +54,18 @@ export default function CashRegisterPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role}>
-            <div className="versum-page" data-testid="cash-register-page">
+        <SalonBWShell role={role}>
+            <div className="salonbw-page" data-testid="cash-register-page">
                 <ul className="breadcrumb">
                     <li>Statystyki</li>
                     <li>Stan kasy</li>
                 </ul>
 
-                <div className="versum-page__toolbar">
-                    <div className="versum-actions">
+                <div className="salonbw-page__toolbar">
+                    <div className="salonbw-actions">
                         <button
                             type="button"
-                            className="versum-toolbar-btn btn btn-default"
+                            className="salonbw-toolbar-btn btn btn-default"
                             onClick={() => navigateDate('prev')}
                         >
                             ◀
@@ -73,13 +73,13 @@ export default function CashRegisterPage() {
                         <input
                             type="date"
                             aria-label="Wybierz datę"
-                            className="form-control versum-toolbar-search"
+                            className="form-control salonbw-toolbar-search"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                         />
                         <button
                             type="button"
-                            className="versum-toolbar-btn btn btn-default"
+                            className="salonbw-toolbar-btn btn btn-default"
                             onClick={() => navigateDate('next')}
                         >
                             ▶
@@ -118,7 +118,9 @@ export default function CashRegisterPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm versum-muted">Ładowanie...</div>
+                    <div className="p-4 text-sm salonbw-muted">
+                        Ładowanie...
+                    </div>
                 ) : activeTab === 'register' ? (
                     <div className="inner">
                         {/* Status header */}
@@ -238,11 +240,11 @@ export default function CashRegisterPage() {
 
                         {/* Entries table */}
                         {data && data.entries.length > 0 && (
-                            <div className="versum-table-wrap mt-6">
+                            <div className="salonbw-table-wrap mt-6">
                                 <h3 className="text-lg font-semibold mb-3">
                                     Szczegóły transakcji
                                 </h3>
-                                <table className="versum-table">
+                                <table className="salonbw-table">
                                     <thead>
                                         <tr>
                                             <th>Czas</th>
@@ -313,6 +315,6 @@ export default function CashRegisterPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

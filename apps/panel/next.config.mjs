@@ -44,7 +44,7 @@ const nextConfig = {
     typedRoutes: false,
     async rewrites() {
         const rules = [
-            // Legacy Versum compatibility aliases (vendored calendar runtime uses these in some flows)
+            // Legacy source compatibility aliases (vendored calendar runtime uses these in some flows)
             // Note: Next rewrites do not reliably chain, so map to `/api/*` directly.
             {
                 source: '/salonblackandwhite/events/:path*',
@@ -62,10 +62,18 @@ const nextConfig = {
                 source: '/salonblackandwhite/graphql',
                 destination: '/api/graphql',
             },
+            {
+                source: '/salonbw-calendar/:path*',
+                destination: '/versum-calendar/:path*',
+            },
+            {
+                source: '/salonbw-vendor/:path*',
+                destination: '/versum-vendor/:path*',
+            },
 
             // Calendar embed is handled by `src/pages/calendar.tsx`, which replaces the document
             // with HTML served by `/api/calendar-embed` to avoid hydration conflicts.
-            // Versum legacy paths (from `panel.versum.com/<slug>/customers*`)
+            // Legacy source paths (from `panel.versum.com/<slug>/customers*`)
             {
                 source: '/salonblackandwhite/customers',
                 destination: '/customers',

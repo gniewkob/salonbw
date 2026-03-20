@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role, Service, ServiceVariant } from '@/types';
 
@@ -20,9 +20,9 @@ export default function ServicesPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role}>
+        <SalonBWShell role={role}>
             <ServicesPageContent role={role} />
-        </VersumShell>
+        </SalonBWShell>
     );
 }
 
@@ -207,7 +207,7 @@ function ServicesPageContent({ role }: { role: Role }) {
     };
 
     return (
-        <div className="versum-page" data-testid="services-page">
+        <div className="salonbw-page" data-testid="services-page">
             <ul className="breadcrumb">
                 <li>Usługi</li>
             </ul>
@@ -232,7 +232,7 @@ function ServicesPageContent({ role }: { role: Role }) {
             </div>
 
             {isLoading ? (
-                <div className="versum-muted p-20">Ładowanie usług...</div>
+                <div className="salonbw-muted p-20">Ładowanie usług...</div>
             ) : (
                 <>
                     <div className="column_row data_table">
@@ -310,7 +310,7 @@ function ServicesPageContent({ role }: { role: Role }) {
                                     <tr>
                                         <td
                                             colSpan={7}
-                                            className="versum-muted p-20 text-center"
+                                            className="salonbw-muted p-20 text-center"
                                         >
                                             Brak usług spełniających kryteria
                                         </td>

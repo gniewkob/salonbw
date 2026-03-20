@@ -1,12 +1,14 @@
 import {
-    Controller,
-    Get,
-    Put,
     Body,
-    UseGuards,
-    Request,
+    Controller,
+    Delete,
+    Get,
     Param,
     ParseIntPipe,
+    Post,
+    Put,
+    Request,
+    UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
@@ -14,8 +16,10 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/role.enum';
 import { SettingsService } from './settings.service';
 import {
+    CreateCalendarViewDto,
     UpdateBranchSettingsDto,
     UpdateCalendarSettingsDto,
+    UpdateCalendarViewDto,
     UpdateOnlineBookingSettingsDto,
     UpdateSmsSettingsDto,
     UpdateReminderSettingsDto,
@@ -66,6 +70,40 @@ export class SettingsController {
         @Request() req: { user: { id: number } },
     ) {
         return this.settingsService.updateCalendarSettings(dto, req.user.id);
+    }
+
+    @Get('calendar-views')
+    @Roles(Role.Admin)
+    async getCalendarViews() {
+        return this.settingsService.getCalendarViews();
+    }
+
+    @Post('calendar-views')
+    @Roles(Role.Admin)
+    async createCalendarView(
+        @Body() dto: CreateCalendarViewDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.createCalendarView(dto, req.user.id);
+    }
+
+    @Put('calendar-views/:id')
+    @Roles(Role.Admin)
+    async updateCalendarView(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateCalendarViewDto,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.updateCalendarView(id, dto, req.user.id);
+    }
+
+    @Delete('calendar-views/:id')
+    @Roles(Role.Admin)
+    async deleteCalendarView(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req: { user: { id: number } },
+    ) {
+        return this.settingsService.deleteCalendarView(id, req.user.id);
     }
 
     // Online Booking Settings

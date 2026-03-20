@@ -19,6 +19,7 @@
         "format": "prettier --write '**/*.{ts,tsx,js,jsx,css,md}'",
         "test": "jest",
         "test:visual": "playwright test tests/visual/versum-admin.spec.ts",
+        "test:prod:calendar": "playwright test tests/e2e/prod-calendar-smoke.spec.ts",
         "cypress:install": "cypress install",
         "start:e2e": "pnpm run start:standalone",
         "e2e": "node scripts/server-utils.js cleanup && NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api} pnpm run build && NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api} start-server-and-test \"pnpm run start:e2e\" http://localhost:3000 'cypress run'",

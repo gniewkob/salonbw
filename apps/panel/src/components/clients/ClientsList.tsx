@@ -39,7 +39,7 @@ export default function ClientsList({ customers, loading }: ClientsListProps) {
 
     return (
         <div className="flex flex-col h-full bg-white">
-            {/* Aktywne filtry - jak w Versum */}
+            {/* Aktywne filtry - jak w source UI */}
             {activeGroup && (
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                     <div className="flex items-center justify-between">

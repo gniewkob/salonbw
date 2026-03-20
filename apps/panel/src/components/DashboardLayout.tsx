@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role } from '@/types';
 import Topbar from './Topbar';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 
 interface Props {
     children: ReactNode;
@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: Props) {
     const { role } = useAuth();
 
     if (role === 'admin' || role === 'employee' || role === 'receptionist') {
-        return <VersumShell role={role}>{children}</VersumShell>;
+        return <SalonBWShell role={role}>{children}</SalonBWShell>;
     }
 
     const map: Record<Role, ComponentType<SidebarProps>> = {

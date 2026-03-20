@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import CalendarSettingsForm from '@/components/settings/CalendarSettingsForm';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CalendarSettingsPage() {
@@ -10,9 +10,9 @@ export default function CalendarSettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <CalendarSettingsForm />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

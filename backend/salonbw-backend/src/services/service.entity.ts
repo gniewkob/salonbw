@@ -51,6 +51,18 @@ export class Service {
     })
     vatRate?: number;
 
+    @Column({ type: 'int', default: 0 })
+    durationBefore: number;
+
+    @Column({ type: 'int', default: 0 })
+    durationAfter: number;
+
+    @Column({ type: 'int', default: 0 })
+    breakOffset: number;
+
+    @Column({ type: 'int', default: 0 })
+    breakDuration: number;
+
     @Column({ default: false })
     isFeatured: boolean;
 

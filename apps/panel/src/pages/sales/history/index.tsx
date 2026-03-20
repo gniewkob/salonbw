@@ -67,7 +67,7 @@ export default function WarehouseSalesHistoryPage() {
                     <div className="products-toolbar">
                         <input
                             type="text"
-                            className="versum-input"
+                            className="salonbw-input"
                             title="Wyszukaj w historii sprzedaży"
                             placeholder="wyszukaj w historii sprzedaży..."
                             value={search}
@@ -77,7 +77,7 @@ export default function WarehouseSalesHistoryPage() {
                             }}
                         />
                         <select
-                            className="versum-select"
+                            className="salonbw-select"
                             aria-label="rodzaj sprzedaży"
                             title="Rodzaj sprzedaży"
                             value={kindFilter}
@@ -157,7 +157,7 @@ export default function WarehouseSalesHistoryPage() {
                             <div className="products-table-footer__controls">
                                 <span>na stronie</span>
                                 <select
-                                    className="versum-select versum-select--inline"
+                                    className="salonbw-select salonbw-select--inline"
                                     aria-label="na stronie"
                                     title="Na stronie"
                                     value={String(PAGE_SIZE)}

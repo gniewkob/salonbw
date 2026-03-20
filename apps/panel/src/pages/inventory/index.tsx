@@ -73,7 +73,7 @@ export default function InventoryHistoryPage() {
                     <div className="products-toolbar">
                         <input
                             type="text"
-                            className="versum-input"
+                            className="salonbw-input"
                             placeholder="wyszukaj w historii inwentaryzacji..."
                             value={search}
                             onChange={(event) => {
@@ -82,7 +82,7 @@ export default function InventoryHistoryPage() {
                             }}
                         />
                         <select
-                            className="versum-select"
+                            className="salonbw-select"
                             value={normalizedStatus ?? ''}
                             onChange={(event) => {
                                 const status = event.target.value;
@@ -149,7 +149,7 @@ export default function InventoryHistoryPage() {
             <div className="products-pagination">
                 Pozycje od {from} do {to} z {filteredRows.length} | na stronie
                 <select
-                    className="versum-select versum-select--inline"
+                    className="salonbw-select salonbw-select--inline"
                     value={String(pageSize)}
                     disabled
                 >

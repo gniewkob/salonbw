@@ -232,7 +232,7 @@ export default function WarehouseOrderCreatePage() {
                                 onChange={(event) =>
                                     setSupplierId(event.target.value)
                                 }
-                                className="versum-select"
+                                className="salonbw-select"
                             >
                                 <option value="">
                                     wpisz nazwę lub wybierz z listy

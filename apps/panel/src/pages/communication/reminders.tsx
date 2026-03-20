@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReminderStats, useSmsMutations } from '@/hooks/useSms';
 
@@ -44,57 +44,57 @@ export default function RemindersPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <VersumShell role={role}>
-                <div className="versum-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page">
                     <ul className="breadcrumb">
                         <li>
                             <Link href="/communication">Łączność</Link>
                         </li>
                         <li>Automatyczne przypomnienia</li>
                     </ul>
-                    <div className="versum-page__toolbar">
+                    <div className="salonbw-page__toolbar">
                         <Link
                             href="/communication"
-                            className="versum-btn versum-btn--light"
+                            className="salonbw-btn salonbw-btn--light"
                         >
                             ← Powrót
                         </Link>
                     </div>
 
                     {/* Stats */}
-                    <div className="versum-mass-communication">
-                        <div className="versum-mass-communication__section">
+                    <div className="salonbw-mass-communication">
+                        <div className="salonbw-mass-communication__section">
                             <h3>Statystyki (ostatnie 7 dni)</h3>
-                            <div className="versum-send-result__stats">
-                                <div className="versum-stat">
-                                    <span className="versum-stat__value">
+                            <div className="salonbw-send-result__stats">
+                                <div className="salonbw-stat">
+                                    <span className="salonbw-stat__value">
                                         {stats?.total ?? '-'}
                                     </span>
-                                    <span className="versum-stat__label">
+                                    <span className="salonbw-stat__label">
                                         Wszystkich wizyt
                                     </span>
                                 </div>
-                                <div className="versum-stat versum-stat--success">
-                                    <span className="versum-stat__value">
+                                <div className="salonbw-stat salonbw-stat--success">
+                                    <span className="salonbw-stat__value">
                                         {stats?.sent ?? '-'}
                                     </span>
-                                    <span className="versum-stat__label">
+                                    <span className="salonbw-stat__label">
                                         Wysłanych przypomnień
                                     </span>
                                 </div>
-                                <div className="versum-stat versum-stat--error">
-                                    <span className="versum-stat__value">
+                                <div className="salonbw-stat salonbw-stat--error">
+                                    <span className="salonbw-stat__value">
                                         {stats?.failed ?? '-'}
                                     </span>
-                                    <span className="versum-stat__label">
+                                    <span className="salonbw-stat__label">
                                         Nieudanych
                                     </span>
                                 </div>
-                                <div className="versum-stat">
-                                    <span className="versum-stat__value text-[#25B4C1]">
+                                <div className="salonbw-stat">
+                                    <span className="salonbw-stat__value text-[#25B4C1]">
                                         {stats?.upcoming ?? '-'}
                                     </span>
-                                    <span className="versum-stat__label">
+                                    <span className="salonbw-stat__label">
                                         Nadchodzących (48h)
                                     </span>
                                 </div>
@@ -102,21 +102,21 @@ export default function RemindersPage() {
                         </div>
 
                         {/* Manual trigger */}
-                        <div className="versum-mass-communication__section">
+                        <div className="salonbw-mass-communication__section">
                             <h3>Ręczne wyzwalanie</h3>
-                            <p className="versum-muted">
+                            <p className="salonbw-muted">
                                 Wyślij przypomnienia do wszystkich klientów z
                                 wizytami w najbliższych godzinach.
                             </p>
-                            <div className="versum-form-group">
+                            <div className="salonbw-form-group">
                                 <label htmlFor="hours-input">
                                     Zakres godzin
                                 </label>
-                                <div className="versum-actions">
+                                <div className="salonbw-actions">
                                     <input
                                         id="hours-input"
                                         type="number"
-                                        className="versum-input"
+                                        className="salonbw-input"
                                         value={hours}
                                         onChange={(e) =>
                                             setHours(
@@ -130,7 +130,7 @@ export default function RemindersPage() {
                                     <span>godzin</span>
                                     <button
                                         type="button"
-                                        className="versum-btn versum-btn--primary"
+                                        className="salonbw-btn salonbw-btn--primary"
                                         onClick={() => void handleTrigger()}
                                         disabled={
                                             isTriggering ||
@@ -147,15 +147,15 @@ export default function RemindersPage() {
 
                         {/* Results */}
                         {showResults && (
-                            <div className="versum-mass-communication__section">
+                            <div className="salonbw-mass-communication__section">
                                 <h3>Wyniki wysyłki ({results.length} wizyt)</h3>
                                 {results.length === 0 ? (
-                                    <p className="versum-muted">
+                                    <p className="salonbw-muted">
                                         Brak wizyt w wybranym zakresie godzin.
                                     </p>
                                 ) : (
-                                    <div className="versum-table-wrap">
-                                        <table className="versum-table">
+                                    <div className="salonbw-table-wrap">
+                                        <table className="salonbw-table">
                                             <thead>
                                                 <tr>
                                                     <th>Klient</th>
@@ -170,22 +170,22 @@ export default function RemindersPage() {
                                                         <td>{r.clientName}</td>
                                                         <td>
                                                             {r.smsSent ? (
-                                                                <span className="versum-badge versum-badge--success">
+                                                                <span className="salonbw-badge salonbw-badge--success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="versum-badge versum-badge--inactive">
+                                                                <span className="salonbw-badge salonbw-badge--inactive">
                                                                     -
                                                                 </span>
                                                             )}
                                                         </td>
                                                         <td>
                                                             {r.emailSent ? (
-                                                                <span className="versum-badge versum-badge--success">
+                                                                <span className="salonbw-badge salonbw-badge--success">
                                                                     Wysłany
                                                                 </span>
                                                             ) : (
-                                                                <span className="versum-badge versum-badge--inactive">
+                                                                <span className="salonbw-badge salonbw-badge--inactive">
                                                                     -
                                                                 </span>
                                                             )}
@@ -193,7 +193,7 @@ export default function RemindersPage() {
                                                         <td>
                                                             {r.error ? (
                                                                 <span
-                                                                    className="versum-badge versum-badge--error"
+                                                                    className="salonbw-badge salonbw-badge--error"
                                                                     title={
                                                                         r.error
                                                                     }
@@ -202,11 +202,11 @@ export default function RemindersPage() {
                                                                 </span>
                                                             ) : r.smsSent ||
                                                               r.emailSent ? (
-                                                                <span className="versum-badge versum-badge--success">
+                                                                <span className="salonbw-badge salonbw-badge--success">
                                                                     OK
                                                                 </span>
                                                             ) : (
-                                                                <span className="versum-badge versum-badge--inactive">
+                                                                <span className="salonbw-badge salonbw-badge--inactive">
                                                                     Pominięty
                                                                 </span>
                                                             )}
@@ -221,7 +221,7 @@ export default function RemindersPage() {
                         )}
 
                         {/* Info */}
-                        <div className="versum-mass-communication__section">
+                        <div className="salonbw-mass-communication__section">
                             <h3>Jak to działa?</h3>
                             <ul>
                                 <li>
@@ -248,7 +248,7 @@ export default function RemindersPage() {
                         </div>
                     </div>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

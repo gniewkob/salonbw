@@ -112,8 +112,8 @@ export default function CustomerReviewsTab({ customerId }: Props) {
     return (
         <div className="row">
             <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header flex-between">
+                <div className="salonbw-widget">
+                    <div className="salonbw-widget__header flex-between">
                         <span>Opinie klienta</span>
                         {reviews.length > 0 && (
                             <div className="flex-center gap-10">
@@ -128,7 +128,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                         )}
                     </div>
 
-                    <div className="versum-widget__content">
+                    <div className="salonbw-widget__content">
                         {/* Source Filter */}
                         {reviews.length > 0 && (
                             <div className="mb-20 border-bottom-eee pb-10">
@@ -166,7 +166,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
 
                         {/* Reviews List */}
                         {filteredReviews.length > 0 ? (
-                            <div className="versum-notes-list">
+                            <div className="salonbw-notes-list">
                                 {filteredReviews.map((review) => {
                                     const config =
                                         sourceConfig[review.source] ||
@@ -221,7 +221,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                             )}
 
                                             {review.reply && (
-                                                <div className="versum-panel-sub mt-12 p-10 bg-fcfc">
+                                                <div className="salonbw-panel-sub mt-12 p-10 bg-fcfc">
                                                     <div className="flex-between mb-5">
                                                         <span className="fz-11 fw-700 text-777">
                                                             Odpowiedź:{' '}

@@ -93,8 +93,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
     return (
         <div className="row customer-files-tab">
             <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header flex-between">
+                <div className="salonbw-widget">
+                    <div className="salonbw-widget__header flex-between">
                         <span>załączone pliki</span>
                         <div className="flex-between gap-8">
                             <select
@@ -136,7 +136,7 @@ export default function CustomerFilesTab({ customerId }: Props) {
                         </div>
                     </div>
 
-                    <div className="versum-widget__content">
+                    <div className="salonbw-widget__content">
                         <div className="customer-files-toolbar">
                             <div className="btn-group">
                                 <button
@@ -172,8 +172,8 @@ export default function CustomerFilesTab({ customerId }: Props) {
                                     : `Brak dokumentów w kategorii "${categoryConfig[filterCategory as CustomerFileCategory].label}".`}
                             </div>
                         ) : (
-                            <div className="versum-table-wrap">
-                                <table className="versum-table fz-13">
+                            <div className="salonbw-table-wrap">
+                                <table className="salonbw-table fz-13">
                                     <thead>
                                         <tr>
                                             <>

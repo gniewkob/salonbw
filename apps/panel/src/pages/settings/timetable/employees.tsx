@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import TimetableEmployeesPage from '@/components/settings/TimetableEmployeesPage';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function TimetableEmployeesRoute() {
@@ -10,9 +10,9 @@ export default function TimetableEmployeesRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <TimetableEmployeesPage />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

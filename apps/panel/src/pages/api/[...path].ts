@@ -5,6 +5,20 @@ const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
 // Local API routes that should NOT be proxied to backend
 const LOCAL_ROUTES = new Set(['calendar-embed', 'runtime', 'gallery', '_diag']);
 
+export function normalizeCompatStatus(
+    targetPath: string,
+    status: number,
+): number {
+    // Vendored calendar runtime expects success responses from GraphQL reads as 200.
+    // Some backend stacks return 201 for POST /graphql, which the legacy client treats
+    // as an error despite receiving a valid payload.
+    if (targetPath === '/graphql' && status === 201) {
+        return 200;
+    }
+
+    return status;
+}
+
 /**
  * Catch-all API proxy that forwards requests to the backend
  * with the Authorization header extracted from the accessToken cookie.
@@ -81,7 +95,7 @@ export default async function handler(
         // Forward response status and selected headers.
         // For file downloads/uploads we must preserve binary response bodies
         // and important headers like Content-Disposition.
-        res.status(backendRes.status);
+        res.status(normalizeCompatStatus(targetPath, backendRes.status));
 
         const passthroughHeaders = [
             'content-type',

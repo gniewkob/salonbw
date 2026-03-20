@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import {
@@ -92,7 +92,7 @@ export default function WarehouseChangesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:statistics">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
                     <div className="flex-between mb-20">
@@ -121,31 +121,31 @@ export default function WarehouseChangesPage() {
                             {/* KPI */}
                             <div className="row mb-20">
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Wszystkie ruchy
                                         </div>
-                                        <div className="versum-tile__value">
+                                        <div className="salonbw-tile__value">
                                             {stats.totalMovements}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Typów operacji
                                         </div>
-                                        <div className="versum-tile__value text-accent">
+                                        <div className="salonbw-tile__value text-accent">
                                             {stats.byType.length}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-sm-4">
-                                    <div className="versum-tile">
-                                        <div className="versum-tile__label">
+                                    <div className="salonbw-tile">
+                                        <div className="salonbw-tile__label">
                                             Najczęstszy typ
                                         </div>
-                                        <div className="versum-tile__value text-success">
+                                        <div className="salonbw-tile__value text-success">
                                             {stats.byType[0]
                                                 ? TYPE_LABELS[
                                                       stats.byType[0].type
@@ -157,11 +157,11 @@ export default function WarehouseChangesPage() {
                             </div>
 
                             {/* Chart */}
-                            <div className="versum-widget mb-20">
-                                <div className="versum-widget__header">
+                            <div className="salonbw-widget mb-20">
+                                <div className="salonbw-widget__header">
                                     Ruchy magazynowe wg typu
                                 </div>
-                                <div className="versum-widget__content h-[300px]">
+                                <div className="salonbw-widget__content h-[300px]">
                                     <ResponsiveContainer>
                                         <BarChart data={chartData}>
                                             <CartesianGrid strokeDasharray="3 3" />
@@ -179,12 +179,12 @@ export default function WarehouseChangesPage() {
                             </div>
 
                             {/* Recent Movements Table */}
-                            <div className="versum-widget">
-                                <div className="versum-widget__header">
+                            <div className="salonbw-widget">
+                                <div className="salonbw-widget__header">
                                     Ostatnie ruchy (50 najnowszych)
                                 </div>
-                                <div className="versum-widget__content">
-                                    <table className="versum-table">
+                                <div className="salonbw-widget__content">
+                                    <table className="salonbw-table">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
@@ -262,7 +262,7 @@ export default function WarehouseChangesPage() {
                         </>
                     ) : null}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

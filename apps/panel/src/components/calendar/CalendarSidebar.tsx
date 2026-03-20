@@ -68,17 +68,17 @@ export default function CalendarSidebar({
 
     return (
         <div className="flex flex-col gap-4 p-4">
-            <div className="versum-datepicker-container">
+            <div className="salonbw-datepicker-container">
                 <DatePicker
                     selected={selectedDate}
                     onChange={handleDateChange}
                     inline
                     locale="pl"
-                    calendarClassName="versum-datepicker"
+                    calendarClassName="salonbw-datepicker"
                 />
             </div>
 
-            <div className="versum-sidebar-section">
+            <div className="salonbw-sidebar-section">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-bold text-gray-500 uppercase">
                         Pracownicy

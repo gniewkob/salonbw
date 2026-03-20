@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BranchSettings } from './entities/branch-settings.entity';
 import { CalendarSettings } from './entities/calendar-settings.entity';
+import { CalendarViewEntity } from './entities/calendar-view.entity';
 import { OnlineBookingSettings } from './entities/online-booking-settings.entity';
 import { SmsSettings } from './entities/sms-settings.entity';
 import { ReminderSettings } from './entities/reminder-settings.entity';
@@ -15,6 +16,7 @@ import { User } from '../users/user.entity';
         TypeOrmModule.forFeature([
             BranchSettings,
             CalendarSettings,
+            CalendarViewEntity,
             OnlineBookingSettings,
             SmsSettings,
             ReminderSettings,

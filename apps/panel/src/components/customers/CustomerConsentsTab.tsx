@@ -35,19 +35,19 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
     return (
         <div className="row">
             <div className="col-sm-12">
-                <div className="versum-widget">
-                    <div className="versum-widget__header">
+                <div className="salonbw-widget">
+                    <div className="salonbw-widget__header">
                         <span>Zgody i preferencje</span>
                     </div>
-                    <div className="versum-widget__content">
+                    <div className="salonbw-widget__content">
                         {/* GDPR Consent */}
-                        <div className="versum-panel-sub">
+                        <div className="salonbw-panel-sub">
                             <div className="row">
                                 <div className="col-sm-1">
                                     <input
                                         id="consent-gdpr"
                                         type="checkbox"
-                                        className="versum-checkbox-large"
+                                        className="salonbw-checkbox-large"
                                         checked={customer.gdprConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -60,17 +60,17 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                 <div className="col-sm-11">
                                     <label
                                         htmlFor="consent-gdpr"
-                                        className="versum-panel-sub__title block"
+                                        className="salonbw-panel-sub__title block"
                                     >
                                         Ochrona danych osobowych (RODO)
                                     </label>
-                                    <p className="versum-panel-sub__description">
+                                    <p className="salonbw-panel-sub__description">
                                         Wyrażam zgodę na przetwarzanie danych
                                         osobowych w celach związanych z
                                         realizacją usług salonu zgodnie z RODO.
                                     </p>
                                     {customer.gdprConsentDate && (
-                                        <div className="versum-panel-sub__meta">
+                                        <div className="salonbw-panel-sub__meta">
                                             Data wyrażenia zgody:{' '}
                                             {formatDate(
                                                 customer.gdprConsentDate,
@@ -82,13 +82,13 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* Marketing Consents */}
-                        <div className="versum-panel-sub">
+                        <div className="salonbw-panel-sub">
                             <div className="row mb-15">
                                 <div className="col-sm-1">
                                     <input
                                         id="consent-sms"
                                         type="checkbox"
-                                        className="versum-checkbox-large"
+                                        className="salonbw-checkbox-large"
                                         checked={customer.smsConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -101,11 +101,11 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                 <div className="col-sm-11">
                                     <label
                                         htmlFor="consent-sms"
-                                        className="versum-panel-sub__title block"
+                                        className="salonbw-panel-sub__title block"
                                     >
                                         Zgoda na powiadomienia SMS
                                     </label>
-                                    <p className="versum-panel-sub__description">
+                                    <p className="salonbw-panel-sub__description">
                                         Wyrażam zgodę na otrzymywanie wiadomości
                                         SMS z przypomnieniami o wizytach oraz
                                         ofertami promocyjnymi.
@@ -118,7 +118,7 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                     <input
                                         id="consent-email"
                                         type="checkbox"
-                                        className="versum-checkbox-large"
+                                        className="salonbw-checkbox-large"
                                         checked={customer.emailConsent}
                                         onChange={(e) =>
                                             handleConsentChange(
@@ -131,11 +131,11 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                                 <div className="col-sm-11">
                                     <label
                                         htmlFor="consent-email"
-                                        className="versum-panel-sub__title block"
+                                        className="salonbw-panel-sub__title block"
                                     >
                                         Zgoda na newsletter e-mail
                                     </label>
-                                    <p className="versum-panel-sub__description">
+                                    <p className="salonbw-panel-sub__description">
                                         Wyrażam zgodę na otrzymywanie wiadomości
                                         e-mail z informacjami o nowościach,
                                         promocjach i newsletterach.
@@ -145,7 +145,7 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                         </div>
 
                         {/* Privacy Information Alert */}
-                        <div className="versum-alert versum-alert-info">
+                        <div className="salonbw-alert salonbw-alert-info">
                             <div className="bold mb-5">
                                 Informacja o przetwarzaniu danych
                             </div>
@@ -162,10 +162,10 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
 
                         {/* History Table */}
                         <div className="mt-30">
-                            <div className="versum-section-title">
+                            <div className="salonbw-section-title">
                                 Historia zmian zgód
                             </div>
-                            <table className="versum-table fz-12">
+                            <table className="salonbw-table fz-12">
                                 <thead>
                                     <tr>
                                         <th>Data</th>

@@ -21,7 +21,7 @@ export default function PolicyPage() {
                     <p className="lead text-gray-600 mb-8">
                         Niniejszy Regulamin określa ogólne warunki, zasady oraz
                         sposób świadczenia usług drogą elektroniczną przez Salon
-                        Fryzjerski "Black & White", a także zasady korzystania z
+                        Fryzjerski &quot;Black & White&quot;, a także zasady korzystania z
                         systemu rezerwacji i świadczenia usług
                         kosmetyczno-fryzjerskich na miejscu.
                     </p>
@@ -38,7 +38,7 @@ export default function PolicyPage() {
                             </strong>{' '}
                             z siedzibą w Radzionkowie (41-922), ul. Mikołaja
                             Kopernika 13, NIP: 626 223 11 81, tel. +48 723 588
-                            868, zwany dalej "Usługodawcą".
+                            868, zwany dalej &quot;Usługodawcą&quot;.
                         </li>
                         <li>
                             Regulamin udostępniany jest nieprzerwanie na stronie

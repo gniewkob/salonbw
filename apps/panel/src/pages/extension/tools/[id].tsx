@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 type PlanAvailability = {
@@ -11,7 +11,7 @@ type PlanAvailability = {
 
 type ToolData = {
     id: string;
-    versumToolId: string;
+    toolId: string;
     title: string;
     description: string;
     descriptionMore?: string[];
@@ -36,7 +36,7 @@ type ToolData = {
 const TOOLS: Record<string, ToolData> = {
     automatic_marketing: {
         id: 'automatic_marketing',
-        versumToolId: '4',
+        toolId: '4',
         title: 'Marketing Automatyczny',
         description:
             'Codziennie w Twoim salonie pojawiają się klienci, ale czy wiesz ilu z nich zobaczysz u siebie ponownie? Marketing Automatyczny pomoże Ci zachęcić ich do powrotu. System analizuje historię wizyt klientów i w odpowiednim momencie automatycznie wysyła do nich wiadomości z indywidualnymi ofertami lub zaproszeniami na kolejne wizyty.',
@@ -68,7 +68,7 @@ const TOOLS: Record<string, ToolData> = {
     },
     lumo: {
         id: 'lumo',
-        versumToolId: '6',
+        toolId: '6',
         title: 'Program Lojalnościowy',
         description:
             'Twoi stali klienci zapewniają Ci większość przychodów, a stabilny rozwój salonu możliwy jest tylko dzięki powiększaniu ich grona. Program Lojalnościowy pozwoli Ci nawiązywać trwałe relacje i zwiększać zaangażowanie klientów. Zasady programu opierają się na zbieraniu punktów przez uczestników, które w przyszłości będą oni mogli wymienić na nagrody.',
@@ -85,7 +85,7 @@ const TOOLS: Record<string, ToolData> = {
     },
     resources: {
         id: 'resources',
-        versumToolId: '7',
+        toolId: '7',
         title: 'Zasoby',
         description:
             'Automatycznie sprawdza dostępność urządzeń i pomieszczeń podczas wprowadzania wizyt. Eliminuje błędne rezerwacje i oszczędza czas.',
@@ -102,7 +102,7 @@ const TOOLS: Record<string, ToolData> = {
     },
     gift_cards: {
         id: 'gift_cards',
-        versumToolId: '8',
+        toolId: '8',
         title: 'Bony i Karnety',
         description:
             'Zaoferuj swoim klientom bony, karty podarunkowe i karnety. Z dodatkiem Bony i karnety będzie to łatwiejsze niż kiedykolwiek!',
@@ -119,10 +119,10 @@ const TOOLS: Record<string, ToolData> = {
     },
     fiscalization: {
         id: 'fiscalization',
-        versumToolId: '3',
+        toolId: '3',
         title: 'Fiskalizacja',
         description:
-            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej prosto z Versum. Zobacz, jakie to szybkie i proste!',
+            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej bezpośrednio w panelu SalonBW. Zobacz, jakie to szybkie i proste!',
         icon: 'fiscalization',
         status: 'Nieaktywny',
         trial: '30 dni darmowego okresu testowego',
@@ -136,7 +136,7 @@ const TOOLS: Record<string, ToolData> = {
     },
     google_calendar: {
         id: 'google_calendar',
-        versumToolId: '1',
+        toolId: '1',
         title: 'Kalendarz Google',
         description:
             'Idealne rozwiązanie organizacyjne dla osób pracujących w kilku miejscach.',
@@ -153,7 +153,7 @@ const TOOLS: Record<string, ToolData> = {
     },
     access_restriction: {
         id: 'access_restriction',
-        versumToolId: '5',
+        toolId: '5',
         title: 'Ograniczenie Dostępu',
         description:
             'Ogranicz dostęp do systemu dla wybranych godzin, urządzeń lub adresów IP.',
@@ -190,9 +190,9 @@ export default function ExtensionToolPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:extension">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <ExtensionToolContent />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }
@@ -204,7 +204,7 @@ function ExtensionToolContent() {
     const tool = resolvedId ? TOOLS[resolvedId] : undefined;
 
     return (
-        <div className="versum-page" data-testid="extension-tool-page">
+        <div className="salonbw-page" data-testid="extension-tool-page">
             <ul className="breadcrumb">
                 <li>
                     <i className="icon sprite-star" aria-hidden="true" />
@@ -328,7 +328,7 @@ function ExtensionToolContent() {
                                         <div className="row row-no-padding">
                                             <div className="col-xs-12">
                                                 <a href={tool.gallery.main}>
-                                                    {/* Copy-first parity with Versum gallery markup. */}
+                                                    {/* Copy-first parity with source gallery markup. */}
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         className="gthumbnail img-responsive"
@@ -346,7 +346,7 @@ function ExtensionToolContent() {
                                                         className="col-xs-4"
                                                     >
                                                         <a href={thumbUrl}>
-                                                            {/* Copy-first parity with Versum gallery markup. */}
+                                                            {/* Copy-first parity with source gallery markup. */}
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img
                                                                 className={`gthumbnail img-responsive ${idx === 1 ? 'center-block' : ''} ${idx === 2 ? 'pull-right' : ''}`}
@@ -388,7 +388,7 @@ function ExtensionToolContent() {
                                         <td key={plan}>
                                             {p.available ? (
                                                 <>
-                                                    {/* Copy-first parity with Versum: native <img> availability icon. */}
+                                                    {/* Copy-first parity with source UI: native <img> availability icon. */}
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         alt="dostępny"
@@ -421,7 +421,7 @@ function ExtensionToolContent() {
                     </table>
                 </div>
             ) : (
-                <p className="versum-muted p-20">Nie znaleziono dodatku.</p>
+                <p className="salonbw-muted p-20">Nie znaleziono dodatku.</p>
             )}
         </div>
     );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { format, addYears } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -207,8 +207,8 @@ export default function GiftCardsManagementPage() {
             roles={['admin', 'receptionist']}
             permission="nav:extension"
         >
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="gift-cards-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="gift-cards-page">
                     <ul className="breadcrumb">
                         <li>
                             <Link href="/extension">Dodatki</Link>
@@ -1426,7 +1426,7 @@ export default function GiftCardsManagementPage() {
                         )}
                     </div>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

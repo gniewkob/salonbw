@@ -14,7 +14,7 @@ interface Props {
 
 /**
  * jqplot-style pie chart — SVG with positioned legend table.
- * Matches Versum's #chart / #chart2 visual output.
+ * Matches source UI's #chart / #chart2 visual output.
  */
 export default function StatisticsPieChart({ width, height, data }: Props) {
     const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);

@@ -86,7 +86,7 @@ test.describe('PROD smoke: warehouse layout parity', () => {
             await page.goto(url);
             await page.waitForLoadState('domcontentloaded');
 
-            // VersumShell structure.
+            // SalonBWShell structure.
             await expect(page.locator('#main-container')).toBeVisible();
             await expect(page.locator('#sidebar')).toBeVisible();
             await expect(page.locator('#main-content')).toBeVisible();

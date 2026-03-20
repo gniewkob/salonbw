@@ -8,7 +8,7 @@
 /* Dark mode overrides (optional, keeping for compatibility but default is light) */
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #f5f5f5; /* Force light mode base for consistency with Versum design for now */
+        --background: #f5f5f5; /* Force light mode base for consistency with the source design for now */
         --foreground: #333333;
     }
 }
@@ -25,7 +25,7 @@ body {
     }
 
     .btn-primary {
-        background: var(--versum-accent);
+        background: var(--salonbw-accent);
         color: #fff;
     }
 
@@ -53,7 +53,7 @@ body {
         @apply bg-gray-50;
     }
 
-    /* Versum Status Badges */
+    /* SalonBW Status Badges */
     .badge {
         @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
     }
@@ -67,481 +67,481 @@ body {
     }
 
     /* Mass Communication Styles */
-    .versum-mass-communication {
+    .salonbw-mass-communication {
         @apply max-w-3xl mx-auto;
     }
 
-    .versum-mass-communication__section {
+    .salonbw-mass-communication__section {
         @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4;
     }
 
-    .versum-mass-communication__section h3 {
+    .salonbw-mass-communication__section h3 {
         @apply text-lg font-semibold text-gray-800 mb-4;
     }
 
-    .versum-mass-communication__subsection {
+    .salonbw-mass-communication__subsection {
         @apply mt-4 pl-4 border-l-2 border-gray-200;
     }
 
-    .versum-mass-communication__subsection h4 {
+    .salonbw-mass-communication__subsection h4 {
         @apply text-sm font-medium text-gray-600 mb-3;
     }
 
-    .versum-mass-communication__footer {
+    .salonbw-mass-communication__footer {
         @apply flex justify-between items-center mt-6 pt-4 border-t border-gray-200;
     }
 
     /* Step indicator */
-    .versum-steps {
+    .salonbw-steps {
         @apply flex items-center justify-center mb-8 py-4;
     }
 
-    .versum-step {
+    .salonbw-step {
         @apply flex items-center gap-2;
     }
 
-    .versum-step__number {
+    .salonbw-step__number {
         @apply w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold;
     }
 
-    .versum-step.active .versum-step__number {
+    .salonbw-step.active .salonbw-step__number {
         @apply bg-[#25B4C1] text-white;
     }
 
-    .versum-step__label {
+    .salonbw-step__label {
         @apply text-sm text-gray-600 font-medium;
     }
 
-    .versum-step.active .versum-step__label {
+    .salonbw-step.active .salonbw-step__label {
         @apply text-gray-900;
     }
 
-    .versum-step__divider {
+    .salonbw-step__divider {
         @apply w-12 h-px bg-gray-300 mx-4;
     }
 
     /* Channel selector */
-    .versum-channel-selector {
+    .salonbw-channel-selector {
         @apply flex gap-4;
     }
 
-    .versum-channel {
+    .salonbw-channel {
         @apply flex items-center gap-2 p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1];
     }
 
-    .versum-channel input {
+    .salonbw-channel input {
         @apply hidden;
     }
 
-    .versum-channel.active {
+    .salonbw-channel.active {
         @apply border-[#25B4C1] bg-[#25B4C1]/5;
     }
 
-    .versum-channel__icon {
+    .salonbw-channel__icon {
         @apply text-2xl;
     }
 
     /* Checkbox row */
-    .versum-checkbox-row {
+    .salonbw-checkbox-row {
         @apply flex items-center gap-3 py-2 cursor-pointer;
     }
 
-    .versum-checkbox-row input[type='checkbox'] {
+    .salonbw-checkbox-row input[type='checkbox'] {
         @apply w-4 h-4 rounded border-gray-300 text-[#25B4C1] focus:ring-[#25B4C1];
     }
 
-    .versum-group-dot {
+    .salonbw-group-dot {
         @apply w-3 h-3 rounded-full inline-block;
     }
 
     /* Template list */
-    .versum-template-list {
+    .salonbw-template-list {
         @apply space-y-2;
     }
 
-    .versum-template-item {
+    .salonbw-template-item {
         @apply p-4 border border-gray-200 rounded-lg cursor-pointer transition-all hover:border-[#25B4C1] hover:bg-gray-50;
     }
 
-    .versum-template-item.active {
+    .salonbw-template-item.active {
         @apply border-[#25B4C1] bg-[#25B4C1]/5;
     }
 
-    .versum-template-item__name {
+    .salonbw-template-item__name {
         @apply block font-medium text-gray-800 mb-1;
     }
 
-    .versum-template-item__preview {
+    .salonbw-template-item__preview {
         @apply block text-sm text-gray-500;
     }
 
     /* Form styles */
-    .versum-form-group {
+    .salonbw-form-group {
         @apply mb-4;
     }
 
-    .versum-form-group label {
+    .salonbw-form-group label {
         @apply block text-sm font-medium text-gray-700 mb-1;
     }
 
-    .versum-input {
+    .salonbw-input {
         @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
     }
 
-    .versum-textarea {
+    .salonbw-textarea {
         @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent resize-none;
     }
 
-    .versum-char-count {
+    .salonbw-char-count {
         @apply block text-right text-xs text-gray-500 mt-1;
     }
 
     /* Variables help */
-    .versum-variables-help {
+    .salonbw-variables-help {
         @apply bg-gray-50 p-4 rounded-lg mt-4;
     }
 
-    .versum-variables-help h4 {
+    .salonbw-variables-help h4 {
         @apply text-sm font-medium text-gray-700 mb-2;
     }
 
-    .versum-variables-help code {
+    .salonbw-variables-help code {
         @apply inline-block px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 mr-2 font-mono;
     }
 
     /* Send result */
-    .versum-mass-communication--success {
+    .salonbw-mass-communication--success {
         @apply text-center py-8;
     }
 
-    .versum-send-result {
+    .salonbw-send-result {
         @apply max-w-md mx-auto;
     }
 
-    .versum-send-result__icon {
+    .salonbw-send-result__icon {
         @apply w-16 h-16 rounded-full bg-green-100 text-green-600 text-3xl flex items-center justify-center mx-auto mb-4;
     }
 
-    .versum-send-result h3 {
+    .salonbw-send-result h3 {
         @apply text-xl font-semibold text-gray-800 mb-6;
     }
 
-    .versum-send-result__stats {
+    .salonbw-send-result__stats {
         @apply flex justify-center gap-8 mb-8;
     }
 
-    .versum-stat {
+    .salonbw-stat {
         @apply text-center;
     }
 
-    .versum-stat__value {
+    .salonbw-stat__value {
         @apply block text-3xl font-bold mb-1;
     }
 
-    .versum-stat--success .versum-stat__value {
+    .salonbw-stat--success .salonbw-stat__value {
         @apply text-green-600;
     }
 
-    .versum-stat--error .versum-stat__value {
+    .salonbw-stat--error .salonbw-stat__value {
         @apply text-red-600;
     }
 
-    .versum-stat__label {
+    .salonbw-stat__label {
         @apply text-sm text-gray-600;
     }
 
-    .versum-recipient-count {
+    .salonbw-recipient-count {
         @apply text-sm text-gray-600;
     }
 
     /* Button styles */
-    .versum-btn {
+    .salonbw-btn {
         @apply px-4 py-2 rounded-md font-medium text-sm transition-colors cursor-pointer border-0;
     }
 
-    .versum-btn--primary {
-        background: var(--versum-accent);
+    .salonbw-btn--primary {
+        background: var(--salonbw-accent);
         color: #fff;
     }
 
-    .versum-btn--primary:hover {
+    .salonbw-btn--primary:hover {
         filter: brightness(0.95);
     }
 
-    .versum-btn--primary:disabled {
+    .salonbw-btn--primary:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
 
-    .versum-btn--light {
+    .salonbw-btn--light {
         @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
     }
 
-    .versum-btn--danger {
+    .salonbw-btn--danger {
         @apply bg-red-100 text-red-700 hover:bg-red-200;
     }
 
-    .versum-btn--sm {
+    .salonbw-btn--sm {
         @apply px-3 py-1 text-xs;
     }
 
-    .versum-btn--default {
+    .salonbw-btn--default {
         @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
     }
 
     /* Template page styles */
-    .versum-page__toolbar {
+    .salonbw-page__toolbar {
         @apply flex items-center mb-4;
     }
 
-    .versum-label {
+    .salonbw-label {
         @apply text-sm text-gray-700;
     }
 
-    .versum-select {
+    .salonbw-select {
         @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#25B4C1] focus:border-transparent;
     }
 
-    .versum-table-wrap {
+    .salonbw-table-wrap {
         @apply overflow-x-auto;
     }
 
-    .versum-table {
+    .salonbw-table {
         @apply w-full border-collapse;
     }
 
-    .versum-table th {
+    .salonbw-table th {
         @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
     }
 
-    .versum-table td {
+    .salonbw-table td {
         @apply text-left p-3 border-b border-gray-200 text-sm;
     }
 
-    .versum-table tr:hover {
+    .salonbw-table tr:hover {
         @apply bg-gray-50;
     }
 
-    .versum-badge {
+    .salonbw-badge {
         @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700;
     }
 
-    .versum-badge--success {
+    .salonbw-badge--success {
         @apply bg-green-100 text-green-800;
     }
 
-    .versum-badge--inactive {
+    .salonbw-badge--inactive {
         @apply bg-gray-200 text-gray-600;
     }
 
-    .versum-badge--error {
+    .salonbw-badge--error {
         @apply bg-red-100 text-red-800;
     }
 
-    .versum-badge--sm {
+    .salonbw-badge--sm {
         @apply px-1.5 py-0.5 text-xs;
     }
 
-    .versum-actions {
+    .salonbw-actions {
         @apply flex gap-2;
     }
 
-    .versum-muted {
+    .salonbw-muted {
         @apply text-gray-500;
     }
 
-    .versum-template-preview {
+    .salonbw-template-preview {
         @apply max-w-xs text-gray-600;
     }
 
-    .versum-empty {
+    .salonbw-empty {
         @apply text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-200;
     }
 
-    .versum-loading {
+    .salonbw-loading {
         @apply text-center py-12 text-gray-500;
     }
 
     /* Modal styles */
-    .versum-modal-overlay {
+    .salonbw-modal-overlay {
         @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
     }
 
-    .versum-modal {
+    .salonbw-modal {
         @apply bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto;
     }
 
-    .versum-modal__header {
+    .salonbw-modal__header {
         @apply flex justify-between items-center p-4 border-b border-gray-200;
     }
 
-    .versum-modal__header h3 {
+    .salonbw-modal__header h3 {
         @apply text-lg font-semibold text-gray-800;
     }
 
-    .versum-modal__close {
+    .salonbw-modal__close {
         @apply text-2xl text-gray-400 hover:text-gray-600 cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100;
     }
 
-    .versum-modal__body {
+    .salonbw-modal__body {
         @apply p-4 space-y-4;
     }
 
-    .versum-modal__footer {
+    .salonbw-modal__footer {
         @apply flex justify-end gap-2 p-4 border-t border-gray-200 bg-gray-50;
     }
 
-    .versum-form-row {
+    .salonbw-form-row {
         @apply grid grid-cols-2 gap-4;
     }
 
     /* Reception View Styles */
-    .versum-reception-view {
+    .salonbw-reception-view {
         @apply h-full overflow-auto;
     }
 
-    .versum-reception-summary {
+    .salonbw-reception-summary {
         @apply flex gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200;
     }
 
-    .versum-reception-summary__item {
+    .salonbw-reception-summary__item {
         @apply flex-1 text-center p-3 rounded-lg bg-gray-50;
     }
 
-    .versum-reception-summary__item--scheduled {
+    .salonbw-reception-summary__item--scheduled {
         @apply bg-blue-50;
     }
 
-    .versum-reception-summary__item--confirmed {
+    .salonbw-reception-summary__item--confirmed {
         @apply bg-purple-50;
     }
 
-    .versum-reception-summary__item--in-progress {
+    .salonbw-reception-summary__item--in-progress {
         @apply bg-yellow-50;
     }
 
-    .versum-reception-summary__item--completed {
+    .salonbw-reception-summary__item--completed {
         @apply bg-green-50;
     }
 
-    .versum-reception-summary__value {
+    .salonbw-reception-summary__value {
         @apply block text-2xl font-bold text-gray-800;
     }
 
-    .versum-reception-summary__label {
+    .salonbw-reception-summary__label {
         @apply block text-sm text-gray-500 mt-1;
     }
 
-    .versum-reception-table-wrap {
+    .salonbw-reception-table-wrap {
         @apply bg-white rounded-lg border border-gray-200 overflow-hidden;
     }
 
-    .versum-reception-table {
+    .salonbw-reception-table {
         @apply w-full border-collapse;
     }
 
-    .versum-reception-table th {
+    .salonbw-reception-table th {
         @apply text-left p-3 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm;
     }
 
-    .versum-reception-table td {
+    .salonbw-reception-table td {
         @apply text-left p-3 border-b border-gray-200 text-sm;
     }
 
-    .versum-reception-table tbody tr:hover {
+    .salonbw-reception-table tbody tr:hover {
         @apply bg-gray-50;
     }
 
-    .versum-reception-table tbody tr:last-child td {
+    .salonbw-reception-table tbody tr:last-child td {
         @apply border-b-0;
     }
 
-    .versum-reception-row--overdue {
+    .salonbw-reception-row--overdue {
         @apply bg-red-50/50;
     }
 
-    .versum-reception-row--overdue:hover {
+    .salonbw-reception-row--overdue:hover {
         @apply bg-red-50;
     }
 
-    .versum-reception-row--processing {
+    .salonbw-reception-row--processing {
         @apply opacity-70;
     }
 
-    .versum-reception-time {
+    .salonbw-reception-time {
         @apply font-medium whitespace-nowrap;
     }
 
-    .versum-reception-overdue-badge {
+    .salonbw-reception-overdue-badge {
         @apply block text-xs text-red-600 font-medium mt-1;
     }
 
-    .versum-reception-client {
+    .salonbw-reception-client {
         @apply min-w-[150px];
     }
 
-    .versum-reception-phone {
+    .salonbw-reception-phone {
         @apply text-xs text-gray-500 mt-1;
     }
 
-    .versum-reception-actions {
+    .salonbw-reception-actions {
         @apply flex gap-2 flex-wrap;
     }
 
-    .versum-reception-no-actions {
+    .salonbw-reception-no-actions {
         @apply text-gray-400;
     }
 
-    .versum-status-badge {
+    .salonbw-status-badge {
         @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
     }
 
-    .versum-status--scheduled {
+    .salonbw-status--scheduled {
         @apply bg-blue-100 text-blue-800;
     }
 
-    .versum-status--confirmed {
+    .salonbw-status--confirmed {
         @apply bg-purple-100 text-purple-800;
     }
 
-    .versum-status--in-progress {
+    .salonbw-status--in-progress {
         @apply bg-yellow-100 text-yellow-800;
     }
 
-    .versum-status--completed {
+    .salonbw-status--completed {
         @apply bg-green-100 text-green-800;
     }
 
-    .versum-status--cancelled {
+    .salonbw-status--cancelled {
         @apply bg-gray-200 text-gray-600;
     }
 
-    .versum-status--no-show {
+    .salonbw-status--no-show {
         @apply bg-red-100 text-red-800;
     }
 
-    .versum-reception-empty {
+    .salonbw-reception-empty {
         @apply text-center py-16 bg-white rounded-lg border border-gray-200;
     }
 
-    .versum-reception-empty__icon {
+    .salonbw-reception-empty__icon {
         @apply text-5xl mb-4;
     }
 
-    .versum-reception-empty h3 {
+    .salonbw-reception-empty h3 {
         @apply text-lg font-medium text-gray-800 mb-2;
     }
 
-    .versum-reception-empty p {
+    .salonbw-reception-empty p {
         @apply text-gray-500;
     }
 
     /* Additional button styles */
-    .versum-btn--success {
+    .salonbw-btn--success {
         @apply bg-green-500 text-white hover:bg-green-600;
     }
 
-    .versum-btn--warning {
+    .salonbw-btn--warning {
         @apply bg-yellow-500 text-white hover:bg-yellow-600;
     }
 
@@ -549,7 +549,7 @@ body {
        VERSUM CALENDAR STYLES - Matching Original
        ============================================ */
 
-    /* Calendar background - white like original Versum */
+    /* Calendar background - white like oryginalny shell panelu */
     .fc {
         --fc-border-color: #e5e7eb;
         --fc-page-bg-color: #ffffff;
@@ -590,7 +590,7 @@ body {
         font-size: 13px !important;
     }
 
-    /* Event styling - Versum-like gray blocks */
+    /* Event styling - source-like gray blocks */
     .fc-event {
         border: none !important;
         border-radius: 3px !important;
@@ -674,10 +674,10 @@ body {
     }
 
     /* ============================================
-       HIDE FULLCALENDAR DEFAULT HEADER (Versum uses custom)
+       HIDE FULLCALENDAR DEFAULT HEADER (źródłowy system używa custom)
        ============================================ */
 
-    /* Hide FullCalendar's default toolbar - we use our custom Versum header */
+    /* Hide FullCalendar's default toolbar - we use our custom SalonBW header */
     .fc .fc-toolbar {
         display: none !important;
     }
@@ -688,17 +688,17 @@ body {
     }
 
     /* ============================================
-       EMPLOYEE LIST (SIDEBAR) - Versum Style
+       EMPLOYEE LIST (SIDEBAR) - SalonBW Style
        ============================================ */
 
-    .versum-employee-list {
+    .salonbw-employee-list {
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 4px;
         padding: 12px;
     }
 
-    .versum-employee-list__header {
+    .salonbw-employee-list__header {
         font-size: 11px;
         font-weight: 700;
         color: #6b7280;
@@ -707,7 +707,7 @@ body {
         margin-bottom: 8px;
     }
 
-    .versum-employee-item {
+    .salonbw-employee-item {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -717,11 +717,11 @@ body {
         transition: background 0.15s ease;
     }
 
-    .versum-employee-item:hover {
+    .salonbw-employee-item:hover {
         background: #f3f4f6;
     }
 
-    .versum-employee-item__checkbox {
+    .salonbw-employee-item__checkbox {
         width: 16px;
         height: 16px;
         border: 2px solid #d1d5db;
@@ -732,29 +732,29 @@ body {
         transition: all 0.15s ease;
     }
 
-    .versum-employee-item__checkbox.checked {
+    .salonbw-employee-item__checkbox.checked {
         background: #3b82f6;
         border-color: #3b82f6;
     }
 
-    .versum-employee-item__color {
+    .salonbw-employee-item__color {
         width: 12px;
         height: 12px;
         border-radius: 50%;
         flex-shrink: 0;
     }
 
-    .versum-employee-item__name {
+    .salonbw-employee-item__name {
         font-size: 13px;
         color: #374151;
         flex: 1;
     }
 
     /* ============================================
-       EVENT TOOLTIP (On Hover) - Versum Style
+       EVENT TOOLTIP (On Hover) - SalonBW Style
        ============================================ */
 
-    .versum-event-tooltip {
+    .salonbw-event-tooltip {
         position: absolute;
         z-index: 1000;
         background: #ffffff;
@@ -766,7 +766,7 @@ body {
         pointer-events: none;
     }
 
-    .versum-event-tooltip::before {
+    .salonbw-event-tooltip::before {
         content: '';
         position: absolute;
         bottom: -6px;
@@ -779,27 +779,27 @@ body {
         border-top: 6px solid #ffffff;
     }
 
-    .versum-event-tooltip__time {
+    .salonbw-event-tooltip__time {
         font-size: 12px;
         color: #6b7280;
         font-weight: 500;
         margin-bottom: 4px;
     }
 
-    .versum-event-tooltip__client {
+    .salonbw-event-tooltip__client {
         font-size: 14px;
         font-weight: 600;
         color: #1f2937;
         margin-bottom: 2px;
     }
 
-    .versum-event-tooltip__service {
+    .salonbw-event-tooltip__service {
         font-size: 13px;
         color: #4b5563;
         margin-bottom: 4px;
     }
 
-    .versum-event-tooltip__employee {
+    .salonbw-event-tooltip__employee {
         font-size: 12px;
         color: #6b7280;
         display: flex;
@@ -807,7 +807,7 @@ body {
         gap: 6px;
     }
 
-    .versum-event-tooltip__price {
+    .salonbw-event-tooltip__price {
         font-size: 13px;
         font-weight: 600;
         color: #059669;
@@ -816,7 +816,7 @@ body {
         border-top: 1px solid #e5e7eb;
     }
 
-    .versum-event-tooltip__status {
+    .salonbw-event-tooltip__status {
         display: inline-block;
         font-size: 11px;
         padding: 2px 8px;
@@ -824,22 +824,22 @@ body {
         margin-top: 6px;
     }
 
-    .versum-event-tooltip__status--scheduled {
+    .salonbw-event-tooltip__status--scheduled {
         background: #dbeafe;
         color: #1e40af;
     }
 
-    .versum-event-tooltip__status--confirmed {
+    .salonbw-event-tooltip__status--confirmed {
         background: #d1fae5;
         color: #065f46;
     }
 
-    .versum-event-tooltip__status--in-progress {
+    .salonbw-event-tooltip__status--in-progress {
         background: #fef3c7;
         color: #92400e;
     }
 
-    .versum-event-tooltip__status--completed {
+    .salonbw-event-tooltip__status--completed {
         background: #f3f4f6;
         color: #4b5563;
     }
@@ -850,39 +850,39 @@ body {
    (Outside @layer for higher specificity)
    ============================================ */
 
-.versum-mini-calendar {
+.salonbw-mini-calendar {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 4px;
     padding: 12px;
 }
 
-.versum-mini-calendar .react-datepicker {
+.salonbw-mini-calendar .react-datepicker {
     border: none;
     font-family: 'Open Sans', sans-serif;
     width: 100%;
 }
 
-.versum-mini-calendar .react-datepicker__header {
+.salonbw-mini-calendar .react-datepicker__header {
     background: #ffffff;
     border-bottom: 1px solid #e5e7eb;
     padding-top: 8px;
 }
 
-.versum-mini-calendar .react-datepicker__current-month {
+.salonbw-mini-calendar .react-datepicker__current-month {
     font-size: 14px;
     font-weight: 600;
     color: #374151;
     text-transform: uppercase;
 }
 
-.versum-mini-calendar .react-datepicker__day-names {
+.salonbw-mini-calendar .react-datepicker__day-names {
     display: flex;
     justify-content: space-around;
     margin-top: 8px;
 }
 
-.versum-mini-calendar .react-datepicker__day-name {
+.salonbw-mini-calendar .react-datepicker__day-name {
     font-size: 11px;
     color: #9ca3af;
     text-transform: lowercase;
@@ -890,16 +890,16 @@ body {
     flex: 1;
 }
 
-.versum-mini-calendar .react-datepicker__month {
+.salonbw-mini-calendar .react-datepicker__month {
     margin: 0.4em;
 }
 
-.versum-mini-calendar .react-datepicker__week {
+.salonbw-mini-calendar .react-datepicker__week {
     display: flex;
     justify-content: space-around;
 }
 
-.versum-mini-calendar .react-datepicker__day {
+.salonbw-mini-calendar .react-datepicker__day {
     font-size: 12px;
     width: 28px;
     height: 28px;
@@ -910,29 +910,29 @@ body {
     text-align: center;
 }
 
-.versum-mini-calendar .react-datepicker__day:hover {
+.salonbw-mini-calendar .react-datepicker__day:hover {
     background: #f3f4f6;
 }
 
-.versum-mini-calendar .react-datepicker__day--selected {
+.salonbw-mini-calendar .react-datepicker__day--selected {
     background: #3b82f6 !important;
     color: white !important;
 }
 
-.versum-mini-calendar .react-datepicker__day--today {
+.salonbw-mini-calendar .react-datepicker__day--today {
     border: 1px solid #3b82f6;
     font-weight: 600;
 }
 
-.versum-mini-calendar .react-datepicker__day--outside-month {
+.salonbw-mini-calendar .react-datepicker__day--outside-month {
     color: #d1d5db;
 }
 
-.versum-mini-calendar .react-datepicker__navigation {
+.salonbw-mini-calendar .react-datepicker__navigation {
     top: 8px;
 }
 
-.versum-mini-calendar .react-datepicker__navigation-icon::before {
+.salonbw-mini-calendar .react-datepicker__navigation-icon::before {
     border-color: #6b7280;
 }
 
@@ -940,14 +940,14 @@ body {
    MINI CALENDAR - Custom Implementation (CalendarNav)
    ============================================ */
 
-.versum-mini-cal {
+.salonbw-mini-cal {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 4px;
     padding: 12px;
 }
 
-.versum-mini-cal__weekdays {
+.salonbw-mini-cal__weekdays {
     display: flex;
     justify-content: space-around;
     margin-bottom: 8px;
@@ -955,7 +955,7 @@ body {
     border-bottom: 1px solid #f3f4f6;
 }
 
-.versum-mini-cal__weekdays span {
+.salonbw-mini-cal__weekdays span {
     font-size: 11px;
     color: #9ca3af;
     text-transform: lowercase;
@@ -964,13 +964,13 @@ body {
     flex: 1;
 }
 
-.versum-mini-cal__days {
+.salonbw-mini-cal__days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
 }
 
-.versum-mini-cal__day {
+.salonbw-mini-cal__day {
     width: 28px;
     height: 28px;
     display: flex;
@@ -987,21 +987,21 @@ body {
     margin: 0 auto;
 }
 
-.versum-mini-cal__day:hover {
+.salonbw-mini-cal__day:hover {
     background: #f3f4f6;
 }
 
-.versum-mini-cal__day--selected {
+.salonbw-mini-cal__day--selected {
     background: #3b82f6 !important;
     color: white !important;
 }
 
-.versum-mini-cal__day--today {
+.salonbw-mini-cal__day--today {
     border: 1px solid #3b82f6;
     font-weight: 600;
 }
 
-.versum-mini-cal__day--other-month {
+.salonbw-mini-cal__day--other-month {
     color: #d1d5db;
 }
 
@@ -1010,14 +1010,14 @@ body {
        VERSUM CALENDAR HEADER - 1:1 with Original
        ============================================ */
 
-    .versum-calendar-page {
+    .salonbw-calendar-page {
         display: flex;
         flex-direction: column;
         height: 100%;
         background: #f5f5f5;
     }
 
-    .versum-calendar-header {
+    .salonbw-calendar-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1027,14 +1027,14 @@ body {
         gap: 16px;
     }
 
-    .versum-calendar-header__left {
+    .salonbw-calendar-header__left {
         display: flex;
         align-items: center;
         gap: 8px;
         flex: 1;
     }
 
-    .versum-calendar-header__nav-btn {
+    .salonbw-calendar-header__nav-btn {
         width: 32px;
         height: 32px;
         display: flex;
@@ -1050,12 +1050,12 @@ body {
         transition: all 0.15s ease;
     }
 
-    .versum-calendar-header__nav-btn:hover {
+    .salonbw-calendar-header__nav-btn:hover {
         background: #f3f4f6;
         border-color: #9ca3af;
     }
 
-    .versum-calendar-header__today-btn {
+    .salonbw-calendar-header__today-btn {
         padding: 6px 12px;
         background: #ffffff;
         border: 1px solid #d1d5db;
@@ -1068,17 +1068,17 @@ body {
         text-transform: lowercase;
     }
 
-    .versum-calendar-header__today-btn:hover {
+    .salonbw-calendar-header__today-btn:hover {
         background: #f3f4f6;
         border-color: #9ca3af;
     }
 
-    .versum-calendar-header__today-btn.disabled {
+    .salonbw-calendar-header__today-btn.disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
 
-    .versum-calendar-header__print-link {
+    .salonbw-calendar-header__print-link {
         margin-left: 12px;
         font-size: 13px;
         color: #3b82f6;
@@ -1086,11 +1086,11 @@ body {
         cursor: pointer;
     }
 
-    .versum-calendar-header__print-link:hover {
+    .salonbw-calendar-header__print-link:hover {
         text-decoration: underline;
     }
 
-    .versum-calendar-header__title {
+    .salonbw-calendar-header__title {
         font-size: 18px;
         font-weight: 600;
         color: #1f2937;
@@ -1099,14 +1099,14 @@ body {
         flex: 0 0 auto;
     }
 
-    .versum-calendar-header__right {
+    .salonbw-calendar-header__right {
         display: flex;
         align-items: center;
         justify-content: flex-end;
         flex: 1;
     }
 
-    .versum-calendar-header__view-switcher {
+    .salonbw-calendar-header__view-switcher {
         display: flex;
         background: #f3f4f6;
         border-radius: 4px;
@@ -1114,7 +1114,7 @@ body {
         gap: 2px;
     }
 
-    .versum-calendar-header__view-btn {
+    .salonbw-calendar-header__view-btn {
         padding: 6px 14px;
         background: transparent;
         border: none;
@@ -1127,274 +1127,274 @@ body {
         text-transform: lowercase;
     }
 
-    .versum-calendar-header__view-btn:hover {
+    .salonbw-calendar-header__view-btn:hover {
         color: #374151;
     }
 
-    .versum-calendar-header__view-btn.active {
+    .salonbw-calendar-header__view-btn.active {
         background: #3b82f6;
         color: #ffffff;
     }
 
-    .versum-calendar-content {
+    .salonbw-calendar-content {
         flex: 1;
         overflow: hidden;
         background: #ffffff;
     }
 
     /* Link utility */
-    .versum-link {
-        color: var(--versum-accent, #25b4c1);
+    .salonbw-link {
+        color: var(--salonbw-accent, #25b4c1);
         text-decoration: none;
     }
 
-    .versum-link:hover {
+    .salonbw-link:hover {
         text-decoration: underline;
     }
 
     /* Text utilities */
-    .versum-text-success {
+    .salonbw-text-success {
         color: #22c55e;
     }
 
-    .versum-text-muted {
+    .salonbw-text-muted {
         @apply text-gray-400;
     }
 
     /* Widget (stats sub-panel) */
-    .versum-widget {
+    .salonbw-widget {
         @apply bg-white border border-gray-200 rounded-lg overflow-hidden mb-4;
     }
 
-    .versum-widget__header {
+    .salonbw-widget__header {
         @apply px-4 py-3 bg-gray-50 border-b border-gray-200 text-sm font-semibold text-gray-700;
     }
 
-    .versum-widget__content {
+    .salonbw-widget__content {
         @apply p-4;
     }
 
     /* Excel export link area */
-    .versum-excel-export {
+    .salonbw-excel-export {
         @apply flex items-center gap-2 mt-4;
     }
 
     /* Input modifiers */
-    .versum-input--sm {
+    .salonbw-input--sm {
         @apply px-2 py-1 text-sm;
     }
 
-    .versum-input--ghost {
+    .salonbw-input--ghost {
         @apply border-0 bg-transparent shadow-none focus:ring-0 px-0;
     }
 
     /* Icon button */
-    .versum-icon-btn {
+    .salonbw-icon-btn {
         @apply w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 cursor-pointer border-0 bg-transparent text-sm;
     }
 
     /* Dashboard layout */
-    .versum-dashboard {
+    .salonbw-dashboard {
         @apply pb-8;
     }
 
-    .versum-dashboard__loading,
-    .versum-dashboard__empty {
+    .salonbw-dashboard__loading,
+    .salonbw-dashboard__empty {
         @apply py-16 text-center text-gray-500 text-sm;
     }
 
-    .versum-dashboard__header {
+    .salonbw-dashboard__header {
         @apply flex items-center justify-between mb-4;
     }
 
-    .versum-dashboard__title {
+    .salonbw-dashboard__title {
         @apply text-lg font-semibold text-gray-800;
     }
 
-    .versum-dashboard__period {
+    .salonbw-dashboard__period {
         @apply flex items-center gap-4 mb-5 pb-3 border-b border-gray-200;
     }
 
-    .versum-dashboard__period-btn {
+    .salonbw-dashboard__period-btn {
         @apply px-3 py-1 text-sm rounded text-gray-600 bg-transparent border-0 cursor-pointer;
     }
 
-    .versum-dashboard__period-btn.active {
-        background: var(--versum-accent, #25b4c1);
+    .salonbw-dashboard__period-btn.active {
+        background: var(--salonbw-accent, #25b4c1);
         color: #fff;
     }
 
-    .versum-dashboard__period-label {
+    .salonbw-dashboard__period-label {
         @apply text-sm text-gray-500 ml-auto;
     }
 
     /* Stats cards row */
-    .versum-dashboard__stats {
+    .salonbw-dashboard__stats {
         @apply grid gap-4 mb-6;
         grid-template-columns: repeat(3, 1fr);
     }
 
-    .versum-stat-card {
+    .salonbw-stat-card {
         @apply bg-white border border-gray-200 rounded-lg p-4;
     }
 
-    .versum-stat-card__title {
+    .salonbw-stat-card__title {
         @apply text-xs text-gray-500 uppercase tracking-wide mb-2;
     }
 
-    .versum-stat-card__value {
+    .salonbw-stat-card__value {
         @apply flex items-center gap-2 text-2xl font-bold text-gray-800 mb-3;
     }
 
-    .versum-stat-card__change {
+    .salonbw-stat-card__change {
         @apply text-xs font-normal text-gray-400;
     }
 
-    .versum-stat-card__change.positive {
+    .salonbw-stat-card__change.positive {
         color: #22c55e;
     }
 
-    .versum-stat-card__chart {
+    .salonbw-stat-card__chart {
         height: 50px;
         overflow: hidden;
     }
 
-    .versum-stat-card__toggle {
+    .salonbw-stat-card__toggle {
         @apply text-sm font-normal text-gray-400 border-0 bg-transparent cursor-pointer p-0;
     }
 
-    .versum-mini-chart {
+    .salonbw-mini-chart {
         @apply flex items-end gap-px h-full;
     }
 
-    .versum-mini-chart__bar {
+    .salonbw-mini-chart__bar {
         @apply flex-1 rounded-sm;
-        background: var(--versum-accent, #25b4c1);
+        background: var(--salonbw-accent, #25b4c1);
     }
 
-    .versum-mini-chart__bar--blue {
+    .salonbw-mini-chart__bar--blue {
         background: #3b82f6;
     }
 
-    .versum-mini-chart__bar--green {
+    .salonbw-mini-chart__bar--green {
         background: #22c55e;
     }
 
     /* Dashboard bottom grid */
-    .versum-dashboard__grid {
+    .salonbw-dashboard__grid {
         @apply grid gap-4;
         grid-template-columns: repeat(3, 1fr);
     }
 
-    .versum-dashboard__section {
+    .salonbw-dashboard__section {
         @apply bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden;
     }
 
-    .versum-dashboard__section-header {
+    .salonbw-dashboard__section-header {
         @apply flex items-center justify-between px-4 py-3 border-b border-gray-100;
     }
 
-    .versum-dashboard__section-header h2 {
+    .salonbw-dashboard__section-header h2 {
         @apply text-sm font-semibold text-gray-700;
     }
 
-    .versum-dashboard__section-actions {
+    .salonbw-dashboard__section-actions {
         @apply flex gap-1;
     }
 
-    .versum-dashboard__section-footer {
+    .salonbw-dashboard__section-footer {
         @apply block text-center text-xs text-[#25b4c1] py-2 border-t border-gray-100 no-underline hover:underline mt-auto;
     }
 
     /* Activity list */
-    .versum-activity-list,
-    .versum-appointments-list {
+    .salonbw-activity-list,
+    .salonbw-appointments-list {
         @apply flex-1 overflow-y-auto;
     }
 
-    .versum-activity-item {
+    .salonbw-activity-item {
         @apply flex items-start gap-3 px-4 py-3 border-b border-gray-50;
     }
 
-    .versum-activity-item--empty,
-    .versum-appointment-item--empty {
+    .salonbw-activity-item--empty,
+    .salonbw-appointment-item--empty {
         @apply px-4 py-6 text-center text-sm text-gray-400;
     }
 
-    .versum-activity-item__avatar {
+    .salonbw-activity-item__avatar {
         @apply w-8 h-8 rounded-full bg-[#25b4c1] text-white text-xs flex items-center justify-center shrink-0 font-semibold;
     }
 
-    .versum-activity-item__content {
+    .salonbw-activity-item__content {
         @apply flex-1 min-w-0;
     }
 
-    .versum-activity-item__title {
+    .salonbw-activity-item__title {
         @apply text-sm text-gray-800 truncate;
     }
 
-    .versum-activity-item__meta {
+    .salonbw-activity-item__meta {
         @apply text-xs text-gray-500 mt-0.5;
     }
 
     /* Appointments list */
-    .versum-appointment-item {
+    .salonbw-appointment-item {
         @apply flex items-center gap-3 px-4 py-3 border-b border-gray-50;
     }
 
-    .versum-appointment-item__time {
+    .salonbw-appointment-item__time {
         @apply text-sm font-semibold text-gray-800 w-12 shrink-0;
     }
 
-    .versum-appointment-item__details {
+    .salonbw-appointment-item__details {
         @apply flex-1 min-w-0;
     }
 
-    .versum-appointment-item__client {
+    .salonbw-appointment-item__client {
         @apply text-sm text-gray-800 truncate;
     }
 
-    .versum-appointment-item__service {
+    .salonbw-appointment-item__service {
         @apply text-xs text-gray-500 truncate;
     }
 
     /* Tasks widget */
-    .versum-tasks {
+    .salonbw-tasks {
         @apply flex-1 flex flex-col px-4 py-2;
     }
 
-    .versum-tasks__input {
+    .salonbw-tasks__input {
         @apply mb-2;
     }
 
-    .versum-tasks__empty {
+    .salonbw-tasks__empty {
         @apply text-sm text-gray-400 text-center py-4;
     }
 
     /* Settings tile grid */
-    .versum-grid {
+    .salonbw-grid {
         @apply grid gap-3 mb-6;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
 
-    .versum-tile--clickable {
+    .salonbw-tile--clickable {
         @apply flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-lg text-center no-underline text-gray-700 transition-colors;
         min-height: 90px;
     }
 
-    .versum-tile--clickable:hover {
+    .salonbw-tile--clickable:hover {
         @apply bg-gray-50 border-gray-300 text-gray-800;
     }
 
-    .versum-tile__icon {
+    .salonbw-tile__icon {
         @apply text-2xl mb-1;
     }
 
-    .versum-section {
+    .salonbw-section {
         @apply mt-6 mb-2;
     }
 
-    .versum-section__title {
+    .salonbw-section__title {
         @apply text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3;
     }
 }

@@ -55,7 +55,7 @@ function MiniChart({
     const maxValue = Math.max(1, ...series.map((point) => point.value));
 
     return (
-        <div className="versum-mini-chart">
+        <div className="salonbw-mini-chart">
             {series.map((point) => {
                 const ratio = point.value / maxValue;
                 const height = point.value > 0 ? Math.max(8, ratio * 100) : 6;
@@ -63,7 +63,7 @@ function MiniChart({
                 return (
                     <div
                         key={point.date}
-                        className={`versum-mini-chart__bar ${barClassName}`.trim()}
+                        className={`salonbw-mini-chart__bar ${barClassName}`.trim()}
                         style={{
                             height: `${height}%`,
                             opacity: point.date === todayKey ? 1 : 0.55,
@@ -137,8 +137,8 @@ export default function AdminDashboard() {
 
     if (dashboardLoading || statsLoading) {
         return (
-            <div className="versum-dashboard">
-                <div className="versum-dashboard__loading">
+            <div className="salonbw-dashboard">
+                <div className="salonbw-dashboard__loading">
                     Ładowanie pulpitu...
                 </div>
             </div>
@@ -147,51 +147,51 @@ export default function AdminDashboard() {
 
     if (!stats) {
         return (
-            <div className="versum-dashboard">
-                <div className="versum-dashboard__empty">Brak danych</div>
+            <div className="salonbw-dashboard">
+                <div className="salonbw-dashboard__empty">Brak danych</div>
             </div>
         );
     }
 
     return (
-        <div className="versum-dashboard">
-            <div className="versum-dashboard__header">
-                <h1 className="versum-dashboard__title">Pulpit</h1>
+        <div className="salonbw-dashboard">
+            <div className="salonbw-dashboard__header">
+                <h1 className="salonbw-dashboard__title">Pulpit</h1>
                 <Link
                     href="/customers/new"
-                    className="versum-btn versum-btn--primary"
+                    className="salonbw-btn salonbw-btn--primary"
                 >
-                    <i className="versum-icon versum-icon--plus"></i>
+                    <i className="salonbw-icon salonbw-icon--plus"></i>
                     Dodaj klienta
                 </Link>
             </div>
 
-            <div className="versum-dashboard__period">
+            <div className="salonbw-dashboard__period">
                 <button
                     type="button"
-                    className="versum-dashboard__period-btn active"
+                    className="salonbw-dashboard__period-btn active"
                 >
                     bieżący miesiąc
                 </button>
-                <span className="versum-dashboard__period-label">
+                <span className="salonbw-dashboard__period-label">
                     Statystyki salonu:{' '}
                     {format(startOfMonth(today), 'd MMMM yyyy', { locale: pl })}{' '}
                     - {format(today, 'd MMMM yyyy', { locale: pl })}
                 </span>
             </div>
 
-            <div className="versum-dashboard__stats">
-                <div className="versum-stat-card">
-                    <h3 className="versum-stat-card__title">liczba wizyt</h3>
-                    <div className="versum-stat-card__value">
+            <div className="salonbw-dashboard__stats">
+                <div className="salonbw-stat-card">
+                    <h3 className="salonbw-stat-card__title">liczba wizyt</h3>
+                    <div className="salonbw-stat-card__value">
                         {stats.todayAppointments}
                         <span
-                            className={`versum-stat-card__change ${appointmentTrend.positive ? 'positive' : ''}`.trim()}
+                            className={`salonbw-stat-card__change ${appointmentTrend.positive ? 'positive' : ''}`.trim()}
                         >
                             {appointmentTrend.text}
                         </span>
                     </div>
-                    <div className="versum-stat-card__chart">
+                    <div className="salonbw-stat-card__chart">
                         <MiniChart
                             series={appointmentSeries}
                             todayKey={todayKey}
@@ -199,75 +199,77 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                <div className="versum-stat-card">
-                    <h3 className="versum-stat-card__title">nowych klientów</h3>
-                    <div className="versum-stat-card__value">
+                <div className="salonbw-stat-card">
+                    <h3 className="salonbw-stat-card__title">
+                        nowych klientów
+                    </h3>
+                    <div className="salonbw-stat-card__value">
                         {stats.todayNewClients}
                         <span
-                            className={`versum-stat-card__change ${newClientsTrend.positive ? 'positive' : ''}`.trim()}
+                            className={`salonbw-stat-card__change ${newClientsTrend.positive ? 'positive' : ''}`.trim()}
                         >
                             {newClientsTrend.text}
                         </span>
                     </div>
-                    <div className="versum-stat-card__chart">
+                    <div className="salonbw-stat-card__chart">
                         <MiniChart
                             series={newClientsSeries}
                             todayKey={todayKey}
-                            barClassName="versum-mini-chart__bar--blue"
+                            barClassName="salonbw-mini-chart__bar--blue"
                         />
                     </div>
                 </div>
 
-                <div className="versum-stat-card">
-                    <h3 className="versum-stat-card__title">obroty salonu</h3>
-                    <div className="versum-stat-card__value">
+                <div className="salonbw-stat-card">
+                    <h3 className="salonbw-stat-card__title">obroty salonu</h3>
+                    <div className="salonbw-stat-card__value">
                         {formatMoney(stats.todayRevenue)}
                         <span
-                            className={`versum-stat-card__change ${revenueTrend.positive ? 'positive' : ''}`.trim()}
+                            className={`salonbw-stat-card__change ${revenueTrend.positive ? 'positive' : ''}`.trim()}
                         >
                             {revenueTrend.text}
                         </span>
                     </div>
-                    <div className="versum-stat-card__chart">
+                    <div className="salonbw-stat-card__chart">
                         <MiniChart
                             series={revenueSeries}
                             todayKey={todayKey}
-                            barClassName="versum-mini-chart__bar--green"
+                            barClassName="salonbw-mini-chart__bar--green"
                         />
                     </div>
                 </div>
             </div>
 
-            <div className="versum-dashboard__grid">
-                <div className="versum-dashboard__section">
-                    <div className="versum-dashboard__section-header">
+            <div className="salonbw-dashboard__grid">
+                <div className="salonbw-dashboard__section">
+                    <div className="salonbw-dashboard__section-header">
                         <h2>więcej aktywności</h2>
                         <Link
                             href="/settings/employees/activity-logs"
-                            className="versum-link"
+                            className="salonbw-link"
                         >
                             więcej
                         </Link>
                     </div>
-                    <div className="versum-activity-list">
+                    <div className="salonbw-activity-list">
                         {dashboardData?.upcomingAppointments
                             ?.slice(0, 5)
                             .map((appointment) => (
                                 <div
                                     key={appointment.id}
-                                    className="versum-activity-item"
+                                    className="salonbw-activity-item"
                                 >
-                                    <div className="versum-activity-item__avatar">
+                                    <div className="salonbw-activity-item__avatar">
                                         {appointment.client?.name?.charAt(0) ||
                                             '?'}
                                     </div>
-                                    <div className="versum-activity-item__content">
-                                        <div className="versum-activity-item__title">
+                                    <div className="salonbw-activity-item__content">
+                                        <div className="salonbw-activity-item__title">
                                             Wizyta:{' '}
                                             {appointment.client?.name ||
                                                 'Unknown'}
                                         </div>
-                                        <div className="versum-activity-item__meta">
+                                        <div className="salonbw-activity-item__meta">
                                             {format(
                                                 new Date(appointment.startTime),
                                                 'd MMMM, HH:mm',
@@ -277,69 +279,69 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             )) || (
-                            <div className="versum-activity-item versum-activity-item--empty">
+                            <div className="salonbw-activity-item salonbw-activity-item--empty">
                                 Brak aktywności
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="versum-dashboard__section">
-                    <div className="versum-dashboard__section-header">
+                <div className="salonbw-dashboard__section">
+                    <div className="salonbw-dashboard__section-header">
                         <h2>najbliższe zaplanowane wizyty</h2>
                     </div>
-                    <div className="versum-appointments-list">
+                    <div className="salonbw-appointments-list">
                         {dashboardData?.upcomingAppointments
                             ?.slice(0, 5)
                             .map((appointment) => (
                                 <div
                                     key={appointment.id}
-                                    className="versum-appointment-item"
+                                    className="salonbw-appointment-item"
                                 >
-                                    <div className="versum-appointment-item__time">
+                                    <div className="salonbw-appointment-item__time">
                                         {format(
                                             new Date(appointment.startTime),
                                             'HH:mm',
                                         )}
                                     </div>
-                                    <div className="versum-appointment-item__details">
-                                        <div className="versum-appointment-item__client">
+                                    <div className="salonbw-appointment-item__details">
+                                        <div className="salonbw-appointment-item__client">
                                             {appointment.client?.name ||
                                                 'Unknown'}
                                         </div>
-                                        <div className="versum-appointment-item__service">
+                                        <div className="salonbw-appointment-item__service">
                                             {appointment.service?.name ||
                                                 'Unknown'}
                                         </div>
                                     </div>
                                 </div>
                             )) || (
-                            <div className="versum-appointment-item versum-appointment-item--empty">
+                            <div className="salonbw-appointment-item salonbw-appointment-item--empty">
                                 Brak zaplanowanych wizyt
                             </div>
                         )}
                     </div>
                     <Link
                         href="/calendar"
-                        className="versum-dashboard__section-footer"
+                        className="salonbw-dashboard__section-footer"
                     >
                         kalendarz wizyt
                     </Link>
                 </div>
 
-                <div className="versum-dashboard__section">
-                    <div className="versum-dashboard__section-header">
+                <div className="salonbw-dashboard__section">
+                    <div className="salonbw-dashboard__section-header">
                         <h2>zadania</h2>
-                        <div className="versum-dashboard__section-actions">
-                            <button type="button" className="versum-icon-btn">
+                        <div className="salonbw-dashboard__section-actions">
+                            <button type="button" className="salonbw-icon-btn">
                                 +
                             </button>
-                            <button type="button" className="versum-icon-btn">
+                            <button type="button" className="salonbw-icon-btn">
                                 •••
                             </button>
                         </div>
                     </div>
-                    <div className="versum-empty-state">
+                    <div className="salonbw-empty-state">
                         Brak zadań do wykonania
                     </div>
                 </div>

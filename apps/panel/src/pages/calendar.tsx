@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * `/calendar` must render the vendored Versum calendar runtime 1:1.
+ * `/calendar` must render the vendored source calendar runtime 1:1.
  *
  * We intentionally replace the whole document with HTML served by
  * `/api/calendar-embed` (which injects runtime config and keeps script loading

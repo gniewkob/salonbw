@@ -25,7 +25,7 @@ export default function Document(props: CustomDocumentProps) {
                     rel="stylesheet"
                     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
                 />
-                {/* Vendored CSS removed - using only versum-shell.css for React modules */}
+                {/* Vendored CSS removed - using only salonbw-shell.css for React modules */}
             </Head>
             <body>
                 <Main />

@@ -1,4 +1,6 @@
 import {
+    ArrayNotEmpty,
+    ArrayUnique,
     IsString,
     IsOptional,
     IsBoolean,
@@ -11,6 +13,7 @@ import {
     Length,
     Matches,
     IsArray,
+    IsInt,
     ValidateIf,
 } from 'class-validator';
 import { CalendarView } from '../entities/calendar-settings.entity';
@@ -298,6 +301,32 @@ export class UpdateCalendarSettingsDto {
 
     @IsOptional()
     statusColors?: Record<string, string>;
+}
+
+export class CreateCalendarViewDto {
+    @IsString()
+    @Length(1, 120)
+    name: string;
+
+    @IsArray()
+    @ArrayNotEmpty()
+    @ArrayUnique()
+    @IsInt({ each: true })
+    employeeIds: number[];
+}
+
+export class UpdateCalendarViewDto {
+    @IsOptional()
+    @IsString()
+    @Length(1, 120)
+    name?: string;
+
+    @IsOptional()
+    @IsArray()
+    @ArrayNotEmpty()
+    @ArrayUnique()
+    @IsInt({ each: true })
+    employeeIds?: number[];
 }
 
 export class UpdateSmsSettingsDto {

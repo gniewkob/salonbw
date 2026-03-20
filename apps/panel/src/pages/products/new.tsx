@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductApi } from '@/api/products';
 import { useProductCategories } from '@/hooks/useWarehouseViews';
@@ -58,8 +58,8 @@ export default function NewProductPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
-            <VersumShell role={role}>
-                <VersumCustomersVendorCss />
+            <SalonBWShell role={role}>
+                <SalonBWVendorCss />
                 <div className="products_index" id="products_main">
                     <ul className="breadcrumb">
                         <li>Magazyn / Dodaj produkt</li>
@@ -94,7 +94,7 @@ export default function NewProductPage() {
                                 <label htmlFor="category">2. Kategoria</label>
                                 <select
                                     id="category"
-                                    className="versum-select"
+                                    className="salonbw-select"
                                     value={form.categoryId}
                                     onChange={(event) =>
                                         setForm((prev) => ({
@@ -121,7 +121,7 @@ export default function NewProductPage() {
                                 </label>
                                 <select
                                     id="productType"
-                                    className="versum-select"
+                                    className="salonbw-select"
                                     value={form.productType}
                                     onChange={(event) =>
                                         setForm((prev) => ({
@@ -294,7 +294,7 @@ export default function NewProductPage() {
                         </div>
                     </form>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

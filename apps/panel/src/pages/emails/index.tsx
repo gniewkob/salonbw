@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import EmailList from '@/components/EmailList';
 
@@ -10,9 +10,9 @@ export default function EmailsPage() {
 
     return (
         <RouteGuard permission="nav:emails">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <EmailList />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

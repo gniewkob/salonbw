@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTipsSummary } from '@/hooks/useStatistics';
 
@@ -36,17 +36,17 @@ export default function TipsPage() {
     const avgTip = totalCount > 0 ? totalTips / totalCount : 0;
 
     return (
-        <VersumShell role={role}>
-            <div className="versum-page" data-testid="tips-page">
+        <SalonBWShell role={role}>
+            <div className="salonbw-page" data-testid="tips-page">
                 <ul className="breadcrumb">
                     <li>Statystyki</li>
                     <li>Napiwki</li>
                 </ul>
 
-                <div className="versum-page__toolbar">
+                <div className="salonbw-page__toolbar">
                     <div className="flex items-center gap-2">
                         <select
-                            className="form-control versum-select"
+                            className="form-control salonbw-select"
                             aria-label="Zakres czasu"
                             value={range}
                             onChange={(e) => {
@@ -67,7 +67,7 @@ export default function TipsPage() {
                     </div>
                     <button
                         type="button"
-                        className="btn btn-default versum-toolbar-btn"
+                        className="btn btn-default salonbw-toolbar-btn"
                         onClick={() => window.print()}
                     >
                         🖨️
@@ -75,7 +75,9 @@ export default function TipsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm versum-muted">Ładowanie...</div>
+                    <div className="p-4 text-sm salonbw-muted">
+                        Ładowanie...
+                    </div>
                 ) : (
                     <div className="inner">
                         {/* Summary cards */}
@@ -118,8 +120,8 @@ export default function TipsPage() {
                         </div>
 
                         {/* Table */}
-                        <div className="versum-table-wrap">
-                            <table className="versum-table">
+                        <div className="salonbw-table-wrap">
+                            <table className="salonbw-table">
                                 <thead>
                                     <tr>
                                         <th>Pracownik</th>
@@ -141,7 +143,7 @@ export default function TipsPage() {
                                                 <td>
                                                     <Link
                                                         href={`/employees/${employee.employeeId}`}
-                                                        className="versum-link"
+                                                        className="salonbw-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>
@@ -193,6 +195,6 @@ export default function TipsPage() {
                     </div>
                 )}
             </div>
-        </VersumShell>
+        </SalonBWShell>
     );
 }

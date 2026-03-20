@@ -5,14 +5,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useMessageTemplates,
+    useSmsHistory,
     useSmsHistoryItem,
     useSmsMutations,
 } from '@/hooks/useSms';
-import { useEmailHistoryItem, useEmailMutations } from '@/hooks/useEmails';
+import {
+    useEmailHistory,
+    useEmailHistoryItem,
+    useEmailMutations,
+} from '@/hooks/useEmails';
+import type { EmailLog, SmsLog } from '@/types';
 
 function formatDateTime(value?: string | null) {
     if (!value) return '-';
@@ -23,13 +29,29 @@ function formatDateTime(value?: string | null) {
     }
 }
 
-function messageLabel(status?: string) {
+function communicationStatusLabel(
+    kind: 'sms' | 'email',
+    status?: string | null,
+) {
     const normalized = (status ?? '').toLowerCase();
+    if (kind === 'email') {
+        if (normalized === 'sent') return 'Email wysłany';
+        if (normalized === 'pending') return 'Email oczekujący';
+        if (normalized === 'failed') return 'Email błąd';
+        return 'Email';
+    }
     if (normalized === 'delivered') return 'SMS Premium';
     if (normalized === 'sent') return 'SMS Standard';
     if (normalized === 'pending') return 'SMS Oczekujący';
     if (normalized === 'failed') return 'SMS Błąd';
     return 'SMS';
+}
+
+function getCommunicationHref(id: number, kind: 'sms' | 'email') {
+    return {
+        pathname: '/communication/[id]',
+        query: { id: String(id), kind },
+    } as const;
 }
 
 export default function CommunicationDetailPage() {
@@ -46,6 +68,26 @@ export default function CommunicationDetailPage() {
     const hasExplicitKind = kind === 'sms' || kind === 'email';
     const smsItem = useSmsHistoryItem(kind === 'email' ? null : id);
     const emailItem = useEmailHistoryItem(kind === 'sms' ? null : id);
+    const smsThread = useSmsHistory({
+        page: 1,
+        limit: 50,
+        channel: 'sms',
+        appointmentId: smsItem.data?.appointmentId ?? undefined,
+        recipientId:
+            smsItem.data?.appointmentId || !smsItem.data?.recipientId
+                ? undefined
+                : smsItem.data.recipientId,
+        enabled:
+            !!smsItem.data &&
+            ((smsItem.data.appointmentId ?? null) !== null ||
+                (smsItem.data.recipientId ?? null) !== null),
+    });
+    const emailThread = useEmailHistory({
+        page: 1,
+        limit: 50,
+        recipientId: emailItem.data?.recipientId ?? undefined,
+        enabled: !!emailItem.data?.recipientId,
+    });
     const { sendSms } = useSmsMutations();
     const { sendEmailAuth } = useEmailMutations();
 
@@ -56,6 +98,10 @@ export default function CommunicationDetailPage() {
     const [isSending, setIsSending] = useState(false);
     const [replyVisible, setReplyVisible] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
+    const [previewVisible, setPreviewVisible] = useState(false);
+    const [previewMode, setPreviewMode] = useState<'template' | 'draft'>(
+        'draft',
+    );
 
     const sms = smsItem.data;
     const email = emailItem.data;
@@ -71,6 +117,7 @@ export default function CommunicationDetailPage() {
             ? smsItem.loading
             : emailItem.loading
         : smsItem.loading || emailItem.loading;
+    const isAmbiguousWithoutKind = !hasExplicitKind && !!sms && !!email;
     const detail = activeKind === 'sms' ? sms : email;
     const templates = useMessageTemplates({
         channel: activeKind,
@@ -96,6 +143,58 @@ export default function CommunicationDetailPage() {
     const defaultReplySubject = email?.subject
         ? `Re: ${email.subject}`
         : 'Odpowiedź';
+    const smsThreadItems = useMemo(() => {
+        if (activeKind !== 'sms' || !sms) {
+            return [] as SmsLog[];
+        }
+
+        const byId = new Map<number, SmsLog>();
+        for (const item of smsThread.data.items) {
+            byId.set(item.id, item);
+        }
+        byId.set(sms.id, sms);
+
+        return Array.from(byId.values()).sort((left, right) => {
+            const leftValue = new Date(
+                left.sentAt ?? left.createdAt ?? 0,
+            ).getTime();
+            const rightValue = new Date(
+                right.sentAt ?? right.createdAt ?? 0,
+            ).getTime();
+            return leftValue - rightValue;
+        });
+    }, [activeKind, sms, smsThread.data.items]);
+    const emailThreadItems = useMemo(() => {
+        if (activeKind !== 'email' || !email) {
+            return [] as EmailLog[];
+        }
+
+        const byId = new Map<number, EmailLog>();
+        for (const item of emailThread.data.items) {
+            byId.set(item.id, {
+                id: item.id,
+                recipient: item.to,
+                subject: item.subject,
+                status: item.status,
+                sentAt: item.sentAt ?? item.createdAt,
+                createdAt: item.createdAt,
+                template: item.template,
+                errorMessage: item.errorMessage,
+                recipientId: item.recipientId,
+            });
+        }
+        byId.set(email.id, email);
+
+        return Array.from(byId.values()).sort((left, right) => {
+            const leftValue = new Date(
+                left.sentAt ?? left.createdAt ?? 0,
+            ).getTime();
+            const rightValue = new Date(
+                right.sentAt ?? right.createdAt ?? 0,
+            ).getTime();
+            return leftValue - rightValue;
+        });
+    }, [activeKind, email, emailThread.data.items]);
 
     useEffect(() => {
         if (activeKind === 'email') {
@@ -130,10 +229,14 @@ export default function CommunicationDetailPage() {
                 await sendSms.mutateAsync({
                     recipient: recipientContact,
                     content: replyText.trim(),
+                    templateId:
+                        replyMode === 'template' && selectedTemplate
+                            ? selectedTemplate.id
+                            : undefined,
                     recipientId: sms?.recipientId,
                     appointmentId: sms?.appointmentId,
                 });
-                await smsItem.refetch();
+                await Promise.all([smsItem.refetch(), smsThread.refetch()]);
             } else {
                 await sendEmailAuth.mutateAsync({
                     to: recipientContact,
@@ -142,7 +245,7 @@ export default function CommunicationDetailPage() {
                     template: replyText.trim(),
                     recipientId: email?.recipientId ?? undefined,
                 });
-                await emailItem.refetch();
+                await Promise.all([emailItem.refetch(), emailThread.refetch()]);
             }
             setReplyText('');
             if (activeKind === 'email') {
@@ -163,12 +266,49 @@ export default function CommunicationDetailPage() {
         setReplyVisible(true);
     };
 
+    const handlePreviewTemplate = () => {
+        if (!selectedTemplate) return;
+        setPreviewMode('template');
+        setPreviewVisible(true);
+    };
+
+    const handlePreviewDraft = () => {
+        if (!replyText.trim()) return;
+        setPreviewMode('draft');
+        setPreviewVisible(true);
+    };
+
+    const previewContent =
+        previewMode === 'template'
+            ? (selectedTemplate?.content ?? '')
+            : replyText.trim();
+    const previewSubject =
+        activeKind === 'email'
+            ? previewMode === 'template'
+                ? selectedTemplate?.subject || defaultReplySubject
+                : replySubject.trim() || defaultReplySubject
+            : '';
+    const previewHeading =
+        previewMode === 'template' ? 'Podgląd szablonu' : 'Podgląd wiadomości';
+
+    const handleModifySelectedTemplate = () => {
+        if (!selectedTemplate) {
+            return;
+        }
+
+        setReplyMode('new');
+        setReplyText(selectedTemplate.content);
+        if (activeKind === 'email') {
+            setReplySubject(selectedTemplate.subject || defaultReplySubject);
+        }
+    };
+
     if (!role) return null;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
-            <VersumShell role={role}>
-                <div className="versum-page communication-detail-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page communication-detail-page">
                     <div className="breadcrumbs" e2e-breadcrumbs="">
                         <ul>
                             <li>
@@ -187,6 +327,25 @@ export default function CommunicationDetailPage() {
                     {loading ? (
                         <div className="products-empty">
                             Ładowanie wiadomości...
+                        </div>
+                    ) : isAmbiguousWithoutKind ? (
+                        <div className="products-empty">
+                            Ten identyfikator istnieje zarówno w historii SMS,
+                            jak i email. Wybierz właściwy typ wiadomości:
+                            <div className="mt-m">
+                                <Link
+                                    className="button"
+                                    href={getCommunicationHref(id!, 'sms')}
+                                >
+                                    otwórz jako SMS
+                                </Link>
+                                <Link
+                                    className="button ml-s"
+                                    href={getCommunicationHref(id!, 'email')}
+                                >
+                                    otwórz jako email
+                                </Link>
+                            </div>
                         </div>
                     ) : !detail ? (
                         <div className="products-empty">
@@ -235,46 +394,166 @@ export default function CommunicationDetailPage() {
                             ) : null}
 
                             <div className="sms_thread">
-                                <div className="message salon">
-                                    <div className="header">
-                                        <strong>
-                                            {formatDateTime(
-                                                detail.sentAt ||
-                                                    detail.createdAt ||
-                                                    null,
-                                            )}
-                                        </strong>{' '}
-                                        ({messageLabel(detail.status)}) |{' '}
-                                        {activeKind === 'sms'
-                                            ? 'Odbiorca:'
-                                            : 'Odbiorca:'}{' '}
-                                        <strong>
-                                            {detail.recipientUser?.id ? (
-                                                <Link
-                                                    href={`/customers/${detail.recipientUser.id}`}
-                                                >
-                                                    {recipientName}
-                                                </Link>
-                                            ) : (
-                                                recipientName
-                                            )}
-                                        </strong>{' '}
-                                        (
-                                        <button
-                                            type="button"
-                                            className="communication-inline-link"
-                                            onClick={handleShowReply}
+                                {activeKind === 'sms' &&
+                                smsThreadItems.length > 0 ? (
+                                    smsThreadItems.map((item) => {
+                                        const isCustomerMessage =
+                                            !item.sentBy?.id &&
+                                            (item.recipientId ?? null) !==
+                                                (sms?.recipientId ?? null);
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className={`message ${
+                                                    isCustomerMessage
+                                                        ? 'customer'
+                                                        : 'salon'
+                                                }`}
+                                            >
+                                                <div className="header">
+                                                    <strong>
+                                                        {formatDateTime(
+                                                            item.sentAt ||
+                                                                item.createdAt ||
+                                                                null,
+                                                        )}
+                                                    </strong>{' '}
+                                                    (
+                                                    {communicationStatusLabel(
+                                                        'sms',
+                                                        item.status,
+                                                    )}
+                                                    ) |{' '}
+                                                    {isCustomerMessage
+                                                        ? 'Nadawca:'
+                                                        : 'Odbiorca:'}{' '}
+                                                    <strong>
+                                                        {isCustomerMessage ? (
+                                                            recipientName
+                                                        ) : detail.recipientUser
+                                                              ?.id ? (
+                                                            <Link
+                                                                href={`/customers/${detail.recipientUser.id}`}
+                                                            >
+                                                                {recipientName}
+                                                            </Link>
+                                                        ) : (
+                                                            recipientName
+                                                        )}
+                                                    </strong>{' '}
+                                                    (
+                                                    <button
+                                                        type="button"
+                                                        className="communication-inline-link"
+                                                        onClick={
+                                                            handleShowReply
+                                                        }
+                                                    >
+                                                        {isCustomerMessage
+                                                            ? item.recipient
+                                                            : recipientContact}
+                                                    </button>
+                                                    )
+                                                </div>
+                                                <div className="text">
+                                                    {item.content}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : activeKind === 'email' &&
+                                  emailThreadItems.length > 0 ? (
+                                    emailThreadItems.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="message salon"
                                         >
-                                            {recipientContact}
-                                        </button>
-                                        )
+                                            <div className="header">
+                                                <strong>
+                                                    {formatDateTime(
+                                                        item.sentAt ||
+                                                            item.createdAt ||
+                                                            null,
+                                                    )}
+                                                </strong>{' '}
+                                                (
+                                                {communicationStatusLabel(
+                                                    'email',
+                                                    item.status,
+                                                )}
+                                                ) | Odbiorca:{' '}
+                                                <strong>
+                                                    {detail.recipientUser
+                                                        ?.id ? (
+                                                        <Link
+                                                            href={`/customers/${detail.recipientUser.id}`}
+                                                        >
+                                                            {recipientName}
+                                                        </Link>
+                                                    ) : (
+                                                        recipientName
+                                                    )}
+                                                </strong>{' '}
+                                                (
+                                                <button
+                                                    type="button"
+                                                    className="communication-inline-link"
+                                                    onClick={handleShowReply}
+                                                >
+                                                    {recipientContact}
+                                                </button>
+                                                )
+                                            </div>
+                                            <div className="text">
+                                                {item.template || item.subject}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="message salon">
+                                        <div className="header">
+                                            <strong>
+                                                {formatDateTime(
+                                                    detail.sentAt ||
+                                                        detail.createdAt ||
+                                                        null,
+                                                )}
+                                            </strong>{' '}
+                                            (
+                                            {communicationStatusLabel(
+                                                activeKind,
+                                                detail.status,
+                                            )}
+                                            ) | Odbiorca:{' '}
+                                            <strong>
+                                                {detail.recipientUser?.id ? (
+                                                    <Link
+                                                        href={`/customers/${detail.recipientUser.id}`}
+                                                    >
+                                                        {recipientName}
+                                                    </Link>
+                                                ) : (
+                                                    recipientName
+                                                )}
+                                            </strong>{' '}
+                                            (
+                                            <button
+                                                type="button"
+                                                className="communication-inline-link"
+                                                onClick={handleShowReply}
+                                            >
+                                                {recipientContact}
+                                            </button>
+                                            )
+                                        </div>
+                                        <div className="text">
+                                            {activeKind === 'sms'
+                                                ? sms?.content
+                                                : email?.template ||
+                                                  email?.subject}
+                                        </div>
                                     </div>
-                                    <div className="text">
-                                        {activeKind === 'sms'
-                                            ? sms?.content
-                                            : email?.template || email?.subject}
-                                    </div>
-                                </div>
+                                )}
 
                                 {activeKind === 'sms' &&
                                 (sms?.deliveredAt || sms?.errorMessage) ? (
@@ -399,6 +678,33 @@ export default function CommunicationDetailPage() {
                                                             ),
                                                         )}
                                                     </select>
+                                                    <div className="communication-template-actions">
+                                                        <button
+                                                            type="button"
+                                                            className="button button-link"
+                                                            onClick={
+                                                                handlePreviewTemplate
+                                                            }
+                                                            disabled={
+                                                                !selectedTemplate
+                                                            }
+                                                        >
+                                                            Podgląd
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="button"
+                                                            onClick={
+                                                                handleModifySelectedTemplate
+                                                            }
+                                                            disabled={
+                                                                !selectedTemplate
+                                                            }
+                                                        >
+                                                            Zmień treść
+                                                            wybranego szablonu
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </li>
                                         ) : null}
@@ -463,9 +769,18 @@ export default function CommunicationDetailPage() {
                                                         firmy oraz numeru
                                                         kontaktowego
                                                     </p>
-                                                    <Link href="/communication/templates">
+                                                    <button
+                                                        type="button"
+                                                        className="button button-link"
+                                                        onClick={
+                                                            handlePreviewDraft
+                                                        }
+                                                        disabled={
+                                                            !replyText.trim()
+                                                        }
+                                                    >
                                                         Podgląd
-                                                    </Link>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </li>
@@ -527,7 +842,73 @@ export default function CommunicationDetailPage() {
                         </div>
                     )}
                 </div>
-            </VersumShell>
+                {previewVisible ? (
+                    <div
+                        className="salonbw-modal-overlay"
+                        onClick={(event) => {
+                            if (event.target === event.currentTarget) {
+                                setPreviewVisible(false);
+                            }
+                        }}
+                    >
+                        <div className="salonbw-modal communication-preview-modal">
+                            <div className="salonbw-modal__header">
+                                <h3>{previewHeading}</h3>
+                                <button
+                                    type="button"
+                                    className="salonbw-modal__close"
+                                    onClick={() => setPreviewVisible(false)}
+                                    aria-label="Zamknij podgląd wiadomości"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="communication-preview-modal__meta">
+                                <div>
+                                    <strong>Odbiorca:</strong> {recipientName}{' '}
+                                    {recipientContact
+                                        ? `(${recipientContact})`
+                                        : ''}
+                                </div>
+                                <div>
+                                    <strong>Kanał:</strong>{' '}
+                                    {activeKind === 'sms' ? 'SMS' : 'E-mail'}
+                                </div>
+                                {previewMode === 'template' &&
+                                selectedTemplate ? (
+                                    <div>
+                                        <strong>Szablon:</strong>{' '}
+                                        {selectedTemplate.name}
+                                    </div>
+                                ) : null}
+                            </div>
+                            {activeKind === 'email' ? (
+                                <div className="communication-preview-email">
+                                    <div className="communication-preview-email__subject">
+                                        Temat: {previewSubject}
+                                    </div>
+                                    <div className="communication-preview-email__body">
+                                        {previewContent}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="communication-preview-sms">
+                                    {previewContent}
+                                </div>
+                            )}
+                            <div className="salonbw-modal__footer">
+                                <button
+                                    type="button"
+                                    className="button button-blue"
+                                    onClick={() => setPreviewVisible(false)}
+                                >
+                                    zamknij
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+            </SalonBWShell>
         </RouteGuard>
     );
 }

@@ -18,7 +18,7 @@ import {
 } from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
 
@@ -79,9 +79,9 @@ export default function StatisticsPage() {
     if (!role) return null;
 
     return (
-        <VersumShell role={role}>
+        <SalonBWShell role={role}>
             <StatisticsPageContent />
-        </VersumShell>
+        </SalonBWShell>
     );
 }
 
@@ -468,7 +468,7 @@ function StatisticsPageContent() {
 
     return (
         <div
-            className="versum-page statistics-module"
+            className="salonbw-page statistics-module"
             data-testid="statistics-page"
         >
             <ul className="breadcrumb">
@@ -546,9 +546,9 @@ function StatisticsPageContent() {
             </div>
 
             {reportLoading ? (
-                <div className="versum-muted p-20">Ładowanie raportu...</div>
+                <div className="salonbw-muted p-20">Ładowanie raportu...</div>
             ) : reportError ? (
-                <div className="versum-muted p-20">
+                <div className="salonbw-muted p-20">
                     Nie udało się pobrać raportu finansowego.
                 </div>
             ) : (

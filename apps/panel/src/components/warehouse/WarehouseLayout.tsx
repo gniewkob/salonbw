@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 
 type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
@@ -74,8 +74,8 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
-            <VersumCustomersVendorCss />
-            <VersumShell role={role}>
+            <SalonBWVendorCss />
+            <SalonBWShell role={role}>
                 <div className="products_index" id="products_main">
                     <ul className="breadcrumb">
                         <li>{heading}</li>
@@ -129,7 +129,7 @@ export default function WarehouseLayout({
 
                     {children}
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

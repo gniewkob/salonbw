@@ -1,5 +1,5 @@
 import ActivityLogRoute from '@/components/settings/ActivityLogRoute';
-import EmployeesNav from '@/components/versum/navs/EmployeesNav';
+import EmployeesNav from '@/components/salonbw/navs/EmployeesNav';
 
 export default function EmployeeActivityLogsPage() {
     return (

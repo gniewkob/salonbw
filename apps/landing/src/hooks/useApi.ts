@@ -82,16 +82,9 @@ function redirectToLogin(router: NextRouter) {
 
     const loginUrl = getPanelUrl('/auth/login');
     const target = `${loginUrl}?redirectTo=${encodeURIComponent(router.asPath)}`;
-    const navigation = router.push(target);
-    if (navigation && typeof navigation.catch === 'function') {
-        void navigation.catch(() => {
-            if (typeof window !== 'undefined') {
-                window.location.href = target;
-            }
-        });
-    } else if (typeof window !== 'undefined') {
+    void router.push(target).catch(() => {
         window.location.href = target;
-    }
+    });
 }
 
 async function handleApiError(

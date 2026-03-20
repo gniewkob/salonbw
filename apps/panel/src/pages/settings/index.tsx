@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 type SettingsTile = {
@@ -90,8 +90,8 @@ export default function SettingsPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="settings-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="settings-page">
                     <h2>
                         <i
                             className="icon sprite-wrench settings-section-heading-icon"
@@ -141,7 +141,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

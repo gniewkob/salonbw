@@ -1,5 +1,5 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 import NotificationList from '@/components/NotificationList';
 
@@ -10,9 +10,9 @@ export default function NotificationsPage() {
 
     return (
         <RouteGuard>
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <NotificationList />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

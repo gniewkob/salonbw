@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -23,7 +23,7 @@ import {
 } from '@dnd-kit/core';
 import type { Route } from 'next';
 
-// Komponent dla wiersza klienta z obsługą drag (Versum 1:1 style)
+// Komponent dla wiersza klienta z obsługą drag (styl source UI)
 function formatLastVisit(date: string | null | undefined) {
     if (!date) return '-';
     const value = new Date(date);
@@ -272,15 +272,15 @@ export default function ClientsPage() {
             roles={['employee', 'receptionist', 'admin']}
             permission="nav:customers"
         >
-            <VersumShell role={role}>
-                <VersumCustomersVendorCss />
+            <SalonBWShell role={role}>
+                <SalonBWVendorCss />
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
                     <div className="customers_index" id="customers_main">
-                        {/* Breadcrumbs - Versum style */}
+                        {/* Breadcrumbs - styl source UI */}
                         <ul className="breadcrumb">
                             <li>
                                 <i
@@ -291,7 +291,7 @@ export default function ClientsPage() {
                             </li>
                         </ul>
 
-                        {/* Toolbar - Versum style */}
+                        {/* Toolbar - styl source UI */}
                         <div className="clients-toolbar">
                             <div className="clients-search">
                                 <input
@@ -302,24 +302,24 @@ export default function ClientsPage() {
                                         setSearchTerm(e.target.value);
                                         setPage(1);
                                     }}
-                                    className="versum-input"
+                                    className="salonbw-input"
                                 />
                             </div>
                             <div className="clients-sort">
-                                <button className="versum-btn versum-btn--link">
+                                <button className="salonbw-btn salonbw-btn--link">
                                     nazwisko: od A do Z ▼
                                 </button>
                             </div>
                             <Link
                                 href="/customers/new"
-                                className="versum-btn versum-btn--primary versum-btn--add"
+                                className="salonbw-btn salonbw-btn--primary salonbw-btn--add"
                             >
                                 <span className="btn-icon">+</span>
                                 Dodaj klienta
                             </Link>
                         </div>
 
-                        {/* Aktywne filtry - jak w Versum */}
+                        {/* Aktywne filtry - jak w source UI */}
                         {activeGroup && (
                             <div className="clients-active-filters">
                                 <div className="clients-filter-header">
@@ -409,7 +409,7 @@ export default function ClientsPage() {
                                 </table>
                             )}
 
-                            {/* Paginacja - Versum style */}
+                            {/* Paginacja - styl source UI */}
                             {(() => {
                                 const totalCount = customersData?.total ?? 0;
                                 const totalPages =
@@ -435,7 +435,7 @@ export default function ClientsPage() {
                                         <label>
                                             na stronie
                                             <select
-                                                className="versum-select"
+                                                className="salonbw-select"
                                                 value={pageSize}
                                                 onChange={(e) => {
                                                     setPageSize(
@@ -452,7 +452,7 @@ export default function ClientsPage() {
                                         <div className="clients-pagination-nav">
                                             <button
                                                 type="button"
-                                                className="versum-btn versum-btn--icon"
+                                                className="salonbw-btn salonbw-btn--icon"
                                                 onClick={() =>
                                                     setPage((p) => p - 1)
                                                 }
@@ -463,7 +463,7 @@ export default function ClientsPage() {
                                             <input
                                                 type="text"
                                                 value={page}
-                                                className="versum-input versum-input--small"
+                                                className="salonbw-input salonbw-input--small"
                                                 aria-label="Aktualna strona"
                                                 readOnly
                                             />
@@ -471,7 +471,7 @@ export default function ClientsPage() {
                                             <span>{totalPages}</span>
                                             <button
                                                 type="button"
-                                                className="versum-btn versum-btn--icon"
+                                                className="salonbw-btn salonbw-btn--icon"
                                                 onClick={() =>
                                                     setPage((p) => p + 1)
                                                 }
@@ -497,7 +497,7 @@ export default function ClientsPage() {
                         ) : null}
                     </DragOverlay>
                 </DndContext>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

@@ -31,6 +31,14 @@ Local implementation note (2026-03-19):
 - `/settings/categories` now has persisted list-level reorder parity; the route supports save-order mode via backend `product-categories/reorder`, so it no longer belongs in the remaining non-exact P2 examples.
 - `/settings/customer-origins` aligns with the dump well enough to treat as `exact`: salon-defined origins support live add/edit/delete, and the system origins section remains read-only.
 - `/settings/trades/new` is no longer an honest disabled stub; it now creates real service categories through the existing `service-categories` backend and redirects into the services module, so the route can be treated as `exact`.
+- `/communication/:id` no longer relies on list-level heuristic guessing of message type: communication list links now carry explicit `kind`, the detail route resolves SMS/email collisions explicitly, and SMS detail renders a real multi-log thread based on `appointmentId` / `recipientId` history instead of a single-message stub. The route still remains `invent`, because salonbw does not yet expose a first-class conversation model equivalent to legacy Versum.
+- `/communication/:id` now also groups email detail into a persisted per-recipient history thread and refreshes the visible thread after reply send. The route still remains `invent`, because salonbw does not yet expose a first-class conversation model equivalent to legacy Versum.
+- `/communication/:id` reply form now also mirrors more of the legacy template flow: when `Użyj szablonu` is selected, the detail exposes `Podgląd` and `Zmień treść wybranego szablonu`, operators can load a saved template into the editable message body, and preview now opens as a local modal for either the selected template or the current reply draft instead of redirecting to the templates list.
+- `/calendar/views` no longer relies on `sessionStorage`; the route now uses dedicated backend CRUD under `settings/calendar-views`, supports create/edit/delete from the modal clone, and persists selected employee sets across sessions. The route still remains `invent`, because the panel keeps a route-driven modal flow instead of the original Versum PJAX HTML-partial contract.
+- vendored `/calendar` is now also wired to local HTML partial endpoints for `calendar views` dropdown/manage/form flows, so the embedded runtime no longer falls back to full Next pages for these actions. The route still remains `invent`, because those partials are an adapted SalonBW bridge over the legacy contract, not a literal backend clone.
+- de-branding in the target panel code is now largely complete: shell/components/styles/constants use `SalonBW` naming, while remaining `Versum` references are treated as deliberate technical exceptions in the compat/runtime layer (`/versum-calendar`, `/versum-vendor`, `window.VersumConfig`, backend `versum-compat`, legacy source URLs/assets, and the icon-font family name).
+- compat migration now also exposes parallel asset aliases `/salonbw-calendar/*` and `/salonbw-vendor/*`; generated vendored calendar artifacts now point to the `salonbw-*` aliases as canonical paths, while legacy `/versum-*` paths remain active as fallback, and vendored calendar runtime still receives the legacy `window.VersumConfig` global bridged from `window.SalonBWConfig`.
+- calendar compat hardening now also includes a proxy-side status normalization for legacy `POST /graphql` calls (`201 -> 200`) because the vendored runtime treated `201` as an error, plus a dedicated production smoke spec for `/calendar` that verifies `salonbw-*` assets, runtime config globals, and absence of `Unhandled response status error`.
 
 ## Latest Production Rollout
 
@@ -569,10 +577,10 @@ Verification:
     - `pnpm tsc --noEmit` ✅
     - `PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl pnpm playwright test tests/e2e/prod-customers-smoke.spec.ts --project=desktop-1366` ✅ (`2 passed`).
 - **2026-02-13** – Global `secondnav` rerender stabilization prepared (panel):
-  - change: `VersumShell` now resolves module using `router.asPath` and forces `secondnav` remount on route transitions via render key (`module + pathname + asPath`),
+  - change: `SalonBWShell` now resolves module using `router.asPath` and forces `secondnav` remount on route transitions via render key (`module + pathname + asPath`),
   - intent: eliminate stale `secondnav` state/content after cross-module navigation (`calendar` / `customers` / `products`),
   - local verification:
-    - `pnpm eslint src/components/versum/VersumShell.tsx` ✅
+    - `pnpm eslint src/components/versum/SalonBWShell.tsx` ✅
     - `pnpm tsc --noEmit` ✅
     - prod smoke (`customers` + `warehouse`) ✅ (`3 passed`).
 - **2026-02-13** – Warehouse routing stabilization + inventory parity pass deployed to production:
@@ -610,7 +618,7 @@ Verification:
   - changes:
     - added `niski stan magazynowy` route (`/stock-alerts`),
     - added `producenci` route (`/manufacturers`),
-    - both routes render in VersumShell and use warehouse table layout.
+    - both routes render in SalonBWShell and use warehouse table layout.
 - **2026-02-12** – Warehouse magazyn updates shipped to production:
   - commits: `90847948`, `e2b6b937`
   - deploy runs: Dashboard `21965037142`, `21965343231`
@@ -626,7 +634,7 @@ Verification:
 - **2026-02-12** – Customers `communication_preferences` layout aligned closer to Versum:
   - commit: `22b72433`
   - deploy run: Dashboard `21943523776`
-  - changes: replaced checkbox-style consents/history widget with Versum-like sections (contact info, channels table, icon-based consents) and dedicated CSS in `apps/panel/src/styles/versum-shell.css`.
+  - changes: replaced checkbox-style consents/history widget with Versum-like sections (contact info, channels table, icon-based consents) and dedicated CSS in `apps/panel/src/styles/salonbw-shell.css`.
 - **2026-02-11** – Antigravity Browser Control is available locally at `http://localhost:49230/` and can be used for interactive browser automation alongside MCP Playwright (click/scroll/type/navigate + progress overlay/control in IDE).
 - **2026-02-11** – Versum cloning rule captured in SOP: `secondnav` is route-contextual (must switch section/links per submodule, not static); parity checks now explicitly include route→secondnav transitions for customers/calendar/warehouse.
 - **2026-02-11** – Customers cleanup completed in panel/backend:

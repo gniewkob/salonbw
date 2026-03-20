@@ -1293,7 +1293,7 @@ export class StatisticsService {
                 const dayStart = startOfDay(day);
                 const dayEnd = endOfDay(day);
                 const dayOfWeek = day.getDay();
-                const dayOfWeekVersum = dayOfWeek === 0 ? 7 : dayOfWeek;
+                const sourceDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
 
                 let workTimeMinutes = 0;
 
@@ -1324,7 +1324,7 @@ export class StatisticsService {
                         }
                     } else {
                         // Use regular slot
-                        const targetDayOfWeek = (dayOfWeekVersum -
+                        const targetDayOfWeek = (sourceDayOfWeek -
                             1) as DayOfWeek;
                         const slot = timetable.slots?.find(
                             (s) => s.dayOfWeek === targetDayOfWeek,

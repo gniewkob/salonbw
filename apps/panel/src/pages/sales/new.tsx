@@ -336,7 +336,7 @@ export default function WarehouseSaleCreatePage() {
                                 onChange={(event) =>
                                     setEmployeeId(event.target.value)
                                 }
-                                className="versum-select"
+                                className="salonbw-select"
                             >
                                 <option value="">
                                     wpisz nazwę lub wybierz z listy
@@ -369,7 +369,7 @@ export default function WarehouseSaleCreatePage() {
                                 onChange={(event) =>
                                     setPaymentMethod(event.target.value)
                                 }
-                                className="versum-select"
+                                className="salonbw-select"
                             >
                                 <option value="cash">gotówka</option>
                                 <option value="card">karta</option>

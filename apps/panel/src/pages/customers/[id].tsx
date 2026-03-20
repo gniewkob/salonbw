@@ -3,9 +3,9 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import ClientDetailNav from '@/components/versum/navs/ClientDetailNav';
-import VersumCustomersVendorCss from '@/components/versum/VersumCustomersVendorCss';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import ClientDetailNav from '@/components/salonbw/navs/ClientDetailNav';
+import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
@@ -148,8 +148,8 @@ export default function CustomerDetailPage() {
             roles={['admin', 'employee', 'receptionist']}
             permission="nav:customers"
         >
-            <VersumShell role={role}>
-                <VersumCustomersVendorCss />
+            <SalonBWShell role={role}>
+                <SalonBWVendorCss />
                 <CustomerErrorBoundary
                     fallback={
                         <div className="show_customer" id="customers_main">
@@ -160,7 +160,7 @@ export default function CustomerDetailPage() {
                                 </p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="versum-btn versum-btn--default"
+                                    className="salonbw-btn salonbw-btn--default"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -169,7 +169,7 @@ export default function CustomerDetailPage() {
                     }
                 >
                     <div className="show_customer" id="customers_main">
-                        {/* Breadcrumbs - Versum style */}
+                        {/* Breadcrumbs - styl source UI */}
                         <ul className="breadcrumb">
                             <li>
                                 <i
@@ -189,7 +189,7 @@ export default function CustomerDetailPage() {
                                 <p>Nieprawidłowy identyfikator klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="versum-btn versum-btn--default"
+                                    className="salonbw-btn salonbw-btn--default"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -199,7 +199,7 @@ export default function CustomerDetailPage() {
                                 <p>Nie udało się załadować danych klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="versum-btn versum-btn--default"
+                                    className="salonbw-btn salonbw-btn--default"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -337,7 +337,7 @@ export default function CustomerDetailPage() {
                                 <p>Nie znaleziono klienta</p>
                                 <Link
                                     href={'/customers' as Route}
-                                    className="versum-btn versum-btn--default"
+                                    className="salonbw-btn salonbw-btn--default"
                                 >
                                     Wróć do listy klientów
                                 </Link>
@@ -345,12 +345,12 @@ export default function CustomerDetailPage() {
                         )}
                     </div>
                 </CustomerErrorBoundary>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }
 
-// View Components - Versum 1:1 Style
+// View components - source UI style
 function CustomerSummaryView({
     customer,
     tags,

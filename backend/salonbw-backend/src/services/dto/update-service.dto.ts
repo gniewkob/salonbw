@@ -74,6 +74,30 @@ export class UpdateServiceDto {
     vatRate?: number;
 
     @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    durationBefore?: number;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    durationAfter?: number;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    breakOffset?: number;
+
+    @ApiProperty({ required: false })
+    @IsNumber()
+    @IsOptional()
+    @Min(0)
+    breakDuration?: number;
+
+    @ApiProperty({ required: false })
     @IsBoolean()
     @IsOptional()
     isFeatured?: boolean;

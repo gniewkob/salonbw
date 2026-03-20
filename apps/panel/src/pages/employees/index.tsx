@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
-import VersumShell from '@/components/versum/VersumShell';
-import EmployeesNav from '@/components/versum/navs/EmployeesNav';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import EmployeesNav from '@/components/salonbw/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import DataTable, { Column } from '@/components/DataTable';
@@ -18,7 +18,7 @@ const EmployeeForm = dynamic<ComponentProps<typeof EmployeeFormComponent>>(
     {
         ssr: false,
         loading: () => (
-            <div className="versum-loading">Loading employee form…</div>
+            <div className="salonbw-loading">Loading employee form…</div>
         ),
     },
 );
@@ -74,16 +74,16 @@ export default function EmployeesPage() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
-            <VersumShell role={role}>
-                <div className="versum-page" data-testid="employees-page">
+            <SalonBWShell role={role}>
+                <div className="salonbw-page" data-testid="employees-page">
                     <ul className="breadcrumb">
                         <li>Ustawienia</li>
                         <li>Pracownicy</li>
                     </ul>
-                    <div className="versum-page__toolbar">
+                    <div className="salonbw-page__toolbar">
                         <button
                             type="button"
-                            className="versum-btn versum-btn--primary"
+                            className="salonbw-btn salonbw-btn--primary"
                             onClick={() => {
                                 setEditing(null);
                                 setOpenForm(true);
@@ -101,7 +101,7 @@ export default function EmployeesPage() {
                             renderActions={(r) => (
                                 <span className="space-x-2">
                                     <button
-                                        className="versum-btn versum-btn--sm versum-btn--light"
+                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--light"
                                         onClick={() => {
                                             setEditing(r);
                                             setOpenForm(true);
@@ -110,7 +110,7 @@ export default function EmployeesPage() {
                                         Edytuj
                                     </button>
                                     <button
-                                        className="versum-btn versum-btn--sm versum-btn--danger"
+                                        className="salonbw-btn salonbw-btn--sm salonbw-btn--danger"
                                         onClick={() => void handleDelete(r)}
                                     >
                                         Usuń
@@ -136,7 +136,7 @@ export default function EmployeesPage() {
                         />
                     </Modal>
                 </div>
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

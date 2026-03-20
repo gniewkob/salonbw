@@ -115,7 +115,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
         typeof n === 'number' ? ` ${n}` : '';
 
     return (
-        <div className="customer-history-tab customer-history-tab--versum">
+        <div className="customer-history-tab customer-history-tab--salonbw">
             <div className="customer-history-toolbar">
                 <button type="button" className="btn btn-default btn-xs">
                     filtruj
@@ -276,7 +276,7 @@ export default function CustomerHistoryTab({ customerId }: Props) {
             )}
 
             {totalPages > 1 && (
-                <div className="customers-history-pagination customers-history-pagination--versum">
+                <div className="customers-history-pagination customers-history-pagination--salonbw">
                     <span>
                         Pozycje od {fromItem} do {toItem} z {data?.total || 0}
                     </span>

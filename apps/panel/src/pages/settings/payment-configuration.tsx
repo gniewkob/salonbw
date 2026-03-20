@@ -1,6 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import PaymentConfigurationPage from '@/components/settings/PaymentConfigurationPage';
-import VersumShell from '@/components/versum/VersumShell';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function PaymentConfigurationRoute() {
@@ -10,9 +10,9 @@ export default function PaymentConfigurationRoute() {
 
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
-            <VersumShell role={role}>
+            <SalonBWShell role={role}>
                 <PaymentConfigurationPage />
-            </VersumShell>
+            </SalonBWShell>
         </RouteGuard>
     );
 }

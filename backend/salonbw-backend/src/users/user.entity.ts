@@ -41,7 +41,11 @@ export class User {
     @Column({ default: true })
     receiveNotifications: boolean;
 
-    @Column({ type: 'integer', nullable: true, name: 'paranoia_limit_override' })
+    @Column({
+        type: 'integer',
+        nullable: true,
+        name: 'paranoia_limit_override',
+    })
     paranoiaLimitOverride?: number | null;
 
     @Column('decimal', {
