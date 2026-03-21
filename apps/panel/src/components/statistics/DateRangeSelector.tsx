@@ -33,13 +33,9 @@ export default function DateRangeSelector({
     customTo,
 }: Props) {
     const defaultDate = format(new Date(), 'yyyy-MM-dd');
-    const [showCustom, setShowCustom] = useState(value === DateRange.Custom);
+    const showCustom = value === DateRange.Custom;
     const [localFrom, setLocalFrom] = useState(customFrom || defaultDate);
     const [localTo, setLocalTo] = useState(customTo || defaultDate);
-
-    useEffect(() => {
-        setShowCustom(value === DateRange.Custom);
-    }, [value]);
 
     useEffect(() => {
         setLocalFrom(customFrom || defaultDate);
@@ -51,10 +47,8 @@ export default function DateRangeSelector({
 
     const handleRangeChange = (newRange: DateRange) => {
         if (newRange === DateRange.Custom) {
-            setShowCustom(true);
             onChange(newRange, localFrom, localTo);
         } else {
-            setShowCustom(false);
             onChange(newRange);
         }
     };
