@@ -15,6 +15,7 @@ export default function NewProductPage() {
     const productApi = useProductApi();
     const { data: categories = [] } = useProductCategories();
     const [isSaving, setIsSaving] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
     const [form, setForm] = useState({
         name: '',
         categoryId: '',
@@ -32,6 +33,7 @@ export default function NewProductPage() {
     if (!role) return null;
 
     const handleSubmit = async () => {
+        setApiError(null);
         if (!form.name.trim()) return;
         setIsSaving(true);
         try {
@@ -51,6 +53,11 @@ export default function NewProductPage() {
                 minQuantity: Number(form.minQuantity),
             });
             await router.push('/products');
+        } catch (error) {
+            console.error('Błąd zapisu produktu:', error);
+            setApiError(
+                'Wystąpił błąd podczas zapisywania produktu. Sprawdź poprawność danych i spróbuj ponownie.',
+            );
         } finally {
             setIsSaving(false);
         }
@@ -72,6 +79,9 @@ export default function NewProductPage() {
                             void handleSubmit();
                         }}
                     >
+                        {apiError ? (
+                            <div className="alert alert-danger">{apiError}</div>
+                        ) : null}
                         <div className="product-form__section">
                             <h4>dane podstawowe</h4>
 
