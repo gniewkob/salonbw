@@ -4084,33 +4084,11 @@ body.settings-dashboard-landing .sidebar {
     width: var(--salonbw-mainnav-w);
 }
 
-body.settings-dashboard-landing #main-content .inner,
-body.settings-dashboard-landing .main-content .inner {
+body.settings-dashboard-landing #main-content > .inner,
+body.settings-dashboard-landing .main-content > .inner {
     max-width: none;
     margin: 0;
     padding: 0;
-}
-
-body.settings-dashboard-landing .breadcrumbs {
-    margin: 0 0 12px 18px;
-}
-
-body.settings-dashboard-landing .breadcrumbs ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-body.settings-dashboard-landing .breadcrumbs li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #313140;
-    font-family: 'Lato', sans-serif;
-    font-size: 19px;
-    font-weight: 300;
-    line-height: 1.2;
-    width: auto;
 }
 
 .setting-box {
@@ -4152,8 +4130,7 @@ body.settings-dashboard-landing .breadcrumbs li {
 }
 
 .settings-dashboard-inner {
-    width: 940px;
-    margin-left: 18px;
+    padding: 20px;
 }
 
 .settings-dashboard-inner--addons {
@@ -4168,35 +4145,18 @@ body.settings-dashboard-landing .breadcrumbs li {
     .setting-box {
         width: 200px;
     }
-
-    .settings-dashboard-inner {
-        width: 600px;
-    }
 }
 
 @media (max-width: 900px) {
     .setting-box {
         width: 180px;
     }
-
-    .settings-dashboard-inner {
-        width: 360px;
-    }
 }
 
 @media (max-width: 640px) {
-    body.settings-dashboard-landing .breadcrumbs {
-        margin-left: 0;
-    }
-
     .setting-box {
         width: 100%;
         height: auto;
-    }
-
-    .settings-dashboard-inner {
-        width: 100%;
-        margin-left: 0;
     }
 
     .setting-box a {
