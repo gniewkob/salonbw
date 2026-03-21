@@ -4117,11 +4117,13 @@ body.settings-dashboard-landing .breadcrumbs li {
 }
 
 .settings-dashboard-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 235px);
+    max-width: 940px;
 }
 
 .settings-dashboard-grid--addons {
+    grid-template-columns: 235px;
     margin-bottom: 20px;
 }
 
@@ -4173,18 +4175,41 @@ body.settings-dashboard-landing .breadcrumbs li {
 }
 
 @media (max-width: 1100px) {
+    .settings-dashboard-grid {
+        grid-template-columns: repeat(3, 200px);
+        max-width: 600px;
+    }
+
+    .settings-dashboard-grid--addons {
+        grid-template-columns: 200px;
+    }
+
     .setting-box {
         width: 200px;
     }
 }
 
 @media (max-width: 900px) {
+    .settings-dashboard-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        max-width: 100%;
+    }
+
+    .settings-dashboard-grid--addons {
+        grid-template-columns: minmax(180px, 1fr);
+    }
+
     .setting-box {
-        width: 50%;
+        width: auto;
     }
 }
 
 @media (max-width: 640px) {
+    .settings-dashboard-grid,
+    .settings-dashboard-grid--addons {
+        grid-template-columns: 1fr;
+    }
+
     .setting-box {
         width: 100%;
         height: auto;
