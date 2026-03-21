@@ -4091,12 +4091,8 @@ body.settings-dashboard-landing .main-content .inner {
     padding: 0;
 }
 
-body.settings-dashboard-landing .salonbw-page {
-    padding: 0 0 0 18px;
-}
-
 body.settings-dashboard-landing .breadcrumbs {
-    margin: 0 0 12px;
+    margin: 0 0 12px 18px;
 }
 
 body.settings-dashboard-landing .breadcrumbs ul {
@@ -4114,17 +4110,7 @@ body.settings-dashboard-landing .breadcrumbs li {
     font-size: 19px;
     font-weight: 300;
     line-height: 1.2;
-}
-
-.settings-dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 235px);
-    max-width: 940px;
-}
-
-.settings-dashboard-grid--addons {
-    grid-template-columns: 235px;
-    margin-bottom: 20px;
+    width: auto;
 }
 
 .setting-box {
@@ -4132,13 +4118,6 @@ body.settings-dashboard-landing .breadcrumbs li {
     height: 120px;
     display: inline-block;
     text-align: center;
-}
-
-.setting-box .ico-container {
-    height: 75px;
-    padding-top: 10px;
-    margin-bottom: 0;
-    vertical-align: middle;
 }
 
 .setting-box svg {
@@ -4159,15 +4138,26 @@ body.settings-dashboard-landing .breadcrumbs li {
     text-decoration: none;
 }
 
+.setting-box a .ico-container {
+    height: 75px;
+    padding-top: 10px;
+    margin-bottom: 0.5rem;
+    vertical-align: middle;
+}
+
 .setting-box a:hover,
 .setting-box a.highlighted {
     background: #f3ffff;
     text-decoration: none;
 }
 
-.settings-addon-section {
-    margin-top: 26px;
-    margin-bottom: 30px;
+.settings-dashboard-inner {
+    width: 940px;
+    margin-left: 18px;
+}
+
+.settings-dashboard-inner--addons {
+    margin-bottom: 20px;
 }
 
 .settings-addon-title-icon {
@@ -4175,44 +4165,38 @@ body.settings-dashboard-landing .breadcrumbs li {
 }
 
 @media (max-width: 1100px) {
-    .settings-dashboard-grid {
-        grid-template-columns: repeat(3, 200px);
-        max-width: 600px;
-    }
-
-    .settings-dashboard-grid--addons {
-        grid-template-columns: 200px;
-    }
-
     .setting-box {
         width: 200px;
+    }
+
+    .settings-dashboard-inner {
+        width: 600px;
     }
 }
 
 @media (max-width: 900px) {
-    .settings-dashboard-grid {
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
-        max-width: 100%;
-    }
-
-    .settings-dashboard-grid--addons {
-        grid-template-columns: minmax(180px, 1fr);
-    }
-
     .setting-box {
-        width: auto;
+        width: 180px;
+    }
+
+    .settings-dashboard-inner {
+        width: 360px;
     }
 }
 
 @media (max-width: 640px) {
-    .settings-dashboard-grid,
-    .settings-dashboard-grid--addons {
-        grid-template-columns: 1fr;
+    body.settings-dashboard-landing .breadcrumbs {
+        margin-left: 0;
     }
 
     .setting-box {
         width: 100%;
         height: auto;
+    }
+
+    .settings-dashboard-inner {
+        width: 100%;
+        margin-left: 0;
     }
 
     .setting-box a {
