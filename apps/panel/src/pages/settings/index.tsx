@@ -121,8 +121,10 @@ export default function SettingsPage() {
     useEffect(() => {
         if (typeof document === 'undefined') return;
         document.body.classList.add('settings-dashboard-landing');
+        document.body.classList.add('no_sidenav');
         return () => {
             document.body.classList.remove('settings-dashboard-landing');
+            document.body.classList.remove('no_sidenav');
         };
     }, []);
 
@@ -131,7 +133,7 @@ export default function SettingsPage() {
     return (
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonBWShell role={role}>
-                <div className="salonbw-page" data-testid="settings-page">
+                <div data-testid="settings-page">
                     <div className="breadcrumbs" e2e-breadcrumbs="">
                         <ul>
                             <li>
@@ -144,7 +146,7 @@ export default function SettingsPage() {
                         </ul>
                     </div>
 
-                    <div className="settings-dashboard-grid">
+                    <div className="inner settings-dashboard-inner">
                         {mainTiles.map((tile) => (
                             <div
                                 key={tile.label}
@@ -167,40 +169,38 @@ export default function SettingsPage() {
                         ))}
                     </div>
 
-                    <div className="settings-addon-section">
-                        <div className="breadcrumbs">
-                            <ul>
-                                <li>
-                                    <div
-                                        className="icon sprite-extension_star_black settings-addon-title-icon"
-                                        aria-hidden="true"
-                                    />
-                                    Ustawienia dodatków
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="settings-dashboard-grid settings-dashboard-grid--addons">
-                            {addonTiles.map((tile) => (
+                    <div className="breadcrumbs">
+                        <ul>
+                            <li>
                                 <div
-                                    key={tile.label}
-                                    className={`setting-box ${tile.boxClass}`}
-                                >
-                                    <Link href={tile.href}>
-                                        <div className="ico-container">
-                                            <svg
-                                                className={tile.iconId}
-                                                aria-hidden="true"
-                                            >
-                                                <use
-                                                    xlinkHref={`${SETTINGS_ICON_SPRITE}#${tile.iconId}`}
-                                                />
-                                            </svg>
-                                        </div>
-                                        {tile.label}
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
+                                    className="icon sprite-extension_star_black settings-addon-title-icon"
+                                    aria-hidden="true"
+                                />
+                                Ustawienia dodatków
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="inner settings-dashboard-inner settings-dashboard-inner--addons">
+                        {addonTiles.map((tile) => (
+                            <div
+                                key={tile.label}
+                                className={`setting-box ${tile.boxClass}`}
+                            >
+                                <Link href={tile.href}>
+                                    <div className="ico-container">
+                                        <svg
+                                            className={tile.iconId}
+                                            aria-hidden="true"
+                                        >
+                                            <use
+                                                xlinkHref={`${SETTINGS_ICON_SPRITE}#${tile.iconId}`}
+                                            />
+                                        </svg>
+                                    </div>
+                                    {tile.label}
+                                </Link>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </SalonBWShell>
