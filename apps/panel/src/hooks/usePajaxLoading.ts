@@ -51,16 +51,14 @@ export function usePajaxLoading() {
  */
 export function usePrefetchOnHover() {
     const router = useRouter();
-    const [prefetchedUrls, setPrefetchedUrls] = useState<Set<string>>(
-        new Set(),
-    );
+    const prefetchedUrlsRef = useRef<Set<string>>(new Set());
 
     const prefetch = (url: string) => {
-        if (!prefetchedUrls.has(url)) {
-            setPrefetchedUrls((prev) => new Set(prev).add(url));
+        if (!prefetchedUrlsRef.current.has(url)) {
+            prefetchedUrlsRef.current.add(url);
             void router.prefetch(url);
         }
     };
 
-    return { prefetch, prefetchedUrls };
+    return { prefetch, prefetchedUrls: prefetchedUrlsRef.current };
 }

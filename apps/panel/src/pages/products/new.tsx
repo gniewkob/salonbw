@@ -29,12 +29,39 @@ export default function NewProductPage() {
         unit: 'op.',
         description: '',
     });
+    const handleFieldChange =
+        (field: keyof typeof form) =>
+        (
+            event: React.ChangeEvent<
+                HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+            >,
+        ) => {
+            const { value } = event.target;
+            setForm((prev) => ({
+                ...prev,
+                [field]: value,
+            }));
+        };
 
     if (!role) return null;
 
     const handleSubmit = async () => {
         setApiError(null);
         if (!form.name.trim()) return;
+        const stock = Number(form.stock);
+        const unitPrice = Number(form.unitPrice);
+        const vatRate = Number(form.vatRate);
+        const minQuantity = Number(form.minQuantity);
+
+        if (
+            !Number.isFinite(stock) ||
+            !Number.isFinite(unitPrice) ||
+            !Number.isFinite(vatRate) ||
+            !Number.isFinite(minQuantity)
+        ) {
+            setApiError('Wprowadź poprawne wartości liczbowe przed zapisem.');
+            return;
+        }
         setIsSaving(true);
         try {
             await productApi.create({
@@ -47,16 +74,18 @@ export default function NewProductPage() {
                 unit: form.unit.trim() || undefined,
                 description: form.description.trim() || undefined,
                 brand: form.brand.trim() || undefined,
-                stock: Number(form.stock),
-                unitPrice: Number(form.unitPrice),
-                vatRate: Number(form.vatRate),
-                minQuantity: Number(form.minQuantity),
+                stock,
+                unitPrice,
+                vatRate,
+                minQuantity,
             });
             await router.push('/products');
         } catch (error) {
             console.error('Błąd zapisu produktu:', error);
             setApiError(
-                'Wystąpił błąd podczas zapisywania produktu. Sprawdź poprawność danych i spróbuj ponownie.',
+                error instanceof Error
+                    ? error.message
+                    : 'Wystąpił błąd podczas zapisywania produktu. Sprawdź poprawność danych i spróbuj ponownie.',
             );
         } finally {
             setIsSaving(false);
@@ -90,13 +119,9 @@ export default function NewProductPage() {
                                 <input
                                     id="name"
                                     className="form-control"
+                                    required
                                     value={form.name}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            name: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('name')}
                                 />
                             </div>
 
@@ -106,12 +131,7 @@ export default function NewProductPage() {
                                     id="category"
                                     className="salonbw-select"
                                     value={form.categoryId}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            categoryId: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('categoryId')}
                                 >
                                     <option value="">brak kategorii</option>
                                     {categories.map((category) => (
@@ -133,12 +153,7 @@ export default function NewProductPage() {
                                     id="productType"
                                     className="salonbw-select"
                                     value={form.productType}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            productType: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('productType')}
                                 >
                                     <option value="product">towar</option>
                                     <option value="supply">materiał</option>
@@ -156,12 +171,7 @@ export default function NewProductPage() {
                                     id="sku"
                                     className="form-control"
                                     value={form.sku}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            sku: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('sku')}
                                 />
                             </div>
 
@@ -173,13 +183,9 @@ export default function NewProductPage() {
                                     id="stock"
                                     type="number"
                                     className="form-control"
+                                    min="0"
                                     value={form.stock}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            stock: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('stock')}
                                 />
                             </div>
 
@@ -192,13 +198,9 @@ export default function NewProductPage() {
                                     type="number"
                                     step="0.01"
                                     className="form-control"
+                                    min="0"
                                     value={form.unitPrice}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            unitPrice: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('unitPrice')}
                                 />
                             </div>
 
@@ -208,13 +210,9 @@ export default function NewProductPage() {
                                     id="vatRate"
                                     type="number"
                                     className="form-control"
+                                    min="0"
                                     value={form.vatRate}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            vatRate: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('vatRate')}
                                 />
                             </div>
                         </div>
@@ -228,12 +226,7 @@ export default function NewProductPage() {
                                     id="brand"
                                     className="form-control"
                                     value={form.brand}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            brand: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('brand')}
                                 />
                             </div>
 
@@ -245,13 +238,9 @@ export default function NewProductPage() {
                                     id="minQuantity"
                                     type="number"
                                     className="form-control"
+                                    min="0"
                                     value={form.minQuantity}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            minQuantity: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('minQuantity')}
                                 />
                             </div>
 
@@ -261,12 +250,7 @@ export default function NewProductPage() {
                                     id="unit"
                                     className="form-control"
                                     value={form.unit}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            unit: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('unit')}
                                 />
                             </div>
 
@@ -276,12 +260,7 @@ export default function NewProductPage() {
                                     id="description"
                                     className="form-control"
                                     value={form.description}
-                                    onChange={(event) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            description: event.target.value,
-                                        }))
-                                    }
+                                    onChange={handleFieldChange('description')}
                                 />
                             </div>
                         </div>
