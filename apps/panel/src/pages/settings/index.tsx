@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,14 +7,18 @@ import { useAuth } from '@/contexts/AuthContext';
 type SettingsTile = {
     href: string;
     label: string;
-    icon: string;
+    boxClass: string;
+    iconId: string;
 };
+
+const SETTINGS_ICON_SPRITE = '/assets/settings-dashboard-icons.svg';
 
 const addonTiles: SettingsTile[] = [
     {
         href: '/extension/tools/4',
         label: 'Marketing Automatyczny',
-        icon: 'sprite-automatic_marketing',
+        boxClass: 'automatic_marketing',
+        iconId: 'svg-automatic_marketing',
     },
 ];
 
@@ -21,70 +26,105 @@ const mainTiles: SettingsTile[] = [
     {
         href: '/settings/timetable/employees',
         label: 'grafiki pracy',
-        icon: 'sprite-settings_work_schedule',
+        boxClass: 'work_schedule',
+        iconId: 'svg-work_schedule',
     },
     {
         href: '/settings/branch',
         label: 'dane salonu',
-        icon: 'sprite-settings_branch',
+        boxClass: 'salon',
+        iconId: 'svg-salon',
     },
     {
         href: '/settings/calendar',
         label: 'godziny otwarcia',
-        icon: 'sprite-settings_opening_hours',
+        boxClass: 'opening_hours_clock',
+        iconId: 'svg-opening_hours_clock',
     },
-    { href: '/calendar', label: 'kalendarz', icon: 'sprite-settings_calendar' },
+    {
+        href: '/calendar',
+        label: 'kalendarz',
+        boxClass: 'calendar',
+        iconId: 'svg-calendar',
+    },
     {
         href: '/employees',
         label: 'pracownicy',
-        icon: 'sprite-settings_employees',
+        boxClass: 'employees',
+        iconId: 'svg-employees',
     },
-    { href: '/customers', label: 'klienci', icon: 'sprite-settings_customers' },
+    {
+        href: '/customers',
+        label: 'klienci',
+        boxClass: 'customers',
+        iconId: 'svg-customers',
+    },
     {
         href: '/communication',
         label: 'rezerwacja online',
-        icon: 'sprite-settings_booking',
+        boxClass: 'booking',
+        iconId: 'svg-booking',
     },
-    { href: '/reviews', label: 'komentarze', icon: 'sprite-settings_notice' },
+    {
+        href: '/reviews',
+        label: 'komentarze',
+        boxClass: 'settings_opinions',
+        iconId: 'svg-settings_opinions',
+    },
     {
         href: '/communication',
         label: 'łączność',
-        icon: 'sprite-settings_sms_nav',
+        boxClass: 'communication',
+        iconId: 'svg-communication',
     },
     {
         href: '/communication',
         label: 'komunikacja z klientem',
-        icon: 'sprite-settings_notifications_nav',
+        boxClass: 'client_communication',
+        iconId: 'svg-client_communication',
     },
     {
         href: '/communication',
         label: 'media społecznościowe',
-        icon: 'sprite-settings_social_media',
+        boxClass: 'social_media',
+        iconId: 'svg-social_media',
     },
     {
         href: '/invoices',
         label: 'faktury i abonament',
-        icon: 'sprite-settings_invoice',
+        boxClass: 'billing',
+        iconId: 'svg-billing',
     },
     {
         href: '/statistics',
         label: 'płatności',
-        icon: 'sprite-settings_payment_methods',
+        boxClass: 'prepayments',
+        iconId: 'svg-prepayments',
     },
     {
         href: '/extension',
         label: 'Premium',
-        icon: 'sprite-settings_subscription',
+        boxClass: 'moment_power',
+        iconId: 'svg-moment_power',
     },
     {
         href: '/settings',
         label: 'inne ustawienia',
-        icon: 'sprite-settings_blue',
+        boxClass: 'extra_settings',
+        iconId: 'svg-extra_settings',
     },
 ];
 
 export default function SettingsPage() {
     const { role } = useAuth();
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        document.body.classList.add('settings-dashboard-landing');
+        return () => {
+            document.body.classList.remove('settings-dashboard-landing');
+        };
+    }, []);
 
     if (!role) return null;
 
@@ -92,51 +132,73 @@ export default function SettingsPage() {
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="settings-page">
-                    <h2 className="settings-page-heading">
-                        <i
-                            className="icon sprite-wrench settings-section-heading-icon"
-                            aria-hidden="true"
-                        />
-                        Ustawienia
-                    </h2>
-
-                    <div className="settings-icons-grid">
-                        {mainTiles.map((tile) => (
-                            <Link
-                                key={tile.label}
-                                href={tile.href}
-                                className="settings-icon-link"
-                            >
-                                <i
-                                    className={`icon ${tile.icon} settings-icon-link__icon`}
+                    <div className="breadcrumbs" e2e-breadcrumbs="">
+                        <ul>
+                            <li>
+                                <div
+                                    className="icon sprite-breadcrumbs_settings"
                                     aria-hidden="true"
                                 />
-                                <span>{tile.label}</span>
-                            </Link>
+                                Ustawienia
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="settings-dashboard-grid">
+                        {mainTiles.map((tile) => (
+                            <div
+                                key={tile.label}
+                                className={`setting-box ${tile.boxClass}`}
+                            >
+                                <Link href={tile.href}>
+                                    <div className="ico-container">
+                                        <svg
+                                            className={tile.iconId}
+                                            aria-hidden="true"
+                                        >
+                                            <use
+                                                xlinkHref={`${SETTINGS_ICON_SPRITE}#${tile.iconId}`}
+                                            />
+                                        </svg>
+                                    </div>
+                                    {tile.label}
+                                </Link>
+                            </div>
                         ))}
                     </div>
 
                     <div className="settings-addon-section">
-                        <h2 className="settings-page-heading">
-                            <i
-                                className="icon sprite-star settings-section-heading-icon"
-                                aria-hidden="true"
-                            />
-                            Ustawienia dodatków
-                        </h2>
-                        <div className="settings-icons-grid settings-icons-grid--addons">
-                            {addonTiles.map((tile) => (
-                                <Link
-                                    key={tile.label}
-                                    href={tile.href}
-                                    className="settings-icon-link"
-                                >
-                                    <i
-                                        className={`icon ${tile.icon} settings-icon-link__icon`}
+                        <div className="breadcrumbs">
+                            <ul>
+                                <li>
+                                    <div
+                                        className="icon sprite-extension_star_black settings-addon-title-icon"
                                         aria-hidden="true"
                                     />
-                                    <span>{tile.label}</span>
-                                </Link>
+                                    Ustawienia dodatków
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="settings-dashboard-grid settings-dashboard-grid--addons">
+                            {addonTiles.map((tile) => (
+                                <div
+                                    key={tile.label}
+                                    className={`setting-box ${tile.boxClass}`}
+                                >
+                                    <Link href={tile.href}>
+                                        <div className="ico-container">
+                                            <svg
+                                                className={tile.iconId}
+                                                aria-hidden="true"
+                                            >
+                                                <use
+                                                    xlinkHref={`${SETTINGS_ICON_SPRITE}#${tile.iconId}`}
+                                                />
+                                            </svg>
+                                        </div>
+                                        {tile.label}
+                                    </Link>
+                                </div>
                             ))}
                         </div>
                     </div>
