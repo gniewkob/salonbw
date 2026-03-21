@@ -8,6 +8,7 @@ import {
     useWarehouseProducts,
     useProductCategories,
 } from '@/hooks/useWarehouseViews';
+import { getProductTypeLabel } from '@/lib/warehouse/productTypeLabel';
 import { ProductCategory } from '@/types';
 
 function flattenCategoryIds(
@@ -123,7 +124,7 @@ export default function WarehouseProductsPage() {
         const rows = filteredProducts.map((product) => [
             product.name,
             product.category?.name ?? 'brak kategorii',
-            product.productType ?? 'product',
+            getProductTypeLabel(product.productType),
             product.sku ?? '',
             `${product.stock} ${product.unit ?? 'op.'}`,
             Number(product.unitPrice ?? 0).toFixed(2),
@@ -258,7 +259,9 @@ export default function WarehouseProductsPage() {
                                                 'brak kategorii'}
                                         </td>
                                         <td>
-                                            {product.productType ?? 'towar'}
+                                            {getProductTypeLabel(
+                                                product.productType,
+                                            )}
                                         </td>
                                         <td>{product.sku ?? '-'}</td>
                                         <td>
