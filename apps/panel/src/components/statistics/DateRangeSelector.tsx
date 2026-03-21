@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { DateRange } from '@/types';
 
@@ -39,6 +39,18 @@ export default function DateRangeSelector({
     const [localTo, setLocalTo] = useState(
         customTo || format(new Date(), 'yyyy-MM-dd'),
     );
+
+    useEffect(() => {
+        if (customFrom) {
+            setLocalFrom(customFrom);
+        }
+    }, [customFrom]);
+
+    useEffect(() => {
+        if (customTo) {
+            setLocalTo(customTo);
+        }
+    }, [customTo]);
 
     const handleRangeChange = (newRange: DateRange) => {
         if (newRange === DateRange.Custom) {
