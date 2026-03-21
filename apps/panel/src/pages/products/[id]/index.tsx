@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 import ProductViewShell from '@/components/warehouse/ProductViewShell';
 import { useProductCard } from '@/hooks/useWarehouseViews';
+import { getProductTypeLabel } from '@/lib/warehouse/productTypeLabel';
 
 function formatCurrency(value: number) {
     return `${Number(value ?? 0).toFixed(2)} zł`;
@@ -108,7 +109,11 @@ export default function ProductCardPage() {
                             </div>
                             <div>
                                 <dt>Rodzaj produktu</dt>
-                                <dd>{data.product.productType ?? 'towar'}</dd>
+                                <dd>
+                                    {getProductTypeLabel(
+                                        data.product.productType,
+                                    )}
+                                </dd>
                             </div>
                             <div>
                                 <dt>Kategoria</dt>

@@ -8,6 +8,31 @@ import { useWarehouseOrders } from '@/hooks/useWarehouseViews';
 import { useStockSummary } from '@/hooks/useStockAlerts';
 import { useStocktakings } from '@/hooks/useWarehouse';
 
+function buildExpandedCategoryPath(
+    nodes: ProductCategory[],
+    targetId?: number,
+): Set<number> {
+    if (!targetId) return new Set<number>();
+
+    const path: number[] = [];
+
+    const visit = (items: ProductCategory[]) => {
+        for (const item of items) {
+            path.push(item.id);
+            if (item.id === targetId) {
+                return true;
+            }
+            if (item.children?.length && visit(item.children)) {
+                return true;
+            }
+            path.pop();
+        }
+        return false;
+    };
+
+    return visit(nodes) ? new Set(path) : new Set<number>();
+}
+
 export default function WarehouseNav() {
     const router = useRouter();
     const path = router.pathname;
@@ -57,6 +82,10 @@ export default function WarehouseNav() {
     const currentCategoryId = router.query.categoryId
         ? Number(router.query.categoryId)
         : undefined;
+    const expandedCategoryPath = buildExpandedCategoryPath(
+        categories ?? [],
+        currentCategoryId,
+    );
 
     const updateFilters = (
         categoryId: number | undefined,
@@ -81,7 +110,7 @@ export default function WarehouseNav() {
         });
     };
 
-    const renderCategoryNodes = (nodes: ProductCategory[]) =>
+    const renderCategoryNodes = (nodes: ProductCategory[], depth = 0) =>
         nodes.map((category) => (
             <li
                 key={category.id}
@@ -90,13 +119,18 @@ export default function WarehouseNav() {
                 }
             >
                 <a
-                    href="javascript:;"
-                    onClick={() => updateFilters(category.id, false)}
+                    href="#"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        updateFilters(category.id, false);
+                    }}
                 >
                     {category.name}
                 </a>
-                {category.children?.length ? (
-                    <ul>{renderCategoryNodes(category.children)}</ul>
+                {category.children?.length &&
+                depth < 1 &&
+                expandedCategoryPath.has(category.id) ? (
+                    <ul>{renderCategoryNodes(category.children, depth + 1)}</ul>
                 ) : null}
             </li>
         ));
@@ -247,8 +281,11 @@ export default function WarehouseNav() {
                     }
                 >
                     <a
-                        href="javascript:;"
-                        onClick={() => updateFilters(undefined)}
+                        href="#"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            updateFilters(undefined);
+                        }}
                     >
                         Wszystkie produkty
                     </a>
@@ -264,8 +301,11 @@ export default function WarehouseNav() {
                     }
                 >
                     <a
-                        href="javascript:;"
-                        onClick={() => updateFilters(undefined, true)}
+                        href="#"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            updateFilters(undefined, true);
+                        }}
                     >
                         produkty bez kategorii
                     </a>
@@ -274,8 +314,11 @@ export default function WarehouseNav() {
                 <li className="divider" />
                 <li>
                     <a
-                        href="javascript:;"
-                        onClick={() => setIsManageModalOpen(true)}
+                        href="#"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            setIsManageModalOpen(true);
+                        }}
                     >
                         <div className="icon_box">
                             <i className="icon sprite-icon_plus" />
