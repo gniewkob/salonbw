@@ -15,30 +15,25 @@ function flattenCategoryIds(
     nodes: ProductCategory[],
     targetId: number,
 ): number[] {
-    const out: number[] = [];
+    const collectDescendantIds = (arr: ProductCategory[]): number[] =>
+        arr.flatMap((node) => [
+            node.id,
+            ...collectDescendantIds(node.children || []),
+        ]);
 
-    const findNode = (arr: ProductCategory[]) => {
-        for (const node of arr) {
-            if (node.id === targetId) {
-                collect(node.children || []);
-                return true;
-            }
-            if (node.children) {
-                if (findNode(node.children)) return true;
+    for (const node of nodes) {
+        if (node.id === targetId) {
+            return collectDescendantIds(node.children || []);
+        }
+        if (node.children?.length) {
+            const nestedIds = flattenCategoryIds(node.children, targetId);
+            if (nestedIds.length > 0) {
+                return nestedIds;
             }
         }
-        return false;
-    };
+    }
 
-    const collect = (arr: ProductCategory[]) => {
-        for (const node of arr) {
-            out.push(node.id);
-            if (node.children) collect(node.children);
-        }
-    };
-
-    findNode(nodes);
-    return out;
+    return [];
 }
 
 type ProductTypeFilter = 'all' | 'product_and_supply' | 'product' | 'supply';
@@ -112,12 +107,15 @@ export default function WarehouseProductsPage() {
     ]);
 
     const exportProductsCsv = () => {
+        const formatCsvNumber = (value: number) =>
+            value.toFixed(2).replace('.', ',');
         const header = [
             'Nazwa',
             'Kategoria',
             'Rodzaj produktu',
             'SKU',
             'Stan magazynowy',
+            'Jednostka',
             'Cena sprzedaży',
             'VAT',
         ];
@@ -126,19 +124,22 @@ export default function WarehouseProductsPage() {
             product.category?.name ?? 'brak kategorii',
             getProductTypeLabel(product.productType),
             product.sku ?? '',
-            `${product.stock} ${product.unit ?? 'op.'}`,
-            Number(product.unitPrice ?? 0).toFixed(2),
+            String(product.stock),
+            product.unit ?? 'op.',
+            formatCsvNumber(Number(product.unitPrice ?? 0)),
             `${Number(product.vatRate ?? 23)}%`,
         ]);
         const csv = [header, ...rows]
             .map((line) =>
                 line
                     .map((value) => `"${String(value).replaceAll('"', '""')}"`)
-                    .join(','),
+                    .join(';'),
             )
             .join('\n');
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([`\uFEFF${csv}`], {
+            type: 'text/csv;charset=utf-8;',
+        });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
