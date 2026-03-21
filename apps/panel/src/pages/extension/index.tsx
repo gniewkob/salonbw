@@ -104,7 +104,7 @@ export default function ExtensionPage() {
                         <i className="icon sprite-star" aria-hidden="true" />
                         {' Dodatki'}
                     </h2>
-                    <div className="inner extensions_boxes salonbw-extension-grid">
+                    <div className="inner extensions_boxes versum-extension-grid salonbw-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
                                 key={`row-${rowIndex}`}
