@@ -308,13 +308,9 @@ export default function WarehouseProductsPage() {
             </div>
 
             <div className="products-export">
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                <a
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        exportProductsCsv();
-                    }}
+                <button
+                    type="button"
+                    onClick={exportProductsCsv}
                     className="button"
                 >
                     <div
@@ -322,7 +318,7 @@ export default function WarehouseProductsPage() {
                         aria-hidden="true"
                     />
                     pobierz bazę produktów w pliku Excel
-                </a>
+                </button>
             </div>
         </WarehouseLayout>
     );
