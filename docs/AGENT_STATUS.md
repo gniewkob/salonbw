@@ -841,6 +841,28 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
     - employees: `3.921%`
     - commissions: `6.715%`
 
+## 2026-03-21 - Panel topbar parity rollout (customers + calendar)
+
+- Code commit: `ccff0228` (`fix(panel-topbar): align shell with versum navbar`)
+- Deploy run (`dashboard`, production): `23384195487` ✅
+- Runtime checks:
+  - `https://panel.salon-bw.pl/auth/login` -> `HTTP 200` ✅
+  - `https://panel.salon-bw.pl/customers` -> authenticated smoke ✅
+  - `https://panel.salon-bw.pl/calendar` -> authenticated smoke ✅
+- Production smoke:
+  - `tests/e2e/prod-calendar-smoke.spec.ts` -> `1/1 PASS`
+  - `tests/e2e/prod-customers-smoke.spec.ts` -> `3/3 PASS`
+- Production parity audit:
+  - Functional parity: `YES`
+  - Topbar parity (`/customers` vs `/calendar`): `YES`
+  - Confirmed on production:
+    - `#menu-toggler` present on both views
+    - SVG brand (`svg-logo` + `svg-dashboard-ico`) present on both views
+    - shared topbar zones present on both views: omnibox, notifications, tasks, help, user dropdown
+  - Artifacts:
+    - `apps/panel/output/playwright/topbar-customers-after-deploy.png`
+    - `apps/panel/output/playwright/topbar-calendar-after-deploy.png`
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
