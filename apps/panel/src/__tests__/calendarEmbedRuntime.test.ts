@@ -73,19 +73,25 @@ describe('calendar embed runtime compat', () => {
             fullName: 'Iwona Adamska',
             initials: 'IA',
             profileHref: '/settings/profile',
-            roleLabel: 'admin',
+            roleLabel: 'administrator',
         });
     });
 
     it('rewrites vendored calendar topbar with current user identity', () => {
         const html = rewriteCalendarEmbedUserIdentity(
             `
+                <div class="brand brand-text-sbw"><a href="/dashboard" title="przejdź do pulpitu">Black&amp;White</a></div>
+                <ul class="dropdown-menu larger-dropdown-menu nav-help">
+                    <li class="divider"></li>
+                    <li class="main-menu-li"><a href="/helps/new"><span>Formularz kontaktowy</span></a></li>
+                </ul>
                 <div class="border-color"><div class="color1">GB</div></div>
                 <a class="profil" href="/settings/employees/4272118">
                     <img alt="Data" class="avatar" src="https://cdn.versum.net/avatars/4272118/thumb/data"/>
                     <strong>Gniewko Bodora</strong>
                     administrator
                 </a>
+                <a class="e2e-user-logout" href="/signout">Wyloguj</a>
             `,
             {
                 name: 'Iwona Adamska',
@@ -98,6 +104,10 @@ describe('calendar embed runtime compat', () => {
         expect(html).toContain('href="/settings/profile"');
         expect(html).toContain('<strong>Iwona Adamska</strong>');
         expect(html).toContain('src="https://example.com/avatar.png"');
+        expect(html).toContain(
+            '<svg class="svg-logo"><use xlink:href="#svg-logo"></use></svg>',
+        );
+        expect(html).toContain('href="/dashboard"');
         expect(html).not.toContain('Gniewko Bodora');
         expect(html).not.toContain('/settings/employees/4272118');
     });

@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {
+    buildTopbarViewModel,
+    deriveTopbarIdentity,
+} from '@/lib/topbar/topbarModel';
 
 const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
 
@@ -102,36 +106,47 @@ function escapeHtml(value: string): string {
 export function deriveCalendarEmbedIdentity(
     profile?: CalendarEmbedProfile | null,
 ) {
-    const fullName =
-        profile?.name?.trim() ||
-        [profile?.firstName, profile?.lastName]
-            .filter(Boolean)
-            .join(' ')
-            .trim();
-    const [first = '', second = ''] = fullName.split(/\s+/, 2);
-    const initials =
-        `${first[0] ?? ''}${second[0] ?? ''}`.toUpperCase() || 'SB';
+    return deriveTopbarIdentity(profile);
+}
 
-    return {
-        fullName: fullName || 'Użytkownik',
-        initials,
-        roleLabel: profile?.role || 'administrator',
-        profileHref: '/settings/profile',
-        avatarUrl: profile?.avatarUrl?.trim() || null,
-    };
+function rewriteCalendarEmbedBrand(html: string, brandHref: string) {
+    return html.replace(
+        /<div class="brand[^"]*">\s*<a[^>]*>[\s\S]*?<\/a><\/div>/,
+        `<div class="brand"><a title="przejdź do pulpitu" href="${escapeHtml(brandHref)}"><svg class="svg-logo"><use xlink:href="#svg-logo"></use></svg><svg class="svg-dashboard-ico"><use xlink:href="#svg-dashboard-ico"></use></svg></a></div>`,
+    );
+}
+
+function rewriteCalendarEmbedHelpMenu(
+    html: string,
+    help: ReturnType<typeof buildTopbarViewModel>['help'],
+) {
+    const chatMarkup = help.showChat
+        ? `<li class="main-menu-li"><a id="chat_widget" onclick="openWidget()" style="cursor:pointer;"><div class="jQ_chat_notification"><svg class="svg-chat"><use xlink:href="#svg-help"></use></svg></div><span>Czat z konsultantem</span></a></li><li class="divider"></li>`
+        : '';
+    const knowledgeBaseMarkup = help.knowledgeBaseHref
+        ? `<li class="divider"></li><li class="main-menu-li"><a href="${escapeHtml(help.knowledgeBaseHref)}" target="_blank" rel="noreferrer"><span>Baza wiedzy</span></a></li>`
+        : '';
+
+    return html.replace(
+        /<ul class="dropdown-menu larger-dropdown-menu nav-help">[\s\S]*?<\/ul>/,
+        `<ul class="dropdown-menu larger-dropdown-menu nav-help">${chatMarkup}<li class="main-menu-li"><a href="${escapeHtml(help.contactFormHref)}"><svg class="svg-message"><use xlink:href="#svg-message"></use></svg><span>Formularz kontaktowy</span></a></li>${knowledgeBaseMarkup}</ul>`,
+    );
 }
 
 export function rewriteCalendarEmbedUserIdentity(
     html: string,
     profile?: CalendarEmbedProfile | null,
 ) {
-    const identity = deriveCalendarEmbedIdentity(profile);
+    const topbar = buildTopbarViewModel(profile);
+    const identity = topbar.user;
     const escapedName = escapeHtml(identity.fullName);
     const escapedRole = escapeHtml(identity.roleLabel);
     const escapedHref = escapeHtml(identity.profileHref);
     const escapedInitials = escapeHtml(identity.initials);
 
-    let nextHtml = html.replace(
+    let nextHtml = rewriteCalendarEmbedBrand(html, topbar.brand.href);
+
+    nextHtml = nextHtml.replace(
         /<a class="profil" href="[^"]*">[\s\S]*?<strong>[\s\S]*?<\/strong>[\s\S]*?<\/a>/,
         `<a class="profil" href="${escapedHref}">${
             identity.avatarUrl
@@ -145,7 +160,12 @@ export function rewriteCalendarEmbedUserIdentity(
         `<div class="color1">${escapedInitials}</div>`,
     );
 
-    return nextHtml;
+    nextHtml = rewriteCalendarEmbedHelpMenu(nextHtml, topbar.help);
+
+    return nextHtml.replace(
+        /href="\/signout"/,
+        `href="${escapeHtml(identity.logoutHref || '/signout')}"`,
+    );
 }
 
 async function fetchCalendarEmbedProfile(accessToken: string) {

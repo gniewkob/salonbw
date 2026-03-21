@@ -1,8 +1,9 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import SalonBWIcon from './SalonBWIcon';
+import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 
 export default function SalonBWTopbar() {
     const { user, logout } = useAuth();
@@ -11,28 +12,21 @@ export default function SalonBWTopbar() {
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
+    const topbar = buildTopbarViewModel(user);
 
-    const initials = useMemo(() => {
-        const sourceName =
-            user?.name?.trim() ||
-            [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
-        if (!sourceName) return 'SB';
-        const [first, second] = sourceName.split(/\s+/, 2);
-        return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase() || 'SB';
-    }, [user?.firstName, user?.lastName, user?.name]);
-
-    // Close dropdowns on outside click
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
+        const handleClickOutside = (
+            event: MouseEvent | globalThis.MouseEvent,
+        ) => {
             if (
                 userMenuRef.current &&
-                !userMenuRef.current.contains(e.target as Node)
+                !userMenuRef.current.contains(event.target as Node)
             ) {
                 setUserMenuOpen(false);
             }
             if (
                 helpMenuRef.current &&
-                !helpMenuRef.current.contains(e.target as Node)
+                !helpMenuRef.current.contains(event.target as Node)
             ) {
                 setHelpMenuOpen(false);
             }
@@ -42,7 +36,14 @@ export default function SalonBWTopbar() {
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
+    const handleMenuTogglerClick = (event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        if (typeof document === 'undefined') return;
+        document.body.classList.toggle('salonbw-sidebar-open');
+    };
+
+    const handleLogout = (event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
         void logout().then(() => {
             void router.push('/auth/login');
         });
@@ -54,27 +55,43 @@ export default function SalonBWTopbar() {
             id="navbar"
         >
             <div className="notification-bar-container"></div>
-
-            {/* Logo - positioned absolutely like the source shell */}
-            <div className="brand">
-                <Link
-                    href="/dashboard"
-                    title="przejdź do pulpitu"
-                    aria-label="Black and White - Przejdź do pulpitu"
-                >
-                    <span className="brand-text">salonbw</span>
-                </Link>
+            <div>
+                {topbar.menuToggler.enabled ? (
+                    <a
+                        aria-label="Menu"
+                        className="menu-toggler navbar-toggle"
+                        href="#"
+                        id="menu-toggler"
+                        onClick={handleMenuTogglerClick}
+                    >
+                        <span className="icon-bar"></span>
+                        <span className="icon-bar"></span>
+                        <span className="icon-bar"></span>
+                    </a>
+                ) : null}
+                <div className="brand">
+                    <Link
+                        aria-label="Przejdź do pulpitu"
+                        href={topbar.brand.href}
+                        title="przejdź do pulpitu"
+                    >
+                        <SalonBWIcon id="svg-logo" className="svg-logo" />
+                        <SalonBWIcon
+                            id="svg-dashboard-ico"
+                            className="svg-dashboard-ico"
+                        />
+                    </Link>
+                </div>
             </div>
-
             <div className="ml-auto">
                 <ul className="navbar-right simple-list d-flex">
                     <li className="d-flex">
                         <div className="omnibox-wrapper">
                             <input
                                 className="omnibox"
-                                data-search-url="/global_searches"
+                                data-search-url={topbar.search.searchUrl}
                                 id="omnibox"
-                                placeholder="Szukaj..."
+                                placeholder={topbar.search.placeholder}
                             />
                             <div
                                 className="dropdown-menu"
@@ -82,64 +99,72 @@ export default function SalonBWTopbar() {
                             ></div>
                         </div>
                     </li>
-
-                    {/* Notification center with counter */}
-                    <li
-                        className="notification_center"
-                        id="notification_center_navbar"
-                    >
-                        <a
-                            className="link"
-                            href="javascript:;"
-                            title="Powiadomienia"
+                    {topbar.notifications.enabled ? (
+                        <li
+                            className="notification_center"
+                            id="notification_center_navbar"
                         >
-                            <div className="notification-badge">
-                                <SalonBWIcon
-                                    id="svg-notifications"
-                                    className="svg-notifications"
-                                />
-                                <span className="badge-count">7</span>
-                            </div>
-                        </a>
-                    </li>
-
-                    {/* Messages with counter */}
-                    <li className="all_complete tasks_tooltip">
-                        <a
-                            aria-expanded="false"
-                            className="link"
-                            href="javascript:;"
-                            title="Twoje zadania"
-                        >
-                            <div
-                                className="assigned_tasks"
-                                data-assigned_tasks="0"
+                            <a
+                                className="link e2e-notification-center-navbar"
+                                href="#"
+                                onClick={(event) => event.preventDefault()}
                             >
-                                <SalonBWIcon
-                                    id="svg-todo"
-                                    className="svg-todo"
-                                />
-                                <span className="badge-count">0</span>
-                            </div>
-                        </a>
-                        <div className="dropdown_cover"></div>
-                        <div
-                            className="dropdown-menu-tasks"
-                            id="dropdownTasks"
-                            role="menu"
-                        ></div>
-                    </li>
-
+                                <div
+                                    className={`notification_center_icon${topbar.notifications.unreadCount ? ' notifications_unread' : ''}`}
+                                    data-unread_notifications={
+                                        topbar.notifications.unreadCount ?? 0
+                                    }
+                                    id="notification_center_navbar_icon"
+                                >
+                                    <SalonBWIcon
+                                        id="svg-notifications"
+                                        className="svg-notifications"
+                                    />
+                                </div>
+                            </a>
+                        </li>
+                    ) : null}
+                    {topbar.tasks.enabled ? (
+                        <li className="all_complete tasks_tooltip">
+                            <a
+                                aria-expanded="false"
+                                className="link"
+                                href="#"
+                                title="Twoje zadania"
+                                onClick={(event) => event.preventDefault()}
+                            >
+                                <div
+                                    className="assigned_tasks"
+                                    data-assigned_tasks={
+                                        topbar.tasks.count ?? 0
+                                    }
+                                >
+                                    <SalonBWIcon
+                                        id="svg-todo"
+                                        className="svg-todo"
+                                    />
+                                </div>
+                            </a>
+                            <div className="dropdown_cover"></div>
+                            <div
+                                className="dropdown-menu-tasks"
+                                id="dropdownTasks"
+                                role="menu"
+                            ></div>
+                        </li>
+                    ) : null}
                     <li
                         ref={helpMenuRef}
-                        className={`dropdown help_tooltip right-menu ${helpMenuOpen ? 'open' : ''}`}
+                        className={`dropdown help_tooltip right-menu${helpMenuOpen ? ' open' : ''}`}
                     >
                         <a
                             className="ai-center d-flex dropdown-toggle"
                             data-toggle="dropdown"
-                            href="javascript:;"
-                            title="Pomoc"
-                            onClick={() => setHelpMenuOpen(!helpMenuOpen)}
+                            href="#"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setHelpMenuOpen((value) => !value);
+                            }}
                         >
                             <div className="d-inline-block jQ_nav_chat_notification">
                                 <SalonBWIcon
@@ -153,9 +178,31 @@ export default function SalonBWTopbar() {
                             </div>
                         </a>
                         <ul className="dropdown-menu larger-dropdown-menu nav-help">
-                            <li className="divider"></li>
+                            {topbar.help.showChat ? (
+                                <>
+                                    <li className="main-menu-li">
+                                        <a
+                                            id="chat_widget"
+                                            href="#"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={(event) =>
+                                                event.preventDefault()
+                                            }
+                                        >
+                                            <div className="jQ_chat_notification">
+                                                <SalonBWIcon
+                                                    id="svg-help"
+                                                    className="svg-chat"
+                                                />
+                                            </div>
+                                            <span>Czat z konsultantem</span>
+                                        </a>
+                                    </li>
+                                    <li className="divider"></li>
+                                </>
+                            ) : null}
                             <li className="main-menu-li">
-                                <Link href="/helps/new">
+                                <Link href={topbar.help.contactFormHref}>
                                     <SalonBWIcon
                                         id="svg-message"
                                         className="svg-message"
@@ -163,48 +210,64 @@ export default function SalonBWTopbar() {
                                     <span>Formularz kontaktowy</span>
                                 </Link>
                             </li>
+                            {topbar.help.knowledgeBaseHref ? (
+                                <>
+                                    <li className="divider"></li>
+                                    <li className="main-menu-li">
+                                        <a
+                                            href={topbar.help.knowledgeBaseHref}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            <span>Baza wiedzy</span>
+                                        </a>
+                                    </li>
+                                </>
+                            ) : null}
                         </ul>
                     </li>
-
                     <li
                         ref={userMenuRef}
-                        className={`dropdown right-menu ${userMenuOpen ? 'open' : ''}`}
+                        className={`dropdown right-menu${userMenuOpen ? ' open' : ''}`}
                     >
                         <a
                             className="dropdown-toggle e2e-nav-user-dropdown"
                             data-toggle="dropdown"
-                            href="javascript:;"
-                            onClick={() => setUserMenuOpen(!userMenuOpen)}
+                            href="#"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setUserMenuOpen((value) => !value);
+                            }}
                         >
                             <div className="border-color">
-                                <div className="color1">{initials}</div>
+                                <div className="color1">
+                                    {topbar.user.initials}
+                                </div>
                             </div>
                             <b className="caret color1 hidden-xs initials-arrow"></b>
                         </a>
                         <ul className="dropdown-menu larger-dropdown-menu">
                             <li className="main-menu-li">
-                                <a className="profil" href="/settings/profile">
-                                    {user?.avatarUrl && (
+                                <a
+                                    className="profil"
+                                    href={topbar.user.profileHref}
+                                >
+                                    {topbar.user.avatarUrl ? (
                                         <img
                                             alt="Avatar"
                                             className="avatar"
-                                            src={user.avatarUrl}
+                                            src={topbar.user.avatarUrl}
                                         />
-                                    )}
-                                    <strong>
-                                        {user?.name || 'Użytkownik'}
-                                    </strong>
-                                    <br />
-                                    <span className="text-muted">
-                                        {user?.role || 'administrator'}
-                                    </span>
+                                    ) : null}
+                                    <strong>{topbar.user.fullName}</strong>
+                                    {topbar.user.roleLabel}
                                 </a>
                             </li>
                             <li className="divider"></li>
                             <li className="main-menu-li">
                                 <a
                                     className="e2e-user-logout"
-                                    href="javascript:;"
+                                    href={topbar.user.logoutHref || '#'}
                                     onClick={handleLogout}
                                 >
                                     Wyloguj
