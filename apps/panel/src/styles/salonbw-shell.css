@@ -2264,8 +2264,8 @@ textarea.form-control {
 .navbar.navbar-default {
     height: var(--salonbw-topbar-h);
     min-height: var(--salonbw-topbar-h);
-    border-bottom: 1px solid var(--salonbw-border);
-    background: #f7f8f9;
+    border-bottom: 1px solid #e7e7e7;
+    background: #fff;
     display: flex;
     align-items: center;
     padding: 0;
@@ -2281,10 +2281,7 @@ textarea.form-control {
     position: absolute;
     z-index: 2000;
     left: 75px;
-    top: 0;
-    height: var(--salonbw-mainnav-item-h);
-    display: flex;
-    align-items: center;
+    top: 15px;
 }
 
 .navbar .brand a {
@@ -2292,22 +2289,26 @@ textarea.form-control {
     align-items: center;
     color: #4c5055;
     text-decoration: none;
-    font-size: 18px;
-    font-weight: 600;
-    font-family: 'Lato', sans-serif;
 }
 
 .navbar .brand a:hover {
     color: #818488;
 }
 
-.navbar .brand-text {
-    font-size: 18px;
-    font-weight: 300;
-    color: #3f464d;
-    font-family: 'Lato', 'Open Sans', Arial, sans-serif;
-    letter-spacing: -0.02em;
-    line-height: 1;
+.navbar .brand a .svg-logo {
+    width: 95px;
+    height: 13px;
+    margin-right: 8px;
+}
+
+.navbar .brand a .svg-dashboard-ico {
+    display: none;
+    width: 18px;
+    height: 13px;
+}
+
+.navbar:hover .svg-dashboard-ico {
+    display: block !important;
 }
 
 .navbar .ml-auto {
@@ -2317,76 +2318,94 @@ textarea.form-control {
 .navbar .navbar-right {
     display: flex;
     align-items: center;
-    gap: 8px;
     margin: 0;
-    padding: 0 10px;
+    padding: 0;
     list-style: none;
 }
 
-.navbar .navbar-right li {
+.navbar .navbar-right > li {
     display: flex;
     align-items: center;
+    height: 40px;
+    position: relative;
+    list-style: none;
+    line-height: 40px;
+}
+
+.navbar .navbar-right > li > a:not(.button) {
+    display: inline-block;
+    padding: 0 10px;
+    height: 40px;
+    color: #666;
+    text-decoration: none;
+}
+
+.navbar .menu-toggler {
+    display: none;
+}
+
+.navbar .navbar-toggle {
+    margin-top: 3px;
 }
 
 /* Omnibox (Search) */
 .navbar .omnibox-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 5px;
+}
+
+.navbar .omnibox-wrapper::before {
+    content: '';
+    position: absolute !important;
+    left: 12px;
+    top: 13px;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid #9aa3ad;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.navbar .omnibox-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 21px;
+    width: 6px;
+    border-top: 1.5px solid #9aa3ad;
+    transform: rotate(45deg);
+    pointer-events: none;
 }
 
 .navbar .omnibox {
+    line-height: 15px;
+    background-color: #fff;
+    width: 100%;
+    min-width: 190px;
     height: 27px;
-    width: 190px;
     border: 1px solid #ccd2d8;
     border-radius: 14px;
-    background: #fff;
-    padding: 0 12px;
-    font-size: 11px;
-    color: #6a737c;
+    padding: 1px 8px 0 30px;
+    font-size: 12px;
+    color: #313140;
+    text-overflow: ellipsis;
 }
 
 .navbar .omnibox:focus {
     outline: none;
-    border-color: var(--salonbw-accent);
-}
-
-/* Notification badges */
-.notification-badge,
-.assigned_tasks {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.badge-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--salonbw-green);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-}
-
-.notification_center .badge-count {
-    background: #e74c3c;
+    border-color: #bfbfbf;
+    box-shadow: inset 0 1px 2px #dedede;
 }
 
 /* Dropdown styling */
 .navbar .dropdown-toggle {
     display: flex;
     align-items: center;
-    gap: 4px;
     cursor: pointer;
     text-decoration: none;
-    color: #59616a;
+    color: #666;
     font-size: 12px;
 }
 
@@ -2428,6 +2447,55 @@ textarea.form-control {
     background: #f5f5f5;
 }
 
+.navbar .help_tooltip,
+.navbar .notification_center,
+.navbar .tasks_tooltip {
+    position: static;
+}
+
+.navbar .help_tooltip svg,
+.navbar .notification_center svg,
+.navbar .tasks_tooltip svg {
+    width: 18px;
+    height: 40px;
+}
+
+.navbar .help_tooltip > a:hover,
+.navbar .notification_center a:hover,
+.navbar .tasks_tooltip > a:hover {
+    opacity: 0.8;
+}
+
+.navbar .notification_center_icon,
+.navbar .assigned_tasks {
+    position: relative;
+}
+
+.navbar .notification_center .notifications_unread::after,
+.navbar .tasks_tooltip .assigned_tasks::after {
+    color: white;
+    border: 1px solid #ffffff;
+    position: absolute;
+    top: 7px;
+    line-height: 100%;
+    font-size: 11px;
+    padding: 1px 4px;
+    text-align: center;
+    border-radius: 7px;
+}
+
+.navbar .notification_center .notifications_unread::after {
+    background: #f72f6d;
+    content: attr(data-unread_notifications);
+    left: 10px;
+}
+
+.navbar .tasks_tooltip .assigned_tasks::after {
+    background: #00c6a3;
+    content: attr(data-assigned_tasks);
+    left: 11px;
+}
+
 /* User initials badge */
 .navbar .border-color {
     display: flex;
@@ -2435,9 +2503,9 @@ textarea.form-control {
 }
 
 .navbar .color1 {
-    height: 22px;
     min-width: 22px;
-    border-radius: 4px;
+    height: 22px;
+    border-radius: 3px;
     border: 1px solid #9ec4e6;
     background: #eff7ff;
     color: #3b7eb6;
@@ -2461,8 +2529,38 @@ textarea.form-control {
 }
 
 .navbar svg {
-    width: 16px;
-    height: 16px;
+    vertical-align: bottom;
+    line-height: 1;
+}
+
+.navbar .profil {
+    min-width: 240px;
+}
+
+.navbar .profil strong {
+    display: block;
+}
+
+.navbar .profil .avatar {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+@media (max-width: 767px) {
+    .navbar .menu-toggler {
+        display: block;
+    }
+
+    .navbar .brand {
+        left: 56px;
+    }
+
+    .navbar .omnibox {
+        min-width: 120px;
+    }
 }
 
 /* ========================================
