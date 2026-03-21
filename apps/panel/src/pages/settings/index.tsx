@@ -30,7 +30,7 @@ const mainTiles: SettingsTile[] = [
     },
     {
         href: '/settings/calendar',
-        label: 'kalendarz',
+        label: 'godziny otwarcia',
         icon: 'sprite-settings_opening_hours',
     },
     { href: '/calendar', label: 'kalendarz', icon: 'sprite-settings_calendar' },
@@ -92,7 +92,7 @@ export default function SettingsPage() {
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="settings-page">
-                    <h2>
+                    <h2 className="settings-page-heading">
                         <i
                             className="icon sprite-wrench settings-section-heading-icon"
                             aria-hidden="true"
@@ -100,15 +100,15 @@ export default function SettingsPage() {
                         Ustawienia
                     </h2>
 
-                    <div className="settings-tiles-grid">
+                    <div className="settings-icons-grid">
                         {mainTiles.map((tile) => (
                             <Link
                                 key={tile.label}
                                 href={tile.href}
-                                className="settings-tile"
+                                className="settings-icon-link"
                             >
                                 <i
-                                    className={`icon ${tile.icon} settings-tile__icon`}
+                                    className={`icon ${tile.icon} settings-icon-link__icon`}
                                     aria-hidden="true"
                                 />
                                 <span>{tile.label}</span>
@@ -117,22 +117,22 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="settings-addon-section">
-                        <h2>
+                        <h2 className="settings-page-heading">
                             <i
                                 className="icon sprite-star settings-section-heading-icon"
                                 aria-hidden="true"
                             />
                             Ustawienia dodatków
                         </h2>
-                        <div className="settings-tiles-grid">
+                        <div className="settings-icons-grid settings-icons-grid--addons">
                             {addonTiles.map((tile) => (
                                 <Link
                                     key={tile.label}
                                     href={tile.href}
-                                    className="settings-tile"
+                                    className="settings-icon-link"
                                 >
                                     <i
-                                        className={`icon ${tile.icon} settings-tile__icon`}
+                                        className={`icon ${tile.icon} settings-icon-link__icon`}
                                         aria-hidden="true"
                                     />
                                     <span>{tile.label}</span>

@@ -4058,50 +4058,75 @@ h2.column_row small {
     text-align: right;
 }
 
-/* --- Settings tile grid --- */
-.settings-tiles-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
+/* --- Settings icon grid --- */
+.settings-page-heading {
+    margin: 0 0 24px;
 }
-.settings-tile {
+
+.settings-icons-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 26px 34px;
+    margin-bottom: 34px;
+}
+
+.settings-icons-grid--addons {
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+}
+
+.settings-icon-link {
+    align-items: center;
+    color: #4f4f4f;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 14px;
     justify-content: flex-start;
-    padding: 30px 16px 20px;
-    border: 1px solid #e0e0e0;
-    background: #fff;
+    min-height: 96px;
     text-align: center;
     text-decoration: none;
-    color: #636363;
-    font-size: 13px;
-    line-height: 1.4;
-    min-height: 160px;
 }
-.settings-tile:hover {
-    border-color: #56aef0;
-    color: #56aef0;
+
+.settings-icon-link:hover {
+    color: #2b84d2;
     text-decoration: none;
 }
-.settings-tile__icon {
+
+.settings-icon-link__icon {
     width: 80px;
     height: 80px;
     display: block;
-    margin: 0 auto 14px;
+    margin: 0 auto;
     background-size: contain !important;
 }
+
 .settings-addon-section {
     margin-bottom: 30px;
 }
-.settings-addon-section h2 {
-    font-size: 22px;
-    font-weight: 400;
-    margin: 20px 0 16px;
-}
+
 .settings-section-heading-icon {
     margin-right: 8px;
+}
+
+@media (max-width: 1200px) {
+    .settings-icons-grid,
+    .settings-icons-grid--addons {
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .settings-icons-grid,
+    .settings-icons-grid--addons {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .settings-icons-grid,
+    .settings-icons-grid--addons {
+        grid-template-columns: 1fr;
+        gap: 22px 16px;
+    }
 }
 
 /* --- Settings detail layout --- */
