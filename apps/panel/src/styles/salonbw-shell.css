@@ -3215,6 +3215,21 @@ body.e2e-statistics .main-content .inner {
     width: 16px;
     height: 22px;
 }
+.icon.sprite-breadcrumbs_settings,
+.icon.sprite-extension_star_black {
+    background-image: url("/salonbw-calendar/assets/sprite-0e259010a938c8acddfd8c0e840c1137717ec91fc92bb50531a77cdacf9b4c3d.png");
+    background-repeat: no-repeat;
+}
+.icon.sprite-breadcrumbs_settings {
+    background-position: -119px -614px;
+    width: 16px;
+    height: 16px;
+}
+.icon.sprite-extension_star_black {
+    background-position: -850px -1043px;
+    width: 19px;
+    height: 17px;
+}
 .icon.sprite-active_green {
     width: 14px;
     height: 14px;
@@ -4071,7 +4086,34 @@ body.settings-dashboard-landing .sidebar {
 
 body.settings-dashboard-landing #main-content .inner,
 body.settings-dashboard-landing .main-content .inner {
-    padding-top: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+body.settings-dashboard-landing .salonbw-page {
+    padding: 0 0 0 18px;
+}
+
+body.settings-dashboard-landing .breadcrumbs {
+    margin: 0 0 12px;
+}
+
+body.settings-dashboard-landing .breadcrumbs ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+body.settings-dashboard-landing .breadcrumbs li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #313140;
+    font-family: 'Lato', sans-serif;
+    font-size: 19px;
+    font-weight: 300;
+    line-height: 1.2;
 }
 
 .settings-dashboard-grid {
@@ -4122,6 +4164,7 @@ body.settings-dashboard-landing .main-content .inner {
 }
 
 .settings-addon-section {
+    margin-top: 26px;
     margin-bottom: 30px;
 }
 
