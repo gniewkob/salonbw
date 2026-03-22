@@ -1720,3 +1720,25 @@
     - wspólne detail pages przestały dokładać dodatkowy content frame,
     - dwa remaining standalone widoki zostały włączone z powrotem do panelowego chrome,
     - drift przesunął się jeszcze bardziej z warstwy shellowej do poziomu faktycznego contentu / danych.
+
+### 2026-03-22 - Panel: kolejne standalone trasy settings pod shared shell
+
+- zmiana kodu:
+    - `apps/panel/src/pages/settings/categories.tsx`
+    - `apps/panel/src/pages/settings/customer_origins.tsx`
+    - `apps/panel/src/pages/settings/extra_fields.tsx`
+    - `apps/panel/src/pages/settings/data_protection.tsx`
+    - `apps/panel/src/pages/settings/trades/new.tsx`
+        - przywrócenie `SalonBWShell` + `RouteGuard`
+- deploy:
+    - `dashboard` (production): run `23412526939` ✅
+- smoke produkcyjny:
+    - `/settings/categories` -> `body.id=settings_categories`, shell obecny, `nestedInnerCount=0` ✅
+    - `/settings/customer-origins` -> `body.id=settings_customer_origins`, shell obecny, `nestedInnerCount=0` ✅
+    - `/settings/extra-fields` -> `body.id=settings_extra_fields`, shell obecny, `nestedInnerCount=0` ✅
+    - `/settings/data-protection` -> `body.id=settings_data_protection`, shell obecny, `nestedInnerCount=0` ✅
+    - `/settings/trades/new` -> `body.id=settings_trades`, shell obecny, `nestedInnerCount=0` ✅
+- wynik:
+    - kolejna paczka settingsowych widoków przestała renderować standalone layout,
+    - shared shell contract obejmuje teraz większą część rodziny `settings/*`,
+    - główne remaining różnice są coraz mniej shellowe, a coraz bardziej content/data-specific.

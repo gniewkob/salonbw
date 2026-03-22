@@ -1087,6 +1087,29 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
 - Notes:
   - some `settings/*` routes still surface backend/data errors that can bypass normal shell verification in smoke, but the shared shell contract now covers the route families themselves
 
+### 2026-03-22 - Panel: przywrócenie shared shell na kolejnych trasach settings
+
+- Code commit:
+  - `2e6534c1` `Wrap settings detail pages in shared shell`
+- Deploy run (`dashboard`, production):
+  - `23412526939` ✅
+- Scope:
+  - restored `SalonBWShell` + `RouteGuard` on:
+    - `/settings/categories`
+    - `/settings/customer-origins`
+    - `/settings/extra-fields`
+    - `/settings/data-protection`
+    - `/settings/trades/new`
+- Production shell smoke:
+  - `/settings/categories` -> `body.id=settings_categories`, `#navbar/#mainnav/#main-content` present, `nestedInnerCount=0` ✅
+  - `/settings/customer-origins` -> `body.id=settings_customer_origins`, shell restored, `nestedInnerCount=0` ✅
+  - `/settings/extra-fields` -> `body.id=settings_extra_fields`, shell restored, `nestedInnerCount=0` ✅
+  - `/settings/data-protection` -> `body.id=settings_data_protection`, shell restored, `nestedInnerCount=0` ✅
+  - `/settings/trades/new` -> `body.id=settings_trades`, shell restored, `nestedInnerCount=0` ✅
+- Result:
+  - another batch of standalone settings views was moved back under the shared shell contract
+  - drift is now increasingly concentrated in content/data behavior rather than missing chrome
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
