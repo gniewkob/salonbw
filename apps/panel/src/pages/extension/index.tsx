@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type ExtensionCard = {
@@ -100,17 +101,10 @@ export default function ExtensionPage() {
         <RouteGuard roles={['admin']} permission="nav:extension">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="extension-page">
-                    <div className="breadcrumbs" e2e-breadcrumbs="">
-                        <ul>
-                            <li>
-                                <div
-                                    className="icon sprite-breadcrumbs_extensions"
-                                    aria-hidden="true"
-                                />
-                                Dodatki
-                            </li>
-                        </ul>
-                    </div>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_extensions"
+                        items={[{ label: 'Dodatki' }]}
+                    />
                     <div className="inner extensions_boxes versum-extension-grid salonbw-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div

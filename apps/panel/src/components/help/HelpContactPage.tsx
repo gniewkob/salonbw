@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -202,20 +202,17 @@ export default function HelpContactPage() {
 
     return (
         <div className="helps-page">
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_help" />
-                        <Link href="/helps/new">Pomoc</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Twój numer klienta: {SALONBW_CLIENT_NUMBER}
-                    </li>
-                </ul>
-            </div>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_help"
+                items={[
+                    { label: 'Pomoc', href: '/helps/new' },
+                    {
+                        label: `Twój numer klienta: ${SALONBW_CLIENT_NUMBER}`,
+                    },
+                ]}
+            />
 
-            <div className="inner helps-page__inner">
+            <div className="helps-page__inner">
                 <h2>Baza wiedzy</h2>
                 <p>
                     Aby ułatwić korzystanie z systemu SalonBW przygotowaliśmy{' '}

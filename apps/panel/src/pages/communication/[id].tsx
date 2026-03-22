@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useMessageTemplates,
@@ -309,20 +310,18 @@ export default function CommunicationDetailPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonBWShell role={role}>
                 <div className="salonbw-page communication-detail-page">
-                    <div className="breadcrumbs" e2e-breadcrumbs="">
-                        <ul>
-                            <li>
-                                <div className="icon sprite-breadcrumbs_communication_set" />
-                                <Link href="/communication">Łączność</Link>
-                            </li>
-                            <li>
-                                <span> / </span>
-                                {activeKind === 'sms'
-                                    ? 'Wiadomość SMS'
-                                    : 'Wiadomość email'}
-                            </li>
-                        </ul>
-                    </div>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_communication_set"
+                        items={[
+                            { label: 'Łączność', href: '/communication' },
+                            {
+                                label:
+                                    activeKind === 'sms'
+                                        ? 'Wiadomość SMS'
+                                        : 'Wiadomość email',
+                            },
+                        ]}
+                    />
 
                     {loading ? (
                         <div className="products-empty">
