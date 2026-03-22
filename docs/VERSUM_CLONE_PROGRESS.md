@@ -1627,3 +1627,38 @@
 - wynik:
     - `settings` przestał mieć ręczne shell breadcrumb wyjątki,
     - kluczowe widoki `settings` są już spójne pod względem shared shell contract.
+
+### 2026-03-22 - Panel: remaining shell holdouts poza `settings`
+
+- zmiana kodu:
+    - `apps/panel/src/pages/messages/index.tsx`
+    - `apps/panel/src/pages/newsletters/new.tsx`
+    - `apps/panel/src/pages/communication/[id].tsx`
+    - `apps/panel/src/pages/extension/index.tsx`
+    - `apps/panel/src/components/help/HelpContactPage.tsx`
+        - migracja z ręcznych breadcrumbs do `VersumBreadcrumbs`
+    - `apps/panel/src/components/salonbw/navigation.ts`
+    - `apps/panel/src/components/salonbw/SalonBWShell.tsx`
+        - route-aware shell profile aliases dla secondary tras
+        - wsparcie dla vendorowych body classes na shared shellu
+    - `apps/panel/src/pages/extension/index.tsx`
+        - usunięcie remaining shell-level nested `.inner`
+- deploy:
+    - `dashboard` (production): run `23411719101` ✅
+    - `dashboard` (production): run `23411836392` ✅
+- walidacja lokalna:
+    - `apps/panel`: targeted `pnpm eslint ... --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm eslint src --fix` ✅
+- smoke produkcyjny:
+    - `/messages` -> `body.id=communication`, `nestedInnerCount=0` ✅
+    - `/newsletters/new` -> `body.id=physical_communication`, `nestedInnerCount=0` ✅
+    - `/extension` -> `body.id=extensions`, `nestedInnerCount=0` ✅
+    - `/helps/new` -> `body.id=physical_helps`, `body.no_sidenav`, `nestedInnerCount=0` ✅
+    - `/communication` -> `body.id=physical_communication`, `nestedInnerCount=0` ✅
+    - `/communication/2?kind=sms` -> `body.id=physical_communication`, `nestedInnerCount=0` ✅
+- wynik:
+    - usunięto remaining manual shell breadcrumb holdouts poza `settings`,
+    - auxiliary trasy shella dostają już vendor-compatible `body.id` i `body.class`,
+    - `extension` przestał dokładać nested content-frame drift,
+    - shared shell contract został domknięty także dla tras pomocniczych komunikacji i pomocy.

@@ -975,6 +975,46 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - representative shell routes in `settings` render without nested content-frame drift
   - no client-side exceptions detected in production smoke for the covered routes
 
+### 2026-03-22 - Panel: domknięcie remaining shell holdouts poza `settings`
+
+- Code commits:
+  - `3fabea4e` `Unify remaining panel shell breadcrumbs`
+  - `1f964a24` `Fix shell profile aliases for secondary routes`
+- Deploy runs (`dashboard`, production):
+  - `23411719101` ✅
+  - `23411836392` ✅
+- Scope:
+  - migrated remaining manual shell breadcrumbs to `VersumBreadcrumbs` in:
+    - `messages`
+    - `newsletters/new`
+    - `communication/[id]`
+    - `extension`
+    - `helps/new`
+  - fixed shared shell route recognition so vendor-compatible shell ids/classes apply to secondary routes:
+    - `/messages` -> `body.id=communication`
+    - `/newsletters/new` -> `body.id=physical_communication`
+    - `/communication` and `/communication/[id]` -> `body.id=physical_communication`
+    - `/extension` -> `body.id=extensions`
+    - `/helps/new` -> `body.id=physical_helps`, `body.no_sidenav`
+  - removed remaining shell-level nested `.inner` from `extension`
+- Local validation:
+  - `apps/panel`: targeted `pnpm eslint ... --fix` ✅
+  - `apps/panel`: `pnpm tsc --noEmit` ✅
+  - `apps/panel`: `pnpm eslint src --fix` ✅
+    - only pre-existing repo-wide warnings remained, no new errors
+- Production shell smoke:
+  - `/messages` -> breadcrumbs `Komunikacja / Wiadomości`, `nestedInnerCount=0`, `body.id=communication` ✅
+  - `/newsletters/new` -> breadcrumbs `Komunikacja / Nowy newsletter`, `nestedInnerCount=0`, `body.id=physical_communication` ✅
+  - `/extension` -> breadcrumbs `Dodatki`, `nestedInnerCount=0`, `body.id=extensions` ✅
+  - `/helps/new` -> breadcrumbs `Pomoc / Twój numer klienta: 19581`, `nestedInnerCount=0`, `body.id=physical_helps`, `body.no_sidenav` ✅
+  - `/communication` -> breadcrumbs `Łączność / Nieprzeczytane wiadomości`, `nestedInnerCount=0`, `body.id=physical_communication` ✅
+  - `/communication/2?kind=sms` -> breadcrumbs `Łączność / Wiadomość SMS`, `nestedInnerCount=0`, `body.id=physical_communication` ✅
+- Result:
+  - remaining manual shell breadcrumb holdouts outside `settings` were removed
+  - secondary shell routes now resolve to vendor-compatible `body.id` and body classes
+  - `extension` no longer adds nested content-frame drift
+  - the shared shell contract is now applied consistently to communication/help/extension auxiliary routes
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
