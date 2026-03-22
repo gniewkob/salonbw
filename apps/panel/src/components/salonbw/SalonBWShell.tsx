@@ -25,7 +25,8 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
     const resolvedSecondaryNav = secondaryNavContext?.secondaryNav ?? null;
 
     // source vendor CSS uses module-scoped selectors like `.main-content.customers`.
-    const mainContentClass = activeModule.key;
+    const mainContentClass =
+        activeModule.key === 'extension' ? 'extensions' : activeModule.key;
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
