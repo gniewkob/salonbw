@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useDeleteProductCategory,
     useProductCategories,
@@ -155,6 +158,7 @@ function renderCategoryRows(
 }
 
 export default function SettingsCategoriesPage() {
+    const { role } = useAuth();
     useSetSecondaryNav(WAREHOUSE_NAV);
 
     const queryClient = useQueryClient();
@@ -211,97 +215,116 @@ export default function SettingsCategoriesPage() {
         ]);
     };
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">
-                {WAREHOUSE_NAV}
-            </aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Ustawienia magazynu' },
-                        { label: 'Kategorie produktów' },
-                    ]}
-                />
-                <PanelSection title="Kategorie produktów">
-                    <div className="actions mb-m">
-                        <Link
-                            href="/products"
-                            className="btn btn-default"
-                            style={{ marginRight: 8 }}
-                        >
-                            lista produktów
-                        </Link>
-                        <Link
-                            href="/settings/categories/new"
-                            className="btn button-blue"
-                            style={{ marginRight: 8 }}
-                        >
-                            + dodaj kategorię produktów
-                        </Link>
-                        {reorderMode ? (
-                            <>
-                                <button
-                                    type="button"
-                                    className="btn button-blue"
-                                    disabled={reorderCategories.isPending}
-                                    onClick={() => void handleSaveOrder()}
-                                >
-                                    {reorderCategories.isPending
-                                        ? 'zapisywanie...'
-                                        : 'zapisz nowy układ'}
-                                </button>
-                                <button
-                                    type="button"
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {WAREHOUSE_NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                { label: 'Ustawienia magazynu' },
+                                { label: 'Kategorie produktów' },
+                            ]}
+                        />
+                        <PanelSection title="Kategorie produktów">
+                            <div className="actions mb-m">
+                                <Link
+                                    href="/products"
                                     className="btn btn-default"
-                                    style={{ marginLeft: 8 }}
-                                    onClick={cancelReorder}
+                                    style={{ marginRight: 8 }}
                                 >
-                                    anuluj
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                type="button"
-                                className="btn btn-default"
-                                onClick={beginReorder}
-                            >
-                                zmień układ
-                            </button>
-                        )}
-                    </div>
-                    {isLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : (
-                        <table className="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Nazwa</th>
-                                    <th style={{ width: 260 }}>Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visibleTree.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={2}>Brak kategorii</td>
-                                    </tr>
+                                    lista produktów
+                                </Link>
+                                <Link
+                                    href="/settings/categories/new"
+                                    className="btn button-blue"
+                                    style={{ marginRight: 8 }}
+                                >
+                                    + dodaj kategorię produktów
+                                </Link>
+                                {reorderMode ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className="btn button-blue"
+                                            disabled={
+                                                reorderCategories.isPending
+                                            }
+                                            onClick={() =>
+                                                void handleSaveOrder()
+                                            }
+                                        >
+                                            {reorderCategories.isPending
+                                                ? 'zapisywanie...'
+                                                : 'zapisz nowy układ'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-default"
+                                            style={{ marginLeft: 8 }}
+                                            onClick={cancelReorder}
+                                        >
+                                            anuluj
+                                        </button>
+                                    </>
                                 ) : (
-                                    renderCategoryRows(visibleTree, {
-                                        deletingId: deleteCategory.isPending
-                                            ? (deleteCategory.variables ?? null)
-                                            : null,
-                                        isReorderMode: reorderMode,
-                                        onDelete: handleDelete,
-                                        onMove: handleMove,
-                                    })
+                                    <button
+                                        type="button"
+                                        className="btn btn-default"
+                                        onClick={beginReorder}
+                                    >
+                                        zmień układ
+                                    </button>
                                 )}
-                            </tbody>
-                        </table>
-                    )}
-                </PanelSection>
-            </div>
-        </div>
+                            </div>
+                            {isLoading ? (
+                                <p>Ładowanie...</p>
+                            ) : (
+                                <table className="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Nazwa</th>
+                                            <th style={{ width: 260 }}>
+                                                Akcje
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {visibleTree.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={2}>
+                                                    Brak kategorii
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            renderCategoryRows(visibleTree, {
+                                                deletingId:
+                                                    deleteCategory.isPending
+                                                        ? (deleteCategory.variables ??
+                                                          null)
+                                                        : null,
+                                                isReorderMode: reorderMode,
+                                                onDelete: handleDelete,
+                                                onMove: handleMove,
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

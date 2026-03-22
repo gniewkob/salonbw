@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import PanelSection from '@/components/ui/PanelSection';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useCreateServiceCategory,
     useServiceCategoryTree,
@@ -63,6 +66,7 @@ function formatCategoryLabel(option: CategoryOption) {
 
 export default function SettingsTradesNewPage() {
     const router = useRouter();
+    const { role } = useAuth();
     useSetSecondaryNav(NAV);
 
     const createCategory = useCreateServiceCategory();
@@ -79,6 +83,8 @@ export default function SettingsTradesNewPage() {
     const [parentId, setParentId] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    if (!role) return null;
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -103,130 +109,160 @@ export default function SettingsTradesNewPage() {
     };
 
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Ustawienia usług' },
-                        { label: 'Branże' },
-                        { label: 'Nowa branża' },
-                    ]}
-                />
-                <PanelSection>
-                    <form onSubmit={(event) => void handleSubmit(event)}>
-                        <h2>Dodaj branżę</h2>
-
-                        {error && (
-                            <div className="alert alert-danger">{error}</div>
-                        )}
-
-                        <div className="form-group">
-                            <label htmlFor="name" className="control-label">
-                                Nazwa
-                            </label>
-                            <input
-                                id="name"
-                                type="text"
-                                className="form-control"
-                                value={name}
-                                onChange={(event) =>
-                                    setName(event.target.value)
-                                }
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="parentId" className="control-label">
-                                Branża nadrzędna
-                            </label>
-                            <select
-                                id="parentId"
-                                className="form-control"
-                                value={parentId}
-                                onChange={(event) =>
-                                    setParentId(event.target.value)
-                                }
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                { label: 'Ustawienia usług' },
+                                { label: 'Branże' },
+                                { label: 'Nowa branża' },
+                            ]}
+                        />
+                        <PanelSection>
+                            <form
+                                onSubmit={(event) => void handleSubmit(event)}
                             >
-                                <option value="">Brak</option>
-                                {parentOptions.map((option) => (
-                                    <option key={option.id} value={option.id}>
-                                        {formatCategoryLabel(option)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                <h2>Dodaj branżę</h2>
 
-                        <div className="form-group">
-                            <label
-                                htmlFor="description"
-                                className="control-label"
-                            >
-                                Opis
-                            </label>
-                            <textarea
-                                id="description"
-                                className="form-control"
-                                rows={4}
-                                value={description}
-                                onChange={(event) =>
-                                    setDescription(event.target.value)
-                                }
-                            />
-                        </div>
+                                {error && (
+                                    <div className="alert alert-danger">
+                                        {error}
+                                    </div>
+                                )}
 
-                        <div className="form-group">
-                            <label htmlFor="color" className="control-label">
-                                Kolor
-                            </label>
-                            <input
-                                id="color"
-                                type="color"
-                                className="form-control"
-                                value={color}
-                                onChange={(event) =>
-                                    setColor(event.target.value)
-                                }
-                            />
-                        </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="name"
+                                        className="control-label"
+                                    >
+                                        Nazwa
+                                    </label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        className="form-control"
+                                        value={name}
+                                        onChange={(event) =>
+                                            setName(event.target.value)
+                                        }
+                                        required
+                                    />
+                                </div>
 
-                        <div className="checkbox">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={isActive}
-                                    onChange={(event) =>
-                                        setIsActive(event.target.checked)
-                                    }
-                                />
-                                Aktywna branża
-                            </label>
-                        </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="parentId"
+                                        className="control-label"
+                                    >
+                                        Branża nadrzędna
+                                    </label>
+                                    <select
+                                        id="parentId"
+                                        className="form-control"
+                                        value={parentId}
+                                        onChange={(event) =>
+                                            setParentId(event.target.value)
+                                        }
+                                    >
+                                        <option value="">Brak</option>
+                                        {parentOptions.map((option) => (
+                                            <option
+                                                key={option.id}
+                                                value={option.id}
+                                            >
+                                                {formatCategoryLabel(option)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <div className="form-group" style={{ marginTop: 16 }}>
-                            <button
-                                type="submit"
-                                className="btn button-blue"
-                                disabled={createCategory.isPending}
-                            >
-                                {createCategory.isPending
-                                    ? 'Zapisywanie...'
-                                    : 'Dodaj branżę'}
-                            </button>
-                            <Link
-                                href="/services"
-                                className="btn btn-default"
-                                style={{ marginLeft: 8 }}
-                            >
-                                Anuluj
-                            </Link>
-                        </div>
-                    </form>
-                </PanelSection>
-            </div>
-        </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="description"
+                                        className="control-label"
+                                    >
+                                        Opis
+                                    </label>
+                                    <textarea
+                                        id="description"
+                                        className="form-control"
+                                        rows={4}
+                                        value={description}
+                                        onChange={(event) =>
+                                            setDescription(event.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="color"
+                                        className="control-label"
+                                    >
+                                        Kolor
+                                    </label>
+                                    <input
+                                        id="color"
+                                        type="color"
+                                        className="form-control"
+                                        value={color}
+                                        onChange={(event) =>
+                                            setColor(event.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={isActive}
+                                            onChange={(event) =>
+                                                setIsActive(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        Aktywna branża
+                                    </label>
+                                </div>
+
+                                <div
+                                    className="form-group"
+                                    style={{ marginTop: 16 }}
+                                >
+                                    <button
+                                        type="submit"
+                                        className="btn button-blue"
+                                        disabled={createCategory.isPending}
+                                    >
+                                        {createCategory.isPending
+                                            ? 'Zapisywanie...'
+                                            : 'Dodaj branżę'}
+                                    </button>
+                                    <Link
+                                        href="/services"
+                                        className="btn btn-default"
+                                        style={{ marginLeft: 8 }}
+                                    >
+                                        Anuluj
+                                    </Link>
+                                </div>
+                            </form>
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }
