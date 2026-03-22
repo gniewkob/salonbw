@@ -7,6 +7,7 @@ import {
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import CustomerSettingsNav from './CustomerSettingsNav';
 import type { CustomerGroup } from '@/types';
 
@@ -199,108 +200,99 @@ export default function CustomerGroupsListPage() {
 
     return (
         <div className="settings-customer-groups-page">
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_settings" />
-                        <Link href="/settings">Ustawienia</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Grupy klientów
-                    </li>
-                </ul>
-            </div>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_settings"
+                items={[
+                    { label: 'Ustawienia', href: '/settings' },
+                    { label: 'Grupy klientów' },
+                ]}
+            />
 
-            <div className="inner">
-                <div className="actions settings-customer-groups__actions">
-                    <div id="general-actions">
-                        <button
-                            type="button"
-                            className="button"
-                            onClick={() => {
-                                setDraftGroups(groups);
-                                setReorderMode(true);
-                            }}
-                            style={{
-                                display: reorderMode ? 'none' : undefined,
-                            }}
-                        >
-                            zmień kolejność
-                        </button>
-                        <button
-                            type="button"
-                            className="button button-blue"
-                            onClick={() =>
-                                void sort
-                                    .mutateAsync(flattenForSort(draftTree))
-                                    .then(() => setReorderMode(false))
-                            }
-                            style={{
-                                display: reorderMode ? undefined : 'none',
-                            }}
-                        >
-                            zapisz kolejność
-                        </button>
-                        <button
-                            type="button"
-                            className="button"
-                            onClick={() => {
-                                setDraftGroups(groups);
-                                setReorderMode(false);
-                            }}
-                            style={{
-                                display: reorderMode ? undefined : 'none',
-                            }}
-                        >
-                            anuluj
-                        </button>
-                        <Link className="button" href="/customers">
-                            wróć do listy klientów
-                        </Link>
-                        <Link
-                            className="button button-blue"
-                            href="/settings/customer_groups/new"
-                        >
-                            dodaj grupę
-                        </Link>
-                    </div>
+            <div className="actions settings-customer-groups__actions">
+                <div id="general-actions">
+                    <button
+                        type="button"
+                        className="button"
+                        onClick={() => {
+                            setDraftGroups(groups);
+                            setReorderMode(true);
+                        }}
+                        style={{
+                            display: reorderMode ? 'none' : undefined,
+                        }}
+                    >
+                        zmień kolejność
+                    </button>
+                    <button
+                        type="button"
+                        className="button button-blue"
+                        onClick={() =>
+                            void sort
+                                .mutateAsync(flattenForSort(draftTree))
+                                .then(() => setReorderMode(false))
+                        }
+                        style={{
+                            display: reorderMode ? undefined : 'none',
+                        }}
+                    >
+                        zapisz kolejność
+                    </button>
+                    <button
+                        type="button"
+                        className="button"
+                        onClick={() => {
+                            setDraftGroups(groups);
+                            setReorderMode(false);
+                        }}
+                        style={{
+                            display: reorderMode ? undefined : 'none',
+                        }}
+                    >
+                        anuluj
+                    </button>
+                    <Link className="button" href="/customers">
+                        wróć do listy klientów
+                    </Link>
+                    <Link
+                        className="button button-blue"
+                        href="/settings/customer_groups/new"
+                    >
+                        dodaj grupę
+                    </Link>
                 </div>
-
-                {isLoading ? (
-                    <div className="settings-detail-state">
-                        Ładowanie grup...
-                    </div>
-                ) : error ? (
-                    <div className="settings-detail-state settings-detail-state--error">
-                        <div>Nie udało się pobrać grup klientów.</div>
-                        <button
-                            type="button"
-                            className="btn btn-default"
-                            onClick={() => void refetch()}
-                        >
-                            odśwież
-                        </button>
-                    </div>
-                ) : (
-                    <div className="column_row">
-                        <ul className="simple-tree">
-                            <li className="node root">
-                                <div className="item">
-                                    <div className="pull_left">
-                                        <div className="icon_box">
-                                            <i className="icon sprite-group" />
-                                        </div>
-                                        Wszyscy klienci
-                                    </div>
-                                    <div className="c" />
-                                </div>
-                                {renderTree(reorderMode ? draftTree : tree)}
-                            </li>
-                        </ul>
-                    </div>
-                )}
             </div>
+
+            {isLoading ? (
+                <div className="settings-detail-state">Ładowanie grup...</div>
+            ) : error ? (
+                <div className="settings-detail-state settings-detail-state--error">
+                    <div>Nie udało się pobrać grup klientów.</div>
+                    <button
+                        type="button"
+                        className="btn btn-default"
+                        onClick={() => void refetch()}
+                    >
+                        odśwież
+                    </button>
+                </div>
+            ) : (
+                <div className="column_row">
+                    <ul className="simple-tree">
+                        <li className="node root">
+                            <div className="item">
+                                <div className="pull_left">
+                                    <div className="icon_box">
+                                        <i className="icon sprite-group" />
+                                    </div>
+                                    Wszyscy klienci
+                                </div>
+                                <div className="c" />
+                            </div>
+                            {renderTree(reorderMode ? draftTree : tree)}
+                        </li>
+                    </ul>
+                </div>
+            )}
 
             {editingGroup ? (
                 <div className="modal-backdrop fade in">

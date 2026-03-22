@@ -83,7 +83,7 @@ export default function TipsPage() {
                         Ładowanie...
                     </div>
                 ) : (
-                    <div className="inner">
+                    <>
                         {/* Summary cards */}
                         <div className="grid grid-cols-3 gap-4 mb-6">
                             <div className="border rounded p-4 text-center bg-yellow-50">
@@ -196,7 +196,7 @@ export default function TipsPage() {
                                 )}
                             </table>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </SalonBWShell>

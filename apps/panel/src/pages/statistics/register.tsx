@@ -126,7 +126,7 @@ export default function CashRegisterPage() {
                         Ładowanie...
                     </div>
                 ) : activeTab === 'register' ? (
-                    <div className="inner">
+                    <>
                         {/* Status header */}
                         <div className="flex items-center gap-3 mb-4">
                             <h2 className="text-xl font-normal">
@@ -307,16 +307,16 @@ export default function CashRegisterPage() {
                                 </table>
                             </div>
                         )}
-                    </div>
+                    </>
                 ) : (
-                    <div className="inner">
+                    <>
                         <h3 className="text-lg font-semibold mb-3">
                             Historia operacji kasowych
                         </h3>
                         <div className="text-gray-500 italic">
                             Funkcja w przygotowaniu
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </SalonBWShell>
