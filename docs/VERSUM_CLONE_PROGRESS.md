@@ -1662,3 +1662,30 @@
     - auxiliary trasy shella dostają już vendor-compatible `body.id` i `body.class`,
     - `extension` przestał dokładać nested content-frame drift,
     - shared shell contract został domknięty także dla tras pomocniczych komunikacji i pomocy.
+
+### 2026-03-22 - Panel: settings landing i statistics shell wrappers
+
+- zmiana kodu:
+    - `apps/panel/src/components/salonbw/navigation.ts`
+        - route-aware shell override dla:
+            - `/settings` -> `settings_dashboard` + `no_sidenav`
+            - `/settings/sms` -> `settings_sms` + `communication_settings`
+    - `apps/panel/src/pages/settings/index.tsx`
+        - usunięcie ręcznego `useEffect` do body classes
+        - usunięcie nested `.inner` na landingu
+    - `apps/panel/src/pages/statistics/customers.tsx`
+        - usunięcie nested `.inner`
+- deploy:
+    - `dashboard` (production): run `23411963723` ✅
+- walidacja lokalna:
+    - `apps/panel`: targeted `pnpm eslint ... --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+- smoke produkcyjny:
+    - `/settings` -> `body.id=settings_dashboard`, `body.no_sidenav`, `nestedInnerCount=0` ✅
+    - `/settings/sms` -> `body.id=settings_sms`, `main-content communication_settings`, `nestedInnerCount=0` ✅
+    - `/statistics/customers` -> `body.id=logical_statistics`, `nestedInnerCount=0` ✅
+- wynik:
+    - `settings` landing korzysta już z shell contract zamiast ręcznego body mutation,
+    - `settings/sms` dostał vendor-compatible shell identity,
+    - `statistics/customers` nie dokłada już drugiego content frame,
+    - remaining drift schodzi coraz bardziej do poziomu real contentu zamiast shared chrome.
