@@ -28,8 +28,7 @@ export default function SalonBWMainNav({
                     return (
                         <li
                             key={item.key}
-                            className={`${item.key} ${isActive ? 'active' : ''} ${item.pinBottom ? 'mt-auto' : ''}`}
-                            data-tooltip={item.label}
+                            className={`${item.shell.mainNavClass} ${isActive ? 'active' : ''} ${item.pinBottom ? 'mt-auto' : ''}`}
                         >
                             <Link
                                 href={item.href}
@@ -41,9 +40,6 @@ export default function SalonBWMainNav({
                                         id={item.iconId}
                                         className={item.iconId}
                                     />
-                                    {isActive && (
-                                        <div className="active-indicator"></div>
-                                    )}
                                 </div>
                                 <span className="nav-label">
                                     {badge && (

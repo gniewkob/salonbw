@@ -144,7 +144,7 @@ export default function WarehouseNav() {
             query?: Record<string, string>;
         }>,
     ) => (
-        <>
+        <div className="column_row">
             <div className="nav-header">{header}</div>
             <ul className="nav nav-list">
                 {items.map((item) => (
@@ -188,7 +188,7 @@ export default function WarehouseNav() {
                     </li>
                 ))}
             </ul>
-        </>
+        </div>
     );
 
     if (isSubmodulePath('/sales')) {
@@ -269,50 +269,55 @@ export default function WarehouseNav() {
     }
 
     return (
-        <>
-            <div className="nav-header">KATEGORIE PRODUKTÓW</div>
-            <ul className="nav nav-list tree">
-                <li
-                    className={
-                        !currentCategoryId &&
-                        router.query.uncategorized !== 'true'
-                            ? 'active'
-                            : undefined
-                    }
-                >
+        <div className="column_row">
+            <div data-product-categories-menu="">
+                <div className="tree">
                     <a
+                        className={
+                            !currentCategoryId &&
+                            router.query.uncategorized !== 'true'
+                                ? 'root active'
+                                : 'root'
+                        }
+                        data-menu-item-name="root"
                         href="#"
                         onClick={(event) => {
                             event.preventDefault();
                             updateFilters(undefined);
                         }}
                     >
+                        <div className="icon_box">
+                            <i className="icon sprite-stock_products" />
+                        </div>
                         Wszystkie produkty
                     </a>
-                </li>
 
-                {categories?.length ? renderCategoryNodes(categories) : null}
+                    <ul>
+                        {categories?.length
+                            ? renderCategoryNodes(categories)
+                            : null}
 
-                <li
-                    className={
-                        router.query.uncategorized === 'true'
-                            ? 'active'
-                            : undefined
-                    }
-                >
-                    <a
-                        href="#"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            updateFilters(undefined, true);
-                        }}
-                    >
-                        produkty bez kategorii
-                    </a>
-                </li>
+                        <li
+                            className={
+                                router.query.uncategorized === 'true'
+                                    ? 'active'
+                                    : undefined
+                            }
+                        >
+                            <a
+                                href="#"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    updateFilters(undefined, true);
+                                }}
+                            >
+                                produkty bez kategorii
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                <li className="divider" />
-                <li>
+                <div className="tree_options">
                     <a
                         href="#"
                         onClick={(event) => {
@@ -320,13 +325,10 @@ export default function WarehouseNav() {
                             setIsManageModalOpen(true);
                         }}
                     >
-                        <div className="icon_box">
-                            <i className="icon sprite-icon_plus" />
-                        </div>
                         dodaj/edytuj/usuń
                     </a>
-                </li>
-            </ul>
+                </div>
+            </div>
 
             {isManageModalOpen && (
                 <ManageCategoriesModal
@@ -334,6 +336,6 @@ export default function WarehouseNav() {
                     onClose={() => setIsManageModalOpen(false)}
                 />
             )}
-        </>
+        </div>
     );
 }

@@ -97,8 +97,7 @@ export default function SalonBWSecondaryNav({
     }
 
     return (
-        // Match source DOM: `.sidenav#sidenav` (keep `secondarynav` as compatibility class)
-        <div className="sidenav secondarynav" id="sidenav">
+        <div className="sidenav" id="sidenav">
             {content}
         </div>
     );

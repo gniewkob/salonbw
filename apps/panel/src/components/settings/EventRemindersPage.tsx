@@ -12,7 +12,7 @@ type ReminderDraft = Required<UpdateReminderSettingsRequest> & {
 };
 
 const REMINDERS_NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree communication_settings">
             <h4>Komunikacja z klientem</h4>
             <ul>

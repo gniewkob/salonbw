@@ -19,6 +19,7 @@ import {
 import { useEmployees } from '@/hooks/useEmployees';
 import { DateRange } from '@/types';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
 
@@ -496,10 +497,13 @@ function StatisticsPageContent() {
             className="salonbw-page statistics-module"
             data-testid="statistics-page"
         >
-            <ul className="breadcrumb">
-                <li>Statystyki</li>
-                <li>Raport finansowy</li>
-            </ul>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_statistics"
+                items={[
+                    { label: 'Statystyki', href: '/statistics' },
+                    { label: 'Raport finansowy' },
+                ]}
+            />
 
             <div className="actions">
                 <div className="pull-left statistics_date">

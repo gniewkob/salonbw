@@ -7,7 +7,7 @@ import { useEmployee } from '@/hooks/useEmployees';
 import { useUpdateEmployee } from '@/hooks/useEmployees';
 
 const NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree other_settings">
             <h4>Pracownicy</h4>
             <ul>

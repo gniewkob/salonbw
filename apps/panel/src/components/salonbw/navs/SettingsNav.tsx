@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
+import SalonBWListNav from './SalonBWListNav';
 
 type NavItem = {
     id: string;
@@ -45,20 +45,12 @@ export default function SettingsNav() {
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
-        <div className="sidebar-inner nav-scroll-container">
-            <div className="nav-header">USTAWIENIA</div>
-            <ul className="nav nav-list">
-                {SETTINGS_ITEMS.map((item) => (
-                    <li key={item.id}>
-                        <Link
-                            href={item.href}
-                            className={isActive(item.href) ? 'active' : ''}
-                        >
-                            {item.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <SalonBWListNav
+            heading="USTAWIENIA"
+            items={SETTINGS_ITEMS.map((item) => ({
+                ...item,
+                active: isActive(item.href),
+            }))}
+        />
     );
 }

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useServicesWithFilters } from '@/hooks/useServicesAdmin';
 import { useServiceRanking } from '@/hooks/useStatistics';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Role, Service, ServiceVariant } from '@/types';
 
@@ -208,9 +209,10 @@ function ServicesPageContent({ role }: { role: Role }) {
 
     return (
         <div className="salonbw-page" data-testid="services-page">
-            <ul className="breadcrumb">
-                <li>Usługi</li>
-            </ul>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_services"
+                items={[{ label: 'Usługi' }]}
+            />
 
             <div className="row mb-xl">
                 <div className="col-sm-6">

@@ -12,14 +12,30 @@ export type SalonBWModuleKey =
     | 'extension'
     | 'helps';
 
+export interface SalonBWShellProfile {
+    bodyId: string;
+    mainNavClass: string;
+    mainContentClass: string;
+    secondaryNavVariant:
+        | 'calendar'
+        | 'customers'
+        | 'products'
+        | 'tree'
+        | 'list'
+        | 'none';
+    secondaryNavRootClass: string | null;
+    breadcrumbsIconClass: string | null;
+    contentFrameVariant: 'default' | 'calendar' | 'fullWidth';
+}
+
 export interface SalonBWModule {
     key: SalonBWModuleKey;
     href: string;
     label: string;
     iconId: string;
     permission: Permission;
+    shell: SalonBWShellProfile;
     secondaryNav: boolean;
-    wideContent?: boolean;
     pinBottom?: boolean;
 }
 
@@ -30,8 +46,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'kalendarz',
         iconId: 'svg-calendar-nav',
         permission: 'nav:calendar',
+        shell: {
+            bodyId: 'calendar',
+            mainNavClass: 'calendar',
+            mainContentClass: 'calendar',
+            secondaryNavVariant: 'calendar',
+            secondaryNavRootClass: 'hasDatepicker',
+            breadcrumbsIconClass: null,
+            contentFrameVariant: 'calendar',
+        },
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'customers',
@@ -39,8 +63,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'klienci',
         iconId: 'svg-customers-nav',
         permission: 'nav:customers',
+        shell: {
+            bodyId: 'customers',
+            mainNavClass: 'customers',
+            mainContentClass: 'customers',
+            secondaryNavVariant: 'customers',
+            secondaryNavRootClass: 'customers_index',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_customers',
+            contentFrameVariant: 'fullWidth',
+        },
         secondaryNav: true, // Page has its own sidebar with dynamic content
-        wideContent: true,
     },
     {
         key: 'products',
@@ -48,8 +80,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'magazyn',
         iconId: 'svg-stock-nav',
         permission: 'nav:products',
+        shell: {
+            bodyId: 'physical_products',
+            mainNavClass: 'stock',
+            mainContentClass: 'stock',
+            secondaryNavVariant: 'products',
+            secondaryNavRootClass: 'column_row',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_stock',
+            contentFrameVariant: 'default',
+        },
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'statistics',
@@ -57,8 +97,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'statystyki',
         iconId: 'svg-statistics-nav',
         permission: 'nav:statistics',
+        shell: {
+            bodyId: 'logical_statistics',
+            mainNavClass: 'statistics',
+            mainContentClass: 'statistics',
+            secondaryNavVariant: 'tree',
+            secondaryNavRootClass: 'column_row tree',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_statistics',
+            contentFrameVariant: 'fullWidth',
+        },
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'communication',
@@ -66,8 +114,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'łączność',
         iconId: 'svg-communication-nav',
         permission: 'nav:communication',
+        shell: {
+            bodyId: 'communication',
+            mainNavClass: 'communication',
+            mainContentClass: 'communication',
+            secondaryNavVariant: 'list',
+            secondaryNavRootClass: 'column_row',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_communication',
+            contentFrameVariant: 'default',
+        },
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'services',
@@ -75,8 +131,16 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'usługi',
         iconId: 'svg-services-nav',
         permission: 'nav:services',
+        shell: {
+            bodyId: 'services',
+            mainNavClass: 'services',
+            mainContentClass: 'services',
+            secondaryNavVariant: 'list',
+            secondaryNavRootClass: 'column_row',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_services',
+            contentFrameVariant: 'default',
+        },
         secondaryNav: true,
-        wideContent: true,
     },
     {
         key: 'settings',
@@ -84,6 +148,15 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'ustawienia',
         iconId: 'svg-settings-nav',
         permission: 'nav:settings',
+        shell: {
+            bodyId: 'settings',
+            mainNavClass: 'settings',
+            mainContentClass: 'settings',
+            secondaryNavVariant: 'list',
+            secondaryNavRootClass: 'column_row',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_settings',
+            contentFrameVariant: 'default',
+        },
         secondaryNav: true,
     },
     {
@@ -92,6 +165,15 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         label: 'dodatki',
         iconId: 'svg-extensions-nav',
         permission: 'nav:extension',
+        shell: {
+            bodyId: 'extension',
+            mainNavClass: 'extensions',
+            mainContentClass: 'extensions',
+            secondaryNavVariant: 'list',
+            secondaryNavRootClass: 'column_row',
+            breadcrumbsIconClass: 'sprite-breadcrumbs_extensions',
+            contentFrameVariant: 'default',
+        },
         secondaryNav: true,
         pinBottom: true,
     },
@@ -103,6 +185,15 @@ const HELPS_MODULE: SalonBWModule = {
     label: 'pomoc',
     iconId: 'svg-help',
     permission: 'nav:settings',
+    shell: {
+        bodyId: 'helps',
+        mainNavClass: 'settings',
+        mainContentClass: 'helps',
+        secondaryNavVariant: 'none',
+        secondaryNavRootClass: null,
+        breadcrumbsIconClass: 'sprite-breadcrumbs_help',
+        contentFrameVariant: 'default',
+    },
     secondaryNav: false,
 };
 

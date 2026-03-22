@@ -118,7 +118,7 @@ export default function CustomerDetailPage() {
     const secondaryNav = useMemo(
         () =>
             customerId !== null ? (
-                <div className="sidenav secondarynav" id="sidenav">
+                <div className="sidenav" id="sidenav">
                     <ClientDetailNav
                         customerId={customerId}
                         customerName={

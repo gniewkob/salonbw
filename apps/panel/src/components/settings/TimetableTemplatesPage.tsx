@@ -160,7 +160,7 @@ export default function TimetableTemplatesPage() {
         );
 
         return (
-            <div className="sidenav secondarynav" id="sidenav">
+            <div className="sidenav" id="sidenav">
                 <div className="column_row">
                     <h4>Grafiki pracowników</h4>
                     <div className="tree users-list">

@@ -1534,3 +1534,32 @@
 - known delta (zaakceptowane na zamknięcie):
     - strict visual `list`: `7.338%` (próg `<=3.0%`),
     - strict visual `summary`: `5.278%` (próg `<=3.0%`).
+
+### 2026-03-22 - Shared shell contract: koniec lokalnych wyjątków layoutowych
+
+- zmiana kodu:
+    - `docs/VERSUM_SHELL_CONTRACT.md`
+        - dodany kanoniczny contract shella panelu oparty na live Versum i runtime `/calendar`.
+    - `apps/panel/src/components/salonbw/navigation.ts`
+        - moduły dostały pełny `shell profile` z vendorowymi `body.id`, klasami `mainnav` i `main-content`, wariantami secondary nav oraz ikonami breadcrumbs.
+    - `apps/panel/src/components/salonbw/SalonBWShell.tsx`
+    - `apps/panel/src/components/salonbw/SalonBWMainNav.tsx`
+    - `apps/panel/src/components/salonbw/SalonBWSecondaryNav.tsx`
+    - `apps/panel/src/styles/salonbw-shell.css`
+        - wspólny shell został doprowadzony bliżej contractu Versum: usunięte lokalne wyjątki `secondarynav` i `inner--wide`, dodany jawny `contentFrameVariant`, wspólny styling `.breadcrumbs`, `tree`, `tree_options` i listowych sidenavów.
+    - `apps/panel/src/components/salonbw/VersumBreadcrumbs.tsx`
+    - `apps/panel/src/components/salonbw/navs/SalonBWListNav.tsx`
+        - dodane reużywalne komponenty shellowe dla breadcrumbs i prostych sidenavów.
+    - `apps/panel/src/components/salonbw/navs/{StatisticsNav,WarehouseNav,CommunicationNav,ServicesNav,SettingsNav,ExtensionNav}.tsx`
+        - ujednolicone root wrappery sidenava do wariantów zgodnych z Versum.
+    - wybrane strony `statistics`, `products`, `services`, `communication` oraz detailowe strony `settings/customers`
+        - migracja z `ul.breadcrumb` i `div.sidenav secondarynav` w kierunku wspólnego contractu.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm eslint src --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+    - `apps/panel`: `pnpm test -- --runInBand src/__tests__/navigationShellProfile.test.ts src/__tests__/VersumBreadcrumbs.test.tsx` ✅
+- status:
+    - shell parity został potraktowany jako osobna warstwa architektoniczna,
+    - known delta:
+        - część podstron detailowych nadal renderuje lokalne `ul.breadcrumb` i wymaga drugiego passu migracyjnego,
+        - parity modułów od tego miejsca należy oceniać najpierw względem `VERSUM_SHELL_CONTRACT.md`, dopiero potem na poziomie contentu strony.

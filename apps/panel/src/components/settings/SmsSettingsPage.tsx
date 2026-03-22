@@ -5,7 +5,7 @@ import { useSettingsMutations, useSmsSettings } from '@/hooks/useSettings';
 import type { SmsSettings, SmsType } from '@/types';
 
 const COMMUNICATION_NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree communication_settings">
             <h4>Ustawienia łączności</h4>
             <ul>

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSmsHistory, useSmsMutations } from '@/hooks/useSms';
 import { useEmailHistory, useEmailMutations } from '@/hooks/useEmails';
@@ -96,9 +97,13 @@ export default function CommunicationPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonBWShell role={role}>
                 <div data-testid="communication-page">
-                    <ul className="breadcrumb">
-                        <li>Łączność / Nieprzeczytane wiadomości</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_communication"
+                        items={[
+                            { label: 'Łączność', href: '/communication' },
+                            { label: 'Nieprzeczytane wiadomości' },
+                        ]}
+                    />
 
                     <div className="row mb-l">
                         <div className="col-sm-5 input-with-select-sm mb-s mb-md-0">
