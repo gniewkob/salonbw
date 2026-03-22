@@ -1110,6 +1110,45 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - another batch of standalone settings views was moved back under the shared shell contract
   - drift is now increasingly concentrated in content/data behavior rather than missing chrome
 
+### 2026-03-22 - Panel: dynamiczne detail routes settings pod shared shell
+
+- Code commits:
+  - `06a2933c` `Restore shared shell on remaining settings detail routes`
+  - `bd4f10dd` `Stabilize timetable employee secondary nav`
+  - `daf9fd84` `Stabilize timetable employee date state`
+  - `868b0b38` `Stabilize timetable shell data references`
+- Deploy runs (`dashboard`, production):
+  - `23412803413` ✅
+  - `23412914256` ✅
+  - `23412993266` ✅
+  - `23413071286` ✅
+- Scope:
+  - restored `SalonBWShell` + `RouteGuard` on:
+    - `/settings/categories/new`
+    - `/settings/categories/[id]/edit`
+    - `/settings/employees/[id]`
+    - `/settings/employees/[id]/edit`
+    - `/settings/employees/[id]/events-history`
+    - `/settings/employees/commissions`
+    - `/settings/employees/commissions/[id]`
+    - `/settings/timetable/branch`
+    - `/settings/timetable/employees/copy`
+    - `/settings/timetable/employees/[id]`
+  - stabilized timetable employee detail by removing render-loop sources in secondary nav and hook fallback data
+- Production shell smoke:
+  - `/settings/categories/new` -> `body.id=settings_categories`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/employees/29` -> `body.id=settings_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/employees/29/edit` -> `body.id=settings_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/employees/29/events-history` -> `body.id=settings_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/employees/commissions` -> `body.id=settings_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/employees/commissions/29` -> `body.id=settings_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/timetable/branch` -> `body.id=timetable_branches`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/timetable/employees/copy` -> `body.id=timetable_employees`, shell present, `nestedInnerCount=0` ✅
+  - `/settings/timetable/employees/29?date=2026-03-22` -> `body.id=timetable_employees`, shell present, `nestedInnerCount=0`, no client-side exception ✅
+- Notes:
+  - after the final stabilization pass, the previous React error #185 on timetable employee detail is gone
+  - remaining console noise on some settings/timetable pages is backend/API specific and no longer a shell regression
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
