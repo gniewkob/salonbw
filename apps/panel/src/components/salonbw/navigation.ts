@@ -220,6 +220,128 @@ function withShellOverride(
     };
 }
 
+function resolveSettingsShellOverride(path: string) {
+    if (path === '/settings') {
+        return {
+            bodyId: 'settings_dashboard',
+            bodyClasses: ['no_sidenav', 'settings-dashboard-landing'],
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/branch')) {
+        return {
+            bodyId: 'settings_branch',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/calendar')) {
+        return {
+            bodyId: 'settings_calendar',
+            bodyClasses: ['no_sidenav'],
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/categories')) {
+        return {
+            bodyId: 'settings_categories',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/customer_groups')) {
+        return {
+            bodyId: 'settings_customer_groups',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/customer_origins') ||
+        path.startsWith('/settings/customer-origins')
+    ) {
+        return {
+            bodyId: 'settings_customer_origins',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/customer-panel')) {
+        return {
+            bodyId: 'settings_customer_panel',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/data_protection') ||
+        path.startsWith('/settings/data-protection')
+    ) {
+        return {
+            bodyId: 'settings_data_protection',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/employees') ||
+        path.startsWith('/employees')
+    ) {
+        return {
+            bodyId: 'settings_employees',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/extra_fields') ||
+        path.startsWith('/settings/extra-fields')
+    ) {
+        return {
+            bodyId: 'settings_extra_fields',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/payment-configuration')) {
+        return {
+            bodyId: 'settings_online_payments_config',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/sms')) {
+        return {
+            bodyId: 'settings_sms',
+            mainContentClass: 'communication_settings',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/timetable/branch')) {
+        return {
+            bodyId: 'timetable_branches',
+            bodyClasses: ['no_sidenav'],
+            mainContentClass: '',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (
+        path.startsWith('/settings/timetable/employees') ||
+        path.startsWith('/settings/timetable/employees/')
+    ) {
+        return {
+            bodyId: 'timetable_employees',
+            mainContentClass: '',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/timetable/templates')) {
+        return {
+            bodyId: 'timetable_templates',
+            mainContentClass: '',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    if (path.startsWith('/settings/trades')) {
+        return {
+            bodyId: 'settings_trades',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
+    return null;
+}
+
 export function resolveSalonBWModule(pathname: string): SalonBWModule {
     // Normalize path
     const path = pathname.toLowerCase();
@@ -287,18 +409,9 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/reviews') ||
         path.startsWith('/invoices')
     ) {
-        if (path === '/settings') {
-            return withShellOverride(SALONBW_MODULES[6], {
-                bodyId: 'settings_dashboard',
-                bodyClasses: ['no_sidenav', 'settings-dashboard-landing'],
-            });
-        }
-
-        if (path.startsWith('/settings/sms')) {
-            return withShellOverride(SALONBW_MODULES[6], {
-                bodyId: 'settings_sms',
-                mainContentClass: 'communication_settings',
-            });
+        const settingsShellOverride = resolveSettingsShellOverride(path);
+        if (settingsShellOverride) {
+            return withShellOverride(SALONBW_MODULES[6], settingsShellOverride);
         }
 
         return SALONBW_MODULES[6];
