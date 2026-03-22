@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useSettingsMutations, useSmsSettings } from '@/hooks/useSettings';
 import type { SmsSettings, SmsType } from '@/types';
@@ -178,24 +179,16 @@ export default function SmsSettingsPage() {
 
     return (
         <div className="sms-settings-page">
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_communication_set" />
-                        <Link href="/settings">ustawienia</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Łączność
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Wiadomości SMS
-                    </li>
-                </ul>
-            </div>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_communication_set"
+                items={[
+                    { label: 'ustawienia', href: '/settings' },
+                    { label: 'Łączność' },
+                    { label: 'Wiadomości SMS' },
+                ]}
+            />
 
-            <div className="inner sms_settings sms-settings-page__inner">
+            <div className="sms_settings sms-settings-page__inner">
                 <div className="polish_sms_settings visible">
                     <div className="sms-settings-page__types">
                         <SmsTypeCard

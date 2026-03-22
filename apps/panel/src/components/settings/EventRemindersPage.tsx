@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useReminderSettings, useSettingsMutations } from '@/hooks/useSettings';
 import PanelSection from '@/components/ui/PanelSection';
 import type { ReminderChannel, UpdateReminderSettingsRequest } from '@/types';
@@ -165,25 +166,15 @@ export default function EventRemindersPage() {
     if (isLoading) {
         return (
             <div className="event-reminders-page">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Komunikacja z klientem
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Przypomnienie o wizycie
-                        </li>
-                    </ul>
-                </div>
-                <div className="inner">
-                    <p>Ładowanie...</p>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Komunikacja z klientem' },
+                        { label: 'Przypomnienie o wizycie' },
+                    ]}
+                />
+                <p>Ładowanie...</p>
             </div>
         );
     }
@@ -198,22 +189,14 @@ export default function EventRemindersPage() {
 
     return (
         <div className="event-reminders-page">
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_settings" />
-                        <Link href="/settings">Ustawienia</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Komunikacja z klientem
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Przypomnienie o wizycie
-                    </li>
-                </ul>
-            </div>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_settings"
+                items={[
+                    { label: 'Ustawienia', href: '/settings' },
+                    { label: 'Komunikacja z klientem' },
+                    { label: 'Przypomnienie o wizycie' },
+                ]}
+            />
 
             <PanelSection>
                 <div className="actions">
