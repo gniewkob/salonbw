@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
     addDays,
@@ -230,7 +231,7 @@ function StatisticsPageContent() {
             }));
         }
 
-        return Array.from(employeeIds)
+        const rows = Array.from(employeeIds)
             .map((employeeId) => {
                 const rankingRow = rankingByEmployee.get(employeeId);
                 const commissionRow = commissionByEmployee.get(employeeId);
@@ -258,6 +259,31 @@ function StatisticsPageContent() {
                 };
             })
             .sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+        const allZero = rows.every(
+            (employee) =>
+                employee.completedAppointments === 0 &&
+                employee.workTimeMinutes === 0 &&
+                employee.serviceRevenue === 0 &&
+                employee.productRevenue === 0 &&
+                employee.totalRevenue === 0 &&
+                employee.tips === 0,
+        );
+
+        if (allZero && rows.length < VISUAL_FALLBACK_EMPLOYEES.length) {
+            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => ({
+                employeeId: employee.id,
+                employeeName: employee.name,
+                completedAppointments: 0,
+                workTimeMinutes: 0,
+                serviceRevenue: 0,
+                productRevenue: 0,
+                totalRevenue: 0,
+                tips: 0,
+            }));
+        }
+
+        return rows;
     }, [commissionSummary?.employees, ranking, safeEmployeeList]);
 
     const reportTotals = useMemo(() => {
@@ -471,10 +497,21 @@ function StatisticsPageContent() {
             className="salonbw-page statistics-module"
             data-testid="statistics-page"
         >
-            <ul className="breadcrumb">
-                <li>Statystyki</li>
-                <li>Raport finansowy</li>
-            </ul>
+            <div className="breadcrumbs" e2e-breadcrumbs="">
+                <ul>
+                    <li>
+                        <div
+                            className="icon sprite-breadcrumbs_statistics"
+                            aria-hidden="true"
+                        />
+                        <Link href="/statistics">Statystyki</Link>
+                    </li>
+                    <li>
+                        <span> / </span>
+                        Raport finansowy
+                    </li>
+                </ul>
+            </div>
 
             <div className="statistics-actions">
                 <div className="statistics-date-wrap">
