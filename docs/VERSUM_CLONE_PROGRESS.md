@@ -1689,3 +1689,34 @@
     - `settings/sms` dostał vendor-compatible shell identity,
     - `statistics/customers` nie dokłada już drugiego content frame,
     - remaining drift schodzi coraz bardziej do poziomu real contentu zamiast shared chrome.
+
+### 2026-03-22 - Panel: settings route families i remaining shell breaches
+
+- zmiana kodu:
+    - `apps/panel/src/components/salonbw/navigation.ts`
+        - szeroka route-aware mapa `settings/*` -> vendor `body.id` / `main-content`
+        - dodany mapping `/event-reminders` -> `physical_marketing`
+    - `apps/panel/src/components/settings/CalendarSettingsForm.tsx`
+        - usunięcie ręcznego body mutation; shell identity przejęta przez resolver
+    - `apps/panel/src/components/ui/PanelSection.tsx`
+        - usunięcie wspólnego nested `.inner`
+    - `apps/panel/src/pages/settings/employees/new.tsx`
+        - przywrócenie `SalonBWShell` + `RouteGuard`
+    - `apps/panel/src/pages/event-reminders/index.tsx`
+        - przywrócenie `SalonBWShell` + `RouteGuard`
+- deploy:
+    - `dashboard` (production): run `23412074881` ✅
+    - `dashboard` (production): run `23412168847` ✅
+    - `dashboard` (production): run `23412273475` ✅
+    - `dashboard` (production): run `23412370725` ✅
+- smoke produkcyjny:
+    - `/settings/branch` -> `body.id=settings_branch`, `nestedInnerCount=0` ✅
+    - `/settings/payment-configuration` -> `body.id=settings_online_payments_config`, `nestedInnerCount=0` ✅
+    - `/settings/customer_groups` -> `body.id=settings_customer_groups`, `nestedInnerCount=0` ✅
+    - `/settings/employees/new` -> shell obecny, `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/event-reminders` -> shell obecny, `body.id=physical_marketing`, `nestedInnerCount=0` ✅
+- wynik:
+    - vendorowy contract dla rodziny `settings/*` został znacznie szerzej przeniesiony do shared shell resolvera,
+    - wspólne detail pages przestały dokładać dodatkowy content frame,
+    - dwa remaining standalone widoki zostały włączone z powrotem do panelowego chrome,
+    - drift przesunął się jeszcze bardziej z warstwy shellowej do poziomu faktycznego contentu / danych.
