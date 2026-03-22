@@ -5,8 +5,6 @@ interface NavItem {
     id: string;
     label: string;
     href: string;
-    title?: string;
-    menuItemName?: string;
     children?: NavItem[];
 }
 
@@ -15,38 +13,20 @@ const REPORTS: NavItem[] = [
         id: 'financial',
         label: 'Raport finansowy',
         href: '/statistics',
-        title: 'Raport finansowy',
     },
     {
         id: 'employees',
         label: 'Pracownicy',
         href: '/statistics/employees',
-        title: 'Pracownicy',
     },
     {
         id: 'commissions',
         label: 'Prowizje pracowników',
         href: '/statistics/commissions',
-        title: 'Prowizje pracowników',
     },
-    {
-        id: 'register',
-        label: 'Stan kasy',
-        href: '/statistics/register',
-        title: 'Stan kasy',
-    },
-    {
-        id: 'tips',
-        label: 'Napiwki',
-        href: '/statistics/tips',
-        title: 'Napiwki',
-    },
-    {
-        id: 'services',
-        label: 'Usługi',
-        href: '/statistics/services',
-        title: 'Usługi',
-    },
+    { id: 'register', label: 'Stan kasy', href: '/statistics/register' },
+    { id: 'tips', label: 'Napiwki', href: '/statistics/tips' },
+    { id: 'services', label: 'Usługi', href: '/statistics/services' },
     {
         id: 'customers',
         label: 'Klienci',
@@ -56,13 +36,11 @@ const REPORTS: NavItem[] = [
                 id: 'returning',
                 label: 'Powracalność klientów',
                 href: '/statistics/customers/returning',
-                menuItemName: 'returning_customers',
             },
             {
                 id: 'origins',
                 label: 'Pochodzenie klientów',
                 href: '/statistics/customers/origins',
-                menuItemName: 'customer_origins',
             },
         ],
     },
@@ -75,13 +53,11 @@ const REPORTS: NavItem[] = [
                 id: 'changes',
                 label: 'Raport zmian magazynowych',
                 href: '/statistics/warehouse/changes',
-                menuItemName: 'inventories_history',
             },
             {
                 id: 'value',
                 label: 'Raport wartości produktów',
                 href: '/statistics/warehouse/value',
-                menuItemName: 'product_values',
             },
         ],
     },
@@ -116,23 +92,18 @@ export default function StatisticsNav() {
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
-        <div className="sidebar-inner nav-scroll-container column_row tree">
-            <ul id="statistics_menu_list">
+        <div className="sidebar-inner nav-scroll-container">
+            <ul className="nav nav-list">
                 {REPORTS.map((item) => (
-                    <li
-                        key={item.id}
-                        className={isActive(item.href) ? 'active' : ''}
-                    >
+                    <li key={item.id}>
                         <Link
                             href={item.href}
                             className={isActive(item.href) ? 'active' : ''}
-                            title={item.title || item.label}
-                            data-push="true"
                         >
                             {item.label}
                         </Link>
                         {item.children ? (
-                            <ul>
+                            <ul className="nav nav-list sub-nav">
                                 {item.children.map((child) => (
                                     <li key={child.id}>
                                         <Link
@@ -141,9 +112,6 @@ export default function StatisticsNav() {
                                                 isActive(child.href)
                                                     ? 'active'
                                                     : ''
-                                            }
-                                            data-menu-item-name={
-                                                child.menuItemName
                                             }
                                         >
                                             {child.label}
