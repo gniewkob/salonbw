@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
     addDays,
@@ -497,66 +496,59 @@ function StatisticsPageContent() {
             className="salonbw-page statistics-module"
             data-testid="statistics-page"
         >
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div
-                            className="icon sprite-breadcrumbs_statistics"
-                            aria-hidden="true"
-                        />
-                        <Link href="/statistics">Statystyki</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Raport finansowy
-                    </li>
-                </ul>
-            </div>
+            <ul className="breadcrumb">
+                <li>Statystyki</li>
+                <li>Raport finansowy</li>
+            </ul>
 
-            <div className="statistics-actions">
-                <div className="statistics-date-wrap">
+            <div className="actions">
+                <div className="pull-left statistics_date">
                     <button
                         type="button"
-                        className="statistics-nav-btn"
+                        className="button button-link button_prev mr-s"
                         onClick={() => navigateDate('prev')}
                         aria-label="Poprzedni dzień"
                     >
-                        <span className="statistics-arrow">&#8249;</span>
-                    </button>
-                    <input
-                        id="report-date"
-                        className="statistics-date-input"
-                        type="text"
-                        readOnly
-                        value={reportDate}
-                        aria-label="Data raportu"
-                    />
-                    <label
-                        htmlFor="report-date-picker"
-                        className="statistics-nav-btn statistics-cal-btn"
-                        aria-label="Wybierz datę"
-                    >
                         <span
-                            className="statistics-cal-icon"
+                            className="fc-icon fc-icon-left-single-arrow"
                             aria-hidden="true"
                         />
-                        <input
-                            id="report-date-picker"
-                            type="date"
-                            className="statistics-date-picker-hidden"
-                            value={reportDate}
-                            onChange={(event) =>
-                                setReportDate(event.target.value)
-                            }
-                        />
-                    </label>
+                    </button>
+                    <div id="choose_date">
+                        <form
+                            className="date_range_box"
+                            onSubmit={(event) => event.preventDefault()}
+                        >
+                            <input
+                                id="date_range"
+                                name="date_range"
+                                type="text"
+                                readOnly
+                                value={reportDate}
+                                aria-label="Data raportu"
+                            />
+                            <input
+                                id="report-date-picker"
+                                type="date"
+                                className="statistics-date-picker-hidden"
+                                value={reportDate}
+                                aria-label="Wybierz datę raportu"
+                                onChange={(event) =>
+                                    setReportDate(event.target.value)
+                                }
+                            />
+                        </form>
+                    </div>
                     <button
                         type="button"
-                        className="statistics-nav-btn"
+                        className="button button-link button_next ml-s"
                         onClick={() => navigateDate('next')}
                         aria-label="Następny dzień"
                     >
-                        <span className="statistics-arrow">&#8250;</span>
+                        <span
+                            className="fc-icon fc-icon-right-single-arrow"
+                            aria-hidden="true"
+                        />
                     </button>
                 </div>
                 <button
@@ -572,6 +564,7 @@ function StatisticsPageContent() {
                 </button>
                 <button
                     type="button"
+                    className="button button-link statistics-print-button"
                     onClick={() => window.print()}
                     aria-label="Drukuj"
                 >
