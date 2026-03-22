@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
@@ -47,26 +48,15 @@ export default function SettingsEmployeeEventsHistoryPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            <Link href="/settings/employees">Pracownicy</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            {employee?.name ?? '...'}
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Historia wydarzeń
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Pracownicy', href: '/settings/employees' },
+                        { label: employee?.name ?? '...' },
+                        { label: 'Historia wydarzeń' },
+                    ]}
+                />
                 <PanelSection
                     title={`Historia wydarzeń — ${employee?.name ?? '...'}`}
                 >

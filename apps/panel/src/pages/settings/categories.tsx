@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
     useDeleteProductCategory,
@@ -216,22 +217,14 @@ export default function SettingsCategoriesPage() {
                 {WAREHOUSE_NAV}
             </aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Ustawienia magazynu
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Kategorie produktów
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Ustawienia magazynu' },
+                        { label: 'Kategorie produktów' },
+                    ]}
+                />
                 <PanelSection title="Kategorie produktów">
                     <div className="actions mb-m">
                         <Link

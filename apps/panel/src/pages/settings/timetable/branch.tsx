@@ -6,6 +6,7 @@ import {
     type ChangeEvent,
     type FormEvent,
 } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
     useBranches,
@@ -283,22 +284,14 @@ export default function SettingsTimetableBranchPage() {
                 {TIMETABLE_NAV}
             </aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Grafiki pracy
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Salon
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Grafiki pracy' },
+                        { label: 'Salon' },
+                    ]}
+                />
 
                 <div className="settings-calendar-page settings-timetable-branch-page">
                     <div className="settings-calendar-page__panel">

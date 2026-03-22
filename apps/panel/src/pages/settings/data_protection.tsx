@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
 import PanelActionBar from '@/components/ui/PanelActionBar';
@@ -109,31 +110,23 @@ export default function SettingsDataProtectionPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Klienci
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Tryb ochrony danych
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Klienci' },
+                        { label: 'Tryb ochrony danych' },
+                    ]}
+                />
 
                 {isLoading && (
-                    <div className="inner edit_branch_form">
+                    <div className="edit_branch_form">
                         <p>Ładowanie...</p>
                     </div>
                 )}
 
                 {isError && (
-                    <div className="inner edit_branch_form">
+                    <div className="edit_branch_form">
                         <div className="alert alert-danger">
                             Nie udało się załadować ustawień.
                         </div>
@@ -141,10 +134,7 @@ export default function SettingsDataProtectionPage() {
                 )}
 
                 {!isLoading && !isError && (
-                    <form
-                        className="inner edit_branch_form"
-                        onSubmit={handleSubmit}
-                    >
+                    <form className="edit_branch_form" onSubmit={handleSubmit}>
                         <div className="actions">
                             <Link
                                 className="button"

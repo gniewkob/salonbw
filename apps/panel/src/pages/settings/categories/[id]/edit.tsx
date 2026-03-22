@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -137,24 +138,17 @@ export default function SettingsCategoriesEditPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            <Link href="/settings/categories">
-                                Kategorie produktów
-                            </Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Edycja kategorii
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        {
+                            label: 'Kategorie produktów',
+                            href: '/settings/categories',
+                        },
+                        { label: 'Edycja kategorii' },
+                    ]}
+                />
                 <PanelSection>
                     <form onSubmit={(event) => void handleSubmit(event)}>
                         <h2>Edytuj kategorię produktów</h2>

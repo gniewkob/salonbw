@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import PanelSection from '@/components/ui/PanelSection';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee } from '@/hooks/useEmployees';
@@ -57,26 +58,15 @@ export default function SettingsEmployeeEditPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            <Link href="/settings/employees">Pracownicy</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            {employee?.name ?? '...'}
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Edytuj
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Pracownicy', href: '/settings/employees' },
+                        { label: employee?.name ?? '...' },
+                        { label: 'Edytuj' },
+                    ]}
+                />
                 <PanelSection>
                     {isLoading ? (
                         <p>Ładowanie...</p>

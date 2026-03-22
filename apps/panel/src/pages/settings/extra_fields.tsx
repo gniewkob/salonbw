@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import CustomerSettingsNav from '@/components/settings/CustomerSettingsNav';
 import PanelSection from '@/components/ui/PanelSection';
@@ -145,22 +145,14 @@ export default function SettingsExtraFieldsPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Klienci
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Dodatkowe pola
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Klienci' },
+                        { label: 'Dodatkowe pola' },
+                    ]}
+                />
 
                 <PanelSection
                     action={
