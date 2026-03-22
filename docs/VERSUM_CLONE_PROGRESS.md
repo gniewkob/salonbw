@@ -1575,3 +1575,26 @@
 - walidacja lokalna:
     - `apps/panel`: `pnpm eslint src --fix` ✅
     - `apps/panel`: `pnpm tsc --noEmit` ✅
+
+### 2026-03-22 - Settings detail routes: shell cleanup + timetable nav stability
+
+- zmiana kodu:
+    - `apps/panel/src/components/settings/{EventRemindersPage,SmsSettingsPage,TimetableEmployeesPage,TimetableTemplatesPage,ActivityLogRoute}.tsx`
+        - migracja shell breadcrumbs do `VersumBreadcrumbs`,
+        - usunięcie lokalnych nested `.inner`,
+        - stabilizacja `secondaryNav` dla tras `timetable/*`, aby nie wpadały w React update loop.
+- deploy:
+    - `dashboard` (production): run `23411066301` ✅
+    - `dashboard` (production): run `23411289327` ✅
+- walidacja lokalna:
+    - `apps/panel`: `pnpm eslint src --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+- findings z rolloutu:
+    - pierwszy deploy ujawnił client-side exception na:
+        - `/settings/timetable/employees`
+        - `/settings/timetable/templates`
+    - root cause: niestabilne React nodes przekazywane do `useSetSecondaryNav`
+- re-smoke produkcyjny po fixie:
+    - `/settings/timetable/employees` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
+    - `/settings/timetable/templates` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
+    - `/settings/employees/activity-logs` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
