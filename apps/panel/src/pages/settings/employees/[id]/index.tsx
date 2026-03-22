@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee } from '@/hooks/useEmployees';
 import PanelSection from '@/components/ui/PanelSection';
 
@@ -41,64 +44,86 @@ const NAV = (
 
 export default function SettingsEmployeeDetailPage() {
     const router = useRouter();
+    const { role } = useAuth();
     const id = router.query.id ? Number(router.query.id) : null;
     useSetSecondaryNav(NAV);
 
     const { data: employee, isLoading } = useEmployee(id);
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Pracownicy', href: '/settings/employees' },
-                        { label: employee?.name ?? '...' },
-                    ]}
-                />
-                <PanelSection
-                    action={
-                        <Link
-                            href={id ? `/settings/employees/${id}/edit` : '#'}
-                            className="btn button-blue pull-right"
-                        >
-                            edytuj
-                        </Link>
-                    }
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
                 >
-                    {isLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : employee ? (
-                        <>
-                            <h2>{employee.name}</h2>
-                            <dl className="dl-horizontal">
-                                <dt>Imię i nazwisko</dt>
-                                <dd>{employee.name}</dd>
-                                <dt>Rola</dt>
-                                <dd>{employee.role}</dd>
-                                <dt>Rola systemowa</dt>
-                                <dd>{employee.role ?? '—'}</dd>
-                            </dl>
-                            <div className="actions" style={{ marginTop: 16 }}>
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                {
+                                    label: 'Pracownicy',
+                                    href: '/settings/employees',
+                                },
+                                { label: employee?.name ?? '...' },
+                            ]}
+                        />
+                        <PanelSection
+                            action={
                                 <Link
                                     href={
                                         id
-                                            ? `/settings/employees/${id}/events-history`
+                                            ? `/settings/employees/${id}/edit`
                                             : '#'
                                     }
-                                    className="btn btn-default"
+                                    className="btn button-blue pull-right"
                                 >
-                                    Historia wizyt
+                                    edytuj
                                 </Link>
-                            </div>
-                        </>
-                    ) : (
-                        <p>Nie znaleziono pracownika.</p>
-                    )}
-                </PanelSection>
-            </div>
-        </div>
+                            }
+                        >
+                            {isLoading ? (
+                                <p>Ładowanie...</p>
+                            ) : employee ? (
+                                <>
+                                    <h2>{employee.name}</h2>
+                                    <dl className="dl-horizontal">
+                                        <dt>Imię i nazwisko</dt>
+                                        <dd>{employee.name}</dd>
+                                        <dt>Rola</dt>
+                                        <dd>{employee.role}</dd>
+                                        <dt>Rola systemowa</dt>
+                                        <dd>{employee.role ?? '—'}</dd>
+                                    </dl>
+                                    <div
+                                        className="actions"
+                                        style={{ marginTop: 16 }}
+                                    >
+                                        <Link
+                                            href={
+                                                id
+                                                    ? `/settings/employees/${id}/events-history`
+                                                    : '#'
+                                            }
+                                            className="btn btn-default"
+                                        >
+                                            Historia wizyt
+                                        </Link>
+                                    </div>
+                                </>
+                            ) : (
+                                <p>Nie znaleziono pracownika.</p>
+                            )}
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee } from '@/hooks/useEmployees';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
 import PanelSection from '@/components/ui/PanelSection';
@@ -35,6 +38,7 @@ const NAV = (
 
 export default function SettingsEmployeeEventsHistoryPage() {
     const router = useRouter();
+    const { role } = useAuth();
     const id = router.query.id ? Number(router.query.id) : null;
     useSetSecondaryNav(NAV);
 
@@ -44,56 +48,74 @@ export default function SettingsEmployeeEventsHistoryPage() {
         limit: 50,
     });
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Pracownicy', href: '/settings/employees' },
-                        { label: employee?.name ?? '...' },
-                        { label: 'Historia wydarzeń' },
-                    ]}
-                />
-                <PanelSection
-                    title={`Historia wydarzeń — ${employee?.name ?? '...'}`}
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
                 >
-                    {isLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : (
-                        <PanelTable
-                            columns={[
-                                { label: 'Data' },
-                                { label: 'Akcja' },
-                                { label: 'Szczegóły' },
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                {
+                                    label: 'Pracownicy',
+                                    href: '/settings/employees',
+                                },
+                                { label: employee?.name ?? '...' },
+                                { label: 'Historia wydarzeń' },
                             ]}
-                            isEmpty={!logs?.items?.length}
-                            emptyMessage="Brak historii wydarzeń"
+                        />
+                        <PanelSection
+                            title={`Historia wydarzeń — ${employee?.name ?? '...'}`}
                         >
-                            {(logs?.items ?? []).map((log, i) => (
-                                <tr
-                                    key={log.id}
-                                    className={i % 2 === 0 ? 'even' : 'odd'}
+                            {isLoading ? (
+                                <p>Ładowanie...</p>
+                            ) : (
+                                <PanelTable
+                                    columns={[
+                                        { label: 'Data' },
+                                        { label: 'Akcja' },
+                                        { label: 'Szczegóły' },
+                                    ]}
+                                    isEmpty={!logs?.items?.length}
+                                    emptyMessage="Brak historii wydarzeń"
                                 >
-                                    <td>
-                                        {new Date(log.timestamp).toLocaleString(
-                                            'pl-PL',
-                                        )}
-                                    </td>
-                                    <td>{log.actionLabel}</td>
-                                    <td>
-                                        {log.details
-                                            ? JSON.stringify(log.details)
-                                            : '—'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </PanelTable>
-                    )}
-                </PanelSection>
-            </div>
-        </div>
+                                    {(logs?.items ?? []).map((log, i) => (
+                                        <tr
+                                            key={log.id}
+                                            className={
+                                                i % 2 === 0 ? 'even' : 'odd'
+                                            }
+                                        >
+                                            <td>
+                                                {new Date(
+                                                    log.timestamp,
+                                                ).toLocaleString('pl-PL')}
+                                            </td>
+                                            <td>{log.actionLabel}</td>
+                                            <td>
+                                                {log.details
+                                                    ? JSON.stringify(
+                                                          log.details,
+                                                      )
+                                                    : '—'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </PanelTable>
+                            )}
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

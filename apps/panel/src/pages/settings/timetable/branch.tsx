@@ -6,8 +6,11 @@ import {
     type ChangeEvent,
     type FormEvent,
 } from 'react';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useBranches,
     useBranchesMutations,
@@ -182,6 +185,7 @@ function getNextRange(day: DayKey, ranges: TimeRangeDraft[]) {
 }
 
 export default function SettingsTimetableBranchPage() {
+    const { role } = useAuth();
     useSetSecondaryNav(TIMETABLE_NAV);
 
     const {
@@ -278,142 +282,290 @@ export default function SettingsTimetableBranchPage() {
         }
     };
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">
-                {TIMETABLE_NAV}
-            </aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Grafiki pracy' },
-                        { label: 'Salon' },
-                    ]}
-                />
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {TIMETABLE_NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                { label: 'Grafiki pracy' },
+                                { label: 'Salon' },
+                            ]}
+                        />
 
-                <div className="settings-calendar-page settings-timetable-branch-page">
-                    <div className="settings-calendar-page__panel">
-                        <ul className="tab_list">
-                            <li className="active tab">
-                                <Link href="/settings/timetable/branch">
-                                    <div className="icon_box">
-                                        <i className="icon sprite-group_today" />
-                                    </div>
-                                    Godziny otwarcia
-                                </Link>
-                            </li>
-                            <li className="tab">
-                                <Link href="/settings/calendar">
-                                    <div className="icon_box">
-                                        <i className="icon sprite-customer_history_visits" />
-                                    </div>
-                                    Kalendarz
-                                </Link>
-                            </li>
-                            <li className="tab">
-                                <Link href="/settings/timetable/employees">
-                                    <div className="icon_box">
-                                        <i className="icon sprite-schedule_employees mr-xs" />
-                                    </div>
-                                    Dostępność pracowników
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {isLoading ? (
-                        <div className="settings-detail-state">
-                            Ładowanie godzin otwarcia...
-                        </div>
-                    ) : null}
-
-                    {isError ? (
-                        <div className="settings-detail-state settings-detail-state--error">
-                            <p>
-                                {loadError instanceof Error
-                                    ? loadError.message
-                                    : 'Nie udało się pobrać godzin otwarcia.'}
-                            </p>
-                            <button
-                                type="button"
-                                className="btn btn-default"
-                                onClick={() => {
-                                    void refetchPrimary();
-                                    void refetchBranches();
-                                }}
-                            >
-                                spróbuj ponownie
-                            </button>
-                        </div>
-                    ) : null}
-
-                    {!isLoading && !isError && !branch ? (
-                        <div className="settings-detail-state settings-detail-state--empty">
-                            Brak aktywnego salonu do skonfigurowania.
-                        </div>
-                    ) : null}
-
-                    {branch ? (
-                        <div className="settings-calendar-page__panel">
-                            <form
-                                className="settings-timetable-branch-form"
-                                onSubmit={(event) => void handleSubmit(event)}
-                            >
-                                <div className="column_row">
-                                    <h2>Domyślne godziny otwarcia</h2>
-                                </div>
-                                <div className="settings-timetable-branch-form__note">
-                                    <span className="light_text smaller">
-                                        możesz zdefiniować wyjątki w zakładce{' '}
+                        <div className="settings-calendar-page settings-timetable-branch-page">
+                            <div className="settings-calendar-page__panel">
+                                <ul className="tab_list">
+                                    <li className="active tab">
+                                        <Link href="/settings/timetable/branch">
+                                            <div className="icon_box">
+                                                <i className="icon sprite-group_today" />
+                                            </div>
+                                            Godziny otwarcia
+                                        </Link>
+                                    </li>
+                                    <li className="tab">
                                         <Link href="/settings/calendar">
+                                            <div className="icon_box">
+                                                <i className="icon sprite-customer_history_visits" />
+                                            </div>
                                             Kalendarz
                                         </Link>
-                                    </span>
+                                    </li>
+                                    <li className="tab">
+                                        <Link href="/settings/timetable/employees">
+                                            <div className="icon_box">
+                                                <i className="icon sprite-schedule_employees mr-xs" />
+                                            </div>
+                                            Dostępność pracowników
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            {isLoading ? (
+                                <div className="settings-detail-state">
+                                    Ładowanie godzin otwarcia...
                                 </div>
+                            ) : null}
 
-                                {validationError ? (
-                                    <div className="settings-detail-state settings-detail-state--error">
-                                        {validationError}
-                                    </div>
-                                ) : null}
+                            {isError ? (
+                                <div className="settings-detail-state settings-detail-state--error">
+                                    <p>
+                                        {loadError instanceof Error
+                                            ? loadError.message
+                                            : 'Nie udało się pobrać godzin otwarcia.'}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="btn btn-default"
+                                        onClick={() => {
+                                            void refetchPrimary();
+                                            void refetchBranches();
+                                        }}
+                                    >
+                                        spróbuj ponownie
+                                    </button>
+                                </div>
+                            ) : null}
 
-                                {submitError ? (
-                                    <div className="settings-detail-state settings-detail-state--error">
-                                        {submitError}
-                                    </div>
-                                ) : null}
+                            {!isLoading && !isError && !branch ? (
+                                <div className="settings-detail-state settings-detail-state--empty">
+                                    Brak aktywnego salonu do skonfigurowania.
+                                </div>
+                            ) : null}
 
-                                {isSaved ? (
-                                    <div className="settings-detail-state">
-                                        Godziny otwarcia zostały zapisane.
-                                    </div>
-                                ) : null}
+                            {branch ? (
+                                <div className="settings-calendar-page__panel">
+                                    <form
+                                        className="settings-timetable-branch-form"
+                                        onSubmit={(event) =>
+                                            void handleSubmit(event)
+                                        }
+                                    >
+                                        <div className="column_row">
+                                            <h2>Domyślne godziny otwarcia</h2>
+                                        </div>
+                                        <div className="settings-timetable-branch-form__note">
+                                            <span className="light_text smaller">
+                                                możesz zdefiniować wyjątki w
+                                                zakładce{' '}
+                                                <Link href="/settings/calendar">
+                                                    Kalendarz
+                                                </Link>
+                                            </span>
+                                        </div>
 
-                                <div className="settings-timetable-branch-form__days">
-                                    {DAYS.map((day) => {
-                                        const ranges = draft[day.key];
-                                        const open = isDayOpen(ranges);
+                                        {validationError ? (
+                                            <div className="settings-detail-state settings-detail-state--error">
+                                                {validationError}
+                                            </div>
+                                        ) : null}
 
-                                        return (
-                                            <div
-                                                key={day.key}
-                                                className="schedule-period"
-                                            >
-                                                <div className="calendar-weekday-col">
-                                                    {day.label}
-                                                </div>
-                                                <div className="calendar-form-col">
-                                                    {ranges.map(
-                                                        (range, rangeIndex) => (
-                                                            <div
-                                                                key={`${day.key}-${rangeIndex}`}
-                                                                className="column_row"
-                                                            >
-                                                                <div className="column column-working">
-                                                                    {rangeIndex ===
-                                                                    0 ? (
+                                        {submitError ? (
+                                            <div className="settings-detail-state settings-detail-state--error">
+                                                {submitError}
+                                            </div>
+                                        ) : null}
+
+                                        {isSaved ? (
+                                            <div className="settings-detail-state">
+                                                Godziny otwarcia zostały
+                                                zapisane.
+                                            </div>
+                                        ) : null}
+
+                                        <div className="settings-timetable-branch-form__days">
+                                            {DAYS.map((day) => {
+                                                const ranges = draft[day.key];
+                                                const open = isDayOpen(ranges);
+
+                                                return (
+                                                    <div
+                                                        key={day.key}
+                                                        className="schedule-period"
+                                                    >
+                                                        <div className="calendar-weekday-col">
+                                                            {day.label}
+                                                        </div>
+                                                        <div className="calendar-form-col">
+                                                            {ranges.map(
+                                                                (
+                                                                    range,
+                                                                    rangeIndex,
+                                                                ) => (
+                                                                    <div
+                                                                        key={`${day.key}-${rangeIndex}`}
+                                                                        className="column_row"
+                                                                    >
+                                                                        <div className="column column-working">
+                                                                            {rangeIndex ===
+                                                                            0 ? (
+                                                                                <label>
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={
+                                                                                            open
+                                                                                        }
+                                                                                        onChange={() =>
+                                                                                            handleOpenToggle(
+                                                                                                day.key,
+                                                                                            )
+                                                                                        }
+                                                                                    />{' '}
+                                                                                    Otwarte
+                                                                                </label>
+                                                                            ) : (
+                                                                                <span className="light_text smaller">
+                                                                                    dodatkowy
+                                                                                    zakres
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="column column-valid-times">
+                                                                            <span>
+                                                                                &nbsp;od&nbsp;
+                                                                            </span>
+                                                                            <select
+                                                                                className="schedule-time"
+                                                                                value={
+                                                                                    range.open
+                                                                                }
+                                                                                onChange={handleTimeChange(
+                                                                                    day.key,
+                                                                                    rangeIndex,
+                                                                                    'open',
+                                                                                )}
+                                                                            >
+                                                                                {TIME_OPTIONS.map(
+                                                                                    (
+                                                                                        option,
+                                                                                    ) => (
+                                                                                        <option
+                                                                                            key={
+                                                                                                option
+                                                                                            }
+                                                                                            value={
+                                                                                                option
+                                                                                            }
+                                                                                        >
+                                                                                            {
+                                                                                                option
+                                                                                            }
+                                                                                        </option>
+                                                                                    ),
+                                                                                )}
+                                                                            </select>
+                                                                            <span>
+                                                                                &nbsp;do&nbsp;
+                                                                            </span>
+                                                                            <select
+                                                                                className="schedule-time"
+                                                                                value={
+                                                                                    range.close
+                                                                                }
+                                                                                onChange={handleTimeChange(
+                                                                                    day.key,
+                                                                                    rangeIndex,
+                                                                                    'close',
+                                                                                )}
+                                                                            >
+                                                                                {TIME_OPTIONS.map(
+                                                                                    (
+                                                                                        option,
+                                                                                    ) => (
+                                                                                        <option
+                                                                                            key={
+                                                                                                option
+                                                                                            }
+                                                                                            value={
+                                                                                                option
+                                                                                            }
+                                                                                        >
+                                                                                            {
+                                                                                                option
+                                                                                            }
+                                                                                        </option>
+                                                                                    ),
+                                                                                )}
+                                                                            </select>
+                                                                        </div>
+                                                                        <div className="column column-period-actions">
+                                                                            <div className="column-add-actions">
+                                                                                {rangeIndex ===
+                                                                                ranges.length -
+                                                                                    1 ? (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="button-link"
+                                                                                        onClick={() =>
+                                                                                            handleAddRange(
+                                                                                                day.key,
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        Dodaj
+                                                                                        zakres
+                                                                                    </button>
+                                                                                ) : null}
+                                                                            </div>
+                                                                            <div className="column-delete-period-action">
+                                                                                {ranges.length >
+                                                                                1 ? (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="button-link"
+                                                                                        onClick={() =>
+                                                                                            handleRemoveRange(
+                                                                                                day.key,
+                                                                                                rangeIndex,
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        usuń
+                                                                                    </button>
+                                                                                ) : null}
+                                                                            </div>
+                                                                            <div className="clearfix" />
+                                                                        </div>
+                                                                    </div>
+                                                                ),
+                                                            )}
+
+                                                            {!open ? (
+                                                                <div className="column_row">
+                                                                    <div className="column column-working">
                                                                         <label>
                                                                             <input
                                                                                 type="checkbox"
@@ -428,168 +580,36 @@ export default function SettingsTimetableBranchPage() {
                                                                             />{' '}
                                                                             Otwarte
                                                                         </label>
-                                                                    ) : (
-                                                                        <span className="light_text smaller">
-                                                                            dodatkowy
-                                                                            zakres
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="column column-valid-times">
-                                                                    <span>
-                                                                        &nbsp;od&nbsp;
-                                                                    </span>
-                                                                    <select
-                                                                        className="schedule-time"
-                                                                        value={
-                                                                            range.open
-                                                                        }
-                                                                        onChange={handleTimeChange(
-                                                                            day.key,
-                                                                            rangeIndex,
-                                                                            'open',
-                                                                        )}
-                                                                    >
-                                                                        {TIME_OPTIONS.map(
-                                                                            (
-                                                                                option,
-                                                                            ) => (
-                                                                                <option
-                                                                                    key={
-                                                                                        option
-                                                                                    }
-                                                                                    value={
-                                                                                        option
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        option
-                                                                                    }
-                                                                                </option>
-                                                                            ),
-                                                                        )}
-                                                                    </select>
-                                                                    <span>
-                                                                        &nbsp;do&nbsp;
-                                                                    </span>
-                                                                    <select
-                                                                        className="schedule-time"
-                                                                        value={
-                                                                            range.close
-                                                                        }
-                                                                        onChange={handleTimeChange(
-                                                                            day.key,
-                                                                            rangeIndex,
-                                                                            'close',
-                                                                        )}
-                                                                    >
-                                                                        {TIME_OPTIONS.map(
-                                                                            (
-                                                                                option,
-                                                                            ) => (
-                                                                                <option
-                                                                                    key={
-                                                                                        option
-                                                                                    }
-                                                                                    value={
-                                                                                        option
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        option
-                                                                                    }
-                                                                                </option>
-                                                                            ),
-                                                                        )}
-                                                                    </select>
-                                                                </div>
-                                                                <div className="column column-period-actions">
-                                                                    <div className="column-add-actions">
-                                                                        {rangeIndex ===
-                                                                        ranges.length -
-                                                                            1 ? (
-                                                                            <button
-                                                                                type="button"
-                                                                                className="button-link"
-                                                                                onClick={() =>
-                                                                                    handleAddRange(
-                                                                                        day.key,
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                Dodaj
-                                                                                zakres
-                                                                            </button>
-                                                                        ) : null}
                                                                     </div>
-                                                                    <div className="column-delete-period-action">
-                                                                        {ranges.length >
-                                                                        1 ? (
-                                                                            <button
-                                                                                type="button"
-                                                                                className="button-link"
-                                                                                onClick={() =>
-                                                                                    handleRemoveRange(
-                                                                                        day.key,
-                                                                                        rangeIndex,
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                usuń
-                                                                            </button>
-                                                                        ) : null}
-                                                                    </div>
-                                                                    <div className="clearfix" />
                                                                 </div>
-                                                            </div>
-                                                        ),
-                                                    )}
-
-                                                    {!open ? (
-                                                        <div className="column_row">
-                                                            <div className="column column-working">
-                                                                <label>
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={
-                                                                            open
-                                                                        }
-                                                                        onChange={() =>
-                                                                            handleOpenToggle(
-                                                                                day.key,
-                                                                            )
-                                                                        }
-                                                                    />{' '}
-                                                                    Otwarte
-                                                                </label>
-                                                            </div>
+                                                            ) : null}
                                                         </div>
-                                                    ) : null}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
 
-                                <div className="form-actions">
-                                    <button
-                                        type="submit"
-                                        className="btn button-blue"
-                                        disabled={
-                                            updateBranch.isPending ||
-                                            Boolean(validationError)
-                                        }
-                                    >
-                                        {updateBranch.isPending
-                                            ? 'zapisywanie...'
-                                            : 'zapisz'}
-                                    </button>
+                                        <div className="form-actions">
+                                            <button
+                                                type="submit"
+                                                className="btn button-blue"
+                                                disabled={
+                                                    updateBranch.isPending ||
+                                                    Boolean(validationError)
+                                                }
+                                            >
+                                                {updateBranch.isPending
+                                                    ? 'zapisywanie...'
+                                                    : 'zapisz'}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            ) : null}
                         </div>
-                    ) : null}
+                    </div>
                 </div>
-            </div>
-        </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }
