@@ -10,7 +10,6 @@ import {
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import type {
     DayOfWeek,
-    Timetable,
     TimetableTemplate,
     TimetableTemplateDayKind,
 } from '@/types';
@@ -148,6 +147,39 @@ export default function TimetableTemplatesPage() {
     } = useTimetableTemplates();
     const { createTemplate, updateTemplate, deleteTemplate } =
         useTimetableTemplateMutations();
+    const staffSignature = JSON.stringify(
+        (staffOptions ?? []).map((option) => ({
+            id: option.id,
+            name: option.name,
+        })),
+    );
+    const timetableSignature = JSON.stringify(
+        timetables.map((timetable) => ({
+            employeeId: timetable.employeeId,
+            validTo: timetable.validTo ?? null,
+        })),
+    );
+    const staffNavItems = useMemo<Array<{ id: number; name: string }>>(() => {
+        if (!staffSignature) return [];
+        return JSON.parse(staffSignature) as Array<{
+            id: number;
+            name: string;
+        }>;
+    }, [staffSignature]);
+    const timetableNavMap = useMemo(() => {
+        if (!timetableSignature) {
+            return new Map<number, { validTo: string | null }>();
+        }
+
+        const items = JSON.parse(timetableSignature) as Array<{
+            employeeId: number;
+            validTo: string | null;
+        }>;
+
+        return new Map(
+            items.map((item) => [item.employeeId, { validTo: item.validTo }]),
+        );
+    }, [timetableSignature]);
 
     useEffect(() => {
         if (!notice) return;
@@ -156,10 +188,6 @@ export default function TimetableTemplatesPage() {
     }, [notice]);
 
     const secondaryNav = useMemo(() => {
-        const timetableMap = new Map<number, Timetable>(
-            timetables.map((timetable) => [timetable.employeeId, timetable]),
-        );
-
         return (
             <div className="sidenav" id="sidenav">
                 <div className="column_row">
@@ -175,8 +203,10 @@ export default function TimetableTemplatesPage() {
                             Wszyscy pracownicy
                         </Link>
                         <ul>
-                            {(staffOptions ?? []).map((option) => {
-                                const timetable = timetableMap.get(option.id);
+                            {staffNavItems.map((option) => {
+                                const timetable = timetableNavMap.get(
+                                    option.id,
+                                );
                                 return (
                                     <li key={option.id}>
                                         <Link
@@ -244,7 +274,7 @@ export default function TimetableTemplatesPage() {
                 </div>
             </div>
         );
-    }, [staffOptions, timetables]);
+    }, [staffNavItems, timetableNavMap]);
 
     useSetSecondaryNav(secondaryNav);
 

@@ -359,7 +359,7 @@ export default function ActivityLogRoute({
                             )}
                         </div>
 
-                        <div className="inner activity-table">
+                        <div className="activity-table">
                             <div className="column_row data_table">
                                 {activityLogs.isLoading ? (
                                     <div className="settings-detail-state">
