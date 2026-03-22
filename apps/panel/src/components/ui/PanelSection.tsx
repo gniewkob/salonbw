@@ -14,9 +14,7 @@ export default function PanelSection({
     className,
 }: PanelSectionProps) {
     return (
-        <div
-            className={`inner edit_branch_form${className ? ` ${className}` : ''}`}
-        >
+        <div className={`edit_branch_form${className ? ` ${className}` : ''}`}>
             {action ? <div className="actions">{action}</div> : null}
             {title ? <h2>{title}</h2> : null}
             {children}
