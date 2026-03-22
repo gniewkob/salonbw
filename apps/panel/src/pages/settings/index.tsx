@@ -109,7 +109,7 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-moment_power',
     },
     {
-        href: '/settings',
+        href: '/settings/categories',
         label: 'inne ustawienia',
         boxClass: 'extra_settings',
         iconId: 'svg-extra_settings',
