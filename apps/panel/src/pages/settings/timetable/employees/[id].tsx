@@ -287,104 +287,109 @@ export default function SettingsTimetableEmployeeDetailPage() {
         return map;
     }, [allTimetables]);
 
-    const secondaryNav = (
-        <div className="sidenav" id="sidenav">
-            <div className="column_row">
-                <h4>Grafiki pracowników</h4>
-                <div className="tree users-list">
-                    <Link
-                        className="root"
-                        href={{
-                            pathname: '/settings/timetable/employees',
-                            query: { date: toIsoDate(date), kind: 'week' },
-                        }}
-                    >
-                        <div className="icon_box">
-                            <i className="icon sprite-filter_handled_employees " />
-                        </div>
-                        Wszyscy pracownicy
-                    </Link>
-                    <ul>
-                        {(staffOptions ?? []).map((option) => {
-                            const timetable = timetableByEmployee.get(
-                                option.id,
-                            );
-                            const expired = isExpired(timetable?.validTo);
+    const secondaryNav = useMemo(
+        () => (
+            <div className="sidenav" id="sidenav">
+                <div className="column_row">
+                    <h4>Grafiki pracowników</h4>
+                    <div className="tree users-list">
+                        <Link
+                            className="root"
+                            href={{
+                                pathname: '/settings/timetable/employees',
+                                query: { date: toIsoDate(date), kind: 'week' },
+                            }}
+                        >
+                            <div className="icon_box">
+                                <i className="icon sprite-filter_handled_employees " />
+                            </div>
+                            Wszyscy pracownicy
+                        </Link>
+                        <ul>
+                            {(staffOptions ?? []).map((option) => {
+                                const timetable = timetableByEmployee.get(
+                                    option.id,
+                                );
+                                const expired = isExpired(timetable?.validTo);
 
-                            return (
-                                <li
-                                    key={option.id}
-                                    className={option.id === id ? 'active' : ''}
-                                >
-                                    <Link
+                                return (
+                                    <li
+                                        key={option.id}
                                         className={
                                             option.id === id ? 'active' : ''
                                         }
-                                        href={{
-                                            pathname:
-                                                '/settings/timetable/employees/[id]',
-                                            query: {
-                                                id: option.id,
-                                                date: toIsoDate(date),
-                                            },
-                                        }}
                                     >
-                                        <span className="employee-name">
-                                            {option.name}
-                                        </span>
-                                        <span
+                                        <Link
                                             className={
-                                                expired
-                                                    ? 'expired schedule-to'
-                                                    : 'schedule-to'
+                                                option.id === id ? 'active' : ''
                                             }
+                                            href={{
+                                                pathname:
+                                                    '/settings/timetable/employees/[id]',
+                                                query: {
+                                                    id: option.id,
+                                                    date: toIsoDate(date),
+                                                },
+                                            }}
                                         >
-                                            {timetable?.validTo
-                                                ? `Grafik do ${formatDate(
-                                                      new Date(
-                                                          `${timetable.validTo}T12:00:00`,
-                                                      ),
-                                                  )}`
-                                                : 'Brak daty końcowej'}
-                                        </span>
-                                    </Link>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
+                                            <span className="employee-name">
+                                                {option.name}
+                                            </span>
+                                            <span
+                                                className={
+                                                    expired
+                                                        ? 'expired schedule-to'
+                                                        : 'schedule-to'
+                                                }
+                                            >
+                                                {timetable?.validTo
+                                                    ? `Grafik do ${formatDate(
+                                                          new Date(
+                                                              `${timetable.validTo}T12:00:00`,
+                                                          ),
+                                                      )}`
+                                                    : 'Brak daty końcowej'}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
 
-                <h4>Inne</h4>
-                <div className="list_container">
-                    <ul className="simple-list">
-                        <li>
-                            <Link href="/statistics/worktime">
-                                <div className="icon_box">
-                                    <i className="icon sprite-schedule_report mr-xs " />
-                                </div>
-                                Raport czasu pracy
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/settings/timetable/templates">
-                                <div className="icon_box">
-                                    <i className="icon sprite-schedule_template mr-xs " />
-                                </div>
-                                Szablony
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/settings/timetable/employees/copy">
-                                <div className="icon_box">
-                                    <i className="icon sprite-schedule_copy mr-xs " />
-                                </div>
-                                Kopiuj grafiki pracy
-                            </Link>
-                        </li>
-                    </ul>
+                    <h4>Inne</h4>
+                    <div className="list_container">
+                        <ul className="simple-list">
+                            <li>
+                                <Link href="/statistics/worktime">
+                                    <div className="icon_box">
+                                        <i className="icon sprite-schedule_report mr-xs " />
+                                    </div>
+                                    Raport czasu pracy
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/settings/timetable/templates">
+                                    <div className="icon_box">
+                                        <i className="icon sprite-schedule_template mr-xs " />
+                                    </div>
+                                    Szablony
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/settings/timetable/employees/copy">
+                                    <div className="icon_box">
+                                        <i className="icon sprite-schedule_copy mr-xs " />
+                                    </div>
+                                    Kopiuj grafiki pracy
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
+        ),
+        [date, id, staffOptions, timetableByEmployee],
     );
 
     useSetSecondaryNav(secondaryNav);
