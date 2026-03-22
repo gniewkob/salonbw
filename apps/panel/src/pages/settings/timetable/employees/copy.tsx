@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useTimetables, useTimetableMutations } from '@/hooks/useTimetables';
 import type { Timetable } from '@/types';
@@ -73,6 +76,7 @@ function isWithinRange(timetable: Timetable, date: string) {
 }
 
 export default function SettingsTimetableEmployeesCopyPage() {
+    const { role } = useAuth();
     useSetSecondaryNav(NAV);
 
     const { data: employeesRaw, loading } = useEmployees();
@@ -177,205 +181,244 @@ export default function SettingsTimetableEmployeesCopyPage() {
         }
     };
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        {
-                            label: 'Grafiki pracy',
-                            href: '/settings/timetable/employees',
-                        },
-                        { label: 'Kopiuj grafiki pracy' },
-                    ]}
-                />
-                <PanelSection title="Kopiuj grafiki pracy">
-                    {loading || timetablesLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : (
-                        <div className="row">
-                            <div className="col-md-8">
-                                {successMessage ? (
-                                    <div className="alert alert-success">
-                                        {successMessage}
-                                    </div>
-                                ) : null}
-                                {errorMessage ? (
-                                    <div className="alert alert-danger">
-                                        {errorMessage}
-                                    </div>
-                                ) : null}
-                                <form
-                                    onSubmit={(event) => {
-                                        void handleSubmit(event);
-                                    }}
-                                >
-                                    <fieldset>
-                                        <legend>Dane kopiowania</legend>
-                                        <div className="form-group">
-                                            <label
-                                                className="control-label"
-                                                htmlFor="copy-from-employee"
-                                            >
-                                                Kopiuj od pracownika
-                                            </label>
-                                            <select
-                                                id="copy-from-employee"
-                                                className="form-control"
-                                                value={fromId}
-                                                onChange={(event) => {
-                                                    setFromId(
-                                                        event.target.value,
-                                                    );
-                                                    setTargetIds([]);
-                                                }}
-                                            >
-                                                <option value="">
-                                                    Wpisz imię i nazwisko lub
-                                                    wybierz z listy
-                                                </option>
-                                                {employees.map((employee) => (
-                                                    <option
-                                                        key={employee.id}
-                                                        value={employee.id}
-                                                    >
-                                                        {employee.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label className="control-label">
-                                                Kopiowany okres
-                                            </label>
-                                            <div className="data-protection-limits__editor">
-                                                <span>od</span>
-                                                <input
-                                                    className="form-control"
-                                                    type="date"
-                                                    value={copyFrom}
-                                                    onChange={(event) =>
-                                                        setCopyFrom(
-                                                            event.target.value,
-                                                        )
-                                                    }
-                                                />
-                                                <span>do</span>
-                                                <input
-                                                    className="form-control"
-                                                    type="date"
-                                                    value={copyTo}
-                                                    onChange={(event) =>
-                                                        setCopyTo(
-                                                            event.target.value,
-                                                        )
-                                                    }
-                                                />
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                {
+                                    label: 'Grafiki pracy',
+                                    href: '/settings/timetable/employees',
+                                },
+                                { label: 'Kopiuj grafiki pracy' },
+                            ]}
+                        />
+                        <PanelSection title="Kopiuj grafiki pracy">
+                            {loading || timetablesLoading ? (
+                                <p>Ładowanie...</p>
+                            ) : (
+                                <div className="row">
+                                    <div className="col-md-8">
+                                        {successMessage ? (
+                                            <div className="alert alert-success">
+                                                {successMessage}
                                             </div>
-                                            {sourceTimetable ? (
-                                                <p className="help-block">
-                                                    Zostanie użyty grafik:{' '}
-                                                    <strong>
-                                                        {sourceTimetable.name}
-                                                    </strong>
-                                                    {sourceTimetable.validFrom
-                                                        ? ` (${sourceTimetable.validFrom}`
-                                                        : ''}
-                                                    {sourceTimetable.validTo
-                                                        ? ` - ${sourceTimetable.validTo})`
-                                                        : sourceTimetable.validFrom
-                                                          ? ')'
-                                                          : ''}
-                                                </p>
-                                            ) : null}
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label
-                                                className="control-label"
-                                                htmlFor="copy-target-employees"
-                                            >
-                                                Wklej pracownikom
-                                            </label>
-                                            <select
-                                                id="copy-target-employees"
-                                                className="form-control"
-                                                multiple
-                                                size={Math.max(
-                                                    3,
-                                                    Math.min(
-                                                        6,
-                                                        availableTargets.length ||
-                                                            3,
-                                                    ),
-                                                )}
-                                                value={targetIds}
-                                                onChange={handleTargetChange}
-                                            >
-                                                {availableTargets.map(
-                                                    (employee) => (
-                                                        <option
-                                                            key={employee.id}
-                                                            value={employee.id}
-                                                        >
-                                                            {employee.name}
+                                        ) : null}
+                                        {errorMessage ? (
+                                            <div className="alert alert-danger">
+                                                {errorMessage}
+                                            </div>
+                                        ) : null}
+                                        <form
+                                            onSubmit={(event) => {
+                                                void handleSubmit(event);
+                                            }}
+                                        >
+                                            <fieldset>
+                                                <legend>Dane kopiowania</legend>
+                                                <div className="form-group">
+                                                    <label
+                                                        className="control-label"
+                                                        htmlFor="copy-from-employee"
+                                                    >
+                                                        Kopiuj od pracownika
+                                                    </label>
+                                                    <select
+                                                        id="copy-from-employee"
+                                                        className="form-control"
+                                                        value={fromId}
+                                                        onChange={(event) => {
+                                                            setFromId(
+                                                                event.target
+                                                                    .value,
+                                                            );
+                                                            setTargetIds([]);
+                                                        }}
+                                                    >
+                                                        <option value="">
+                                                            Wpisz imię i
+                                                            nazwisko lub wybierz
+                                                            z listy
                                                         </option>
-                                                    ),
-                                                )}
-                                            </select>
-                                            <p className="help-block">
-                                                Przytrzymaj Ctrl lub Cmd, aby
-                                                wybrać wielu pracowników.
-                                            </p>
-                                        </div>
+                                                        {employees.map(
+                                                            (employee) => (
+                                                                <option
+                                                                    key={
+                                                                        employee.id
+                                                                    }
+                                                                    value={
+                                                                        employee.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employee.name
+                                                                    }
+                                                                </option>
+                                                            ),
+                                                        )}
+                                                    </select>
+                                                </div>
 
-                                        <div className="form-group">
-                                            <button
-                                                type="submit"
-                                                className="btn button-blue"
-                                                disabled={
-                                                    createTimetable.isPending
-                                                }
-                                            >
-                                                {createTimetable.isPending
-                                                    ? 'Kopiowanie...'
-                                                    : 'Skopiuj'}
-                                            </button>
-                                            <Link
-                                                href="/settings/timetable/employees"
-                                                className="btn btn-default"
-                                                style={{ marginLeft: 8 }}
-                                            >
-                                                Anuluj
-                                            </Link>
-                                        </div>
-                                    </fieldset>
-                                </form>
-                            </div>
-                            <div className="col-md-4">
-                                <fieldset>
-                                    <legend>
-                                        Funkcja pozwala na szybkie skopiowanie
-                                        grafiku pracy ustalonego dla danego
-                                        pracownika innym pracownikom.
-                                    </legend>
-                                    <p className="light_text">
-                                        Wybierz pracownika źródłowego, zakres
-                                        dat kopiowanego okresu oraz pracowników
-                                        docelowych. Dla każdego odbiorcy
-                                        zostanie zapisany nowy grafik z
-                                        identycznym układem tygodnia.
-                                    </p>
-                                </fieldset>
-                            </div>
-                        </div>
-                    )}
-                </PanelSection>
-            </div>
-        </div>
+                                                <div className="form-group">
+                                                    <label className="control-label">
+                                                        Kopiowany okres
+                                                    </label>
+                                                    <div className="data-protection-limits__editor">
+                                                        <span>od</span>
+                                                        <input
+                                                            className="form-control"
+                                                            type="date"
+                                                            value={copyFrom}
+                                                            onChange={(event) =>
+                                                                setCopyFrom(
+                                                                    event.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                        />
+                                                        <span>do</span>
+                                                        <input
+                                                            className="form-control"
+                                                            type="date"
+                                                            value={copyTo}
+                                                            onChange={(event) =>
+                                                                setCopyTo(
+                                                                    event.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+                                                    {sourceTimetable ? (
+                                                        <p className="help-block">
+                                                            Zostanie użyty
+                                                            grafik:{' '}
+                                                            <strong>
+                                                                {
+                                                                    sourceTimetable.name
+                                                                }
+                                                            </strong>
+                                                            {sourceTimetable.validFrom
+                                                                ? ` (${sourceTimetable.validFrom}`
+                                                                : ''}
+                                                            {sourceTimetable.validTo
+                                                                ? ` - ${sourceTimetable.validTo})`
+                                                                : sourceTimetable.validFrom
+                                                                  ? ')'
+                                                                  : ''}
+                                                        </p>
+                                                    ) : null}
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label
+                                                        className="control-label"
+                                                        htmlFor="copy-target-employees"
+                                                    >
+                                                        Wklej pracownikom
+                                                    </label>
+                                                    <select
+                                                        id="copy-target-employees"
+                                                        className="form-control"
+                                                        multiple
+                                                        size={Math.max(
+                                                            3,
+                                                            Math.min(
+                                                                6,
+                                                                availableTargets.length ||
+                                                                    3,
+                                                            ),
+                                                        )}
+                                                        value={targetIds}
+                                                        onChange={
+                                                            handleTargetChange
+                                                        }
+                                                    >
+                                                        {availableTargets.map(
+                                                            (employee) => (
+                                                                <option
+                                                                    key={
+                                                                        employee.id
+                                                                    }
+                                                                    value={
+                                                                        employee.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employee.name
+                                                                    }
+                                                                </option>
+                                                            ),
+                                                        )}
+                                                    </select>
+                                                    <p className="help-block">
+                                                        Przytrzymaj Ctrl lub
+                                                        Cmd, aby wybrać wielu
+                                                        pracowników.
+                                                    </p>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <button
+                                                        type="submit"
+                                                        className="btn button-blue"
+                                                        disabled={
+                                                            createTimetable.isPending
+                                                        }
+                                                    >
+                                                        {createTimetable.isPending
+                                                            ? 'Kopiowanie...'
+                                                            : 'Skopiuj'}
+                                                    </button>
+                                                    <Link
+                                                        href="/settings/timetable/employees"
+                                                        className="btn btn-default"
+                                                        style={{
+                                                            marginLeft: 8,
+                                                        }}
+                                                    >
+                                                        Anuluj
+                                                    </Link>
+                                                </div>
+                                            </fieldset>
+                                        </form>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <fieldset>
+                                            <legend>
+                                                Funkcja pozwala na szybkie
+                                                skopiowanie grafiku pracy
+                                                ustalonego dla danego pracownika
+                                                innym pracownikom.
+                                            </legend>
+                                            <p className="light_text">
+                                                Wybierz pracownika źródłowego,
+                                                zakres dat kopiowanego okresu
+                                                oraz pracowników docelowych. Dla
+                                                każdego odbiorcy zostanie
+                                                zapisany nowy grafik z
+                                                identycznym układem tygodnia.
+                                            </p>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            )}
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

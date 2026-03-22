@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -39,6 +41,7 @@ function flattenCategories(
 
 export default function SettingsCategoriesEditPage() {
     const router = useRouter();
+    const { role } = useAuth();
     useSetSecondaryNav(NAV);
 
     const { apiFetch } = useAuth();
@@ -102,112 +105,147 @@ export default function SettingsCategoriesEditPage() {
         void router.push('/settings/categories');
     };
 
+    if (!role) return null;
+
     if (isLoading) {
         return (
-            <div
-                className="settings-detail-layout"
-                data-testid="settings-detail"
-            >
-                <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-                <div className="settings-detail-layout__main">
-                    <PanelSection>
-                        <p>Ładowanie...</p>
-                    </PanelSection>
-                </div>
-            </div>
+            <RouteGuard roles={['admin']} permission="nav:settings">
+                <SalonBWShell role={role}>
+                    <div
+                        className="settings-detail-layout"
+                        data-testid="settings-detail"
+                    >
+                        <aside className="settings-detail-layout__sidebar">
+                            {NAV}
+                        </aside>
+                        <div className="settings-detail-layout__main">
+                            <PanelSection>
+                                <p>Ładowanie...</p>
+                            </PanelSection>
+                        </div>
+                    </div>
+                </SalonBWShell>
+            </RouteGuard>
         );
     }
 
     if (!category) {
         return (
-            <div
-                className="settings-detail-layout"
-                data-testid="settings-detail"
-            >
-                <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-                <div className="settings-detail-layout__main">
-                    <PanelSection>
-                        <p>Nie znaleziono kategorii.</p>
-                    </PanelSection>
-                </div>
-            </div>
+            <RouteGuard roles={['admin']} permission="nav:settings">
+                <SalonBWShell role={role}>
+                    <div
+                        className="settings-detail-layout"
+                        data-testid="settings-detail"
+                    >
+                        <aside className="settings-detail-layout__sidebar">
+                            {NAV}
+                        </aside>
+                        <div className="settings-detail-layout__main">
+                            <PanelSection>
+                                <p>Nie znaleziono kategorii.</p>
+                            </PanelSection>
+                        </div>
+                    </div>
+                </SalonBWShell>
+            </RouteGuard>
         );
     }
 
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        {
-                            label: 'Kategorie produktów',
-                            href: '/settings/categories',
-                        },
-                        { label: 'Edycja kategorii' },
-                    ]}
-                />
-                <PanelSection>
-                    <form onSubmit={(event) => void handleSubmit(event)}>
-                        <h2>Edytuj kategorię produktów</h2>
-                        <div className="form-group">
-                            <label htmlFor="name" className="control-label">
-                                Nazwa
-                            </label>
-                            <input
-                                id="name"
-                                type="text"
-                                className="form-control"
-                                value={name}
-                                onChange={(event) =>
-                                    setName(event.target.value)
-                                }
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="parentId" className="control-label">
-                                Kategoria nadrzędna (opcjonalnie)
-                            </label>
-                            <select
-                                id="parentId"
-                                className="form-control"
-                                value={parentId}
-                                onChange={(event) =>
-                                    setParentId(event.target.value)
-                                }
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                {
+                                    label: 'Kategorie produktów',
+                                    href: '/settings/categories',
+                                },
+                                { label: 'Edycja kategorii' },
+                            ]}
+                        />
+                        <PanelSection>
+                            <form
+                                onSubmit={(event) => void handleSubmit(event)}
                             >
-                                <option value="">— brak —</option>
-                                {selectableParents.map((entry) => (
-                                    <option key={entry.id} value={entry.id}>
-                                        {'-'.repeat(entry.depth)} {entry.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <button
-                                type="submit"
-                                className="btn button-blue"
-                                disabled={updateCategory.isPending}
-                            >
-                                {updateCategory.isPending
-                                    ? 'Zapisywanie...'
-                                    : 'Zapisz kategorię'}
-                            </button>
-                            <Link
-                                href="/settings/categories"
-                                className="btn btn-default"
-                                style={{ marginLeft: 8 }}
-                            >
-                                Anuluj
-                            </Link>
-                        </div>
-                    </form>
-                </PanelSection>
-            </div>
-        </div>
+                                <h2>Edytuj kategorię produktów</h2>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="name"
+                                        className="control-label"
+                                    >
+                                        Nazwa
+                                    </label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        className="form-control"
+                                        value={name}
+                                        onChange={(event) =>
+                                            setName(event.target.value)
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="parentId"
+                                        className="control-label"
+                                    >
+                                        Kategoria nadrzędna (opcjonalnie)
+                                    </label>
+                                    <select
+                                        id="parentId"
+                                        className="form-control"
+                                        value={parentId}
+                                        onChange={(event) =>
+                                            setParentId(event.target.value)
+                                        }
+                                    >
+                                        <option value="">— brak —</option>
+                                        {selectableParents.map((entry) => (
+                                            <option
+                                                key={entry.id}
+                                                value={entry.id}
+                                            >
+                                                {'-'.repeat(entry.depth)}{' '}
+                                                {entry.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <button
+                                        type="submit"
+                                        className="btn button-blue"
+                                        disabled={updateCategory.isPending}
+                                    >
+                                        {updateCategory.isPending
+                                            ? 'Zapisywanie...'
+                                            : 'Zapisz kategorię'}
+                                    </button>
+                                    <Link
+                                        href="/settings/categories"
+                                        className="btn btn-default"
+                                        style={{ marginLeft: 8 }}
+                                    >
+                                        Anuluj
+                                    </Link>
+                                </div>
+                            </form>
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

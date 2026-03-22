@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import PanelSection from '@/components/ui/PanelSection';
 import PanelTable from '@/components/ui/PanelTable';
@@ -43,59 +46,73 @@ const NAV = (
 );
 
 export default function SettingsEmployeeCommissionsPage() {
+    const { role } = useAuth();
     useSetSecondaryNav(NAV);
 
     const { data: employeesRaw, loading: isLoading } = useEmployees();
     const employees = employeesRaw ?? [];
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        { label: 'Pracownicy' },
-                        { label: 'Prowizje' },
-                    ]}
-                />
-                <PanelSection title="Prowizje pracowników">
-                    {isLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : (
-                        <PanelTable
-                            columns={[
-                                { label: 'Pracownik' },
-                                { label: 'Prowizja (usługi)' },
-                                { label: 'Prowizja (produkty)' },
-                                { label: 'Akcje' },
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                { label: 'Pracownicy' },
+                                { label: 'Prowizje' },
                             ]}
-                            isEmpty={employees.length === 0}
-                            emptyMessage="Brak pracowników"
-                        >
-                            {employees.map((emp, i) => (
-                                <tr
-                                    key={emp.id}
-                                    className={i % 2 === 0 ? 'even' : 'odd'}
+                        />
+                        <PanelSection title="Prowizje pracowników">
+                            {isLoading ? (
+                                <p>Ładowanie...</p>
+                            ) : (
+                                <PanelTable
+                                    columns={[
+                                        { label: 'Pracownik' },
+                                        { label: 'Prowizja (usługi)' },
+                                        { label: 'Prowizja (produkty)' },
+                                        { label: 'Akcje' },
+                                    ]}
+                                    isEmpty={employees.length === 0}
+                                    emptyMessage="Brak pracowników"
                                 >
-                                    <td>{emp.name}</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <Link
-                                            href={`/settings/employees/commissions/${emp.id}`}
-                                            className="btn btn-xs btn-default"
+                                    {employees.map((emp, i) => (
+                                        <tr
+                                            key={emp.id}
+                                            className={
+                                                i % 2 === 0 ? 'even' : 'odd'
+                                            }
                                         >
-                                            edytuj
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </PanelTable>
-                    )}
-                </PanelSection>
-            </div>
-        </div>
+                                            <td>{emp.name}</td>
+                                            <td>—</td>
+                                            <td>—</td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                <Link
+                                                    href={`/settings/employees/commissions/${emp.id}`}
+                                                    className="btn btn-xs btn-default"
+                                                >
+                                                    edytuj
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </PanelTable>
+                            )}
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }

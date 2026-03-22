@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
+import RouteGuard from '@/components/RouteGuard';
+import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +48,7 @@ function useCreateProductCategory() {
 
 export default function SettingsCategoriesNewPage() {
     const router = useRouter();
+    const { role } = useAuth();
     useSetSecondaryNav(NAV);
 
     const createCategory = useCreateProductCategory();
@@ -72,76 +75,97 @@ export default function SettingsCategoriesNewPage() {
         void router.push('/settings/categories');
     };
 
+    if (!role) return null;
+
     return (
-        <div className="settings-detail-layout" data-testid="settings-detail">
-            <aside className="settings-detail-layout__sidebar">{NAV}</aside>
-            <div className="settings-detail-layout__main">
-                <VersumBreadcrumbs
-                    iconClass="sprite-breadcrumbs_settings"
-                    items={[
-                        { label: 'Ustawienia', href: '/settings' },
-                        {
-                            label: 'Kategorie produktów',
-                            href: '/settings/categories',
-                        },
-                        { label: 'Nowa kategoria' },
-                    ]}
-                />
-                <PanelSection>
-                    <form onSubmit={(e) => void handleSubmit(e)}>
-                        <h2>Dodaj kategorię produktów</h2>
-                        <div className="form-group">
-                            <label htmlFor="name" className="control-label">
-                                Nazwa
-                            </label>
-                            <input
-                                id="name"
-                                type="text"
-                                className="form-control"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="parentId" className="control-label">
-                                Kategoria nadrzędna (opcjonalnie)
-                            </label>
-                            <select
-                                id="parentId"
-                                className="form-control"
-                                value={parentId}
-                                onChange={(e) => setParentId(e.target.value)}
-                            >
-                                <option value="">— brak —</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <button
-                                type="submit"
-                                className="btn button-blue"
-                                disabled={createCategory.isPending}
-                            >
-                                {createCategory.isPending
-                                    ? 'Zapisywanie...'
-                                    : 'Dodaj kategorię'}
-                            </button>
-                            <Link
-                                href="/settings/categories"
-                                className="btn btn-default"
-                                style={{ marginLeft: 8 }}
-                            >
-                                Anuluj
-                            </Link>
-                        </div>
-                    </form>
-                </PanelSection>
-            </div>
-        </div>
+        <RouteGuard roles={['admin']} permission="nav:settings">
+            <SalonBWShell role={role}>
+                <div
+                    className="settings-detail-layout"
+                    data-testid="settings-detail"
+                >
+                    <aside className="settings-detail-layout__sidebar">
+                        {NAV}
+                    </aside>
+                    <div className="settings-detail-layout__main">
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_settings"
+                            items={[
+                                { label: 'Ustawienia', href: '/settings' },
+                                {
+                                    label: 'Kategorie produktów',
+                                    href: '/settings/categories',
+                                },
+                                { label: 'Nowa kategoria' },
+                            ]}
+                        />
+                        <PanelSection>
+                            <form onSubmit={(e) => void handleSubmit(e)}>
+                                <h2>Dodaj kategorię produktów</h2>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="name"
+                                        className="control-label"
+                                    >
+                                        Nazwa
+                                    </label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        className="form-control"
+                                        value={name}
+                                        onChange={(e) =>
+                                            setName(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label
+                                        htmlFor="parentId"
+                                        className="control-label"
+                                    >
+                                        Kategoria nadrzędna (opcjonalnie)
+                                    </label>
+                                    <select
+                                        id="parentId"
+                                        className="form-control"
+                                        value={parentId}
+                                        onChange={(e) =>
+                                            setParentId(e.target.value)
+                                        }
+                                    >
+                                        <option value="">— brak —</option>
+                                        {categories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <button
+                                        type="submit"
+                                        className="btn button-blue"
+                                        disabled={createCategory.isPending}
+                                    >
+                                        {createCategory.isPending
+                                            ? 'Zapisywanie...'
+                                            : 'Dodaj kategorię'}
+                                    </button>
+                                    <Link
+                                        href="/settings/categories"
+                                        className="btn btn-default"
+                                        style={{ marginLeft: 8 }}
+                                    >
+                                        Anuluj
+                                    </Link>
+                                </div>
+                            </form>
+                        </PanelSection>
+                    </div>
+                </div>
+            </SalonBWShell>
+        </RouteGuard>
     );
 }
