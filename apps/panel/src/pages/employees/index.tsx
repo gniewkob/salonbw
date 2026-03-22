@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import EmployeesNav from '@/components/salonbw/navs/EmployeesNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -76,10 +77,13 @@ export default function EmployeesPage() {
         <RouteGuard roles={['admin']} permission="nav:employees">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="employees-page">
-                    <ul className="breadcrumb">
-                        <li>Ustawienia</li>
-                        <li>Pracownicy</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_settings"
+                        items={[
+                            { label: 'Ustawienia', href: '/settings' },
+                            { label: 'Pracownicy' },
+                        ]}
+                    />
                     <div className="salonbw-page__toolbar">
                         <button
                             type="button"

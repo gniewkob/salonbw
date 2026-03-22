@@ -1,5 +1,6 @@
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useInvoices, useMyInvoices } from '@/hooks/useInvoices';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,10 +19,13 @@ export default function InvoicesPage() {
         <RouteGuard permission="nav:invoices">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="invoices-page">
-                    <ul className="breadcrumb">
-                        <li>Ustawienia</li>
-                        <li>Faktury</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_settings"
+                        items={[
+                            { label: 'Ustawienia', href: '/settings' },
+                            { label: 'Faktury' },
+                        ]}
+                    />
 
                     {loading ? (
                         <div className="salonbw-loading">Ładowanie...</div>

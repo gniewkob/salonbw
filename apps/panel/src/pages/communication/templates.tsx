@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMessageTemplates, useSmsMutations } from '@/hooks/useSms';
 import type { TemplateType, MessageChannel } from '@/types';
@@ -136,12 +136,13 @@ export default function TemplatesPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonBWShell role={role}>
                 <div className="salonbw-page">
-                    <ul className="breadcrumb">
-                        <li>
-                            <Link href="/communication">Łączność</Link>
-                        </li>
-                        <li>Szablony wiadomości</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_communication"
+                        items={[
+                            { label: 'Łączność', href: '/communication' },
+                            { label: 'Szablony wiadomości' },
+                        ]}
+                    />
 
                     <div className="salonbw-page__toolbar">
                         <label

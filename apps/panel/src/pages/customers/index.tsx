@@ -1,6 +1,7 @@
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomers,
@@ -280,16 +281,13 @@ export default function ClientsPage() {
                     onDragEnd={handleDragEnd}
                 >
                     <div className="customers_index" id="customers_main">
-                        {/* Breadcrumbs - styl source UI */}
-                        <ul className="breadcrumb">
-                            <li>
-                                <i
-                                    className="icon sprite-breadcrumbs_customers"
-                                    aria-hidden="true"
-                                />{' '}
-                                Klienci / Lista klientów
-                            </li>
-                        </ul>
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_customers"
+                            items={[
+                                { label: 'Klienci', href: '/customers' },
+                                { label: 'Lista klientów' },
+                            ]}
+                        />
 
                         {/* Toolbar - styl source UI */}
                         <div className="clients-toolbar">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReminderStats, useSmsMutations } from '@/hooks/useSms';
 
@@ -46,12 +47,13 @@ export default function RemindersPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonBWShell role={role}>
                 <div className="salonbw-page">
-                    <ul className="breadcrumb">
-                        <li>
-                            <Link href="/communication">Łączność</Link>
-                        </li>
-                        <li>Automatyczne przypomnienia</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_communication"
+                        items={[
+                            { label: 'Łączność', href: '/communication' },
+                            { label: 'Automatyczne przypomnienia' },
+                        ]}
+                    />
                     <div className="salonbw-page__toolbar">
                         <Link
                             href="/communication"

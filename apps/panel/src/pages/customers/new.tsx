@@ -6,6 +6,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import NewCustomerNav from '@/components/salonbw/navs/NewCustomerNav';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCreateCustomer } from '@/hooks/useCustomers';
@@ -213,15 +214,13 @@ export default function NewCustomerPage() {
                         className="show_customer new_customer"
                         id="customers_main"
                     >
-                        <ul className="breadcrumb">
-                            <li>
-                                <i
-                                    className="icon sprite-breadcrumbs_customers"
-                                    aria-hidden="true"
-                                />{' '}
-                                Klienci / nowy klient
-                            </li>
-                        </ul>
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_customers"
+                            items={[
+                                { label: 'Klienci', href: '/customers' },
+                                { label: 'nowy klient' },
+                            ]}
+                        />
 
                         <h2 className="column_row">
                             nowy klient

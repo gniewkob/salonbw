@@ -1563,3 +1563,15 @@
     - known delta:
         - część podstron detailowych nadal renderuje lokalne `ul.breadcrumb` i wymaga drugiego passu migracyjnego,
         - parity modułów od tego miejsca należy oceniać najpierw względem `VERSUM_SHELL_CONTRACT.md`, dopiero potem na poziomie contentu strony.
+
+### 2026-03-22 - Shared shell contract: drugi pass migracji breadcrumbs
+
+- zmiana kodu:
+    - strony `customers`, `products/[id]/edit`, `services/new`, `services/[id]`, `communication/{mass,reminders,templates}`, `statistics/{register,tips,services}`, `extension/tools/[id]`, `employees`, `reviews`, `invoices`, `admin/gift-cards`
+        - migracja z lokalnego `ul.breadcrumb` do wspólnego `VersumBreadcrumbs`.
+- efekt:
+    - domknięcie drugiej warstwy shared shella bez lokalnych breadcrumb wyjątków,
+    - `/customers` przestaje być wyjątkiem względem pozostałych modułów shellowych.
+- walidacja lokalna:
+    - `apps/panel`: `pnpm eslint src --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅

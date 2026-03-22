@@ -2,6 +2,7 @@ import { useState, useEffect, type ComponentProps } from 'react';
 import dynamic from 'next/dynamic';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import DataTable, { Column } from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import { useReviews } from '@/hooks/useReviews';
@@ -123,10 +124,13 @@ export default function ReviewsPage() {
         <RouteGuard permission="nav:reviews">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="reviews-page">
-                    <ul className="breadcrumb">
-                        <li>Ustawienia</li>
-                        <li>Opinie</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_settings"
+                        items={[
+                            { label: 'Ustawienia', href: '/settings' },
+                            { label: 'Opinie' },
+                        ]}
+                    />
                     <div className="salonbw-page__toolbar">
                         {isAdmin && (
                             <label className="salonbw-label">
