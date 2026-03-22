@@ -5566,27 +5566,14 @@ body.settings-dashboard-landing .main-content > .inner {
     }
 }
 
-/* --- Extension / Dodatki --- */
-.extensions-page-heading {
-    font-size: 22px;
-    font-weight: 400;
-    color: #313140;
-    margin: 0 0 10px;
-}
-
-.extensions-page-heading .icon {
-    margin-right: 6px;
-    vertical-align: middle;
-}
-
 /* Body-scoped (1,3,1) overrides the body#extension .main-content .inner (1,2,1) rule.
    Provides 7px top padding to match the source layout where .inner.extensions_boxes
    starts 7px below .main-content. max-width: 774px matches the source card grid width. */
 body#extension .main-content .inner.extensions_boxes,
 body.e2e-extension .main-content .inner.extensions_boxes {
     padding: 7px 0 0;
-    max-width: 774px;
-    margin: 0;
+    max-width: 840px;
+    margin: 0 0 0 30px;
 }
 
 /* Extension detail: constrain content to match the source ~600px content area. */
@@ -5597,14 +5584,13 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 .extensions_boxes .row {
-    margin-left: -7px;
-    margin-right: -7px;
-    margin-bottom: 14px;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .extensions_boxes .reduced-padding {
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-left: 14px;
+    padding-right: 20px;
 }
 
 .extensions_boxes .box-link {
@@ -5617,14 +5603,26 @@ body.e2e-extension .main-content .inner.extension_info {
     text-decoration: none;
 }
 
+.extensions_boxes .box-link:hover .ext-col,
+.extensions_boxes .box-link:active .ext-col {
+    border: 2px solid #58aff0;
+    padding-top: 19px;
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
 .ext-col {
     display: block;
-    padding: 20px 15px 60px;
+    padding-top: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
     border: 1px solid #e0e0e0;
-    min-height: 200px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+    min-height: 170px;
+    margin-bottom: 28px;
     text-decoration: none;
     color: inherit;
-    overflow: hidden;
 }
 
 .ext-col:hover {
@@ -5632,17 +5630,21 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 .ext_image {
+    min-height: 140px;
+    display: inline-block;
     float: left;
     width: 90px;
     margin-right: 14px;
+    text-align: center;
 }
 
 .ext_image svg {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
 }
 
 .ext_info {
+    min-height: 140px;
     overflow: hidden;
 }
 
@@ -5658,6 +5660,7 @@ body.e2e-extension .main-content .inner.extension_info {
     margin-top: 10px;
     color: #505960;
     font-family: 'Lato', sans-serif;
+    min-height: 80px;
 }
 
 .ext_info .more {
@@ -5668,7 +5671,10 @@ body.e2e-extension .main-content .inner.extension_info {
 }
 
 .ext_info .activate {
-    float: right;
+    display: block;
+    margin-top: 0;
+    margin-bottom: 10px;
+    float: left;
     font-size: 12px;
     color: #8a939b;
     text-transform: none;
