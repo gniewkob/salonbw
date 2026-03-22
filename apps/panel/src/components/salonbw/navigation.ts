@@ -339,6 +339,13 @@ function resolveSettingsShellOverride(path: string) {
         } satisfies Partial<SalonBWShellProfile>;
     }
 
+    if (path.startsWith('/event-reminders')) {
+        return {
+            bodyId: 'physical_marketing',
+            mainContentClass: 'settings',
+        } satisfies Partial<SalonBWShellProfile>;
+    }
+
     return null;
 }
 
@@ -405,6 +412,7 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/settings') ||
         path.startsWith('/admin/settings') ||
         path.startsWith('/admin/timetables') ||
+        path.startsWith('/event-reminders') ||
         path.startsWith('/employees') ||
         path.startsWith('/reviews') ||
         path.startsWith('/invoices')
