@@ -30,22 +30,39 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
         const body = document.body;
         const previousId = body.id;
         const hadE2eBodyClass = body.classList.contains('e2e-body');
+        const previousShellClasses = (
+            body.getAttribute('data-salonbw-shell-classes') ?? ''
+        )
+            .split(' ')
+            .filter(Boolean);
         const previousModuleClass = body.getAttribute(
             'data-salonbw-module-class',
         );
         const nextModuleClass = `e2e-${activeModule.key}`;
+        const nextShellClasses = shellProfile.bodyClasses ?? [];
 
         body.classList.add('e2e-body');
         body.id = shellProfile.bodyId;
         body.classList.add(nextModuleClass);
+        body.classList.add(...nextShellClasses);
         body.setAttribute('data-salonbw-module-class', nextModuleClass);
+        body.setAttribute(
+            'data-salonbw-shell-classes',
+            nextShellClasses.join(' '),
+        );
 
         if (previousModuleClass && previousModuleClass !== nextModuleClass) {
             body.classList.remove(previousModuleClass);
         }
+        for (const className of previousShellClasses) {
+            if (!nextShellClasses.includes(className)) {
+                body.classList.remove(className);
+            }
+        }
 
         return () => {
             body.classList.remove(nextModuleClass);
+            body.classList.remove(...nextShellClasses);
             if (!hadE2eBodyClass) {
                 body.classList.remove('e2e-body');
             }
@@ -58,9 +75,18 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
             } else {
                 body.removeAttribute('data-salonbw-module-class');
             }
+            if (previousShellClasses.length > 0) {
+                body.classList.add(...previousShellClasses);
+                body.setAttribute(
+                    'data-salonbw-shell-classes',
+                    previousShellClasses.join(' '),
+                );
+            } else {
+                body.removeAttribute('data-salonbw-shell-classes');
+            }
             body.id = previousId;
         };
-    }, [activeModule.key, shellProfile.bodyId]);
+    }, [activeModule.key, shellProfile.bodyClasses, shellProfile.bodyId]);
 
     return (
         <div id="salonbw-shell-root">
