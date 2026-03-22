@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useStaffOptions } from '@/hooks/useEmployees';
 import { useTimetables } from '@/hooks/useTimetables';
 import {
@@ -321,26 +322,19 @@ export default function TimetableTemplatesPage() {
 
     return (
         <div className="timetable-templates-page">
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_settings" />
-                        <Link href="/settings">Ustawienia</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        <Link href="/settings/timetable/employees">
-                            Grafiki pracowników
-                        </Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Szablony
-                    </li>
-                </ul>
-            </div>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_settings"
+                items={[
+                    { label: 'Ustawienia', href: '/settings' },
+                    {
+                        label: 'Grafiki pracowników',
+                        href: '/settings/timetable/employees',
+                    },
+                    { label: 'Szablony' },
+                ]}
+            />
 
-            <div className="inner">
+            <div>
                 <div className="column_row top_row">
                     <div className="buttons">
                         <button

@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
@@ -176,26 +177,19 @@ export default function ActivityLogRoute({
     return (
         <RouteGuard roles={['admin']} permission="nav:employees">
             <SalonBWShell role={role}>
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        {breadcrumbs.map((item, index) => (
-                            <li key={`${item.label}-${index}`}>
-                                {index === 0 && item.iconClass ? (
-                                    <div className={`icon ${item.iconClass}`} />
-                                ) : null}
-                                {index > 0 ? <span> / </span> : null}
-                                {item.href ? (
-                                    <Link href={item.href}>{item.label}</Link>
-                                ) : (
-                                    item.label
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass={
+                        breadcrumbs[0]?.iconClass ??
+                        'sprite-breadcrumbs_settings'
+                    }
+                    items={breadcrumbs.map((item) => ({
+                        href: item.href,
+                        label: item.label,
+                    }))}
+                />
 
                 <div className="settings-employee-activity-page">
-                    <div className="inner">
+                    <div>
                         <button
                             className="button"
                             id="filters_toggle"
