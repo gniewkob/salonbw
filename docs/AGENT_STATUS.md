@@ -1043,6 +1043,50 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - page render stayed stable on all three routes
   - Playwright console on `/statistics/customers` still showed existing backend 500s for some statistics endpoints, but no client-side exception or shell regression
 
+### 2026-03-22 - Panel: route-aware settings shell ids + remaining shell breaches
+
+- Code commits:
+  - `d99fcb3a` `Map settings routes to vendor shell profiles`
+  - `1211813d` `Remove nested shell frame from panel sections`
+  - `b9b63f5d` `Wrap remaining settings routes in shared shell`
+  - `0e933065` `Map event reminders to settings shell profile`
+- Deploy runs (`dashboard`, production):
+  - `23412074881` ✅
+  - `23412168847` ✅
+  - `23412273475` ✅
+  - `23412370725` ✅
+- Scope:
+  - moved broad `settings/*` route identity to a single shell resolver in `navigation.ts`
+  - aligned vendor-compatible shell ids for:
+    - `settings_branch`
+    - `settings_calendar`
+    - `settings_categories`
+    - `settings_customer_groups`
+    - `settings_customer_origins`
+    - `settings_customer_panel`
+    - `settings_data_protection`
+    - `settings_employees`
+    - `settings_extra_fields`
+    - `settings_online_payments_config`
+    - `settings_sms`
+    - `timetable_branches`
+    - `timetable_employees`
+    - `timetable_templates`
+    - `settings_trades`
+    - `physical_marketing` for `/event-reminders`
+  - removed nested content-frame wrapper from shared `PanelSection`
+  - wrapped previously standalone routes in shared shell:
+    - `/settings/employees/new`
+    - `/event-reminders`
+- Production shell smoke:
+  - `/settings/branch` -> `body.id=settings_branch`, `nestedInnerCount=0` ✅
+  - `/settings/payment-configuration` -> `body.id=settings_online_payments_config`, `nestedInnerCount=0` ✅
+  - `/settings/customer_groups` -> `body.id=settings_customer_groups`, `nestedInnerCount=0` ✅
+  - `/settings/employees/new` -> shell restored, `body.id=settings_employees`, `#navbar/#mainnav/#sidenav` present, `nestedInnerCount=0` ✅
+  - `/event-reminders` -> shell restored, `body.id=physical_marketing`, `#navbar/#mainnav/#sidenav` present, `nestedInnerCount=0` ✅
+- Notes:
+  - some `settings/*` routes still surface backend/data errors that can bypass normal shell verification in smoke, but the shared shell contract now covers the route families themselves
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
