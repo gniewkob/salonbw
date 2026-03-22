@@ -14,6 +14,7 @@ export type SalonBWModuleKey =
 
 export interface SalonBWShellProfile {
     bodyId: string;
+    bodyClasses?: string[];
     mainNavClass: string;
     mainContentClass: string;
     secondaryNavVariant:
@@ -48,6 +49,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:calendar',
         shell: {
             bodyId: 'calendar',
+            bodyClasses: [],
             mainNavClass: 'calendar',
             mainContentClass: 'calendar',
             secondaryNavVariant: 'calendar',
@@ -65,6 +67,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:customers',
         shell: {
             bodyId: 'customers',
+            bodyClasses: [],
             mainNavClass: 'customers',
             mainContentClass: 'customers',
             secondaryNavVariant: 'customers',
@@ -82,6 +85,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:products',
         shell: {
             bodyId: 'physical_products',
+            bodyClasses: [],
             mainNavClass: 'stock',
             mainContentClass: 'stock',
             secondaryNavVariant: 'products',
@@ -99,6 +103,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:statistics',
         shell: {
             bodyId: 'logical_statistics',
+            bodyClasses: [],
             mainNavClass: 'statistics',
             mainContentClass: 'statistics',
             secondaryNavVariant: 'tree',
@@ -115,7 +120,8 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         iconId: 'svg-communication-nav',
         permission: 'nav:communication',
         shell: {
-            bodyId: 'communication',
+            bodyId: 'physical_communication',
+            bodyClasses: [],
             mainNavClass: 'communication',
             mainContentClass: 'communication',
             secondaryNavVariant: 'list',
@@ -133,6 +139,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:services',
         shell: {
             bodyId: 'services',
+            bodyClasses: [],
             mainNavClass: 'services',
             mainContentClass: 'services',
             secondaryNavVariant: 'list',
@@ -150,6 +157,7 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         permission: 'nav:settings',
         shell: {
             bodyId: 'settings',
+            bodyClasses: [],
             mainNavClass: 'settings',
             mainContentClass: 'settings',
             secondaryNavVariant: 'list',
@@ -166,7 +174,8 @@ export const SALONBW_MODULES: SalonBWModule[] = [
         iconId: 'svg-extensions-nav',
         permission: 'nav:extension',
         shell: {
-            bodyId: 'extension',
+            bodyId: 'extensions',
+            bodyClasses: [],
             mainNavClass: 'extensions',
             mainContentClass: 'extensions',
             secondaryNavVariant: 'list',
@@ -186,7 +195,8 @@ const HELPS_MODULE: SalonBWModule = {
     iconId: 'svg-help',
     permission: 'nav:settings',
     shell: {
-        bodyId: 'helps',
+        bodyId: 'physical_helps',
+        bodyClasses: ['no_sidenav'],
         mainNavClass: 'settings',
         mainContentClass: 'helps',
         secondaryNavVariant: 'none',
@@ -196,6 +206,19 @@ const HELPS_MODULE: SalonBWModule = {
     },
     secondaryNav: false,
 };
+
+function withShellOverride(
+    module: SalonBWModule,
+    shellOverride: Partial<SalonBWShellProfile>,
+): SalonBWModule {
+    return {
+        ...module,
+        shell: {
+            ...module.shell,
+            ...shellOverride,
+        },
+    };
+}
 
 export function resolveSalonBWModule(pathname: string): SalonBWModule {
     // Normalize path
@@ -239,9 +262,16 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
 
     if (
         path.startsWith('/communication') ||
+        path.startsWith('/newsletters') ||
+        path.startsWith('/messages') ||
         path.startsWith('/emails') ||
         path.startsWith('/admin/communications')
     ) {
+        if (path.startsWith('/messages')) {
+            return withShellOverride(SALONBW_MODULES[4], {
+                bodyId: 'communication',
+            });
+        }
         return SALONBW_MODULES[4];
     }
 
