@@ -1742,3 +1742,42 @@
     - kolejna paczka settingsowych widoków przestała renderować standalone layout,
     - shared shell contract obejmuje teraz większą część rodziny `settings/*`,
     - główne remaining różnice są coraz mniej shellowe, a coraz bardziej content/data-specific.
+
+### 2026-03-22 - Panel: remaining dynamic settings routes and timetable stabilization
+
+- zmiana kodu:
+    - `apps/panel/src/pages/settings/categories/new.tsx`
+    - `apps/panel/src/pages/settings/categories/[id]/edit.tsx`
+    - `apps/panel/src/pages/settings/employees/[id]/index.tsx`
+    - `apps/panel/src/pages/settings/employees/[id]/edit.tsx`
+    - `apps/panel/src/pages/settings/employees/[id]/events-history.tsx`
+    - `apps/panel/src/pages/settings/employees/commissions/index.tsx`
+    - `apps/panel/src/pages/settings/employees/commissions/[id].tsx`
+    - `apps/panel/src/pages/settings/timetable/branch.tsx`
+    - `apps/panel/src/pages/settings/timetable/employees/copy.tsx`
+    - `apps/panel/src/pages/settings/timetable/employees/[id].tsx`
+        - przywrócenie `SalonBWShell` + `RouteGuard` dla remaining detail routes
+    - `apps/panel/src/hooks/useTimetables.ts`
+        - stabilne fallback arrays dla loading state, żeby nie generować nowych referencji przy każdym renderze
+    - `apps/panel/src/pages/settings/timetable/employees/[id].tsx`
+        - memoizacja `date`
+        - memoizacja secondary nav na stabilnych danych
+- deploy:
+    - `dashboard` (production): run `23412803413` ✅
+    - `dashboard` (production): run `23412914256` ✅
+    - `dashboard` (production): run `23412993266` ✅
+    - `dashboard` (production): run `23413071286` ✅
+- smoke produkcyjny:
+    - `/settings/categories/new` -> `body.id=settings_categories`, `nestedInnerCount=0` ✅
+    - `/settings/employees/29` -> `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/settings/employees/29/edit` -> `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/settings/employees/29/events-history` -> `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/settings/employees/commissions` -> `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/settings/employees/commissions/29` -> `body.id=settings_employees`, `nestedInnerCount=0` ✅
+    - `/settings/timetable/branch` -> `body.id=timetable_branches`, `nestedInnerCount=0` ✅
+    - `/settings/timetable/employees/copy` -> `body.id=timetable_employees`, `nestedInnerCount=0` ✅
+    - `/settings/timetable/employees/29?date=2026-03-22` -> `body.id=timetable_employees`, `nestedInnerCount=0`, brak client-side exception ✅
+- wynik:
+    - praktycznie cała rodzina dynamicznych tras `settings/*` wróciła pod wspólny shell contract,
+    - `timetable/employees/[id]` przestał zapętlać `setSecondaryNav`,
+    - remaining różnice w tym obszarze nie wynikają już z brakującego chrome ani nested content frame.
