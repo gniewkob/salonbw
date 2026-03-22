@@ -93,7 +93,7 @@ export default function ServicesStatisticsPage() {
                         Ładowanie...
                     </div>
                 ) : (
-                    <div className="inner">
+                    <>
                         {/* Summary */}
                         <div className="grid grid-cols-2 gap-4 mb-6">
                             <div className="border rounded p-4 text-center bg-blue-50">
@@ -206,7 +206,7 @@ export default function ServicesStatisticsPage() {
                                 )}
                             </table>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </SalonBWShell>
