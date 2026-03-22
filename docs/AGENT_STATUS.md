@@ -1015,6 +1015,34 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - `extension` no longer adds nested content-frame drift
   - the shared shell contract is now applied consistently to communication/help/extension auxiliary routes
 
+### 2026-03-22 - Panel: settings landing i statistics shell wrappers
+
+- Code commit:
+  - `e17075d4` `Align settings landing and stats shell wrappers`
+- Deploy run (`dashboard`, production):
+  - `23411963723` ✅
+- Scope:
+  - moved `settings` landing shell behavior into route-aware shell profile:
+    - `/settings` -> `body.id=settings_dashboard`
+    - `body.no_sidenav`
+    - `body.settings-dashboard-landing`
+  - aligned `/settings/sms` with vendor shell contract:
+    - `body.id=settings_sms`
+    - `#main-content.communication_settings`
+  - removed remaining nested content-frame wrappers from:
+    - `settings` landing
+    - `statistics/customers`
+- Local validation:
+  - `apps/panel`: targeted `pnpm eslint ... --fix` ✅
+  - `apps/panel`: `pnpm tsc --noEmit` ✅
+- Production shell smoke:
+  - `/settings` -> `body.id=settings_dashboard`, `body.no_sidenav`, `nestedInnerCount=0` ✅
+  - `/settings/sms` -> `body.id=settings_sms`, `main-content communication_settings`, `nestedInnerCount=0` ✅
+  - `/statistics/customers` -> `body.id=logical_statistics`, `nestedInnerCount=0` ✅
+- Notes:
+  - page render stayed stable on all three routes
+  - Playwright console on `/statistics/customers` still showed existing backend 500s for some statistics endpoints, but no client-side exception or shell regression
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
