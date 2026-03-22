@@ -222,7 +222,10 @@ export default function SettingsTimetableEmployeeDetailPage() {
     const router = useRouter();
     const { role } = useAuth();
     const id = router.query.id ? Number(router.query.id) : null;
-    const date = parseDateParam(router.query.date);
+    const date = useMemo(
+        () => parseDateParam(router.query.date),
+        [router.query.date],
+    );
 
     const { data: employee, isLoading: employeeLoading } = useEmployee(id);
     const { data: staffOptions } = useStaffOptions();
