@@ -287,6 +287,20 @@ export function resolveSalonBWModule(pathname: string): SalonBWModule {
         path.startsWith('/reviews') ||
         path.startsWith('/invoices')
     ) {
+        if (path === '/settings') {
+            return withShellOverride(SALONBW_MODULES[6], {
+                bodyId: 'settings_dashboard',
+                bodyClasses: ['no_sidenav', 'settings-dashboard-landing'],
+            });
+        }
+
+        if (path.startsWith('/settings/sms')) {
+            return withShellOverride(SALONBW_MODULES[6], {
+                bodyId: 'settings_sms',
+                mainContentClass: 'communication_settings',
+            });
+        }
+
         return SALONBW_MODULES[6];
     }
 

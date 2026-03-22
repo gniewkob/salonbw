@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
@@ -119,16 +118,6 @@ const mainTiles: SettingsTile[] = [
 export default function SettingsPage() {
     const { role } = useAuth();
 
-    useEffect(() => {
-        if (typeof document === 'undefined') return;
-        document.body.classList.add('settings-dashboard-landing');
-        document.body.classList.add('no_sidenav');
-        return () => {
-            document.body.classList.remove('settings-dashboard-landing');
-            document.body.classList.remove('no_sidenav');
-        };
-    }, []);
-
     if (!role) return null;
 
     return (
@@ -140,7 +129,7 @@ export default function SettingsPage() {
                         items={[{ label: 'Ustawienia' }]}
                     />
 
-                    <div className="inner settings-dashboard-inner">
+                    <div className="settings-dashboard-inner">
                         {mainTiles.map((tile) => (
                             <div
                                 key={tile.label}
@@ -174,7 +163,7 @@ export default function SettingsPage() {
                             </li>
                         </ul>
                     </div>
-                    <div className="inner settings-dashboard-inner settings-dashboard-inner--addons">
+                    <div className="settings-dashboard-inner settings-dashboard-inner--addons">
                         {addonTiles.map((tile) => (
                             <div
                                 key={tile.label}
