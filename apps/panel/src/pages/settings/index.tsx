@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type SettingsTile = {
@@ -36,31 +37,31 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-salon',
     },
     {
-        href: '/settings/calendar',
+        href: '/settings/timetable/branch',
         label: 'godziny otwarcia',
         boxClass: 'opening_hours_clock',
         iconId: 'svg-opening_hours_clock',
     },
     {
-        href: '/calendar',
+        href: '/settings/calendar',
         label: 'kalendarz',
         boxClass: 'calendar',
         iconId: 'svg-calendar',
     },
     {
-        href: '/employees',
+        href: '/settings/employees',
         label: 'pracownicy',
         boxClass: 'employees',
         iconId: 'svg-employees',
     },
     {
-        href: '/customers',
+        href: '/settings/extra_fields',
         label: 'klienci',
         boxClass: 'customers',
         iconId: 'svg-customers',
     },
     {
-        href: '/communication',
+        href: '/settings/customer-panel',
         label: 'rezerwacja online',
         boxClass: 'booking',
         iconId: 'svg-booking',
@@ -72,13 +73,13 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-settings_opinions',
     },
     {
-        href: '/communication',
+        href: '/settings/sms',
         label: 'łączność',
         boxClass: 'communication',
         iconId: 'svg-communication',
     },
     {
-        href: '/communication',
+        href: '/settings/reminders',
         label: 'komunikacja z klientem',
         boxClass: 'client_communication',
         iconId: 'svg-client_communication',
@@ -96,7 +97,7 @@ const mainTiles: SettingsTile[] = [
         iconId: 'svg-billing',
     },
     {
-        href: '/statistics',
+        href: '/settings/payment-configuration',
         label: 'płatności',
         boxClass: 'prepayments',
         iconId: 'svg-prepayments',
@@ -134,17 +135,10 @@ export default function SettingsPage() {
         <RouteGuard roles={['admin']} permission="nav:settings">
             <SalonBWShell role={role}>
                 <div data-testid="settings-page">
-                    <div className="breadcrumbs" e2e-breadcrumbs="">
-                        <ul>
-                            <li>
-                                <div
-                                    className="icon sprite-breadcrumbs_settings"
-                                    aria-hidden="true"
-                                />
-                                Ustawienia
-                            </li>
-                        </ul>
-                    </div>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_settings"
+                        items={[{ label: 'Ustawienia' }]}
+                    />
 
                     <div className="inner settings-dashboard-inner">
                         {mainTiles.map((tile) => (
