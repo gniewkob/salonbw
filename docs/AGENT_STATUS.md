@@ -863,6 +863,30 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
     - `apps/panel/output/playwright/topbar-customers-after-deploy.png`
     - `apps/panel/output/playwright/topbar-calendar-after-deploy.png`
 
+## 2026-03-22 - Panel shell breadcrumbs parity rollout
+
+- Code commit: `317867ef` (`Unify shell breadcrumbs across panel modules`)
+- Deploy run (`dashboard`, production): `23410037131` ✅
+- Scope:
+  - migrated remaining shell-level breadcrumb holdouts to `VersumBreadcrumbs`
+  - key routes included:
+    - `customers` list/detail/new/edit
+    - `products/[id]/edit`
+    - `services/new`, `services/[id]`
+    - `communication/{mass,reminders,templates}`
+    - `statistics/{register,tips,services}`
+    - `extension/tools/[id]`
+    - `employees`, `reviews`, `invoices`, `admin/gift-cards`
+- Production shell smoke:
+  - authenticated login to `https://panel.salon-bw.pl/auth/login` ✅
+  - DOM signature check:
+    - `/customers` -> `body.id=customers`, `#sidenav.sidenav`, `.breadcrumbs`, `secondaryRootClass=customers_index` ✅
+    - `/products` -> `body.id=physical_products`, `main-content stock`, `.breadcrumbs`, `secondaryRootClass=column_row` ✅
+    - `/statistics` -> `body.id=logical_statistics`, `.breadcrumbs`, `secondaryRootClass=column_row tree` ✅
+- Result:
+  - `/customers` no longer remains a breadcrumb exception in the shared shell
+  - shared shell parity is now cleaner before any further page-content passes
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
