@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { format, addYears } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
@@ -209,12 +209,13 @@ export default function GiftCardsManagementPage() {
         >
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="gift-cards-page">
-                    <ul className="breadcrumb">
-                        <li>
-                            <Link href="/extension">Dodatki</Link>
-                        </li>
-                        <li>Bony i Karnety</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_extensions"
+                        items={[
+                            { label: 'Dodatki', href: '/extension' },
+                            { label: 'Bony i Karnety' },
+                        ]}
+                    />
                     <div className="min-h-screen bg-gray-50">
                         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                             <div className="flex items-center justify-between mb-8">

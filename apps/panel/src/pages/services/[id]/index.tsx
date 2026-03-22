@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { RevenueChart } from '@/components/statistics';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -214,16 +214,13 @@ export default function ServiceDetailsPage() {
                 className="salonbw-page service-details-page"
                 data-testid="service-details-page"
             >
-                <ul className="breadcrumb">
-                    <li>
-                        <i
-                            className="icon sprite-breadcrumbs_services"
-                            aria-hidden="true"
-                        />{' '}
-                        <Link href="/services">Usługi</Link> /{' '}
-                        {summaryData?.name ?? 'Usługa'}
-                    </li>
-                </ul>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_services"
+                    items={[
+                        { label: 'Usługi', href: '/services' },
+                        { label: summaryData?.name ?? 'Usługa' },
+                    ]}
+                />
 
                 <div className="column_row row buttons-row">
                     <div className="col-sm-6" />

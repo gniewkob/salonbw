@@ -8,6 +8,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import NewCustomerNav from '@/components/salonbw/navs/NewCustomerNav';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
@@ -145,12 +146,19 @@ export default function CustomerEditPage() {
                     }
                 >
                     <div className="show_customer" id="customers_main">
-                        <ul className="breadcrumb">
-                            <li>
-                                Klienci / {customer?.name || '...'} / Edytuj
-                                klienta
-                            </li>
-                        </ul>
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_customers"
+                            items={[
+                                { label: 'Klienci', href: '/customers' },
+                                {
+                                    label: customer?.name || '...',
+                                    href: customer?.id
+                                        ? `/customers/${customer.id}`
+                                        : undefined,
+                                },
+                                { label: 'Edytuj klienta' },
+                            ]}
+                        />
 
                         {isLoading ? (
                             <div className="customer-loading">Ładowanie...</div>

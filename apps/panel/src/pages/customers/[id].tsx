@@ -6,6 +6,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import ClientDetailNav from '@/components/salonbw/navs/ClientDetailNav';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import {
@@ -169,16 +170,13 @@ export default function CustomerDetailPage() {
                     }
                 >
                     <div className="show_customer" id="customers_main">
-                        {/* Breadcrumbs - styl source UI */}
-                        <ul className="breadcrumb">
-                            <li>
-                                <i
-                                    className="icon sprite-breadcrumbs_customers"
-                                    aria-hidden="true"
-                                />{' '}
-                                Klienci / {customer?.name || '...'}
-                            </li>
-                        </ul>
+                        <VersumBreadcrumbs
+                            iconClass="sprite-breadcrumbs_customers"
+                            items={[
+                                { label: 'Klienci', href: '/customers' },
+                                { label: customer?.name || '...' },
+                            ]}
+                        />
 
                         {!router.isReady || isCustomerLoading ? (
                             <div className="customer-loading">

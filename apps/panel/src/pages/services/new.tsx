@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import ManageCategoriesModal from '@/components/services/ManageCategoriesModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -489,15 +490,13 @@ function NewServicePageContent() {
 
     return (
         <div className="salonbw-page services-create-page">
-            <ul className="breadcrumb">
-                <li>
-                    <i
-                        className="icon sprite-breadcrumbs_services"
-                        aria-hidden="true"
-                    />{' '}
-                    <Link href="/services">Usługi</Link> / Dodawanie
-                </li>
-            </ul>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_services"
+                items={[
+                    { label: 'Usługi', href: '/services' },
+                    { label: 'Dodawanie' },
+                ]}
+            />
 
             {error ? (
                 <div className="services-create-alert services-create-alert--error">

@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductApi } from '@/api/products';
 import { useProductCategories } from '@/hooks/useWarehouseViews';
@@ -102,12 +103,15 @@ export default function EditProductPage() {
             <SalonBWShell role={role}>
                 <SalonBWVendorCss />
                 <div className="products_index" id="products_main">
-                    <ul className="breadcrumb">
-                        <li>
-                            Magazyn / Produkty /{' '}
-                            {product?.name ?? `#${productId ?? ''}`} / Edytuj
-                        </li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_stock"
+                        items={[
+                            { label: 'Magazyn', href: '/products' },
+                            { label: 'Produkty', href: '/products' },
+                            { label: product?.name ?? `#${productId ?? ''}` },
+                            { label: 'Edytuj' },
+                        ]}
+                    />
 
                     {isLoading ? (
                         <p className="products-empty">Ładowanie produktu...</p>

@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type PlanAvailability = {
@@ -205,13 +205,13 @@ function ExtensionToolContent() {
 
     return (
         <div className="salonbw-page" data-testid="extension-tool-page">
-            <ul className="breadcrumb">
-                <li>
-                    <i className="icon sprite-star" aria-hidden="true" />
-                    <Link href="/extension">Dodatki</Link>
-                </li>
-                <li>{tool?.title ?? resolvedId}</li>
-            </ul>
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_extensions"
+                items={[
+                    { label: 'Dodatki', href: '/extension' },
+                    { label: tool?.title ?? resolvedId },
+                ]}
+            />
 
             {tool ? (
                 <div className="inner extension_info container-fluid">

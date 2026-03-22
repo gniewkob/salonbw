@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
 import { useEmailMutations } from '@/hooks/useEmails';
@@ -122,12 +122,13 @@ export default function MassCommunicationPage() {
         <RouteGuard roles={['admin']} permission="nav:communication">
             <SalonBWShell role={role}>
                 <div className="salonbw-page">
-                    <ul className="breadcrumb">
-                        <li>
-                            <Link href="/communication">Łączność</Link>
-                        </li>
-                        <li>Wyślij wiadomość masową</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_communication"
+                        items={[
+                            { label: 'Łączność', href: '/communication' },
+                            { label: 'Wyślij wiadomość masową' },
+                        ]}
+                    />
 
                     {/* Step indicator */}
                     <div className="salonbw-steps">
