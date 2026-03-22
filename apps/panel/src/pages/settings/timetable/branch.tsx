@@ -15,7 +15,7 @@ import {
 import type { Branch, WorkingHoursValue } from '@/types';
 
 const TIMETABLE_NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree other_settings">
             <h4>Grafiki pracy</h4>
             <ul>

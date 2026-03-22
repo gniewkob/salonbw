@@ -111,7 +111,7 @@ export default function CustomerEditPage() {
 
     const secondaryNav = useMemo(
         () => (
-            <div className="sidenav secondarynav" id="sidenav">
+            <div className="sidenav" id="sidenav">
                 <NewCustomerNav
                     title="EDYCJA KLIENTA"
                     activeTab={activeTab}

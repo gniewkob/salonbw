@@ -115,7 +115,7 @@ export default function NewCustomerPage() {
 
     const secondaryNav = useMemo(
         () => (
-            <div className="sidenav secondarynav" id="sidenav">
+            <div className="sidenav" id="sidenav">
                 <NewCustomerNav
                     activeTab={activeTab}
                     onSelect={handleSelectTab}

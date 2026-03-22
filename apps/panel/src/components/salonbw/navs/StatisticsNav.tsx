@@ -92,18 +92,19 @@ export default function StatisticsNav() {
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
-        <div className="sidebar-inner nav-scroll-container">
-            <ul className="nav nav-list">
+        <div className="column_row tree">
+            <ul id="statistics_menu_list">
                 {REPORTS.map((item) => (
                     <li key={item.id}>
                         <Link
                             href={item.href}
                             className={isActive(item.href) ? 'active' : ''}
+                            title={item.label}
                         >
                             {item.label}
                         </Link>
                         {item.children ? (
-                            <ul className="nav nav-list sub-nav">
+                            <ul>
                                 {item.children.map((child) => (
                                     <li key={child.id}>
                                         <Link
@@ -113,6 +114,7 @@ export default function StatisticsNav() {
                                                     ? 'active'
                                                     : ''
                                             }
+                                            title={child.label}
                                         >
                                             {child.label}
                                         </Link>

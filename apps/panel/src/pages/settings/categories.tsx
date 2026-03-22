@@ -11,7 +11,7 @@ import PanelSection from '@/components/ui/PanelSection';
 import type { ProductCategory } from '@/types';
 
 const WAREHOUSE_NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree other_settings">
             <h4>Ustawienia magazynu</h4>
             <ul>

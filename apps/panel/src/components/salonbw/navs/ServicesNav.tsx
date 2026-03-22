@@ -29,52 +29,64 @@ export default function ServicesNav() {
     };
 
     return (
-        <div className="sidebar-inner nav-scroll-container">
-            {/* All Services */}
-            <ul className="nav nav-list">
-                <li className={!currentCategoryId ? 'active' : undefined}>
-                    <a
-                        href="javascript:;"
-                        onClick={() => updateFilters(undefined)}
-                    >
-                        Wszystkie usługi
-                    </a>
-                </li>
-            </ul>
-
-            {/* Category List */}
-            <ul className="nav nav-list">
-                {categories.map((category) => (
+        <div className="column_row">
+            <div className="tree">
+                <a
+                    className={!currentCategoryId ? 'root active' : 'root'}
+                    href="#"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        updateFilters(undefined);
+                    }}
+                >
+                    Wszystkie usługi
+                </a>
+                <ul>
+                    {categories.map((category) => (
+                        <li
+                            key={category.id}
+                            className={
+                                currentCategoryId === category.id
+                                    ? 'active'
+                                    : undefined
+                            }
+                        >
+                            <a
+                                href="#"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    updateFilters(category.id);
+                                }}
+                            >
+                                {category.name}
+                            </a>
+                        </li>
+                    ))}
                     <li
-                        key={category.id}
                         className={
-                            currentCategoryId === category.id
-                                ? 'active'
-                                : undefined
+                            currentCategoryId === 0 ? 'active' : undefined
                         }
                     >
                         <a
-                            href="javascript:;"
-                            onClick={() => updateFilters(category.id)}
+                            href="#"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                updateFilters(0);
+                            }}
                         >
-                            {category.name}
+                            usługi bez kategorii
                         </a>
                     </li>
-                ))}
-                {/* Uncategorized services */}
-                <li className={currentCategoryId === 0 ? 'active' : undefined}>
-                    <a href="javascript:;" onClick={() => updateFilters(0)}>
-                        usługi bez kategorii
-                    </a>
-                </li>
-            </ul>
+                </ul>
+            </div>
 
-            {/* Manage Categories Link */}
-            <div className="salonbw-secondarynav__manage-groups">
+            <div className="tree_options">
                 <a
-                    href="javascript:;"
-                    onClick={() => setIsManageModalOpen(true)}
-                    className="salonbw-secondarynav__link"
+                    href="#"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        setIsManageModalOpen(true);
+                    }}
                 >
                     dodaj/edytuj/usuń
                 </a>

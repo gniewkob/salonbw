@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
+import SalonBWListNav from './SalonBWListNav';
 
 type NavItem = {
     id: string;
@@ -37,20 +37,12 @@ export default function CommunicationNav() {
         router.pathname === href || router.pathname.startsWith(`${href}/`);
 
     return (
-        <div className="sidebar-inner nav-scroll-container">
-            <div className="nav-header">ŁĄCZNOŚĆ</div>
-            <ul className="nav nav-list">
-                {COMMUNICATION_ITEMS.map((item) => (
-                    <li key={item.id}>
-                        <Link
-                            href={item.href}
-                            className={isActive(item.href) ? 'active' : ''}
-                        >
-                            {item.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <SalonBWListNav
+            heading="ŁĄCZNOŚĆ"
+            items={COMMUNICATION_ITEMS.map((item) => ({
+                ...item,
+                active: isActive(item.href),
+            }))}
+        />
     );
 }

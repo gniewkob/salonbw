@@ -7,7 +7,7 @@ import type { Timetable } from '@/types';
 import PanelSection from '@/components/ui/PanelSection';
 
 const NAV = (
-    <div className="sidenav secondarynav" id="sidenav">
+    <div className="sidenav" id="sidenav">
         <div className="column_row tree other_settings">
             <h4>Grafiki pracy</h4>
             <ul>

@@ -23,10 +23,7 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
     const modules = visibleSalonBWModules(role);
     const secondNavRenderKey = `${activeModule.key}:${router.pathname}:${router.asPath}`;
     const resolvedSecondaryNav = secondaryNavContext?.secondaryNav ?? null;
-
-    // source vendor CSS uses module-scoped selectors like `.main-content.customers`.
-    const mainContentClass =
-        activeModule.key === 'extension' ? 'extensions' : activeModule.key;
+    const shellProfile = activeModule.shell;
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
@@ -39,7 +36,7 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
         const nextModuleClass = `e2e-${activeModule.key}`;
 
         body.classList.add('e2e-body');
-        body.id = activeModule.key;
+        body.id = shellProfile.bodyId;
         body.classList.add(nextModuleClass);
         body.setAttribute('data-salonbw-module-class', nextModuleClass);
 
@@ -63,7 +60,7 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
             }
             body.id = previousId;
         };
-    }, [activeModule.key]);
+    }, [activeModule.key, shellProfile.bodyId]);
 
     return (
         <div id="salonbw-shell-root">
@@ -88,15 +85,11 @@ export default function SalonBWShell({ role, children }: SalonBWShellProps) {
                     )}
                 </div>
                 <div
-                    className={`main-content ${mainContentClass}`}
+                    className={`main-content ${shellProfile.mainContentClass} main-content--${shellProfile.contentFrameVariant}`}
                     id="main-content"
                     role="main"
                 >
-                    <div
-                        className={`inner ${activeModule.wideContent ? 'inner--wide' : ''}`}
-                    >
-                        {children}
-                    </div>
+                    <div className="inner">{children}</div>
                 </div>
             </div>
             <FloatingHelpButton />

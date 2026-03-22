@@ -2701,6 +2701,8 @@ textarea.form-control {
 
 body#statistics #sidenav,
 body#statistics .sidenav,
+body#logical_statistics #sidenav,
+body#logical_statistics .sidenav,
 body.e2e-statistics #sidenav,
 body.e2e-statistics .sidenav {
     align-self: flex-start;
@@ -2800,13 +2802,15 @@ body.e2e-extension .main-content .inner {
     min-height: 0;
 }
 
-body#statistics .main-content .inner,
-body.e2e-statistics .main-content .inner {
+.main-content--fullWidth .inner,
+.main-content--calendar .inner {
     max-width: none;
     margin: 0;
 }
 
-.main-content .inner.inner--wide {
+body#statistics .main-content .inner,
+body#logical_statistics .main-content .inner,
+body.e2e-statistics .main-content .inner {
     max-width: none;
     margin: 0;
 }
@@ -2838,6 +2842,113 @@ body.e2e-statistics .main-content .inner {
 .salonbw-floating-help svg {
     width: 26px;
     height: 26px;
+}
+
+.breadcrumbs {
+    margin: 0;
+    padding: 10px 20px 0;
+}
+
+.breadcrumbs ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.breadcrumbs li {
+    align-items: center;
+    color: #656d74;
+    display: inline-flex;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.breadcrumbs li .icon {
+    margin-right: 8px;
+}
+
+.breadcrumbs li a {
+    color: #656d74;
+    text-decoration: none;
+}
+
+.breadcrumbs li a:hover {
+    color: #3a434b;
+    text-decoration: underline;
+}
+
+#sidenav .column_row,
+.sidenav .column_row {
+    padding: 10px;
+}
+
+#sidenav .tree > .root,
+.sidenav .tree > .root {
+    align-items: center;
+    color: #4d565e;
+    display: flex;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+    padding: 4px 10px;
+    text-decoration: none;
+}
+
+#sidenav .tree > .root.active,
+.sidenav .tree > .root.active,
+#sidenav .tree > .root:hover,
+.sidenav .tree > .root:hover {
+    background: #eef3f7;
+    color: var(--salonbw-accent);
+}
+
+#sidenav .tree ul,
+.sidenav .tree ul,
+#statistics_menu_list,
+#statistics_menu_list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#sidenav .tree li a,
+#statistics_menu_list > li > a,
+#statistics_menu_list ul li a,
+.sidenav .tree li a {
+    color: #616971;
+    display: block;
+    font-size: 12px;
+    padding: 3px 10px;
+    text-decoration: none;
+}
+
+#sidenav .tree li.active > a,
+#sidenav .tree li a:hover,
+#statistics_menu_list a.active,
+#statistics_menu_list a:hover,
+.sidenav .tree li.active > a,
+.sidenav .tree li a:hover {
+    background: #eef3f7;
+    color: var(--salonbw-accent);
+}
+
+#sidenav .tree_options,
+.sidenav .tree_options {
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+#sidenav .tree_options a,
+.sidenav .tree_options a {
+    color: #616971;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+#sidenav .tree_options a:hover,
+.sidenav .tree_options a:hover {
+    color: var(--salonbw-accent);
+    text-decoration: underline;
 }
 
 /* =============================================

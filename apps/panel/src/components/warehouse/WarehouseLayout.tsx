@@ -6,6 +6,7 @@ import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 type WarehouseMainTab = 'products' | 'sales' | 'use' | 'deliveries' | 'orders';
@@ -77,9 +78,13 @@ export default function WarehouseLayout({
             <SalonBWVendorCss />
             <SalonBWShell role={role}>
                 <div className="products_index" id="products_main">
-                    <ul className="breadcrumb">
-                        <li>{heading}</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_stock"
+                        items={[
+                            { label: 'Magazyn', href: '/products' },
+                            { label: heading },
+                        ]}
+                    />
 
                     <div className="column_row secondary_menu">
                         <div className="pull_left">

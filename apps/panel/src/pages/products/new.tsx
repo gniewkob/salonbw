@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductApi } from '@/api/products';
 import { useProductCategories } from '@/hooks/useWarehouseViews';
@@ -97,9 +98,13 @@ export default function NewProductPage() {
             <SalonBWShell role={role}>
                 <SalonBWVendorCss />
                 <div className="products_index" id="products_main">
-                    <ul className="breadcrumb">
-                        <li>Magazyn / Dodaj produkt</li>
-                    </ul>
+                    <VersumBreadcrumbs
+                        iconClass="sprite-breadcrumbs_stock"
+                        items={[
+                            { label: 'Magazyn', href: '/products' },
+                            { label: 'Dodaj produkt' },
+                        ]}
+                    />
 
                     <form
                         className="product-form"
