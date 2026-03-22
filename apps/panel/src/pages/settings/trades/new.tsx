@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import PanelSection from '@/components/ui/PanelSection';
 import {
@@ -105,26 +106,15 @@ export default function SettingsTradesNewPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Ustawienia usług
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Branże
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Nowa branża
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        { label: 'Ustawienia usług' },
+                        { label: 'Branże' },
+                        { label: 'Nowa branża' },
+                    ]}
+                />
                 <PanelSection>
                     <form onSubmit={(event) => void handleSubmit(event)}>
                         <h2>Dodaj branżę</h2>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useTimetables, useTimetableMutations } from '@/hooks/useTimetables';
@@ -180,24 +181,17 @@ export default function SettingsTimetableEmployeesCopyPage() {
         <div className="settings-detail-layout" data-testid="settings-detail">
             <aside className="settings-detail-layout__sidebar">{NAV}</aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            <Link href="/settings/timetable/employees">
-                                Grafiki pracy
-                            </Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            Kopiuj grafiki pracy
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        {
+                            label: 'Grafiki pracy',
+                            href: '/settings/timetable/employees',
+                        },
+                        { label: 'Kopiuj grafiki pracy' },
+                    ]}
+                />
                 <PanelSection title="Kopiuj grafiki pracy">
                     {loading || timetablesLoading ? (
                         <p>Ładowanie...</p>

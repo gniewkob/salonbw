@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
 import { useEmployee, useStaffOptions } from '@/hooks/useEmployees';
 import {
@@ -453,26 +454,19 @@ export default function SettingsTimetableEmployeeDetailPage() {
                 {secondaryNav}
             </aside>
             <div className="settings-detail-layout__main">
-                <div className="breadcrumbs" e2e-breadcrumbs="">
-                    <ul>
-                        <li>
-                            <div className="icon sprite-breadcrumbs_settings" />
-                            <Link href="/settings">Ustawienia</Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            <Link href="/settings/timetable/employees">
-                                Grafiki pracowników
-                            </Link>
-                        </li>
-                        <li>
-                            <span> / </span>
-                            {employee.name}
-                        </li>
-                    </ul>
-                </div>
+                <VersumBreadcrumbs
+                    iconClass="sprite-breadcrumbs_settings"
+                    items={[
+                        { label: 'Ustawienia', href: '/settings' },
+                        {
+                            label: 'Grafiki pracowników',
+                            href: '/settings/timetable/employees',
+                        },
+                        { label: employee.name },
+                    ]}
+                />
 
-                <div className="inner">
+                <div>
                     <div className="column_row top_row timetable-employee-detail__top">
                         <div className="date">
                             <div className="button-group">
