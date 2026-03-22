@@ -9,6 +9,8 @@ import type {
 } from '@/types';
 
 export const TIMETABLES_QUERY_KEY = ['api', '/timetables'] as const;
+const EMPTY_TIMETABLES: Timetable[] = [];
+const EMPTY_EXCEPTIONS: TimetableException[] = [];
 
 interface CreateTimetablePayload {
     employeeId: number;
@@ -89,7 +91,7 @@ export function useTimetables(options?: {
     });
 
     return {
-        data: query.data ?? [],
+        data: query.data ?? EMPTY_TIMETABLES,
         error: (query.error as Error | null) ?? null,
         loading: query.isLoading,
         refetch: query.refetch,
@@ -182,7 +184,7 @@ export function useTimetableExceptions(
     });
 
     return {
-        data: query.data ?? [],
+        data: query.data ?? EMPTY_EXCEPTIONS,
         error: (query.error as Error | null) ?? null,
         loading: query.isLoading,
         refetch: query.refetch,

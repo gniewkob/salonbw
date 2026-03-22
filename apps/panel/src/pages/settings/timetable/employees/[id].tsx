@@ -21,10 +21,13 @@ import {
 } from '@/components/timetables';
 import type {
     DayOfWeek,
+    StaffOption,
     Timetable,
     TimetableException,
     TimetableSlot,
 } from '@/types';
+
+const EMPTY_STAFF_OPTIONS: StaffOption[] = [];
 
 const DAY_LABELS = [
     'poniedziałek',
@@ -228,7 +231,8 @@ export default function SettingsTimetableEmployeeDetailPage() {
     );
 
     const { data: employee, isLoading: employeeLoading } = useEmployee(id);
-    const { data: staffOptions } = useStaffOptions();
+    const { data: staffOptionsData } = useStaffOptions();
+    const staffOptions = staffOptionsData ?? EMPTY_STAFF_OPTIONS;
     const {
         data: allTimetables,
         loading: timetablesLoading,
