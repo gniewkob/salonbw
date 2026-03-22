@@ -106,19 +106,6 @@ export default function CalendarSettingsForm() {
         }
     }, [settings]);
 
-    useEffect(() => {
-        if (typeof document === 'undefined') return;
-        const body = document.body;
-        const previousId = body.id;
-        body.classList.add('no_sidenav');
-        body.id = 'settings_calendar';
-
-        return () => {
-            body.classList.remove('no_sidenav');
-            body.id = previousId;
-        };
-    }, []);
-
     const isCustomDaysMode = useMemo(() => {
         const days = formData.daysWhileEditable;
         return typeof days === 'number' && !isPresetDaysLimit(days);
