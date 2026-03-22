@@ -108,55 +108,60 @@ export default function EmployeeActivityPage() {
                     <li>Aktywność pracowników</li>
                 </ul>
 
-                <div className="statistics-actions">
-                    <div className="statistics-date-wrap">
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
+                <div className="actions">
+                    <div className="pull-left statistics_date">
+                        <button
+                            type="button"
                             className="button button-link button_prev mr-s"
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigateDate('prev');
-                            }}
+                            onClick={() => navigateDate('prev')}
                             aria-label="Poprzedni dzień"
                         >
                             <span className="fc-icon fc-icon-left-single-arrow" />
-                        </a>
-                        <input
-                            type="text"
-                            id="date_range"
-                            className="statistics-date-input"
-                            readOnly
-                            value={selectedDate}
-                            aria-label="Data"
-                        />
-                        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                        <a
+                        </button>
+                        <div id="choose_date">
+                            <form
+                                className="date_range_box"
+                                onSubmit={(event) => event.preventDefault()}
+                            >
+                                <input
+                                    type="text"
+                                    id="date_range"
+                                    name="date_range"
+                                    readOnly
+                                    value={selectedDate}
+                                    aria-label="Data"
+                                />
+                                <input
+                                    type="date"
+                                    className="statistics-date-picker-hidden"
+                                    value={selectedDate}
+                                    aria-label="Wybierz datę"
+                                    onChange={(event) =>
+                                        setSelectedDate(event.target.value)
+                                    }
+                                />
+                            </form>
+                        </div>
+                        <button
+                            type="button"
                             className="button button-link button_next ml-s"
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigateDate('next');
-                            }}
+                            onClick={() => navigateDate('next')}
                             aria-label="Następny dzień"
                         >
                             <span className="fc-icon fc-icon-right-single-arrow" />
-                        </a>
+                        </button>
                     </div>
-                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                    <a
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.print();
-                        }}
+                    <button
+                        type="button"
+                        className="button button-link statistics-print-button"
+                        onClick={() => window.print()}
                         aria-label="Drukuj"
                     >
                         <div
                             className="icon sprite-print_blue"
                             aria-hidden="true"
                         />
-                    </a>
+                    </button>
                 </div>
 
                 {loading ? (
