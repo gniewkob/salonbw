@@ -906,6 +906,44 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - shared shell no longer contains extra content-frame wrappers on these routes
   - next parity work should focus on remaining settings landing/list-nav polish and other shell hotspots, not nested `inner` cleanup
 
+## 2026-03-22 - Settings shell detail routes + timetable nav stability
+
+- Code commits:
+  - `fb782514` (`Refine settings shell detail routes`)
+  - `dc566c2f` (`Fix settings timetable secondary nav stability`)
+- Deploy runs (`dashboard`, production):
+  - `23411066301` ✅
+  - `23411289327` ✅
+- Scope:
+  - `event-reminders`, `settings/sms`, `settings/timetable/employees`, `settings/timetable/templates`, `settings/employees/activity-logs`
+    - migrated shell breadcrumbs to `VersumBreadcrumbs`
+  - removed nested content-frame wrappers from:
+    - `TimetableEmployeesPage`
+    - `TimetableTemplatesPage`
+    - `ActivityLogRoute`
+  - stabilized timetable secondary nav rendering to avoid React update loop in `useSetSecondaryNav`
+- Production findings during rollout:
+  - first deploy exposed client-side exceptions on:
+    - `/settings/timetable/employees`
+    - `/settings/timetable/templates`
+  - root cause: unstable `secondaryNav` React nodes caused repeated `setSecondaryNav(...)` updates
+- Production re-smoke after fix:
+  - `/settings/timetable/employees`
+    - `breadcrumbsCount=1`
+    - `nestedInnerCount=0`
+    - no client-side exception ✅
+  - `/settings/timetable/templates`
+    - `breadcrumbsCount=1`
+    - `nestedInnerCount=0`
+    - no client-side exception ✅
+  - `/settings/employees/activity-logs`
+    - `breadcrumbsCount=1`
+    - `nestedInnerCount=0`
+    - no client-side exception ✅
+- Result:
+  - settings shell detail routes no longer drift on breadcrumbs / nested `.inner`
+  - timetable settings routes are stable again on production
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
