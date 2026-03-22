@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
+import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function MessagesPage() {
@@ -7,19 +8,14 @@ export default function MessagesPage() {
     if (!role) return null;
     return (
         <SalonBWShell role={role}>
-            <div className="breadcrumbs" e2e-breadcrumbs="">
-                <ul>
-                    <li>
-                        <div className="icon sprite-breadcrumbs_communication" />
-                        <Link href="/communication">Komunikacja</Link>
-                    </li>
-                    <li>
-                        <span> / </span>
-                        Wiadomości
-                    </li>
-                </ul>
-            </div>
-            <div className="inner">
+            <VersumBreadcrumbs
+                iconClass="sprite-breadcrumbs_communication"
+                items={[
+                    { label: 'Komunikacja', href: '/communication' },
+                    { label: 'Wiadomości' },
+                ]}
+            />
+            <div>
                 <div className="actions">
                     <Link
                         href="/newsletters/new"
