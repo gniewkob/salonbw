@@ -887,6 +887,25 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - `/customers` no longer remains a breadcrumb exception in the shared shell
   - shared shell parity is now cleaner before any further page-content passes
 
+## 2026-03-22 - Settings/statistics shell geometry cleanup
+
+- Code commit: `083a4a3e` (`Refine shell layout in settings and statistics`)
+- Deploy run (`dashboard`, production): `23410667212` ✅
+- Scope:
+  - `SettingsDetailLayout` moved to shared `VersumBreadcrumbs`
+  - `settings/customer_groups` and `settings/customer_groups/new` no longer inject nested `.inner`
+  - `statistics/register`, `statistics/tips`, `statistics/services` no longer inject nested `.inner`
+  - `docs/VERSUM_SHELL_ANALYSIS.md` added as durable shell-analysis reference
+- Production shell smoke:
+  - `/settings/customer_groups` -> `nestedInnerCount=0`, breadcrumbs `Ustawienia / Grupy klientów` ✅
+  - `/settings/customer_groups/new` -> `nestedInnerCount=0`, breadcrumbs `Ustawienia / Grupy klientów / Dodaj` ✅
+  - `/statistics/register` -> `nestedInnerCount=0`, breadcrumbs `Statystyki / Stan kasy` ✅
+  - `/statistics/tips` -> `nestedInnerCount=0`, breadcrumbs `Statystyki / Napiwki` ✅
+  - `/statistics/services` -> `nestedInnerCount=0`, breadcrumbs `Statystyki / Usługi` ✅
+- Result:
+  - shared shell no longer contains extra content-frame wrappers on these routes
+  - next parity work should focus on remaining settings landing/list-nav polish and other shell hotspots, not nested `inner` cleanup
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
