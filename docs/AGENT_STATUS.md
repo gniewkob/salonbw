@@ -944,6 +944,37 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - settings shell detail routes no longer drift on breadcrumbs / nested `.inner`
   - timetable settings routes are stable again on production
 
+## 2026-03-22 - Settings shell holdouts cleanup
+
+- Code commit: `971e5ea5` (`Unify remaining settings shell breadcrumbs`)
+- Deploy run (`dashboard`, production): `23411528574` ✅
+- Scope:
+  - migrated remaining manual shell breadcrumbs in `settings` routes to `VersumBreadcrumbs`
+  - key route groups covered:
+    - `settings/employees/*`
+    - `settings/employees/commissions/*`
+    - `settings/timetable/{branch,employees/copy,employees/[id]}`
+    - `settings/categories*`
+    - `settings/{customer_origins,extra_fields,data_protection}`
+    - `settings/trades/new`
+    - `CalendarSettingsForm`
+  - removed remaining shell-level nested `.inner` from:
+    - `settings/timetable/employees/[id]`
+    - `settings/data_protection`
+- Production shell smoke:
+  - `/settings/employees/new` -> breadcrumbs `Ustawienia / Pracownicy / Nowy pracownik`, `nestedInnerCount=0` ✅
+  - `/settings/employees/commissions` -> breadcrumbs `Ustawienia / Pracownicy / Prowizje`, `nestedInnerCount=0` ✅
+  - `/settings/timetable/branch` -> breadcrumbs `Ustawienia / Grafiki pracy / Salon`, `nestedInnerCount=0` ✅
+  - `/settings/timetable/employees/copy` -> breadcrumbs `Ustawienia / Grafiki pracy / Kopiuj grafiki pracy`, `nestedInnerCount=0` ✅
+  - `/settings/categories` -> breadcrumbs `Ustawienia / Ustawienia magazynu / Kategorie produktów`, `nestedInnerCount=0` ✅
+  - `/settings/extra_fields` -> breadcrumbs `Ustawienia / Klienci / Dodatkowe pola`, `nestedInnerCount=0` ✅
+  - `/settings/data_protection` -> breadcrumbs `Ustawienia / Klienci / Tryb ochrony danych`, `nestedInnerCount=0` ✅
+  - `/settings/trades/new` -> breadcrumbs `Ustawienia / Ustawienia usług / Branże / Nowa branża`, `nestedInnerCount=0` ✅
+- Result:
+  - `settings` no longer has remaining manual shell breadcrumb holdouts
+  - representative shell routes in `settings` render without nested content-frame drift
+  - no client-side exceptions detected in production smoke for the covered routes
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:

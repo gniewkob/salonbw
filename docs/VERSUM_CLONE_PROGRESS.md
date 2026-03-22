@@ -1598,3 +1598,32 @@
     - `/settings/timetable/employees` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
     - `/settings/timetable/templates` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
     - `/settings/employees/activity-logs` -> `breadcrumbsCount=1`, `nestedInnerCount=0`, brak client-side exception ✅
+
+### 2026-03-22 - Settings: zamknięcie remaining shell breadcrumb holdouts
+
+- zmiana kodu:
+    - `apps/panel/src/pages/settings/employees/*`
+    - `apps/panel/src/pages/settings/employees/commissions/*`
+    - `apps/panel/src/pages/settings/timetable/{branch,employees/copy,employees/[id]}`
+    - `apps/panel/src/pages/settings/{categories,categories/new,categories/[id]/edit,customer_origins,extra_fields,data_protection,trades/new}`
+    - `apps/panel/src/components/settings/CalendarSettingsForm.tsx`
+        - migracja z ręcznych shell breadcrumbs do `VersumBreadcrumbs`
+    - `settings/timetable/employees/[id]` i `settings/data_protection`
+        - usunięcie remaining shell-level nested `.inner`
+- deploy:
+    - `dashboard` (production): run `23411528574` ✅
+- walidacja lokalna:
+    - `apps/panel`: `pnpm eslint src --fix` ✅
+    - `apps/panel`: `pnpm tsc --noEmit` ✅
+- smoke produkcyjny:
+    - `/settings/employees/new` -> `Ustawienia / Pracownicy / Nowy pracownik`, `nestedInnerCount=0` ✅
+    - `/settings/employees/commissions` -> `Ustawienia / Pracownicy / Prowizje`, `nestedInnerCount=0` ✅
+    - `/settings/timetable/branch` -> `Ustawienia / Grafiki pracy / Salon`, `nestedInnerCount=0` ✅
+    - `/settings/timetable/employees/copy` -> `Ustawienia / Grafiki pracy / Kopiuj grafiki pracy`, `nestedInnerCount=0` ✅
+    - `/settings/categories` -> `Ustawienia / Ustawienia magazynu / Kategorie produktów`, `nestedInnerCount=0` ✅
+    - `/settings/extra_fields` -> `Ustawienia / Klienci / Dodatkowe pola`, `nestedInnerCount=0` ✅
+    - `/settings/data_protection` -> `Ustawienia / Klienci / Tryb ochrony danych`, `nestedInnerCount=0` ✅
+    - `/settings/trades/new` -> `Ustawienia / Ustawienia usług / Branże / Nowa branża`, `nestedInnerCount=0` ✅
+- wynik:
+    - `settings` przestał mieć ręczne shell breadcrumb wyjątki,
+    - kluczowe widoki `settings` są już spójne pod względem shared shell contract.
