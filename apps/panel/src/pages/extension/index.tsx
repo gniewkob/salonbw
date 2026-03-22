@@ -60,7 +60,7 @@ const cards: ExtensionCard[] = [
         colClass: 'ext_1',
         title: 'Fiskalizacja',
         description:
-            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej bezpośrednio w panelu SalonBW. Zobacz, jakie to szybkie i proste!',
+            'Włącz funkcję fiskalizacji i drukuj paragony na drukarce fiskalnej prosto z Versum. Zobacz, jakie to szybkie i proste!',
         icon: 'fiscalization',
         status: 'Nieaktywny',
     },
@@ -100,10 +100,17 @@ export default function ExtensionPage() {
         <RouteGuard roles={['admin']} permission="nav:extension">
             <SalonBWShell role={role}>
                 <div className="salonbw-page" data-testid="extension-page">
-                    <h2 className="extensions-page-heading">
-                        <i className="icon sprite-star" aria-hidden="true" />
-                        {' Dodatki'}
-                    </h2>
+                    <div className="breadcrumbs" e2e-breadcrumbs="">
+                        <ul>
+                            <li>
+                                <div
+                                    className="icon sprite-breadcrumbs_extensions"
+                                    aria-hidden="true"
+                                />
+                                Dodatki
+                            </li>
+                        </ul>
+                    </div>
                     <div className="inner extensions_boxes versum-extension-grid salonbw-extension-grid">
                         {rows.map((row, rowIndex) => (
                             <div
