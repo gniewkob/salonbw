@@ -274,7 +274,6 @@ export default function CommissionsPage() {
                                                 <td>
                                                     <Link
                                                         href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
-                                                        className="salonbw-link"
                                                     >
                                                         {employee.employeeName}
                                                     </Link>
@@ -284,6 +283,10 @@ export default function CommissionsPage() {
                                                         className="button mt-xs"
                                                         prefetch={false}
                                                     >
+                                                        <div
+                                                            className="icon sprite-settings_product_purchase_prices mr-xs"
+                                                            aria-hidden="true"
+                                                        />
                                                         szczegóły
                                                     </Link>
                                                 </td>
