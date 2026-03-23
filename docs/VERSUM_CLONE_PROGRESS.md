@@ -1801,3 +1801,24 @@
 - wynik:
     - usunięty realny bug UX w statystykach: klik z raportów nie prowadzi już do nieistniejących kart pracowników
     - `commissions` jest bliżej wzorca Versum przy pustych / sparsowanych danych, bez ruszania shared shella
+
+### 2026-03-23 - Statistics commissions: aktywny eksport i source-like action bar
+
+- zmiana kodu:
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+        - aktywowany przycisk `pobierz raport Excel`
+        - eksport generuje BOM-prefixed CSV z separatorem `;` i polskim formatowaniem liczb
+        - odtworzony source-like spacing przed tabelą prowizji
+- deploy:
+    - `dashboard` (production): run `23428675404` ✅
+- smoke produkcyjny:
+    - `/statistics/commissions` -> aktywny przycisk `pobierz raport Excel` ✅
+    - `/statistics/commissions` -> zachowana kanoniczna kolejność fallback rows (`Recepcja`, `Gniewko Bodora`, `Aleksandra Bodora`) ✅
+- parity:
+    - `output/parity/2026-03-23-statistics-prod-full/REPORT.md`
+    - `dashboard` -> `5.506%`
+    - `employees` -> `4.167%`
+    - `commissions` -> `6.542%` (poprawa względem `6.718%`)
+- wynik:
+    - ekran `commissions` jest bliżej zachowania i struktury live Versum,
+    - remaining diff nie wygląda już na problem danych ani shared shella, tylko layout/content parity samego bloku raportu.
