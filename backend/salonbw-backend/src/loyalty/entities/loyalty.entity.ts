@@ -5,7 +5,9 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
+    OneToOne,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
 
@@ -91,11 +93,11 @@ export class LoyaltyBalance {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User)
+    @OneToOne(() => User)
     @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @Column({ name: 'user_id' })
+    @Column({ name: 'user_id', unique: true })
     userId: number;
 
     @Column({ name: 'total_points_earned', default: 0 })
@@ -150,6 +152,8 @@ export enum LoyaltyTransactionSource {
 }
 
 @Entity('loyalty_transactions')
+@Index(['userId'])
+@Index(['type', 'isExpired', 'expiresAt'])
 export class LoyaltyTransaction {
     @PrimaryGeneratedColumn()
     id: number;

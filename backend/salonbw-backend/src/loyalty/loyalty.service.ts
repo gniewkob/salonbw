@@ -179,17 +179,11 @@ export class LoyaltyService {
                 this.updateTier(balance, program);
                 await manager.getRepository(LoyaltyBalance).save(balance);
 
-                const expiresAt = program.pointsExpireMonths
-                    ? new Date(
-                          Date.now() +
-                              program.pointsExpireMonths *
-                                  30 *
-                                  24 *
-                                  60 *
-                                  60 *
-                                  1000,
-                      )
-                    : null;
+                let expiresAt: Date | null = null;
+                if (program.pointsExpireMonths) {
+                    expiresAt = new Date();
+                    expiresAt.setMonth(expiresAt.getMonth() + program.pointsExpireMonths);
+                }
 
                 const txRepo = manager.getRepository(LoyaltyTransaction);
                 const tx = txRepo.create({
@@ -479,10 +473,27 @@ export class LoyaltyService {
                 });
                 const savedTx = await txRepo.save(tx);
 
-                // Atomic increment avoids race condition on reward counter
-                await manager
-                    .getRepository(LoyaltyReward)
-                    .increment({ id: reward.id }, 'currentRedemptions', 1);
+                // Atomic increment with max limit constraint check to avoid overselling race condition
+                if (reward.maxRedemptions) {
+                    const updateResult = await manager
+                        .getRepository(LoyaltyReward)
+                        .createQueryBuilder()
+                        .update()
+                        .set({ currentRedemptions: () => 'current_redemptions + 1' })
+                        .where('id = :id', { id: reward.id })
+                        .andWhere('current_redemptions < max_redemptions')
+                        .execute();
+
+                    if (updateResult.affected === 0) {
+                        throw new BadRequestException(
+                            'Ta nagroda została w międzyczasie wyczerpana.',
+                        );
+                    }
+                } else {
+                    await manager
+                        .getRepository(LoyaltyReward)
+                        .increment({ id: reward.id }, 'currentRedemptions', 1);
+                }
 
                 const redemptionCode =
                     await this.generateRedemptionCode(manager);
@@ -528,40 +539,45 @@ export class LoyaltyService {
         dto: UseRedemptionDto,
         actorId: number,
     ): Promise<LoyaltyRewardRedemption> {
-        const redemption = await this.redemptionRepo.findOne({
-            where: { redemptionCode: dto.redemptionCode.toUpperCase() },
-            relations: ['reward', 'user'],
+        const updated = await this.dataSource.transaction(async (manager) => {
+            const redemptionRepo = manager.getRepository(LoyaltyRewardRedemption);
+
+            const redemption = await redemptionRepo.findOne({
+                where: { redemptionCode: dto.redemptionCode.toUpperCase() },
+                relations: ['reward', 'user'],
+                lock: { mode: 'pessimistic_write' },
+            });
+
+            if (!redemption) {
+                throw new NotFoundException('Kupon nie istnieje');
+            }
+
+            if (redemption.status !== 'active') {
+                throw new BadRequestException(
+                    `Kupon jest już ${redemption.status === 'used' ? 'wykorzystany' : redemption.status}`,
+                );
+            }
+
+            if (redemption.expiresAt && redemption.expiresAt < new Date()) {
+                redemption.status = 'expired';
+                await redemptionRepo.save(redemption);
+                throw new BadRequestException('Kupon wygasł');
+            }
+
+            redemption.status = 'used';
+            redemption.usedAt = new Date();
+            if (dto.appointmentId) {
+                redemption.usedAppointmentId = dto.appointmentId;
+            }
+            redemption.processedById = actorId;
+
+            return redemptionRepo.save(redemption);
         });
-
-        if (!redemption) {
-            throw new NotFoundException('Kupon nie istnieje');
-        }
-
-        if (redemption.status !== 'active') {
-            throw new BadRequestException(
-                `Kupon jest już ${redemption.status === 'used' ? 'wykorzystany' : redemption.status}`,
-            );
-        }
-
-        if (redemption.expiresAt && redemption.expiresAt < new Date()) {
-            redemption.status = 'expired';
-            await this.redemptionRepo.save(redemption);
-            throw new BadRequestException('Kupon wygasł');
-        }
-
-        redemption.status = 'used';
-        redemption.usedAt = new Date();
-        if (dto.appointmentId) {
-            redemption.usedAppointmentId = dto.appointmentId;
-        }
-        redemption.processedById = actorId;
-
-        const updated = await this.redemptionRepo.save(redemption);
 
         await this.logService.logAction(
             { id: actorId } as unknown as User,
             LogAction.LOYALTY_COUPON_USED,
-            { redemptionCode: dto.redemptionCode, userId: redemption.userId },
+            { redemptionCode: dto.redemptionCode, userId: updated.userId },
         );
 
         return updated;
@@ -710,15 +726,28 @@ export class LoyaltyService {
         });
 
         if (!balance) {
-            balance = repo.create({
-                userId,
-                currentBalance: 0,
-                totalPointsEarned: 0,
-                totalPointsSpent: 0,
-                lifetimeTierPoints: 0,
-                tierMultiplier: 1.0,
-            });
-            await repo.save(balance);
+            try {
+                balance = repo.create({
+                    userId,
+                    currentBalance: 0,
+                    totalPointsEarned: 0,
+                    totalPointsSpent: 0,
+                    lifetimeTierPoints: 0,
+                    tierMultiplier: 1.0,
+                });
+                await repo.save(balance);
+            } catch (err: any) {
+                // Fail-safe handling for concurrent creation if unique constraint fails
+                if (err.code === '23505') { // Postgres duplicate key code
+                    balance = await repo.findOne({
+                        where: { userId },
+                        lock: { mode: 'pessimistic_write' },
+                    });
+                    if (!balance) throw err;
+                } else {
+                    throw err;
+                }
+            }
         }
 
         return balance;
@@ -772,40 +801,45 @@ export class LoyaltyService {
             if (chunk.length === 0) break;
 
             for (const tx of chunk) {
-                await this.dataSource.transaction(async (manager) => {
-                    await manager
-                        .getRepository(LoyaltyTransaction)
-                        .update(tx.id, { isExpired: true });
-
-                    const balance = await this.lockOrCreateBalance(
-                        tx.userId,
-                        manager,
-                    );
-                    const expireAmount = Math.min(
-                        tx.points,
-                        balance.currentBalance,
-                    );
-
-                    if (expireAmount > 0) {
-                        balance.currentBalance -= expireAmount;
+                try {
+                    await this.dataSource.transaction(async (manager) => {
                         await manager
-                            .getRepository(LoyaltyBalance)
-                            .save(balance);
+                            .getRepository(LoyaltyTransaction)
+                            .update(tx.id, { isExpired: true });
 
-                        await manager.getRepository(LoyaltyTransaction).save(
-                            manager.getRepository(LoyaltyTransaction).create({
-                                userId: tx.userId,
-                                type: LoyaltyTransactionType.Expire,
-                                source: LoyaltyTransactionSource.Expiration,
-                                points: -expireAmount,
-                                balanceAfter: balance.currentBalance,
-                                description: 'Wygaśnięcie punktów',
-                            }),
+                        const balance = await this.lockOrCreateBalance(
+                            tx.userId,
+                            manager,
+                        );
+                        const expireAmount = Math.min(
+                            tx.points,
+                            balance.currentBalance,
                         );
 
-                        totalExpired += expireAmount;
-                    }
-                });
+                        if (expireAmount > 0) {
+                            balance.currentBalance -= expireAmount;
+                            await manager
+                                .getRepository(LoyaltyBalance)
+                                .save(balance);
+
+                            await manager.getRepository(LoyaltyTransaction).save(
+                                manager.getRepository(LoyaltyTransaction).create({
+                                    userId: tx.userId,
+                                    type: LoyaltyTransactionType.Expire,
+                                    source: LoyaltyTransactionSource.Expiration,
+                                    points: -expireAmount,
+                                    balanceAfter: balance.currentBalance,
+                                    description: 'Wygaśnięcie punktów',
+                                }),
+                            );
+
+                            totalExpired += expireAmount;
+                        }
+                    });
+                } catch (err) {
+                    this.logger.error(`Failed to expire points for transaction ${tx.id}`, err);
+                    // Pętla kontynuuje pomimo niepowodzenia pojedynczego rekordu.
+                }
             }
         }
 
