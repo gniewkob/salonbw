@@ -53,6 +53,9 @@ const isZeroCommissionRow = (row: {
     row.totalRevenue === 0 &&
     row.totalCommission === 0;
 
+const normalizeEmployeeName = (value: string) =>
+    value.trim().toLowerCase().replace(/\s+/g, ' ');
+
 export default function CommissionsPage() {
     const { role } = useAuth();
     const { data: employeeList } = useEmployees();
@@ -84,6 +87,26 @@ export default function CommissionsPage() {
     };
 
     const commissionRows = useMemo(() => {
+        const knownEmployeesByName = new Map(
+            safeEmployeeList.map((employee) => {
+                const fullName =
+                    employee.fullName ||
+                    employee.name ||
+                    [employee.firstName, employee.lastName]
+                        .filter(Boolean)
+                        .join(' ') ||
+                    `Pracownik #${employee.id}`;
+
+                return [
+                    normalizeEmployeeName(fullName),
+                    {
+                        id: employee.id,
+                        name: fullName,
+                    },
+                ] as const;
+            }),
+        );
+
         if (data?.employees?.length) {
             const mappedRows = data.employees.map((employee) => ({
                 employeeId: employee.employeeId,
@@ -103,30 +126,35 @@ export default function CommissionsPage() {
                 return mappedRows;
             }
 
-            const seenNames = new Set(
-                mappedRows.map((employee) =>
-                    employee.employeeName.toLowerCase(),
-                ),
+            const zeroRowsByName = new Map(
+                mappedRows.map((employee) => [
+                    normalizeEmployeeName(employee.employeeName),
+                    employee,
+                ]),
             );
-            const fillerRows = VISUAL_FALLBACK_EMPLOYEES.filter((employee) => {
-                const key = employee.name.toLowerCase();
-                if (seenNames.has(key)) {
-                    return false;
-                }
-                seenNames.add(key);
-                return true;
-            }).map((employee) => ({
-                employeeId: employee.id,
-                employeeName: employee.name,
-                serviceRevenue: 0,
-                serviceCommission: 0,
-                productRevenue: 0,
-                productCommission: 0,
-                totalRevenue: 0,
-                totalCommission: 0,
-            }));
 
-            return [...mappedRows, ...fillerRows].slice(0, 3);
+            return VISUAL_FALLBACK_EMPLOYEES.map((employee) => {
+                const key = normalizeEmployeeName(employee.name);
+                const matchedKnownEmployee = knownEmployeesByName.get(key);
+                const matchedRow = zeroRowsByName.get(key);
+
+                return {
+                    employeeId:
+                        matchedKnownEmployee?.id ??
+                        matchedRow?.employeeId ??
+                        employee.id,
+                    employeeName:
+                        matchedKnownEmployee?.name ??
+                        matchedRow?.employeeName ??
+                        employee.name,
+                    serviceRevenue: matchedRow?.serviceRevenue ?? 0,
+                    serviceCommission: matchedRow?.serviceCommission ?? 0,
+                    productRevenue: matchedRow?.productRevenue ?? 0,
+                    productCommission: matchedRow?.productCommission ?? 0,
+                    totalRevenue: matchedRow?.totalRevenue ?? 0,
+                    totalCommission: matchedRow?.totalCommission ?? 0,
+                };
+            });
         }
 
         const actualEmployees = safeEmployeeList
