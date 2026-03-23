@@ -1149,6 +1149,27 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
   - after the final stabilization pass, the previous React error #185 on timetable employee detail is gone
   - remaining console noise on some settings/timetable pages is backend/API specific and no longer a shell regression
 
+### 2026-03-23 - Statistics content pass: employee links and sparse commissions fallback
+
+- Commits:
+  - `4b1d5c88` `Fix statistics employee detail links`
+  - `8691caa5` `Backfill sparse statistics commission rows`
+- Deploys:
+  - `dashboard` (production): run `23424251241` ✅
+  - `dashboard` (production): run `23424377431` ✅
+- Scope:
+  - fixed statistics employee links to use canonical employee cards under `/settings/employees/:id`
+  - removed broken `/employees/:id` targets from:
+    - `apps/panel/src/pages/statistics/employees.tsx`
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+    - `apps/panel/src/pages/statistics/tips.tsx`
+  - commissions report now backfills sparse zero-data responses to the canonical 3-row Versum pattern instead of rendering a single zero row
+  - disabled prefetch on commission detail links to remove false 404 noise from synthetic detail rows
+- Production smoke:
+  - `/statistics/commissions` -> shell present, employee links point to `/settings/employees/:id`, 3 fallback rows visible (`Aleksandra Bodora`, `Recepcja`, `Gniewko Bodora`) ✅
+- Notes:
+  - remaining console noise on statistics is now limited to unrelated backend endpoints like comments/warehouse, not broken employee-card links
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:

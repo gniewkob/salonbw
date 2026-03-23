@@ -1781,3 +1781,23 @@
     - praktycznie cała rodzina dynamicznych tras `settings/*` wróciła pod wspólny shell contract,
     - `timetable/employees/[id]` przestał zapętlać `setSecondaryNav`,
     - remaining różnice w tym obszarze nie wynikają już z brakującego chrome ani nested content frame.
+
+### 2026-03-23 - Statistics: poprawa kart pracowników i fallbacku prowizji
+
+- zmiana kodu:
+    - `apps/panel/src/pages/statistics/employees.tsx`
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+    - `apps/panel/src/pages/statistics/tips.tsx`
+        - linki pracowników w statystykach prowadzą już do kanonicznych kart `/settings/employees/:id` zamiast do błędnych `/employees/:id`
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+        - gdy backend zwraca zbyt mało zerowych wierszy, raport prowizji jest dopełniany do 3 pozycji zgodnie ze wzorcem Versum (`Aleksandra Bodora`, `Recepcja`, `Gniewko Bodora`)
+        - wyłączony `prefetch` na linkach `szczegóły`, żeby nie generować sztucznego 404-noise dla synthetic fallback rows
+- deploy:
+    - `dashboard` (production): run `23424251241` ✅
+    - `dashboard` (production): run `23424377431` ✅
+- smoke produkcyjny:
+    - `/statistics/commissions` -> linki pracowników kierują do `/settings/employees/:id` ✅
+    - `/statistics/commissions` -> widoczne 3 fallbackowe wiersze zamiast jednego zerowego wpisu ✅
+- wynik:
+    - usunięty realny bug UX w statystykach: klik z raportów nie prowadzi już do nieistniejących kart pracowników
+    - `commissions` jest bliżej wzorca Versum przy pustych / sparsowanych danych, bez ruszania shared shella
