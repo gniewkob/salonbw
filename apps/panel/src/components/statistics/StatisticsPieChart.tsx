@@ -45,17 +45,48 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
         return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} Z`;
     };
 
+    const legendTop = cy - (data.length * 19.5) / 2;
+    const svgWidth = Math.round(height * 1.1);
+
     return (
         <div
-            className="statistics-jqplot-wrap"
+            className="jqplot-target statistics-jqplot-target"
             {...{ style: { width, height, position: 'relative' } }}
         >
-            <svg
-                width={height * 1.1}
+            <canvas
+                width={width}
                 height={height}
-                {...{ style: { position: 'absolute', left: 0, top: 0 } }}
+                className="jqplot-base-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
+            <div
+                className="jqplot-title"
+                style={{ height: 0, width: 0 }}
+                aria-hidden="true"
+            />
+            <canvas
+                width={width}
+                height={height}
+                className="jqplot-grid-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
+            <canvas
+                width={width}
+                height={height}
+                className="jqplot-series-shadowCanvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
+            <svg
+                width={svgWidth}
+                height={height}
+                className="jqplot-series-canvas statistics-jqplot-series-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
                 aria-hidden="true"
             >
+                <rect width={svgWidth} height={height} fill="#fff" />
                 {slices.map((slice, i) => {
                     const isFullCircle =
                         slice.endAngle - slice.startAngle >=
@@ -80,43 +111,33 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
                 })}
             </svg>
             <table
-                className="statistics-jqplot-legend"
-                {...{
-                    style: {
-                        position: 'absolute',
-                        right: 0,
-                        top: cy - (data.length * 20) / 2,
-                    },
-                }}
+                className="jqplot-table-legend"
+                style={{ position: 'absolute', right: 0, top: legendTop }}
             >
                 <tbody>
                     {data.map((d, i) => (
-                        <tr key={i}>
+                        <tr key={i} className="jqplot-table-legend">
                             <td
-                                {...{
-                                    style: {
-                                        paddingTop: i > 0 ? '0.5em' : 0,
-                                    },
+                                className="jqplot-table-legend jqplot-table-legend-swatch"
+                                style={{
+                                    textAlign: 'center',
+                                    paddingTop: i > 0 ? '0.5em' : '0px',
                                 }}
                             >
-                                <div className="statistics-jqplot-swatch-outer">
+                                <div className="jqplot-table-legend-swatch-outline">
                                     <div
-                                        className="statistics-jqplot-swatch"
-                                        {...{
-                                            style: {
-                                                backgroundColor: d.color,
-                                                borderColor: d.color,
-                                            },
+                                        className="jqplot-table-legend-swatch"
+                                        style={{
+                                            backgroundColor: d.color,
+                                            borderColor: d.color,
                                         }}
                                     />
                                 </div>
                             </td>
                             <td
-                                className="statistics-jqplot-label"
-                                {...{
-                                    style: {
-                                        paddingTop: i > 0 ? '0.5em' : 0,
-                                    },
+                                className="jqplot-table-legend jqplot-table-legend-label"
+                                style={{
+                                    paddingTop: i > 0 ? '0.5em' : '0px',
                                 }}
                             >
                                 {d.label}
@@ -125,6 +146,32 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
                     ))}
                 </tbody>
             </table>
+            <canvas
+                width={width}
+                height={height}
+                className="jqplot-highlight-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
+            <div
+                className="jqplot-highlighter-tooltip"
+                style={{ position: 'absolute', display: 'none' }}
+                aria-hidden="true"
+            />
+            <canvas
+                width={width}
+                height={height}
+                className="jqplot-pieRenderer-highlight-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
+            <canvas
+                width={width}
+                height={height}
+                className="jqplot-event-canvas"
+                style={{ position: 'absolute', left: 0, top: 0 }}
+                aria-hidden="true"
+            />
         </div>
     );
 }
