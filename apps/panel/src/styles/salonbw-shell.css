@@ -3052,120 +3052,32 @@ body.e2e-statistics .main-content .inner {
     line-height: 20px;
 }
 
-/* Bootstrap-style float grid for statistics */
-.statistics-row {
-    margin-right: -15px;
-    margin-left: -15px;
-    overflow: hidden;
-}
-
-.statistics-row::after {
+/* Source-like statistics grid and content classes */
+.statistics-module .row::after {
     content: '';
     display: table;
     clear: both;
 }
 
-.statistics-col-5 {
+.statistics-module .col-lg-5,
+.statistics-module .col-lg-7 {
     float: left;
+    padding: 0 15px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.statistics-module .col-lg-5 {
     width: 41.6667%;
-    padding: 0 15px;
-    position: relative;
-    box-sizing: border-box;
 }
 
-.statistics-col-7 {
-    float: left;
+.statistics-module .col-lg-7 {
     width: 58.3333%;
-    padding: 0 15px;
-    position: relative;
-    box-sizing: border-box;
 }
 
-.statistics-clearfix {
-    clear: both;
-    display: block;
-}
-
-/* Price summary table (.data_table.compact_cells.no_hover) */
-.statistics-price-summary {
+.price_summary {
     font-size: 13px;
     line-height: 20px;
-}
-
-.statistics-data-table {
-    display: block;
-}
-
-.statistics-data-table table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-.statistics-data-table th {
-    font-size: 11px;
-    font-weight: 600;
-    color: #313140;
-    background: #f5f8fa;
-    border: 1px solid #ccd6dd;
-    padding: 5px 7px;
-    text-align: left;
-}
-
-.statistics-data-table td {
-    font-size: 13px;
-    font-weight: 400;
-    color: #313140;
-    background: #fff;
-    padding: 5px 7px;
-    text-align: left;
-}
-
-.statistics-td-empty {
-    background: #f5f8fa !important;
-    border: 1px solid #ccd6dd !important;
-}
-
-.statistics-td-summary {
-    text-align: right !important;
-    font-size: 13px !important;
-    white-space: normal !important;
-    border: 1px solid #ccd6dd !important;
-    background: #f5f8fa !important;
-    padding: 5px 7px !important;
-}
-
-.statistics-td-no-right {
-    border-right: none !important;
-}
-
-.statistics-td-no-left {
-    border-left: none !important;
-}
-
-/* Payment chart container */
-.statistics-chart-wrap {
-    width: 500px;
-}
-
-.statistics-chart-title {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 16px;
-    font-size: 13px;
-    color: #313140;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.statistics-info-tip {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%23337ab7'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") no-repeat center;
-    cursor: pointer;
-    flex-shrink: 0;
 }
 
 /* jqplot-style chart legend */
@@ -3199,34 +3111,56 @@ body.e2e-statistics .main-content .inner {
     white-space: nowrap;
 }
 
-/* Employee chart */
-.statistics-employee-chart-wrap {
-    width: 550px;
-    margin-top: 16px;
+.statistics-module .empty {
+    background: #f5f8fa !important;
+    border: 1px solid #ccd6dd !important;
 }
 
-.statistics-chart-label {
-    text-align: center;
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: #313140;
+.statistics-module .no-right-border {
+    border-right: none !important;
 }
 
-.statistics-wybrana {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #313140;
+.statistics-module .no-left-border {
+    border-left: none !important;
+}
+
+.statistics-module .bigger {
+    font-size: 13px !important;
+}
+
+.statistics-module .text-wrap {
+    white-space: normal !important;
+}
+
+.statistics-module .strong {
+    font-weight: 600;
+}
+
+.statistics-module .mb-m {
+    margin-bottom: 16px;
+}
+
+.statistics-module .info_tip {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.statistics-module .icon.sprite-info_tip2 {
+    width: 16px;
+    height: 16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%23337ab7'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
 }
 
 @media (max-width: 1100px) {
-    .statistics-col-5,
-    .statistics-col-7 {
+    .statistics-module .col-lg-5,
+    .statistics-module .col-lg-7 {
         float: none;
         width: 100%;
         padding: 0;
     }
-    .statistics-chart-wrap,
-    .statistics-employee-chart-wrap {
+    .statistics-module [style*='width: 500px'],
+    .statistics-module [style*='width: 550px'] {
         width: 100%;
     }
 }
