@@ -1170,6 +1170,28 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
 - Notes:
   - remaining console noise on statistics is now limited to unrelated backend endpoints like comments/warehouse, not broken employee-card links
 
+### 2026-03-23 - Statistics commissions: source-like action bar and active Excel export
+
+- Commit:
+  - `5c58adbe` `Align statistics commissions action bar with source`
+- Deploy:
+  - `dashboard` (production): run `23428675404` ✅
+- Scope:
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+    - enabled the Excel export action instead of rendering it as disabled
+    - export now generates BOM-prefixed CSV with `;` separators and Polish decimal formatting
+    - aligned the content block closer to the source by restoring the source-like spacing before the table
+- Production smoke:
+  - `/statistics/commissions` -> active `pobierz raport Excel` button visible ✅
+  - `/statistics/commissions` -> canonical row order preserved (`Recepcja`, `Gniewko Bodora`, `Aleksandra Bodora`) ✅
+- Parity:
+  - `output/parity/2026-03-23-statistics-prod-full/REPORT.md`
+  - `Statistics dashboard` -> `5.506%`
+  - `Statistics employees` -> `4.167%`
+  - `Statistics commissions` -> `6.542%` (improved from `6.718%`)
+- Notes:
+  - the commissions screen is now closer to the live source behaviorally, but the remaining strict diff is still content-layout specific rather than shell-related
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
