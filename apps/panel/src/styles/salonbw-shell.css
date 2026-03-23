@@ -3168,19 +3168,35 @@ body.e2e-statistics .main-content .inner {
     flex-shrink: 0;
 }
 
-/* jqplot-style chart containers */
-.statistics-jqplot-target {
-    overflow: hidden;
+/* jqplot-style chart legend */
+.statistics-jqplot-wrap {
+    position: relative;
 }
 
-.statistics-jqplot-target .jqplot-grid-canvas {
-    box-sizing: border-box;
-    border: 1px solid #ccd6dd;
-    background: #fff;
+.statistics-jqplot-legend {
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 9.75px;
+    color: #666;
+    border-collapse: collapse;
 }
 
-.statistics-jqplot-series-canvas {
-    overflow: visible;
+.statistics-jqplot-swatch-outer {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statistics-jqplot-swatch {
+    width: 12px;
+    height: 12px;
+    border: 1px solid;
+}
+
+.statistics-jqplot-label {
+    padding-left: 4px;
+    white-space: nowrap;
 }
 
 /* Employee chart */
