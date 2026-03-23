@@ -3171,6 +3171,10 @@ body.e2e-statistics .main-content .inner {
 /* jqplot-style chart legend */
 .statistics-jqplot-wrap {
     position: relative;
+    background: #fff;
+    border: 2px solid #ccd6dd;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .statistics-jqplot-legend {
@@ -3178,6 +3182,15 @@ body.e2e-statistics .main-content .inner {
     font-size: 9.75px;
     color: #666;
     border-collapse: collapse;
+}
+
+.statistics-jqplot-wrap .jqplot-base-canvas,
+.statistics-jqplot-wrap .jqplot-grid-canvas,
+.statistics-jqplot-wrap .jqplot-series-shadowCanvas,
+.statistics-jqplot-wrap .jqplot-highlight-canvas,
+.statistics-jqplot-wrap .jqplot-pieRenderer-highlight-canvas,
+.statistics-jqplot-wrap .jqplot-event-canvas {
+    display: block;
 }
 
 .statistics-jqplot-swatch-outer {
@@ -3197,6 +3210,11 @@ body.e2e-statistics .main-content .inner {
 .statistics-jqplot-label {
     padding-left: 4px;
     white-space: nowrap;
+}
+
+.statistics-jqplot-wrap .jqplot-table-legend-swatch-outline {
+    width: 16px;
+    height: 16px;
 }
 
 /* Employee chart */
