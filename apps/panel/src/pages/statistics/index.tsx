@@ -638,7 +638,6 @@ function StatisticsPageContent() {
                                     />
                                 </div>
                                 <StatisticsPieChart
-                                    id="chart"
                                     width={500}
                                     height={300}
                                     data={paymentRows.map((row) => {
@@ -807,7 +806,6 @@ function StatisticsPageContent() {
                             Udział pracowników w utargu
                         </p>
                         <StatisticsPieChart
-                            id="chart2"
                             width={550}
                             height={320}
                             data={employeeChartData.map((employee) => ({

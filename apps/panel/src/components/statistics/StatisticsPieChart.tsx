@@ -7,7 +7,6 @@ interface PieSlice {
 }
 
 interface Props {
-    id?: string;
     width: number;
     height: number;
     data: PieSlice[];
@@ -17,7 +16,7 @@ interface Props {
  * jqplot-style pie chart — SVG with positioned legend table.
  * Matches source UI's #chart / #chart2 visual output.
  */
-export default function StatisticsPieChart({ id, width, height, data }: Props) {
+export default function StatisticsPieChart({ width, height, data }: Props) {
     const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
     const slices = useMemo(() => {
@@ -48,36 +47,12 @@ export default function StatisticsPieChart({ id, width, height, data }: Props) {
 
     return (
         <div
-            id={id}
-            className="jqplot-target statistics-jqplot-wrap"
+            className="statistics-jqplot-wrap"
             {...{ style: { width, height, position: 'relative' } }}
         >
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-base-canvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
-            <div className="jqplot-title" style={{ height: 0, width: 0 }} />
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-grid-canvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-series-shadowCanvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
             <svg
-                width={width}
+                width={height * 1.1}
                 height={height}
-                className="jqplot-series-canvas"
                 {...{ style: { position: 'absolute', left: 0, top: 0 } }}
                 aria-hidden="true"
             >
@@ -105,7 +80,7 @@ export default function StatisticsPieChart({ id, width, height, data }: Props) {
                 })}
             </svg>
             <table
-                className="jqplot-table-legend statistics-jqplot-legend"
+                className="statistics-jqplot-legend"
                 {...{
                     style: {
                         position: 'absolute',
@@ -116,19 +91,17 @@ export default function StatisticsPieChart({ id, width, height, data }: Props) {
             >
                 <tbody>
                     {data.map((d, i) => (
-                        <tr key={i} className="jqplot-table-legend">
+                        <tr key={i}>
                             <td
-                                className="jqplot-table-legend jqplot-table-legend-swatch"
                                 {...{
                                     style: {
-                                        textAlign: 'center',
                                         paddingTop: i > 0 ? '0.5em' : 0,
                                     },
                                 }}
                             >
-                                <div className="jqplot-table-legend-swatch-outline statistics-jqplot-swatch-outer">
+                                <div className="statistics-jqplot-swatch-outer">
                                     <div
-                                        className="jqplot-table-legend-swatch statistics-jqplot-swatch"
+                                        className="statistics-jqplot-swatch"
                                         {...{
                                             style: {
                                                 backgroundColor: d.color,
@@ -139,7 +112,7 @@ export default function StatisticsPieChart({ id, width, height, data }: Props) {
                                 </div>
                             </td>
                             <td
-                                className="jqplot-table-legend jqplot-table-legend-label statistics-jqplot-label"
+                                className="statistics-jqplot-label"
                                 {...{
                                     style: {
                                         paddingTop: i > 0 ? '0.5em' : 0,
@@ -152,31 +125,6 @@ export default function StatisticsPieChart({ id, width, height, data }: Props) {
                     ))}
                 </tbody>
             </table>
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-highlight-canvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
-            <div
-                className="jqplot-highlighter-tooltip"
-                style={{ position: 'absolute', display: 'none' }}
-            />
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-pieRenderer-highlight-canvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
-            <canvas
-                width={width}
-                height={height}
-                className="jqplot-event-canvas"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-                aria-hidden="true"
-            />
         </div>
     );
 }
