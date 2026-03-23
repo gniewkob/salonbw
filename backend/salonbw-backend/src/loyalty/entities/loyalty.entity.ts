@@ -181,6 +181,9 @@ export class LoyaltyTransaction {
     @Column()
     points: number;
 
+    @Column({ name: 'points_remaining', nullable: true })
+    pointsRemaining: number;
+
     @Column({ name: 'balance_after' })
     balanceAfter: number;
 
