@@ -705,28 +705,27 @@ function StatisticsPageContent() {
                                             )}
                                         </td>
                                         <td>
-                                            {employee.serviceRevenue.toFixed(2)}
-                                            &nbsp;zł
+                                            {formatMoney(
+                                                employee.serviceRevenue,
+                                            )}
                                         </td>
                                         <td>
-                                            {(
-                                                employee.serviceRevenue / 1.23
-                                            ).toFixed(2)}
-                                            &nbsp;zł
+                                            {formatMoney(
+                                                employee.serviceRevenue / 1.23,
+                                            )}
                                         </td>
                                         <td>
-                                            {employee.productRevenue.toFixed(2)}
-                                            &nbsp;zł
+                                            {formatMoney(
+                                                employee.productRevenue,
+                                            )}
                                         </td>
                                         <td>
-                                            {(
-                                                employee.productRevenue / 1.23
-                                            ).toFixed(2)}
-                                            &nbsp;zł
+                                            {formatMoney(
+                                                employee.productRevenue / 1.23,
+                                            )}
                                         </td>
                                         <td>
-                                            {employee.totalRevenue.toFixed(2)}
-                                            &nbsp;zł
+                                            {formatMoney(employee.totalRevenue)}
                                         </td>
                                         <td>
                                             {reportTotals.dayRevenue > 0
