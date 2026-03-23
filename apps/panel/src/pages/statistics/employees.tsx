@@ -22,6 +22,8 @@ interface EmployeeActivitySummary {
     };
 }
 
+const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
+
 const toNumber = (value: unknown): number => {
     if (typeof value === 'number') {
         return Number.isFinite(value) ? value : 0;
@@ -158,7 +160,7 @@ export default function EmployeeActivityPage() {
                                             >
                                                 <td>
                                                     <Link
-                                                        href={`/employees/${employee.employeeId}`}
+                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
                                                         className="salonbw-link"
                                                     >
                                                         {employee.employeeName}

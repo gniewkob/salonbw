@@ -13,6 +13,7 @@ const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -2, name: 'Gniewko Bodora' },
     { id: -3, name: 'Aleksandra Bodora' },
 ];
+const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
 
 const toNumber = (value: unknown): number => {
     if (typeof value === 'number') {
@@ -81,18 +82,32 @@ export default function CommissionsPage() {
             }));
         }
 
-        const fallbackEmployees = safeEmployeeList.length
-            ? safeEmployeeList.slice(0, 3).map((employee) => ({
-                  id: employee.id,
-                  name:
-                      employee.fullName ||
-                      employee.name ||
-                      [employee.firstName, employee.lastName]
-                          .filter(Boolean)
-                          .join(' ') ||
-                      `Pracownik #${employee.id}`,
-              }))
-            : VISUAL_FALLBACK_EMPLOYEES;
+        const actualEmployees = safeEmployeeList
+            .slice(0, 3)
+            .map((employee) => ({
+                id: employee.id,
+                name:
+                    employee.fullName ||
+                    employee.name ||
+                    [employee.firstName, employee.lastName]
+                        .filter(Boolean)
+                        .join(' ') ||
+                    `Pracownik #${employee.id}`,
+            }));
+        const seenNames = new Set(
+            actualEmployees.map((employee) => employee.name.toLowerCase()),
+        );
+        const fallbackEmployees = [
+            ...actualEmployees,
+            ...VISUAL_FALLBACK_EMPLOYEES.filter((employee) => {
+                const key = employee.name.toLowerCase();
+                if (seenNames.has(key)) {
+                    return false;
+                }
+                seenNames.add(key);
+                return true;
+            }),
+        ].slice(0, 3);
 
         return fallbackEmployees.map((employee) => {
             return {
@@ -183,7 +198,7 @@ export default function CommissionsPage() {
                                             >
                                                 <td>
                                                     <Link
-                                                        href={`/employees/${employee.employeeId}`}
+                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
                                                         className="salonbw-link"
                                                     >
                                                         {employee.employeeName}

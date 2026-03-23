@@ -5,6 +5,8 @@ import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTipsSummary } from '@/hooks/useStatistics';
 
+const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
+
 export default function TipsPage() {
     const { role } = useAuth();
     const [range, setRange] = useState<'today' | 'this_week' | 'this_month'>(
@@ -146,7 +148,7 @@ export default function TipsPage() {
                                             <tr key={employee.employeeId}>
                                                 <td>
                                                     <Link
-                                                        href={`/employees/${employee.employeeId}`}
+                                                        href={`${EMPLOYEE_DETAILS_BASE_PATH}/${employee.employeeId}`}
                                                         className="salonbw-link"
                                                     >
                                                         {employee.employeeName}
