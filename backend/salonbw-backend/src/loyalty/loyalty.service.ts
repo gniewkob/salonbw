@@ -295,7 +295,7 @@ export class LoyaltyService {
         query: RewardQueryDto,
     ): Promise<{ data: LoyaltyReward[]; total: number }> {
         const where: FindOptionsWhere<LoyaltyReward> = {};
-        const page = query.page ?? 1;
+        const page = Math.max(1, query.page ?? 1);
         const limit = query.limit ?? 20;
 
         if (query.type) {
@@ -600,7 +600,7 @@ export class LoyaltyService {
         query: LoyaltyTransactionQueryDto,
     ): Promise<{ data: LoyaltyTransaction[]; total: number }> {
         const where: FindOptionsWhere<LoyaltyTransaction> = {};
-        const page = query.page ?? 1;
+        const page = Math.max(1, query.page ?? 1);
         const limit = query.limit ?? 20;
 
         if (query.userId) {
@@ -848,15 +848,24 @@ export class LoyaltyService {
             for (const tx of chunk) {
                 try {
                     await this.dataSource.transaction(async (manager) => {
-                        const expireAmount = tx.pointsRemaining ?? 0;
+                        // Re-fetch the transaction inside the lock to avoid Stale Read.
+                        // Its pointsRemaining might have been depleted by deductPoints since the chunk was fetched.
+                        const freshTx = await manager.getRepository(LoyaltyTransaction).findOne({
+                            where: { id: tx.id },
+                            lock: { mode: 'pessimistic_write' },
+                        });
+
+                        if (!freshTx || freshTx.isExpired) return;
+                        
+                        const expireAmount = freshTx.pointsRemaining ?? 0;
 
                         await manager
                             .getRepository(LoyaltyTransaction)
-                            .update(tx.id, { isExpired: true, pointsRemaining: 0 });
+                            .update(freshTx.id, { isExpired: true, pointsRemaining: 0 });
 
                         if (expireAmount > 0) {
                             const balance = await this.lockOrCreateBalance(
-                                tx.userId,
+                                freshTx.userId,
                                 manager,
                             );
 
@@ -873,7 +882,7 @@ export class LoyaltyService {
 
                                 await manager.getRepository(LoyaltyTransaction).save(
                                     manager.getRepository(LoyaltyTransaction).create({
-                                        userId: tx.userId,
+                                        userId: freshTx.userId,
                                         type: LoyaltyTransactionType.Expire,
                                         source: LoyaltyTransactionSource.Expiration,
                                         points: -actualDeduction,
