@@ -9,6 +9,7 @@ import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import {
     Repository,
     FindOptionsWhere,
+    MoreThan,
     MoreThanOrEqual,
     LessThanOrEqual,
     Between,
@@ -191,6 +192,7 @@ export class LoyaltyService {
                     type: LoyaltyTransactionType.Earn,
                     source: dto.source,
                     points: pts,
+                    pointsRemaining: pts,
                     balanceAfter: balance.currentBalance,
                     appointmentId: dto.appointmentId,
                     referralUserId: dto.referralUserId,
@@ -261,7 +263,7 @@ export class LoyaltyService {
             if (dto.points > 0) {
                 balance.totalPointsEarned += dto.points;
             } else {
-                balance.totalPointsSpent += Math.abs(dto.points);
+                await this.deductPoints(balance, Math.abs(dto.points), manager);
             }
             await manager.getRepository(LoyaltyBalance).save(balance);
 
@@ -271,6 +273,7 @@ export class LoyaltyService {
                 type: LoyaltyTransactionType.Adjust,
                 source: LoyaltyTransactionSource.Manual,
                 points: dto.points,
+                pointsRemaining: dto.points > 0 ? dto.points : undefined,
                 balanceAfter: newBalance,
                 description: dto.description,
                 performedById: actorId,
@@ -456,8 +459,7 @@ export class LoyaltyService {
                     );
                 }
 
-                balance.currentBalance -= reward.pointsCost;
-                balance.totalPointsSpent += reward.pointsCost;
+                await this.deductPoints(balance, reward.pointsCost, manager);
                 await manager.getRepository(LoyaltyBalance).save(balance);
 
                 const txRepo = manager.getRepository(LoyaltyTransaction);
@@ -711,6 +713,49 @@ export class LoyaltyService {
     }
 
     /**
+     * Deducts points from a user's balance using FIFO logic.
+     * Searches for the oldest valid Earn transactions with remaining points.
+     */
+    private async deductPoints(
+        balance: LoyaltyBalance,
+        amount: number,
+        manager: EntityManager,
+    ): Promise<void> {
+        if (amount <= 0) return;
+        if (balance.currentBalance < amount) {
+            throw new BadRequestException(
+                `Niewystarczająca liczba punktów. Dostępne: ${balance.currentBalance}`,
+            );
+        }
+
+        const earnTxs = await manager.getRepository(LoyaltyTransaction).find({
+            where: {
+                userId: balance.userId,
+                type: LoyaltyTransactionType.Earn,
+                isExpired: false,
+                pointsRemaining: MoreThan(0),
+            },
+            order: { createdAt: 'ASC' },
+            lock: { mode: 'pessimistic_write' },
+        });
+
+        let toDeduct = amount;
+
+        for (const tx of earnTxs) {
+            if (toDeduct <= 0) break;
+
+            const deductedFromTx = Math.min(tx.pointsRemaining, toDeduct);
+            tx.pointsRemaining -= deductedFromTx;
+            toDeduct -= deductedFromTx;
+
+            await manager.getRepository(LoyaltyTransaction).save(tx);
+        }
+
+        balance.currentBalance -= amount;
+        balance.totalPointsSpent += amount;
+    }
+
+    /**
      * Lock-or-create the balance row for the given user within an active
      * transaction.  Uses pessimistic_write so concurrent operations on the
      * same user block until the first one commits.
@@ -803,37 +848,42 @@ export class LoyaltyService {
             for (const tx of chunk) {
                 try {
                     await this.dataSource.transaction(async (manager) => {
+                        const expireAmount = tx.pointsRemaining ?? 0;
+
                         await manager
                             .getRepository(LoyaltyTransaction)
-                            .update(tx.id, { isExpired: true });
-
-                        const balance = await this.lockOrCreateBalance(
-                            tx.userId,
-                            manager,
-                        );
-                        const expireAmount = Math.min(
-                            tx.points,
-                            balance.currentBalance,
-                        );
+                            .update(tx.id, { isExpired: true, pointsRemaining: 0 });
 
                         if (expireAmount > 0) {
-                            balance.currentBalance -= expireAmount;
-                            await manager
-                                .getRepository(LoyaltyBalance)
-                                .save(balance);
-
-                            await manager.getRepository(LoyaltyTransaction).save(
-                                manager.getRepository(LoyaltyTransaction).create({
-                                    userId: tx.userId,
-                                    type: LoyaltyTransactionType.Expire,
-                                    source: LoyaltyTransactionSource.Expiration,
-                                    points: -expireAmount,
-                                    balanceAfter: balance.currentBalance,
-                                    description: 'Wygaśnięcie punktów',
-                                }),
+                            const balance = await this.lockOrCreateBalance(
+                                tx.userId,
+                                manager,
                             );
 
-                            totalExpired += expireAmount;
+                            const actualDeduction = Math.min(
+                                expireAmount,
+                                balance.currentBalance,
+                            );
+
+                            if (actualDeduction > 0) {
+                                balance.currentBalance -= actualDeduction;
+                                await manager
+                                    .getRepository(LoyaltyBalance)
+                                    .save(balance);
+
+                                await manager.getRepository(LoyaltyTransaction).save(
+                                    manager.getRepository(LoyaltyTransaction).create({
+                                        userId: tx.userId,
+                                        type: LoyaltyTransactionType.Expire,
+                                        source: LoyaltyTransactionSource.Expiration,
+                                        points: -actualDeduction,
+                                        balanceAfter: balance.currentBalance,
+                                        description: 'Wygaśnięcie punktów',
+                                    }),
+                                );
+
+                                totalExpired += actualDeduction;
+                            }
                         }
                     });
                 } catch (err) {
