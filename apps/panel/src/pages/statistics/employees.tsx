@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
+import StatisticsToolbar from '@/components/statistics/StatisticsToolbar';
 
 interface EmployeeActivity {
     employeeId: number;
@@ -112,61 +113,13 @@ export default function EmployeeActivityPage() {
                     ]}
                 />
 
-                <div className="actions">
-                    <div className="pull-left statistics_date">
-                        <button
-                            type="button"
-                            className="button button-link button_prev mr-s"
-                            onClick={() => navigateDate('prev')}
-                            aria-label="Poprzedni dzień"
-                        >
-                            <span className="fc-icon fc-icon-left-single-arrow" />
-                        </button>
-                        <div id="choose_date">
-                            <form
-                                className="date_range_box"
-                                onSubmit={(event) => event.preventDefault()}
-                            >
-                                <input
-                                    type="text"
-                                    id="date_range"
-                                    name="date_range"
-                                    readOnly
-                                    value={selectedDate}
-                                    aria-label="Data"
-                                />
-                                <input
-                                    type="date"
-                                    className="statistics-date-picker-hidden"
-                                    value={selectedDate}
-                                    aria-label="Wybierz datę"
-                                    onChange={(event) =>
-                                        setSelectedDate(event.target.value)
-                                    }
-                                />
-                            </form>
-                        </div>
-                        <button
-                            type="button"
-                            className="button button-link button_next ml-s"
-                            onClick={() => navigateDate('next')}
-                            aria-label="Następny dzień"
-                        >
-                            <span className="fc-icon fc-icon-right-single-arrow" />
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        className="button button-link statistics-print-button"
-                        onClick={() => window.print()}
-                        aria-label="Drukuj"
-                    >
-                        <div
-                            className="icon sprite-print_blue"
-                            aria-hidden="true"
-                        />
-                    </button>
-                </div>
+                <StatisticsToolbar
+                    date={selectedDate}
+                    onPrev={() => navigateDate('prev')}
+                    onNext={() => navigateDate('next')}
+                    onDateChange={setSelectedDate}
+                    onPrint={() => window.print()}
+                />
 
                 {loading ? (
                     <div className="salonbw-muted p-20">Ładowanie...</div>
@@ -190,21 +143,12 @@ export default function EmployeeActivityPage() {
                                     <tr>
                                         <th>Pracownik</th>
                                         <th>Przepracowany czas</th>
-                                        <th>Procent</th>
                                         <th>Liczba wizyt</th>
                                     </tr>
                                     {rows.map((employee, i) => {
                                         const empMinutes = toNumber(
                                             employee.workTimeMinutes,
                                         );
-                                        const pct =
-                                            totalWorkMinutes > 0
-                                                ? Math.round(
-                                                      (empMinutes /
-                                                          totalWorkMinutes) *
-                                                          100,
-                                                  )
-                                                : 0;
                                         return (
                                             <tr
                                                 key={employee.employeeId}
@@ -223,7 +167,6 @@ export default function EmployeeActivityPage() {
                                                 <td>
                                                     {formatWorkTime(empMinutes)}
                                                 </td>
-                                                <td>{pct}%</td>
                                                 <td>
                                                     {toNumber(
                                                         employee.appointmentsCount,
@@ -240,7 +183,6 @@ export default function EmployeeActivityPage() {
                                     <tr>
                                         <th aria-label="Pracownik" />
                                         <th>Przepracowany czas</th>
-                                        <th>Procent</th>
                                         <th>Liczba wizyt</th>
                                     </tr>
                                     <tr>
@@ -250,7 +192,6 @@ export default function EmployeeActivityPage() {
                                         <td>
                                             {formatWorkTime(totalWorkMinutes)}
                                         </td>
-                                        <td>100%</td>
                                         <td>{totalAppointments}</td>
                                     </tr>
                                 </tbody>

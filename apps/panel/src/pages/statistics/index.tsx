@@ -22,6 +22,7 @@ import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import StatisticsPieChart from '@/components/statistics/StatisticsPieChart';
+import StatisticsToolbar from '@/components/statistics/StatisticsToolbar';
 
 const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -1, name: 'Recepcja' },
@@ -505,79 +506,15 @@ function StatisticsPageContent() {
                 ]}
             />
 
-            <div className="actions">
-                <div className="pull-left statistics_date">
-                    <button
-                        type="button"
-                        className="button button-link button_prev mr-s"
-                        onClick={() => navigateDate('prev')}
-                        aria-label="Poprzedni dzień"
-                    >
-                        <span
-                            className="fc-icon fc-icon-left-single-arrow"
-                            aria-hidden="true"
-                        />
-                    </button>
-                    <div id="choose_date">
-                        <form
-                            className="date_range_box"
-                            onSubmit={(event) => event.preventDefault()}
-                        >
-                            <input
-                                id="date_range"
-                                name="date_range"
-                                type="text"
-                                readOnly
-                                value={reportDate}
-                                aria-label="Data raportu"
-                            />
-                            <input
-                                id="report-date-picker"
-                                type="date"
-                                className="statistics-date-picker-hidden"
-                                value={reportDate}
-                                aria-label="Wybierz datę raportu"
-                                onChange={(event) =>
-                                    setReportDate(event.target.value)
-                                }
-                            />
-                        </form>
-                    </div>
-                    <button
-                        type="button"
-                        className="button button-link button_next ml-s"
-                        onClick={() => navigateDate('next')}
-                        aria-label="Następny dzień"
-                    >
-                        <span
-                            className="fc-icon fc-icon-right-single-arrow"
-                            aria-hidden="true"
-                        />
-                    </button>
-                </div>
-                <button
-                    type="button"
-                    className="button"
-                    onClick={downloadCsvReport}
-                >
-                    <div
-                        className="icon sprite-exel_blue mr-xs"
-                        aria-hidden="true"
-                    />
-                    pobierz raport Excel
-                </button>
-                <button
-                    type="button"
-                    className="button button-link statistics-print-button"
-                    onClick={() => window.print()}
-                    aria-label="Drukuj"
-                >
-                    <div
-                        className="icon sprite-print_blue"
-                        aria-hidden="true"
-                    />
-                </button>
-            </div>
+            <StatisticsToolbar
+                date={reportDate}
+                dateLabel="Data raportu"
+                onPrev={() => navigateDate('prev')}
+                onNext={() => navigateDate('next')}
+                onDateChange={setReportDate}
+                onExcel={downloadCsvReport}
+                onPrint={() => window.print()}
+            />
 
             {reportLoading ? (
                 <div className="salonbw-muted p-20">Ładowanie raportu...</div>
