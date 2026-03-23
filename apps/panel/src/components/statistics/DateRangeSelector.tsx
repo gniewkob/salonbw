@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { DateRange } from '@/types';
 
@@ -32,23 +33,29 @@ export default function DateRangeSelector({
     customFrom,
     customTo,
 }: Props) {
-    const defaultDate = format(new Date(), 'yyyy-MM-dd');
-    const showCustom = value === DateRange.Custom;
-    const [localFrom, setLocalFrom] = useState(customFrom || defaultDate);
-    const [localTo, setLocalTo] = useState(customTo || defaultDate);
+    const [showCustom, setShowCustom] = useState(value === DateRange.Custom);
+    const [localFrom, setLocalFrom] = useState(
+        customFrom || format(new Date(), 'yyyy-MM-dd'),
+    );
+    const [localTo, setLocalTo] = useState(
+        customTo || format(new Date(), 'yyyy-MM-dd'),
+    );
+
+    // Synchronizacja stanu lokalnego, jeśli propsy z zewnątrz ulegną zmianie
+    useEffect(() => {
+        if (customFrom) setLocalFrom(customFrom);
+    }, [customFrom]);
 
     useEffect(() => {
-        setLocalFrom(customFrom || defaultDate);
-    }, [customFrom, defaultDate]);
-
-    useEffect(() => {
-        setLocalTo(customTo || defaultDate);
-    }, [customTo, defaultDate]);
+        if (customTo) setLocalTo(customTo);
+    }, [customTo]);
 
     const handleRangeChange = (newRange: DateRange) => {
         if (newRange === DateRange.Custom) {
+            setShowCustom(true);
             onChange(newRange, localFrom, localTo);
         } else {
+            setShowCustom(false);
             onChange(newRange);
         }
     };
@@ -63,7 +70,6 @@ export default function DateRangeSelector({
                 {RANGE_OPTIONS.map((option) => (
                     <button
                         key={option.value}
-                        type="button"
                         onClick={() => handleRangeChange(option.value)}
                         className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                             value === option.value
@@ -77,16 +83,10 @@ export default function DateRangeSelector({
             </div>
 
             {showCustom && (
-                <form
-                    className="flex items-center gap-2 ml-2"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        handleCustomApply();
-                    }}
-                >
+                <div className="flex items-center gap-2 ml-2">
                     <input
                         type="date"
-                        aria-label="Określ datę od"
+                        aria-label="Data początkowa"
                         value={localFrom}
                         onChange={(e) => setLocalFrom(e.target.value)}
                         className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -94,18 +94,18 @@ export default function DateRangeSelector({
                     <span className="text-gray-500">-</span>
                     <input
                         type="date"
-                        aria-label="Określ datę do"
+                        aria-label="Data końcowa"
                         value={localTo}
                         onChange={(e) => setLocalTo(e.target.value)}
                         className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     <button
-                        type="submit"
+                        onClick={handleCustomApply}
                         className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                     >
                         Zastosuj
                     </button>
-                </form>
+                </div>
             )}
         </div>
     );
