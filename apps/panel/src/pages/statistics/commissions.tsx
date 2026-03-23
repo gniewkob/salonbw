@@ -6,7 +6,6 @@ import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCommissionReport } from '@/hooks/useStatistics';
-import StatisticsToolbar from '@/components/statistics/StatisticsToolbar';
 
 const VISUAL_FALLBACK_EMPLOYEES = [
     { id: -1, name: 'Recepcja' },
@@ -56,6 +55,29 @@ const isZeroCommissionRow = (row: {
 const normalizeEmployeeName = (value: string) =>
     value.trim().toLowerCase().replace(/\s+/g, ' ');
 
+const formatMoneyValue = (value: unknown): string =>
+    toNumber(value).toFixed(2).replace('.', ',');
+
+const Money = ({ value }: { value: unknown }) => (
+    <>
+        {formatMoneyValue(value)}
+        &nbsp;zł
+    </>
+);
+
+const MoneyWithSuffix = ({
+    value,
+    suffix,
+}: {
+    value: unknown;
+    suffix: string;
+}) => (
+    <>
+        <Money value={value} />
+        <small>{suffix}</small>
+    </>
+);
+
 export default function CommissionsPage() {
     const { role } = useAuth();
     const { data: employeeList } = useEmployees();
@@ -80,10 +102,6 @@ export default function CommissionsPage() {
         const newDate =
             direction === 'prev' ? subDays(current, 1) : addDays(current, 1);
         setSelectedDate(format(newDate, 'yyyy-MM-dd'));
-    };
-
-    const formatMoney = (value: unknown): string => {
-        return toNumber(value).toFixed(2).replace('.', ',') + ' zł';
     };
 
     const downloadCommissionCsv = () => {
@@ -288,14 +306,79 @@ export default function CommissionsPage() {
                     ]}
                 />
 
-                <StatisticsToolbar
-                    date={selectedDate}
-                    onPrev={() => navigateDate('prev')}
-                    onNext={() => navigateDate('next')}
-                    onDateChange={setSelectedDate}
-                    onExcel={downloadCommissionCsv}
-                    onPrint={() => window.print()}
-                />
+                <div className="actions">
+                    <div className="pull-left statistics_date">
+                        <button
+                            type="button"
+                            className="button button-link button_prev mr-s"
+                            onClick={() => navigateDate('prev')}
+                            aria-label="Poprzedni dzień"
+                        >
+                            <span
+                                className="fc-icon fc-icon-left-single-arrow"
+                                aria-hidden="true"
+                            />
+                        </button>
+                        <div id="choose_date">
+                            <form
+                                data-push="true"
+                                className="date_range_box"
+                                onSubmit={(event) => event.preventDefault()}
+                            >
+                                <input
+                                    id="date_range"
+                                    name="date_range"
+                                    type="text"
+                                    readOnly
+                                    value={selectedDate}
+                                    aria-label="Data"
+                                />
+                                <input
+                                    type="date"
+                                    className="statistics-date-picker-hidden"
+                                    value={selectedDate}
+                                    aria-label="Data"
+                                    onChange={(event) =>
+                                        setSelectedDate(event.target.value)
+                                    }
+                                />
+                            </form>
+                        </div>
+                        <button
+                            type="button"
+                            className="button button-link button_next ml-s"
+                            onClick={() => navigateDate('next')}
+                            aria-label="Następny dzień"
+                        >
+                            <span
+                                className="fc-icon fc-icon-right-single-arrow"
+                                aria-hidden="true"
+                            />
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        className="button"
+                        onClick={downloadCommissionCsv}
+                    >
+                        <div
+                            className="icon sprite-exel_blue mr-xs"
+                            aria-hidden="true"
+                        />
+                        pobierz raport Excel
+                    </button>
+                    <button
+                        type="button"
+                        className="button button-link statistics-print-button"
+                        onClick={() => window.print()}
+                        aria-label="Drukuj"
+                    >
+                        <div
+                            className="icon sprite-print_blue"
+                            aria-hidden="true"
+                        />
+                    </button>
+                </div>
 
                 {loading ? (
                     <div className="salonbw-muted p-20">Ładowanie...</div>
@@ -309,7 +392,10 @@ export default function CommissionsPage() {
                             <br className="c" />
                             <br />
                             <div className="data_table">
-                                <table className="table table-bordered">
+                                <table
+                                    className="table table-bordered"
+                                    data-selectable=""
+                                >
                                     <tbody>
                                         <tr>
                                             <th>Pracownik</th>
@@ -319,7 +405,13 @@ export default function CommissionsPage() {
                                             <th>Prowizja z produktów</th>
                                             <th>
                                                 Łącznie obroty{' '}
-                                                <small>brutto</small>
+                                                <small
+                                                    style={{
+                                                        fontWeight: 'normal',
+                                                    }}
+                                                >
+                                                    brutto
+                                                </small>
                                             </th>
                                             <th>Łącznie prowizja</th>
                                         </tr>
@@ -350,35 +442,47 @@ export default function CommissionsPage() {
                                                     </Link>
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.serviceRevenue,
-                                                    )}
+                                                    <Money
+                                                        value={
+                                                            employee.serviceRevenue
+                                                        }
+                                                    />
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.serviceCommission,
-                                                    )}
+                                                    <Money
+                                                        value={
+                                                            employee.serviceCommission
+                                                        }
+                                                    />
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.productRevenue,
-                                                    )}
+                                                    <Money
+                                                        value={
+                                                            employee.productRevenue
+                                                        }
+                                                    />
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.productCommission,
-                                                    )}
+                                                    <Money
+                                                        value={
+                                                            employee.productCommission
+                                                        }
+                                                    />
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.totalRevenue,
-                                                    )}
+                                                    <Money
+                                                        value={
+                                                            employee.totalRevenue
+                                                        }
+                                                    />
                                                 </td>
                                                 <td>
-                                                    {formatMoney(
-                                                        employee.totalCommission,
-                                                    )}
-                                                    <small>brutto</small>
+                                                    <MoneyWithSuffix
+                                                        value={
+                                                            employee.totalCommission
+                                                        }
+                                                        suffix="brutto"
+                                                    />
                                                 </td>
                                             </tr>
                                         ))}
@@ -388,12 +492,21 @@ export default function CommissionsPage() {
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th aria-label="Pracownik" />
+                                            <th />
                                             <th>Obroty na usługach</th>
                                             <th>Prowizja od usług</th>
                                             <th>Obroty na produktach</th>
                                             <th>Prowizja z produktów</th>
-                                            <th>Łącznie obroty brutto</th>
+                                            <th>
+                                                Łącznie obroty{' '}
+                                                <small
+                                                    style={{
+                                                        fontWeight: 'normal',
+                                                    }}
+                                                >
+                                                    brutto
+                                                </small>
+                                            </th>
                                             <th>Łącznie prowizja</th>
                                         </tr>
                                         <tr>
@@ -401,63 +514,83 @@ export default function CommissionsPage() {
                                                 <strong>Łącznie</strong>
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.serviceRevenue,
-                                                )}{' '}
-                                                brutto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.serviceRevenue
+                                                    }
+                                                    suffix="brutto"
+                                                />
                                                 <br />
-                                                {formatMoney(
-                                                    safeTotals.serviceRevenue /
-                                                        1.23,
-                                                )}{' '}
-                                                netto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.serviceRevenue /
+                                                        1.23
+                                                    }
+                                                    suffix="netto"
+                                                />
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.serviceCommission,
-                                                )}{' '}
-                                                brutto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.serviceCommission
+                                                    }
+                                                    suffix="brutto"
+                                                />
                                                 <br />
-                                                {formatMoney(
-                                                    safeTotals.serviceCommission /
-                                                        1.23,
-                                                )}{' '}
-                                                netto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.serviceCommission /
+                                                        1.23
+                                                    }
+                                                    suffix="netto"
+                                                />
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.productRevenue,
-                                                )}{' '}
-                                                brutto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.productRevenue
+                                                    }
+                                                    suffix="brutto"
+                                                />
                                                 <br />
-                                                {formatMoney(
-                                                    safeTotals.productRevenue /
-                                                        1.23,
-                                                )}{' '}
-                                                netto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.productRevenue /
+                                                        1.23
+                                                    }
+                                                    suffix="netto"
+                                                />
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.productCommission,
-                                                )}{' '}
-                                                brutto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.productCommission
+                                                    }
+                                                    suffix="brutto"
+                                                />
                                                 <br />
-                                                {formatMoney(
-                                                    safeTotals.productCommission /
-                                                        1.23,
-                                                )}{' '}
-                                                netto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.productCommission /
+                                                        1.23
+                                                    }
+                                                    suffix="netto"
+                                                />
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.totalRevenue,
-                                                )}
+                                                <Money
+                                                    value={
+                                                        safeTotals.totalRevenue
+                                                    }
+                                                />
                                             </td>
                                             <td>
-                                                {formatMoney(
-                                                    safeTotals.totalCommission,
-                                                )}{' '}
-                                                brutto
+                                                <MoneyWithSuffix
+                                                    value={
+                                                        safeTotals.totalCommission
+                                                    }
+                                                    suffix="brutto"
+                                                />
                                             </td>
                                         </tr>
                                     </tbody>
