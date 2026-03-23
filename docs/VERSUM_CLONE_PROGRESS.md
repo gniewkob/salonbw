@@ -1822,3 +1822,22 @@
 - wynik:
     - ekran `commissions` jest bliżej zachowania i struktury live Versum,
     - remaining diff nie wygląda już na problem danych ani shared shella, tylko layout/content parity samego bloku raportu.
+
+### 2026-03-23 - Statistics commissions: copy-first rewrite paska akcji
+
+- zmiana kodu:
+    - `apps/panel/src/pages/statistics/commissions.tsx`
+        - usunięty wspólny `StatisticsToolbar` tylko dla widoku `commissions`
+        - wstawiony bardziej literalny, source-like blok `.actions` zgodny ze strukturą Versum
+        - summary/header cells dopasowane bliżej oryginalnego markupu
+- deploy:
+    - `dashboard` (production): run `23429330156` ✅
+- smoke produkcyjny:
+    - `/statistics/commissions` -> source-like pasek akcji obecny, widok działa ✅
+    - `/statistics/commissions` -> aktywny eksport Excel nadal działa ✅
+- parity:
+    - `output/parity/2026-03-23-statistics-prod-full/REPORT.md`
+    - `commissions` -> `6.513%` (poprawa względem `6.542%`)
+- wynik:
+    - potwierdzone, że remaining strict diff nie jest już głównie problemem toolbar abstraction,
+    - dalsze zyski trzeba szukać w samym bloku raportu / tabeli albo szerzej w content parity statystyk.
