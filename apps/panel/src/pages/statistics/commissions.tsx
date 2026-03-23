@@ -86,6 +86,64 @@ export default function CommissionsPage() {
         return toNumber(value).toFixed(2).replace('.', ',') + ' zł';
     };
 
+    const downloadCommissionCsv = () => {
+        const escape = (value: unknown) =>
+            `"${String(value ?? '').replaceAll('"', '""')}"`;
+
+        const lines: string[][] = [];
+        lines.push(['sep=;']);
+        lines.push(['Prowizje pracowników']);
+        lines.push(['Data', selectedDate]);
+        lines.push([]);
+        lines.push([
+            'Pracownik',
+            'Obroty na usługach',
+            'Prowizja od usług',
+            'Obroty na produktach',
+            'Prowizja z produktów',
+            'Łącznie obroty brutto',
+            'Łącznie prowizja',
+        ]);
+
+        for (const employee of commissionRows) {
+            lines.push([
+                employee.employeeName,
+                toNumber(employee.serviceRevenue).toFixed(2),
+                toNumber(employee.serviceCommission).toFixed(2),
+                toNumber(employee.productRevenue).toFixed(2),
+                toNumber(employee.productCommission).toFixed(2),
+                toNumber(employee.totalRevenue).toFixed(2),
+                toNumber(employee.totalCommission).toFixed(2),
+            ]);
+        }
+
+        lines.push([]);
+        lines.push([
+            'Łącznie',
+            safeTotals.serviceRevenue.toFixed(2),
+            safeTotals.serviceCommission.toFixed(2),
+            safeTotals.productRevenue.toFixed(2),
+            safeTotals.productCommission.toFixed(2),
+            safeTotals.totalRevenue.toFixed(2),
+            safeTotals.totalCommission.toFixed(2),
+        ]);
+
+        const csv = lines
+            .map((row) => row.map(escape).join(';'))
+            .join('\n')
+            .replaceAll('.', ',');
+
+        const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8',
+        });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `raport-prowizji-${selectedDate}.csv`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    };
+
     const commissionRows = useMemo(() => {
         const knownEmployeesByName = new Map(
             safeEmployeeList.map((employee) => {
@@ -235,8 +293,7 @@ export default function CommissionsPage() {
                     onPrev={() => navigateDate('prev')}
                     onNext={() => navigateDate('next')}
                     onDateChange={setSelectedDate}
-                    onExcel={() => undefined}
-                    excelDisabled
+                    onExcel={downloadCommissionCsv}
                     onPrint={() => window.print()}
                 />
 
@@ -249,6 +306,8 @@ export default function CommissionsPage() {
                 ) : (
                     <div className="overflow_hidden">
                         <div className="description">
+                            <br className="c" />
+                            <br />
                             <div className="data_table">
                                 <table className="table table-bordered">
                                     <tbody>
