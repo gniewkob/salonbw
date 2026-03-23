@@ -1192,6 +1192,28 @@ Goal: Copy Versum panel module-by-module with identical UI, flows, and API contr
 - Notes:
   - the commissions screen is now closer to the live source behaviorally, but the remaining strict diff is still content-layout specific rather than shell-related
 
+### 2026-03-23 - Statistics commissions: copy-first actions rewrite
+
+- Commit:
+  - `dee2c9d7` `Copy source actions into statistics commissions`
+- Deploy:
+  - `dashboard` (production): run `23429330156` ✅
+- Scope:
+  - `apps/panel/src/pages/statistics/commissions.tsx`
+    - removed the shared `StatisticsToolbar` abstraction from the commissions view
+    - inlined a source-like `.actions` block matching the Versum structure more literally
+    - kept React only for date changes, print and CSV export behavior
+    - aligned summary/header cells closer to the source markup
+- Production smoke:
+  - `/statistics/commissions` -> source-like action bar present, page functional ✅
+  - `/statistics/commissions` -> active Excel export still present ✅
+- Parity:
+  - `output/parity/2026-03-23-statistics-prod-full/REPORT.md`
+  - `Statistics commissions` -> `6.513%` (improved from `6.542%`)
+- Notes:
+  - this confirms the remaining mismatch is not primarily caused by the toolbar abstraction
+  - the next meaningful gains are likely in the report table/content block itself or in broader statistics content parity, not shared shell work
+
 ## Instructions for Agents
 
 1. **After every deployment or infrastructure fix** update this file:
