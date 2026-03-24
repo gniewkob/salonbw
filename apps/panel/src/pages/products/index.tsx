@@ -154,8 +154,9 @@ export default function WarehouseProductsPage() {
             heading="Magazyn / Produkty"
             activeTab="products"
         >
-            <div className="row mb-l">
-                <div className="col-sm-4 col-lg-5 input-with-select-sm mb-s mb-md-0">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-2">
+                    {' '}
                     <input
                         type="text"
                         value={search}
@@ -179,134 +180,125 @@ export default function WarehouseProductsPage() {
                         ))}
                     </select>
                 </div>
-                <div className="col-sm-8 col-lg-7">
-                    <div className="d-flex flex-wrap jc-end">
-                        <Link href="/sales/new" className="button ml-xs">
-                            dodaj sprzedaż
-                        </Link>
-                        <Link href="/use/new" className="button ml-xs">
-                            dodaj zużycie
-                        </Link>
-                        <Link
-                            href="/products/new"
-                            className="button button-blue ml-xs"
-                        >
-                            dodaj produkt
-                        </Link>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Link href="/sales/new" className="button ml-xs">
+                        dodaj sprzedaż
+                    </Link>
+                    <Link href="/use/new" className="button ml-xs">
+                        dodaj zużycie
+                    </Link>
+                    <Link
+                        href="/products/new"
+                        className="button button-blue ml-xs"
+                    >
+                        dodaj produkt
+                    </Link>
                 </div>
             </div>
 
-            <div className="column_row data_table">
-                <table className="table-bordered">
-                    <thead>
-                        <tr>
-                            <th className="pointer checkbox_container center_text">
-                                <input
-                                    type="checkbox"
-                                    aria-label="zaznacz wszystkie"
-                                />
-                            </th>
-                            <th>Nazwa</th>
-                            <th>Kategoria</th>
-                            <th>Rodzaj produktu</th>
-                            <th>Kod wewnętrzny (SKU)</th>
-                            <th>Stan magazynowy</th>
-                            <th>Cena sprzedaży</th>
-                            <th className="col-actions-45" aria-label="Akcje" />
+            <table className="table-bordered w-full">
+                <thead>
+                    <tr>
+                        <th className="pointer checkbox_container center_text">
+                            <input
+                                type="checkbox"
+                                aria-label="zaznacz wszystkie"
+                            />
+                        </th>
+                        <th>Nazwa</th>
+                        <th>Kategoria</th>
+                        <th>Rodzaj produktu</th>
+                        <th>Kod wewnętrzny (SKU)</th>
+                        <th>Stan magazynowy</th>
+                        <th>Cena sprzedaży</th>
+                        <th className="col-actions-45" aria-label="Akcje" />
+                    </tr>
+                </thead>
+                <tbody>
+                    {isLoading ? (
+                        <tr className="odd">
+                            <td colSpan={8} className="products-empty">
+                                Ładowanie produktów...
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr className="odd">
-                                <td colSpan={8} className="products-empty">
-                                    Ładowanie produktów...
-                                </td>
-                            </tr>
-                        ) : filteredProducts.length === 0 ? (
-                            <tr className="odd">
-                                <td colSpan={8} className="products-empty">
-                                    Brak produktów spełniających kryteria
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredProducts.map((product, i) => {
-                                const volume =
-                                    Number(product.volumeMl ?? 0) > 0
-                                        ? product.stock *
-                                          Number(product.volumeMl)
-                                        : 0;
-                                return (
-                                    <tr
-                                        key={product.id}
-                                        className={i % 2 === 0 ? 'odd' : 'even'}
-                                    >
-                                        <td className="pointer checkbox_container center_text">
-                                            <input
-                                                type="checkbox"
-                                                aria-label={`zaznacz ${product.name}`}
+                    ) : filteredProducts.length === 0 ? (
+                        <tr className="odd">
+                            <td colSpan={8} className="products-empty">
+                                Brak produktów spełniających kryteria
+                            </td>
+                        </tr>
+                    ) : (
+                        filteredProducts.map((product) => {
+                            const volume =
+                                Number(product.volumeMl ?? 0) > 0
+                                    ? product.stock * Number(product.volumeMl)
+                                    : 0;
+                            return (
+                                <tr key={product.id}>
+                                    <td className="pointer checkbox_container center_text">
+                                        <input
+                                            type="checkbox"
+                                            aria-label={`zaznacz ${product.name}`}
+                                        />
+                                    </td>
+                                    <td className="wrap blue_text pointer link_body">
+                                        <Link
+                                            href={`/products/${product.id}`}
+                                            className="inverse_decoration"
+                                        >
+                                            {product.name}
+                                        </Link>
+                                    </td>
+                                    <td>
+                                        {product.category?.name ??
+                                            'brak kategorii'}
+                                    </td>
+                                    <td>
+                                        {getProductTypeLabel(
+                                            product.productType,
+                                        )}
+                                    </td>
+                                    <td>{product.sku ?? '-'}</td>
+                                    <td>
+                                        {product.stock} {product.unit ?? 'op.'}
+                                        {volume > 0
+                                            ? ` (${volume} ml)`
+                                            : ' (0 ml)'}
+                                    </td>
+                                    <td>
+                                        {Number(product.unitPrice ?? 0)
+                                            .toFixed(2)
+                                            .replace('.', ',')}
+                                        &nbsp;zł
+                                    </td>
+                                    <td className="center_text">
+                                        <Link
+                                            href={`/sales/new?product_id=${product.id}`}
+                                            className="icon_link stockroom_sell"
+                                            title="sprzedaj"
+                                        >
+                                            <i
+                                                className="icon sprite-stock_action_sell"
+                                                aria-hidden="true"
                                             />
-                                        </td>
-                                        <td className="wrap blue_text pointer link_body">
-                                            <Link
-                                                href={`/products/${product.id}`}
-                                                className="inverse_decoration"
-                                            >
-                                                {product.name}
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {product.category?.name ??
-                                                'brak kategorii'}
-                                        </td>
-                                        <td>
-                                            {getProductTypeLabel(
-                                                product.productType,
-                                            )}
-                                        </td>
-                                        <td>{product.sku ?? '-'}</td>
-                                        <td>
-                                            {product.stock}{' '}
-                                            {product.unit ?? 'op.'}
-                                            {volume > 0
-                                                ? ` (${volume} ml)`
-                                                : ' (0 ml)'}
-                                        </td>
-                                        <td>
-                                            {Number(product.unitPrice ?? 0)
-                                                .toFixed(2)
-                                                .replace('.', ',')}
-                                            &nbsp;zł
-                                        </td>
-                                        <td className="center_text">
-                                            <Link
-                                                href={`/sales/new?product_id=${product.id}`}
-                                                className="icon_link stockroom_sell"
-                                                title="sprzedaj"
-                                            >
-                                                <i
-                                                    className="icon sprite-stock_action_sell"
-                                                    aria-hidden="true"
-                                                />
-                                            </Link>
-                                            <Link
-                                                href={`/use/new?product_id=${product.id}`}
-                                                className="icon_link stockroom_consumption"
-                                                title="zużyj"
-                                            >
-                                                <i
-                                                    className="icon sprite-stock_action_consumption"
-                                                    aria-hidden="true"
-                                                />
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                        </Link>
+                                        <Link
+                                            href={`/use/new?product_id=${product.id}`}
+                                            className="icon_link stockroom_consumption"
+                                            title="zużyj"
+                                        >
+                                            <i
+                                                className="icon sprite-stock_action_consumption"
+                                                aria-hidden="true"
+                                            />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
+                </tbody>
+            </table>
 
             <div className="products-export">
                 <button
