@@ -497,6 +497,7 @@ function StatisticsPageContent() {
         <div
             className="salonbw-page statistics-module"
             data-testid="statistics-page"
+            style={{ maxWidth: '1200px', margin: '0 auto' }}
         >
             <VersumBreadcrumbs
                 iconClass="sprite-breadcrumbs_statistics"
@@ -523,8 +524,8 @@ function StatisticsPageContent() {
                     Nie udało się pobrać raportu finansowego.
                 </div>
             ) : (
-                <div className="statistics-description">
-                    <h2>Salon ogółem</h2>
+                <div className="statistics-description p-4">
+                    <h2 className="mt-4">Salon ogółem</h2>
                     <p>
                         Liczba sfinalizowanych wizyt:{' '}
                         <strong>{reportTotals.totalVisits}</strong>
@@ -536,8 +537,8 @@ function StatisticsPageContent() {
                     </p>
                     <br />
 
-                    <div className="statistics-row">
-                        <div className="statistics-col-5">
+                    <div className="flex gap-4">
+                        <div className="flex-[5]">
                             <div className="statistics-price-summary">
                                 <div className="statistics-data-table">
                                     <table>
@@ -627,7 +628,7 @@ function StatisticsPageContent() {
                                 <br />
                             </div>
                         </div>
-                        <div className="statistics-col-7">
+                        <div className="flex-[7]">
                             <div className="statistics-chart-wrap">
                                 <div className="statistics-chart-title">
                                     Udział metod płatności w utargu
@@ -663,7 +664,7 @@ function StatisticsPageContent() {
                     </div>
                     <br className="statistics-clearfix" />
 
-                    <h2>Dane w podziale na pracowników</h2>
+                    <h2 className="mt-8">Dane w podziale na pracowników</h2>
                     <div className="data_table">
                         <table className="table table-bordered">
                             <tbody>

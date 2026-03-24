@@ -183,7 +183,9 @@ export class LoyaltyService {
                 let expiresAt: Date | null = null;
                 if (program.pointsExpireMonths) {
                     expiresAt = new Date();
-                    expiresAt.setMonth(expiresAt.getMonth() + program.pointsExpireMonths);
+                    expiresAt.setMonth(
+                        expiresAt.getMonth() + program.pointsExpireMonths,
+                    );
                 }
 
                 const txRepo = manager.getRepository(LoyaltyTransaction);
@@ -481,7 +483,9 @@ export class LoyaltyService {
                         .getRepository(LoyaltyReward)
                         .createQueryBuilder()
                         .update()
-                        .set({ currentRedemptions: () => 'current_redemptions + 1' })
+                        .set({
+                            currentRedemptions: () => 'current_redemptions + 1',
+                        })
                         .where('id = :id', { id: reward.id })
                         .andWhere('current_redemptions < max_redemptions')
                         .execute();
@@ -542,7 +546,9 @@ export class LoyaltyService {
         actorId: number,
     ): Promise<LoyaltyRewardRedemption> {
         const updated = await this.dataSource.transaction(async (manager) => {
-            const redemptionRepo = manager.getRepository(LoyaltyRewardRedemption);
+            const redemptionRepo = manager.getRepository(
+                LoyaltyRewardRedemption,
+            );
 
             const redemption = await redemptionRepo.findOne({
                 where: { redemptionCode: dto.redemptionCode.toUpperCase() },
@@ -783,7 +789,8 @@ export class LoyaltyService {
                 await repo.save(balance);
             } catch (err: any) {
                 // Fail-safe handling for concurrent creation if unique constraint fails
-                if (err.code === '23505') { // Postgres duplicate key code
+                if (err.code === '23505') {
+                    // Postgres duplicate key code
                     balance = await repo.findOne({
                         where: { userId },
                         lock: { mode: 'pessimistic_write' },
@@ -850,18 +857,23 @@ export class LoyaltyService {
                     await this.dataSource.transaction(async (manager) => {
                         // Re-fetch the transaction inside the lock to avoid Stale Read.
                         // Its pointsRemaining might have been depleted by deductPoints since the chunk was fetched.
-                        const freshTx = await manager.getRepository(LoyaltyTransaction).findOne({
-                            where: { id: tx.id },
-                            lock: { mode: 'pessimistic_write' },
-                        });
+                        const freshTx = await manager
+                            .getRepository(LoyaltyTransaction)
+                            .findOne({
+                                where: { id: tx.id },
+                                lock: { mode: 'pessimistic_write' },
+                            });
 
                         if (!freshTx || freshTx.isExpired) return;
-                        
+
                         const expireAmount = freshTx.pointsRemaining ?? 0;
 
                         await manager
                             .getRepository(LoyaltyTransaction)
-                            .update(freshTx.id, { isExpired: true, pointsRemaining: 0 });
+                            .update(freshTx.id, {
+                                isExpired: true,
+                                pointsRemaining: 0,
+                            });
 
                         if (expireAmount > 0) {
                             const balance = await this.lockOrCreateBalance(
@@ -880,23 +892,32 @@ export class LoyaltyService {
                                     .getRepository(LoyaltyBalance)
                                     .save(balance);
 
-                                await manager.getRepository(LoyaltyTransaction).save(
-                                    manager.getRepository(LoyaltyTransaction).create({
-                                        userId: freshTx.userId,
-                                        type: LoyaltyTransactionType.Expire,
-                                        source: LoyaltyTransactionSource.Expiration,
-                                        points: -actualDeduction,
-                                        balanceAfter: balance.currentBalance,
-                                        description: 'Wygaśnięcie punktów',
-                                    }),
-                                );
+                                await manager
+                                    .getRepository(LoyaltyTransaction)
+                                    .save(
+                                        manager
+                                            .getRepository(LoyaltyTransaction)
+                                            .create({
+                                                userId: freshTx.userId,
+                                                type: LoyaltyTransactionType.Expire,
+                                                source: LoyaltyTransactionSource.Expiration,
+                                                points: -actualDeduction,
+                                                balanceAfter:
+                                                    balance.currentBalance,
+                                                description:
+                                                    'Wygaśnięcie punktów',
+                                            }),
+                                    );
 
                                 totalExpired += actualDeduction;
                             }
                         }
                     });
                 } catch (err) {
-                    this.logger.error(`Failed to expire points for transaction ${tx.id}`, err);
+                    this.logger.error(
+                        `Failed to expire points for transaction ${tx.id}`,
+                        err,
+                    );
                     // Pętla kontynuuje pomimo niepowodzenia pojedynczego rekordu.
                 }
             }

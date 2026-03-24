@@ -62,7 +62,7 @@ function DraggableCustomerRow({
         <tr
             ref={setNodeRef}
             {...{ style }}
-            className={`${isDragging ? 'opacity-50' : ''} clients-row`}
+            className={`${isDragging ? 'opacity-50' : ''}`}
             onClick={() => onOpen(customer.id)}
         >
             <td className="col-checkbox">
@@ -290,8 +290,8 @@ export default function ClientsPage() {
                         />
 
                         {/* Toolbar - styl source UI */}
-                        <div className="clients-toolbar">
-                            <div className="clients-search">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
                                 <input
                                     type="text"
                                     placeholder="wyszukaj klienta"
@@ -302,8 +302,6 @@ export default function ClientsPage() {
                                     }}
                                     className="salonbw-input"
                                 />
-                            </div>
-                            <div className="clients-sort">
                                 <button className="salonbw-btn salonbw-btn--link">
                                     nazwisko: od A do Z ▼
                                 </button>
@@ -373,7 +371,7 @@ export default function ClientsPage() {
                         )}
 
                         {/* Lista klientów */}
-                        <div className="clients-list">
+                        <div className="bg-white border border-gray-300 rounded-sm">
                             <div className="clients-list-header">
                                 <label className="clients-checkbox-all">
                                     <input type="checkbox" />
@@ -386,7 +384,7 @@ export default function ClientsPage() {
                                     Ładowanie...
                                 </div>
                             ) : (
-                                <table className="clients-table">
+                                <table className="w-full">
                                     <tbody>
                                         {filteredCustomers.map((customer) => (
                                             <DraggableCustomerRow

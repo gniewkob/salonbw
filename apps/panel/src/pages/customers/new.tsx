@@ -222,10 +222,12 @@ export default function NewCustomerPage() {
                             ]}
                         />
 
-                        <h2 className="column_row">
-                            nowy klient
-                            <small>Klienci / nowy klient</small>
-                        </h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-bold">Nowy klient</h2>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                            Klienci / Nowy klient
+                        </p>
 
                         <form
                             onSubmit={(e) => void onSubmit(e)}
