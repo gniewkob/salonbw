@@ -168,6 +168,34 @@
 
 ---
 
+### 2026-03-24 - Usługi: audyt parity (15% limit) + poprawki smoke testów
+
+- zmiana kodu:
+    - `apps/panel/tests/e2e/prod-services-parity-audit.spec.ts`
+        - dodano nowy audyt z progiem odchyleń 15.0% dedykowany do weryfikacji Pattern-Driven Development.
+    - `apps/panel/tests/e2e/prod-services-smoke.spec.ts`
+        - przeprowadzono dostosowanie selektorów z legacy Versum (`table.versum-table`) do nowych klas zdefiniowanych z Tailwind/utility (np. `table.table-bordered`).
+    - `apps/panel/src/components/services/ServiceVariantsModal.tsx`
+        - naprawiono usterkę z "pustym" przyciskiem anulowania przez dodanie event handlera `onClick={handleCancelForm}`,
+        - potwierdzono gotowość interfejsu (i podłączonego API) do usuwania wariantów.
+- status:
+    - skrypt `prod-services-parity-audit` jest gotowy na rerun z uwzględnieniem tolerancji RWD/Tailwind.
+    - odblokowano uruchomienie testów (poprawiono kompilację i dependencje dla `pngjs`).
+
+---
+
+### 2026-03-24 - Usługi: pełne pokrycie w skrypcie parity audit
+
+- zmiana kodu:
+    - `apps/panel/tests/e2e/prod-services-parity-audit.spec.ts`
+        - dodano dynamiczne rozwiązywanie ID dla Panelu i Versum oparte na analizie pierwszego wiersza z `tbody`, analogicznie do klientów,
+        - dodano sprawdzanie ekranu tworzenia (`03-services-new`) oraz ekranu szczegółów (`02-services-summary`), kompletując w ten sposób pełny zakres funkcjonalny audytu.
+- status:
+    - przygotowano ostateczną konfigurację E2E gotową na ewentualny nadzór manualny produkcyjnego uruchomienia przez developera.
+
+
+---
+
 ### 2026-03-20 - Services: `/services/new` domknięty funkcjonalnie pod realny flow Versum
 
 - zmiana kodu:
