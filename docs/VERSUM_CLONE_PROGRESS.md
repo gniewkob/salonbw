@@ -184,6 +184,31 @@
 
 ---
 
+### 2026-03-24 - Usługi: commit `cf93b5d7` + blokada DNS w sieci lokalnej
+
+- zmiana kodu (commit `cf93b5d7`):
+    - `apps/panel/tests/e2e/prod-services-parity-audit.spec.ts`
+        - dodano dynamiczne rozwiązywanie ID dla Panelu i Versum oparte na analizie pierwszego wiersza z `tbody`, analogicznie do klientów,
+        - dodano sprawdzanie ekranu tworzenia (`03-services-new`) oraz ekranu szczegółów (`02-services-summary`), kompletując w ten sposób pełny zakres funkcjonalny audytu.
+    - `apps/panel/types/pngjs.d.ts`
+        - dodano lokalne deklaracje TS dla modułu `pngjs` (mini `.d.ts` zamiast zależności `@types/pngjs`).
+    - `apps/panel/tests/e2e/prod-services-smoke.spec.ts`
+        - zaktualizowane selektory do `table.table-bordered`.
+    - `apps/panel/src/components/services/ServiceVariantsModal.tsx`
+        - fix: pusty przycisk `Anuluj` — dodany `onClick={handleCancelForm}`.
+- status produkcyjnego rerunu:
+    - **BLOCKED** — DNS dla `salon-bw.pl` (i subdomen) nie rozwiązuje się z aktualnej sieci lokalnej (`host salon-bw.pl 1.1.1.1` → NXDOMAIN),
+    - komenda do uruchomienia, gdy połączenie będzie dostępne:
+        ```
+        PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl \
+          PANEL_LOGIN_EMAIL='kontakt@bodora.pl' \
+          PANEL_LOGIN_PASSWORD='haslohaslo' \
+          VERSUM_LOGIN_EMAIL='gniewko' \
+          VERSUM_LOGIN_PASSWORD='wywpib-daQko9-syhker' \
+          pnpm exec playwright test tests/e2e/prod-services-parity-audit.spec.ts --project=desktop-1366
+        ```
+    - artefakty pojawią się w: `output/parity/2026-03-24-services-prod-full/REPORT.md`
+
 ### 2026-03-24 - Usługi: pełne pokrycie w skrypcie parity audit
 
 - zmiana kodu:
