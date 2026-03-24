@@ -64,7 +64,8 @@ export default function WarehouseChangesPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        fetchData();
+        void fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange]);
 
     const fetchData = async () => {

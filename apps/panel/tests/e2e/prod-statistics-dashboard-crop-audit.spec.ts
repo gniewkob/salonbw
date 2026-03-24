@@ -19,20 +19,20 @@ const CROPS: CropTarget[] = [
     {
         id: 'summary',
         name: 'Summary Block',
-        panelSelector: '.statistics-col-5',
+        panelSelector: '.statistics-price-summary',
         versumSelector: '.col-lg-5',
     },
     {
         id: 'payments-chart',
         name: 'Payments Chart Block',
-        panelSelector: '.statistics-col-7',
+        panelSelector: '.statistics-chart-wrap',
         versumSelector: '.col-lg-7',
     },
     {
         id: 'employees-table',
         name: 'Employees Table',
-        panelSelector: '.table.table-bordered',
-        versumSelector: '.table.table-bordered',
+        panelSelector: '.data_table',
+        versumSelector: '.data_table',
     },
     {
         id: 'employees-chart',
