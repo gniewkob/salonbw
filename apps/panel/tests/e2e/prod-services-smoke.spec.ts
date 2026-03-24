@@ -50,7 +50,7 @@ test.describe('PROD smoke: services details tabs', () => {
         await expect(page.locator('[data-testid="services-page"]')).toBeVisible();
 
         const firstServiceLink = page.locator(
-            'table.versum-table tbody tr td a.versum-link[href^="/services/"]',
+            'table.table-bordered tbody tr td.link_body a[href^="/services/"]',
         );
         await expect(firstServiceLink.first()).toBeVisible({ timeout: 20_000 });
 
@@ -70,7 +70,7 @@ test.describe('PROD smoke: services details tabs', () => {
         await page.waitForLoadState('domcontentloaded');
 
         const firstServiceLink = page.locator(
-            'table.versum-table tbody tr td a.versum-link[href^="/services/"]',
+            'table.table-bordered tbody tr td.link_body a[href^="/services/"]',
         );
         await expect(firstServiceLink.first()).toBeVisible({ timeout: 20_000 });
         const detailsHref = await firstServiceLink.first().getAttribute('href');
@@ -85,12 +85,12 @@ test.describe('PROD smoke: services details tabs', () => {
             page.locator('button:has-text("dodaj komentarz")'),
         ).toBeVisible();
         await expect(
-            page.locator('table.versum-table th:has-text("Komentarz")'),
+            page.locator('table.salonbw-table th:has-text("Komentarz")'),
         ).toBeVisible();
 
         await page.click('a:has-text("prowizje")');
         await expect(
-            page.locator('table.versum-table th:has-text("Prowizja (%)")'),
+            page.locator('table.salonbw-table th:has-text("Prowizja (%)")'),
         ).toBeVisible();
         await expect(
             page.locator('button:has-text("zapisz prowizje")'),

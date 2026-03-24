@@ -393,6 +393,7 @@ export default function ServiceVariantsModal({
                                             <button
                                                 type="button"
                                                 className="btn btn-default mr-10"
+                                                onClick={handleCancelForm}
                                             >
                                                 anuluj
                                             </button>
