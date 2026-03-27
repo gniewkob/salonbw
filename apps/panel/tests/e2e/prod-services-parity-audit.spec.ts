@@ -4,6 +4,8 @@ import path from 'node:path';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
+const PANEL_BASE = (process.env.PANEL_BASE_URL ?? 'https://panel.salon-bw.pl').replace(/\/$/, '');
+
 interface PageCheck {
     requiredTexts?: string[];
     requiredSelectors?: string[];
@@ -111,7 +113,7 @@ async function loginPanel(page: any) {
     const password = requireEnv('PANEL_LOGIN_PASSWORD');
 
     for (let attempt = 0; attempt < 4; attempt += 1) {
-        await page.goto('https://panel.salon-bw.pl/auth/login', {
+        await page.goto(`${PANEL_BASE}/auth/login`, {
             waitUntil: 'domcontentloaded',
         });
         await page.waitForLoadState('networkidle').catch(() => null);
@@ -320,7 +322,7 @@ function buildReportWithVisual(
 }
 
 async function resolvePanelServiceId(page: any): Promise<number | null> {
-    await page.goto('https://panel.salon-bw.pl/services', { waitUntil: 'domcontentloaded', timeout: 35000 });
+    await page.goto(`${PANEL_BASE}/services`, { waitUntil: 'domcontentloaded', timeout: 35000 });
     await page.waitForTimeout(1000);
     const link = page.locator('table tbody tr td.link_body a[href^="/services/"]:not([href*="tab_name"]):not([href*="edit"])').first();
     const count = await link.count().catch(() => 0);
@@ -348,7 +350,7 @@ function buildActions(panelId: number | null, versumId: number | null): AuditAct
         {
             id: '01-services-list',
             name: 'Services list',
-            panelUrl: 'https://panel.salon-bw.pl/services',
+            panelUrl: `${PANEL_BASE}/services`,
             versumUrl: 'https://panel.versum.com/salonblackandwhite/services',
             panelCheck: {
                 requiredTexts: ['usługi', 'dodaj usługę'],
@@ -362,7 +364,7 @@ function buildActions(panelId: number | null, versumId: number | null): AuditAct
         {
             id: '03-services-new',
             name: 'Services create',
-            panelUrl: 'https://panel.salon-bw.pl/services/new',
+            panelUrl: `${PANEL_BASE}/services/new`,
             versumUrl: 'https://panel.versum.com/salonblackandwhite/services/new',
             panelCheck: {
                 requiredTexts: ['nowa usługa'],
@@ -379,7 +381,7 @@ function buildActions(panelId: number | null, versumId: number | null): AuditAct
         list.push({
             id: '02-services-summary',
             name: 'Services summary',
-            panelUrl: `https://panel.salon-bw.pl/services/${panelId}`,
+            panelUrl: `${PANEL_BASE}/services/${panelId}`,
             versumUrl: `https://panel.versum.com/salonblackandwhite/services/${versumId}`,
             panelCheck: {
                 requiredSelectors: ['#main-content'],
