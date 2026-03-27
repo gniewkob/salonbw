@@ -82,7 +82,7 @@ export default function WarehouseLayout({
                         iconClass="sprite-breadcrumbs_stock"
                         items={[
                             { label: 'Magazyn', href: '/products' },
-                            { label: heading },
+                            { label: heading.replace(/^Magazyn\s*\/\s*/, '') },
                         ]}
                     />
 
