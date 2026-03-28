@@ -50,7 +50,7 @@ export default function TipsPage() {
                 />
 
                 <div className="salonbw-page__toolbar">
-                    <div className="flex items-center gap-2">
+                    <div className="d-flex align-items-center gap-2">
                         <select
                             className="form-control salonbw-select"
                             aria-label="Zakres czasu"
@@ -81,46 +81,50 @@ export default function TipsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm salonbw-muted">
-                        Ładowanie...
-                    </div>
+                    <div className="p-4 small salonbw-muted">Ładowanie...</div>
                 ) : (
                     <>
                         {/* Summary cards */}
-                        <div className="grid grid-cols-3 gap-4 mb-6">
-                            <div className="border rounded p-4 text-center bg-yellow-50">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Łącznie napiwków
-                                </div>
-                                <div className="text-2xl font-bold text-yellow-700">
-                                    {formatMoney(totalTips)}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                    za {getRangeLabel()}
-                                </div>
-                            </div>
-
-                            <div className="border rounded p-4 text-center">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Liczba napiwków
-                                </div>
-                                <div className="text-2xl font-bold">
-                                    {totalCount}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                    transakcje
+                        <div className="row g-4 mb-5">
+                            <div className="col-4">
+                                <div className="border rounded p-4 text-center bg-warning bg-opacity-10">
+                                    <div className="small text-muted mb-2">
+                                        Łącznie napiwków
+                                    </div>
+                                    <div className="fs-3 fw-bold text-warning">
+                                        {formatMoney(totalTips)}
+                                    </div>
+                                    <div className="small text-muted mt-1">
+                                        za {getRangeLabel()}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="border rounded p-4 text-center">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Średni napiwek
+                            <div className="col-4">
+                                <div className="border rounded p-4 text-center">
+                                    <div className="small text-muted mb-2">
+                                        Liczba napiwków
+                                    </div>
+                                    <div className="fs-3 fw-bold">
+                                        {totalCount}
+                                    </div>
+                                    <div className="small text-muted mt-1">
+                                        transakcje
+                                    </div>
                                 </div>
-                                <div className="text-2xl font-bold">
-                                    {formatMoney(avgTip)}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                    na transakcję
+                            </div>
+
+                            <div className="col-4">
+                                <div className="border rounded p-4 text-center">
+                                    <div className="small text-muted mb-2">
+                                        Średni napiwek
+                                    </div>
+                                    <div className="fs-3 fw-bold">
+                                        {formatMoney(avgTip)}
+                                    </div>
+                                    <div className="small text-muted mt-1">
+                                        na transakcję
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -131,13 +135,13 @@ export default function TipsPage() {
                                 <thead>
                                     <tr>
                                         <th>Pracownik</th>
-                                        <th className="text-right">
+                                        <th className="text-end">
                                             Liczba napiwków
                                         </th>
-                                        <th className="text-right">
+                                        <th className="text-end">
                                             Suma napiwków
                                         </th>
-                                        <th className="text-right">
+                                        <th className="text-end">
                                             Średni napiwek
                                         </th>
                                     </tr>
@@ -154,15 +158,15 @@ export default function TipsPage() {
                                                         {employee.employeeName}
                                                     </Link>
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {employee.tipsCount}
                                                 </td>
-                                                <td className="text-right font-semibold">
+                                                <td className="text-end fw-semibold">
                                                     {formatMoney(
                                                         employee.tipsTotal,
                                                     )}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {formatMoney(
                                                         employee.averageTip,
                                                     )}
@@ -173,7 +177,7 @@ export default function TipsPage() {
                                         <tr>
                                             <td
                                                 colSpan={4}
-                                                className="text-center text-gray-500 py-4"
+                                                className="text-center text-muted py-4"
                                             >
                                                 Brak napiwków w wybranym okresie
                                             </td>
@@ -182,15 +186,15 @@ export default function TipsPage() {
                                 </tbody>
                                 {data && data.length > 0 && (
                                     <tfoot>
-                                        <tr className="bg-gray-100 font-bold">
+                                        <tr className="bg-light fw-bold">
                                             <td>Łącznie</td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {totalCount}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {formatMoney(totalTips)}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {formatMoney(avgTip)}
                                             </td>
                                         </tr>

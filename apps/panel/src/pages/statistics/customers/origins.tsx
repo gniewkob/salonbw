@@ -83,11 +83,11 @@ export default function ClientOriginsPage() {
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
-                    <div className="flex-between mb-20">
-                        <h1 className="text-2xl font-semibold">
+                    <div className="flex-between mb-5">
+                        <h1 className="fs-3 fw-semibold">
                             Pochodzenie klientów
                         </h1>
-                        <div className="flex gap-8">
+                        <div className="d-flex gap-5">
                             <select
                                 title="Okres statystyk"
                                 aria-label="Wybierz okres"
@@ -109,7 +109,7 @@ export default function ClientOriginsPage() {
                     ) : stats ? (
                         <>
                             {/* KPI */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-4">
                                     <div className="salonbw-tile">
                                         <div className="salonbw-tile__label">
@@ -239,10 +239,10 @@ export default function ClientOriginsPage() {
                                         <thead>
                                             <tr>
                                                 <th>Źródło</th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Liczba klientów
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Udział
                                                 </th>
                                             </tr>
@@ -251,10 +251,10 @@ export default function ClientOriginsPage() {
                                             {stats.origins.map((origin) => (
                                                 <tr key={origin.origin}>
                                                     <td>{origin.origin}</td>
-                                                    <td className="text-right">
+                                                    <td className="text-end">
                                                         {origin.count}
                                                     </td>
-                                                    <td className="text-right">
+                                                    <td className="text-end">
                                                         {origin.percentage}%
                                                     </td>
                                                 </tr>

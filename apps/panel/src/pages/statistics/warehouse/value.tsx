@@ -90,8 +90,8 @@ export default function WarehouseValuePage() {
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
-                    <div className="flex-between mb-20">
-                        <h1 className="text-2xl font-semibold">
+                    <div className="flex-between mb-5">
+                        <h1 className="fs-3 fw-semibold">
                             Raport wartości produktów
                         </h1>
                         <button
@@ -110,7 +110,7 @@ export default function WarehouseValuePage() {
                     ) : stats ? (
                         <>
                             {/* KPI */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-3">
                                     <div className="salonbw-tile">
                                         <div className="salonbw-tile__label">
@@ -161,7 +161,7 @@ export default function WarehouseValuePage() {
                             </div>
 
                             {/* Charts */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-6">
                                     <div className="salonbw-widget">
                                         <div className="salonbw-widget__header">
@@ -242,7 +242,7 @@ export default function WarehouseValuePage() {
                             </div>
 
                             {/* Categories Table */}
-                            <div className="salonbw-widget mb-20">
+                            <div className="salonbw-widget mb-5">
                                 <div className="salonbw-widget__header">
                                     Szczegóły wg kategorii
                                 </div>
@@ -251,13 +251,13 @@ export default function WarehouseValuePage() {
                                         <thead>
                                             <tr>
                                                 <th>Kategoria</th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Produkty
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Ilość sztuk
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Wartość
                                                 </th>
                                             </tr>
@@ -266,13 +266,13 @@ export default function WarehouseValuePage() {
                                             {stats.byCategory.map((cat) => (
                                                 <tr key={cat.category}>
                                                     <td>{cat.category}</td>
-                                                    <td className="text-right">
+                                                    <td className="text-end">
                                                         {cat.productCount}
                                                     </td>
-                                                    <td className="text-right">
+                                                    <td className="text-end">
                                                         {cat.totalQuantity}
                                                     </td>
-                                                    <td className="text-right font-medium">
+                                                    <td className="text-end fw-medium">
                                                         {formatCurrency(
                                                             cat.totalValue,
                                                         )}
@@ -295,13 +295,13 @@ export default function WarehouseValuePage() {
                                             <thead>
                                                 <tr>
                                                     <th>Produkt</th>
-                                                    <th className="text-right">
+                                                    <th className="text-end">
                                                         Stan aktualny
                                                     </th>
-                                                    <th className="text-right">
+                                                    <th className="text-end">
                                                         Min. stan
                                                     </th>
-                                                    <th className="text-right">
+                                                    <th className="text-end">
                                                         Cena
                                                     </th>
                                                 </tr>
@@ -311,13 +311,13 @@ export default function WarehouseValuePage() {
                                                     (p) => (
                                                         <tr key={p.id}>
                                                             <td>{p.name}</td>
-                                                            <td className="text-right text-danger font-bold">
+                                                            <td className="text-end text-danger fw-bold">
                                                                 {p.quantity}
                                                             </td>
-                                                            <td className="text-right">
+                                                            <td className="text-end">
                                                                 {p.minQuantity}
                                                             </td>
-                                                            <td className="text-right">
+                                                            <td className="text-end">
                                                                 {formatCurrency(
                                                                     p.price,
                                                                 )}

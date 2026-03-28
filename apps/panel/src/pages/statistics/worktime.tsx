@@ -94,10 +94,8 @@ export default function WorkTimeReportPage() {
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
-                    <div className="flex-between mb-20">
-                        <h1 className="text-2xl font-semibold">
-                            Raport czasu pracy
-                        </h1>
+                    <div className="flex-between mb-5">
+                        <h1 className="fs-3 fw-semibold">Raport czasu pracy</h1>
                         <select
                             title="Okres statystyk"
                             aria-label="Wybierz okres"
@@ -118,7 +116,7 @@ export default function WorkTimeReportPage() {
                     ) : (
                         <>
                             {/* Total Stats */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-3">
                                     <div className="salonbw-tile">
                                         <div className="salonbw-tile__label">
@@ -173,7 +171,7 @@ export default function WorkTimeReportPage() {
                                                 <thead>
                                                     <tr>
                                                         <th>Pracownik</th>
-                                                        <th className="text-right">
+                                                        <th className="text-end">
                                                             Godziny
                                                         </th>
                                                     </tr>
@@ -185,7 +183,7 @@ export default function WorkTimeReportPage() {
                                                                 key={
                                                                     emp.employeeId
                                                                 }
-                                                                className={`cursor-pointer ${selectedEmployee === emp.employeeId ? 'active' : ''}`}
+                                                                className={` ${selectedEmployee === emp.employeeId ? 'active' : ''}`}
                                                                 onClick={() =>
                                                                     setSelectedEmployee(
                                                                         emp.employeeId,
@@ -197,7 +195,7 @@ export default function WorkTimeReportPage() {
                                                                         emp.employeeName
                                                                     }
                                                                 </td>
-                                                                <td className="text-right">
+                                                                <td className="text-end">
                                                                     {formatMinutes(
                                                                         emp.totalWorkTimeMinutes,
                                                                     )}
@@ -214,7 +212,7 @@ export default function WorkTimeReportPage() {
                                 <div className="col-sm-8">
                                     {selectedData && (
                                         <>
-                                            <div className="salonbw-widget mb-20">
+                                            <div className="salonbw-widget mb-5">
                                                 <div className="salonbw-widget__header">
                                                     {selectedData.employeeName}{' '}
                                                     - szczegóły
@@ -223,48 +221,48 @@ export default function WorkTimeReportPage() {
                                                     <div className="row">
                                                         <div className="col-sm-3">
                                                             <div className="text-center">
-                                                                <div className="text-2xl font-bold text-accent">
+                                                                <div className="fs-3 fw-bold text-accent">
                                                                     {formatMinutes(
                                                                         selectedData.totalWorkTimeMinutes,
                                                                     )}
                                                                 </div>
-                                                                <div className="text-sm text-muted">
+                                                                <div className="small text-muted">
                                                                     Suma godzin
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className="col-sm-3">
                                                             <div className="text-center">
-                                                                <div className="text-2xl font-bold text-success">
+                                                                <div className="fs-3 fw-bold text-success">
                                                                     {
                                                                         selectedData.totalAppointments
                                                                     }
                                                                 </div>
-                                                                <div className="text-sm text-muted">
+                                                                <div className="small text-muted">
                                                                     Wizyt
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className="col-sm-3">
                                                             <div className="text-center">
-                                                                <div className="text-2xl font-bold">
+                                                                <div className="fs-3 fw-bold">
                                                                     {
                                                                         selectedData.workingDays
                                                                     }
                                                                 </div>
-                                                                <div className="text-sm text-muted">
+                                                                <div className="small text-muted">
                                                                     Dni
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className="col-sm-3">
                                                             <div className="text-center">
-                                                                <div className="text-2xl font-bold">
+                                                                <div className="fs-3 fw-bold">
                                                                     {formatMinutes(
                                                                         selectedData.averageWorkTimePerDay,
                                                                     )}
                                                                 </div>
-                                                                <div className="text-sm text-muted">
+                                                                <div className="small text-muted">
                                                                     Średnio/dzień
                                                                 </div>
                                                             </div>
@@ -340,19 +338,19 @@ export default function WorkTimeReportPage() {
                                         <thead>
                                             <tr>
                                                 <th>Pracownik</th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Godziny
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Wizyty
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Dni
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Średnio/dzień
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Wizyt/godzinę
                                                 </th>
                                             </tr>
@@ -374,25 +372,25 @@ export default function WorkTimeReportPage() {
                                                         <td>
                                                             {emp.employeeName}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {formatMinutes(
                                                                 emp.totalWorkTimeMinutes,
                                                             )}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {
                                                                 emp.totalAppointments
                                                             }
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {emp.workingDays}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {formatMinutes(
                                                                 emp.averageWorkTimePerDay,
                                                             )}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {appsPerHour}
                                                         </td>
                                                     </tr>

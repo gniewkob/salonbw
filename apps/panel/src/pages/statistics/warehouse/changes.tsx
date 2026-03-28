@@ -96,8 +96,8 @@ export default function WarehouseChangesPage() {
             <SalonShell role={role}>
                 <div className="statistics-page">
                     {/* Header */}
-                    <div className="flex-between mb-20">
-                        <h1 className="text-2xl font-semibold">
+                    <div className="flex-between mb-5">
+                        <h1 className="fs-3 fw-semibold">
                             Raport zmian magazynowych
                         </h1>
                         <select
@@ -120,7 +120,7 @@ export default function WarehouseChangesPage() {
                     ) : stats ? (
                         <>
                             {/* KPI */}
-                            <div className="row mb-20">
+                            <div className="row mb-5">
                                 <div className="col-sm-4">
                                     <div className="salonbw-tile">
                                         <div className="salonbw-tile__label">
@@ -158,7 +158,7 @@ export default function WarehouseChangesPage() {
                             </div>
 
                             {/* Chart */}
-                            <div className="salonbw-widget mb-20">
+                            <div className="salonbw-widget mb-5">
                                 <div className="salonbw-widget__header">
                                     Ruchy magazynowe wg typu
                                 </div>
@@ -191,13 +191,13 @@ export default function WarehouseChangesPage() {
                                                 <th>Data</th>
                                                 <th>Produkt</th>
                                                 <th>Typ</th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Zmiana
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Stan przed
                                                 </th>
-                                                <th className="text-right">
+                                                <th className="text-end">
                                                     Stan po
                                                 </th>
                                                 <th>Użytkownik</th>
@@ -233,7 +233,7 @@ export default function WarehouseChangesPage() {
                                                             </span>
                                                         </td>
                                                         <td
-                                                            className={`text-right ${
+                                                            className={`text-end ${
                                                                 m.quantity > 0
                                                                     ? 'text-success'
                                                                     : 'text-danger'
@@ -243,10 +243,10 @@ export default function WarehouseChangesPage() {
                                                                 ? `+${m.quantity}`
                                                                 : m.quantity}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {m.quantityBefore}
                                                         </td>
-                                                        <td className="text-right">
+                                                        <td className="text-end">
                                                             {m.quantityAfter}
                                                         </td>
                                                         <td>

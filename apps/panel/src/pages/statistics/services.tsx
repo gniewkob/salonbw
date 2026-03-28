@@ -53,7 +53,7 @@ export default function ServicesStatisticsPage() {
                 />
 
                 <div className="salonbw-page__toolbar">
-                    <div className="flex items-center gap-2">
+                    <div className="d-flex align-items-center gap-2">
                         <select
                             className="form-control salonbw-select"
                             aria-label="Zakres czasu"
@@ -75,7 +75,7 @@ export default function ServicesStatisticsPage() {
                                 poprzedni miesiąc
                             </option>
                         </select>
-                        <span className="text-sm text-gray-500">
+                        <span className="small text-muted">
                             ({getDateRangeLabel()})
                         </span>
                     </div>
@@ -89,28 +89,30 @@ export default function ServicesStatisticsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="p-4 text-sm salonbw-muted">
-                        Ładowanie...
-                    </div>
+                    <div className="p-4 small salonbw-muted">Ładowanie...</div>
                 ) : (
                     <>
                         {/* Summary */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="border rounded p-4 text-center bg-blue-50">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Łączna liczba wizyt
-                                </div>
-                                <div className="text-2xl font-bold text-blue-700">
-                                    {totalBookings}
+                        <div className="row g-4 mb-5">
+                            <div className="col-6">
+                                <div className="border rounded p-4 text-center bg-primary bg-opacity-10">
+                                    <div className="small text-muted mb-2">
+                                        Łączna liczba wizyt
+                                    </div>
+                                    <div className="fs-3 fw-bold text-primary">
+                                        {totalBookings}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="border rounded p-4 text-center bg-green-50">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Łączny przychód
-                                </div>
-                                <div className="text-2xl font-bold text-green-700">
-                                    {formatMoney(totalRevenue)}
+                            <div className="col-6">
+                                <div className="border rounded p-4 text-center bg-success bg-opacity-10">
+                                    <div className="small text-muted mb-2">
+                                        Łączny przychód
+                                    </div>
+                                    <div className="fs-3 fw-bold text-success">
+                                        {formatMoney(totalRevenue)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,14 +124,14 @@ export default function ServicesStatisticsPage() {
                                     <tr>
                                         <th>Usługa</th>
                                         <th>Kategoria</th>
-                                        <th className="text-right">
+                                        <th className="text-end">
                                             Liczba wizyt
                                         </th>
-                                        <th className="text-right">Przychód</th>
-                                        <th className="text-right">
+                                        <th className="text-end">Przychód</th>
+                                        <th className="text-end">
                                             Średnia cena
                                         </th>
-                                        <th className="text-right">
+                                        <th className="text-end">
                                             Średni czas
                                         </th>
                                     </tr>
@@ -150,20 +152,20 @@ export default function ServicesStatisticsPage() {
                                                     {service.categoryName ||
                                                         'Bez kategorii'}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {service.bookingCount}
                                                 </td>
-                                                <td className="text-right font-semibold">
+                                                <td className="text-end fw-semibold">
                                                     {formatMoney(
                                                         service.revenue,
                                                     )}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {formatMoney(
                                                         service.averagePrice,
                                                     )}
                                                 </td>
-                                                <td className="text-right">
+                                                <td className="text-end">
                                                     {Math.round(
                                                         service.averageDuration,
                                                     )}{' '}
@@ -175,7 +177,7 @@ export default function ServicesStatisticsPage() {
                                         <tr>
                                             <td
                                                 colSpan={6}
-                                                className="text-center text-gray-500 py-4"
+                                                className="text-center text-muted py-4"
                                             >
                                                 Brak danych w wybranym okresie
                                             </td>
@@ -184,15 +186,15 @@ export default function ServicesStatisticsPage() {
                                 </tbody>
                                 {data && data.length > 0 && (
                                     <tfoot>
-                                        <tr className="bg-gray-100 font-bold">
+                                        <tr className="bg-light fw-bold">
                                             <td colSpan={2}>Łącznie</td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {totalBookings}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {formatMoney(totalRevenue)}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-end">
                                                 {formatMoney(
                                                     totalBookings > 0
                                                         ? totalRevenue /
