@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
 import ClientDetailNav from '@/components/salonbw/navs/ClientDetailNav';
-import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetSecondaryNav } from '@/contexts/SecondaryNavContext';
@@ -150,7 +149,6 @@ export default function CustomerDetailPage() {
             permission="nav:customers"
         >
             <SalonBWShell role={role}>
-                <SalonBWVendorCss />
                 <CustomerErrorBoundary
                     fallback={
                         <div className="show_customer" id="customers_main">

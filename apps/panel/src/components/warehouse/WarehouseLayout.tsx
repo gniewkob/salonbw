@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Head from 'next/head';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -75,7 +74,6 @@ export default function WarehouseLayout({
             <Head>
                 <title>{pageTitle}</title>
             </Head>
-            <SalonBWVendorCss />
             <SalonBWShell role={role}>
                 <div className="products_index" id="products_main">
                     <VersumBreadcrumbs

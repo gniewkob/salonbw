@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import RouteGuard from '@/components/RouteGuard';
 import SalonBWShell from '@/components/salonbw/SalonBWShell';
-import SalonBWVendorCss from '@/components/salonbw/SalonBWVendorCss';
 import VersumBreadcrumbs from '@/components/salonbw/VersumBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductApi } from '@/api/products';
@@ -101,7 +100,6 @@ export default function EditProductPage() {
     return (
         <RouteGuard roles={['admin']} permission="nav:warehouse">
             <SalonBWShell role={role}>
-                <SalonBWVendorCss />
                 <div className="products_index" id="products_main">
                     <VersumBreadcrumbs
                         iconClass="sprite-breadcrumbs_stock"
