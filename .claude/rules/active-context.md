@@ -3,35 +3,31 @@
 ## Current focus
 
 - **Bootstrap 5 migration COMPLETE (2026-03-27)**
-  - Tailwind CSS fully removed (deps + config + all `@apply`/`@tailwind` directives)
-  - Bootstrap 5.3 loaded globally via `_app.tsx`
+  - Tailwind CSS fully removed; Bootstrap 5.3 global via `_app.tsx`
   - `salon-theme.css` + `salon-shell.css` provide all custom styles
-  - CSS variables renamed: `--salonbw-*` → `--salon-*` (salon-shell.css + globals.css)
-  - components/salonbw/ → components/salon/ (all files renamed: SalonBW* → Salon*)
-  - vendor CSS dir (`public/versum-vendor/`) deleted
-  - 0 lint errors, 0 TypeScript errors post-migration
-- **Faza D — Panel UI Kit Sprint 1** (started 2026-03-18, migration COMPLETE as of 2026-03-18)
-  1. [DONE] Build `PanelTable` component (`apps/panel/src/components/ui/PanelTable.tsx`)
-  2. [DONE] Build `PanelSection` component (`apps/panel/src/components/ui/PanelSection.tsx`)
-  3. [DONE] Migrate all `/settings/*` pages (15 pages + 2 components) to use new components
-  4. [DEFERRED] Dead CSS audit — remove unused chunks from `default.css` / `new-ui.css`
-- `data_protection.tsx` deliberately skipped: `inner edit_branch_form` is on a `<form>` element; `PanelSection` renders `<div>`, wrapping would add unnecessary nesting. Leave as-is indefinitely unless `as` prop added.
-  Evidence: "PanelSection renders a div, wrapping would add unnecessary nesting" — session decision 2026-03-18
-- P1/P2 backlog: CLOSED as of 2026-03-18 (all routes `exact` or excluded P3)
-- Versum parity: visual parity deferred per pivot 2026-03-17 (15% error threshold)
+  - CSS variables: `--salonbw-*` → `--salon-*`; components/salonbw/ → components/salon/
+- **Faza E — Versum visual parity sprint** (started 2026-03-28)
+  - Services module: sidenav icons, table class fixes, URL-based tabs, ServiceDetailNav — DONE (`d9e72660`)
+  - Statistics dashboard: Versum-native class names (`.description`, `.price_summary`, `.data_table.compact_cells`, `.row`/`.col-lg-5/7`, `.info_tip`, `br.c`) — DONE (`1b47831c`)
+  - Remaining open: Magazyn (11.3%), Klienci (7.4%), Łączność (80% structural)
+- **Faza D — Panel UI Kit Sprint 1 — COMPLETE** (2026-03-18)
+  - PanelTable + PanelSection built; all `/settings/*` pages migrated
+  - `data_protection.tsx` deliberately skipped (form element, not div)
+- P1/P2 backlog: CLOSED as of 2026-03-18
 
 ## In-progress work
 
-- Branch: master (latest commit `e56e39ff`)
-- Panel production: `7ac0850e` | Next.js 15.5.10 — DEPLOYED (2026-03-18)
-- API production: `e56e39ff` | 2026-03-24 — DEPLOYED (loyalty race-condition fixes, FIFO expiry, pessimistic locks)
+- Branch: master (latest commit `1b47831c`)
+- Panel production: `d9e72660` | Next.js 15.5.10 — DEPLOYED (2026-03-28, 16 commits pushed)
+- API production: `e56e39ff` | 2026-03-24 — unchanged
 - Landing production: `e74331ee` | Next.js 15.5.10 | 2026-02-26 — unchanged
-- UI Kit Sprint 1 migration: COMPLETE
+- Versum parity sprint: in progress (Services + Statistics done; Magazyn/Klienci/Łączność next)
 
 ## Recent decisions
 
-- Sprint 1 migration 2026-03-18: 15 `/settings/*` pages + 2 components migrated to `PanelTable`/`PanelSection`. `SettingsDetailLayout` updated at component level — all pages using it benefit automatically. `data_protection.tsx` skipped (form element, not div).
-  Evidence: "Czytam reprezentatywne pages settings żeby zrozumieć pełny zakres" + grep found 12 pages + 2 components
+- Versum parity: using Versum dump HTML + CSS as single source of truth for class names. Custom `statistics-*` aliases eliminated in favour of native `.description`, `.price_summary`, `.data_table.compact_cells`, `.info_tip`, etc.
+  Evidence: "kontynuujemy plan" after deploy — user confirmed parity sprint approach
+- Sprint 1 migration 2026-03-18: 15 `/settings/*` pages + 2 components migrated to `PanelTable`/`PanelSection`.
 - `PanelTable` API: `columns[]` (label?, ariaLabel?, className?), `isEmpty?`, `emptyMessage?`, `children` (tbody rows).
 - `PanelSection` API: `title?` (renders h2), `action?` (renders actions div), `children`, `className?`.
   - Use `title` prop only when h2 is at direct top level of section (not inside loading conditional or form).
